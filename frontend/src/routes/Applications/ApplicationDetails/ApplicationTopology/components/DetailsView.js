@@ -186,7 +186,8 @@ class DetailsView extends React.Component {
     renderTabs(node) {
         const { t } = this.props
         const isLogTabHidden = node.type !== 'pod'
-        const isYAMLTabHidden = node.type === 'cluster' || node.type === 'ocpapplication' || node.type === 'fluxapplication'
+        const isYAMLTabHidden =
+            node.type === 'cluster' || node.type === 'ocpapplication' || node.type === 'fluxapplication'
         const { activeTabKey } = this.state
 
         return (

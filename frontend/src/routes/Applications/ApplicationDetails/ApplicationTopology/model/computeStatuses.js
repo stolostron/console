@@ -1198,7 +1198,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 'cluster',
                 'subscription',
                 'ocpapplication',
-                'fluxapplication'
+                'fluxapplication',
             ]))
     ) {
         //resource with pods info is processed separately

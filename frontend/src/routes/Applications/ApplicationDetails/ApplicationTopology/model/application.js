@@ -3,7 +3,6 @@
 import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 import { fireManagedClusterView } from '../../../../../resources'
-import { openSync } from 'fs'
 
 export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion, clusters) => {
     let app

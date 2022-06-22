@@ -225,7 +225,7 @@ export const createResourceSearchLink = (node, t) => {
         computedNSList.forEach((item) => {
             computedNS = computedNS.length === 0 ? item : `${computedNS},${item}`
         })
-        
+
         //get the list of all names from the related list; for helm charts, they are different than the deployable name
         //pulse orange means not deployed on any cluster so don't show link to search page
         if (isSearchAvailable()) {
@@ -639,8 +639,12 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
 export const processResourceActionLink = (resource, toggleLoading, t) => {
     let targetLink = ''
     const linkPath = R.pathOr('', ['action'])(resource)
-    const { name, namespace, editLink, kind, cluster} = resource //routeObject
-    const nsData = namespace ? kind === 'ocpapplication' || kind === 'fluxapplication' ? `namespace:${namespace}` : ` namespace:${namespace}` : ''
+    const { name, namespace, editLink, kind, cluster } = resource //routeObject
+    const nsData = namespace
+        ? kind === 'ocpapplication' || kind === 'fluxapplication'
+            ? `namespace:${namespace}`
+            : ` namespace:${namespace}`
+        : ''
     const kindData = kind === 'ocpapplication' || kind === 'fluxapplication' ? '' : `kind:${kind}`
     let nameData
     if (kind === 'ocpapplication') {
