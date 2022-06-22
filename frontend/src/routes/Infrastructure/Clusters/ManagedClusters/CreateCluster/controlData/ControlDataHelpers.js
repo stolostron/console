@@ -8,7 +8,7 @@ import {
     VALID_DNS_LABEL,
     VALIDATE_URL,
     VALIDATE_ALPHANUMERIC,
-} from 'temptifly'
+} from '../../../../../../components/TemplateEditor'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'

@@ -36,6 +36,7 @@ const initialControl = (control, editor) => {
             return ret
         },
     }
+    // eslint-disable-next-line no-undef
     const lastestData = new Proxy({}, handler)
 
     if (type !== 'title' && type !== 'section' && !setActive) {

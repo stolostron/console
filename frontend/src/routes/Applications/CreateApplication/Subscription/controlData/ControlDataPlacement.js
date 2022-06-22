@@ -26,7 +26,7 @@ import {
     getSharedPlacementRuleWarning,
     getSharedSubscriptionWarning,
 } from './utils'
-import { getSourcePath } from 'temptifly'
+import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
 import _ from 'lodash'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'

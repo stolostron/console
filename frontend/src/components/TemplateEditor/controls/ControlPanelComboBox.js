@@ -392,6 +392,7 @@ class ControlPanelComboBox extends React.Component {
 
     renderLabel(label, searchText, active, control, simplified, describe) {
         if (describe) {
+            // eslint-disable-next-line jest/valid-title, jest/valid-describe-callback
             const desc = describe(label, control)
             return (
                 <div className="tf--list-box__menu-item-container">

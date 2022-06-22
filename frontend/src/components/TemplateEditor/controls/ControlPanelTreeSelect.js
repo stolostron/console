@@ -1,7 +1,5 @@
 'use strict'
 
-/* eslint-disable react/no-unused-state, react/no-unused-prop-types, jsx-a11y/autocomplete-valid */
-
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'

@@ -314,9 +314,9 @@ class YamlInline {
         var ret = []
 
         for (var name in tab) {
-            if (tab.hasOwnProperty(name)) {
-                ret.push(name)
-            }
+            //if (tab.hasOwnProperty(name)) {
+            ret.push(name)
+            //}
         }
 
         return ret
@@ -939,7 +939,7 @@ class YamlParser {
                 else {
                     var lastKey = null
                     for (var k in data) {
-                        if (data.hasOwnProperty(k)) lastKey = k
+                        lastKey = k
                     }
                     this.refs[isRef] = data[lastKey]
                 }
@@ -1406,14 +1406,12 @@ class YamlParser {
         var i
 
         for (i in a) {
-            if (a.hasOwnProperty(i))
-                if (/^\d+$/.test(i)) c.push(a)
-                else c[i] = a[i]
+            if (/^\d+$/.test(i)) c.push(a)
+            else c[i] = a[i]
         }
         for (i in b) {
-            if (b.hasOwnProperty(i))
-                if (/^\d+$/.test(i)) c.push(b)
-                else c[i] = b[i]
+            if (/^\d+$/.test(i)) c.push(b)
+            else c[i] = b[i]
         }
 
         return c
