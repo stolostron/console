@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType, Provider } from '@stolostron/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'

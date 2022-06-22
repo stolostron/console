@@ -9,7 +9,7 @@ import {
     CuratorCondition,
     getLatestAnsibleJob,
 } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'

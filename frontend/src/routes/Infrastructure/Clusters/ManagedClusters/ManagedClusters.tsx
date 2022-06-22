@@ -19,7 +19,7 @@ import {
     ITableFilter,
     Provider,
     ProviderLongTextMap,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

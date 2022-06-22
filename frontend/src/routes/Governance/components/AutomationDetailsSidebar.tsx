@@ -17,7 +17,7 @@ import {
     ExclamationTriangleIcon,
     ExternalLinkAltIcon,
 } from '@patternfly/react-icons'
-import { AcmTable } from '@stolostron/ui-components'
+import { AcmTable } from '../../../ui-components'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'

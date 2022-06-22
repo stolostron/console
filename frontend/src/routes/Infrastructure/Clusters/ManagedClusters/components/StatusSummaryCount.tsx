@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
+import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useCallback, useContext, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

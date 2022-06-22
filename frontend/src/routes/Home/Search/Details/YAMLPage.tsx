@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'

@@ -10,7 +10,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmTextInput,
     IAcmTableColumn,
-} from '@stolostron/ui-components'
+} from '../ui-components'
 import {
     ActionGroup,
     Button,

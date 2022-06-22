@@ -32,7 +32,7 @@ import {
     AcmSubmit,
     AcmTextArea,
     AcmTextInput,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import { keyBy } from 'lodash'
 import { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'

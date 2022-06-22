@@ -7,7 +7,7 @@ import {
     AcmPageHeader,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

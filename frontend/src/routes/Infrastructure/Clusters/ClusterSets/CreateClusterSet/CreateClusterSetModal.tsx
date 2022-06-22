@@ -14,7 +14,7 @@ import {
     AcmModal,
     AcmSubmit,
     AcmTextInput,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
