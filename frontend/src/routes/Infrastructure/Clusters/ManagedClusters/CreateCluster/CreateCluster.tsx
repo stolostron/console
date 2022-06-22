@@ -81,6 +81,12 @@ export default function CreateClusterPage() {
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
 
+    // setup translation
+    const { t } = useTranslation()
+    const i18n = (key: string, arg: any) => {
+        return t(key, arg)
+    }
+
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
@@ -147,7 +153,7 @@ export default function CreateClusterPage() {
             if (matchedManagedCluster || matchedAgentClusterInstall) {
                 setCreationStatus({
                     status: 'ERROR',
-                    messages: [{ message: `The cluster name is already used by another cluster.` }],
+                    messages: [{ message: t('The cluster name is already used by another cluster.') }],
                 })
                 return 'ERROR'
             } else {
@@ -212,9 +218,9 @@ export default function CreateClusterPage() {
                 } else if (status !== 'ERROR' && selectedTemplate !== '') {
                     setCreationStatus({
                         status: 'IN_PROGRESS',
-                        messages: ['Running automation...'],
+                        messages: [t('Setting up automation...')],
                     })
-                    // get template, modifty it and create curator cluster namespace
+                    // get template, modify it and create curator cluster namespace
                     const currentTemplate = curatorTemplates.find(
                         (template) => template.metadata.name === selectedTemplate
                     )
@@ -245,7 +251,7 @@ export default function CreateClusterPage() {
                         setCreationStatus({
                             status: 'ERROR',
                             messages: [
-                                'Your Ansible Automation Platform credential was deleted. Create a new template with an Ansible Automation Platform credential.',
+                                t('One or more Ansible Automation Platform credentials was not found. Create a new automation template.'),
                             ],
                         })
                         return status
@@ -285,12 +291,6 @@ export default function CreateClusterPage() {
     // cancel button
     const cancelCreate = () => {
         history.push(NavigationPath.clusters)
-    }
-
-    // setup translation
-    const { t } = useTranslation()
-    const i18n = (key: string, arg: any) => {
-        return t(key, arg)
     }
 
     //compile templates
@@ -361,8 +361,8 @@ export default function CreateClusterPage() {
                                 createResource(
                                     resourceJSON,
                                     true,
-                                    'Saving cluster draft...',
-                                    'Cluster draft saved'
+                                    t('Saving cluster draft...'),
+                                    t('Cluster draft saved')
                                 ).then((status) => {
                                     if (status === 'ERROR') {
                                         resolve(status)
