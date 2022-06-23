@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Switch, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
@@ -102,7 +102,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
         if (isFlux) {
             return t('Flux')
         }
-        return t('Openshift')
+        return t('OpenShift')
     }
     return '-'
 }
@@ -210,8 +210,6 @@ export default function ApplicationsOverview() {
     const [namespaces] = useRecoilState(namespacesState)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
-
-    const [isSwitchProjectButtonChecked, setIsSwitchProjectButtonChecked] = useState<boolean>(false)
 
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
@@ -392,29 +390,19 @@ export default function ApplicationsOverview() {
     }, [discoveredOCPAppResources, generateTransformData])
 
     const tableItems: IResource[] = useMemo(
-        () =>
-            isSwitchProjectButtonChecked
-                ? [
-                      ...applicationTableItems,
-                      ...applicationSetsTableItems,
-                      ...argoApplicationTableItems,
-                      ...discoveredApplicationsTableItems,
-                      ...ocpAppResourceTableItems,
-                  ]
-                : [
-                      ...applicationTableItems,
-                      ...applicationSetsTableItems,
-                      ...argoApplicationTableItems,
-                      ...discoveredApplicationsTableItems,
-                      ...ocpAppResourceTableItems,
-                  ].filter((item) => !item.metadata?.namespace?.startsWith('openshift')),
+        () => [
+            ...applicationTableItems,
+            ...applicationSetsTableItems,
+            ...argoApplicationTableItems,
+            ...discoveredApplicationsTableItems,
+            ...ocpAppResourceTableItems,
+        ],
         [
             applicationSetsTableItems,
             applicationTableItems,
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
             ocpAppResourceTableItems,
-            isSwitchProjectButtonChecked,
         ]
     )
     const keyFn = useCallback(
@@ -565,10 +553,6 @@ export default function ApplicationsOverview() {
                 id: 'table.filter.type.acm.application.label',
                 options: [
                     {
-                        label: t('Subscription'),
-                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
-                    },
-                    {
                         label: t('Argo CD'),
                         value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                     },
@@ -576,23 +560,28 @@ export default function ApplicationsOverview() {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
+                    {
+                        label: t('Subscription'),
+                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                    },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
                 },
             },
             {
-                label: t('Openshift Applications'),
+                label: t(''),
                 id: 'openshift-apps',
                 options: [
                     {
-                        label: 'Openshift',
-                        value: 'openshiftapps',
-                    },
-                    {
-                        label: 'Flux',
+                        label: t('Flux'),
                         value: 'fluxapps',
                     },
+                    {
+                        label: t('OpenShift'),
+                        value: 'openshiftapps',
+                    },
+                    { label: t('OpenShift-default'), value: 'openshift-default' },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
@@ -604,23 +593,15 @@ export default function ApplicationsOverview() {
                                     isFlux = true
                                 }
                             })
-                            if (value === 'openshiftapps') {
-                                return !isFlux
-                            }
-                            if (value === 'fluxapps') {
-                                return isFlux
+                            switch (value) {
+                                case 'openshiftapps':
+                                    return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
+                                case 'openshift-default':
+                                    return !isFlux && item.metadata?.namespace?.startsWith('openshift-')
+                                case 'fluxapps':
+                                    return isFlux
                             }
                         }
-                    })
-                },
-            },
-            {
-                label: t('Namespace'),
-                id: 'namespace-filter',
-                options: [{ label: 'Not starts with Openshift', value: 'openshift' }],
-                tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-                    return selectedValues.some((value) => {
-                        return !item.metadata?.namespace?.startsWith(value)
                     })
                 },
             },
@@ -858,31 +839,9 @@ export default function ApplicationsOverview() {
         [canCreateApplication, history, t]
     )
 
-    const toggleProjectSwitch = useCallback(() => {
-        setIsSwitchProjectButtonChecked((isSwitchProjectButtonChecked) => !isSwitchProjectButtonChecked)
-    }, [])
-
-    const switchProjectButton = useMemo(
-        () => (
-            <Switch
-                style={{ margin: '20px' }}
-                id="show-default-projects"
-                label="Show default projects"
-                isChecked={isSwitchProjectButtonChecked}
-                onChange={() => toggleProjectSwitch()}
-            />
-        ),
-        [isSwitchProjectButtonChecked, toggleProjectSwitch]
-    )
-
     const custom = useMemo(() => {
-        return (
-            <Fragment>
-                {switchProjectButton}
-                {appCreationButton}
-            </Fragment>
-        )
-    }, [appCreationButton, switchProjectButton])
+        return <Fragment>{appCreationButton}</Fragment>
+    }, [appCreationButton])
 
     return (
         <PageSection>
