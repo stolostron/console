@@ -576,7 +576,6 @@ export default function ApplicationsOverview() {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
-                    // TBD Openshift
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
