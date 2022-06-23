@@ -31,7 +31,12 @@ export const getConnectedLayoutOptions = ({ elements }) => {
         .roots((n) => {
             // only have the application node as root
             const ndata = n.data()
-            return ndata.node.type === 'application' || ndata.node.type === 'applicationset'
+            return (
+                ndata.node.type === 'application' ||
+                ndata.node.type === 'applicationset' ||
+                ndata.node.type === 'ocpapplication' ||
+                ndata.node.type === 'fluxapplication'
+            )
         })
         .toArray()
     const leaves = nodes.leaves()
