@@ -314,7 +314,6 @@
     "cluster.create.aws.title": "Select to create an OpenShift Container Platform on Amazon Web Services",
     "cluster.create.azure.subtitle": "Microsoft Azure",
     "cluster.create.baremetal.subtitle": "Bare metal",
-    "cluster.create.centrallymanaged.section.tooltip": "Simplify cluster self-service with infrastructure environments, which enable you to manage hosts, create ready-to-use host groups, and quickly create clusters based on provided infrastructure. To use infrastructure environments, select <strong>On Premise</strong>.",
     "cluster.create.cim.subtitle": "Use existing discovered hosts",
     "cluster.create.cim.tooltip": "Create a cluster from hosts that have been discovered and made available via infrastructure environments.",
     "cluster.create.configure.advancedparameters": "Configure advanced parameters",
