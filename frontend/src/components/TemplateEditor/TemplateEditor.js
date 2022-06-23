@@ -3,11 +3,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Prompt } from 'react-router-dom'
-import SplitPane from 'react-split-pane'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import isEmpty from 'lodash/isEmpty'
-import { Button, Switch, Alert } from '@patternfly/react-core'
+import {
+    Button,
+    Switch,
+    Alert,
+    Drawer,
+    DrawerColorVariant,
+    DrawerContent,
+    DrawerContentBody,
+    DrawerPanelContent,
+    PageSection,
+} from '@patternfly/react-core'
 import {
     initializeControls,
     parseYAML,
@@ -227,6 +236,7 @@ export default class TemplateEditor extends React.Component {
             hasUndo: false,
             hasRedo: false,
             resetInx: 0,
+            showCondensed: false,
             hasPauseCreate: !!get(props, 'createControl.pauseCreate'),
             editor: {
                 forceUpdate: (() => {
@@ -257,8 +267,6 @@ export default class TemplateEditor extends React.Component {
         if (props.initialOpen) {
             localStorage.setItem(TEMPLATE_EDITOR_OPEN_COOKIE, 'true')
         }
-        const { type = 'main' } = this.props
-        this.splitterSizeCookie = `TEMPLATE-EDITOR-SPLITTER-SIZE-${type.toUpperCase()}`
         if (!this.state.hasPauseCreate) {
             this.beforeUnloadFunc = ((event) => {
                 if (this.isDirty) {
@@ -276,30 +284,6 @@ export default class TemplateEditor extends React.Component {
                 this.forceUpdate()
             }, 0)
         }
-        if (window.ResizeObserver) {
-            const temptifly = document.getElementsByClassName('temptifly')[0]
-            const resizeObserver = new ResizeObserver(
-                (() => {
-                    this.layoutEditors()
-                }).bind(this)
-            )
-            resizeObserver.observe(temptifly)
-        }
-        this.innerWidth = window.innerWidth
-        window.addEventListener(
-            'resize',
-            (() => {
-                if (this.innerWidth !== window.innerWidth) {
-                    this.innerWidth = window.innerWidth
-                    localStorage.removeItem(this.splitterSizeCookie)
-                    const pane1 = document.getElementsByClassName('Pane1')
-                    if (pane1 && pane1[0]) {
-                        pane1[0].style.width = `${this.innerWidth / 2}px`
-                    }
-                }
-                this.layoutEditors()
-            }).bind(this)
-        )
     }
 
     componentWillUnmount() {
@@ -311,29 +295,37 @@ export default class TemplateEditor extends React.Component {
         window.removeEventListener('beforeunload', this.beforeUnloadFunc)
     }
 
-    setSplitPaneRef = (splitPane) => (this.splitPane = splitPane)
-
-    handleSplitterDefault = () => {
-        const width = window.innerWidth
-        const cookie = localStorage.getItem(this.splitterSizeCookie)
-        let size = cookie ? parseInt(cookie, 10) : width
-        if (!cookie) {
-            size = width / 2
-            localStorage.setItem(this.splitterSizeCookie, size)
-        } else if (size > (width * 7) / 10) {
-            size = (width * 7) / 10
-        }
-        return size
-    }
-
-    handleSplitterChange = (size) => {
-        localStorage.setItem(this.splitterSizeCookie, size)
-        this.layoutEditors()
-    }
-
     setContainerRef = (container) => {
         this.containerRef = container
-        this.layoutEditors()
+    }
+
+    setYamlViewRef = () => {
+        this.editorPanel = document.getElementById('editor-drawer-panel')
+        if (window.ResizeObserver && this.editorPanel) {
+            const resizeObserver = new ResizeObserver(
+                (() => {
+                    this.layoutEditors()
+                }).bind(this)
+            )
+            resizeObserver.observe(this.editorPanel)
+        }
+    }
+
+    layoutEditors() {
+        if (this.editorPanel && this.editors.length > 0) {
+            const { otherYAMLTabs } = this.state
+            const rect = this.editorPanel.getBoundingClientRect()
+            const width = rect.width - 10
+            let height = window.innerHeight - rect.top
+            height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+            this.setState({ showCondensed: width < 500 })
+            this.editors.forEach((editor) => {
+                editor.layout({ width, height })
+                console.log('🚀 -------------------------------------------------------🚀')
+                console.log('🚀 ~ this.editors.forEach ~ width, height', width, height)
+                console.log('🚀 -------------------------------------------------------🚀')
+            })
+        }
     }
 
     setEditorReadOnly = (readonly) => {
@@ -376,26 +368,36 @@ export default class TemplateEditor extends React.Component {
             'creation-view-split-container': true,
             showEditor,
         })
-        let maxSize
-        const page = document.getElementById('page')
-        if (page) {
-            maxSize = (page.getBoundingClientRect().width * 8) / 10
+        let maxSize = '600px'
+        const temptifly = document.getElementsByClassName('temptifly')[0]
+        if (temptifly) {
+            maxSize = `${(temptifly.getBoundingClientRect().width * 8) / 10}px`
         }
         return (
             <div className={editorClasses}>
-                <SplitPane
-                    split="vertical"
-                    minSize={500}
-                    maxSize={maxSize}
-                    ref={this.setSplitPaneRef}
-                    defaultSize={this.handleSplitterDefault()}
-                    onChange={this.handleSplitterChange}
-                    pane1Style={showEditor ? undefined : { width: '100%' }}
-                    style={{ overflow: showEditor ? 'auto hidden' : 'hidden auto' }}
-                >
-                    {this.renderControls(isLoaded)}
-                    {showEditor && this.renderEditor()}
-                </SplitPane>
+                <Drawer isExpanded={showEditor} isInline={true}>
+                    <DrawerContent
+                        style={{ overflow: 'hidden' }}
+                        panelContent={
+                            <DrawerPanelContent
+                                isResizable={true}
+                                defaultSize="600px"
+                                maxSize={maxSize}
+                                minSize="200px"
+                                colorVariant={DrawerColorVariant.light200}
+                                id="editor-drawer-panel"
+                            >
+                                {this.renderEditor()}
+                            </DrawerPanelContent>
+                        }
+                    >
+                        <DrawerContentBody>
+                            <PageSection isFilled type="wizard" style={{ height: '100%' }}>
+                                {this.renderControls(isLoaded)}
+                            </PageSection>
+                        </DrawerContentBody>
+                    </DrawerContent>
+                </Drawer>
             </div>
         )
     }
@@ -751,7 +753,7 @@ export default class TemplateEditor extends React.Component {
         const { editorReadOnly } = this.state
         const { hasUndo, hasRedo, exceptions, otherYAMLTabs, showSecrets, i18n } = this.state
         return (
-            <div className="creation-view-yaml">
+            <div className="creation-view-yaml" ref={this.setYamlViewRef}>
                 <EditorHeader
                     otherYAMLTabs={otherYAMLTabs}
                     handleTabChange={this.handleTabChange}
@@ -782,7 +784,8 @@ export default class TemplateEditor extends React.Component {
 
     renderEditors = () => {
         const { monacoEditor, theme } = this.props
-        const { activeYAMLEditor, otherYAMLTabs, editorReadOnly, templateYAML, immutableRows } = this.state
+        const { activeYAMLEditor, otherYAMLTabs, editorReadOnly, templateYAML, immutableRows, showCondensed } =
+            this.state
         return (
             <React.Fragment>
                 <YamlEditor
@@ -792,7 +795,8 @@ export default class TemplateEditor extends React.Component {
                     width={'100%'}
                     height={'100%'}
                     wrapEnabled={true}
-                    setEditor={this.addEditor}
+                    setEditor={this.addEditor.bind(this)}
+                    showCondensed={showCondensed}
                     onYamlChange={this.handleEditorChange}
                     theme={theme}
                     yaml={templateYAML}
@@ -809,6 +813,7 @@ export default class TemplateEditor extends React.Component {
                             width={'100%'}
                             height={'100%'}
                             wrapEnabled={true}
+                            showCondensed={showCondensed}
                             setEditor={this.addEditor}
                             theme={theme}
                             onYamlChange={this.handleEditorChange}
@@ -843,20 +848,6 @@ export default class TemplateEditor extends React.Component {
             const hasRedo = model.canRedo()
             this.setState({ hasUndo, hasRedo })
         })
-    }
-
-    layoutEditors() {
-        if (this.containerRef && this.editors.length > 0) {
-            const { otherYAMLTabs } = this.state
-            const hasTabs = otherYAMLTabs.length >= 0
-            const controlsSize = this.handleSplitterDefault()
-            const rect = this.containerRef.getBoundingClientRect()
-            const width = rect.width - controlsSize - 11
-            const height = rect.height - (hasTabs ? 80 : 40)
-            this.editors.forEach((editor) => {
-                editor.layout({ width, height })
-            })
-        }
     }
 
     gotoEditorLine(line) {

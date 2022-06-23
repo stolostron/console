@@ -1062,6 +1062,7 @@
 .temptifly .pf-c-wizard .pf-c-wizard__main-body,
 .creation-view .pf-c-wizard .pf-c-wizard__main-body {
     padding-bottom: 0;
+    height: 100%;
 }
 .temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name,
 .creation-view .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name {

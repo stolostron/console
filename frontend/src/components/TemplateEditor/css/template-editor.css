@@ -21,19 +21,16 @@
     pointer-events: none;
     height: 1em;
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr.top,
-.creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr.top {
-    top: 0;
-    background-image: linear-gradient(to top, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
-    display: none;
-}
-.temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr.bottom,
-.creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr.bottom {
-    bottom: 0;
-    background-image: linear-gradient(to bottom, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
+
+.temptifly .pf-c-drawer__panel,
+.creation-view .pf-c-drawer__panel {
+    transition: none;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     position: relative;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml.hasTabs,
@@ -52,22 +49,7 @@
     width: 100%;
     height: 100%;
 }
-.temptifly .Resizer,
-.creation-view .Resizer {
-    width: 0;
-    z-index: 1;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    -moz-background-clip: padding;
-    -webkit-background-clip: padding;
-    background-clip: padding-box;
-    border-left: 3px solid rgba(255, 255, 255, 0);
-    border-right: 3px solid rgba(255, 255, 255, 0);
-    cursor: col-resize;
-    margin: 0 0 0 5px;
-    background: var(--pf-c-drawer--m-inline--m-expanded__panel--after--BackgroundColor);
-}
+
 .pf-c-content .temptifly .pf-c-wizard__toggle-list {
     margin-bottom: 0;
 }

@@ -13,8 +13,6 @@ import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import TemplateEditor from '../../../../../components/TemplateEditor'
-// import TemplateEditor from 'temptifly'
-// import 'temptifly/dist/styles.css'
 import {
     agentClusterInstallsState,
     clusterCuratorsState,

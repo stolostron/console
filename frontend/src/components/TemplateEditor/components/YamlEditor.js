@@ -12,6 +12,7 @@ class YamlEditor extends React.Component {
         onYamlChange: PropTypes.func,
         readOnly: PropTypes.bool,
         setEditor: PropTypes.func,
+        showCondensed: PropTypes.bool,
         theme: PropTypes.string,
         yaml: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     }
@@ -148,7 +149,8 @@ class YamlEditor extends React.Component {
         return (
             this.props.yaml !== nextProps.yaml ||
             this.props.hide !== nextProps.hide ||
-            this.props.readOnly !== nextProps.readOnly
+            this.props.readOnly !== nextProps.readOnly ||
+            this.props.showCondensed !== nextProps.showCondensed
         )
     }
 
@@ -161,7 +163,7 @@ class YamlEditor extends React.Component {
     }
 
     render() {
-        const { yaml, readOnly, hide = false } = this.props
+        const { yaml, readOnly, hide = false, showCondensed } = this.props
         let { theme = 'resource-editor' } = this.props
         const { editor } = this.state
         const style = {
@@ -178,7 +180,14 @@ class YamlEditor extends React.Component {
                     React.cloneElement(editor, {
                         value: yaml,
                         theme,
-                        options: { ...this.state.editor.props.options, readOnly },
+                        options: {
+                            ...this.state.editor.props.options,
+                            wordWrapColumn: showCondensed ? 512 : 256,
+                            minimap: {
+                                enabled: !showCondensed,
+                            },
+                            readOnly,
+                        },
                     })}
             </div>
         )

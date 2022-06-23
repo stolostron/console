@@ -14,7 +14,7 @@ import InfraEnvForm, { Portals } from './InfraEnvForm'
 // include monaco editor
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import '../Clusters/ManagedClusters/CreateCluster/style.css'
+import '../../Applications/CreateApplication/Subscription/style.css'
 import { createProject, createResource, IResource } from '../../../resources'
 import { deleteResources } from '../../../lib/delete-resources'
 
@@ -118,7 +118,7 @@ const CreateInfraEnv: React.FC = () => {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-infra-env">
-                    <PageSection variant="light" isFilled>
+                    <PageSection variant="light" isFilled type="wizard">
                         <TemplateEditor
                             type="Infra env"
                             title="InfraEnv YAML"
