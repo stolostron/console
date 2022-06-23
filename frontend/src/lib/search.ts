@@ -95,25 +95,6 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
     })
 }
 
-export function queryKustomizations(): IRequestResult<ISearchResult> {
-    return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-        operationName: 'searchResult',
-        variables: {
-            input: [
-                {
-                    filters: [
-                        {
-                            property: 'kind',
-                            values: 'kustomization',
-                        },
-                    ],
-                },
-            ],
-        },
-        query: searchFilterQuery,
-    })
-}
-
 export function useSearchParams() {
     const { search } = useLocation()
     return useMemo(() => new URLSearchParams(search), [search])
