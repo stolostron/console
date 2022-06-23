@@ -845,7 +845,7 @@ describe('filterSubscriptionObject simple subscription object', () => {
 
 describe('getClusterHost', () => {
     it('should host from cluster URL', () => {
-        expect(getClusterHost('https://console-openshift-console.222')).toEqual('222')
+        expect(getClusterHost('https://console-openshift-console.somehost')).toEqual('somehost')
     })
 })
 
