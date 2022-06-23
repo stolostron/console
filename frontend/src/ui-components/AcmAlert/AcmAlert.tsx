@@ -109,6 +109,7 @@ export function AcmAlert(props: {
         if (alertInfo && !alertContext.activeAlerts.find((a) => a.id === alertInfo.id)) {
             setOpen(false)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [alertContext])
     return (
         <Collapse

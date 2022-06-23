@@ -13,10 +13,6 @@ describe('AcmDrawer', () => {
         render(<AcmDrawer title="Drawer" onCloseClick={onCloseClick} isExpanded={true} />)
         expect(screen.getByText('Drawer')).toBeInTheDocument()
     })
-    // test('renders in a closed state', () => {
-    //     render(<AcmDrawer title="Drawer" onCloseClick={onCloseClick} isExpanded={false} />)
-    //     expect(screen.queryByText('Drawer')).toBeNull()
-    // })
     test('haz zero accessibility defects', async () => {
         const { container } = render(<AcmDrawer title="Drawer" onCloseClick={onCloseClick} isExpanded={true} />)
         expect(screen.getByText('Drawer')).toBeInTheDocument()

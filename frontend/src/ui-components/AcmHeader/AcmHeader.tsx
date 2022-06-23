@@ -377,6 +377,7 @@ function NavExpandableList(props: { route: AcmRoute; showSwitcher: boolean; post
                 return true
         }
         return false
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.route])
 
     return (

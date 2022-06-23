@@ -31,6 +31,7 @@ export function AcmDrawerProvider(props: { children: React.ReactNode | React.Rea
     const historyListener = history.listen(() => setDrawerContext(undefined))
     useEffect(() => {
         return () => historyListener()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (
@@ -112,6 +113,7 @@ function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObj
         if (props.isExpanded === undefined || props.isExpanded === false) {
             alertContext.clearAlerts()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.isExpanded])
 
     return (

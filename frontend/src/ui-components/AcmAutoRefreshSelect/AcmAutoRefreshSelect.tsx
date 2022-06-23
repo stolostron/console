@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useState } from 'react'
+import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import { makeStyles } from '@material-ui/styles'
@@ -58,7 +58,7 @@ export const savePollInterval = (refreshIntervalCookie: string, pollInterval: nu
     localStorage.setItem(refreshIntervalCookie, `${pollInterval}`)
 }
 
-const initializeLocalStorage = (props: AcmAutoRefreshSelectProps) => {
+const useInitializeLocalStorage = (props: AcmAutoRefreshSelectProps) => {
     const initialValue = props.pollInterval
     const key = props.refreshIntervalCookie ?? DEFAULTS.refreshIntervalCookie
     const defaultValue = (props.initPollInterval ?? DEFAULTS.initPollInterval) * 1000
@@ -79,7 +79,7 @@ const initializeLocalStorage = (props: AcmAutoRefreshSelectProps) => {
 
 export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
     const [isOpen, setOpen] = useState<boolean>(false)
-    const [selected, setStoredValue] = initializeLocalStorage(props)
+    const [selected, setStoredValue] = useInitializeLocalStorage(props)
     const [initialFetchCalled, setInitialFetchCalled] = useState<boolean>(false)
     const [docHidden, setDocHidden] = useState<boolean>(window.document.hidden)
     const onVisibilityChange = () => {
@@ -99,6 +99,7 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
         setInitialFetchCalled(true)
         document.addEventListener('visibilitychange', onVisibilityChange)
         return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(
@@ -113,10 +114,11 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
             }
             return
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [selected, docHidden] // intentionally exclude initialFetchCalled to avoid double refetch
     )
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeyPress = (e: KeyboardEvent) => {
         /* istanbul ignore else */
         if (e.key === 'Enter') {
             refetch()

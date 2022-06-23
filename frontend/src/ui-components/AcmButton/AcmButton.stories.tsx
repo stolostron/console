@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ButtonVariant } from '@patternfly/react-core'
-import { Meta } from '@storybook/react'
+import { ArgTypes, Meta } from '@storybook/react'
 
 import { AcmButton } from './AcmButton'
 
@@ -19,7 +19,7 @@ const meta: Meta = {
 }
 export default meta
 
-export const Button = (args) => (
+export const Button = (args: ArgTypes) => (
     <div style={{ margin: '50px 0px 0px 50px' }}>
         <AcmButton {...args} onClick={() => alert('clicked')}>
             {args.text}

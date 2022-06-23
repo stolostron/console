@@ -60,6 +60,7 @@ export function useValidationState() {
     }, [])
     const validationContext: IValidationState = useMemo(
         () => ({ ...{ setValidate, setReadOnly, setError }, ...validationState }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [validationState]
     )
     return validationContext
@@ -105,6 +106,7 @@ export function AcmSubmit(props: AcmSubmitProps) {
                 alertContext.clearAlerts((alert) => alert.group === 'validation')
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [validationContext.errors])
     return (
         <Button

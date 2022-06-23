@@ -110,12 +110,14 @@ export function AcmToast(props: {
         if (alertInfo && !alertContext.activeAlerts.find((a) => a.id === alertInfo.id)) {
             setOpen(false)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [alertContext])
 
     useEffect(() => {
         if (alertInfo?.autoClose) {
             setTimeout(() => setOpen(false), 5000)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (

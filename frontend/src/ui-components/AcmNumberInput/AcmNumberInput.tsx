@@ -40,10 +40,12 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
             setValidated(error ? 'error' : 'default')
         }
         ValidationContext.setError(props.id, error)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.value, props.hidden])
 
     useLayoutEffect(() => {
         setValidated(error ? 'error' : 'default')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ValidationContext.validate])
 
     return (

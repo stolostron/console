@@ -413,6 +413,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         // Check breakpoints as soon as ref callbacks are set, in case initial viewport is too small for table
         // Need to check on every update to breakpoint as well for the same case, so that display
         // doesn't thrash between table/cards on initial expansion of viewport
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [breakpoint, outerDiv, tableDiv]
     )
 
@@ -427,6 +428,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     const classes = useStyles()
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const setInternalSearchWithDebounce = useCallback(
         /* istanbul ignore next */
         process.env.NODE_ENV !== 'test'
@@ -439,6 +441,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     useEffect(() => {
         setInternalSearchWithDebounce(search)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search])
 
     useEffect(() => {
@@ -452,6 +455,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             })
             setSelected(initialSelected)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.initialSelectedItems])
 
     useLayoutEffect(() => {
@@ -470,6 +474,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             }
             return selected
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [items])
 
     const { tableItems, totalCount } = useMemo<{
@@ -539,6 +544,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         } else {
             return { filtered: tableItems, filteredCount: totalCount }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [internalSearch, items, tableItems, totalCount, columns, groupFn])
 
     const sorted = useMemo<ITableItem<T>[]>(() => {
@@ -560,6 +566,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         } else {
             return filtered
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filtered, sort, columns])
 
     const { grouped, itemCount } = useMemo<{
@@ -587,6 +594,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         } else {
             return { grouped: sorted, itemCount: sorted.length }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sorted, columns, groupFn])
 
     const actualPage = useMemo<number>(() => {
@@ -596,12 +604,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             actualPage = Math.max(1, Math.ceil(grouped.length / perPage))
         }
         return actualPage
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [grouped, page, perPage])
 
     useEffect(() => {
         if (page !== actualPage) {
             setPage(actualPage)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, actualPage])
 
     const paged = useMemo<ITableItem<T>[]>(() => {
@@ -665,6 +675,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             }
         })
         return { rows: newRows, addedSubRowCount }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected, paged, columns, expanded, openGroups, keyFn])
 
     const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
@@ -710,6 +721,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             }
         }
         return undefined
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rows, addedSubRowCount, openGroups, setOpenGroups, expanded, setExpanded, groupFn, addSubRows])
 
     // Compensate for PF auto-added columns
@@ -739,6 +751,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         if (preFilterSort) {
             setSort(preFilterSort)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [preFilterSort, setPage, setSort, setSearch, setInternalSearch])
 
     const clearFilters = useCallback(() => setToolbarFilterIds({}), [setToolbarFilterIds])
@@ -765,6 +778,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         },
         // setSort/setSearch/setPage can come from props, but setPreFilterSort is only from state and therefore
         // guaranteed stable - not needed in dependency list
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [search, sort, preFilterSort, setSort, setSearch, setPage]
     )
 
@@ -783,6 +797,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 setPreFilterSort(undefined)
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [internalSearch, filtered, adjustedSortIndexOffset]
     )
 
@@ -793,6 +808,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             setPage(newPage)
             setPerPage(newPerPage)
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [page, perPage, setPage, setPerPage]
     )
 
@@ -810,6 +826,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 props.onSelect(items.filter((item) => newSelected[keyFn(item)]))
             }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [filtered, rows, keyFn]
     )
 
@@ -1168,6 +1185,7 @@ function TableColumnFilters<T>(props: {
                 return updatedFilters
             })
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [filters]
     )
 
@@ -1181,6 +1199,7 @@ function TableColumnFilters<T>(props: {
             }
             return updatedFilters
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const onDeleteGroup = useCallback((filter: string) => {
@@ -1189,6 +1208,7 @@ function TableColumnFilters<T>(props: {
             delete updatedFilters[filter]
             return updatedFilters
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const FilterSelectGroups = useMemo(() => {
@@ -1238,6 +1258,7 @@ function TableColumnFilters<T>(props: {
                 ))}
             </SelectGroup>
         ))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters, items, toolbarFilterIds])
 
     return (
@@ -1484,10 +1505,12 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
     const onToggleCheckbox = useCallback(() => {
         if (props.selectedCount > 0) props.onSelectNone()
         else props.onSelectAll()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.selectedCount, props.onSelectNone, props.onSelectAll])
 
     const toggleText = useMemo(() => {
         return props.selectedCount > 0 ? `${props.selectedCount} selected` : ''
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.selectedCount, props.selectedCount])
 
     const toggle = useMemo(() => {
@@ -1507,6 +1530,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 onToggle={(isOpen) => setIsOpen(isOpen)}
             />
         )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.selectedCount, toggleText, onToggleCheckbox])
 
     const selectNoneDropdownItem = useMemo(() => {
@@ -1522,6 +1546,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 Select none
             </DropdownItem>
         )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.onSelectNone])
 
     const selectPageDropdownItem = useMemo(() => {
@@ -1537,6 +1562,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 {`Select ${Math.min(props.perPage, props.itemCount)} page items`}
             </DropdownItem>
         )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.onSelectPage, props.perPage, props.itemCount])
 
     const selectAllDropdownItem = useMemo(() => {
@@ -1552,6 +1578,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 {`Select all ${props.itemCount} items`}
             </DropdownItem>
         )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.onSelectAll, props.itemCount])
 
     const dropdownItems = useMemo(

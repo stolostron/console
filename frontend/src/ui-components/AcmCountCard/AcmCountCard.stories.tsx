@@ -2,6 +2,7 @@
 
 import { makeStyles } from '@material-ui/styles'
 import { Meta } from '@storybook/react'
+import { KeyboardEvent } from 'react'
 
 import { AcmCountCard } from './AcmCountCard'
 
@@ -15,7 +16,7 @@ const handleCardClick = () => {
     alert('Card clicked')
 }
 
-const handleKeyPress = (e) => {
+const handleKeyPress = (e: KeyboardEvent<Element>) => {
     alert(`'${e.key}' key pressed, (charCode: ${e.charCode})`)
 }
 

@@ -33,7 +33,7 @@ type AcmSummaryListProps = {
     loading?: boolean
 }
 
-export const skeleton = (title: string) => {
+export const SkeletonWrapper = (title: string) => {
     const classes = useStyles()
     return (
         <Card>
@@ -68,7 +68,7 @@ export function AcmSummaryList(props: AcmSummaryListProps) {
     const primary = props.list.find((item) => item.isPrimary)
     const secondary = props.list.filter((item) => !item.isPrimary)
 
-    if (props.loading) return skeleton(props.title)
+    if (props.loading) return SkeletonWrapper(props.title)
     return (
         <Card>
             <Split>

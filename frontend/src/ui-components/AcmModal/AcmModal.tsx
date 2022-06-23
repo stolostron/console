@@ -19,6 +19,7 @@ function AcmModalContent(props: ModalProps) {
         if (!props.isOpen) {
             alertContext.clearAlerts()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.isOpen])
 
     return <Modal {...props} ref={null} />

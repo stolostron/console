@@ -37,6 +37,7 @@ export function AcmLabels(props: {
         return Object.keys(labelsRecord)
             .filter((key) => props.collapse?.includes(key))
             .map((key: string) => (labelsRecord[key] ? `${key}=${labelsRecord[key]}` : `${key}`))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [labelsRecord, props.collapse])
 
     /* istanbul ignore next */

@@ -58,15 +58,6 @@ describe('AcmDropdown', () => {
         expect(onHover).toHaveBeenCalled()
         await new Promise((resolve) => setTimeout(resolve, 0))
     })
-    // test('renders in disabled state', async () => {
-    //     const { getByTestId, getByRole, container } = render(<Component isDisabled={true} tooltip="Tooltip text" />)
-    //     expect(getByTestId('dropdown')).toBeInTheDocument()
-    //     expect(await axe(container)).toHaveNoViolations()
-    //     userEvent.hover(getByTestId('dropdown'))
-    //     await waitFor(() => expect(getByRole('tooltip')).toBeInTheDocument())
-    //     userEvent.click(getByTestId('dropdown'))
-    //     await new Promise((resolve) => setTimeout(resolve, 0))
-    // })
     test('renders as a kebab dropdown', async () => {
         const { getByTestId, container } = render(<Component isKebab={true} onToggle={() => null} />)
         expect(getByTestId('dropdown')).toBeInTheDocument()

@@ -15,6 +15,7 @@ export function AcmExpandableSection(props: {
         if (props.expanded !== undefined && props.expanded !== expanded) {
             setExpanded(props.expanded)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.expanded])
 
     if (props.hidden) return <></>

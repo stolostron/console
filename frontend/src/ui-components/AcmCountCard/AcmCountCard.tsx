@@ -148,7 +148,7 @@ export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
     )
 }
 
-export const loadingCard = (props: SkeletonCard) => {
+export const LoadingCard = (props: SkeletonCard) => {
     const useStyles = makeStyles({
         cardSkeleton: {
             height: '250px',
@@ -179,7 +179,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
     if (parseInt(count) >= 1000) {
         count = `${(parseInt(count) - (parseInt(count) % 100)) / 1000}k`
     }
-    if (loading) return loadingCard(props)
+    if (loading) return LoadingCard(props)
     return (
         <Card
             id={id}
