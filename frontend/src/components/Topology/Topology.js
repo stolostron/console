@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { createRef } from 'react'
+import { Component, createRef } from 'react'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '../../ui-components'
 import ResourceFilterView from './components/ResourceFilterView'
@@ -26,7 +26,7 @@ import './css/topology-controls.css'
 import './css/resource-toolbar.css'
 import _ from 'lodash'
 
-class Topology extends React.Component {
+class Topology extends Component {
     static propTypes = {
         argoAppDetailsContainerControl: PropTypes.shape({
             argoAppDetailsContainerData: PropTypes.object,

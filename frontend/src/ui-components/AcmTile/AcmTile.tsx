@@ -3,7 +3,6 @@
 import { makeStyles } from '@material-ui/styles'
 import { Skeleton, Tile, TileProps } from '@patternfly/react-core'
 
-
 type AcmTileProps = TileProps & {
     loading?: boolean
     relatedResourceData?: {

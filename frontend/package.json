@@ -201,13 +201,19 @@
     "eslintConfig": {
         "parser": "@typescript-eslint/parser",
         "parserOptions": {
-            "project": "./tsconfig.json"
+            "project": "./tsconfig.json",
+            "ecmaFeatures": {
+                "jsx": true
+            },
+            "ecmaVersion": 2018,
+            "sourceType": "module"
         },
         "extends": [
             "eslint:recommended",
             "plugin:@typescript-eslint/recommended",
             "plugin:jest/recommended",
-            "plugin:react-hooks/recommended"
+            "plugin:react-hooks/recommended",
+            "plugin:prettier/recommended"
         ],
         "plugins": [
             "react",
@@ -217,7 +223,9 @@
         ],
         "env": {
             "browser": true,
-            "node": true
+            "node": true,
+            "jest": true,
+            "es6": true
         },
         "rules": {
             "@typescript-eslint/no-non-null-assertion": "off",
@@ -255,6 +263,14 @@
                 }
             ]
         },
+        "overrides": [
+            {
+                "files": [
+                    "*.ts",
+                    "*.tsx"
+                ]
+            }
+        ],
         "settings": {
             "react": {
                 "version": "detect"

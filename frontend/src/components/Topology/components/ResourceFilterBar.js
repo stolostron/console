@@ -11,7 +11,6 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
 import PropTypes from 'prop-types'
 import { Chip, ChipGroup } from '@patternfly/react-core'
 import '../css/resource-filter-view.css'

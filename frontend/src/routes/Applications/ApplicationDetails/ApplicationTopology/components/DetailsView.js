@@ -13,7 +13,7 @@
 
 import _ from 'lodash'
 import R from 'ramda'
-import { Fragment } from 'react'
+import { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
@@ -41,7 +41,7 @@ DetailsViewDecorator.propTypes = {
     shape: PropTypes.string,
 }
 
-class DetailsView extends React.Component {
+class DetailsView extends Component {
     constructor(props) {
         super(props)
         this.toggleLinkLoading = this.toggleLinkLoading.bind(this)

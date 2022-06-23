@@ -2,6 +2,7 @@
 import R from 'ramda'
 import _ from 'lodash'
 
+import { Fragment } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
 function attrsFunction(selection, map) {
@@ -237,7 +238,7 @@ export const counterZoom = (scale, scaleMin, scaleMax, valueMin, valueMax) => {
 
 export const getTooltip = (tooltips) => {
     return ReactDOMServer.renderToStaticMarkup(
-        <React.Fragment>
+        <Fragment>
             {tooltips.map(({ name, value, href, target = '_blank', rel = 'noopener noreferrer' }) => {
                 return (
                     <div key={Math.random()}>
@@ -252,6 +253,6 @@ export const getTooltip = (tooltips) => {
                     </div>
                 )
             })}
-        </React.Fragment>
+        </Fragment>
     )
 }

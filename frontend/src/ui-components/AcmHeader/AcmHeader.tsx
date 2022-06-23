@@ -186,7 +186,7 @@ function UserDropdown() {
             .then(({ admin, logoutPath }) => {
                 const onLogout = (delay = 0) => {
                     return setTimeout(() => {
-                        location.reload(true)
+                        location.reload()
                     }, delay)
                 }
                 if (admin) {

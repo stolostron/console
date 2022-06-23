@@ -2,7 +2,7 @@
 
 import { Button, FormGroup, Popover, Select, SelectOption, SelectProps, SelectVariant } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { Children, Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmMultiSelectProps = Pick<
@@ -71,7 +71,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
         if (value === undefined || value.length === 0) {
             setPlaceholderText(<span style={{ color: '#666' }}>{placeholder}</span>)
         } else {
-            const selectedItems = React.Children.map(props.children, (child) => {
+            const selectedItems = Children.map(props.children, (child) => {
                 const option = child as unknown as SelectOption
                 if (value.includes(option.props.value as string)) return option.props.children
                 return undefined

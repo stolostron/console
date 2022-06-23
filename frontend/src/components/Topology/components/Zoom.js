@@ -11,15 +11,15 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
 import PropTypes from 'prop-types'
 import { ExpandIcon, SearchPlusIcon, SearchMinusIcon } from '@patternfly/react-icons'
 import '../css/diagram-controls.css'
+import { PureComponent } from 'react'
 
 const MAX_ZOOM = 2
 const MIN_ZOOM = 0.1
 
-export default class Zoom extends React.PureComponent {
+export default class Zoom extends PureComponent {
     setZoomInRef = (ref) => {
         this.zoomInRef = ref
     }

@@ -7,7 +7,7 @@ declare module 'react-tag-autocomplete'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
-import { useEffect, useState } from 'react'
+import { createRef, useEffect, useState } from 'react'
 import ReactTags from 'react-tag-autocomplete'
 import './AcmSearchbar.css'
 import { convertStringToTags } from './helper'
@@ -31,7 +31,7 @@ type AcmSearchbarProps = {
 
 export function AcmSearchbar(props: AcmSearchbarProps) {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    const reactTags: any = React.createRef()
+    const reactTags: any = createRef()
     const { loadingSuggestions, suggestions, queryString, currentQueryCallback, toggleInfoModal } = props
     const [currentQuery, setCurrentQuery] = useState(queryString)
     const [searchbarTags, setSearchbarTags] = useState(convertStringToTags(currentQuery))

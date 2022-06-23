@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { Tooltip, TooltipPosition } from '@patternfly/react-core'
 
 export function TooltipWrapper(props: {

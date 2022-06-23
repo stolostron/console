@@ -10,7 +10,6 @@ import {
     Title,
 } from '@patternfly/react-core'
 
-
 const useStyles = makeStyles({
     max: {
         maxWidth: '335px',

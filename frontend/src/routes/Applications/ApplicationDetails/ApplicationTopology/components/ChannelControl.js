@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
+import { Component } from 'react'
 import R from 'ramda'
 import PropTypes from 'prop-types'
 import { AcmDropdown } from '../../../../../ui-components'
@@ -19,7 +19,7 @@ import { Pagination, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 
-class ChannelControl extends React.Component {
+class ChannelControl extends Component {
     static propTypes = {
         channelControl: PropTypes.shape({
             allChannels: PropTypes.array,

@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { fireEvent, render, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmAutoRefreshSelect } from './AcmAutoRefreshSelect'
 import { act } from 'react-dom/test-utils'
 
-describe('AcmAutoRefreshSelect ', () => {
+describe('AcmAutoRefreshSelect', () => {
     const refetch = jest.fn()
 
     beforeEach(() => {

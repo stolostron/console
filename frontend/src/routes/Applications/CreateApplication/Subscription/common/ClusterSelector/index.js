@@ -2,7 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
+import { Fragment, Component } from 'react'
 import PropTypes from 'prop-types'
 import { AcmTextInput } from '../../../../../../ui-components'
 import { Checkbox, Accordion, AccordionItem, AccordionToggle, AccordionContent } from '@patternfly/react-core'
@@ -14,7 +14,7 @@ import './style.css'
 
 const activeModeStr = 'active.mode'
 
-export class ClusterSelector extends React.Component {
+export class ClusterSelector extends Component {
     static propTypes = {
         control: PropTypes.object,
         controlId: PropTypes.string,
@@ -57,7 +57,7 @@ export class ClusterSelector extends React.Component {
         const showLabels = modeSelected && isExpanded
 
         return (
-            <React.Fragment>
+            <Fragment>
                 <div className="creation-view-controls-labels">
                     <div>
                         {name}
@@ -129,7 +129,7 @@ export class ClusterSelector extends React.Component {
                         </Accordion>
                     </div>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 
@@ -193,7 +193,7 @@ export class ClusterSelector extends React.Component {
 
                 if (validValue || id === 0) {
                     return (
-                        <React.Fragment key={id}>
+                        <Fragment key={id}>
                             <div
                                 className="matching-labels-container"
                                 style={{ display: 'flex', marginBottom: '20px' }}
@@ -242,7 +242,7 @@ export class ClusterSelector extends React.Component {
                                     ''
                                 )}
                             </div>
-                        </React.Fragment>
+                        </Fragment>
                     )
                 }
                 return ''

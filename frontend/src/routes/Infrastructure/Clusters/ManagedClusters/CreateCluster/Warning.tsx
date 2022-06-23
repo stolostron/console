@@ -3,15 +3,16 @@
 import { Alert, AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../../../../../ui-components'
 import { Link } from 'react-router-dom'
+import { createContext, useContext } from 'react'
 
 export type WarningContextType =
     | { title: string; text: string; linkTo?: string; linkText?: string; isExternalLink?: boolean }
     | undefined
 
-export const WarningContext = React.createContext<WarningContextType>(undefined)
+export const WarningContext = createContext<WarningContextType>(undefined)
 
 export const Warning = () => {
-    const warning = React.useContext(WarningContext)
+    const warning = useContext(WarningContext)
 
     if (!warning) {
         return null

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Button, ButtonProps, Form, FormProps } from '@patternfly/react-core'
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { AcmAlertContext } from '../AcmAlert/AcmAlert'
 
 export interface IValidationData {
@@ -88,8 +88,8 @@ export function AcmSubmit(props: AcmSubmitProps) {
     const validationContext = useContext(ValidationContext)
     const alertContext = useContext(AcmAlertContext)
     const [isDisabled, setDisabled] = useState(false)
-    const [isLoading, setIsLoading] = React.useState(false)
-    const isMountedRef = React.useRef(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const isMountedRef = useRef(false)
     useEffect(() => {
         isMountedRef.current = true
         return () => {

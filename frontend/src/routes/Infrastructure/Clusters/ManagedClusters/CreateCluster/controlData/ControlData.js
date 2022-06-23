@@ -2,7 +2,6 @@
 
 // eslint-disable-next-line no-use-before-define
 
-
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'

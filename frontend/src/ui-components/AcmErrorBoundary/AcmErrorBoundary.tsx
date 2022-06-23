@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import {
     Card,
     EmptyState,
@@ -16,6 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { withStyles, Styles } from '@material-ui/styles'
+import { Component } from 'react'
 
 type ErrorBoundaryStyles = {
     card: string
@@ -68,7 +68,7 @@ type ErrorInfo = {
     componentStack: string
 }
 
-class ErrorBoundary extends React.Component<
+class ErrorBoundary extends Component<
     { children: React.ReactNode | React.ReactNode[]; actions?: React.ReactNode; classes: ErrorBoundaryStyles },
     ErrorBoundaryState
 > {

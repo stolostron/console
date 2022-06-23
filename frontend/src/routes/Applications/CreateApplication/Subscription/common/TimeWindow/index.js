@@ -2,7 +2,6 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
 import PropTypes from 'prop-types'
 import {
     Radio,
@@ -16,6 +15,7 @@ import {
     SelectVariant,
     TimePicker,
 } from '@patternfly/react-core'
+import { Fragment, Component } from 'react'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import { Tooltip, getSourcePath, removeVs } from 'temptifly'
@@ -23,7 +23,7 @@ import moment from 'moment-timezone'
 import _ from 'lodash'
 import './style.css'
 
-export class TimeWindow extends React.Component {
+export class TimeWindow extends Component {
     static propTypes = {
         control: PropTypes.object,
         controlId: PropTypes.string,
@@ -126,7 +126,7 @@ export class TimeWindow extends React.Component {
         const { mode, days = [], timezone } = this.props.control.active
 
         return (
-            <React.Fragment>
+            <Fragment>
                 <div className="creation-view-controls-labels">
                     <div className="creation-view-controls-textarea-title">
                         {name}
@@ -282,7 +282,7 @@ export class TimeWindow extends React.Component {
                         </Accordion>
                     </div>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 
@@ -319,7 +319,7 @@ export class TimeWindow extends React.Component {
                 // Don't show deleted time invertals
                 if (validTime) {
                     return (
-                        <React.Fragment key={id}>
+                        <Fragment key={id}>
                             {id === 0 ? (
                                 <div className="time-picker-title" style={{ display: 'flex' }}>
                                     <div className="config-title">
@@ -372,7 +372,7 @@ export class TimeWindow extends React.Component {
                                     ''
                                 )}
                             </div>
-                        </React.Fragment>
+                        </Fragment>
                     )
                 }
                 return ''

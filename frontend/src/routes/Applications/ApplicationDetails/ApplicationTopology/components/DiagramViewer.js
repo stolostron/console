@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 import { Spinner } from '@patternfly/react-core'
@@ -27,7 +27,7 @@ import * as c from '../../../../../components/Topology/constants.js'
 import _ from 'lodash'
 import './DiagramViewer.css'
 
-class DiagramViewer extends React.Component {
+class DiagramViewer extends Component {
     static propTypes = {
         activeFilters: PropTypes.object,
         argoAppDetailsContainerControl: PropTypes.shape({

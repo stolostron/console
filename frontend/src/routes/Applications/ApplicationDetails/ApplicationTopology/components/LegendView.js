@@ -3,10 +3,10 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-
 import PropTypes from 'prop-types'
+import { Component } from 'react'
 
-class LegendView extends React.Component {
+class LegendView extends Component {
     render() {
         const { t } = this.props
 

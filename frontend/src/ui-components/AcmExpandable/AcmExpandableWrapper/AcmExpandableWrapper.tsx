@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { Children, useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { AcmButton } from '../../AcmButton/AcmButton'
 import { Title, Gallery, GalleryItem } from '@patternfly/react-core'
@@ -47,7 +47,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
                 <Title headingLevel="h4">
                     {headerLabel}
                     {withCount && (
-                        <span className={classes.headerCount}> {`( ${React.Children.count(children)} total )`}</span>
+                        <span className={classes.headerCount}> {`( ${Children.count(children)} total )`}</span>
                     )}
                 </Title>
             )}
@@ -57,7 +57,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
                 }
             >
                 <Gallery hasGutter className={classes.gallery}>
-                    {React.Children.map(props.children, (child, idx) => {
+                    {Children.map(props.children, (child, idx) => {
                         return (
                             <GalleryItem>
                                 <div key={`item-${idx}`}>{child}</div>
@@ -68,7 +68,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
             </div>
             {expandable && (
                 <AcmButton className={classes.showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
-                    {showAll ? 'Show less' : `Show all (${React.Children.count(children)})`}
+                    {showAll ? 'Show less' : `Show all (${Children.count(children)})`}
                 </AcmButton>
             )}
         </div>

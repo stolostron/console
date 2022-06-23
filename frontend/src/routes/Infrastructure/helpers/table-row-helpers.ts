@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 export type HumanizedSortable = {
     title: string | React.ReactNode
     sortableValue: number | string
