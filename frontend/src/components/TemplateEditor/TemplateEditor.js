@@ -321,9 +321,6 @@ export default class TemplateEditor extends React.Component {
             this.setState({ showCondensed: width < 500 })
             this.editors.forEach((editor) => {
                 editor.layout({ width, height })
-                console.log('🚀 -------------------------------------------------------🚀')
-                console.log('🚀 ~ this.editors.forEach ~ width, height', width, height)
-                console.log('🚀 -------------------------------------------------------🚀')
             })
         }
     }
@@ -387,7 +384,7 @@ export default class TemplateEditor extends React.Component {
                                 colorVariant={DrawerColorVariant.light200}
                                 id="editor-drawer-panel"
                             >
-                                {this.renderEditor()}
+                                {showEditor && this.renderEditor()}
                             </DrawerPanelContent>
                         }
                     >
@@ -795,7 +792,7 @@ export default class TemplateEditor extends React.Component {
                     width={'100%'}
                     height={'100%'}
                     wrapEnabled={true}
-                    setEditor={this.addEditor.bind(this)}
+                    addEditor={this.addEditor.bind(this)}
                     showCondensed={showCondensed}
                     onYamlChange={this.handleEditorChange}
                     theme={theme}
@@ -814,7 +811,7 @@ export default class TemplateEditor extends React.Component {
                             height={'100%'}
                             wrapEnabled={true}
                             showCondensed={showCondensed}
-                            setEditor={this.addEditor}
+                            addEditor={this.addEditor}
                             theme={theme}
                             onYamlChange={this.handleEditorChange}
                             yaml={yaml}

@@ -6,12 +6,12 @@ import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly
 
 class YamlEditor extends React.Component {
     static propTypes = {
+        addEditor: PropTypes.func,
         editor: PropTypes.element,
         hide: PropTypes.bool,
         immutableRows: PropTypes.array,
         onYamlChange: PropTypes.func,
         readOnly: PropTypes.bool,
-        setEditor: PropTypes.func,
         showCondensed: PropTypes.bool,
         theme: PropTypes.string,
         yaml: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
@@ -92,13 +92,13 @@ class YamlEditor extends React.Component {
     }
 
     editorDidMount(editor, monaco) {
-        const { setEditor } = this.props
+        const { addEditor } = this.props
         editor.layout()
         editor.focus()
         editor.monaco = monaco
         editor.decorations = []
-        if (setEditor) {
-            setEditor(editor)
+        if (addEditor) {
+            addEditor(editor)
         }
         this.editor = editor
 
