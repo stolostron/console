@@ -17,11 +17,13 @@ module.exports = {
     transform: {
         '^.+\\.jsx?$': 'babel-jest',
         '^.+\\.tsx?$': 'ts-jest',
-        '^.+\\.hbs$': 'jest-raw-loader',
-        '\\.(css|less)$': 'jest-raw-loader',
+        // '^.+\\.hbs$': 'jest-raw-loader',
+        '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
+        // '\\.(css|less)$': 'jest-raw-loader',
+        '\\.(css|less)$': '<rootDir>/jest-raw-loader.js',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard)',
+        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid)',
     ],
     coverageDirectory: './coverage',
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],

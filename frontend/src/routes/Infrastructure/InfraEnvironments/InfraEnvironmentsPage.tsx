@@ -14,8 +14,12 @@ import {
     AcmTable,
 } from '@stolostron/ui-components'
 import isMatch from 'lodash/isMatch'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
+import {
+    AgentK8sResource,
+    InfraEnvK8sResource,
+    AGENT_LOCATION_LABEL_KEY,
+    getAgentStatus,
+} from 'openshift-assisted-ui-lib/cim'
 import { useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -28,9 +32,7 @@ import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 
-const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
-
-const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: CIM.AgentK8sResource[]) => {
+const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
     infraEnvs.forEach((infraEnv) => {
         const infraAgents = agents.filter((a) =>
@@ -44,7 +46,7 @@ const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: CIM.AgentK8s
 const deleteInfraEnv = (
     infraEnv: InfraEnvK8sResource,
     infraEnvs: InfraEnvK8sResource[],
-    agents: CIM.AgentK8sResource[]
+    agents: AgentK8sResource[]
 ) => {
     //1st: We prevent deleting action if there are any agents assigned to infraenv
     const infraAgents = agents.filter((a) =>
@@ -103,29 +105,29 @@ const InfraEnvironmentsPage: React.FC = () => {
     )
 }
 
-const keyFn = (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid
+const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid
 
 type InfraEnvsTableProps = {
-    infraEnvs: CIM.InfraEnvK8sResource[]
-    agents: CIM.AgentK8sResource[]
+    infraEnvs: InfraEnvK8sResource[]
+    agents: AgentK8sResource[]
 }
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
     const { t } = useTranslation()
     const history = useHistory()
-    const getDetailsLink = (infraEnv: CIM.InfraEnvK8sResource) =>
+    const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
             .replace(':namespace', infraEnv.metadata.namespace as string)
             .replace(':name', infraEnv.metadata.name as string)
 
-    const [modalProps, setModalProps] = useState<IBulkActionModelProps<CIM.InfraEnvK8sResource> | { open: false }>({
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<InfraEnvK8sResource> | { open: false }>({
         open: false,
     })
 
     return (
         <>
-            <BulkActionModel<CIM.InfraEnvK8sResource> {...modalProps} />
-            <AcmTable<CIM.InfraEnvK8sResource>
+            <BulkActionModel<InfraEnvK8sResource> {...modalProps} />
+            <AcmTable<InfraEnvK8sResource>
                 items={infraEnvs}
                 rowActions={[]}
                 keyFn={keyFn}
@@ -230,7 +232,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                     id: 'delete',
                                     text: t('infraEnv.rowAction.delete.title'),
                                     isAriaDisabled: true,
-                                    click: (infraEnv: CIM.InfraEnvK8sResource) => {
+                                    click: (infraEnv: InfraEnvK8sResource) => {
                                         setModalProps({
                                             open: true,
                                             title: t('action.title.delete'),
@@ -250,9 +252,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                     sort: 'metadata.namespace',
                                                 },
                                             ],
-                                            keyFn: (infraEnv: CIM.InfraEnvK8sResource) =>
-                                                infraEnv.metadata.uid as string,
-                                            actionFn: (infraEnv: CIM.InfraEnvK8sResource) => {
+                                            keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid as string,
+                                            actionFn: (infraEnv: InfraEnvK8sResource) => {
                                                 return deleteInfraEnv(infraEnv, infraEnvs, agents)
                                             },
                                             close: () => {
@@ -267,7 +268,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             }
 
                             return (
-                                <RbacDropdown<CIM.InfraEnvK8sResource>
+                                <RbacDropdown<InfraEnvK8sResource>
                                     id={`${infraEnv.metadata.name}-actions`}
                                     item={infraEnv}
                                     isKebab={true}
@@ -290,7 +291,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     {
                         id: 'delete',
                         title: t('infraEnv.delete.plural'),
-                        click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
+                        click: (infraEnvs: InfraEnvK8sResource[]) => {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.delete.infraenv'),
@@ -366,8 +367,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                         },
                                     },
                                 ],
-                                keyFn: (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid as string,
-                                actionFn: (infraEnv: CIM.InfraEnvK8sResource) => {
+                                keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid as string,
+                                actionFn: (infraEnv: InfraEnvK8sResource) => {
                                     return deleteInfraEnv(infraEnv, infraEnvs, agents)
                                 },
                                 close: () => {

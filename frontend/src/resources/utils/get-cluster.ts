@@ -2,7 +2,13 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@stolostron/ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
+import {
+    isDraft,
+    getIsSNOCluster,
+    getConsoleUrl as getConsoleUrlAI,
+    getClusterApiUrl as getClusterApiUrlAI,
+    AgentClusterInstallK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator } from '../cluster-curator'
@@ -14,8 +20,6 @@ import { managedClusterSetLabel } from '../managed-cluster-set'
 import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
-
-const { isDraft, getIsSNOCluster, getConsoleUrl: getConsoleUrlAI, getClusterApiUrl: getClusterApiUrlAI } = CIM
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -154,7 +158,7 @@ export function mapClusters(
     managedClusterAddOns: ManagedClusterAddOn[] = [],
     clusterClaims: ClusterClaim[] = [],
     clusterCurators: ClusterCurator[] = [],
-    agentClusterInstalls: CIM.AgentClusterInstallK8sResource[] = []
+    agentClusterInstalls: AgentClusterInstallK8sResource[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -199,7 +203,7 @@ export function getCluster(
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterClaim: ClusterClaim | undefined,
     clusterCurator: ClusterCurator | undefined,
-    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined
+    agentClusterInstall: AgentClusterInstallK8sResource | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -618,7 +622,7 @@ export function getDistributionInfo(
 export function getKubeApiServer(
     clusterDeployment?: ClusterDeployment,
     managedClusterInfo?: ManagedClusterInfo,
-    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
+    agentClusterInstall?: AgentClusterInstallK8sResource
 ) {
     return (
         clusterDeployment?.status?.apiURL ??
@@ -632,7 +636,7 @@ export function getConsoleUrl(
     clusterDeployment?: ClusterDeployment,
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
-    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
+    agentClusterInstall?: AgentClusterInstallK8sResource
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -676,7 +680,7 @@ export function getClusterStatus(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterCurator: ClusterCurator | undefined,
-    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined,
+    agentClusterInstall: AgentClusterInstallK8sResource | undefined,
     clusterClaim: ClusterClaim | undefined
 ) {
     let statusMessage: string | undefined
