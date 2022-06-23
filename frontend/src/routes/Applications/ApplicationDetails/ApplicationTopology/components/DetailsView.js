@@ -186,13 +186,15 @@ class DetailsView extends Component {
     renderTabs(node) {
         const { t } = this.props
         const isLogTabHidden = node.type !== 'pod'
+        const isYAMLTabHidden =
+            node.type === 'cluster' || node.type === 'ocpapplication' || node.type === 'fluxapplication'
         const { activeTabKey } = this.state
 
         return (
             <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
                 <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false} />
                 <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden} />
-                <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={node.type === 'cluster'} />
+                <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={isYAMLTabHidden} />
             </Tabs>
         )
     }

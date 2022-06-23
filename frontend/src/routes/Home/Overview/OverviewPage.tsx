@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-import { ButtonVariant, PageSection, Split, SplitItem, Stack } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
 import { PlusIcon } from '@patternfly/react-icons'
 import {
     AcmActionGroup,
     AcmAlert,
-    AcmAutoRefreshSelect,
     AcmButton,
     AcmDonutChart,
     AcmLaunchLink,
@@ -13,7 +12,6 @@ import {
     AcmOverviewProviders,
     AcmPage,
     AcmPageHeader,
-    AcmRefreshTime,
     AcmScrollable,
     AcmSummaryList,
     Provider,
@@ -25,13 +23,15 @@ import { useRecoilState } from 'recoil'
 import {
     applicationsState,
     argoApplicationsState,
+    managedClusterInfosState,
     managedClustersState,
     policyreportState,
     usePolicies,
 } from '../../../atoms'
+import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { getProvider, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { getProvider, ManagedClusterInfo, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../Search/search-sdk/search-client'
@@ -106,7 +106,6 @@ function getClusterSummary(clusters: any, selectedCloud: string, setSelectedClou
 
 const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     const baseSearchQueries = [
-        { keywords: [], filters: [{ property: 'kind', values: ['node'] }] },
         { keywords: [], filters: [{ property: 'kind', values: ['pod'] }] },
         {
             keywords: [],
@@ -142,7 +141,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     return baseSearchQueries
 }
 
-function PageActions(props: { timestamp: string; reloading: boolean; refetch: () => void }) {
+function PageActions() {
     const { t } = useTranslation()
     const [addons, setAddons] = useState()
     useEffect(() => {
@@ -194,13 +193,7 @@ function PageActions(props: { timestamp: string; reloading: boolean; refetch: ()
                 >
                     {t('Add credential')}
                 </AcmButton>
-                <AcmAutoRefreshSelect
-                    refetch={props.refetch}
-                    initPollInterval={300}
-                    refreshIntervals={[30, 60, 5 * 60, 30 * 60, 0]}
-                />
             </AcmActionGroup>
-            <AcmRefreshTime timestamp={props.timestamp} reloading={props.reloading} />
         </Fragment>
     )
 }
@@ -212,6 +205,7 @@ export default function OverviewPage() {
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
     const [policyReports] = useRecoilState(policyreportState)
+    const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [clusters, setClusters] = useState<any[]>([])
     const [selectedCloud, setSelectedCloud] = useState<string>('')
     const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
@@ -223,7 +217,6 @@ export default function OverviewPage() {
         providers: [],
     })
 
-    const timestamp = new Date().toString() as string
     if (!_.isEqual(clusters, managedClusters || [])) {
         setClusters(managedClusters || [])
     }
@@ -241,28 +234,31 @@ export default function OverviewPage() {
         })
         return nonCompliantClustersSet
     }, [policies, selectedClusterNames])
-    const tempClusters = selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.metadata?.name)
-    const compliantClusters = tempClusters.filter((c) => !nonCompliantClusters.has(c))
 
-    const [
-        fireSearchQuery,
-        { called: searchCalled, data: searchData, loading: searchLoading, error: searchError, refetch: searchRefetch },
-    ] = useSearchResultCountLazyQuery({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    })
+    const compliantClusters = useMemo(() => {
+        const tempClusters =
+            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.metadata?.name)
+        return tempClusters.filter((c) => !nonCompliantClusters.has(c))
+    }, [selectedClusterNames, clusters, nonCompliantClusters])
+
+    const nodeCount = useMemo(() => {
+        let count = 0
+        managedClusterInfos.forEach((managedClusterInfo: ManagedClusterInfo) => {
+            count = count + (managedClusterInfo.status?.nodeList?.length ?? 0)
+        })
+        return count
+    }, [managedClusterInfos])
+
+    const [fireSearchQuery, { data: searchData, loading: searchLoading, error: searchError }] =
+        useSearchResultCountLazyQuery({
+            client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+        })
 
     useEffect(() => {
-        if (!searchCalled) {
-            fireSearchQuery({
-                variables: { input: searchQueries(selectedClusterNames) },
-            })
-        } else {
-            searchRefetch &&
-                searchRefetch({
-                    input: searchQueries(selectedClusterNames),
-                })
-        }
-    }, [fireSearchQuery, selectedClusterNames, searchCalled, searchRefetch])
+        fireSearchQuery({
+            variables: { input: searchQueries(selectedClusterNames) },
+        })
+    }, [fireSearchQuery, selectedClusterNames])
     const searchResult = useMemo(() => searchData?.searchResult || [], [searchData?.searchResult])
 
     // Process data from API.
@@ -338,10 +334,6 @@ export default function OverviewPage() {
             }
         }, [policyReports, selectedClusterNames, clusters])
 
-    function refetchData() {
-        searchRefetch && searchRefetch({ input: searchQueries(selectedClusterNames) })
-    }
-
     const { kubernetesTypes, regions, ready, offline, providers } = summaryData
     const provider = providers.find((p: any) => p.provider === selectedCloud)
     const cloudLabelFilter: string =
@@ -362,40 +354,46 @@ export default function OverviewPage() {
     )
 
     const summary = useMemo(() => {
-        let overviewSummary = searchLoading
-            ? []
-            : [
-                  {
-                      isPrimary: false,
-                      description: 'Applications',
-                      count: [...apps, ...argoApps].length || 0,
-                      href: buildSummaryLinks('application', true),
-                  },
-                  {
-                      isPrimary: false,
-                      description: 'Clusters',
-                      count:
-                          selectedClusterNames.length > 0 ? selectedClusterNames.length : managedClusters.length || 0,
-                      href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
-                  },
-                  { isPrimary: false, description: 'Kubernetes type', count: kubernetesTypes?.size },
-                  { isPrimary: false, description: 'Region', count: regions?.size },
-                  {
-                      isPrimary: false,
-                      description: 'Nodes',
-                      count: searchResult[0]?.count || 0,
-                      href: buildSummaryLinks('node'),
-                  },
-                  {
-                      isPrimary: false,
-                      description: 'Pods',
-                      count: searchResult[1]?.count || 0,
-                      href: buildSummaryLinks('pod'),
-                  },
-              ]
+        let overviewSummary = [
+            {
+                isLoading: !apps || !argoApps,
+                isPrimary: false,
+                description: 'Applications',
+                count: [...apps, ...argoApps].length || 0,
+                href: buildSummaryLinks('application', true),
+            },
+            {
+                isLoading: !managedClusters,
+                isPrimary: false,
+                description: 'Clusters',
+                count: selectedClusterNames.length > 0 ? selectedClusterNames.length : managedClusters.length || 0,
+                href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
+            },
+            {
+                isloading: !kubernetesTypes?.size,
+                isPrimary: false,
+                description: 'Kubernetes type',
+                count: kubernetesTypes?.size,
+            },
+            { isLoading: !regions?.size, isPrimary: false, description: 'Region', count: regions?.size },
+            {
+                isLoading: !nodeCount,
+                isPrimary: false,
+                description: 'Nodes',
+                count: nodeCount || 0,
+                href: buildSummaryLinks('node'),
+            },
+            {
+                isLoading: searchLoading,
+                isPrimary: false,
+                description: 'Pods',
+                count: searchResult[0]?.count || 0,
+                href: buildSummaryLinks('pod'),
+            },
+        ]
         if (searchError) {
-            // Hide node and pods if search is unavailable or throwing errors
-            overviewSummary = overviewSummary.slice(0, 4)
+            // Hide pods data if search is unavailable or throwing errors
+            overviewSummary = overviewSummary.slice(0, 5)
         }
         return overviewSummary
     }, [
@@ -404,7 +402,8 @@ export default function OverviewPage() {
         buildSummaryLinks,
         cloudLabelFilter,
         kubernetesTypes?.size,
-        managedClusters.length,
+        managedClusters,
+        nodeCount,
         regions?.size,
         searchError,
         searchLoading,
@@ -417,27 +416,25 @@ export default function OverviewPage() {
         // Issue: https://github.com/open-cluster-management/backlog/issues/7087
         const urlClusterFilter: string =
             selectedClusterNames.length > 0 ? `%20cluster%3A${selectedClusterNames.join(',')}` : ''
-        return searchLoading
-            ? []
-            : [
-                  {
-                      key: 'Failed',
-                      value: searchResult[4]?.count || 0,
-                      link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled${urlClusterFilter}"}`,
-                  },
-                  {
-                      key: 'Pending',
-                      value: searchResult[3]?.count || 0,
-                      link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting${urlClusterFilter}"}`,
-                  },
-                  {
-                      key: 'Running',
-                      value: searchResult[2]?.count || 0,
-                      isPrimary: true,
-                      link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
-                  },
-              ]
-    }, [searchLoading, searchResult, selectedClusterNames])
+        return [
+            {
+                key: 'Failed',
+                value: searchResult[3]?.count || 0,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled${urlClusterFilter}"}`,
+            },
+            {
+                key: 'Pending',
+                value: searchResult[2]?.count || 0,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting${urlClusterFilter}"}`,
+            },
+            {
+                key: 'Running',
+                value: searchResult[1]?.count || 0,
+                isPrimary: true,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
+            },
+        ]
+    }, [searchResult, selectedClusterNames])
 
     // TODO: Breaks url if length of selectedClustersFilter is too big.
     // Issue: https://github.com/open-cluster-management/backlog/issues/7087
@@ -447,103 +444,86 @@ export default function OverviewPage() {
         }"}&showrelated=policy`
     }
     const complianceData = useMemo(() => {
-        return searchLoading
-            ? []
-            : [
-                  {
-                      key: 'With violations',
-                      value: nonCompliantClusters.size,
-                      link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
-                  },
-                  {
-                      key: 'Without violations',
-                      value: compliantClusters.length,
-                      isPrimary: true,
-                      link: buildClusterComplianceLinks(compliantClusters),
-                  },
-              ]
-    }, [compliantClusters, nonCompliantClusters, searchLoading])
+        return [
+            {
+                key: 'With violations',
+                value: nonCompliantClusters.size,
+                link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
+            },
+            {
+                key: 'Without violations',
+                value: compliantClusters.length,
+                isPrimary: true,
+                link: buildClusterComplianceLinks(compliantClusters),
+            },
+        ]
+    }, [compliantClusters, nonCompliantClusters])
 
     const clusterData = useMemo(() => {
-        return searchLoading
-            ? []
-            : [
-                  {
-                      key: 'Offline',
-                      value: offline,
-                      link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
-                  },
-                  {
-                      key: 'Ready',
-                      value: ready,
-                      isPrimary: true,
-                      link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
-                  },
-              ]
-    }, [cloudLabelFilter, offline, ready, searchLoading])
+        return [
+            {
+                key: 'Offline',
+                value: offline,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
+            },
+            {
+                key: 'Ready',
+                value: ready,
+                isPrimary: true,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
+            },
+        ]
+    }, [cloudLabelFilter, offline, ready])
 
     const policyReportData = useMemo(() => {
-        return searchLoading
-            ? []
-            : [
-                  {
-                      key: 'Critical',
-                      value: policyReportCriticalCount,
-                      isPrimary: true,
-                      link:
-                          policyReportCriticalCount > 0
-                              ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20critical%3A>0"}`
-                              : undefined,
-                  },
-                  {
-                      key: 'Important',
-                      value: policyReportImportantCount,
-                      link:
-                          policyReportImportantCount > 0
-                              ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20important%3A>0"}`
-                              : undefined,
-                  },
-                  {
-                      key: 'Moderate',
-                      value: policyReportModerateCount,
-                      link:
-                          policyReportModerateCount > 0
-                              ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20moderate%3A>0"}`
-                              : undefined,
-                  },
-                  {
-                      key: 'Low',
-                      value: policyReportLowCount,
-                      link:
-                          policyReportLowCount > 0
-                              ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20low%3A>0"}`
-                              : undefined,
-                  },
-              ]
-    }, [
-        policyReportCriticalCount,
-        policyReportImportantCount,
-        policyReportLowCount,
-        policyReportModerateCount,
-        searchLoading,
-    ])
+        return [
+            {
+                key: 'Critical',
+                value: policyReportCriticalCount,
+                isPrimary: true,
+                link:
+                    policyReportCriticalCount > 0
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20critical%3A>0"}`
+                        : undefined,
+            },
+            {
+                key: 'Important',
+                value: policyReportImportantCount,
+                link:
+                    policyReportImportantCount > 0
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20important%3A>0"}`
+                        : undefined,
+            },
+            {
+                key: 'Moderate',
+                value: policyReportModerateCount,
+                link:
+                    policyReportModerateCount > 0
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20moderate%3A>0"}`
+                        : undefined,
+            },
+            {
+                key: 'Low',
+                value: policyReportLowCount,
+                link:
+                    policyReportLowCount > 0
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20low%3A>0"}`
+                        : undefined,
+            },
+        ]
+    }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount])
 
     return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={t('Overview')}
-                    actions={<PageActions timestamp={timestamp} reloading={searchLoading} refetch={refetchData} />}
-                />
-            }
-        >
+        <AcmPage header={<AcmPageHeader title={t('Overview')} actions={<PageActions />} />}>
             <AcmScrollable>
                 {searchError && (
                     <PageSection>
                         <AcmAlert
                             noClose
                             isInline
-                            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'danger'}
+                            variant={
+                                searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'warning'
+                            }
                             title={
                                 searchError?.graphQLErrors[0]?.message.includes('not enabled')
                                     ? t('Configuration alert')
@@ -552,7 +532,7 @@ export default function OverviewPage() {
                             subtitle={
                                 searchError?.graphQLErrors[0]?.message ||
                                 t(
-                                    'The search service is unavailable or degraded. Some data might be missing from the page.'
+                                    'The search service is unavailable or degraded. Some data might be missing from this view.'
                                 )
                             }
                         />
@@ -560,112 +540,63 @@ export default function OverviewPage() {
                 )}
                 <PageSection>
                     <Stack hasGutter>
-                        {searchLoading ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
+                        {providers.length === 0 ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
 
-                        {searchLoading ? (
-                            <AcmSummaryList key="loading" loading title={t('Summary')} list={summary} />
-                        ) : (
-                            <AcmSummaryList title={t('Summary')} list={summary} />
-                        )}
+                        <AcmSummaryList title={t('Summary')} list={summary} />
 
-                        {searchLoading ? (
-                            <Split hasGutter isWrappable>
-                                <SplitItem isFilled>
-                                    <AcmDonutChart
-                                        loading
-                                        key="chart-loading-1"
-                                        title="Cluster violations"
-                                        description={t('Overview of policy violation status')}
-                                        data={[]}
-                                    />
-                                </SplitItem>
-                                {!searchError && (
-                                    <SplitItem isFilled>
-                                        <AcmDonutChart
-                                            loading
-                                            key="chart-loading-2"
-                                            title="Pods"
-                                            description={t('Overview of pod count and status')}
-                                            data={[]}
-                                        />
-                                    </SplitItem>
-                                )}
-                                <SplitItem isFilled>
-                                    <AcmDonutChart
-                                        loading
-                                        key="chart-loading-3"
-                                        title="Cluster status"
-                                        description={t('Overview of cluster status')}
-                                        data={[]}
-                                    />
-                                </SplitItem>
-                                <SplitItem isFilled>
-                                    <AcmDonutChart
-                                        loading
-                                        key="chart-loading-4"
-                                        title="Clusters with issues"
-                                        description={t('Overview of cluster issues')}
-                                        data={[]}
-                                    />
-                                </SplitItem>
-                            </Split>
-                        ) : (
-                            <Split hasGutter isWrappable>
-                                <SplitItem>
-                                    <AcmDonutChart
-                                        title="Cluster violations"
-                                        description={t('Overview of policy violation status')}
-                                        data={complianceData}
-                                        colorScale={[
-                                            'var(--pf-global--danger-color--100)',
-                                            'var(--pf-global--success-color--100)',
-                                        ]}
-                                    />
-                                </SplitItem>
+                        <Stack hasGutter>
+                            <AcmMasonry minSize={400} maxColumns={searchError ? 3 : 4}>
+                                <AcmDonutChart
+                                    title="Cluster violations"
+                                    description={t('Overview of policy violation status')}
+                                    loading={!complianceData}
+                                    data={complianceData}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--success-color--100)',
+                                    ]}
+                                />
                                 {!searchError ? (
-                                    <SplitItem>
-                                        <AcmDonutChart
-                                            title="Pods"
-                                            description={t('Overview of pod count and status')}
-                                            data={podData}
-                                            colorScale={[
-                                                'var(--pf-global--danger-color--100)',
-                                                'var(--pf-global--info-color--100)',
-                                                'var(--pf-global--success-color--100)',
-                                            ]}
-                                        />
-                                    </SplitItem>
-                                ) : null}
-                                <SplitItem>
                                     <AcmDonutChart
-                                        title="Cluster status"
-                                        description={t('Overview of cluster status')}
-                                        data={clusterData}
+                                        title="Pods"
+                                        description={t('Overview of pod count and status')}
+                                        loading={searchLoading}
+                                        data={podData}
                                         colorScale={[
                                             'var(--pf-global--danger-color--100)',
+                                            'var(--pf-global--info-color--100)',
                                             'var(--pf-global--success-color--100)',
                                         ]}
                                     />
-                                </SplitItem>
-                                <SplitItem>
-                                    <AcmDonutChart
-                                        title="Cluster issues"
-                                        description={t('Overview of cluster issues')}
-                                        data={policyReportData}
-                                        donutLabel={{
-                                            title: `${policyReports.length}`,
-                                            subTitle: t('Clusters with issues'),
-                                        }}
-                                        colorScale={[
-                                            'var(--pf-global--danger-color--100)',
-                                            'var(--pf-global--palette--orange-300)',
-                                            'var(--pf-global--palette--orange-200)',
-                                            'var(--pf-global--warning-color--100)',
-                                        ]}
-                                    />
-                                </SplitItem>
-                            </Split>
-                        )}
+                                ) : undefined}
+                                <AcmDonutChart
+                                    title="Cluster status"
+                                    description={t('Overview of cluster status')}
+                                    loading={!clusterData}
+                                    data={clusterData}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--success-color--100)',
+                                    ]}
+                                />
+                                <AcmDonutChart
+                                    title="Cluster issues"
+                                    description={t('Overview of cluster issues')}
+                                    loading={!policyReportData}
+                                    data={policyReportData}
+                                    donutLabel={{
+                                        title: `${policyReports.length}`,
+                                        subTitle: t('Clusters with issues'),
+                                    }}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--palette--orange-300)',
+                                        'var(--pf-global--palette--orange-200)',
+                                        'var(--pf-global--warning-color--100)',
+                                    ]}
+                                />
+                            </AcmMasonry>
+                        </Stack>
                     </Stack>
                 </PageSection>
             </AcmScrollable>

@@ -101,7 +101,6 @@ const definitions: IWatchOptions[] = [
     { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
-    { kind: 'Kustomization', apiVersion: 'kustomize.toolkit.fluxcd.io/v1beta2' },
     { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'insight-content-data' } },
     {
         kind: 'ConfigMap',

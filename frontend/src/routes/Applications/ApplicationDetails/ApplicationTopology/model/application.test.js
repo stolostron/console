@@ -175,6 +175,8 @@ describe('getApplication Argo', () => {
         },
         isAppSet: false,
         isArgoApp: true,
+        isFluxApp: false,
+        isOCPApp: false,
         metadata: {
             annotations: [
                 {

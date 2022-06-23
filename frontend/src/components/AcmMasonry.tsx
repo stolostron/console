@@ -46,7 +46,7 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
         Children.forEach(props.children, (child, index) => {
             const smallest = Math.min(...columnHeights)
             const columnIndex = columnHeights.findIndex((column) => column === smallest)
-            if (columnIndex !== undefined && columnIndex !== -1) {
+            if (child && columnIndex !== undefined && columnIndex !== -1) {
                 itemColumns[columnIndex].push(
                     <MasonryItem key={index} index={index} sizes={sizes} setSizes={setSizes}>
                         {child}

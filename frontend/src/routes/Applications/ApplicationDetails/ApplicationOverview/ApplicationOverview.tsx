@@ -104,6 +104,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     let isArgoApp = false
     let isAppSet = false
+    let isOCPApp = false
+    let isFluxApp = false
     let isSubscription = false
     let disableBtn
     let subsList = []
@@ -138,7 +140,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     if (applicationData) {
         isArgoApp = applicationData.application?.isArgoApp
         isAppSet = applicationData.application?.isAppSet
-        isSubscription = !isArgoApp && !isAppSet
+        isOCPApp = applicationData.application?.isOCPApp
+        isFluxApp = applicationData.application?.isFluxApp
+
+        isSubscription = !isArgoApp && !isAppSet && !isOCPApp && !isFluxApp
         const { name, namespace } = applicationData.application.metadata
         const applicationResource = applicationData.application.app
         const appRepos = getApplicationRepos(applicationData.application.app, subscriptions, channels)
@@ -156,7 +161,28 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 
         ////////////////////////////////// argo items ////////////////////////////////////
-        if (!isSubscription) {
+        if (isOCPApp || isFluxApp) {
+            const cluster = applicationData.application?.app.cluster.name
+            leftItems = [
+                { key: 'Name', value: name },
+                { key: 'Namespace', value: namespace },
+            ]
+            rightItems = [
+                {
+                    key: t('Clusters'),
+                    value: cluster,
+                },
+                {
+                    key: t('Cluster resource status'),
+                    value: createStatusIcons(applicationData, t),
+                    keyAction: (
+                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
+                            <OutlinedQuestionCircleIcon className="help-icon" />
+                        </Tooltip>
+                    ),
+                },
+            ]
+        } else if (!isSubscription) {
             let lastSyncedTimeStamp = ''
             if (isArgoApp) {
                 lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
