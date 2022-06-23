@@ -3,6 +3,7 @@ import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dis
 import { createResource, getResource, listResources, replaceResource } from './utils/resource-request'
 import { IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
+import { set } from 'lodash'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
 export type ClusterCuratorApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
@@ -56,13 +57,7 @@ export interface ClusterCuratorAnsibleJob {
 }
 
 export function createClusterCurator(clusterCurator: ClusterCurator) {
-    if (!clusterCurator.metadata) {
-        clusterCurator.metadata = {}
-    }
-    if (!clusterCurator.metadata.labels) {
-        clusterCurator.metadata.labels = {}
-    }
-    clusterCurator.metadata.labels['open-cluster-management'] = 'curator'
+    set(clusterCurator, 'metadata.labels["open-cluster-management"]', 'curator')
     return createResource<ClusterCurator>(clusterCurator)
 }
 

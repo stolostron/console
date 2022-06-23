@@ -477,6 +477,7 @@ export const onChangeAutomationTemplate = (control, controlData) => {
         const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
         if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
             clusterCurator.spec.desiredCuration = 'install'
+            installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
         }
         const spec = clusterCurator?.spec
         if (spec) {
@@ -498,7 +499,6 @@ export const onChangeAutomationTemplate = (control, controlData) => {
             })
             clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
         }
-        installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
     } else {
         // Clear Ansible secrets
         curations.forEach((curation) => {
@@ -631,5 +631,5 @@ export const arrayItemHasKey = (options, key) => {
 }
 
 export function append() {
-    return Array.prototype.slice.call(arguments, 0, -1).join('');
+    return Array.prototype.slice.call(arguments, 0, -1).join('')
 }
