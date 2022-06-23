@@ -102,7 +102,7 @@ const clusterCurator: ClusterCurator = {
     kind: ClusterCuratorKind,
     metadata: {
         name: 'test',
-        namespace: clusterName,
+        namespace: 'test-ii',
         labels: {
             'open-cluster-management': 'curator',
         },
@@ -110,6 +110,12 @@ const clusterCurator: ClusterCurator = {
     spec: {
         desiredCuration: undefined,
         install: {
+            prehook: [
+                {
+                    name: 'test',
+                    extra_vars: {},
+                },
+            ],
             towerAuthSecret: 'ansible-connection',
         },
     },
@@ -119,14 +125,22 @@ const mockClusterCuratorInstall: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
     metadata: {
-        name: 'test',
+        name: clusterName,
         namespace: clusterName,
         labels: {
             'open-cluster-management': 'curator',
         },
     },
     spec: {
-        install: { towerAuthSecret: 'toweraccess' },
+        install: {
+            prehook: [
+                {
+                    name: 'test',
+                    extra_vars: {},
+                },
+            ],
+            towerAuthSecret: 'toweraccess-install',
+        },
         desiredCuration: 'install',
     },
 }
@@ -152,12 +166,13 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     metadata: {
-        name: 'toweraccess',
+        name: 'toweraccess-install',
         namespace: clusterName,
         labels: {
             'cluster.open-cluster-management.io/type': 'ans',
             'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
             'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+            'cluster.open-cluster-management.io/backup': 'cluster',
         },
     },
     stringData: {
