@@ -36,22 +36,10 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
-    CronJobDefinition,
-    CronJobKind,
-    DaemonSetDefinition,
-    DaemonSetKind,
-    DeploymentConfigDefinition,
-    DeploymentConfigKind,
-    DeploymentDefinition,
-    DeploymentKind,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
-    JobDefinition,
-    JobKind,
     OCPAppResource,
-    StatefulSetDefinition,
-    StatefulSetKind,
     Subscription,
 } from '../../resources'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -223,7 +211,7 @@ export default function ApplicationsOverview() {
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
-    const [isSwitchProjectButtonChecked, setIsSwitchProjectButtonChecked] = useState(false)
+    const [isSwitchProjectButtonChecked, setIsSwitchProjectButtonChecked] = useState<boolean>(false)
 
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
@@ -594,6 +582,49 @@ export default function ApplicationsOverview() {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
                 },
             },
+            {
+                label: t('Openshift Applications'),
+                id: 'openshift-apps',
+                options: [
+                    {
+                        label: 'Openshift',
+                        value: 'openshiftapps',
+                    },
+                    {
+                        label: 'Flux',
+                        value: 'fluxapps',
+                    },
+                ],
+                tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+                    return selectedValues.some((value) => {
+                        if (isOCPAppResource(item)) {
+                            let isFlux = false
+                            Object.entries(fluxAnnotations).forEach(([, values]) => {
+                                const [nameAnnotation, namespaceAnnotation] = values
+                                if (item.label.includes(nameAnnotation) && item.label.includes(namespaceAnnotation)) {
+                                    isFlux = true
+                                }
+                            })
+                            if (value === 'openshiftapps') {
+                                return !isFlux
+                            }
+                            if (value === 'fluxapps') {
+                                return isFlux
+                            }
+                        }
+                    })
+                },
+            },
+            {
+                label: t('Namespace'),
+                id: 'namespace-filter',
+                options: [{ label: 'Not starts with Openshift', value: 'openshift' }],
+                tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+                    return selectedValues.some((value) => {
+                        return !item.metadata?.namespace?.startsWith(value)
+                    })
+                },
+            },
         ],
         [t]
     )
@@ -696,37 +727,7 @@ export default function ApplicationsOverview() {
                 },
             })
 
-            if (
-                isResourceTypeOf(resource, [
-                    CronJobDefinition,
-                    DaemonSetDefinition,
-                    DeploymentDefinition,
-                    DeploymentConfigDefinition,
-                    JobDefinition,
-                    StatefulSetDefinition,
-                ])
-            ) {
-                actions.push({
-                    id: 'viewApplication',
-                    title: t('View application'),
-                    click: () => {
-                        history.push(
-                            `${NavigationPath.applicationOverview
-                                .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(
-                                    ':name',
-                                    resource.metadata?.name as string
-                                )}?apiVersion=ocp&cluster=local-cluster`
-                        )
-                    },
-                })
-            }
-
-            if (
-                [CronJobKind, DaemonSetKind, DeploymentKind, DeploymentConfigKind, JobKind, StatefulSetKind]
-                    .map((kind) => kind.toLowerCase())
-                    .includes(resource.kind)
-            ) {
+            if (isOCPAppResource(resource)) {
                 actions.push({
                     id: 'viewApplication',
                     title: t('View application'),
