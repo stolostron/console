@@ -5,7 +5,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -839,10 +839,6 @@ export default function ApplicationsOverview() {
         [canCreateApplication, history, t]
     )
 
-    const custom = useMemo(() => {
-        return <Fragment>{appCreationButton}</Fragment>
-    }, [appCreationButton])
-
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
@@ -853,7 +849,7 @@ export default function ApplicationsOverview() {
                 keyFn={keyFn}
                 items={tableItems}
                 filters={filters}
-                customTableAction={custom}
+                customTableAction={appCreationButton}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
