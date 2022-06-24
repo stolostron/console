@@ -1584,7 +1584,6 @@
     "Number of clusters where the grouped Argo applications' resources are deployed.": "Number of clusters where the grouped Argo applications' resources are deployed.",
     "Object storage": "Object storage",
     "Offline": "Offline",
-    "One or more Ansible Automation Platform credentials was not found. Create a new automation template.": "One or more Ansible Automation Platform credentials was not found. Create a new automation template.",
     "Open cluster console": "Open cluster console",
     "Open new search tab": "Open new search tab",
     "OpenShift": "OpenShift",

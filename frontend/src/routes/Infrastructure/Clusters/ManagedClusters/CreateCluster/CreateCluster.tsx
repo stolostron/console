@@ -245,23 +245,6 @@ export default function CreateClusterPage() {
                 if (status === 'ERROR') {
                     setCreationStatus({ status, messages })
                 } else if (status !== 'ERROR' && clusterCurator) {
-                    // Make sure all secrets referenced by the curator exist
-                    for (const curation of supportedCurations) {
-                        if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
-                            if (!automationCredentials.find((ac) => `toweraccess-${curation}` === ac.metadata?.name)) {
-                                setCreationStatus({
-                                    status: 'ERROR',
-                                    messages: [
-                                        t(
-                                            'One or more Ansible Automation Platform credentials was not found. Create a new automation template.'
-                                        ),
-                                    ],
-                                })
-                                return status
-                            }
-                        }
-                    }
-
                     setCreationStatus({
                         status: 'IN_PROGRESS',
                         messages: [t('Setting up automation...')],
@@ -333,12 +316,22 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName': {
-                const availableData = curatorTemplates.filter((template) => {
-                    const ansibleSecret = ansibleCredentials.find(
-                        (secret) => secret.metadata.name === template?.spec?.install?.towerAuthSecret
+                const availableData = curatorTemplates.filter((template) =>
+                    supportedCurations.every(
+                        // each curation with any hooks must have a secret reference and the secret must exist
+                        (curation) =>
+                            !(
+                                template?.spec?.[curation]?.prehook?.length ||
+                                template?.spec?.[curation]?.posthook?.length
+                            ) ||
+                            (template?.spec?.[curation]?.towerAuthSecret &&
+                                ansibleCredentials.find(
+                                    (secret) =>
+                                        secret.metadata.name === template?.spec?.[curation]?.towerAuthSecret &&
+                                        secret.metadata.namespace === template.metadata.namespace
+                                ))
                     )
-                    return ansibleSecret !== undefined
-                })
+                )
                 // TODO: Need to keep namespace information
                 control.available = availableData.map((template) => template.metadata.name)
                 control.availableData = availableData
