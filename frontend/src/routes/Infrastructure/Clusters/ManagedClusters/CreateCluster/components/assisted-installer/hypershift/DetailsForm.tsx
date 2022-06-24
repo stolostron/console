@@ -1,30 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo, useContext } from 'react'
 import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
+import { set, get, isEqual, startCase, camelCase } from 'lodash'
 import { getValue } from 'temptifly'
 import { AcmLabelsInput, AcmSelect } from '@stolostron/ui-components'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { NavigationPath } from '../../../../../../../NavigationPath'
-import { Secret } from '../../../../../../../resources'
-import { clusterDeploymentsState, clusterImageSetsState } from '../../../../../../../atoms'
-import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
-import { useClusterImages } from './utils'
+import { NavigationPath } from '../../../../../../../../NavigationPath'
+import { clusterDeploymentsState, clusterImageSetsState } from '../../../../../../../../atoms'
+import {
+    useCanJoinClusterSets,
+    useMustJoinClusterSet,
+} from '../../../../../ClusterSets/components/useCanJoinClusterSets'
+import { useClusterImages } from '../utils'
+import { Secret } from '../../../../../../../../resources'
+import { HypershiftAgentContext } from './HypershiftAgentContext'
+import { getClusterImageVersion } from './utils'
 
-const {
-    ACMClusterDeploymentDetailsStep,
-    FeatureGateContextProvider,
-    ACMFeatureSupportLevelProvider,
-    ACM_ENABLED_FEATURES,
-    labelsToArray,
-    LoadingState,
-    getVersionFromReleaseImage,
-} = CIM
+const { HostedClusterDetailsStep, labelsToArray, LoadingState } = CIM
 
 type FormControl = {
     active: CIM.ClusterDetailsValues & {
@@ -32,6 +29,7 @@ type FormControl = {
         additionalLabels?: {
             [x: string]: string
         }[]
+        releaseImage?: string
     }
     disabled?: VoidFunction
     reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
@@ -47,13 +45,14 @@ type DetailsFormProps = {
     controlProps: Secret
 }
 const fields: any = {
-    name: { path: 'ClusterDeployment[0].metadata.name' },
-    baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
-    openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
+    name: { path: 'HostedCluster[0].metadata.name' },
+    baseDnsDomain: { path: 'HostedCluster[0].spec.dns.baseDomain' },
+    releaseImage: { path: 'HostedCluster[0].spec.release.image' },
     pullSecret: {},
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
+    const { setClusterName, setReleaseImage } = useContext(HypershiftAgentContext)
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const formRef = useRef<FormikProps<any>>(null)
@@ -63,19 +62,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const mustJoinClusterSet = useMustJoinClusterSet()
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
-
-    const getVersion = (versionName = '') => {
-        const clusterImage = clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
-        return getVersionFromReleaseImage(clusterImage?.spec?.releaseImage) || versionName
-    }
-
-    useEffect(() => {
-        if (control.disabled && formRef?.current) {
-            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach((item: HTMLElement) => {
-                item.setAttribute('disabled', 'true')
-            })
-        }
-    }, [control.disabled, formRef.current])
 
     useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -92,6 +78,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 ...control.active,
                 managedClusterSet: control.active.managedClusterSet,
                 additionalLabels: control.active.additionalLabels,
+                openshiftVersion:
+                    clusterImageSets.find((cis) => cis.spec?.releaseImage === control.active.releaseImage)?.metadata
+                        .name || control.active.openshiftVersion,
             }
             if (control.active.managedClusterSet !== managedClusterSet) {
                 setManagedClusterSet(control.active.managedClusterSet)
@@ -119,7 +108,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             return Object.keys(fields).map((key) => {
                 let desc = get(control, `active.${key}`)
                 if (key === 'openshiftVersion') {
-                    desc = getVersion(get(control, `active.${key}`))
+                    desc = getClusterImageVersion(get(control, `active.${key}`))
                 }
                 return {
                     term: startCase(camelCase(key)),
@@ -179,33 +168,26 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 isDisabled={false}
             />
         ),
-        // pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
-        //     <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
-        // ) : null,
     }
 
-    useEffect(() => {
-        control.active = { ...control.active, managedClusterSet }
-        handleChange(control)
-    }, [managedClusterSet])
-
-    const onValuesChanged = useCallback(
-        debounce((formikValues, initRender) => {
-            const values = {
-                ...formikValues,
-                managedClusterSet: control.active.managedClusterSet,
-                additionalLabels: control.active.additionalLabels,
+    const onValuesChanged = useCallback((formikValues, initRender) => {
+        setClusterName(formikValues.name)
+        setReleaseImage(formikValues.openshiftVersion)
+        const values = {
+            ...formikValues,
+            managedClusterSet: control.active.managedClusterSet,
+            additionalLabels: control.active.additionalLabels,
+            releaseImage: clusterImageSets.find(({ metadata }) => metadata.name === formikValues.openshiftVersion)?.spec
+                ?.releaseImage,
+        }
+        if (!isEqual(values, control.active)) {
+            if (!initRender || control.active.name === '') {
+                control.active = values
             }
-            if (!isEqual(values, control.active)) {
-                if (!initRender || control.active.name === '') {
-                    control.active = values
-                }
-                control.step.title.isComplete = false
-                handleChange(control)
-            }
-        }),
-        []
-    )
+            control.step.title.isComplete = false
+            handleChange(control)
+        }
+    }, [])
 
     useEffect(() => {
         control.active = {
@@ -219,19 +201,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     }, [additionalLabels])
 
     return clusterImages ? (
-        <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-            <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
-                <ACMClusterDeploymentDetailsStep
-                    formRef={formRef}
-                    onValuesChanged={onValuesChanged}
-                    clusterImages={clusterImages}
-                    usedClusterNames={usedClusterNames}
-                    pullSecret={controlProps?.stringData?.pullSecret}
-                    defaultBaseDomain={controlProps?.stringData?.baseDomain}
-                    extensionAfter={extensionAfter}
-                />
-            </ACMFeatureSupportLevelProvider>
-        </FeatureGateContextProvider>
+        <HostedClusterDetailsStep
+            formRef={formRef}
+            onValuesChanged={onValuesChanged}
+            clusterImages={clusterImages}
+            usedClusterNames={usedClusterNames}
+            extensionAfter={extensionAfter}
+            initPullSecret={controlProps?.stringData?.pullSecret}
+            initBaseDomain={controlProps?.stringData?.baseDomain}
+        />
     ) : (
         <LoadingState />
     )

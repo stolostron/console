@@ -28,6 +28,7 @@
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
+        "cidr-tools": "^4.3.0",
         "@apollo/client": "3.5.10",
         "@babel/runtime": "7.17.9",
         "@kubernetes/client-node": "0.16.3",
@@ -62,7 +63,7 @@
         "moment": "2.29.3",
         "moment-timezone": "0.5.34",
         "monaco-editor": "0.33.0",
-        "openshift-assisted-ui-lib": "2.3.11-CIM-2.5",
+        "openshift-assisted-ui-lib": "2.5.0-cim",
         "ramda": "0.28.0",
         "react-masonry-css": "1.0.16",
         "string-similarity": "4.0.4",
@@ -71,7 +72,8 @@
         "validator": "13.7.0",
         "whatwg-fetch": "3.6.2",
         "yaml": "1.10.2",
-        "yup": "0.32.11"
+        "yup": "0.32.11",
+        "react-error-boundary": "^3.1.4"
     },
     "devDependencies": {
         "@babel/core": "7.17.10",
