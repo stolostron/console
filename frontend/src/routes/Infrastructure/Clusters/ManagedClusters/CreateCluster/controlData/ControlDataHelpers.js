@@ -255,10 +255,10 @@ export const onChangeConnection = (control, controlData) => {
         })
     }
     setTimeout(() => {
-        const control = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
-        if (control) {
-            control.active = replacements['additionalTrustBundle']
-            control.disabled = !control.active
+        const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
+        if (datbControl) {
+            datbControl.active = replacements['additionalTrustBundle']
+            datbControl.disabled = !datbControl.active
         }
     })
 }
@@ -614,7 +614,7 @@ export const isHidden_SNO = (control, controlData) => {
 }
 
 export const onChangeSNO = (control, controlData) => {
-    var groupDataArray = getControlByID(controlData, 'workerPools').active
+    const groupDataArray = getControlByID(controlData, 'workerPools').active
     groupDataArray.forEach((group) => {
         var computeNodeCount = group.find(({ id }) => id === 'computeNodeCount')
         if (!control.active) {
@@ -635,6 +635,4 @@ export const arrayItemHasKey = (options, key) => {
     return options && options.some((o) => o[key])
 }
 
-export function append() {
-    return Array.prototype.slice.call(arguments, 0, -1).join('')
-}
+export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')

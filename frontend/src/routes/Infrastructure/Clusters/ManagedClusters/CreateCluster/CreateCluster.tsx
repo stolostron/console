@@ -316,24 +316,24 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName': {
-                const availableData = curatorTemplates.filter((template) =>
+                const availableData = curatorTemplates.filter((curatorTemplate) =>
                     supportedCurations.every(
                         // each curation with any hooks must have a secret reference and the secret must exist
                         (curation) =>
                             !(
-                                template?.spec?.[curation]?.prehook?.length ||
-                                template?.spec?.[curation]?.posthook?.length
+                                curatorTemplate?.spec?.[curation]?.prehook?.length ||
+                                curatorTemplate?.spec?.[curation]?.posthook?.length
                             ) ||
-                            (template?.spec?.[curation]?.towerAuthSecret &&
+                            (curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
                                 ansibleCredentials.find(
                                     (secret) =>
-                                        secret.metadata.name === template?.spec?.[curation]?.towerAuthSecret &&
-                                        secret.metadata.namespace === template.metadata.namespace
+                                        secret.metadata.name === curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
+                                        secret.metadata.namespace === curatorTemplate.metadata.namespace
                                 ))
                     )
                 )
                 // TODO: Need to keep namespace information
-                control.available = availableData.map((template) => template.metadata.name)
+                control.available = availableData.map((curatorTemplate) => curatorTemplate.metadata.name)
                 control.availableData = availableData
                 control.availableSecrets = ansibleCredentials
                 break
