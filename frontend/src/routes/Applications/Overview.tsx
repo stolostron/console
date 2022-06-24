@@ -418,12 +418,30 @@ export default function ApplicationsOverview() {
                 transforms: [cellWidth(20)],
                 cell: (application) => {
                     let clusterQuery = ''
+                    let apiVersion = application.kind.toLowerCase() + '.' + application.apiVersion.split('/')[0]
                     if (
-                        application.apiVersion === ArgoApplicationApiVersion &&
-                        application.kind === ArgoApplicationKind
+                        (application.apiVersion === ArgoApplicationApiVersion &&
+                            application.kind === ArgoApplicationKind) ||
+                        (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
                     ) {
                         const cluster = application?.status?.cluster
                         clusterQuery = cluster ? `&cluster=${cluster}` : ''
+                    }
+                    if (
+                        application.apiVersion !== ApplicationApiVersion &&
+                        application.apiVersion !== ArgoApplicationApiVersion
+                    ) {
+                        const labels = (application as OCPAppResource).label
+                        if (
+                            labels.includes(`${fluxAnnotations.git[0]}=`) ||
+                            labels.includes(`${fluxAnnotations.git[1]}=`) ||
+                            labels.includes(`${fluxAnnotations.helm[0]}=`) ||
+                            labels.includes(`${fluxAnnotations.helm[1]}=`)
+                        ) {
+                            apiVersion = 'flux'
+                        } else if (labels.includes('app=') || labels.includes('app.kubernetes.io/part-of=')) {
+                            apiVersion = 'ocp'
+                        }
                     }
                     return (
                         <span style={{ whiteSpace: 'nowrap' }}>
@@ -433,9 +451,7 @@ export default function ApplicationsOverview() {
                                         .replace(':namespace', application.metadata?.namespace as string)
                                         .replace(':name', application.metadata?.name as string) +
                                     '?apiVersion=' +
-                                    application.kind.toLowerCase() +
-                                    '.' +
-                                    application.apiVersion.split('/')[0] +
+                                    apiVersion +
                                     clusterQuery
                                 }
                             >
