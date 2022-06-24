@@ -72,6 +72,7 @@ export interface InstallConfig {
             datacenter: string
             defaultDatastore: string
             folder: string
+            resourcePool: string
             ingressVIP: string
             network: string
             password: string
