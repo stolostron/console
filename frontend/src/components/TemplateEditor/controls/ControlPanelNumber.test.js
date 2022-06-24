@@ -25,7 +25,7 @@ describe('ControlPanelNumber component', () => {
         const { getByTestId, asFragment, rerender } = render(<Component />)
         expect(asFragment()).toMatchSnapshot()
 
-        userEvent.type(getByTestId('number-controlId'), '3')
+        userEvent.type(getByTestId('controlId'), '3')
         expect(control.active).toBe('3')
         userEvent.click(getByTestId('up-controlId'))
         expect(control.active).toBe('4')

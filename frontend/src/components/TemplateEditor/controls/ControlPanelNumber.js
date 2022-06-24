@@ -49,6 +49,7 @@ class ControlPanelNumber extends React.Component {
                                     style={{ lineHeight: '16px' }}
                                     type="button"
                                     aria-label="Minus"
+                                    id={`down-${controlId}`}
                                     data-testid={`down-${controlId}`}
                                     onClick={() => {
                                         onChange(-1)
@@ -73,6 +74,7 @@ class ControlPanelNumber extends React.Component {
                                         onSet(e.target.value)
                                     }}
                                     aria-label="Number input"
+                                    id={controlId}
                                     data-testid={`number-${controlId}`}
                                 />
                                 <button
@@ -80,6 +82,7 @@ class ControlPanelNumber extends React.Component {
                                     style={{ lineHeight: '16px' }}
                                     type="button"
                                     aria-label="Plus"
+                                    id={`up-${controlId}`}
                                     data-testid={`up-${controlId}`}
                                     onClick={() => {
                                         onChange(1)

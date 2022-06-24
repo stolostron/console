@@ -33,12 +33,12 @@ describe('ControlPanelCheckbox component', () => {
         const { getByTestId, asFragment, rerender } = render(<Component />)
         expect(asFragment()).toMatchSnapshot()
 
-        userEvent.click(getByTestId('checkbox-controlId'))
+        userEvent.click(getByTestId('controlId'))
         expect(control.active).toBe(true)
 
         control.active = 'true'
         rerender(<Component />)
-        userEvent.click(getByTestId('checkbox-controlId'))
+        userEvent.click(getByTestId('controlId'))
         expect(control.active).toBe(false)
     })
 })

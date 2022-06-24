@@ -59,3 +59,40 @@ exports[`ControlPanelTextArea component renders as expected 1`] = `
   </div>
 </DocumentFragment>
 `;
+
+exports[`ControlPanelTextArea component renders as expected 2`] = `
+<DocumentFragment>
+  <div
+    class="creation-view-controls-textbox"
+  >
+    <div
+      class="pf-c-form__group"
+      id="controlId-label"
+    >
+      <div
+        class="pf-c-form__group-control"
+      >
+        <div>
+          <textarea
+            aria-invalid="true"
+            class="pf-c-form-control"
+            data-testid="area-controlId"
+            id="controlId"
+            placeholder="placeholder"
+            type="text"
+          >
+            n
+          </textarea>
+        </div>
+        <div
+          aria-live="polite"
+          class="pf-c-form__helper-text pf-m-error"
+          id="controlId-helper"
+        >
+          error
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -31,7 +31,7 @@ describe('ControlPanelTextInput component', () => {
         const { getByTestId, asFragment, rerender } = render(<Component />)
         expect(asFragment()).toMatchSnapshot()
 
-        userEvent.type(getByTestId('text-controlId'), 'n')
+        userEvent.type(getByTestId('controlId'), 'n')
         expect(control.active).toBe('n')
 
         control.name = ''
