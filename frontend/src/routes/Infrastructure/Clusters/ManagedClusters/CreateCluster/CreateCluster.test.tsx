@@ -47,6 +47,7 @@ import {
     clickByPlaceholderText,
     clickByTestId,
     clickByText,
+    clickByTitle,
     typeByPlaceholderText,
     typeByTestId,
     typeByText,
@@ -893,6 +894,51 @@ const mockClusterDeploymentAws = {
     },
 }
 
+const mockClusterDeploymentAwsAnsible = {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterDeployment',
+    metadata: {
+        name: 'test',
+        namespace: 'test',
+        labels: {
+            cloud: 'AWS',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+    },
+    spec: {
+        baseDomain,
+        clusterName: 'test',
+        controlPlaneConfig: {
+            servingCertificates: {},
+        },
+        installAttemptsLimit: 0,
+        installed: false,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            installConfigSecretRef: {
+                name: 'test-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-ssh-private-key',
+            },
+            imageSetRef: {
+                name: 'ocp-release48',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-pull-secret',
+        },
+    },
+}
+
 const mockPrivateSecretAws = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -1228,7 +1274,10 @@ describe('CreateCluster', () => {
         // skipping proxy
         await clickByText('Next')
 
-        // step 6 - integration - skipping ansible template
+        // choose ansible template; then clear
+        await clickByPlaceholderText('Select an Ansible job template')
+        await clickByText(mockClusterCurators[0].metadata.name!)
+        await clickByTitle('Clear selected item')
         await clickByText('Next')
 
         // nocks for cluster creation
@@ -1245,6 +1294,79 @@ describe('CreateCluster', () => {
             nockCreate(mockPrivateSecretAws),
             nockCreate(mockKlusterletAddonSecretAws),
             nockCreate(mockClusterDeploymentAws),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        // expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('Creating cluster ...')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
+
+    test('can create AWS cluster with ansible template', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
+
+        // create the form
+        const { container } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the infrastructure
+        await clickByTestId('amazon-web-services')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('Select a credential')
+        //screen.debug(debug(), 2000000)
+        await clickByText(providerConnectionAws.metadata.name!)
+        await clickByText('Next')
+
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- nodes
+        await clickByText('Next')
+
+        // step 5 -- the network
+        await clickByText('Next')
+
+        // skipping private configuration
+        await clickByText('Next')
+
+        // skipping proxy
+        await clickByText('Next')
+
+        // ansible template
+        await clickByPlaceholderText('Select an Ansible job template')
+        await clickByText(mockClusterCurators[0].metadata.name!)
+        await clickByText('Next')
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedClusterAws),
+            nockCreate(mockMachinePoolAws),
+            nockCreate(mockProviderConnectionSecretCopiedAws),
+            nockCreate(mockPullSecretAws),
+            nockCreate(mockInstallConfigSecretAws),
+            nockCreate(mockPrivateSecretAws),
+            nockCreate(mockKlusterletAddonSecretAws),
+            nockCreate(mockClusterDeploymentAwsAnsible),
+            nockCreate(mockProviderConnectionAnsibleCopied),
+            nockCreate(mockClusterCuratorInstall),
         ]
 
         // click create button

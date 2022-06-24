@@ -480,26 +480,21 @@ export const onChangeAutomationTemplate = (control, controlData) => {
             clusterCurator.spec.desiredCuration = 'install'
             installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
         }
-        const spec = clusterCurator?.spec
-        if (spec) {
-            curations.forEach((curation) => {
-                if (spec[curation]?.towerAuthSecret) {
-                    // Create copies of each Ansible secret
-                    const secretName = `toweraccess-${curation}`
-                    const secretControl = getControlByID(controlData, secretName)
-                    const matchingSecret = control.availableSecrets.find(
-                        (s) =>
-                            s.metadata.name === spec[curation].towerAuthSecret &&
-                            s.metadata.namespace === clusterCuratorTemplate.metadata.namespace
-                    )
-                    if (matchingSecret) {
-                        secretControl.active = _.cloneDeep(matchingSecret)
-                    }
-                    spec[curation].towerAuthSecret = secretName
-                }
-            })
-            clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
-        }
+        curations.forEach((curation) => {
+            if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
+                // Create copies of each Ansible secret
+                const secretName = `toweraccess-${curation}`
+                const secretControl = getControlByID(controlData, secretName)
+                const matchingSecret = control.availableSecrets.find(
+                    (s) =>
+                        s.metadata.name === clusterCurator.spec[curation].towerAuthSecret &&
+                        s.metadata.namespace === clusterCuratorTemplate.metadata.namespace
+                )
+                secretControl.active = _.cloneDeep(matchingSecret)
+                clusterCurator.spec[curation].towerAuthSecret = secretName
+            }
+        })
+        clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
     } else {
         // Clear Ansible secrets
         curations.forEach((curation) => {
