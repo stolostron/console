@@ -2,6 +2,7 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
 import {
+    getValue,
     VALIDATE_CIDR,
     VALIDATE_NUMERIC,
     VALIDATE_BASE_DNS_NAME_REQUIRED,
@@ -511,6 +512,14 @@ export const onChangeAutomationTemplate = (control, controlData) => {
     }
 }
 
+const reverseClusterCuratorSpec = (control, templateObject) => {
+    // preserve user modifications to ClusterCurator if valid YAML
+    const active = getValue(templateObject, 'ClusterCurator[0].spec')
+    if (active) {
+        control.active = jsYaml.dump({ spec: active })
+    }
+}
+
 export const automationControlData = [
     ///////////////////////  automation  /////////////////////////////////////
     {
@@ -539,6 +548,7 @@ export const automationControlData = [
         id: 'clusterCuratorSpec',
         type: 'hidden',
         active: '',
+        reverse: reverseClusterCuratorSpec,
     },
     {
         id: 'supportedCurations',
