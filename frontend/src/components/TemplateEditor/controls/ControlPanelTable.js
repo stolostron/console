@@ -177,6 +177,7 @@ class ControlPanelTable extends React.Component {
             control: { id, controlData },
         } = props
         this.state = {
+            page: 1,
             perPage: parseInt(localStorage.getItem(`table-${id}-page-size`), 10) || PAGE_SIZES.DEFAULT,
             sortBy: {},
             searchValue: '',
@@ -284,8 +285,9 @@ class ControlPanelTable extends React.Component {
             })
         })
         const columns = this.getColumns()
-        const explanation =
+        const explanation = i18n(
             "You don't have any bare metal assets yet. Start by creating or importing your bare metal assets."
+        )
         if (isFailed) {
             return <Alert variant="danger" title={i18n('overview.error.default')} />
         } else if (isLoading) {

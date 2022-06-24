@@ -24,7 +24,7 @@ global.fetch = jest.fn((input, reqInit) =>
 )
 
 configure({ testIdAttribute: 'id' })
-jest.setTimeout(30 * 1000)
+jest.setTimeout(30 * 10000000)
 
 async function setupBeforeAll(): Promise<void> {
     nock.disableNetConnect()

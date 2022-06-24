@@ -242,36 +242,36 @@ platform:
 
 {{#case 'BMC'}}
   baremetal:
-    libvirtURI: {{{../../libvirtURI}}}
-{{#if ../../hasProvisioningNetwork}}
-    provisioningNetworkCIDR: {{{../../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
-    provisioningNetworkInterface: {{{../../provisioningNetworkInterface}}} ##provisioningNetworkInterface
-    provisioningBridge: {{{../../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+    libvirtURI: {{{@root.libvirtURI}}}
+{{#if @root.hasProvisioningNetwork}}
+    provisioningNetworkCIDR: {{{@root.provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
+    provisioningNetworkInterface: {{{@root.provisioningNetworkInterface}}} ##provisioningNetworkInterface
+    provisioningBridge: {{{@root.provisioningNetworkBridge }}}  ##provisioningNetworkBridge
 {{else}}
     provisioningNetwork: Disabled
 {{/if}}
-    externalBridge: {{{../../externalNetworkBridge }}}  ##externalNetworkBridge
-    {{#if ../../showDNSVIP}}
-    dnsVIP: {{{../../../dnsVIP}}} ##dnsVIP
+    externalBridge: {{{@root.externalNetworkBridge }}}  ##externalNetworkBridge
+    {{#if @root.showDNSVIP}}
+    dnsVIP: {{{@root.dnsVIP}}} ##dnsVIP
     {{/if}}
-    apiVIP: {{{../../apiVIP}}} ##apiVIP
-    ingressVIP: {{{../../ingressVIP}}} ##ingressVIP
+    apiVIP: {{{@root.apiVIP}}} ##apiVIP
+    ingressVIP: {{{@root.ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
 {{#if_ne (lookup ../../bootstrapOSImage 0) ''}}
     bootstrapOSImage: >-
-      {{{../../../bootstrapOSImage}}}
+      {{{@root.bootstrapOSImage}}}
 {{/if_ne}}
 {{#if_ne (lookup ../../clusterOSImage 0) ''}}
     clusterOSImage: >-
-      {{{../../../clusterOSImage}}}
+      {{{@root.clusterOSImage}}}
 {{/if_ne}}
     hosts:
-{{#each ../../hosts}}
+{{#each @root.hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
-{{#if ../../../disableCertificateVerification}}
+{{#if @root.disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
           username: {{{username}}}  ##hosts.{{@index}}.username

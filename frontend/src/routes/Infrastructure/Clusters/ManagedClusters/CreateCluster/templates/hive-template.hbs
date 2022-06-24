@@ -39,15 +39,15 @@ spec:
   {{#case 'BMC'}}
     baremetal:
       libvirtSSHPrivateKeySecretRef:
-        name: {{{../../name}}}-ssh-private-key
+        name: {{{@root.name}}}-ssh-private-key
       hosts:
-        {{#each ../../hosts}}
+        {{#each @root.hosts}}
         - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
           namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
           role: {{{role}}}  ##hosts.{{@index}}.role
           bmc:
             address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
-{{#if ../../../disableCertificateVerification}}
+{{#if @root.disableCertificateVerification}}
             disableCertificateVerification: true
 {{/if}}
             username: {{{username}}}  ##hosts.{{@index}}.username

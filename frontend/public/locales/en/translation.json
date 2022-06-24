@@ -2572,6 +2572,7 @@
     "You can include any combination of filters and keywords to make your search more specific.": "You can include any combination of filters and keywords to make your search more specific.",
     "You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.": "You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.",
     "You don't have any applications": "You don't have any applications",
+    "You don't have any bare metal assets yet. Start by creating or importing your bare metal assets.": "You don't have any bare metal assets yet. Start by creating or importing your bare metal assets.",
     "You don't have any channels": "You don't have any channels",
     "You don't have any clusters reporting policy status": "You don't have any clusters reporting policy status",
     "You don't have any credentials": "You don't have any credentials",
