@@ -25,19 +25,12 @@ import {
     SubscriptionKind,
     ApplicationSetDefinition,
     ApplicationDefinition,
-    DeploymentDefinition,
-    JobDefinition,
-    CronJobDefinition,
     DeploymentKind,
     StatefulSetKind,
     DeploymentConfigKind,
     JobKind,
     CronJobKind,
     DaemonSetKind,
-    DeploymentConfigDefinition,
-    DaemonSetDefinition,
-    StatefulSetDefinition,
-    KustomizationDefinition,
 } from '../../../resources'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
@@ -182,20 +175,6 @@ export const getClusterList = (
         )
     } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
         return getSubscriptionsClusterList(resource as Application, placementRules, subscriptions)
-    } else if (
-        isResourceTypeOf(resource, [
-            CronJobDefinition,
-            DaemonSetDefinition,
-            DeploymentDefinition,
-            DeploymentConfigDefinition,
-            JobDefinition,
-            StatefulSetDefinition,
-        ]) ||
-        isResourceTypeOf(resource, KustomizationDefinition)
-    ) {
-        const clusterSet = new Set<string>()
-        clusterSet.add(localClusterStr)
-        return Array.from(clusterSet)
     }
 
     return [] as string[]

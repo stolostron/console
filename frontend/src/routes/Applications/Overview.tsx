@@ -15,7 +15,6 @@ import {
     argoApplicationsState,
     channelsState,
     discoveredApplicationsState,
-    discoveredKustomizationsState,
     discoveredOCPAppResourcesState,
     namespacesState,
     placementRulesState,
@@ -37,26 +36,10 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
-    CronJobDefinition,
-    CronJobKind,
-    DaemonSetDefinition,
-    DaemonSetKind,
-    DeploymentConfigDefinition,
-    DeploymentConfigKind,
-    DeploymentDefinition,
-    DeploymentKind,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
-    JobDefinition,
-    JobKind,
-    Kustomization,
-    KustomizationApiVersion,
-    KustomizationDefinition,
-    KustomizationKind,
     OCPAppResource,
-    StatefulSetDefinition,
-    StatefulSetKind,
     Subscription,
 } from '../../resources'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -84,10 +67,19 @@ const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localClusterStr = 'local-cluster'
 
+const fluxAnnotations = {
+    helm: ['helm.toolkit.fluxcd.io/name', 'helm.toolkit.fluxcd.io/namespace'],
+    git: ['kustomize.toolkit.fluxcd.io/name', 'kustomize.toolkit.fluxcd.io/namespace'],
+}
+
 type IApplicationResource = IResource | OCPAppResource
 
+function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource {
+    return 'label' in resource
+}
+
 // Map resource kind to type column
-function getApplicationType(resource: IResource, t: TFunction) {
+function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
         if (resource.kind === ApplicationKind) {
             return 'Subscription'
@@ -98,10 +90,19 @@ function getApplicationType(resource: IResource, t: TFunction) {
         } else if (resource.kind === ApplicationSetKind) {
             return t('ApplicationSet')
         }
-    } else if (['apps/v1', 'batch/v1', 'v1'].includes(resource.apiVersion)) {
-        return t('Openshift')
-    } else if (resource.apiVersion === KustomizationApiVersion) {
-        return t('Flux')
+    } else if (isOCPAppResource(resource)) {
+        const label = resource.label
+        let isFlux = false
+        Object.entries(fluxAnnotations).forEach(([, values]) => {
+            const [nameAnnotation, namespaceAnnotation] = values
+            if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
+                isFlux = true
+            }
+        })
+        if (isFlux) {
+            return t('Flux')
+        }
+        return t('OpenShift')
     }
     return '-'
 }
@@ -209,20 +210,6 @@ export default function ApplicationsOverview() {
     const [namespaces] = useRecoilState(namespacesState)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
-    const [kustomizations] = useRecoilState(discoveredKustomizationsState)
-
-    const fluxAppresources: IResource[] = useMemo(
-        () =>
-            kustomizations.filter((item: any) => {
-                const labels = item.label
-                return (
-                    labels &&
-                    labels.includes('kustomize.toolkit.fluxcd.io/name') &&
-                    labels.includes('kustomize.toolkit.fluxcd.io/namespace')
-                )
-            }),
-        [kustomizations]
-    )
 
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
@@ -389,6 +376,7 @@ export default function ApplicationsOverview() {
                         ? `${remoteOCPApp.apigroup}/${remoteOCPApp.apiversion}`
                         : remoteOCPApp.apiversion,
                     kind: remoteOCPApp.kind,
+                    label: remoteOCPApp.label,
                     metadata: {
                         name: remoteOCPApp.name,
                         namespace: remoteOCPApp.namespace,
@@ -401,23 +389,6 @@ export default function ApplicationsOverview() {
             )
     }, [discoveredOCPAppResources, generateTransformData])
 
-    const fluxApplicationTableItems = useMemo(() => {
-        return fluxAppresources.map((fluxApp: any) =>
-            generateTransformData({
-                apiVersion: fluxApp.apigroup ? `${fluxApp.apigroup}/${fluxApp.apiversion}` : fluxApp.apiversion,
-                kind: fluxApp.kind,
-                metadata: {
-                    name: fluxApp.name,
-                    namespace: fluxApp.namespace,
-                    creationTimestamp: fluxApp.created,
-                },
-                status: {
-                    cluster: fluxApp.cluster,
-                },
-            } as Kustomization)
-        )
-    }, [fluxAppresources, generateTransformData])
-
     const tableItems: IResource[] = useMemo(
         () => [
             ...applicationTableItems,
@@ -425,7 +396,6 @@ export default function ApplicationsOverview() {
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
             ...ocpAppResourceTableItems,
-            ...fluxApplicationTableItems,
         ],
         [
             applicationSetsTableItems,
@@ -433,10 +403,8 @@ export default function ApplicationsOverview() {
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
             ocpAppResourceTableItems,
-            fluxApplicationTableItems,
         ]
     )
-
     const keyFn = useCallback(
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
@@ -585,10 +553,6 @@ export default function ApplicationsOverview() {
                 id: 'table.filter.type.acm.application.label',
                 options: [
                     {
-                        label: t('Subscription'),
-                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
-                    },
-                    {
                         label: t('Argo CD'),
                         value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                     },
@@ -597,13 +561,48 @@ export default function ApplicationsOverview() {
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
                     {
-                        label: t('Flux'),
-                        value: `${getApiVersionResourceGroup(KustomizationApiVersion)}/${KustomizationKind}`,
+                        label: t('Subscription'),
+                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
                     },
-                    // TBD Openshift
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
+                },
+            },
+            {
+                label: t(''),
+                id: 'openshift-apps',
+                options: [
+                    {
+                        label: t('Flux'),
+                        value: 'fluxapps',
+                    },
+                    {
+                        label: t('OpenShift'),
+                        value: 'openshiftapps',
+                    },
+                    { label: t('OpenShift-default'), value: 'openshift-default' },
+                ],
+                tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+                    return selectedValues.some((value) => {
+                        if (isOCPAppResource(item)) {
+                            let isFlux = false
+                            Object.entries(fluxAnnotations).forEach(([, values]) => {
+                                const [nameAnnotation, namespaceAnnotation] = values
+                                if (item.label.includes(nameAnnotation) && item.label.includes(namespaceAnnotation)) {
+                                    isFlux = true
+                                }
+                            })
+                            switch (value) {
+                                case 'openshiftapps':
+                                    return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
+                                case 'openshift-default':
+                                    return !isFlux && item.metadata?.namespace?.startsWith('openshift-')
+                                case 'fluxapps':
+                                    return isFlux
+                            }
+                        }
+                    })
                 },
             },
         ],
@@ -708,55 +707,7 @@ export default function ApplicationsOverview() {
                 },
             })
 
-            if (
-                isResourceTypeOf(resource, [
-                    CronJobDefinition,
-                    DaemonSetDefinition,
-                    DeploymentDefinition,
-                    DeploymentConfigDefinition,
-                    JobDefinition,
-                    StatefulSetDefinition,
-                ])
-            ) {
-                actions.push({
-                    id: 'viewApplication',
-                    title: t('View application'),
-                    click: () => {
-                        history.push(
-                            `${NavigationPath.applicationOverview
-                                .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(
-                                    ':name',
-                                    resource.metadata?.name as string
-                                )}?apiVersion=ocp&cluster=local-cluster`
-                        )
-                    },
-                })
-            }
-
-            if (isResourceTypeOf(resource, KustomizationDefinition)) {
-                actions.push({
-                    id: 'viewApplication',
-                    title: t('View application'),
-                    click: () => {
-                        history.push(
-                            // TBD - may need to refactor the url
-                            `${NavigationPath.applicationOverview
-                                .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(
-                                    ':name',
-                                    resource.metadata?.name as string
-                                )}?'apiVersion=flux&cluster=local-cluster'`
-                        )
-                    },
-                })
-            }
-
-            if (
-                [CronJobKind, DaemonSetKind, DeploymentKind, DeploymentConfigKind, JobKind, StatefulSetKind]
-                    .map((kind) => kind.toLowerCase())
-                    .includes(resource.kind)
-            ) {
+            if (isOCPAppResource(resource)) {
                 actions.push({
                     id: 'viewApplication',
                     title: t('View application'),

@@ -18,6 +18,8 @@ import '../../Applications/CreateApplication/Subscription/style.css'
 import { createProject, createResource, IResource } from '../../../resources'
 import { deleteResources } from '../../../lib/delete-resources'
 
+import './CreateInfraEnv.css'
+
 const controlData = [
     {
         name: 'creation.ocp.cloud.connection',
@@ -118,7 +120,7 @@ const CreateInfraEnv: React.FC = () => {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-infra-env">
-                    <PageSection variant="light" isFilled type="wizard">
+                    <PageSection variant="light" className="create-infra-env__content" type="wizard">
                         <TemplateEditor
                             type="Infra env"
                             title="InfraEnv YAML"

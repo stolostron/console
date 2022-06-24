@@ -868,7 +868,7 @@ describe('ClusterDetails for On Premise', () => {
         await waitForText('Waiting for hosts...')
 
         // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
-        await waitForText('On Premise')
+        await waitForText('Assisted installation')
 
         // screen.debug(undefined, -1)
     })
