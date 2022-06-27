@@ -23,6 +23,7 @@ export interface ClusterDeployment {
         clusterName: string
         baseDomain?: string
         installed: boolean
+        installAttemptsLimit?: number
         clusterMetadata?: {
             adminKubeconfigSecretRef: {
                 name: string

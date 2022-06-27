@@ -7,11 +7,12 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
+import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin';
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-
+    const locales = ['en']
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         entry: {},
         resolve: {
@@ -81,18 +82,19 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
                 filename: '[name].[contenthash:8].css',
                 chunkFilename: '[id].[contenthash:8].css',
                 ignoreOrder: false, // Enable to remove warnings about conflicting order
-            }),
-            new CopyPlugin({
-                patterns: [
-                    {
-                        from: `../../public/locales/*/translation.json`,
-                        to: ({ absoluteFilename }) => {
-                            const { groups: { locale } } = absoluteFilename.match(/locales\/(?<locale>.+)\/translation.json/)
-                            return `locales/${locale}/plugin__${env.plugin}.json`
-                        },
+            }),       
+            ...locales.map((locale) => {
+                return new MergeJsonWebpackPlugin({
+                    files: [
+                        `../../public/locales/${locale}/translation.json`,
+                        `../../node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
+                      ],
+                    output: {
+                        "fileName": `locales/${locale}/plugin__${env.plugin}.json`
                     },
-                ],
-            }),
+                    space: 4
+                })
+            }),            
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
             assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
