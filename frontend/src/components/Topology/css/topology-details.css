@@ -1,5 +1,5 @@
 .topologyDetails {
-    background-color: #fff;
+    background-color: var(--pf-global--BackgroundColor--400);
     width: 100%;
     height: calc(100% - 29px);
     overflow: auto;
@@ -8,7 +8,6 @@
 .topologyDetails .detailsHeader {
     position: sticky;
     top: 0px;
-    background-color: white;
     box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
     z-index: var(--pf-c-page--section--m-sticky-top--ZIndex);
 }
@@ -37,12 +36,10 @@
 .topologyDetails .detailsHeader .innerDetailsHeader .titleText {
     margin-left: 0.5rem;
     font-size: 0.875rem;
-    color: #152935;
     font-weight: bold;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .titleNameText {
     font-size: 18px;
-    color: #5a6872;
 }
 .topologyDetails .legendHeader {
     margin: 4px 42px 0 24px;
@@ -339,7 +336,6 @@
 .topologyDetails .label {
     font-size: 14px;
     font-weight: bold;
-    color: #152935;
     line-height: 1.3rem;
 }
 .topologyDetails .borderLeft {
@@ -352,11 +348,11 @@
 }
 .topologyDetails .value {
     font-size: 14px;
-    color: #5a6872;
+    color: var(--pf-global--Color--100);
     word-break: normal;
 }
 .topologyDetails .ksLabelBackground {
-    background-color: #dfe3e6;
+    background-color: var(--pf-c-label--BackgroundColor);
     border-radius: 35px;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -369,7 +365,7 @@
     font-family: 'RedHatText';
     font-weight: 600;
     font-size: 14px;
-    color: #06c;
+    color: var(--pf-global--link--Color);
     cursor: pointer;
 }
 .topologyDetails .link:hover {
