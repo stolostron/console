@@ -5,7 +5,14 @@ import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
 
 const IP_ADDRESS_TESTER = {
-    test: (value) => new Address4(value).isValid() || new Address6(value).isValid(),
+    test: (value) => {
+        try {
+            new Address4(value).isValid() || new Address6(value).isValid()
+            return true
+        } catch {
+            return false
+        }
+    },
 }
 
 const getCIDRContextTexter = (cidrFieldKey, sourcePath) => {

@@ -1,5 +1,5 @@
 'use strict'
 
-module.exports.if_gtFn = (v1, v2, opts) => {
+module.exports.if_gtFn = function (v1, v2, opts) {
     return v1 > v2 ? opts.fn(this) : opts.inverse(this)
 }

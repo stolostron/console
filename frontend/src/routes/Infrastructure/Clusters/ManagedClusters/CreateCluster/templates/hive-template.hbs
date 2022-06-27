@@ -60,55 +60,55 @@ spec:
   {{#case 'AWS'}}
     aws:
       credentialsSecretRef:
-        name: {{{../../name}}}-aws-creds
-      region: {{{../../region}}}
+        name: {{{name}}}-aws-creds
+      region: {{{region}}}
   {{/case}}
 
   {{#case 'GCP'}}
     gcp:
       credentialsSecretRef:
-        name: {{{../../name}}}-gcp-creds
-      region: {{{../../region}}}
+        name: {{{name}}}-gcp-creds
+      region: {{{region}}}
   {{/case}}
 
   {{#case 'Azure'}}
     azure:
-      baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}} ##resourceGroupName
+      baseDomainResourceGroupName: {{{baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
-        name: {{{../../name}}}-azure-creds
-      region: {{{../../region}}}
-      cloudName: {{{../../cloudName}}}
+        name: {{{name}}}-azure-creds
+      region: {{{region}}}
+      cloudName: {{{cloudName}}}
   {{/case}}
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{../../cluster}}}
+      cluster: {{{cluster}}}
       certificatesSecretRef:
-        name: {{{../../name}}}-vsphere-certs
+        name: {{{name}}}-vsphere-certs
       credentialsSecretRef:
-        name: {{{../../name}}}-vsphere-creds
-      vCenter: {{{../../vCenter}}}
-      datacenter: {{{../../datacenter}}}
-      defaultDatastore: {{{../../defaultDatastore}}}
-      network: '{{{../../networkType}}}'  ##networkType
+        name: {{{name}}}-vsphere-creds
+      vCenter: {{{vCenter}}}
+      datacenter: {{{datacenter}}}
+      defaultDatastore: {{{defaultDatastore}}}
+      network: '{{{networkType}}}'  ##networkType
   {{/case}}
 
   {{#case 'RHV'}}
     ovirt:
       certificatesSecretRef:
-        name: {{{../../name}}}-ovirt-certs
+        name: {{{name}}}-ovirt-certs
       credentialsSecretRef:
-        name: {{{../../name}}}-ovirt-creds
-      ovirt_cluster_id: {{{../../ovirt_cluster_id}}}
-      ovirt_network_name: {{{../../ovirt_network_name}}}
-      storage_domain_id: {{{../../ovirt_storage_domain_id}}}
+        name: {{{name}}}-ovirt-creds
+      ovirt_cluster_id: {{{ovirt_cluster_id}}}
+      ovirt_network_name: {{{ovirt_network_name}}}
+      storage_domain_id: {{{ovirt_storage_domain_id}}}
   {{/case}}
 
   {{#case 'OpenStack'}}
     openstack:
       credentialsSecretRef:
-        name: {{{../../name}}}-openstack-creds
-      cloud: {{{../../cloud}}}
+        name: {{{name}}}-openstack-creds
+      cloud: {{{cloud}}}
   {{/case}}
 
 {{/switch}}
@@ -162,15 +162,15 @@ metadata:
 {{#switch infrastructure}}
   {{#case 'AWS'}}
     cloud: Amazon
-    region: {{{../../region}}}
+    region: {{{region}}}
   {{/case}}
   {{#case 'GCP'}}
     cloud: Google
-    region: {{{../../region}}}
+    region: {{{region}}}
   {{/case}}
   {{#case 'Azure'}}
     cloud: Azure
-    region: {{{../../region}}}
+    region: {{{region}}}
   {{/case}}
   {{#case 'BMC'}}
     cloud: BareMetal
@@ -223,13 +223,13 @@ spec:
 {{! ========================================================== }}
 {{! ========================================================== }}
 {{#if_eq infrastructure 'BMC'}}
-{{#if_gt ../networks.length 1}}
+{{#if_gt networks.length 1}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: 'ipv6dualstack-featuregate-manifests'
-  namespace: '{{{../../name}}}'
+  namespace: '{{{name}}}'
 data:
   ipv6-dual-stack-no-upgrade.yaml: |
     apiVersion: config.openshift.io/v1
@@ -268,13 +268,13 @@ spec:
     aws:
       rootVolume:
         iops: 2000
-        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        size: {{{workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
-      {{#if ../../workerZones}}
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
+      {{#if workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
-      {{#each ../../workerZones}}
-      - {{{../../region}}}{{{ this }}}
+      {{#each workerZones}}
+      - {{{region}}}{{{ this }}}
       {{/each}}
       {{/if}}
   {{/case}}
@@ -282,18 +282,18 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
       osDisk:
-        diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
-{{#if ../../workerZones}}
+        diskSizeGB: {{{workerStorage}}} ##workerPools.{{@index}}.workerStorage
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
+{{#if workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
-      {{#each ../../workerZones}}
+      {{#each workerZones}}
       - "{{{ this }}}"
       {{/each}}
 {{/if}}
@@ -302,29 +302,29 @@ spec:
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus: {{{../../cpus}}} ##workerPools.{{@index}}.cpus
-      coresPerSocket: {{{../../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
-      memoryMB: {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+      cpus: {{{cpus}}} ##workerPools.{{@index}}.cpus
+      coresPerSocket: {{{coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
+      memoryMB: {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+        diskSizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
   {{#case 'RHV'}}
   platform:
     ovirt:
       cpu:
-        cores: {{{../../cores}}} ##workerPools.{{@index}}.cores
-        sockets: {{{../../sockets}}} ##workerPools.{{@index}}.sockets
-      memoryMB: {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+        cores: {{{cores}}} ##workerPools.{{@index}}.cores
+        sockets: {{{sockets}}} ##workerPools.{{@index}}.sockets
+      memoryMB: {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+        sizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
       vmType: server
   {{/case}}
 
   {{#case 'OpenStack'}}
   platform:
     openstack:
-      flavor: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      flavor: {{{workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
 {{/switch}}
@@ -397,12 +397,12 @@ type: Opaque
 
 {{#case 'AWS'}}
 metadata:
-  name: {{{../../name}}}-aws-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-aws-creds
+  namespace: '{{{name}}}'
 stringData:
-  aws_access_key_id: {{{../../aws_access_key_id}}}
-{{#if ../../showSecrets}}
-  aws_secret_access_key: {{{../../aws_secret_access_key}}}
+  aws_access_key_id: {{{aws_access_key_id}}}
+{{#if showSecrets}}
+  aws_secret_access_key: {{{aws_secret_access_key}}}
 {{else}}
   aws_secret_access_key: # injected on create
 {{/if}}
@@ -410,13 +410,13 @@ stringData:
 
 {{#case 'GCP'}}
 metadata:
-  name: {{{../../name}}}-gcp-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-gcp-creds
+  namespace: '{{{name}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   osServiceAccount.json: |-
 {{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServiceAccount.json - See ControlDataHelpers.js replacements[] }}
-{{#each ../../osServiceAccountJson}}
+{{#each osServiceAccountJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -426,13 +426,13 @@ stringData:
 
 {{#case 'Azure'}}
 metadata:
-  name: {{{../../name}}}-azure-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-azure-creds
+  namespace: '{{{name}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   osServicePrincipal.json: |-
 {{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServicePrincipal.json - See ControlDataHelpers.js replacements[] }}
-{{#each ../../osServicePrincipalJson}}
+{{#each osServicePrincipalJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -442,11 +442,11 @@ stringData:
 
 {{#case 'vSphere'}}
 metadata:
-  name: {{{../../name}}}-vsphere-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-vsphere-creds
+  namespace: '{{{name}}}'
 stringData:
-  username: {{{../../username}}}
-  password: {{{../../password}}}
+  username: {{{username}}}
+  password: {{{password}}}
 
 ---
 
@@ -454,12 +454,12 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: {{{../../name}}}-vsphere-certs
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-vsphere-certs
+  namespace: '{{{name}}}'
 data:
 
-{{#if ../../showSecrets}}
-  .cacert: {{{../../cacertificate}}}
+{{#if showSecrets}}
+  .cacert: {{{cacertificate}}}
 {{else}}
   .cacert: # injected on create
 {{/if}}
@@ -468,16 +468,16 @@ data:
 
 {{#case 'RHV'}}
 metadata:
-  name: {{{../../name}}}-ovirt-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-ovirt-creds
+  namespace: '{{{name}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   ovirt-config.yaml: |-
-    ovirt_url: {{{../../ovirt_url}}}
-    ovirt_username: {{{../../ovirt_username}}}
-    ovirt_password: {{{../../ovirt_password}}}
+    ovirt_url: {{{ovirt_url}}}
+    ovirt_username: {{{ovirt_username}}}
+    ovirt_password: {{{ovirt_password}}}
     ovirt_ca_bundle: |+
-      {{{../../ovirt_ca_bundle}}}
+      {{{ovirt_ca_bundle}}}
 {{else}}
   ovirt-config.yaml: # injected on create
 {{/if}}
@@ -487,12 +487,12 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: {{{../../name}}}-ovirt-certs
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-ovirt-certs
+  namespace: '{{{name}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   .cacert: |+
-    {{../../ovirt_ca_bundle}}
+    {{ovirt_ca_bundle}}
 {{else}}
   .cacert: # injected on create
 {{/if}}
@@ -500,14 +500,14 @@ stringData:
 
 {{#case 'OpenStack'}}
 metadata:
-  name: {{{../../name}}}-openstack-creds
-  namespace: '{{{../../name}}}'
+  name: {{{name}}}-openstack-creds
+  namespace: '{{{name}}}'
 stringData:
-  cloud: '{{{../../cloud}}}'
-{{#if ../../showSecrets}}
+  cloud: '{{{cloud}}}'
+{{#if showSecrets}}
   clouds.yaml: |-
 {{! handlebars does not like periods in ids, so we will use a replacement to map to the correct clouds.yaml - See ControlDataHelpers.js replacements[] }}
-     {{{../../cloudsYaml}}}
+     {{{cloudsYaml}}}
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}

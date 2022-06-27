@@ -47,59 +47,59 @@ controlPlane:
   {{#case 'AWS'}}
   platform:
     aws:
-{{#if ../../masterZones}}
+{{#if masterZones}}
       zones: ##masterPool.{{@index}}.masterZones
-      {{#each ../../../masterZones}}
-      - {{{../../../region}}}{{{ this }}}
+      {{#each masterZones}}
+      - {{{region}}}{{{ this }}}
       {{/each}}
 {{/if}}
       rootVolume:
         iops: 4000
-        size: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        size: {{{masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
         type: io1
-      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type: {{{masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type: {{{masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
       osDisk:
-        diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
-      type:  {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+        diskSizeGB: {{{masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+      type:  {{{masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus:  {{{../../masterCpus}}} ##masterPool.{{@index}}.masterCpus
-      coresPerSocket:  {{{../../masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
-      memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
+      cpus:  {{{masterCpus}}} ##masterPool.{{@index}}.masterCpus
+      coresPerSocket:  {{{masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
+      memoryMB:  {{{masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
-        diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        diskSizeGB: {{{masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
 
   {{#case 'RHV'}}
   platform:
     ovirt:
       cpu:
-        cores: {{{../../masterCores}}} ##masterPool.{{@index}}.masterCores
-        sockets: {{{../../masterSockets}}} ##masterPool.{{@index}}.masterSockets
-      memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
+        cores: {{{masterCores}}} ##masterPool.{{@index}}.masterCores
+        sockets: {{{masterSockets}}} ##masterPool.{{@index}}.masterSockets
+      memoryMB:  {{{masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
-        sizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        sizeGB: {{{masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
       vmType: high_performance
   {{/case}}
 
   {{#case 'OpenStack'}}
   platform:
     openstack:
-      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type: {{{masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
 {{/switch}}
@@ -139,13 +139,13 @@ compute:
     aws:
       rootVolume:
         iops: 2000
-        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        size: {{{workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
-{{#if ../../workerZones}}
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
+{{#if workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
-      {{#each ../../workerZones}}
-      - {{{../../../region}}}{{{ this }}}
+      {{#each workerZones}}
+      - {{{region}}}{{{ this }}}
       {{/each}}
 {{/if}}
 
@@ -154,18 +154,18 @@ compute:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
-      type:  {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type:  {{{workerType}}} ##workerPools.{{@index}}.workerType
       osDisk:
-        diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-{{#if ../../workerZones}}
+        diskSizeGB: {{{workerStorage}}} ##workerPools.{{@index}}.workerStorage
+{{#if workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
-      {{#each ../../workerZones}}
+      {{#each workerZones}}
       - "{{{ this }}}"
       {{/each}}
 {{/if}}
@@ -174,29 +174,29 @@ compute:
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus:  {{{../../cpus}}} ##workerPools.{{@index}}.cpus
-      coresPerSocket:  {{{../../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
-      memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+      cpus:  {{{cpus}}} ##workerPools.{{@index}}.cpus
+      coresPerSocket:  {{{coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
+      memoryMB:  {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+        diskSizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
   {{#case 'RHV'}}
   platform:
     ovirt:
       cpu:
-        cores: {{{../../cores}}} ##workerPools.{{@index}}.cores
-        sockets: {{{../../sockets}}} ##workerPools.{{@index}}.sockets
-      memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+        cores: {{{cores}}} ##workerPools.{{@index}}.cores
+        sockets: {{{sockets}}} ##workerPools.{{@index}}.sockets
+      memoryMB:  {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+        sizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
       vmType: server
   {{/case}}
 
   {{#case 'OpenStack'}}
   platform:
     openstack:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
 {{/switch}}
@@ -213,18 +213,18 @@ compute:
 
 {{#if_ne infrastructure 'vSphere'}}
 networking:
-  networkType: {{{../networkType}}} ##networkType
+  networkType: {{{networkType}}} ##networkType
   clusterNetwork:
-{{#each ../networks}}
+{{#each networks}}
   - cidr: {{{clusterNetwork}}} ##networks.{{@index}}.clusterNetwork
     hostPrefix: {{{hostPrefix}}} ##networks.{{@index}}.hostPrefix
 {{/each}}
   machineNetwork:
-{{#each ../networks}}
+{{#each networks}}
   - cidr: {{{machineCIDR}}} ##networks.{{@index}}.machineCIDR
 {{/each}}
   serviceNetwork:
-{{#each ../networks}}
+{{#each networks}}
   - {{{serviceNetwork}}} ##networks.{{@index}}.serviceNetwork
 {{/each}}
 {{/if_ne}}
@@ -242,31 +242,31 @@ platform:
 
 {{#case 'BMC'}}
   baremetal:
-    libvirtURI: {{{@root.libvirtURI}}}
-{{#if @root.hasProvisioningNetwork}}
-    provisioningNetworkCIDR: {{{@root.provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
-    provisioningNetworkInterface: {{{@root.provisioningNetworkInterface}}} ##provisioningNetworkInterface
-    provisioningBridge: {{{@root.provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+    libvirtURI: {{{libvirtURI}}}
+{{#if hasProvisioningNetwork}}
+    provisioningNetworkCIDR: {{{provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
+    provisioningNetworkInterface: {{{provisioningNetworkInterface}}} ##provisioningNetworkInterface
+    provisioningBridge: {{{provisioningNetworkBridge }}}  ##provisioningNetworkBridge
 {{else}}
     provisioningNetwork: Disabled
 {{/if}}
-    externalBridge: {{{@root.externalNetworkBridge }}}  ##externalNetworkBridge
-    {{#if @root.showDNSVIP}}
-    dnsVIP: {{{@root.dnsVIP}}} ##dnsVIP
+    externalBridge: {{{externalNetworkBridge }}}  ##externalNetworkBridge
+    {{#if showDNSVIP}}
+    dnsVIP: {{{dnsVIP}}} ##dnsVIP
     {{/if}}
-    apiVIP: {{{@root.apiVIP}}} ##apiVIP
-    ingressVIP: {{{@root.ingressVIP}}} ##ingressVIP
+    apiVIP: {{{apiVIP}}} ##apiVIP
+    ingressVIP: {{{ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
-{{#if_ne (lookup ../../bootstrapOSImage 0) ''}}
+{{#if_ne (lookup bootstrapOSImage 0) ''}}
     bootstrapOSImage: >-
       {{{@root.bootstrapOSImage}}}
 {{/if_ne}}
-{{#if_ne (lookup ../../clusterOSImage 0) ''}}
+{{#if_ne (lookup clusterOSImage 0) ''}}
     clusterOSImage: >-
       {{{@root.clusterOSImage}}}
 {{/if_ne}}
     hosts:
-{{#each @root.hosts}}
+{{#each hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
@@ -283,89 +283,89 @@ platform:
 
 {{#case 'AWS'}}
   aws:
-    region: {{{../../region}}}
-    {{#if ../../subnetID}}
+    region: {{{region}}}
+    {{#if subnetID}}
     subnets:
-    {{#each ../../subnetID}}
+    {{#each subnetID}}
       - {{{.}}}
     {{/each}}
     {{/if}}
 
-    {{#if (arrayItemHasKey ../../serviceEndpoints "endpointName")}}
+    {{#if (arrayItemHasKey serviceEndpoints "endpointName")}}
     serviceEndpoints:
-    {{#each ../../serviceEndpoints}}
+    {{#each serviceEndpoints}}
       {{#if endpointName}}
       - name: {{{endpointName}}}
         url: {{{endpointURL}}}
       {{/if}}
     {{/each}}
     {{/if}}
-    {{#if ../../hostedZone}}
-    hostedZone: {{{../../hostedZone}}}
+    {{#if hostedZone}}
+    hostedZone: {{{hostedZone}}}
     {{/if}}
-    {{#if ../../amiID}}
-    amiID: {{{../../amiID}}}
+    {{#if amiID}}
+    amiID: {{{amiID}}}
     {{/if}}
-{{#if ../../amiID}}
+{{#if amiID}}
 publish: Internal
 {{/if}}
 {{/case}}
 
 {{#case 'GCP'}}
   gcp:
-    projectID: {{{../../projectID}}} ##projectID
-    region: {{{../../region}}}
+    projectID: {{{projectID}}} ##projectID
+    region: {{{region}}}
 {{/case}}
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
-    cloudName: {{{../../cloudName}}}
-    region: {{{../../region}}}
+    baseDomainResourceGroupName: {{{baseDomainResourceGroupName}}}
+    cloudName: {{{cloudName}}}
+    region: {{{region}}}
 {{/case}}
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{../../vCenter}}}
-    username: {{{../../username}}}
-    password: {{{../../password}}}
-    datacenter: {{{../../datacenter}}}
-    defaultDatastore: {{{../../defaultDatastore}}}
-    cluster: {{{../../cluster}}}
-    apiVIP: {{{../../apiVIP}}}    ##apiVIP
-    ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
-    network: '{{{../../networkType}}}' ##networkType
+    vCenter: {{{vCenter}}}
+    username: {{{username}}}
+    password: {{{password}}}
+    datacenter: {{{datacenter}}}
+    defaultDatastore: {{{defaultDatastore}}}
+    cluster: {{{cluster}}}
+    apiVIP: {{{apiVIP}}}    ##apiVIP
+    ingressVIP: {{{ingressVIP}}}  ##ingressVIP
+    network: '{{{networkType}}}' ##networkType
 {{/case}}
 
 {{#case 'RHV'}}
   ovirt:
-    api_vip: {{{../../apiVIP}}}    ##apiVIP
-    ingress_vip: {{{../../ingressVIP}}}  ##ingressVIP
-    ovirt_network_name: {{{../../ovirt_network_name}}} ##ovirt_network_name
-    vnicProfileID: {{{../../vnicProfileID}}}
-    ovirt_cluster_id: {{{../../ovirt_cluster_id}}} ##ovirt_cluster_id
-    ovirt_storage_domain_id: {{{../../ovirt_storage_domain_id}}} ##ovirt_storage_domain_id
+    api_vip: {{{apiVIP}}}    ##apiVIP
+    ingress_vip: {{{ingressVIP}}}  ##ingressVIP
+    ovirt_network_name: {{{ovirt_network_name}}} ##ovirt_network_name
+    vnicProfileID: {{{vnicProfileID}}}
+    ovirt_cluster_id: {{{ovirt_cluster_id}}} ##ovirt_cluster_id
+    ovirt_storage_domain_id: {{{ovirt_storage_domain_id}}} ##ovirt_storage_domain_id
 {{/case}}
 
 {{! == NOTE: lbFloatingIP is deprecated in 4.7 for apiFloatingIP, but since we still support 4.5 and 4.6, we need the old key }}
 {{#case 'OpenStack'}}
   openstack:
-    cloud: {{{../../cloud}}}
-    externalNetwork: {{{../../externalNetworkName}}}
-    {{#if ../../lbFloatingIP}}
-    lbFloatingIP: {{{../../lbFloatingIP}}}
+    cloud: {{{cloud}}}
+    externalNetwork: {{{externalNetworkName}}}
+    {{#if lbFloatingIP}}
+    lbFloatingIP: {{{lbFloatingIP}}}
     {{/if}}
-    {{#if ../../apiFloatingIP}}
-    apiFloatingIP: {{{../../apiFloatingIP}}}
+    {{#if apiFloatingIP}}
+    apiFloatingIP: {{{apiFloatingIP}}}
     {{/if}}
-    ingressFloatingIP: {{{../../ingressFloatingIP}}}
-    {{#if ../../clusterOSImage}}
+    ingressFloatingIP: {{{ingressFloatingIP}}}
+    {{#if clusterOSImage}}
     clusterOSImage: >-
-      {{{../../clusterOSImage}}}
+      {{{clusterOSImage}}}
     {{/if}}
-    {{#if ../../externalDNS}}
+    {{#if externalDNS}}
     externalDNS:
-    {{#each ../../externalDNS}}
+    {{#each externalDNS}}
     - {{{.}}}
     {{/each}}
     {{/if}}
