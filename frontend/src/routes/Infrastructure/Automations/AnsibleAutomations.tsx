@@ -14,8 +14,9 @@ import {
 } from '@stolostron/ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { clusterCuratorTemplatesValue } from '../../../selectors'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -27,7 +28,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import {
     ClusterCurator,
     deleteResource,
-    filterForTemplatedCurators,
     getTemplateJobsNum,
     LinkAnsibleCredential,
     unpackProviderConnection,
@@ -84,9 +84,8 @@ export default function AnsibleAutomationsPage() {
 function AnsibleJobTemplateTable() {
     // Load Data
     const [secrets] = useRecoilState(secretsState)
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const providerConnections = secrets.map(unpackProviderConnection)
-    const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
+    const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
