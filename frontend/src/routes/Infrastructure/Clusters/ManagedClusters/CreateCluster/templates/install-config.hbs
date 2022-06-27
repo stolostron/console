@@ -24,25 +24,25 @@ proxy:
 {{#if_eq infrastructure 'BMC'}}
 controlPlane:
   name: master
-  replicas: {{{../masterNodeCount}}}
+  replicas: {{{masterNodeCount}}}
   platform:
     baremetal: {}
 {{/if_eq}}
 
 {{#each masterPool}}
 controlPlane:
-  {{#if ../architecture}}
-  architecture: {{{../architecture}}}
+  {{#if @root.architecture}}
+  architecture: {{{@root.architecture}}}
   {{/if}}
   hyperthreading: Enabled
   name: master
-{{#if ../singleNode}}
+{{#if @root.singleNode}}
   replicas: 1
 {{else}}
   replicas: 3
 {{/if}}
 
-{{#switch ../infrastructure}}
+{{#switch @root.infrastructure}}
 
   {{#case 'AWS'}}
   platform:
@@ -116,23 +116,23 @@ controlPlane:
 {{#if_eq infrastructure 'BMC'}}
 compute:
 - name: worker
-  replicas: {{{../computeNodeCount}}}
+  replicas: {{{computeNodeCount}}}
 {{/if_eq}}
 
 {{#each workerPools}}
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
-  {{#if ../architecture}}
-  architecture: {{{../architecture}}}
+  {{#if @root.architecture}}
+  architecture: {{{@root.architecture}}}
   {{/if}}
   name: '{{{workerName}}}'
-  {{#if ../singleNode}}
+  {{#if @root.singleNode}}
   replicas: 0
   {{else}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
   {{/if}}
-{{#switch ../infrastructure}}
+{{#switch @root.infrastructure}}
 
   {{#case 'AWS'}}
   platform:

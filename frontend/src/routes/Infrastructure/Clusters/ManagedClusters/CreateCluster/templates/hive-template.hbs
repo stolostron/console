@@ -136,12 +136,12 @@ spec:
 {{/if}}
 
 {{#if_eq infrastructure 'BMC'}}
-{{#if_gt ../networks.length 1}}
+{{#if_gt networks.length 1}}
     manifestsConfigMapRef:
       name: ipv6dualstack-featuregate-manifests
 {{/if_gt}}
     sshKnownHosts:
-{{#each ../sshKnownHosts}}
+{{#each sshKnownHosts}}
     -  "{{{.}}}"
 {{/each}}
 {{/if_eq}}
@@ -254,14 +254,14 @@ data:
 apiVersion: hive.openshift.io/v1
 kind: MachinePool
 metadata:
-  name: {{{../name}}}-{{{workerName}}}
-  namespace: '{{{../name}}}'
+  name: {{{@root.name}}}-{{{workerName}}}
+  namespace: '{{{@root.name}}}'
 spec:
   clusterDeploymentRef:
-    name: '{{{../name}}}'
+    name: '{{{@root.name}}}'
   name: {{{workerName}}} ##workerPools.{{@index}}.workerName
 
-{{#switch ../infrastructure}}
+{{#switch @root.infrastructure}}
 
   {{#case 'AWS'}}
   platform:
@@ -328,7 +328,7 @@ spec:
   {{/case}}
 
 {{/switch}}
-  {{#if ../singleNode}}
+  {{#if @root.singleNode}}
   replicas: 0
   {{else}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
@@ -540,14 +540,14 @@ kind: Secret
 type: Opaque
 metadata:
   name: {{{append "toweraccess-" ..}}}
-  namespace: {{{../../name}}}
+  namespace: {{{@root.name}}}
   labels:
     cluster.open-cluster-management.io/type: ans
     cluster.open-cluster-management.io/copiedFromSecretName: {{{metadata.name}}}
     cluster.open-cluster-management.io/copiedFromNamespace: {{{metadata.namespace}}}
 stringData:
   host: {{{stringData.host}}}
-{{#if ../../showSecrets}}
+{{#if @root.showSecrets}}
   token: {{{stringData.token}}}
 {{else}}
   token: # injected on create
