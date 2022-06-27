@@ -66,6 +66,8 @@ import { isLocalSubscription } from './helpers/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localClusterStr = 'local-cluster'
+const partOfAnnotationStr = 'app.kubernetes.io/part-of'
+const appAnnotationStr = 'app'
 
 const fluxAnnotations = {
     helm: ['helm.toolkit.fluxcd.io/name', 'helm.toolkit.fluxcd.io/namespace'],
@@ -366,27 +368,53 @@ export default function ApplicationsOverview() {
     }, [discoveredApplications, generateTransformData])
 
     const ocpAppResourceTableItems = useMemo(() => {
-        return discoveredOCPAppResources
-            .filter(({ label }) => {
-                return label && (label.includes('app=') || label.includes('app.kubernetes.io/part-of='))
-            })
-            .map((remoteOCPApp: any) =>
+        const openShiftAppResourceMaps: Record<string, any> = {}
+        const transformedData: any[] = []
+        discoveredOCPAppResources.forEach((item: any) => {
+            let itemLabel = ''
+            const labels: [] =
+                item.label &&
+                item.label
+                    .replace(/\s/g, '')
+                    .split(';')
+                    .map((label: string) => {
+                        const [annotation, value] = label.split('=')
+                        return { annotation, value } as { annotation: string; value: string }
+                    })
+            labels &&
+                labels.forEach(({ annotation, value }) => {
+                    if (annotation === 'app') {
+                        itemLabel = value
+                    } else if (annotation === partOfAnnotationStr) {
+                        if (!itemLabel) {
+                            itemLabel = value
+                        }
+                    }
+                })
+            if (itemLabel) {
+                const key = `${itemLabel}-${item.namespace}-${item.cluster}`
+                openShiftAppResourceMaps[key] = item
+            }
+        })
+
+        Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+            transformedData.push(
                 generateTransformData({
-                    apiVersion: remoteOCPApp.apigroup
-                        ? `${remoteOCPApp.apigroup}/${remoteOCPApp.apiversion}`
-                        : remoteOCPApp.apiversion,
-                    kind: remoteOCPApp.kind,
-                    label: remoteOCPApp.label,
+                    apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
+                    kind: value.kind,
+                    label: value.label,
                     metadata: {
-                        name: remoteOCPApp.name,
-                        namespace: remoteOCPApp.namespace,
-                        creationTimestamp: remoteOCPApp.created,
+                        name: value.name,
+                        namespace: value.namespace,
+                        creationTimestamp: value.created,
                     },
                     status: {
-                        cluster: remoteOCPApp.cluster,
+                        cluster: value.cluster,
                     },
                 } as OCPAppResource)
             )
+        })
+        return transformedData
     }, [discoveredOCPAppResources, generateTransformData])
 
     const tableItems: IResource[] = useMemo(
@@ -439,7 +467,7 @@ export default function ApplicationsOverview() {
                             labels.includes(`${fluxAnnotations.helm[1]}=`)
                         ) {
                             apiVersion = 'flux'
-                        } else if (labels.includes('app=') || labels.includes('app.kubernetes.io/part-of=')) {
+                        } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
                             apiVersion = 'ocp'
                         }
                     }
@@ -569,26 +597,13 @@ export default function ApplicationsOverview() {
                 id: 'table.filter.type.acm.application.label',
                 options: [
                     {
-                        label: t('Argo CD'),
-                        value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
-                    },
-                    {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
                     {
-                        label: t('Subscription'),
-                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                        label: t('Argo CD'),
+                        value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                     },
-                ],
-                tableFilterFn: (selectedValues: string[], item: IResource) => {
-                    return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
-                },
-            },
-            {
-                label: t(''),
-                id: 'openshift-apps',
-                options: [
                     {
                         label: t('Flux'),
                         value: 'fluxapps',
@@ -598,6 +613,10 @@ export default function ApplicationsOverview() {
                         value: 'openshiftapps',
                     },
                     { label: t('OpenShift-default'), value: 'openshift-default' },
+                    {
+                        label: t('Subscription'),
+                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                    },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
@@ -617,6 +636,10 @@ export default function ApplicationsOverview() {
                                 case 'fluxapps':
                                     return isFlux
                             }
+                        } else {
+                            return selectedValues.includes(
+                                `${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`
+                            )
                         }
                     })
                 },
