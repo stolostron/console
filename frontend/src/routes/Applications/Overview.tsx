@@ -569,26 +569,13 @@ export default function ApplicationsOverview() {
                 id: 'table.filter.type.acm.application.label',
                 options: [
                     {
-                        label: t('Argo CD'),
-                        value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
-                    },
-                    {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
                     {
-                        label: t('Subscription'),
-                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                        label: t('Argo CD'),
+                        value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                     },
-                ],
-                tableFilterFn: (selectedValues: string[], item: IResource) => {
-                    return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
-                },
-            },
-            {
-                label: t(''),
-                id: 'openshift-apps',
-                options: [
                     {
                         label: t('Flux'),
                         value: 'fluxapps',
@@ -598,6 +585,10 @@ export default function ApplicationsOverview() {
                         value: 'openshiftapps',
                     },
                     { label: t('OpenShift-default'), value: 'openshift-default' },
+                    {
+                        label: t('Subscription'),
+                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                    },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
@@ -617,6 +608,10 @@ export default function ApplicationsOverview() {
                                 case 'fluxapps':
                                     return isFlux
                             }
+                        } else {
+                            return selectedValues.includes(
+                                `${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`
+                            )
                         }
                     })
                 },
