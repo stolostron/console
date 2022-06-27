@@ -192,9 +192,13 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             )
                             const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
                             const warningAgents = infraAgents.filter((a) =>
-                                ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
-                                    getAgentStatus(a).status.key
-                                )
+                                [
+                                    'pending-for-input',
+                                    'insufficient',
+                                    'insufficient-unbound',
+                                    'disconnected-unbound',
+                                    'disconnected',
+                                ].includes(getAgentStatus(a).status.key)
                             )
 
                             return (
