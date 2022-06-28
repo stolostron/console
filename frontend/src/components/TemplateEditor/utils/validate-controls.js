@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
 import { ControlMode, parseYAML, reverseTemplate } from './source-utils'

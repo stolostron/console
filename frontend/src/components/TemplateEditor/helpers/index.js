@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export * from './case.js'
 export * from './default.js'
 export * from './if_eq.js'

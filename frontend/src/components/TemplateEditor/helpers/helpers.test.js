@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 import { if_eqFn } from './if_eq'
 import { if_gtFn } from './if_gt'

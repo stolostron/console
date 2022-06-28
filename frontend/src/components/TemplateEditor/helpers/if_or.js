@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
 module.exports.if_orFn = function (v1, v2, opts) {
