@@ -478,22 +478,22 @@ export const interruptLinks = (svg) => {
 
 export const counterZoomLinks = (svg, currentZoom, showLineLabels) => {
     if (svg) {
-        const opacity = counterZoom(currentZoom.k, 0.35, 0.85, 0.5, 0.85)
-        svg.select('g.links')
-            .selectAll('g.link')
-            .each(({ layout }, i, ns) => {
-                const {
-                    target: { search },
-                } = layout
-                const link = d3.select(ns[i])
-                link.selectAll('path')
-                    .call(attrs, () => {
-                        return getLinkMarkers(layout, search)
-                    })
-                    .call(styles, {
-                        'stroke-opacity': opacity,
-                    })
-            })
+        // const opacity = counterZoom(currentZoom.k, 0.35, 0.85, 0.5, 0.85)
+        // svg.select('g.links')
+        //     .selectAll('g.link')
+        //     .each(({ layout }, i, ns) => {
+        //         const {
+        //             target: { search },
+        //         } = layout
+        //         const link = d3.select(ns[i])
+        //         link.selectAll('path')
+        //             .call(attrs, () => {
+        //                 return getLinkMarkers(layout, search)
+        //             })
+        //             .call(styles, {
+        //                 'stroke-opacity': opacity,
+        //             })
+        //     })
 
         // move line labels
         if (showLineLabels) {
