@@ -11,7 +11,7 @@ declare global {
             deleteNamespace(namespace: string): Chainable<void>
             mockWait(alias: string): Chainable<void>
             mockResource(resource: IResource): Chainable<void>
-            mockCreateResource(resource: IResource, opts: { alias?: string }): Chainable<void>
+            mockCreateResource(resource: IResource, opts?: { alias?: string }): Chainable<void>
         }
     }
 }

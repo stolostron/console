@@ -41,10 +41,10 @@ Cypress.Commands.add('mockResource', (resource: IResource) => {
     websocketMockCreateResourceEvent(resource)
 })
 
-Cypress.Commands.add('mockCreateResource', (resource: IResource, opts: { alias?: string }) => {
+Cypress.Commands.add('mockCreateResource', (resource: IResource, opts?: { alias?: string }) => {
     if (!Cypress.env('mock')) return
 
-    const { alias } = opts
+    const { alias } = opts ?? {}
 
     let url = `/multicloud/apis/${resource.apiVersion}`
     if (resource.metadata.namespace) {
