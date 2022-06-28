@@ -20,7 +20,7 @@ import {
     managedClusterSetsState,
     managedClustersState,
 } from '../../../../../atoms'
-import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockNamespacedList } from '../../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockIgnoreRBAC, nockList, nockNamespacedList } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
@@ -63,6 +63,11 @@ import {
     PodList,
     SelfSubjectAccessReview,
 } from '../../../../../resources'
+import {
+    MultiClusterEngine,
+    MultiClusterEngineApiVersion,
+    MultiClusterEngineKind,
+} from '../../../../../resources/multi-cluster-engine'
 import ClusterDetails from './ClusterDetails'
 import {
     clusterName,
@@ -332,6 +337,289 @@ const mockHiveProvisionPods: PodList = {
         },
     ],
 }
+
+const mockMultiClusterEngineListResponse: MultiClusterEngine[] = [
+    {
+        apiVersion: 'multicluster.openshift.io/v1',
+        kind: 'MultiClusterEngine',
+        metadata: {
+            creationTimestamp: '2022-05-05T15:12:32Z',
+            finalizers: ['finalizer.multicluster.openshift.io'],
+            generation: 4,
+            labels: {
+                'installer.name': 'multiclusterhub',
+                'installer.namespace': 'open-cluster-management',
+            },
+            managedFields: [
+                {
+                    apiVersion: 'multicluster.openshift.io/v1',
+                    fieldsType: 'FieldsV1',
+                    fieldsV1: {
+                        'f:metadata': {
+                            'f:labels': {
+                                'f:installer.name': {},
+                                'f:installer.namespace': {},
+                            },
+                        },
+                        'f:spec': {
+                            'f:imagePullSecret': {},
+                            'f:overrides': {},
+                            'f:tolerations': {},
+                        },
+                    },
+                    manager: 'multiclusterhub-operator',
+                    operation: 'Apply',
+                    time: '2022-06-28T05:52:39Z',
+                },
+                {
+                    apiVersion: 'multicluster.openshift.io/v1',
+                    fieldsType: 'FieldsV1',
+                    fieldsV1: {
+                        'f:status': {
+                            '.': {},
+                            'f:components': {},
+                            'f:conditions': {},
+                            'f:phase': {},
+                        },
+                    },
+                    manager: 'backplane-operator',
+                    operation: 'Update',
+                    subresource: 'status',
+                    time: '2022-05-05T15:12:38Z',
+                },
+                {
+                    apiVersion: 'multicluster.openshift.io/v1',
+                    fieldsType: 'FieldsV1',
+                    fieldsV1: {
+                        'f:metadata': {
+                            'f:finalizers': {
+                                '.': {},
+                                'v:"finalizer.multicluster.openshift.io"': {},
+                            },
+                        },
+                        'f:spec': {
+                            'f:availabilityConfig': {},
+                            'f:overrides': {
+                                'f:components': {},
+                            },
+                            'f:targetNamespace': {},
+                        },
+                    },
+                    manager: 'backplane-operator',
+                    operation: 'Update',
+                    time: '2022-05-06T07:49:42Z',
+                },
+            ],
+            name: 'multiclusterengine',
+            resourceVersion: '295088094',
+            uid: '763cb473-a075-49a2-b8f6-f140ac9d7d37',
+        },
+        spec: {
+            availabilityConfig: 'High',
+            imagePullSecret: 'multiclusterhub-operator-pull-secret',
+            overrides: {
+                components: [
+                    {
+                        enabled: true,
+                        name: 'hypershift-preview',
+                    },
+                    {
+                        enabled: true,
+                        name: 'assisted-service',
+                    },
+                    {
+                        enabled: true,
+                        name: 'cluster-lifecycle',
+                    },
+                    {
+                        enabled: true,
+                        name: 'cluster-manager',
+                    },
+                    {
+                        enabled: true,
+                        name: 'discovery',
+                    },
+                    {
+                        enabled: true,
+                        name: 'hive',
+                    },
+                    {
+                        enabled: true,
+                        name: 'server-foundation',
+                    },
+                    {
+                        enabled: false,
+                        name: 'managedserviceaccount-preview',
+                    },
+                    {
+                        enabled: true,
+                        name: 'console-mce',
+                    },
+                ],
+            },
+            targetNamespace: 'multicluster-engine',
+            tolerations: [
+                {
+                    effect: 'NoSchedule',
+                    key: 'node-role.kubernetes.io/infra',
+                    operator: 'Exists',
+                },
+            ],
+        },
+        status: {
+            components: [
+                {
+                    kind: 'Component',
+                    lastTransitionTime: '2022-06-24T10:53:31Z',
+                    message: 'No resources present',
+                    name: 'managedservice',
+                    reason: 'ComponentDisabled',
+                    status: 'True',
+                    type: 'NotPresent',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T09:35:22Z',
+                    name: 'hypershift-addon-manager',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:52:25Z',
+                    name: 'hypershift-deployment-controller',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:51:12Z',
+                    name: 'console-mce-console',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:52:08Z',
+                    name: 'discovery-operator',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:51:43Z',
+                    name: 'hive-operator',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:52:08Z',
+                    name: 'infrastructure-operator',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:42:32Z',
+                    name: 'cluster-curator-controller',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:51:19Z',
+                    name: 'clusterclaims-controller',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:53:18Z',
+                    name: 'provider-credential-controller',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T09:35:24Z',
+                    name: 'clusterlifecycle-state-metrics-v2',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:51:47Z',
+                    name: 'cluster-manager',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'ClusterManager',
+                    lastTransitionTime: '2022-06-24T10:53:31Z',
+                    message: 'Components of cluster manager are applied',
+                    name: 'cluster-manager',
+                    reason: 'ClusterManagerApplied',
+                    status: 'True',
+                    type: 'Applied',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:53:21Z',
+                    name: 'ocm-controller',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:51:56Z',
+                    name: 'ocm-proxyserver',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+                {
+                    kind: 'Deployment',
+                    lastTransitionTime: '2022-06-24T10:52:08Z',
+                    name: 'ocm-webhook',
+                    reason: 'MinimumReplicasAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+            ],
+            conditions: [
+                {
+                    lastTransitionTime: '2022-06-24T10:52:05Z',
+                    lastUpdateTime: '2022-06-24T10:52:05Z',
+                    message: 'All components deployed',
+                    reason: 'ComponentsDeployed',
+                    status: 'True',
+                    type: 'Progressing',
+                },
+                {
+                    lastTransitionTime: '2022-06-24T10:53:31Z',
+                    lastUpdateTime: '2022-06-24T10:53:31Z',
+                    reason: 'ComponentsAvailable',
+                    status: 'True',
+                    type: 'Available',
+                },
+            ],
+            phase: 'Available',
+        },
+    },
+]
 
 const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     apiVersion: ManagedClusterAddOnApiVersion,
@@ -665,21 +953,14 @@ const mockClusterCurator: ClusterCurator = {
     },
 }
 
-const mockRHACMNamespace = {
-    apiVersion: 'v1',
-    kind: 'Namespace',
-    metadata: {
-        name: 'rhacm',
-    },
-}
-
-const mockOCMNamespace = {
-    apiVersion: 'v1',
-    kind: 'Namespace',
-    metadata: {
-        name: 'multicluster-engine',
-    },
-}
+const mockMultiClusterEngineList = () =>
+    nockList<MultiClusterEngine>(
+        {
+            apiVersion: MultiClusterEngineApiVersion,
+            kind: MultiClusterEngineKind,
+        },
+        mockMultiClusterEngineListResponse
+    )
 
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
@@ -848,7 +1129,7 @@ describe('ClusterDetails for On Premise', () => {
     })
 
     test('overview page renders AI empty details', async () => {
-        const nocks: Scope[] = [nockGet(mockRHACMNamespace, undefined, 404), nockGet(mockOCMNamespace, undefined, 200)]
+        const nocks: Scope[] = [mockMultiClusterEngineList()]
         render(<AIComponent />)
         await waitForNocks(nocks)
 
@@ -868,7 +1149,7 @@ describe('ClusterDetails for On Premise', () => {
         await waitForText('Waiting for hosts...')
 
         // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
-        await waitForText('On Premise')
+        await waitForText('Assisted installation')
 
         // screen.debug(undefined, -1)
     })

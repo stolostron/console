@@ -6,8 +6,7 @@ import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory } from 'react-router'
-import TemplateEditor from 'temptifly'
-
+import TemplateEditor from '../../../components/TemplateEditor'
 import { NavigationPath } from '../../../NavigationPath'
 import infraEnvTemplate from './infraenv-template.hbs'
 import InfraEnvForm, { Portals } from './InfraEnvForm'
@@ -15,10 +14,11 @@ import InfraEnvForm, { Portals } from './InfraEnvForm'
 // include monaco editor
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import '../Clusters/ManagedClusters/CreateCluster/style.css'
-import 'temptifly/dist/styles.css'
+import '../../Applications/CreateApplication/Subscription/style.css'
 import { createProject, createResource, IResource } from '../../../resources'
 import { deleteResources } from '../../../lib/delete-resources'
+
+import './CreateInfraEnv.css'
 
 const controlData = [
     {
@@ -120,7 +120,7 @@ const CreateInfraEnv: React.FC = () => {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-infra-env">
-                    <PageSection variant="light" isFilled>
+                    <PageSection variant="light" className="create-infra-env__content" type="wizard">
                         <TemplateEditor
                             type="Infra env"
                             title="InfraEnv YAML"

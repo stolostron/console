@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALIDATE_URL } from 'temptifly'
+import { VALIDATE_URL } from '../../../../../components/TemplateEditor'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 

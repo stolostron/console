@@ -2,16 +2,19 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
 import {
+    getValue,
     VALIDATE_CIDR,
     VALIDATE_NUMERIC,
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
     VALIDATE_URL,
     VALIDATE_ALPHANUMERIC,
-} from 'temptifly'
+} from '../../../../../../components/TemplateEditor'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import jsYaml from 'js-yaml'
 import _ from 'lodash'
 
 const OpenNewTab = () => (
@@ -197,16 +200,12 @@ export const setAvailableTemplates = (control, templates) => {
 }
 
 const onChangeProxy = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
+    const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = controlData.find(({ id }) => {
-        return id === 'hasProxy'
-    }).active
+    const useProxy = getControlByID(controlData, 'hasProxy').active
     ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
+        const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
             if (ctrl.disabled) {
@@ -256,27 +255,21 @@ export const onChangeConnection = (control, controlData) => {
         })
     }
     setTimeout(() => {
-        const control = controlData.find(({ id }) => {
-            return id === 'disconnectedAdditionalTrustBundle'
-        })
-        if (control) {
-            control.active = replacements['additionalTrustBundle']
-            control.disabled = !control.active
+        const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
+        if (datbControl) {
+            datbControl.active = replacements['additionalTrustBundle']
+            datbControl.disabled = !datbControl.active
         }
     })
 }
 
 export const onChangeDisconnect = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
+    const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = controlData.find(({ id }) => {
-        return id === 'isDisconnected'
-    }).active
+    const isDisconnected = getControlByID(controlData, 'isDisconnected').active
     ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
+        const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
             if (ctrl.disabled) {
@@ -476,11 +469,49 @@ export const proxyControlData = [
 ]
 
 export const onChangeAutomationTemplate = (control, controlData) => {
-    var installAttemptsLimit = controlData.find(({ id }) => id === 'installAttemptsLimit')
-    if (control.active) {
-        installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
+    const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
+    const installAttemptsLimit = getControlByID(controlData, 'installAttemptsLimit')
+    // TODO: include namespace in key
+    const clusterCuratorTemplate = control.availableData.find((cc) => cc.metadata.name === control.active)
+    const curations = getControlByID(controlData, 'supportedCurations')?.active
+    if (control.active && clusterCuratorTemplate) {
+        const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
+        if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
+            clusterCurator.spec.desiredCuration = 'install'
+            installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
+        }
+        curations.forEach((curation) => {
+            if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
+                // Create copies of each Ansible secret
+                const secretName = `toweraccess-${curation}`
+                const secretControl = getControlByID(controlData, secretName)
+                const matchingSecret = control.availableSecrets.find(
+                    (s) =>
+                        s.metadata.name === clusterCurator.spec[curation].towerAuthSecret &&
+                        s.metadata.namespace === clusterCuratorTemplate.metadata.namespace
+                )
+                secretControl.active = _.cloneDeep(matchingSecret)
+                clusterCurator.spec[curation].towerAuthSecret = secretName
+            }
+        })
+        clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
     } else {
+        // Clear Ansible secrets
+        curations.forEach((curation) => {
+            const secretName = `toweraccess-${curation}`
+            const secretControl = getControlByID(controlData, secretName)
+            secretControl.active = ''
+        })
+        clusterCuratorSpec.active = ''
         delete installAttemptsLimit.immutable
+    }
+}
+
+const reverseClusterCuratorSpec = (control, templateObject) => {
+    // preserve user modifications to ClusterCurator if valid YAML
+    const active = getValue(templateObject, 'ClusterCurator[0].spec')
+    if (active) {
+        control.active = jsYaml.dump({ spec: active })
     }
 }
 
@@ -508,6 +539,38 @@ export const automationControlData = [
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
     },
+    {
+        id: 'clusterCuratorSpec',
+        type: 'hidden',
+        active: '',
+        reverse: reverseClusterCuratorSpec,
+    },
+    {
+        id: 'supportedCurations',
+        type: 'values',
+        hidden: true,
+        active: [],
+    },
+    {
+        id: 'toweraccess-install',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-upgrade',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-scale',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-destroy',
+        type: 'hidden',
+        active: '',
+    },
 ]
 
 export const architectureData = [
@@ -523,8 +586,8 @@ export const architectureData = [
 ]
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
-    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
+    const imageSet = getControlByID(controlData, 'imageSet')
     //NOTE: We will need to adjust this in the future for new OCP versions!
     if (
         singleNodeFeatureFlag &&
@@ -541,17 +604,17 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    const imageSet = getControlByID(controlData, 'imageSet')
     return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
 }
 
 export const isHidden_SNO = (control, controlData) => {
-    const singleNode = controlData.find(({ id }) => id === 'singleNode')
+    const singleNode = getControlByID(controlData, 'singleNode')
     return singleNode && singleNode.active && !isHidden_lt_OCP48(control, controlData)
 }
 
 export const onChangeSNO = (control, controlData) => {
-    var groupDataArray = controlData.find(({ id }) => id === 'workerPools').active
+    const groupDataArray = getControlByID(controlData, 'workerPools').active
     groupDataArray.forEach((group) => {
         var computeNodeCount = group.find(({ id }) => id === 'computeNodeCount')
         if (!control.active) {
@@ -571,3 +634,5 @@ export const addSnoText = (controlData) => {
 export const arrayItemHasKey = (options, key) => {
     return options && options.some((o) => o[key])
 }
+
+export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')

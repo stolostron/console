@@ -7,6 +7,7 @@ import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
+import hypershiftTemplateHbs from '../templates/assisted-installer/hypershift-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
 import { ConnectedIcon } from '@patternfly/react-icons'
 
@@ -22,11 +23,13 @@ import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
 import { Label } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { controlDataHypershift } from './ControlDataHypershift'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
 const cimTemplate = Handlebars.compile(cimTemplateHbs)
 const aiTemplate = Handlebars.compile(aiTemplateHbs)
+const hypershiftTemplate = Handlebars.compile(hypershiftTemplateHbs)
 
 export const getActiveCardID = (control, fetchData = {}) => {
     const { requestedUIDs } = fetchData
@@ -189,6 +192,18 @@ export const getControlData = (
                     insertControlData: controlDataAI,
                     replacements: {},
                     replaceTemplate: aiTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
+                id: 'CIM-Hypershift',
+                logo: <ConnectedIcon />,
+                title: 'cluster.create.hypershift.subtitle',
+                tooltip: 'cluster.create.hypershift.tooltip',
+                change: {
+                    insertControlData: controlDataHypershift,
+                    replacements: {},
+                    replaceTemplate: hypershiftTemplate,
                 },
                 section: 'Assisted installation',
             },

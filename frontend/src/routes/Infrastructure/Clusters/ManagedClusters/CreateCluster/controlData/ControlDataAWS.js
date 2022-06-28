@@ -2,7 +2,11 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC, VALIDATE_ALPHANUMERIC_PERIOD } from 'temptifly'
+import {
+    VALIDATE_ALPHANUMERIC,
+    VALIDATE_NUMERIC,
+    VALIDATE_ALPHANUMERIC_PERIOD,
+} from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
@@ -19,6 +23,7 @@ import {
     addSnoText,
     architectureData,
 } from './ControlDataHelpers'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
@@ -86,7 +91,7 @@ export const awsGovRegions = {
 const setAWSZones = (control, controlData) => {
     const setZones = (poolKey, zoneKey) => {
         const region = control.active
-        const pool = controlData.find(({ id }) => id === poolKey)
+        const pool = getControlByID(controlData, poolKey)
         pool.active.forEach((worker) => {
             const typeZones = worker.find(({ id }) => id === zoneKey)
             const zones = awsRegions[region]

@@ -126,6 +126,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const history = useHistory()
     const isArgoApp = applicationData?.application?.isArgoApp
     const isAppSet = applicationData?.application?.isAppSet
+    const isOCPApp = applicationData?.application?.isOCPApp
+    const isFluxApp = applicationData?.application?.isFluxApp
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -180,22 +182,33 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             click: () => {
                 if (applicationData) {
                     const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
-                    const searchLink = getSearchLink({
-                        properties: {
-                            name: applicationData?.application.app.metadata?.name,
-                            namespace: applicationData?.application.app.metadata?.namespace,
-                            kind: applicationData?.application.app.kind.toLowerCase(),
-                            apigroup: apigroup as string,
-                            apiversion: apiversion as string,
-                        },
-                    })
+                    const isOCPorFluxApp = applicationData.application.isOCPApp || applicationData.application.isFluxApp
+                    const searchLink = isOCPorFluxApp
+                        ? getSearchLink({
+                              properties: {
+                                  namespace: applicationData?.application.app.metadata?.namespace,
+                                  label: applicationData?.application.isOCPApp
+                                      ? `app=${applicationData?.application.app.metadata?.name},app.kubernetes.io/part-of=${applicationData?.application.app.metadata?.name}`
+                                      : `kustomize.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name},helm.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name}`,
+                                  cluster: applicationData?.application.app.cluster.name,
+                              },
+                          })
+                        : getSearchLink({
+                              properties: {
+                                  name: applicationData?.application.app.metadata?.name,
+                                  namespace: applicationData?.application.app.metadata?.namespace,
+                                  kind: applicationData?.application.app.kind.toLowerCase(),
+                                  apigroup: apigroup as string,
+                                  apiversion: apiversion as string,
+                              },
+                          })
                     history.push(searchLink)
                 }
             },
         },
     ]
 
-    if (!isArgoApp) {
+    if (!isArgoApp && !isOCPApp && !isFluxApp) {
         const selectedApp = applicationData?.application.app
         actions.push({
             id: 'edit-application',
@@ -335,9 +348,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         setApplicationNotFound(true)
                     } else {
                         setApplicationNotFound(false)
-                        const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
-                            cluster,
-                        })
+                        const topology = await getTopology(
+                            application,
+                            clusters,
+                            lastRefreshRef?.current?.relatedResources,
+                            {
+                                cluster,
+                            }
+                        )
                         const appData = getApplicationData(topology?.nodes)
 
                         // when first opened, refresh topology with wait statuses
@@ -358,7 +376,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                             appData,
                             topology
                         )
-                        const topologyWithRelated = getTopology(application, clusters, relatedResources, {
+                        const topologyWithRelated = await getTopology(application, clusters, relatedResources, {
                             topology,
                             cluster,
                         })

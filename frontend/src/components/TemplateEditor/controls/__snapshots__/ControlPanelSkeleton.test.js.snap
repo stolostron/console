@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ControlPanelSkeleton component renders as expected 1`] = `
+<DocumentFragment>
+  <div
+    class="creation-view-controls-skeleton"
+  >
+    <label
+      class="creation-view-controls-textbox-title"
+      for="controlId"
+    >
+      creation.app.name
+    </label>
+    <div
+      class="pf-c-skeleton"
+      id="controlId"
+    >
+      <span
+        class="pf-u-screen-reader"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;

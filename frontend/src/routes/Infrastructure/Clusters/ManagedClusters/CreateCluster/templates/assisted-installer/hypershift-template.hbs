@@ -1,0 +1,157 @@
+---
+apiVersion: hypershift.openshift.io/v1alpha1
+kind: HostedCluster
+metadata:
+  name: '{{{hypershift.name}}}'
+  namespace: '{{{hypershift.name}}}'
+  labels:
+  {{#if hypershift.managedClusterSet}}
+    "cluster.open-cluster-management.io/clusterset": '{{{hypershift.managedClusterSet}}}'
+  {{/if}}
+spec:
+  release:
+    image: {{{hypershift.releaseImage}}}
+  pullSecret:
+    name: pullsecret-cluster-{{{hypershift.name}}}
+  sshKey:
+    name: sshkey-cluster-{{{hypershift.name}}}
+  networking:
+    {{#if hypershift-network.isAdvanced}}
+    podCIDR: {{{hypershift-network.podCIDR}}}
+    serviceCIDR: {{{hypershift-network.serviceCIDR}}}
+    {{else}}
+    podCIDR: 10.132.0.0/14
+    serviceCIDR: 172.31.0.0/16
+    {{/if}}
+    machineCIDR: {{{hypershift-network.machineCIDR}}}
+  {{#if hypershift-network.enableProxy}}
+  configuration:
+    items:
+    - apiVersion: config.openshift.io/v1
+      kind: Proxy
+      spec:
+        httpProxy: '{{{hypershift-network.httpProxy}}}'
+        httpsProxy: '{{{hypershift-network.httpsProxy}}}'
+        noProxy: '{{{hypershift-network.noProxy}}}'
+  {{/if}}
+  platform:
+    type: Agent
+    agent:
+      agentNamespace: '{{{hypershift-hosts.agentNamespace}}}'
+  infraID: '{{{hypershift.name}}}'
+  dns:
+    baseDomain: '{{{hypershift.baseDnsDomain}}}'
+  services:
+  - service: APIServer
+    servicePublishingStrategy:
+      nodePort:
+        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
+      type: NodePort
+  - service: OAuthServer
+    servicePublishingStrategy:
+      nodePort:
+        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
+      type: NodePort
+  - service: OIDC
+    servicePublishingStrategy:
+      nodePort:
+        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
+      type: None
+  - service: Konnectivity
+    servicePublishingStrategy:
+      nodePort:
+        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
+      type: NodePort
+  - service: Ignition
+    servicePublishingStrategy:
+      nodePort:
+        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
+      type: NodePort
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pullsecret-cluster-{{{hypershift.name}}}
+  namespace: {{{hypershift.name}}}
+data:
+  '.dockerconfigjson': {{{hypershift.pullSecret}}}
+type: kubernetes.io/dockerconfigjson
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sshkey-cluster-{{{hypershift.name}}}
+  namespace: '{{{hypershift.name}}}'
+stringData:
+  id_rsa.pub: {{{hypershift-network.sshPublicKey}}}
+
+{{#each hypershift-hosts.nodePools}}
+---
+apiVersion: hypershift.openshift.io/v1alpha1
+kind: NodePool
+metadata:
+  name: '{{{this.name}}}'
+  namespace: '{{{this.clusterName}}}'
+spec:
+  clusterName: '{{{this.clusterName}}}'
+  {{#if this.autoSelectHosts}}
+  replicas: {{{this.count}}}
+  {{else}}
+  replicas: {{{this.selectedAgentIDs.length}}}
+  {{/if}}
+  management:
+    autoRepair: false
+    upgradeType: InPlace
+  platform:
+    type: Agent
+    agent:
+      agentLabelSelector:
+        matchLabels:
+          'agentclusterinstalls.extensions.hive.openshift.io/hostedcluster': '{{{this.clusterName}}}/{{{this.name}}}'
+  release:
+    image: {{{this.releaseImage}}}
+
+{{/each}}
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+    cloud: hybrid
+    name: '{{{hypershift.name}}}'
+    {{#if hypershift.managedClusterSet}}
+    cluster.open-cluster-management.io/clusterset: '{{{hypershift.managedClusterSet}}}'
+    {{/if}}
+    {{#each hypershift.additionalLabels}}
+    {{{key}}}: '{{{value}}}'
+    {{/each}}
+  name: '{{{hypershift.name}}}'
+spec:
+  hubAcceptsClient: true
+
+{{#if includeKlusterletAddonConfig}}
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: '{{{hypershift.name}}}'
+  namespace: '{{{hypershift.name}}}'
+spec:
+  clusterName: '{{{hypershift.name}}}'
+  clusterNamespace: '{{{hypershift.name}}}'
+  clusterLabels:
+    cloud: ai-hypershift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+{{/if}}
+---

@@ -18,6 +18,7 @@ import {
     listChannels,
     listProviderConnections,
 } from '../../../../../resources'
+import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
@@ -52,7 +53,7 @@ export const getUniqueChannelName = (channelPath, groupControlData) => {
     }
 
     //get the channel type and append to url to make sure different type of channels are unique, yet using the same url
-    const channelTypeSection = groupControlData.find(({ id }) => id === 'channelType')
+    const channelTypeSection = getControlByID(groupControlData, 'channelType')
 
     let channelTypeStr
     let channelType
@@ -227,7 +228,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
 
     // if existing channel or using same channel, hide user/token controls, region, reconcile rate
     const showHideOrDisableControl = (cid, defaultType) => {
-        const control = groupControlData.find(({ id }) => id === cid)
+        const control = getControlByID(groupControlData, cid)
         control.type = existingChannel ? 'hidden' : defaultType
         if (originalChannelControl) {
             const originalControl = originalChannelControl.find((c) => c.id === cid)
@@ -287,11 +288,11 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
 
 const retrieveGitDetails = async (branchName, groupControlData, setLoadingState) => {
     try {
-        const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
-        const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
-        const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
-        const githubAccessIdCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
-        const githubUserCtrl = groupControlData.find(({ id }) => id === 'githubUser')
+        const gitControl = getControlByID(groupControlData, 'githubURL')
+        const branchCtrl = getControlByID(groupControlData, 'githubBranch')
+        const githubPathCtrl = getControlByID(groupControlData, 'githubPath')
+        const githubAccessIdCtrl = getControlByID(groupControlData, 'githubAccessId')
+        const githubUserCtrl = getControlByID(groupControlData, 'githubUser')
 
         const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise

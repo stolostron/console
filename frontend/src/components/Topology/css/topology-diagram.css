@@ -1,7 +1,5 @@
 .resourceDiagramControlsContainer {
     height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .resourceDiagramSourceContainer {
@@ -36,9 +34,8 @@
 }
 .topologyDiagramContainer .channel-controls-container {
     display: flex;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 3px;
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+    background-color: var(--pf-global--BackgroundColor--400);
+    box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
     width: 282px;
     margin-top: 40px;
 }
@@ -74,7 +71,6 @@
     display: none;
 }
 .topologyDiagramContainer .channel-controls-container .label {
-    color: #152935;
     font-family: RedHatText;
     font-size: 0.8rem;
     font-weight: bold;

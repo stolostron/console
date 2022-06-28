@@ -22,10 +22,7 @@ import {
 } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState } from '../../../../../atoms'
-
-import TemplateEditor from 'temptifly'
-import 'temptifly/dist/styles.css'
-
+import TemplateEditor from '../../../../../components/TemplateEditor'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
