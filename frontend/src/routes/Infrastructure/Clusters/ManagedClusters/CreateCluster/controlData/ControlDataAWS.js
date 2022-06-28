@@ -2,7 +2,11 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC, VALIDATE_ALPHANUMERIC_PERIOD } from 'temptifly'
+import {
+    VALIDATE_ALPHANUMERIC,
+    VALIDATE_NUMERIC,
+    VALIDATE_ALPHANUMERIC_PERIOD,
+} from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,

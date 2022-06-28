@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EditorHeader component renders as expected 1`] = `
+<DocumentFragment>
+  <div
+    class="creation-view-yaml-header"
+  >
+    <div
+      class="creation-view-yaml-header-toolbar"
+      role="region"
+    />
+    <div
+      class="creation-view-yaml-header-tabs"
+    >
+      <nav
+        aria-label="Select template"
+        class="tf--tabs"
+        role="navigation"
+      >
+        <ul
+          class="tf--tabs__nav"
+          role="tablist"
+        >
+          <li
+            class="tf--tabs__nav-item tf--tabs__nav-item--selected"
+            id="main"
+            role="presentation"
+            tabindex="-1"
+          >
+            <a
+              aria-selected="true"
+              class="tf--tabs__nav-link"
+              href="#"
+              role="tab"
+              tabindex="0"
+            >
+              application
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div
+        class="creation-view-yaml-header-secrets"
+      >
+        <div
+          class="pf-c-check pf-m-standalone"
+        >
+          <input
+            aria-invalid="false"
+            aria-label="show-secrets"
+            class="pf-c-check__input"
+            data-ouia-component-id="OUIA-Generated-Checkbox-1"
+            data-ouia-component-type="PF4/Checkbox"
+            data-ouia-safe="true"
+            id="show-secrets"
+            type="checkbox"
+          />
+        </div>
+        <div />
+      </div>
+      <div
+        class="pf-c-clipboard-copy pf-m-inline pf-m-block"
+      >
+        <span
+          class="pf-c-clipboard-copy__text"
+          id="text-input-0"
+        />
+        <span
+          class="pf-c-clipboard-copy__actions"
+        >
+          <span
+            class="pf-c-clipboard-copy__actions-item"
+          >
+            <button
+              aria-disabled="false"
+              aria-label="Copy to clipboard"
+              aria-labelledby="copy-button-0 text-input-0"
+              class="pf-c-button pf-m-plain"
+              data-ouia-component-id="OUIA-Generated-Button-plain-1"
+              data-ouia-component-type="PF4/Button"
+              data-ouia-safe="true"
+              id="copy-button-0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                fill="currentColor"
+                height="1em"
+                role="img"
+                style="vertical-align: -0.125em;"
+                viewBox="0 0 448 512"
+                width="1em"
+              >
+                <path
+                  d="M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z"
+                />
+              </svg>
+            </button>
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

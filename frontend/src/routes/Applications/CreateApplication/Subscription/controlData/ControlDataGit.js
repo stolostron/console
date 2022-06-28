@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from 'temptifly'
+import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from '../../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
 import prePostTasks from './ControlDataPrePostTasks'
 import {

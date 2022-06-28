@@ -9,7 +9,7 @@ import {
     VALID_DNS_LABEL,
     VALIDATE_URL,
     VALIDATE_ALPHANUMERIC,
-} from 'temptifly'
+} from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
