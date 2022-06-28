@@ -4,7 +4,6 @@ import { DaemonSetApiVersion, DaemonSetKind } from './daemonset'
 import { DeploymentApiVersion, DeploymentKind } from './deployment'
 import { DeploymentConfigApiVersion, DeploymentConfigKind } from './deployment-config'
 import { JobApiVersion, JobKind } from './job'
-import { Metadata } from './metadata'
 import { IResource } from './resource'
 import { StatefulSetApiVersion, StatefulSetKind } from './stateful-set'
 
@@ -22,7 +21,8 @@ export type OCPAppResourceKindType = 'cronjob' | 'daemonSet' | 'deployment' | 'd
 export interface OCPAppResource extends IResource {
     apiVersion: OCPAppResourceApiVersionType
     kind: OCPAppResourceKindType
-    metadata: Metadata
+    name: string
+    namespace: string
     label: string
     status?: any
     transformed?: {

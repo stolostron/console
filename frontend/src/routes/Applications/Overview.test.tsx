@@ -10,6 +10,7 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    discoveredOCPAppResourcesState,
     managedClusterInfosState,
     managedClustersState,
     namespacesState,
@@ -40,6 +41,7 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    OCPAppResource,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -289,6 +291,28 @@ const mockArgoApplication1: ArgoApplication = {
     status: {},
 }
 
+const mockOCPApplication0: OCPAppResource = {
+    apiVersion: 'apps/v1',
+    kind: 'deployment',
+    name: 'authentication-operator',
+    namespace: 'authentication-operator-ns',
+    label: 'app=authentication-operator',
+    status: {
+        cluster: 'test-cluster',
+    },
+}
+
+const mockFluxApplication0: OCPAppResource = {
+    apiVersion: 'apps/v1',
+    kind: 'deployment',
+    name: 'authentication-operator',
+    namespace: 'authentication-operator-ns',
+    label: 'kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
+    status: {
+        cluster: 'test-cluster',
+    },
+}
+
 const mockApplications: Application[] = [mockApplication0]
 
 const mockSubscriptions: Subscription[] = [mockSubscription0]
@@ -310,6 +334,8 @@ const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].m
 const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
 
 const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
+
+const mockOCPApplications: OCPAppResource[] = [mockOCPApplication0, mockFluxApplication0]
 
 const mockSearchQuery = {
     operationName: 'searchResult',
@@ -372,6 +398,7 @@ describe('Applications Page', () => {
                     snapshot.set(argoApplicationsState, mockArgoApplications)
                     snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
                     snapshot.set(namespacesState, mockNamespaces)
+                    snapshot.set(discoveredOCPAppResourcesState, mockOCPApplications)
                 }}
             >
                 <MemoryRouter>
@@ -399,6 +426,16 @@ describe('Applications Page', () => {
     test('should display argoapp', async () => {
         expect(screen.getByText(mockArgoApplication1.metadata.name!)).toBeTruthy()
         expect(screen.getByText('Discovered')).toBeTruthy()
+    })
+
+    test('should display ocp app', async () => {
+        expect(screen.getByText(mockOCPApplication0.name!)).toBeTruthy()
+        expect(screen.getByText('OpenShift')).toBeTruthy()
+    })
+
+    test('should display flux app', async () => {
+        expect(screen.getByText(mockFluxApplication0.name!)).toBeTruthy()
+        expect(screen.getByText('OpenShift')).toBeTruthy()
     })
 
     test('should filter subscription apps', async () => {
@@ -450,5 +487,21 @@ describe('Applications Page', () => {
         const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
         expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
+    })
+
+    test('should filter ocp apps', async () => {
+        // Open filter
+        userEvent.click(screen.getByText('Filter'))
+        expect(screen.getByTestId('openshiftapps')).toBeTruthy()
+        userEvent.click(screen.getByTestId('openshiftapps'))
+
+        // Close filter
+        userEvent.click(screen.getByText('Filter'))
+        const ocpCheckBox = screen.queryByTestId('openshiftapps')
+        expect(ocpCheckBox).toBeNull()
+        const applicationType = screen.queryByText(ApplicationKind)
+        expect(applicationType).toBeNull()
+        const discoveredType = screen.queryByText('Discovered')
+        expect(discoveredType).toBeNull()
     })
 })
