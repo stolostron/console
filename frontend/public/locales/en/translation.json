@@ -1765,6 +1765,7 @@
     "Recommendations with remediation": "Recommendations with remediation",
     "Red Hat OpenStack Platform": "Red Hat OpenStack Platform",
     "Related applications ({{0}})": "Related applications ({{0}})",
+    "Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.": "Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.",
     "Related resources": "Related resources",
     "Release Name": "Release Name",
     "Remediation": "Remediation",

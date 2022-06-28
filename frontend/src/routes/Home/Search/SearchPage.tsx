@@ -16,14 +16,13 @@ import {
     AcmSearchbar,
 } from '@stolostron/ui-components'
 import _ from 'lodash'
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
-import SearchResults from './components/SearchResults'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
@@ -33,6 +32,7 @@ import {
     useSearchCompleteQuery,
     useSearchSchemaQuery,
 } from './search-sdk/search-sdk'
+import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -85,7 +85,7 @@ function RenderSearchBar(props: {
     setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
     savedSearchQueries: UserSearch[]
 }) {
-    const { searchQuery, setCurrentQuery, queryErrors, setQueryErrors, savedSearchQueries } = props
+    const { searchQuery, setCurrentQuery, queryErrors, setQueryErrors, savedSearchQueries, setSelectedSearch } = props
     const { t } = useTranslation()
     const [saveSearch, setSaveSearch] = useState<string>()
     const [open, toggleOpen] = useState<boolean>(false)
@@ -95,11 +95,15 @@ function RenderSearchBar(props: {
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
 
-    const searchCompleteValue = getSearchCompleteString(searchQuery)
-    const searchCompleteQuery = convertStringToQuery(searchQuery)
-    searchCompleteQuery.filters = searchCompleteQuery.filters.filter((filter) => {
-        return filter.property !== searchCompleteValue
-    })
+    const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
+        const value = getSearchCompleteString(searchQuery)
+        const query = convertStringToQuery(searchQuery)
+        query.filters = query.filters.filter((filter) => {
+            return filter.property !== value
+        })
+        return { searchCompleteValue: value, searchCompleteQuery: query }
+    }, [searchQuery])
+
     const searchCompleteResults = useSearchCompleteQuery({
         skip: !searchQuery.endsWith(':') && !operators.some((operator: string) => searchQuery.endsWith(operator)),
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -121,7 +125,7 @@ function RenderSearchBar(props: {
         <Fragment>
             <PageSection>
                 <SaveAndEditSearchModal
-                    setSelectedSearch={props.setSelectedSearch}
+                    setSelectedSearch={setSelectedSearch}
                     saveSearch={saveSearch}
                     onClose={() => setSaveSearch(undefined)}
                     savedSearchQueries={savedSearchQueries}
@@ -151,7 +155,7 @@ function RenderSearchBar(props: {
                             setCurrentQuery(newQuery)
                             updateBrowserUrl(newQuery)
                             if (newQuery !== searchQuery) {
-                                props.setSelectedSearch('Saved searches')
+                                setSelectedSearch('Saved searches')
                             }
                         }}
                         toggleInfoModal={toggle}
@@ -175,28 +179,35 @@ function RenderDropDownAndNewTab(props: {
     setCurrentQuery: React.Dispatch<React.SetStateAction<string>>
     savedSearchQueries: UserSearch[]
 }) {
+    const { selectedSearch, setSelectedSearch, setCurrentQuery, savedSearchQueries } = props
     const classes = useStyles()
     const { t } = useTranslation()
 
-    const SelectQuery = (id: string) => {
-        if (id === 'savedSearchesID') {
-            props.setCurrentQuery('')
-            updateBrowserUrl('')
-            props.setSelectedSearch('Saved searches')
-        } else {
-            const selectedQuery = props.savedSearchQueries!.filter((query) => query!.id === id)
-            props.setCurrentQuery(selectedQuery[0]!.searchText || '')
-            updateBrowserUrl(selectedQuery[0]!.searchText || '')
-            props.setSelectedSearch(selectedQuery[0]!.name || '')
-        }
-    }
+    const SelectQuery = useCallback(
+        (id: string) => {
+            if (id === 'savedSearchesID') {
+                setCurrentQuery('')
+                updateBrowserUrl('')
+                setSelectedSearch('Saved searches')
+            } else {
+                const selectedQuery = savedSearchQueries!.filter((query) => query!.id === id)
+                setCurrentQuery(selectedQuery[0]!.searchText || '')
+                updateBrowserUrl(selectedQuery[0]!.searchText || '')
+                setSelectedSearch(selectedQuery[0]!.name || '')
+            }
+        },
+        [savedSearchQueries, setCurrentQuery, setSelectedSearch]
+    )
 
-    const SavedSearchDropdown = (props: { selectedSearch: string; savedSearchQueries: UserSearch[] }) => {
-        const dropdownItems: any[] = props.savedSearchQueries.map((query) => {
-            return { id: query!.id, text: query!.name }
-        })
-
-        dropdownItems.unshift({ id: 'savedSearchesID', text: 'Saved searches' })
+    function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: UserSearch[] }) {
+        const { savedSearchQueries, selectedSearch } = props
+        const dropdownItems: any[] = useMemo(() => {
+            const items: any[] = savedSearchQueries.map((query) => {
+                return { id: query!.id, text: query!.name }
+            })
+            items.unshift({ id: 'savedSearchesID', text: 'Saved searches' })
+            return items
+        }, [savedSearchQueries])
 
         return (
             <div className={classes.dropdown}>
@@ -206,7 +217,7 @@ function RenderDropDownAndNewTab(props: {
                     onSelect={(id) => {
                         SelectQuery(id)
                     }}
-                    text={props.selectedSearch}
+                    text={selectedSearch}
                     dropdownItems={dropdownItems}
                     isKebab={false}
                 />
@@ -217,10 +228,7 @@ function RenderDropDownAndNewTab(props: {
     return (
         <div className={classes.actionGroup}>
             <AcmActionGroup>
-                <SavedSearchDropdown
-                    selectedSearch={props.selectedSearch}
-                    savedSearchQueries={props.savedSearchQueries}
-                />
+                <SavedSearchDropdown selectedSearch={selectedSearch} savedSearchQueries={savedSearchQueries} />
                 <AcmButton
                     href={NavigationPath.search}
                     variant={ButtonVariant.link}
