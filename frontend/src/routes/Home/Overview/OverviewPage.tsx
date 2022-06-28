@@ -279,6 +279,12 @@ export default function OverviewPage() {
         }
     }, [clusters, selectedCloud, searchData, selectedClusterNames])
 
+    function getPolicyReportRiskSummary(policyReport: PolicyReport, risk: string) {
+        return policyReport.results.filter(
+            (result: PolicyReportResults) => result.source === 'insights' && result.properties.total_risk === risk
+        )
+    }
+
     const { policyReportCriticalCount, policyReportImportantCount, policyReportModerateCount, policyReportLowCount } =
         useMemo(() => {
             const clustersToSearch: string[] =
@@ -291,40 +297,28 @@ export default function OverviewPage() {
 
             const policyReportCriticalCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
-                    const criticalResults = currentValue.results.filter(
-                        (result: PolicyReportResults) =>
-                            result.source === 'insights' && result.properties.total_risk === '4'
-                    )
+                    const criticalResults = getPolicyReportRiskSummary(currentValue, '4')
                     return total + criticalResults.length
                 },
                 0
             )
             const policyReportImportantCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
-                    const importantResults = currentValue.results.filter(
-                        (result: PolicyReportResults) =>
-                            result.source === 'insights' && result.properties.total_risk === '3'
-                    )
+                    const importantResults = getPolicyReportRiskSummary(currentValue, '3')
                     return total + importantResults.length
                 },
                 0
             )
             const policyReportModerateCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
-                    const moderateResults = currentValue.results.filter(
-                        (result: PolicyReportResults) =>
-                            result.source === 'insights' && result.properties.total_risk === '2'
-                    )
+                    const moderateResults = getPolicyReportRiskSummary(currentValue, '2')
                     return total + moderateResults.length
                 },
                 0
             )
             const policyReportLowCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
-                    const lowResults = currentValue.results.filter(
-                        (result: PolicyReportResults) =>
-                            result.source === 'insights' && result.properties.total_risk === '1'
-                    )
+                    const lowResults = getPolicyReportRiskSummary(currentValue, '1')
                     return total + lowResults.length
                 },
                 0
