@@ -292,7 +292,8 @@ export default function OverviewPage() {
             const policyReportCriticalCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
                     const criticalResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '4'
+                        (result: PolicyReportResults) =>
+                            result.source === 'insights' && result.properties.total_risk === '4'
                     )
                     return total + criticalResults.length
                 },
@@ -301,7 +302,8 @@ export default function OverviewPage() {
             const policyReportImportantCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
                     const importantResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '3'
+                        (result: PolicyReportResults) =>
+                            result.source === 'insights' && result.properties.total_risk === '3'
                     )
                     return total + importantResults.length
                 },
@@ -310,7 +312,8 @@ export default function OverviewPage() {
             const policyReportModerateCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
                     const moderateResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '2'
+                        (result: PolicyReportResults) =>
+                            result.source === 'insights' && result.properties.total_risk === '2'
                     )
                     return total + moderateResults.length
                 },
@@ -319,7 +322,8 @@ export default function OverviewPage() {
             const policyReportLowCount = policyReportsForSelectedClusters.reduce(
                 (total: number, currentValue: PolicyReport) => {
                     const lowResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '1'
+                        (result: PolicyReportResults) =>
+                            result.source === 'insights' && result.properties.total_risk === '1'
                     )
                     return total + lowResults.length
                 },
