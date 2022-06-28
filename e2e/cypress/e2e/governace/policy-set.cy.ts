@@ -7,20 +7,18 @@ describe('policy set', () => {
     const namespace: string = `cypress-${crypto.randomBytes(4).toString('hex')}`
     const policySetName = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
-    before(() => {
+    after(() => {
+        cy.deleteNamespace(namespace)
+    })
+
+    it('create policy set', () => {
         cy.createNamespace(namespace)
         cy.mockResource({
             apiVersion: 'cluster.open-cluster-management.io/v1',
             kind: 'ManagedCluster',
             metadata: { name: 'local-cluster', labels: { 'local-cluster': 'true' } },
         })
-    })
 
-    after(() => {
-        cy.deleteNamespace(namespace)
-    })
-
-    it('create policy set', () => {
         cy.visit(`/multicloud/governance/policy-sets/create`)
         cy.get('.pf-c-page__main').contains('Create policy set', { timeout: 5 * 60 * 1000 })
 

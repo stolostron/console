@@ -32,14 +32,16 @@ enum SocketIOAction {
 }
 
 const sid = 'qKNAdUvgaMqOq4-ZAAAf'
-let websocketMockQueue = [
-    `${SocketIOType.Open}{"sid":"${sid}","upgrades":[""],"pingInterval":25000,"pingTimeout":20000,"maxPayload":1000000}`,
-    `${SocketIOType.Message}${SocketIOAction.Connect}{"sid":"${sid}"}`,
-    ['LOADED'],
-]
+let websocketMockQueue: unknown[]
 
 export function setupWebsocketMock() {
     if (!Cypress.env('mock')) return
+
+    websocketMockQueue = [
+        `${SocketIOType.Open}{"sid":"${sid}","upgrades":[""],"pingInterval":25000,"pingTimeout":20000,"maxPayload":1000000}`,
+        `${SocketIOType.Message}${SocketIOAction.Connect}{"sid":"${sid}"}`,
+        ['LOADED'],
+    ]
 
     cy.intercept({ method: 'POST', url: '/socket.io/?*' }, (req: CyHttpMessages.IncomingHttpRequest) => {
         req.reply('ok')
