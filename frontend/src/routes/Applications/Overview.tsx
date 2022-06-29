@@ -74,6 +74,13 @@ const fluxAnnotations = {
     git: ['kustomize.toolkit.fluxcd.io/name', 'kustomize.toolkit.fluxcd.io/namespace'],
 }
 
+const labelArr: string[] = [
+    'app=',
+    'kustomize.toolkit.fluxcd.io/name=',
+    'helm.toolkit.fluxcd.io/name=',
+    'app.kubernetes.io/part-of=',
+]
+
 type IApplicationResource = IResource | OCPAppResource
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource {
@@ -370,11 +377,15 @@ export default function ApplicationsOverview() {
     const ocpAppResourceTableItems = useMemo(() => {
         const openShiftAppResourceMaps: Record<string, any> = {}
         const transformedData: any[] = []
-        discoveredOCPAppResources.forEach((item: any) => {
+        for (let i = 0; i < discoveredOCPAppResources.length; i++) {
+            if ((discoveredOCPAppResources[i] as any)._hostingSubscription) {
+                // don't list subscription apps as ocp
+                continue
+            }
             let itemLabel = ''
             const labels: [] =
-                item.label &&
-                item.label
+                (discoveredOCPAppResources[i] as any).label &&
+                (discoveredOCPAppResources[i] as any).label
                     .replace(/\s/g, '')
                     .split(';')
                     .map((label: string) => {
@@ -392,19 +403,33 @@ export default function ApplicationsOverview() {
                     }
                 })
             if (itemLabel) {
-                const key = `${itemLabel}-${item.namespace}-${item.cluster}`
-                openShiftAppResourceMaps[key] = item
+                const key = `${itemLabel}-${(discoveredOCPAppResources[i] as any).namespace}-${
+                    (discoveredOCPAppResources[i] as any).cluster
+                }`
+                openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
             }
-        })
+        }
 
         Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+            let labelIdx
+            let i
+            for (i = 0; i < labelArr.length; i++) {
+                labelIdx = value.label?.indexOf(labelArr[i])
+                if (labelIdx > -1) {
+                    break
+                }
+            }
+            labelIdx += labelArr[i].length
+
+            const semicolon = value.label?.indexOf(';', labelIdx)
+            const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
             transformedData.push(
                 generateTransformData({
                     apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
                     kind: value.kind,
                     label: value.label,
                     metadata: {
-                        name: value.name,
+                        name: appLabel,
                         namespace: value.namespace,
                         creationTimestamp: value.created,
                     },
