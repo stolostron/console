@@ -471,7 +471,7 @@ export default function ApplicationsOverview() {
                 transforms: [cellWidth(20)],
                 cell: (application) => {
                     let clusterQuery = ''
-                    let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion.split('/')[0]}`
+                    let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
                     if (
                         (application.apiVersion === ArgoApplicationApiVersion &&
                             application.kind === ArgoApplicationKind) ||

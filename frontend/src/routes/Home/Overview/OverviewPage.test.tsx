@@ -290,6 +290,19 @@ const mockPolicyReports: PolicyReport[] = [
                 policy: 'policyreport testing risk 0 policy',
                 result: 'policyreport testing risk 0 result',
             },
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                source: 'grc',
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '2',
+                    component: 'rule.id.0',
+                },
+                message: 'policyreport testing risk 2 and grc filtering',
+                policy: 'policyreport testing risk 2 and grc filtering - policy',
+                result: 'policyreport testing risk 2 and grc filtering - result',
+            },
         ],
     },
 ]
@@ -485,4 +498,6 @@ it('should render overview page with expected data', async () => {
     // Check PolicyReport chart
     await waitFor(() => expect(getByText('2 Critical')).toBeTruthy())
     await waitFor(() => expect(getByText('1 Important')).toBeTruthy())
+    await waitFor(() => expect(getByText('0 Moderate')).toBeTruthy())
+    await waitFor(() => expect(getByText('0 Low')).toBeTruthy())
 })
