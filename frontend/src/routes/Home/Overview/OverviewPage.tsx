@@ -294,7 +294,7 @@ export default function OverviewPage() {
             let policyReportModerateCount = 0
             let policyReportLowCount = 0
             policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
-                policyReport.results.filter((result: PolicyReportResults) => {
+                policyReport.results.forEach((result: PolicyReportResults) => {
                     if (result.source === 'insights') {
                         switch (result.properties.total_risk) {
                             case '4':
