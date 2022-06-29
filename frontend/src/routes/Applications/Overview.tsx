@@ -75,9 +75,9 @@ const fluxAnnotations = {
 }
 
 const labelArr: string[] = [
-    'app=',
     'kustomize.toolkit.fluxcd.io/name=',
     'helm.toolkit.fluxcd.io/name=',
+    'app=',
     'app.kubernetes.io/part-of=',
 ]
 
