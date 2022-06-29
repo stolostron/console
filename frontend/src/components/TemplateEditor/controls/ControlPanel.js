@@ -344,7 +344,7 @@ class ControlPanel extends React.Component {
                     setAvailable(control, { loading: true })
                     query()
                         .then((data) => {
-                            setAvailable(control, { loading: false, data })
+                            setAvailable(control, { loading: false, data, i18n: this.props.i18n })
                             control.forceUpdate()
                         })
                         .catch((err) => {
