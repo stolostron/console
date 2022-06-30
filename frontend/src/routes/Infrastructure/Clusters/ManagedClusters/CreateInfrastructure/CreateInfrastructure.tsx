@@ -19,13 +19,17 @@ export function CreateInfrastructure() {
             ),
         [secrets]
     )
-    function getCredentialLabels(provider: Provider) {
-        return credentials.filter(
-            (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/type'] === provider
-        ).length > 0
-            ? [t('Saved credentials')]
-            : undefined
-    }
+
+    const getCredentialLabels = useCallback(
+        (provider: Provider) => {
+            return credentials.filter(
+                (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/type'] === provider
+            ).length > 0
+                ? [t('Saved credentials')]
+                : undefined
+        },
+        [credentials, t]
+    )
 
     const cards = useMemo(() => {
         const cards: ICatalogCard[] = [
@@ -144,13 +148,13 @@ export function CreateInfrastructure() {
             },
         ]
         return cards
-    }, [history])
+    }, [getCredentialLabels, history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
     const breadcrumbs = useMemo(
         () => [{ label: t('Clusters'), to: NavigationPath.clusters }, { label: t('Infrastructure') }],
-        []
+        [t]
     )
 
     const onBack = useCallback(() => history.push(NavigationPath.clusters), [history])

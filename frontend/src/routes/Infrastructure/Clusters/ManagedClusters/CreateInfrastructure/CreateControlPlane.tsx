@@ -16,6 +16,8 @@ import { NavigationPath } from '../../../../../NavigationPath'
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
+    const history = useHistory()
+
     const cards = useMemo(() => {
         const cards: ICatalogCard[] = [
             {
@@ -78,7 +80,7 @@ export function CreateControlPlane() {
             },
         ]
         return cards
-    }, [])
+    }, [history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -89,9 +91,8 @@ export function CreateControlPlane() {
             { label: t('Control Plane') },
         ]
         return breadcrumbs
-    }, [])
+    }, [t])
 
-    const history = useHistory()
     const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
 
     return (
