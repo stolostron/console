@@ -3,7 +3,7 @@
 import { uniqBy, get, set } from 'lodash'
 import { getClusterName, addClusters } from './utils'
 import { createReplicaChild } from './topologySubscription'
-import { fireManagedClusterView, listNamespacedResources } from '../../../../../resources'
+import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
@@ -209,19 +209,32 @@ export const openRouteURL = (routeObject, toggleLoading) => {
     const apiVersion = `${apigroup}/${apiversion}`
 
     toggleLoading()
-    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-        .then((viewResponse) => {
-            toggleLoading()
-            if (viewResponse.message) {
-                // should handle error in the future
-            } else {
-                openRouteURLWindow(viewResponse.result)
-            }
-        })
-        .catch((err) => {
-            toggleLoading()
-            console.error('Error getting resource: ', err)
-        })
+    if (cluster === 'local-cluster') {
+        const route = getResource({ apiVersion, kind, metadata: { namespace, name } }).promise
+        route
+            .then((result) => {
+                toggleLoading()
+                openRouteURLWindow(result)
+            })
+            .catch((err) => {
+                toggleLoading()
+                console.error('Error getting resource: ', err)
+            })
+    } else {
+        fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+            .then((viewResponse) => {
+                toggleLoading()
+                if (viewResponse.message) {
+                    // should handle error in the future
+                } else {
+                    openRouteURLWindow(viewResponse.result)
+                }
+            })
+            .catch((err) => {
+                toggleLoading()
+                console.error('Error getting resource: ', err)
+            })
+    }
 }
 
 const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
