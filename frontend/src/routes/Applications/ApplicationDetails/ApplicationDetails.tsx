@@ -182,15 +182,26 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             click: () => {
                 if (applicationData) {
                     const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
-                    const searchLink = getSearchLink({
-                        properties: {
-                            name: applicationData?.application.app.metadata?.name,
-                            namespace: applicationData?.application.app.metadata?.namespace,
-                            kind: applicationData?.application.app.kind.toLowerCase(),
-                            apigroup: apigroup as string,
-                            apiversion: apiversion as string,
-                        },
-                    })
+                    const isOCPorFluxApp = applicationData.application.isOCPApp || applicationData.application.isFluxApp
+                    const searchLink = isOCPorFluxApp
+                        ? getSearchLink({
+                              properties: {
+                                  namespace: applicationData?.application.app.metadata?.namespace,
+                                  label: applicationData?.application.isOCPApp
+                                      ? `app=${applicationData?.application.app.metadata?.name},app.kubernetes.io/part-of=${applicationData?.application.app.metadata?.name}`
+                                      : `kustomize.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name},helm.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name}`,
+                                  cluster: applicationData?.application.app.cluster.name,
+                              },
+                          })
+                        : getSearchLink({
+                              properties: {
+                                  name: applicationData?.application.app.metadata?.name,
+                                  namespace: applicationData?.application.app.metadata?.namespace,
+                                  kind: applicationData?.application.app.kind.toLowerCase(),
+                                  apigroup: apigroup as string,
+                                  apiversion: apiversion as string,
+                              },
+                          })
                     history.push(searchLink)
                 }
             },

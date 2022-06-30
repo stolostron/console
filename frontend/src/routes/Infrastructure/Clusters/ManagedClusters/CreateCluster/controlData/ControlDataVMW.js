@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
