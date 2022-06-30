@@ -136,7 +136,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/configure': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/username': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/mchVersion': { target: 'https://localhost:4000', secure: false },
-                '/socket.io': {
+                '/multicloud/socket.io': {
                     target: 'https://localhost:4000',
                     secure: false,
                     ws: true,

@@ -57,7 +57,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
         }
 
-        io = new SocketIoServer(server as unknown as Server, { transports: ['polling'] })
+        io = new SocketIoServer(server as unknown as Server, { path: '/multicloud/socket.io' })
 
         io.on('connection', clientConnected)
 

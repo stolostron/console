@@ -434,7 +434,7 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        const socket = io()
+        const socket = io({ path: '/multicloud/socket.io' })
         socket.on('connect', () => {
             console.debug('websocket', 'connect')
             socket.on('ADDED', (resource: IResource) => {
