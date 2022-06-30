@@ -73,7 +73,7 @@
     "Already informing": "Already informing",
     "Amazon Web Services": "Amazon Web Services",
     "An OpenShift cluster in your AWS account that uses the ACM multicloud API.": "An OpenShift cluster in your AWS account that uses the ACM multicloud API.",
-    "An OpenShift cluster running in a bare metal environment in you on-premises data center.": "An OpenShift cluster running in a bare metal environment in you on-premises data center.",
+    "An OpenShift cluster running in a bare metal environment in your on-premises data center.": "An OpenShift cluster running in a bare metal environment in your on-premises data center.",
     "An OpenShift cluster running in a vSphere environment in your on-premises data center.": "An OpenShift cluster running in a vSphere environment in your on-premises data center.",
     "An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.": "An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.",
     "An OpenShift cluster running in your Azure subscription that uses the ACM multicloud API.": "An OpenShift cluster running in your Azure subscription that uses the ACM multicloud API.",

@@ -50,7 +50,7 @@ export function CreateInfrastructure() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'An OpenShift cluster running in a bare metal environment in you on-premises data center.'
+                            'An OpenShift cluster running in a bare metal environment in your on-premises data center.'
                         ),
                     },
                 ],
