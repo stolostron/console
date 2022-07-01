@@ -24,7 +24,7 @@
     font-weight: bold;
 }
 .node rect {
-    fill: white;
+    fill: #f0f0f0;
     opacity: 0.85;
     pointer-events: none;
     stroke: #c8c8c8;
