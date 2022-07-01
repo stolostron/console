@@ -141,13 +141,11 @@ const discoverChannelFromSource = (
         }
 
         // if more then one group, collapse all groups
-        if (multiple) {
-            groupControlData
-                .filter(({ type }) => type === 'section')
-                .forEach((section) => {
-                    section.collapsed = true
-                })
-        }
+        groupControlData
+            .filter(({ type }) => type === 'section')
+            .forEach((section) => {
+                section.collapsed = true
+            })
     }
 
     // get trailing digit so we can create a unique name

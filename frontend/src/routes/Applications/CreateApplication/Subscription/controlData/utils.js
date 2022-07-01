@@ -21,6 +21,7 @@ import {
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
+const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const specPathname = 'spec.pathname'
 
@@ -374,14 +375,6 @@ export const getGitBranches = async (groupControlData, setLoadingState) => {
     retrieveGitDetails(null, groupControlData, setLoadingState)
 }
 
-export const placementRuleSimplified = (value, control) => {
-    if (!control || !value) {
-        return value
-    }
-    const mappedData = _.get(control, 'availableData', {})[value]
-    return (mappedData && _.get(mappedData, 'metadata.name')) || value
-}
-
 export const setAvailableRules = (control, result) => {
     const { loading } = result
     const { data, i18n } = result
@@ -399,11 +392,12 @@ export const setAvailableRules = (control, result) => {
         } else if (placementRules) {
             control.isLoaded = true
 
+            control.availableInfo = {}
             const keyFn = (rule) => {
                 const ruleName = _.get(rule, 'metadata.name', '')
                 const clusterSelector = _.get(rule, 'spec.clusterSelector')
                 const clusterConditions = _.get(rule, 'spec.clusterConditions')
-                let selector = i18n('creation.app.local.clusters.only')
+                let selector = i18n('creation.app.local.clusters.only', [ruleName])
                 if (clusterSelector?.matchExpressions?.length > 0) {
                     if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
                         const getLabels = () => {
@@ -413,29 +407,42 @@ export const setAvailableRules = (control, result) => {
                                 })
                                 .join('; ')
                         }
-                        selector = i18n('creation.app.clusters.matching', [getLabels()])
+                        selector = i18n('creation.app.clusters.matching', [ruleName, getLabels()])
                     }
                 } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
-                    selector = i18n('creation.app.clusters.all.online')
+                    selector = i18n('creation.app.clusters.all.online', [ruleName])
                 } else if (clusterSelector.matchLabels) {
                     if (!clusterSelector.matchLabels['local-cluster']) {
-                        selector = i18n('creation.app.clusters.matching', [clusterSelector.matchLabels[0]])
+                        selector = i18n('creation.app.clusters.matching', [ruleName, clusterSelector.matchLabels[0]])
                     }
                 }
-                return `${ruleName} [${selector}]`
+                control.availableInfo[ruleName] = selector
+                return ruleName
             }
             control.availableData = _.keyBy(placementRules, keyFn)
             control.available = _.map(Object.values(control.availableData), keyFn).sort()
-            control.placeholder =
-                control.available.length === 0
-                    ? i18n('creation.app.select.no.existing.placement.rule')
-                    : i18n('creation.app.select.existing.placement.rule')
             control.info = ''
+            const { groupControlData } = control
+
+            // if no existing placement rules...
+            if (control.available.length === 0) {
+                control.placeholder = i18n('creation.app.select.no.existing.placement.rule')
+                const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
+                clusterSelectorControl.onSelect()
+            } else {
+                control.placeholder = i18n('creation.app.select.existing.placement.rule')
+                const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
+                existingRuleControl.onSelect()
+            }
 
             //remove default placement rule name if this is not on the list of available placements
             //in that case the name was set by the reverse function on control initialization
-            if (control.active && !control.available.includes(control.active)) {
-                control.active = null
+            if (control.active) {
+                if (!control.available.includes(control.active)) {
+                    control.active = null
+                } else {
+                    control.info = control.availableInfo[control.active]
+                }
             }
         }
     } else {

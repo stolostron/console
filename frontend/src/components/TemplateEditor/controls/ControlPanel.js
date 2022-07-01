@@ -225,12 +225,17 @@ class ControlPanel extends React.Component {
                 shadowed,
                 collapsed,
             })
+            const sectionContainerClasses = classNames({
+                'creation-view-group-subcontainer': title.subgroup,
+            })
             title.content = _content
             return (
                 <React.Fragment key={id}>
-                    {this.renderControl(id, 'section', title, grpId)}
-                    <div className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
-                        {this.renderControls(_content, grpId)}
+                    <div className={sectionContainerClasses}>
+                        {this.renderControl(id, 'section', title, grpId)}
+                        <div className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
+                            {this.renderControls(_content, grpId)}
+                        </div>
                     </div>
                 </React.Fragment>
             )

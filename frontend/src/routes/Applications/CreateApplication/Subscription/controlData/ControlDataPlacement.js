@@ -19,12 +19,7 @@ import ClusterSelector, {
     reverse as reverseClusterSelector,
     summarize as summarizeClusterSelector,
 } from '../common/ClusterSelector'
-import {
-    setAvailableRules,
-    getSharedPlacementRuleWarning,
-    getSharedSubscriptionWarning,
-    placementRuleSimplified,
-} from './utils'
+import { setAvailableRules, getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
@@ -82,9 +77,9 @@ export const updatePlacementControls = (control) => {
 
 // existing placement rule combo box changed -- update hidden value used in temptlate
 export const updateNewRuleControls = (control) => {
-    const { availableData, groupControlData } = control
+    const { availableData, availableInfo, groupControlData } = control
     const active = availableData[control.active]
-    control.info = control?.active.split('[').pop().split(']')[0]
+    control.info = availableInfo[control?.active]
     const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
     selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, 'metadata.name'))
 }
@@ -117,13 +112,25 @@ export const summarizeOnline = (control, globalControlData, summary, i18n) => {
     const localClusterCheckboxControl = getControlByID(control.groupControlData, localClusterCheckbox)
     const onlineClusterCheckboxControl = getControlByID(control.groupControlData, onlineClusterCheckbox)
     const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
+    const existingRuleControl = getControlByID(control.groupControlData, existingRuleCheckbox)
+    const existingRuleCombo = getControlByID(control.groupControlData, 'placementrulecombo')
 
-    if (_.get(localClusterCheckboxControl, 'active', false) === true) {
+    if (_.get(existingRuleControl, 'active', false) === true) {
+        summary.push(existingRuleCombo.info)
+    } else if (_.get(localClusterCheckboxControl, 'active', false) === true) {
         summary.push(i18n('edit.app.localCluster.summary'))
     } else if (_.get(onlineClusterCheckboxControl, 'active', false) === true) {
         summary.push(i18n('edit.app.onlineClusters.summary'))
     } else if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
-        summary.push(i18n('edit.app.labelClusters.summary'))
+        summarizeClusterSelector(control, [], summary)
+    }
+}
+
+export const summarizeSelectorControl = (control, globalControlData, summary) => {
+    const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
+
+    if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
+        summarizeClusterSelector(control, [], summary)
     }
 }
 
@@ -153,7 +160,7 @@ const placementData = async () => [
         id: 'clusterSection',
         type: 'section',
         title: 'creation.app.placement.rule',
-        overline: true,
+        subgroup: true,
         collapsable: true,
         collapsed: false,
         info: getSharedPlacementRuleWarning,
@@ -166,6 +173,7 @@ const placementData = async () => [
         tooltip: 'tooltip.creation.app.settings.existingRule',
         onSelect: updatePlacementControls,
         active: true,
+        summarize: summarizeOnline,
     },
     {
         id: 'placementrulecombo',
@@ -176,7 +184,7 @@ const placementData = async () => [
         fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,
         validation: {},
-        simplified: placementRuleSimplified,
+        summarize: () => {},
     },
     {
         id: 'selectedRuleName',
@@ -190,7 +198,7 @@ const placementData = async () => [
         available: [],
         onSelect: updatePlacementControls,
         reverse: reverseClusterSelector,
-        summarize: summarizeClusterSelector,
+        summarize: summarizeSelectorControl,
     },
     {
         id: onlineClusterCheckbox,
@@ -205,7 +213,7 @@ const placementData = async () => [
         available: [],
         onSelect: updatePlacementControls,
         reverse: reverseOnline,
-        summarize: summarizeOnline.bind(null),
+        summarize: () => {},
     },
     {
         id: localClusterCheckbox,
@@ -219,11 +227,7 @@ const placementData = async () => [
             'Subscription[0].spec.placement.local',
             'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
         ],
-        summarize: (control, controlData, summary, i18n) => {
-            if (control.active) {
-                summary.push(i18n('edit.app.localCluster.summary'))
-            }
-        },
+        summarize: () => {},
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  settings  /////////////////////////////////////
@@ -231,7 +235,7 @@ const placementData = async () => [
         id: 'settingsSection',
         type: 'section',
         title: 'creation.app.section.settings',
-        overline: true,
+        subgroup: true,
         collapsable: true,
         collapsed: false,
         info: getSharedSubscriptionWarning,

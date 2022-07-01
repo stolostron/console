@@ -777,9 +777,25 @@
     padding: 10px;
     margin: 10px 0;
 }
-.temptifly-controls .creation-view-group-container .creation-view-controls-title.collapsed,
-.creation-view-controls .creation-view-group-container .creation-view-controls-title.collapsed {
-    margin-bottom: 0px;
+.creation-view-controls .creation-view-group-subcontainer {
+    border: 1px solid var(--pf-global--BorderColor--300);
+    background-color: var(--pf-global--BackgroundColor--light-100);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    margin-bottom: 3px;
+}
+
+.creation-view-controls .creation-view-group-subcontainer .creation-view-controls-title-main-name {
+    font-weight: bold;
+}
+
+.creation-view-controls .creation-view-group-subcontainer .pf-c-form__label-text {
+    font-weight: normal;
+    font-size: 16px;
+}
+
+.creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-c-form__label-text {
+    font-weight: bold;
 }
 .temptifly-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,
 .creation-view-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,

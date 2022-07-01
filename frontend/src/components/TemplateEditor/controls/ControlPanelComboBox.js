@@ -401,9 +401,10 @@ class ControlPanelComboBox extends React.Component {
                 )
             }
         } else {
-            const title = simplified && simplified(label, control)
-            if (simplified) {
-                label = label.split('[').pop().split(']')[0]
+            let title = simplified && simplified(label, control)
+            if (control.availableInfo) {
+                title = label
+                label = control.availableInfo[label]
             }
             return (
                 <div className="tf--list-box__menu-item-container">
