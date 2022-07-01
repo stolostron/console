@@ -29,6 +29,7 @@ class ControlPanelSingleSelect extends React.Component {
     render() {
         const { open } = this.state
         const { controlId, i18n, control, handleChange } = this.props
+        const {
             name,
             active = '',
             available = [],
