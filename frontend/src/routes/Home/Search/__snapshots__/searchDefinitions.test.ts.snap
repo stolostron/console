@@ -678,7 +678,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
