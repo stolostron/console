@@ -4,6 +4,8 @@ import { PluginData } from '../../../components/PluginData'
 import { PluginContextProvider } from '../../../components/PluginContextProvider'
 import Clusters from './Clusters'
 
+import '../../../App.css'
+
 export default function ClustersPlugin() {
     return (
         <PluginContextProvider>
