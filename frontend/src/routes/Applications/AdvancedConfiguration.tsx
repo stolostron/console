@@ -664,7 +664,7 @@ export default function AdvancedConfiguration() {
             >
                 <Split hasGutter>
                     <TerminologyCard
-                        title={t('Subsciptions')}
+                        title={t('Subscriptions')}
                         description={t(
                             'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
                         )}
