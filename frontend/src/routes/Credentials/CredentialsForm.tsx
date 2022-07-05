@@ -64,6 +64,7 @@ const credentialProviders: Provider[] = [
     Provider.vmware,
     Provider.baremetal,
     Provider.hybrid,
+    Provider.hypershift,
 ]
 
 enum ProviderGroup {
@@ -83,6 +84,7 @@ const providerGroup: Record<string, string> = {
     [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
+    [Provider.hybrid]: ProviderGroup.Datacenter,
     [Provider.hybrid]: ProviderGroup.Datacenter,
 }
 
@@ -477,6 +479,11 @@ export function CredentialsForm(props: {
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 break
+            case Provider.hypershift:
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!['ssh-publickey'] = sshPublickey
+                break
         }
         if (secret.stringData?.pullSecret && !secret.stringData.pullSecret.endsWith('\n')) {
             secret.stringData.pullSecret += '\n'
@@ -656,6 +663,7 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                             Provider.redhatvirtualization,
                             Provider.hybrid,
+                            Provider.hypershift,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('Base DNS domain'),
@@ -1359,6 +1367,7 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                             Provider.redhatvirtualization,
                             Provider.hybrid,
+                            Provider.hypershift,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Pull secret'),
@@ -1403,6 +1412,7 @@ export function CredentialsForm(props: {
                             Provider.openstack,
                             Provider.redhatvirtualization,
                             Provider.vmware,
+                            Provider.hypershift,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('SSH public key'),

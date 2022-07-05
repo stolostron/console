@@ -4,7 +4,7 @@ import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
-import { getValue } from 'temptifly'
+import { getValue } from '../../../../../../../components/TemplateEditor'
 import { AcmLabelsInput, AcmSelect } from '../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
@@ -93,6 +93,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 managedClusterSet: control.active.managedClusterSet,
                 additionalLabels: control.active.additionalLabels,
             }
+            if (control.active.managedClusterSet !== managedClusterSet) {
+                setManagedClusterSet(control.active.managedClusterSet)
+            }
             Object.keys(fields).forEach((key) => {
                 const path = fields[key].path
                 if (path) {
@@ -144,7 +147,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 }
                 labelHelp={t('import.form.managedClusterSet.labelHelp')}
                 value={managedClusterSet}
-                onChange={setManagedClusterSet}
+                onChange={(value) => {
+                    setManagedClusterSet(value)
+                    control.active = { ...control.active, managedClusterSet: value }
+                    handleChange(control)
+                }}
                 isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
                 hidden={canJoinClusterSets === undefined}
                 helperText={

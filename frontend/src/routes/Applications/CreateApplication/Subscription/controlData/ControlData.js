@@ -17,7 +17,7 @@ import otherChannelData from './ControlDataOther'
 import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
 import { listProjects } from '../../../../../resources'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
-import { VALID_DNS_LABEL } from 'temptifly'
+import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor'
 import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
 import ObjectStore from '../../logos/ObjectStore.svg'
@@ -115,7 +115,6 @@ export const controlData = async () => [
         id: 'channelSection',
         type: 'section',
         title: 'creation.app.channels',
-        overline: true,
         collapsable: true,
         collapsed: false,
     },

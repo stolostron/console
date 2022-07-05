@@ -18,7 +18,7 @@ import {
 import { Fragment, Component } from 'react'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
-import { Tooltip, getSourcePath, removeVs } from 'temptifly'
+import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
 import moment from 'moment-timezone'
 import _ from 'lodash'
 import './style.css'

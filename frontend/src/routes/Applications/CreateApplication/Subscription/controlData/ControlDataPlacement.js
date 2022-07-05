@@ -25,8 +25,9 @@ import {
     getSharedPlacementRuleWarning,
     getSharedSubscriptionWarning,
 } from './utils'
-import { getSourcePath } from 'temptifly'
+import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
+import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
 
@@ -115,8 +116,8 @@ export const updateDisplayForPlacementControls = (urlControl, controlGlobal) => 
 export const updatePlacementControlsForLocal = (placementControl) => {
     const { active, groupControlData } = placementControl
 
-    const onlineControl = groupControlData.find(({ id }) => id === onlineClusterCheckbox)
-    const clusterSelectorControl = groupControlData.find(({ id }) => id === 'clusterSelector')
+    const onlineControl = getControlByID(groupControlData, onlineClusterCheckbox)
+    const clusterSelectorControl = getControlByID(groupControlData, 'clusterSelector')
 
     if (active === true) {
         if (onlineControl) {
@@ -145,8 +146,8 @@ export const updatePlacementControlsForLocal = (placementControl) => {
 export const updatePlacementControlsForCustom = (placementControl) => {
     const { active, groupControlData } = placementControl
 
-    const onlineControl = groupControlData.find(({ id }) => id === onlineClusterCheckbox)
-    const localControl = groupControlData.find(({ id }) => id === localClusterCheckbox)
+    const onlineControl = getControlByID(groupControlData, onlineClusterCheckbox)
+    const localControl = getControlByID(groupControlData, localClusterCheckbox)
 
     localControl && _.set(localControl, 'active', false)
 
@@ -162,8 +163,8 @@ export const updatePlacementControlsForCustom = (placementControl) => {
 export const updatePlacementControlsForAllOnline = (placementControl) => {
     const { active, groupControlData } = placementControl
 
-    const clusterSelectorControl = groupControlData.find(({ id }) => id === 'clusterSelector')
-    const localControl = groupControlData.find(({ id }) => id === localClusterCheckbox)
+    const clusterSelectorControl = getControlByID(groupControlData, 'clusterSelector')
+    const localControl = getControlByID(groupControlData, localClusterCheckbox)
 
     localControl && _.set(localControl, 'active', false)
 
@@ -197,9 +198,9 @@ export const reverseOnline = (control, templateObject) => {
 }
 
 export const summarizeOnline = (control, globalControlData, summary, i18n) => {
-    const localClusterCheckboxControl = control.groupControlData.find(({ id }) => id === localClusterCheckbox)
-    const onlineClusterCheckboxControl = control.groupControlData.find(({ id }) => id === onlineClusterCheckbox)
-    const clusterSelectorControl = control.groupControlData.find(({ id }) => id === 'clusterSelector')
+    const localClusterCheckboxControl = getControlByID(control.groupControlData, localClusterCheckbox)
+    const onlineClusterCheckboxControl = getControlByID(control.groupControlData, onlineClusterCheckbox)
+    const clusterSelectorControl = getControlByID(control.groupControlData, 'clusterSelector')
 
     if (_.get(localClusterCheckboxControl, 'active', false) === true) {
         summary.push(i18n('edit.app.localCluster.summary'))

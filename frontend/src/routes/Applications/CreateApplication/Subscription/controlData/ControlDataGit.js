@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from 'temptifly'
+import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from '../../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
 import prePostTasks from './ControlDataPrePostTasks'
 import {
@@ -21,6 +21,7 @@ import {
     updateGitBranchFolders,
     channelSimplified,
 } from './utils'
+import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
 export const validateBranch = (branch) => {
@@ -76,17 +77,9 @@ export const VALIDATE_GITBRANCH = {
 export const updateGitCredentials = (urlControl, globalControl, setLoadingState) => {
     const groupControlData = _.get(urlControl, 'groupControlData')
 
-    const userCtrlData = _.get(
-        groupControlData.find(({ id }) => id === 'githubUser'),
-        'active',
-        ''
-    )
+    const userCtrlData = _.get(getControlByID(groupControlData, 'githubUser'), 'active', '')
 
-    const tokenCtrlData = _.get(
-        groupControlData.find(({ id }) => id === 'githubAccessId'),
-        'active',
-        ''
-    )
+    const tokenCtrlData = _.get(getControlByID(groupControlData, 'githubAccessId'), 'active', '')
 
     if (
         (userCtrlData.length > 0 && tokenCtrlData.length > 0) ||
@@ -100,7 +93,7 @@ export const updateGitCredentials = (urlControl, globalControl, setLoadingState)
 export const updateSubReconcileRate = (subReconcileRateControl) => {
     const groupControlData = _.get(subReconcileRateControl, 'groupControlData')
 
-    const gitReconcileOption = groupControlData.find(({ id }) => id === 'gitReconcileOption')
+    const gitReconcileOption = getControlByID(groupControlData, 'gitReconcileOption')
 
     if (subReconcileRateControl.active) {
         gitReconcileOption.type = 'hidden'
@@ -120,7 +113,7 @@ export const reverseSubReconcileRate = (control, templateObject) => {
         control.active = true
 
         const { groupControlData } = control
-        const gitReconcileOption = groupControlData.find(({ id }) => id === 'gitReconcileOption')
+        const gitReconcileOption = getControlByID(groupControlData, 'gitReconcileOption')
         gitReconcileOption.type = 'hidden'
         gitReconcileOption.active = ''
     }

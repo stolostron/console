@@ -44,24 +44,24 @@ spec:
   {{#case 'AWS'}}
     aws:
       credentialsSecretRef:
-        name: {{{../../name}}}-aws-creds
-      region: {{{../../region}}}
+        name: {{{name}}}-aws-creds
+      region: {{{region}}}
   {{/case}}
 
   {{#case 'GCP'}}
     gcp:
       credentialsSecretRef:
-        name: {{{../../name}}}-gcp-creds
-      region: {{{../../region}}}
+        name: {{{name}}}-gcp-creds
+      region: {{{region}}}
   {{/case}}
 
   {{#case 'Azure'}}
     azure:
-      baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}} ##resourceGroupName
+      baseDomainResourceGroupName: {{{baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
-        name: {{{../../name}}}-azure-creds
-      region: {{{../../region}}}
-      cloudName: {{{../../cloudName}}}
+        name: {{{name}}}-azure-creds
+      region: {{{region}}}
+      cloudName: {{{cloudName}}}
   {{/case}}
 {{/switch}}
 
@@ -127,12 +127,12 @@ type: Opaque
 
 {{#case 'AWS'}}
 metadata:
-  name: {{{../../name}}}-aws-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-aws-creds
+  namespace: '{{{namespace}}}'
 stringData:
-  aws_access_key_id: {{{../../aws_access_key_id}}}
-{{#if ../../showSecrets}}
-  aws_secret_access_key: {{{../../aws_secret_access_key}}}
+  aws_access_key_id: {{{aws_access_key_id}}}
+{{#if showSecrets}}
+  aws_secret_access_key: {{{aws_secret_access_key}}}
 {{else}}
   aws_secret_access_key: # injected on create
 {{/if}}
@@ -140,13 +140,13 @@ stringData:
 
 {{#case 'GCP'}}
 metadata:
-  name: {{{../../name}}}-gcp-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-gcp-creds
+  namespace: '{{{namespace}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   osServiceAccount.json: |-
 {{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServiceAccount.json - See ControlDataHelpers.js replacements[] }}
-{{#each ../../osServiceAccountJson}}
+{{#each osServiceAccountJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -156,13 +156,13 @@ stringData:
 
 {{#case 'Azure'}}
 metadata:
-  name: {{{../../name}}}-azure-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-azure-creds
+  namespace: '{{{namespace}}}'
 stringData:
-{{#if ../../showSecrets}}
+{{#if showSecrets}}
   osServicePrincipal.json: |-
 {{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServicePrincipal.json - See ControlDataHelpers.js replacements[] }}
-{{#each ../../osServicePrincipalJson}}
+{{#each osServicePrincipalJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -172,19 +172,19 @@ stringData:
 
 {{#case 'vSphere'}}
 metadata:
-  name: {{{../../name}}}-vsphere-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-vsphere-creds
+  namespace: '{{{namespace}}}'
 stringData:
-  username: {{{../../username}}}
-  password: {{{../../password}}}
+  username: {{{username}}}
+  password: {{{password}}}
 
 {{#case 'RHV'}}
 metadata:
-  name: {{{../../name}}}-ovirt-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-ovirt-creds
+  namespace: '{{{namespace}}}'
 stringData:
-{{#if ../../showSecrets}}
-  ovirt-config.yaml:{{{../../ovirtConfigYaml}}}
+{{#if showSecrets}}
+  ovirt-config.yaml:{{{ovirtConfigYaml}}}
 {{else}}
   ovirt-config.yaml: # injected on create
 {{/if}}
@@ -196,12 +196,12 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: {{{../../name}}}-vsphere-certs
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-vsphere-certs
+  namespace: '{{{namespace}}}'
 data:
 
-{{#if ../../showSecrets}}
-  .cacert: {{{../../cacertificate}}}
+{{#if showSecrets}}
+  .cacert: {{{cacertificate}}}
 {{else}}
   .cacert: # injected on create
 {{/if}}
@@ -210,13 +210,13 @@ data:
 
 {{#case 'OpenStack'}}
 metadata:
-  name: {{{../../name}}}-openstack-creds
-  namespace: '{{{../../namespace}}}'
+  name: {{{name}}}-openstack-creds
+  namespace: '{{{namespace}}}'
 stringData:
-  cloud: '{{{../../cloud}}}'
-{{#if ../../showSecrets}}
+  cloud: '{{{cloud}}}'
+{{#if showSecrets}}
   clouds.yaml: |-
-    {{{../../clouds.yaml}}}
+    {{{clouds.yaml}}}
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}

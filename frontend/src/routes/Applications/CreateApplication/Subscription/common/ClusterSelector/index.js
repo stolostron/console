@@ -8,7 +8,7 @@ import { AcmTextInput } from '../../../../../../ui-components'
 import { Checkbox, Accordion, AccordionItem, AccordionToggle, AccordionContent } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
-import { Tooltip, getSourcePath, removeVs } from 'temptifly'
+import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
 import _ from 'lodash'
 import './style.css'
 

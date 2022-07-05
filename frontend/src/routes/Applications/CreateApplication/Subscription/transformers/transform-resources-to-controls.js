@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { initializeControls, getSourcePath, getResourceID } from 'temptifly'
+import { initializeControls, getSourcePath, getResourceID } from '../../../../../components/TemplateEditor'
 import _ from 'lodash'
 
 //only called when editing an existing application

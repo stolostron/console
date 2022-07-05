@@ -2,7 +2,6 @@
 import {
     ActionGroup,
     Button,
-    ButtonVariant,
     Chip,
     ChipGroup,
     Flex,
@@ -11,7 +10,6 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -23,6 +21,7 @@ import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { getOperatorError } from '../../../lib/error-output'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -156,37 +155,6 @@ export function AnsibleAutomationsForm(props: {
         () => isAnsibleOperatorInstalled(subscriptionOperators),
         [subscriptionOperators]
     )
-
-    function getOperatorError() {
-        const openShiftConsoleConfig = configMaps?.find((configmap) => configmap.metadata?.name === 'console-public')
-        const openShiftConsoleUrl: string = openShiftConsoleConfig?.data?.consoleURL
-        if (!isOperatorInstalled)
-            return (
-                <div>
-                    {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
-                    {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
-                        <div>
-                            {t('Install the Operator through the following link: ')}
-                            <Button
-                                isInline
-                                variant={ButtonVariant.link}
-                                onClick={() =>
-                                    window.open(
-                                        openShiftConsoleUrl +
-                                            '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                    )
-                                }
-                            >
-                                OperatorHub
-                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                            </Button>
-                        </div>
-                    ) : (
-                        t('Install the Operator through operator hub.')
-                    )}
-                </div>
-            )
-    }
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
@@ -565,7 +533,7 @@ export function AnsibleAutomationsForm(props: {
                 schema={schema}
                 immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
-                operatorError={getOperatorError()}
+                operatorError={getOperatorError(configMaps, isOperatorInstalled, t)}
             />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}

@@ -2,7 +2,6 @@
 
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, Hint, PageSection, TextContent } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlertContext,
@@ -15,19 +14,20 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { clusterCuratorTemplatesValue } from '../../../selectors'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
+import { getOperatorError } from '../../../lib/error-output'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ClusterCurator,
     deleteResource,
-    filterForTemplatedCurators,
     getTemplateJobsNum,
     LinkAnsibleCredential,
     unpackProviderConnection,
@@ -67,36 +67,12 @@ export default function AnsibleAutomationsPage() {
     //         })
     //     }
     // }
-
-    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
-    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
-
     return (
         <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
                     {!isOperatorInstalled && (
-                        <Hint className={classes.hint}>
-                            <div>
-                                {t('template.hint')}{' '}
-                                <AcmButton
-                                    onClick={() =>
-                                        window.open(
-                                            openShiftConsoleUrl +
-                                                '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                        )
-                                    }
-                                    variant={ButtonVariant.link}
-                                    role="link"
-                                    id="view-logs"
-                                    isInline
-                                    isSmall
-                                >
-                                    {t('template.operator.link')}
-                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                                </AcmButton>
-                            </div>
-                        </Hint>
+                        <Hint className={classes.hint}>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
                     )}
                     <AnsibleJobTemplateTable />
                 </PageSection>
@@ -108,9 +84,8 @@ export default function AnsibleAutomationsPage() {
 function AnsibleJobTemplateTable() {
     // Load Data
     const [secrets] = useRecoilState(secretsState)
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const providerConnections = secrets.map(unpackProviderConnection)
-    const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
+    const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&

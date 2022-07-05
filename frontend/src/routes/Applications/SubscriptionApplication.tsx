@@ -11,8 +11,7 @@ import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import TemplateEditor from 'temptifly'
-import 'temptifly/dist/styles.css'
+import TemplateEditor from '../../components/TemplateEditor'
 import {
     ansibleJobState,
     applicationsState,

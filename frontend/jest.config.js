@@ -23,7 +23,7 @@ module.exports = {
         '\\.(css|less)$': '<rootDir>/jest-raw-loader.js',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid)',
+        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid)',
     ],
     coverageDirectory: './coverage',
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],

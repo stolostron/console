@@ -289,42 +289,30 @@ export default function OverviewPage() {
                 clustersToSearch.find((clusterName: string) => clusterName === policyReport.scope?.name)
             )
 
-            const policyReportCriticalCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const criticalResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '4'
-                    )
-                    return total + criticalResults.length
-                },
-                0
-            )
-            const policyReportImportantCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const importantResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '3'
-                    )
-                    return total + importantResults.length
-                },
-                0
-            )
-            const policyReportModerateCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const moderateResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '2'
-                    )
-                    return total + moderateResults.length
-                },
-                0
-            )
-            const policyReportLowCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const lowResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '1'
-                    )
-                    return total + lowResults.length
-                },
-                0
-            )
+            let policyReportCriticalCount = 0
+            let policyReportImportantCount = 0
+            let policyReportModerateCount = 0
+            let policyReportLowCount = 0
+            policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
+                policyReport.results.forEach((result: PolicyReportResults) => {
+                    if (result.source === 'insights') {
+                        switch (result.properties.total_risk) {
+                            case '4':
+                                policyReportCriticalCount++
+                                break
+                            case '3':
+                                policyReportImportantCount++
+                                break
+                            case '2':
+                                policyReportModerateCount++
+                                break
+                            case '1':
+                                policyReportLowCount++
+                                break
+                        }
+                    }
+                })
+            })
 
             return {
                 policyReportCriticalCount,

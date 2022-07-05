@@ -20,7 +20,8 @@ import {
     VALIDATE_ALPHANUMERIC,
     VALIDATE_ALPHANUMERIC_PERIOD,
     VALIDATE_MAC_ADDRESS,
-} from 'temptifly'
+} from '../../../../../../components/TemplateEditor'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listBareMetalAssets } from '../../../../../../resources'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import _ from 'lodash'
@@ -46,7 +47,7 @@ const VALIDATE_CIDR_OPTIONAL = _.cloneDeep(VALIDATE_CIDR)
 VALIDATE_CIDR_OPTIONAL.required = false
 
 const isHidden_gt_OCP44 = (control, controlData) => {
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    const imageSet = getControlByID(controlData, 'imageSet')
     if (imageSet && imageSet.active && imageSet.active.includes('release:4.4')) {
         return false
     }
@@ -59,7 +60,7 @@ const showDNSVIP = (control, controlData) => {
 
 const getRoleCount = (theRole, control, controlData) => {
     let count = 0
-    const hosts = controlData.find(({ id }) => id === 'hosts')
+    const hosts = getControlByID(controlData, 'hosts')
     if (hosts) {
         const { active = [] } = hosts
         count = active.reduce((total, { role }) => {
@@ -181,14 +182,12 @@ export const getControlDataBMC = (includeAutomation = true) => {
 }
 
 const onChangeProvisioningNetwork = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
+    const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
     const useProvisioningNetwork = control.active
     ;['provisioningNetworkCIDR', 'provisioningNetworkInterface', 'provisioningNetworkBridge'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
+        const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProvisioningNetwork
             if (ctrl.disabled) {
@@ -349,7 +348,7 @@ const controlDataBMC = [
         name: 'creation.ocp.host.disable.certificate.verification',
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
         hidden: (control, controlData) => {
-            const hosts = controlData.find(({ id }) => id === 'hosts')
+            const hosts = getControlByID(controlData, 'hosts')
             return !hosts || !hosts.available || hosts.available.length === 0
         },
         active: 'true',

@@ -1,5 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, Grid, GridItem, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
+import {
+    Card,
+    CardBody,
+    CardTitle,
+    Grid,
+    GridItem,
+    PageSection,
+    Split,
+    SplitItem,
+    Stack,
+    StackItem,
+} from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useRecoilState } from 'recoil'
@@ -19,14 +30,16 @@ export const Portals = Object.freeze({
 })
 
 const portals = (
-    <Split hasGutter className="infra-env-form__footer">
-        <SplitItem>
-            <div id={Portals.createBtn} />
-        </SplitItem>
-        <SplitItem>
-            <div id={Portals.cancelBtn} />
-        </SplitItem>
-    </Split>
+    <PageSection variant="light" isFilled>
+        <Split hasGutter>
+            <SplitItem>
+                <div id={Portals.createBtn} />
+            </SplitItem>
+            <SplitItem>
+                <div id={Portals.cancelBtn} />
+            </SplitItem>
+        </Split>
+    </PageSection>
 )
 
 type InfraEnvFormProps = {
@@ -76,38 +89,46 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
 
     const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata.name), [infraEnvironments])
     return (
-        <Grid hasGutter className="infra-env-form">
-            <GridItem span={8}>
-                <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} formRef={formRef} />
-            </GridItem>
-            <GridItem span={8}>
-                <Card>
-                    <Split hasGutter>
-                        <SplitItem>
-                            <CardBody style={{ width: '200px' }}>
-                                <MainIcon />
-                            </CardBody>
-                        </SplitItem>
-                        <SplitItem isFilled>
-                            <CardTitle>Next steps: Adding hosts</CardTitle>
-                            <CardBody>
-                                <Stack hasGutter>
-                                    <StackItem>
-                                        After your infrastructure environment is successfully created, open the details
-                                        view and click the "Add hosts" button.
-                                    </StackItem>
-                                    <StackItem>
-                                        Adding hosts allows cluster creators to pull any available hosts from the
-                                        infrastructure environment.
-                                    </StackItem>
-                                </Stack>
-                            </CardBody>
-                        </SplitItem>
-                    </Split>
-                </Card>
-            </GridItem>
-            <GridItem>{portals}</GridItem>
-        </Grid>
+        <>
+            <PageSection variant="light" isFilled>
+                <Grid hasGutter className="infra-env-form">
+                    <GridItem span={8}>
+                        <InfraEnvFormPage
+                            onValuesChanged={onValuesChanged}
+                            usedNames={infraEnvNames}
+                            formRef={formRef}
+                        />
+                    </GridItem>
+                    <GridItem span={8}>
+                        <Card>
+                            <Split hasGutter>
+                                <SplitItem>
+                                    <CardBody style={{ width: '200px' }}>
+                                        <MainIcon />
+                                    </CardBody>
+                                </SplitItem>
+                                <SplitItem isFilled>
+                                    <CardTitle>Next steps: Adding hosts</CardTitle>
+                                    <CardBody>
+                                        <Stack hasGutter>
+                                            <StackItem>
+                                                After your infrastructure environment is successfully created, open the
+                                                details view and click the "Add hosts" button.
+                                            </StackItem>
+                                            <StackItem>
+                                                Adding hosts allows cluster creators to pull any available hosts from
+                                                the infrastructure environment.
+                                            </StackItem>
+                                        </Stack>
+                                    </CardBody>
+                                </SplitItem>
+                            </Split>
+                        </Card>
+                    </GridItem>
+                </Grid>
+            </PageSection>
+            {portals}
+        </>
     )
 }
 

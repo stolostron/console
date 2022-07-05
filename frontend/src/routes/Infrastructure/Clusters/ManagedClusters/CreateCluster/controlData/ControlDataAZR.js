@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // eslint-disable-next-line no-use-before-define
-
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
+import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,

@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Router } from 'react-router-dom'
-import { createBrowserHistory } from 'history'
-import { render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
+import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
 import { wait } from '../../../../lib/test-util'
-import SearchResults from './SearchResults'
 import {
     SearchResultItemsDocument,
     SearchResultRelatedCountDocument,
     SearchResultRelatedItemsDocument,
 } from '../search-sdk/search-sdk'
+import SearchResults from './SearchResults'
 
 describe('SearchResults Page', () => {
     it('should render page with correct data from search WITH keyword', async () => {
@@ -227,8 +227,14 @@ describe('SearchResults Page', () => {
         expect(screen.getByText('Loading')).toBeInTheDocument()
         // This wait pauses till apollo query is returning data
         await wait()
-        // Test that the component has rendered correctly with data
+        // Test that the component has rendered search result table correctly
         await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('testPod')).toBeTruthy())
+
+        // Test the related resources section is hidden behind expandable section and click
+        screen.queryByText('Show related resources')?.click()
+
+        // Test that the related resource tiles display corrctly after expandable is opened
         await waitFor(() => expect(screen.queryByText('Show all (3)')).toBeTruthy())
     })
 

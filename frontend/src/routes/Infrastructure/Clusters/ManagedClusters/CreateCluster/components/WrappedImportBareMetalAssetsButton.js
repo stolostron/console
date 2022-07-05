@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-use-before-define
 import { useCallback } from 'react'
 import { Button } from '@patternfly/react-core'
-import { Tooltip } from 'temptifly'
+import { Tooltip } from '../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 export default function WrappedImportBareMetalAssetsButton({ appendTable }) {
