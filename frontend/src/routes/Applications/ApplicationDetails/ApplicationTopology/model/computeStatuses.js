@@ -27,6 +27,7 @@ import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/
 
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
+const specIsDesign = 'specs.isDesign'
 const showResourceYaml = 'show_resource_yaml'
 export const checkmarkStatus = 'checkmark'
 export const warningStatus = 'warning'
@@ -66,7 +67,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
     }
 
     const isDeployable = isDeployableResource(node)
-    const isDesign = _.get(node, 'specs.isDesign', false)
+    const isDesign = _.get(node, specIsDesign, false)
     switch (node.type) {
         case 'fluxapplication':
         case 'ocpapplication':
@@ -505,7 +506,7 @@ export const getPulseForData = (available, desired, podsUnavailable) => {
 //////////////////// APPLICATION /////////////////////////
 ///////////////////////////////////////////////////////////
 export const setApplicationDeployStatus = (node, details, t) => {
-    const isDesign = _.get(node, 'specs.isDesign', false)
+    const isDesign = _.get(node, specIsDesign, false)
     if ((node.type !== 'application' || !isDesign) && node.type !== 'applicationset') {
         return details
     }
@@ -712,7 +713,7 @@ export const translateArgoHealthStatus = (healthStatus) => {
 export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => {
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
-    const isDesign = _.get(node, 'specs.isDesign', false)
+    const isDesign = _.get(node, specIsDesign, false)
     //check if this is a subscription created from the app deployable
     if (R.pathOr('', ['type'])(node) !== 'subscription' || isDeployableResource(node) || !isDesign) {
         return details //ignore subscriptions defined from deployables or any other types
@@ -1187,7 +1188,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates } =
         getStateNames(t)
     const isDeployable = isDeployableResource(node)
-    const isDesign = _.get(node, 'specs.isDesign', false)
+    const isDesign = _.get(node, specIsDesign, false)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
     if (
