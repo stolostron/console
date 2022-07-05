@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, DataView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { CatalogCardItemType, CatalogColor, DataView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { AcmIcon, AcmIconVariant, Provider } from '@stolostron/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -25,7 +25,7 @@ export function CreateInfrastructure() {
             return credentials.filter(
                 (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/type'] === provider
             ).length > 0
-                ? [t('Saved credentials')]
+                ? [{ label: t('Saved credentials'), color: CatalogColor.green }]
                 : undefined
         },
         [credentials, t]
