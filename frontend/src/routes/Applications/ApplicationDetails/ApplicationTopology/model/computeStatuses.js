@@ -66,6 +66,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
     }
 
     const isDeployable = isDeployableResource(node)
+    const isDesign = _.get(node, 'specs.isDesign', false)
     switch (node.type) {
         case 'fluxapplication':
         case 'ocpapplication':
@@ -76,7 +77,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
             if (apiVersion && apiVersion.indexOf('argoproj.io') > -1 && !isDeployable) {
                 pulse = getPulseStatusForArgoApp(node)
             } else {
-                if (isDeployable) {
+                if (isDeployable || !isDesign) {
                     pulse = getPulseStatusForGenericNode(node, t)
                 } else if (!_.get(node, 'specs.channels')) {
                     pulse = 'red'
@@ -105,7 +106,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
             }
             break
         case 'subscription':
-            if (isDeployable) {
+            if (isDeployable || !isDesign) {
                 pulse = getPulseStatusForGenericNode(node, t)
             } else {
                 pulse = getPulseStatusForSubscription(node)
@@ -504,7 +505,8 @@ export const getPulseForData = (available, desired, podsUnavailable) => {
 //////////////////// APPLICATION /////////////////////////
 ///////////////////////////////////////////////////////////
 export const setApplicationDeployStatus = (node, details, t) => {
-    if (node.type !== 'application' && node.type !== 'applicationset') {
+    const isDesign = _.get(node, 'specs.isDesign', false)
+    if ((node.type !== 'application' || !isDesign) && node.type !== 'applicationset') {
         return details
     }
 
@@ -710,8 +712,9 @@ export const translateArgoHealthStatus = (healthStatus) => {
 export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => {
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
+    const isDesign = _.get(node, 'specs.isDesign', false)
     //check if this is a subscription created from the app deployable
-    if (R.pathOr('', ['type'])(node) !== 'subscription' || isDeployableResource(node)) {
+    if (R.pathOr('', ['type'])(node) !== 'subscription' || isDeployableResource(node) || !isDesign) {
         return details //ignore subscriptions defined from deployables or any other types
     }
     const timeWindow = _.get(node, 'specs.raw.spec.timewindow.windowtype')
@@ -1184,6 +1187,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates } =
         getStateNames(t)
     const isDeployable = isDeployableResource(node)
+    const isDesign = _.get(node, 'specs.isDesign', false)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
     if (
@@ -1199,7 +1203,8 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 'subscription',
                 'ocpapplication',
                 'fluxapplication',
-            ]))
+            ]) &&
+            isDesign)
     ) {
         //resource with pods info is processed separately
         //ignore packages or any resources from the above list not defined as a deployable
