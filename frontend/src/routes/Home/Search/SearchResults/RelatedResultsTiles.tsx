@@ -1,5 +1,5 @@
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmExpandableWrapper, AcmTile } from '@stolostron/ui-components'
+import { AcmAlert, AcmExpandableWrapper, AcmTile } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
