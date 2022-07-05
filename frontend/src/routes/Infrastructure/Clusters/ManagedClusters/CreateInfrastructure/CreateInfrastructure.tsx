@@ -60,21 +60,21 @@ export function CreateInfrastructure() {
                 ],
                 onClick: () => history.push(NavigationPath.createControlPlane),
             },
-            {
-                id: 'alibaba',
-                icon: <AcmIcon icon={AcmIconVariant.alibaba} />,
-                title: t('Alibaba'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.alibaba),
-                // onClick: () => history.push(NavigationPath.clusters),
-            },
+            // {
+            //     id: 'alibaba',
+            //     icon: <AcmIcon icon={AcmIconVariant.alibaba} />,
+            //     title: t('Alibaba'),
+            //     items: [
+            //         {
+            //             type: CatalogCardItemType.Description,
+            //             description: t(
+            //                 'An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.'
+            //             ),
+            //         },
+            //     ],
+            //     labels: getCredentialLabels(Provider.alibaba),
+            //     // onClick: () => history.push(NavigationPath.clusters),
+            // },
             {
                 id: 'google',
                 icon: <AcmIcon icon={AcmIconVariant.gcp} />,
