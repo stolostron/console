@@ -73,7 +73,7 @@ export class ClusterSelector extends React.Component {
                             />
                             <FormGroup
                                 id="clusterSelector-container"
-                                label={i18n('tooltip.creation.app.settings.clusterSelector')}
+                                label={i18n('creation.app.settings.clusterSelector')}
                                 labelIcon={
                                     /* istanbul ignore next */
 

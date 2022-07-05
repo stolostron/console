@@ -425,13 +425,14 @@ export const setAvailableRules = (control, result) => {
             const { groupControlData } = control
 
             // if no existing placement rules...
+            const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
+            existingRuleControl.disabled = control.available.length === 0
             if (control.available.length === 0) {
                 control.placeholder = i18n('creation.app.select.no.existing.placement.rule')
                 const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
                 clusterSelectorControl.onSelect()
             } else {
                 control.placeholder = i18n('creation.app.select.existing.placement.rule')
-                const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
                 existingRuleControl.onSelect()
             }
 

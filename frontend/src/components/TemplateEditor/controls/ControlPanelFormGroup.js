@@ -19,7 +19,7 @@ class ControlPanelFormGroup extends React.Component {
         const { name, exception, opaque, tooltip, tip, validation = {}, icon, info } = control
         return (
             <React.Fragment>
-                <div style={opaque ? { pointerEvents: 'none', opacity: 0.3 } : {}}>
+                <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
                     <FormGroup
                         id={`${controlId}-label`}
                         label={name}
