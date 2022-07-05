@@ -23,4 +23,9 @@ describe('CreateControlPlane', () => {
         render(<Component />)
         await clickByTestId('hosted')
     })
+
+    test('can click standalone', async () => {
+        render(<Component />)
+        await clickByTestId('standalone')
+    })
 })

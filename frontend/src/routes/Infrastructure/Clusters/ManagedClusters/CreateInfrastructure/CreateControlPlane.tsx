@@ -19,7 +19,7 @@ export function CreateControlPlane() {
     const history = useHistory()
 
     const cards = useMemo(() => {
-        const cards: ICatalogCard[] = [
+        const newCards: ICatalogCard[] = [
             {
                 id: 'hosted',
                 title: t('Hosted'),
@@ -79,18 +79,18 @@ export function CreateControlPlane() {
                 onClick: () => history.push(NavigationPath.createCluster),
             },
         ]
-        return cards
+        return newCards
     }, [history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
     const breadcrumbs = useMemo(() => {
-        const breadcrumbs: ICatalogBreadcrumb[] = [
+        const newBreadcrumbs: ICatalogBreadcrumb[] = [
             { label: t('Clusters'), to: NavigationPath.clusters },
             { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
             { label: t('Control Plane') },
         ]
-        return breadcrumbs
+        return newBreadcrumbs
     }, [t])
 
     const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])

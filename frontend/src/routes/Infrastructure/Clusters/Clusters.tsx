@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import CreateClusterPoolPage from './ClusterPools/CreateClusterPool/CreateClusterPool'

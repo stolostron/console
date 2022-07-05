@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { configure } from '@testing-library/dom'
