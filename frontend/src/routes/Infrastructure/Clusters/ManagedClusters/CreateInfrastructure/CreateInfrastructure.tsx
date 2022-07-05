@@ -32,7 +32,7 @@ export function CreateInfrastructure() {
     )
 
     const cards = useMemo(() => {
-        const cards: ICatalogCard[] = [
+        const newCards: ICatalogCard[] = [
             {
                 id: 'aws',
                 icon: <AcmIcon icon={AcmIconVariant.aws} />,
@@ -147,7 +147,7 @@ export function CreateInfrastructure() {
                 onClick: () => history.push(NavigationPath.createCluster),
             },
         ]
-        return cards
+        return newCards
     }, [getCredentialLabels, history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])

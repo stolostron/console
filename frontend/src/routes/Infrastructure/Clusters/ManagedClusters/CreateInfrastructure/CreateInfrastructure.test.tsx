@@ -7,32 +7,19 @@ import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateInfrastructure } from './CreateInfrastructure'
 
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    Secret,
-} from '../../../../../resources'
+import { ProviderConnectionApiVersion, ProviderConnectionKind, Secret } from '../../../../../resources'
 
-const providerConnectionAws: ProviderConnection = {
+const providerConnectionAws: Secret = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     metadata: {
-        name: 'connectionAws',
+        name: 'aws',
         namespace: 'default',
         labels: {
             'cluster.open-cluster-management.io/type': 'aws',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
-    stringData: {
-        aws_access_key_id: 'fake-aws-key-id',
-        aws_secret_access_key: 'fake-aws-secret-access-key',
-        baseDomain: '',
-        pullSecret: '{"pullSecret":"secret"}',
-        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
-    },
-    type: 'Opaque',
 }
 
 describe('CreateInfrastructure', () => {
@@ -40,7 +27,7 @@ describe('CreateInfrastructure', () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(secretsState, [providerConnectionAws as Secret])
+                    snapshot.set(secretsState, [providerConnectionAws])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createInfrastructure]}>
