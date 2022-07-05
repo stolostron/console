@@ -3,10 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { configure } from '@testing-library/dom'
 import '@testing-library/jest-dom'
+import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
-import i18n from 'i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { initReactI18next } from 'react-i18next'
 
@@ -165,3 +165,13 @@ jest.doMock('moment', () => {
     moment.tz.setDefault('UTC')
     return moment
 })
+
+window.matchMedia =
+    window.matchMedia ||
+    function () {
+        return {
+            matches: false,
+            addListener: function () {},
+            removeListener: function () {},
+        }
+    }
