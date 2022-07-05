@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, CatalogColor, DataView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { AcmIcon, AcmIconVariant, Provider } from '@stolostron/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -166,7 +166,7 @@ export function CreateInfrastructure() {
                 description={t('First, choose your infrastructure provider.')}
                 breadcrumbs={breadcrumbs}
             />
-            <DataView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
         </Fragment>
     )
 }

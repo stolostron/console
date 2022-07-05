@@ -2,7 +2,7 @@
 import { CheckIcon } from '@patternfly/react-icons'
 import {
     CatalogCardItemType,
-    DataView,
+    ItemView,
     getPatternflyColor,
     ICatalogBreadcrumb,
     ICatalogCard,
@@ -102,7 +102,7 @@ export function CreateControlPlane() {
                 description={t('Next, select a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />
-            <DataView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
         </Fragment>
     )
 }
