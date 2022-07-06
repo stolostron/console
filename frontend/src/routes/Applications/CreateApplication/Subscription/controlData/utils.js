@@ -432,7 +432,7 @@ export const setAvailableRules = (control, result) => {
                 const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
                 clusterSelectorControl.onSelect()
             } else {
-                control.placeholder = i18n('creation.app.select.existing.placement.rule')
+                control.placeholder = i18n('creation.app.settings.existingRule')
                 existingRuleControl.onSelect()
             }
 

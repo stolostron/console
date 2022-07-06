@@ -179,7 +179,7 @@ const placementData = async () => [
         id: 'placementrulecombo',
         type: 'combobox',
         opaque: false,
-        placeholder: 'creation.app.select.existing.placement.rule',
+        placeholder: 'creation.app.settings.existingRule',
         reverse: reverseExistingRule,
         fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,
