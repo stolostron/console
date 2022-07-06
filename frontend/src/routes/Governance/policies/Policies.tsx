@@ -249,6 +249,7 @@ export default function PoliciesPage() {
                                 isDisabled={!canUpdatePolicyAutomation}
                                 tooltip={!canUpdatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
+                                component={Link}
                                 variant={ButtonVariant.link}
                                 onClick={() =>
                                     setDrawerContext({
