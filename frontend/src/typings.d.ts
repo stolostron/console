@@ -16,3 +16,5 @@ declare module '*.svg' {
 
 // for SVG images loaded as url paths
 declare module '*.svg?url'
+
+declare module 'merge-jsons-webpack-plugin'

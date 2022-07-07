@@ -3,19 +3,22 @@ import { Button } from '@patternfly/react-core'
 import { MoonIcon, SunIcon } from '@patternfly/react-icons'
 import { CSSProperties, useState } from 'react'
 
-export let theme = localStorage.getItem('theme')
-if (!theme) {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        theme = 'dark'
-    } else {
-        theme = 'light'
+// Do not detect dark theme automatically in production for standalone
+if (process.env.NODE_ENV === 'development') {
+    let theme = localStorage.getItem('theme')
+    if (!theme) {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme = 'dark'
+        } else {
+            theme = 'light'
+        }
+    }
+    if (theme === 'dark') {
+        document.documentElement.classList.add('pf-theme-dark')
     }
 }
-if (theme === 'dark') {
-    document.documentElement.classList.add('pf-theme-dark')
-}
 
-export function toggleTheme() {
+function toggleTheme() {
     if (document.documentElement.classList.contains('pf-theme-dark')) {
         setLightTheme()
     } else {
@@ -23,16 +26,12 @@ export function toggleTheme() {
     }
 }
 
-export function setLightTheme() {
+function setLightTheme() {
     document.documentElement.classList.remove('pf-theme-dark')
     localStorage.setItem('theme', 'light')
 }
 
-export function isDarkTheme() {
-    return document.documentElement.classList.contains('pf-theme-dark')
-}
-
-export function setDarkTheme() {
+function setDarkTheme() {
     document.documentElement.classList.add('pf-theme-dark')
     localStorage.setItem('theme', 'dark')
 }
