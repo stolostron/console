@@ -98,8 +98,8 @@ const setAvailableRules = (control, result) => {
                     if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
                         const getLabels = () => {
                             return clusterSelector.matchExpressions
-                                .map(({ key, values }) => {
-                                    return `${key}=${values.join(', ')}`
+                                .map(({ key, operator, values }) => {
+                                    return `${key}${operator === 'In' ? '=' : '!='}${values.join(', ')}`
                                 })
                                 .join('; ')
                         }
