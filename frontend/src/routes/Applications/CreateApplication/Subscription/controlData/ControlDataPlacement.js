@@ -19,7 +19,7 @@ import ClusterSelector, {
     reverse as reverseClusterSelector,
     summarize as summarizeClusterSelector,
 } from '../common/ClusterSelector'
-import { setAvailableRules, getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
+import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
@@ -30,6 +30,26 @@ const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
+const unavailable = '-unavailable-'
+
+async function getClusterStatus(name) {
+    let successImportStatus = false
+    const localClusterNS = {
+        apiVersion: NamespaceApiVersion,
+        kind: NamespaceKind,
+        metadata: {
+            name,
+        },
+    }
+    const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], [localClusterNS])
+    const managedCluster = authorizedNamespaces.find((ns) => ns === name)
+    if (managedCluster) {
+        successImportStatus = true
+    }
+    return successImportStatus
+}
+
+const enableHubSelfManagement = getClusterStatus('local-cluster')
 
 export const loadExistingPlacementRules = () => {
     let nsControl = undefined
@@ -44,6 +64,98 @@ export const loadExistingPlacementRules = () => {
         loadingDesc: 'creation.app.loading.rules',
         setAvailable: setAvailableRules.bind(null),
     }
+}
+
+const setAvailableRules = (control, result) => {
+    const { loading } = result
+    const { data, i18n } = result
+    const placementRules = data
+    control.isLoading = false
+    const error = placementRules ? null : result.error
+    if (!control.available) {
+        control.available = []
+        control.availableData = []
+    }
+    if (error || placementRules) {
+        if (error) {
+            control.isFailed = true
+            control.isLoaded = true
+        } else if (placementRules) {
+            control.isLoaded = true
+
+            control.availableInfo = {}
+            const { groupControlData } = control
+            const enableHubSelfManagement = getControlByID(groupControlData, 'enableHubSelfManagement')
+
+            const keyFn = (rule) => {
+                const ruleName = _.get(rule, 'metadata.name', '')
+                const clusterSelector = _.get(rule, 'spec.clusterSelector')
+                const clusterConditions = _.get(rule, 'spec.clusterConditions')
+                let selector = enableHubSelfManagement?.active
+                    ? i18n('creation.app.local.clusters.only', [ruleName])
+                    : unavailable
+                if (clusterSelector?.matchExpressions?.length > 0) {
+                    if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
+                        const getLabels = () => {
+                            return clusterSelector.matchExpressions
+                                .map(({ key, values }) => {
+                                    return `${key}=${values.join(', ')}`
+                                })
+                                .join('; ')
+                        }
+                        selector = i18n('creation.app.clusters.matching', [ruleName, getLabels()])
+                    }
+                } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
+                    selector = enableHubSelfManagement?.active
+                        ? i18n('creation.app.clusters.all.online', [ruleName])
+                        : i18n('creation.app.clusters.only.online', [ruleName])
+                } else if (clusterSelector.matchLabels) {
+                    if (!clusterSelector.matchLabels['local-cluster']) {
+                        const getLabels = () => {
+                            return Object.entries(clusterSelector.matchLabels)
+                                .map(([key, value]) => {
+                                    return `${key}=${value}`
+                                })
+                                .join('; ')
+                        }
+                        selector = i18n('creation.app.clusters.matching', [ruleName, getLabels()])
+                    }
+                }
+                control.availableInfo[ruleName] = selector
+                return ruleName
+            }
+            control.availableData = _.keyBy(placementRules, keyFn)
+            control.available = _.map(Object.values(control.availableData), keyFn)
+                .filter((ruleName) => control.availableInfo[ruleName] !== unavailable)
+                .sort()
+            control.info = ''
+
+            // if no existing placement rules...
+            const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
+            existingRuleControl.disabled = control.available.length === 0
+            if (control.available.length === 0) {
+                control.placeholder = i18n('creation.app.select.no.existing.placement.rule')
+                const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
+                clusterSelectorControl.onSelect()
+            } else {
+                control.placeholder = i18n('creation.app.settings.existingRule')
+                existingRuleControl.onSelect()
+            }
+
+            //remove default placement rule name if this is not on the list of available placements
+            //in that case the name was set by the reverse function on control initialization
+            if (control.active) {
+                if (!control.available.includes(control.active)) {
+                    control.active = null
+                } else {
+                    control.info = control.availableInfo[control.active]
+                }
+            }
+        }
+    } else {
+        control.isLoading = loading
+    }
+    return control
 }
 
 export const updatePlacementControls = (control) => {
@@ -134,25 +246,6 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-async function getClusterStatus(name) {
-    let successImportStatus = false
-    const localClusterNS = {
-        apiVersion: NamespaceApiVersion,
-        kind: NamespaceKind,
-        metadata: {
-            name,
-        },
-    }
-    const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], [localClusterNS])
-    const managedCluster = authorizedNamespaces.find((ns) => ns === name)
-    if (managedCluster) {
-        successImportStatus = true
-    }
-    return successImportStatus
-}
-
-const enableHubSelfManagement = getClusterStatus('local-cluster')
-
 const placementData = async () => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
@@ -190,6 +283,11 @@ const placementData = async () => [
         id: 'selectedRuleName',
         type: 'hidden',
         reverse: reverseExistingRule,
+    },
+    {
+        id: 'enableHubSelfManagement',
+        type: 'hidden',
+        active: await enableHubSelfManagement,
     },
     {
         type: 'custom',

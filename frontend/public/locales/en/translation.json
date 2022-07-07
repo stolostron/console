@@ -566,6 +566,7 @@
     "creation.app.local.clusters.only": "{{0}} deploys only to local cluster",
     "creation.app.clusters.matching": "{{0}} deploys to clusters with these labels: {{1}}",
     "creation.app.clusters.all.online": "{{0}} deploys to all online clusters and local cluster",
+    "creation.app.clusters.only.online": "{{0}} deploys to all online clusters",
     "creation.app.select.no.existing.placement.rule": "The selected namespace does not contain any existing placement configurations",
     "creation.app.settings.existingRule": "Select an existing placement configuration",
     "creation.app.settings.localClusters": "Deploy only to local cluster",
