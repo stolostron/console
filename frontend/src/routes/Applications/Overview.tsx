@@ -62,6 +62,7 @@ import {
     isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -237,6 +238,8 @@ export default function ApplicationsOverview() {
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
+    const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+
     const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
 
     const getTimeWindow = useCallback(
@@ -332,6 +335,21 @@ export default function ApplicationsOverview() {
         () =>
             argoApplications
                 .filter((argoApp) => {
+                    // cache Argo app signature for filtering OCP apps later
+                    setArgoApplicationsHashSet(
+                        (prev) =>
+                            new Set(
+                                prev.add(
+                                    `${argoApp.metadata.name}-${
+                                        argoApp.spec.destination.namespace
+                                    }-${getArgoDestinationCluster(
+                                        argoApp.spec.destination,
+                                        managedClusters,
+                                        'local-cluster'
+                                    )}`
+                                )
+                            )
+                    )
                     const isChildOfAppset =
                         argoApp.metadata.ownerReferences &&
                         argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
@@ -341,12 +359,18 @@ export default function ApplicationsOverview() {
                     return false
                 })
                 .map(generateTransformData),
-        [argoApplications, generateTransformData]
+        [argoApplications, generateTransformData, managedClusters]
     )
 
     const discoveredApplicationsTableItems = useMemo(() => {
-        return discoveredApplications.map((remoteArgoApp: any) =>
-            generateTransformData({
+        return discoveredApplications.map((remoteArgoApp: any) => {
+            setArgoApplicationsHashSet(
+                (prev) =>
+                    new Set(
+                        prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`)
+                    )
+            )
+            return generateTransformData({
                 apiVersion: ArgoApplicationApiVersion,
                 kind: ArgoApplicationKind,
                 metadata: {
@@ -358,7 +382,7 @@ export default function ApplicationsOverview() {
                     destination: {
                         namespace: remoteArgoApp.destinationNamespace,
                         name: remoteArgoApp.destinationName,
-                        server: remoteArgoApp.destinationCluster,
+                        server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
                     },
                     source: {
                         path: remoteArgoApp.path,
@@ -371,13 +395,14 @@ export default function ApplicationsOverview() {
                     cluster: remoteArgoApp.cluster,
                 },
             } as ArgoApplication)
-        )
+        })
     }, [discoveredApplications, generateTransformData])
 
     const ocpAppResourceTableItems = useMemo(() => {
         const openShiftAppResourceMaps: Record<string, any> = {}
         const transformedData: any[] = []
         for (let i = 0; i < discoveredOCPAppResources.length; i++) {
+            let argoInstanceLabelValue
             if ((discoveredOCPAppResources[i] as any)._hostingSubscription) {
                 // don't list subscription apps as ocp
                 continue
@@ -401,12 +426,20 @@ export default function ApplicationsOverview() {
                             itemLabel = value
                         }
                     }
+                    if (annotation === 'app.kubernetes.io/instance') {
+                        argoInstanceLabelValue = value
+                    }
                 })
             if (itemLabel) {
                 const key = `${itemLabel}-${(discoveredOCPAppResources[i] as any).namespace}-${
                     (discoveredOCPAppResources[i] as any).cluster
                 }`
-                openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
+                const argoKey = `${argoInstanceLabelValue}-${(discoveredOCPAppResources[i] as any).namespace}-${
+                    (discoveredOCPAppResources[i] as any).cluster
+                }`
+                if (!argoApplicationsHashSet.has(argoKey)) {
+                    openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
+                }
             }
         }
 
@@ -440,7 +473,7 @@ export default function ApplicationsOverview() {
             )
         })
         return transformedData
-    }, [discoveredOCPAppResources, generateTransformData])
+    }, [discoveredOCPAppResources, generateTransformData, argoApplicationsHashSet])
 
     const tableItems: IResource[] = useMemo(
         () => [

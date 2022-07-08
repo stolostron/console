@@ -457,7 +457,9 @@ const searchDefinitions: any = {
             {
                 header: 'Namespace',
                 sort: 'namespace',
-                cell: 'namespace',
+                cell: (item: any) => {
+                    return item?.namespace ?? '-'
+                },
             },
             {
                 header: 'Cluster',

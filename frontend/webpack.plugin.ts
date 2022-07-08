@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
-import CopyPlugin from 'copy-webpack-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'

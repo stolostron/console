@@ -2092,7 +2092,6 @@
     "submariner.title.tooltip": "Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud.",
     "submariner.update.form.message": "Editing the <bold>SubmarinerConfig</bold> will update the configurations of the Submariner add-on on the managed cluster. It may take a few minutes for the changes to take effect.",
     "submariner.update.form.title": "Edit Submariner configuration",
-    "Subsciptions": "Subsciptions",
     "Subscription": "Subscription",
     "Subscription deployed on local cluster": "Subscription deployed on local cluster",
     "Subscription ID": "Subscription ID",

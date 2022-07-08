@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardHeader, ExpandableSection } from '@patternfly/react-core'
+import { Card, CardBody, CardHeader, ExpandableSection } from '@patternfly/react-core'
 import { ReactNode, useState } from 'react'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 
@@ -17,10 +17,9 @@ export function SearchResultExpandableCard(props: {
     return (
         <Card isRounded isExpanded={open}>
             <CardHeader>
-                <ExpandableSection toggleText={props.title} onToggle={() => setOpen(!open)} isExpanded={open}>
-                    {open && props.renderContent()}
-                </ExpandableSection>
+                <ExpandableSection toggleText={props.title} onToggle={() => setOpen(!open)} isExpanded={open} />
             </CardHeader>
+            {open && <CardBody>{props.renderContent()}</CardBody>}
         </Card>
     )
 }
