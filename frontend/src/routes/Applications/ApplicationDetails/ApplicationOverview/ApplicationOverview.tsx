@@ -261,7 +261,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                 },
                 {
-                    key: t('Respository Resource'),
+                    key: t('Repository Resource'),
                     value: (
                         <ResourceLabels
                             appRepos={appRepos as any[]}
