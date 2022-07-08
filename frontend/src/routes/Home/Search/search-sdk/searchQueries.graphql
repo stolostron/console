@@ -1,12 +1,3 @@
-query savedSearches {
-    items: savedSearches {
-        id
-        name
-        description
-        searchText
-    }
-}
-
 query searchSchema {
     searchSchema
 }
