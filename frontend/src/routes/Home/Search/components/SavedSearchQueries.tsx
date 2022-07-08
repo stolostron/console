@@ -31,7 +31,7 @@ export default function SavedSearchQueries(props: {
     const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
     const input = [
-        ...savedSearches.map((query) => convertStringToQuery(query!.searchText as string)),
+        ...savedSearches.map((query) => convertStringToQuery(query.searchText)),
         ...suggestedQueryTemplates.map((query: { searchText: string }) => convertStringToQuery(query.searchText)),
     ]
     const { data, error, loading } = useSearchResultCountQuery({
@@ -45,7 +45,6 @@ export default function SavedSearchQueries(props: {
                 updateBrowserUrl(history, query.searchText)
                 setSelectedSearch(query.name)
             }
-            return
         },
         [history, setSelectedSearch]
     )

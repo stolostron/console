@@ -81,6 +81,14 @@ export const SaveAndEditSearchModal = (props: {
         dispatch({ field: e.currentTarget.name, value: value })
     }
 
+    function setRequestError(err: any) {
+        if (err && err.message) {
+            setUpdateError(err.message)
+        } else {
+            setUpdateError('There was an error while performing the delete request.')
+        }
+    }
+
     function CreateUpdateSavedSearch() {
         const id = savedSearch && savedSearch.id ? savedSearch.id : Date.now().toString()
         const searchText = (savedSearch && savedSearch.searchText) ?? ''
@@ -99,11 +107,7 @@ export const SaveAndEditSearchModal = (props: {
                     setSelectedSearch(searchName)
                 })
                 .catch((err) => {
-                    if (err && err.message) {
-                        setUpdateError(err.message)
-                    } else {
-                        setUpdateError('There was an error while performing the delete request.')
-                    }
+                    setRequestError(err)
                 })
         } else {
             patchUserPreference(userPreference, 'replace', {
@@ -114,11 +118,7 @@ export const SaveAndEditSearchModal = (props: {
             })
                 .promise.then(() => props.onClose())
                 .catch((err) => {
-                    if (err && err.message) {
-                        setUpdateError(err.message)
-                    } else {
-                        setUpdateError('There was an error while performing the delete request.')
-                    }
+                    setRequestError(err)
                 })
         }
     }
@@ -179,7 +179,6 @@ export const SaveAndEditSearchModal = (props: {
                         noClose
                         variant={'warning'}
                         title={t(
-                            // TODO - Handle interpolation
                             'A saved search query is already using the name {{searchName}}. Please choose a different name.',
                             { searchName }
                         )}

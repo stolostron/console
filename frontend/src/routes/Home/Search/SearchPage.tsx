@@ -34,7 +34,7 @@ import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
-
+const savedSearches = 'Saved searches'
 const useStyles = makeStyles({
     actionGroup: {
         backgroundColor: 'var(--pf-global--BackgroundColor--100)',
@@ -52,19 +52,20 @@ const useStyles = makeStyles({
 // Adds AcmAlert to page if there's errors from the Apollo queries.
 function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
     const { t } = useTranslation()
+    const notEnabled = 'not enabled'
     if (schemaError || completeError) {
         return (
             <div style={{ marginBottom: '1rem' }}>
                 <AcmAlert
                     noClose
                     variant={
-                        schemaError?.message.includes('not enabled') || completeError?.message.includes('not enabled')
+                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
                             ? 'info'
                             : 'danger'
                     }
                     isInline
                     title={
-                        schemaError?.message.includes('not enabled') || completeError?.message.includes('not enabled')
+                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
                             ? t('search.filter.info.title')
                             : t('search.filter.errors.title')
                     }
@@ -73,6 +74,7 @@ function HandleErrors(schemaError: ApolloError | undefined, completeError: Apoll
             </div>
         )
     }
+    return <Fragment />
 }
 
 function RenderSearchBar(props: {
@@ -154,7 +156,7 @@ function RenderSearchBar(props: {
                         currentQueryCallback={(newQuery) => {
                             updateBrowserUrl(history, newQuery)
                             if (newQuery !== searchQuery) {
-                                setSelectedSearch('Saved searches')
+                                setSelectedSearch(savedSearches)
                             }
                         }}
                         toggleInfoModal={toggle}
@@ -193,25 +195,24 @@ function RenderDropDownAndNewTab(props: {
         (id: string) => {
             if (id === 'savedSearchesID') {
                 updateBrowserUrl(history, '')
-                setSelectedSearch('Saved searches')
+                setSelectedSearch(savedSearches)
             } else {
-                const selectedQuery = savedSearchQueries!.filter((query) => query!.id === id)
-                updateBrowserUrl(history, selectedQuery[0]!.searchText || '')
-                setSelectedSearch(selectedQuery[0]!.name || '')
+                const selectedQuery = savedSearchQueries.filter((query) => query.id === id)
+                updateBrowserUrl(history, selectedQuery[0].searchText || '')
+                setSelectedSearch(selectedQuery[0].name || '')
             }
         },
         [history, savedSearchQueries, setSelectedSearch]
     )
 
     function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: SavedSearch[] }) {
-        const { savedSearchQueries, selectedSearch } = props
         const dropdownItems: any[] = useMemo(() => {
-            const items: any[] = savedSearchQueries.map((query) => {
-                return { id: query!.id, text: query!.name }
+            const items: any[] = props.savedSearchQueries.map((query) => {
+                return { id: query.id, text: query.name }
             })
-            items.unshift({ id: 'savedSearchesID', text: 'Saved searches' })
+            items.unshift({ id: 'savedSearchesID', text: savedSearches })
             return items
-        }, [savedSearchQueries])
+        }, [props.savedSearchQueries])
 
         return (
             <div className={classes.dropdown}>
@@ -221,7 +222,7 @@ function RenderDropDownAndNewTab(props: {
                     onSelect={(id) => {
                         SelectQuery(id)
                     }}
-                    text={selectedSearch}
+                    text={props.selectedSearch}
                     dropdownItems={dropdownItems}
                     isKebab={false}
                 />
@@ -259,7 +260,7 @@ export default function SearchPage() {
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
     const [userPreferences] = useRecoilState(userPreferencesState)
-    const [selectedSearch, setSelectedSearch] = useState('Saved searches')
+    const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
     const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
@@ -274,7 +275,7 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (searchQuery === '') {
-            setSelectedSearch('Saved searches')
+            setSelectedSearch(savedSearches)
         }
     }, [searchQuery])
 
@@ -310,8 +311,8 @@ export default function SearchPage() {
                     savedSearchQueries={userSavedSearches}
                     userPreference={userPreference}
                 />
-                {!queryErrors ? (
-                    searchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
+                {!queryErrors &&
+                    (searchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
                         <SearchResults
                             currentQuery={searchQuery}
                             preSelectedRelatedResources={preSelectedRelatedResources}
@@ -322,8 +323,7 @@ export default function SearchPage() {
                             setSelectedSearch={setSelectedSearch}
                             userPreference={userPreference}
                         />
-                    )
-                ) : null}
+                    ))}
             </AcmScrollable>
         </AcmPage>
     )

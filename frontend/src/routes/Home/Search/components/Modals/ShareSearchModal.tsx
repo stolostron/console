@@ -11,8 +11,10 @@ export const ShareSearchModal = (props: { onClose: () => void; shareSearch: Save
     const { onClose, shareSearch } = props
     const { t } = useTranslation()
     function GetUrl() {
-        let url = decodeURIComponent(window.location.origin + window.location.pathname)
-        return (url += `?filters={"textsearch":"${encodeURIComponent(shareSearch.searchText)}"}`)
+        return (
+            decodeURIComponent(window.location.origin + window.location.pathname) +
+            `?filters={"textsearch":"${encodeURIComponent(shareSearch.searchText)}"}`
+        )
     }
 
     return (
