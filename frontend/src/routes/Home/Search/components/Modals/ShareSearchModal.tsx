@@ -1,17 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Fragment } from 'react'
 import { ModalVariant } from '@patternfly/react-core'
 import { AcmCodeSnippet, AcmModal } from '@stolostron/ui-components'
+import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { SavedSearch } from '../../../../../resources/userpreference'
 
-export const ShareSearchModal = (props: any) => {
+export const ShareSearchModal = (props: { onClose: () => void; shareSearch: SavedSearch }) => {
+    const { onClose, shareSearch } = props
     const { t } = useTranslation()
     function GetUrl() {
-        let url = decodeURIComponent(window.location.origin + window.location.pathname)
-        const search = props.shareSearch ? props.shareSearch.searchText : ''
-        return (url += `?filters={"textsearch":"${encodeURIComponent(search)}"}`)
+        return (
+            decodeURIComponent(window.location.origin + window.location.pathname) +
+            `?filters={"textsearch":"${encodeURIComponent(shareSearch.searchText)}"}`
+        )
     }
 
     return (
@@ -19,11 +22,11 @@ export const ShareSearchModal = (props: any) => {
             <AcmModal
                 title={t('Share search')}
                 variant={ModalVariant.small}
-                isOpen={props.shareSearch !== undefined}
-                onClose={props.onClose}
+                isOpen={shareSearch !== undefined}
+                onClose={onClose}
                 actions={[]}
             >
-                <p>Copy this private URL to share</p>
+                <p>{t('Copy this private URL to share')}</p>
                 <AcmCodeSnippet
                     id="snippet"
                     command={GetUrl()}
