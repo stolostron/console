@@ -213,6 +213,9 @@
             "plugin:jest/recommended",
             "plugin:react-hooks/recommended"
         ],
+        "ignorePatterns": [
+            "**/*.stories.tsx"
+        ],
         "plugins": [
             "react",
             "@typescript-eslint",
