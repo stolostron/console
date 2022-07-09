@@ -24,7 +24,7 @@ describe('AcmCountCard', () => {
 
     test('has zero accessibility defects', async () => {
         const { container } = render(<SkeletonCard />)
-        expect(await axe(container)).toHaveNoViolations
+        expect(await axe(container)).toHaveNoViolations()
     })
 
     // Suggested Search Card Tests

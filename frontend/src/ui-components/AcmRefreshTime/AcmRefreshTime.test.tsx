@@ -19,7 +19,7 @@ describe('AcmRefreshTimeReloading', () => {
 
     test('has zero accessibility defects', async () => {
         const { container } = render(<ReloadingRefreshTime />)
-        expect(await axe(container)).toHaveNoViolations
+        expect(await axe(container)).toHaveNoViolations()
     })
 })
 
@@ -32,7 +32,7 @@ describe('AcmRefreshTime', () => {
 
     test('has zero accessibility defects', async () => {
         const { container } = render(<RefreshTime />)
-        expect(await axe(container)).toHaveNoViolations
+        expect(await axe(container)).toHaveNoViolations()
     })
 
     test('validates RefreshTime component renders', () => {
