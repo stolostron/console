@@ -35,5 +35,5 @@
         "noEmit": true
     },
     "include": ["src", "webpack.config.ts", "i18n-scripts"],
-    "exclude": [ "node_modules", "**/*.stories.tsx", "**/*.stories.jsx", "**/*.test.tsx", "**/*.test.jsx"],
+    "exclude": [ "**/*.stories.tsx"]
 }

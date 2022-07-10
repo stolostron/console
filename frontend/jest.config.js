@@ -31,7 +31,7 @@ module.exports = {
     collectCoverageFrom: [
         '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         '<rootDir>/src/*.{tsx,ts,jsx,js}',
-        '!<rootDir>/src/**/*.stories.tsx}',
+        '!<rootDir>/src/**/*.stories.tsx',
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',

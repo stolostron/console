@@ -15,7 +15,7 @@ describe('AcmAutoRefreshSelect', () => {
 
     test('has zero accessibility defects', async () => {
         const { container } = render(<AcmAutoRefreshSelect refetch={refetch} pollInterval={30000} />)
-        expect(await axe(container)).toHaveNoViolations
+        expect(await axe(container)).toHaveNoViolations()
     })
     test('renders', async () => {
         const { getByTestId, container } = render(<AcmAutoRefreshSelect refetch={refetch} pollInterval={30000} />)

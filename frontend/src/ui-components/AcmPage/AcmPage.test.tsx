@@ -106,7 +106,7 @@ describe('AcmBreadcrumb', () => {
         expect(container).toMatchInlineSnapshot('<div />')
     })
 
-    test('AcmBreadcrumb renders null when no breadcrumbs ', () => {
+    test('AcmBreadcrumb renders null when no breadcrumbs', () => {
         const { container } = render(
             <MemoryRouter>
                 <AcmBreadcrumb />
