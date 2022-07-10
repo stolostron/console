@@ -99,8 +99,8 @@ import {
     NamespaceApiVersion,
     NamespaceKind,
     NMStateConfigApiVersion,
-    OCPAppResource,
     NMStateConfigKind,
+    OCPAppResource,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -140,6 +140,9 @@ import {
     SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
+    UserPreference,
+    UserPreferenceApiVersion,
+    UserPreferenceKind,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -200,6 +203,7 @@ export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
+export const userPreferencesState = AtomArray<UserPreference>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -281,6 +285,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
     const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
     const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
+    const [, setUserPreferencesState] = useRecoilState(userPreferencesState)
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -338,6 +343,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
+        addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
         return setters
     }, [
         setAgentClusterInstalls,
@@ -388,6 +394,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setSubscriptionReportsState,
         setSubscriptionsState,
         setSubscriptionOperatorsState,
+        setUserPreferencesState,
     ])
 
     useEffect(() => {
