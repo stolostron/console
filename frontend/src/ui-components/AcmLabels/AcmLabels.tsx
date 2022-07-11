@@ -1,8 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Label, LabelGroup, Truncate } from '@patternfly/react-core'
+import { Label, LabelGroup } from '@patternfly/react-core'
 import { Fragment, useMemo } from 'react'
+import { makeStyles } from '@material-ui/core'
 
+const useStyles = makeStyles({
+    acmLabel: {
+        display: 'inline-grid',
+        '--pf-c-label__text--MaxWidth': 'unset',
+    }
+})
 export function AcmLabels(props: {
     labels?: string[] | Record<string, string>
     collapse?: string[]
@@ -10,6 +17,7 @@ export function AcmLabels(props: {
     expandedText?: string
     allCollapsedText?: string
 }) {
+    const classes = useStyles()
     const labelsRecord: Record<string, string> = useMemo(() => {
         if (props.labels === undefined) return {}
         else if (Array.isArray(props.labels))
@@ -55,13 +63,13 @@ export function AcmLabels(props: {
     return (
         <LabelGroup numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
             {labels.map((label) => (
-                <Label key={label}>
-                    <Truncate content={label} style={{ minWidth: 0 }} />
+                <Label key={label} className={classes.acmLabel} isTruncated>
+                    {label}
                 </Label>
             ))}
             {hidden.map((label) => (
-                <Label key={label}>
-                    <Truncate content={label} style={{ minWidth: 0 }} />
+                <Label key={label} className={classes.acmLabel} isTruncated>
+                    {label}
                 </Label>
             ))}
         </LabelGroup>
