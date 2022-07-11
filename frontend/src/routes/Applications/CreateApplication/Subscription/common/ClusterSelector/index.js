@@ -9,7 +9,7 @@ import { Radio, FormGroup, Accordion, AccordionItem, AccordionContent, Popover, 
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
+import { Tooltip } from '../../../../../../components/TemplateEditor'
 import _ from 'lodash'
 import './style.css'
 
