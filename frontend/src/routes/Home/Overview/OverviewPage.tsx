@@ -5,7 +5,6 @@ import { PlusIcon } from '@patternfly/react-icons'
 import {
     AcmActionGroup,
     AcmAlert,
-    AcmAutoRefreshSelect,
     AcmButton,
     AcmDonutChart,
     AcmLaunchLink,
@@ -13,7 +12,6 @@ import {
     AcmOverviewProviders,
     AcmPage,
     AcmPageHeader,
-    AcmRefreshTime,
     AcmRoute,
     AcmScrollable,
     AcmSummaryList,
@@ -23,28 +21,27 @@ import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import {
-    acmRouteState,
-    applicationsState,
-    argoApplicationsState,
-    managedClustersState,
-    usePolicies,
-} from '../../../atoms'
+import { acmRouteState, applicationsState, argoApplicationsState, usePolicies } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { getProvider, Policy } from '../../../resources'
+import { Cluster, ClusterStatus, Policy } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../Search/search-sdk/search-sdk'
 
-function getClusterSummary(clusters: any, selectedCloud: string, setSelectedCloud: Dispatch<SetStateAction<string>>) {
+function getClusterSummary(
+    clusters: Cluster[],
+    selectedCloud: string,
+    setSelectedCloud: Dispatch<SetStateAction<string>>
+) {
     const clusterSummary = clusters.reduce(
-        (prev: any, curr: any) => {
+        (prev: any, curr: Cluster) => {
             // Data for Providers section.
             // Get cloud label. If not available set to Other until the label is present.
-            const cloudLabel = curr.metadata?.labels?.cloud || 'Other'
-            const cloud = getProvider(curr) || Provider.other
+            const cloudLabel = curr?.labels?.cloud || 'Other'
+            const cloud = curr.provider || Provider.other
             const provider = prev.providers.find((p: any) => p.provider === cloud)
             if (provider) {
                 provider.clusterCount = provider.clusterCount + 1
@@ -71,19 +68,14 @@ function getClusterSummary(clusters: any, selectedCloud: string, setSelectedClou
             // Collect stats if cluster matches selected cloud filter. Defaults to all.
             if (selectedCloud === '' || selectedCloud === cloud) {
                 // Data for Summary section.
-                prev.clusterNames.add(curr.metadata.name)
-                prev.kubernetesTypes.add(curr.metadata.labels.vendor ?? 'Other')
-                prev.regions.add(curr.metadata.labels.region ?? 'Other')
+                prev.clusterNames.add(curr.name)
+                prev.kubernetesTypes.add(curr.labels?.vendor ?? 'Other')
+                prev.regions.add(curr.labels?.region ?? 'Other')
 
-                const clusterConditions = _.get(curr, 'status.conditions') || []
-                const isReady =
-                    _.get(
-                        clusterConditions.find((c: any) => c.type === 'ManagedClusterConditionAvailable'),
-                        'status'
-                    ) === 'True'
+                const clusterStatus: ClusterStatus = curr.status
 
                 // Data for Cluster status pie chart.
-                if (isReady) {
+                if (clusterStatus === 'ready') {
                     prev.ready = prev.ready + 1
                 } else {
                     prev.offline = prev.offline + 1
@@ -143,7 +135,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     return baseSearchQueries
 }
 
-const PageActions = (props: { timestamp: string; reloading: boolean; refetch: () => void }) => {
+const PageActions = () => {
     const { t } = useTranslation()
     const [addons, setAddons] = useState()
     useEffect(() => {
@@ -195,13 +187,7 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
                 >
                     {t('Add credential')}
                 </AcmButton>
-                <AcmAutoRefreshSelect
-                    refetch={props.refetch}
-                    initPollInterval={0}
-                    refreshIntervals={[30, 60, 5 * 60, 30 * 60, 0]}
-                />
             </AcmActionGroup>
-            <AcmRefreshTime timestamp={props.timestamp} reloading={props.reloading} />
         </Fragment>
     )
 }
@@ -209,12 +195,10 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
 export default function OverviewPage() {
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [managedClusters] = useRecoilState(managedClustersState)
     const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
     useEffect(() => setRoute(AcmRoute.Overview), [setRoute])
-    const [clusters, setClusters] = useState<any[]>([])
     const [selectedCloud, setSelectedCloud] = useState<string>('')
     const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
     const [summaryData, setSummaryData] = useState<any>({
@@ -225,10 +209,17 @@ export default function OverviewPage() {
         providers: [],
     })
 
-    const timestamp = new Date().toString() as string
-    if (!_.isEqual(clusters, managedClusters || [])) {
-        setClusters(managedClusters || [])
-    }
+    const allClusters: Cluster[] = useAllClusters()
+    const clusters: Cluster[] = useMemo(() => {
+        return allClusters.filter((cluster) => {
+            // don't show clusters in cluster pools in table
+            if (cluster.hive.clusterPool) {
+                return cluster.hive.clusterClaimName !== undefined
+            } else {
+                return true
+            }
+        })
+    }, [allClusters])
 
     const nonCompliantClusters = new Set<string>()
     policies.forEach((c: Policy) => {
@@ -240,7 +231,8 @@ export default function OverviewPage() {
             }
         })
     })
-    const tempClusters = selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.metadata?.name)
+    const tempClusters: string[] =
+        selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.name ?? '')
     const compliantClusters = tempClusters.filter((c) => !nonCompliantClusters.has(c))
 
     // SEARCH-API
@@ -316,7 +308,7 @@ export default function OverviewPage() {
 
     useEffect(() => {
         const clustersToSearch =
-            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.metadata.name)
+            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.name ?? '')
         if (!searchPolicyReportCalled && clustersToSearch.length > 0) {
             firePolicyReportQuery({
                 variables: { input: policyReportQuery(clustersToSearch) },
@@ -346,13 +338,6 @@ export default function OverviewPage() {
         (total: any, currentValue: any) => total + currentValue.low,
         0
     )
-
-    const refetchData = useCallback(() => {
-        searchRefetch && searchRefetch({ input: searchQueries(selectedClusterNames) })
-        const clustersToSearch =
-            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.metadata.name)
-        searchPolicyReportRefetch && searchPolicyReportRefetch({ input: policyReportQuery(clustersToSearch) })
-    }, [clusters, searchPolicyReportRefetch, searchRefetch, selectedClusterNames])
 
     const { kubernetesTypes, regions, ready, offline, providers } = summaryData
     const provider = providers.find((p: any) => p.provider === selectedCloud)
@@ -384,8 +369,7 @@ export default function OverviewPage() {
                   {
                       isPrimary: false,
                       description: 'Clusters',
-                      count:
-                          selectedClusterNames.length > 0 ? selectedClusterNames.length : managedClusters.length || 0,
+                      count: selectedClusterNames.length > 0 ? selectedClusterNames.length : clusters.length || 0,
                       href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
                   },
                   { isPrimary: false, description: 'Kubernetes type', count: kubernetesTypes?.size },
@@ -414,7 +398,7 @@ export default function OverviewPage() {
         buildSummaryLinks,
         cloudLabelFilter,
         kubernetesTypes?.size,
-        managedClusters.length,
+        clusters,
         regions?.size,
         searchError,
         searchLoading,
@@ -529,14 +513,7 @@ export default function OverviewPage() {
               ]
 
     return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={t('Overview')}
-                    actions={<PageActions timestamp={timestamp} reloading={searchLoading} refetch={refetchData} />}
-                />
-            }
-        >
+        <AcmPage header={<AcmPageHeader title={t('Overview')} actions={<PageActions />} />}>
             <AcmScrollable>
                 {searchError && (
                     <PageSection>
