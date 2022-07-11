@@ -2,7 +2,7 @@
 
 import { makeStyles } from '@material-ui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
+import { AcmButton, AcmDropdown } from '../ui-components'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 

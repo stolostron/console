@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ModalVariant } from '@patternfly/react-core'
-import { AcmCodeSnippet, AcmModal } from '@stolostron/ui-components'
+import { AcmCodeSnippet, AcmModal } from '../../../../../ui-components'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../../resources/userpreference'

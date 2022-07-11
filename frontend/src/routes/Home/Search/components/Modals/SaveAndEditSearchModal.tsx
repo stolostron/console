@@ -3,8 +3,8 @@
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '@stolostron/ui-components'
-import React, { Fragment, useEffect, useReducer, useState } from 'react'
+import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '../../../../../ui-components'
+import { Fragment, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
     createUserPreference,

@@ -17,7 +17,7 @@ import {
     AcmModal,
     AcmSubmit,
     AcmTextInput,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import {
     ActionGroup,
     DescriptionList,

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line no-use-before-define
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 import { Button } from '@patternfly/react-core'
 import { Tooltip } from '../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../lib/acm-i18next'

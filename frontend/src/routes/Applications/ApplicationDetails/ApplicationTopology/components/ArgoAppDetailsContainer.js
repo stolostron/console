@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 import {
     Select,
@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
 
-class ArgoAppDetailsContainer extends React.Component {
+class ArgoAppDetailsContainer extends Component {
     static propTypes = {
         argoAppDetailsContainerControl: PropTypes.shape({
             argoAppDetailsContainerData: PropTypes.object,

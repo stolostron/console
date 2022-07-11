@@ -2,9 +2,9 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+import { Fragment, Component } from 'react'
 import PropTypes from 'prop-types'
-import { AcmTextInput } from '@stolostron/ui-components'
+import { AcmTextInput } from '../../../../../../ui-components'
 import { Radio, FormGroup, Accordion, AccordionItem, AccordionContent, Popover, Button } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
@@ -15,7 +15,7 @@ import './style.css'
 
 const activeModeStr = 'active.mode'
 
-export class ClusterSelector extends React.Component {
+export class ClusterSelector extends Component {
     static propTypes = {
         control: PropTypes.object,
         controlId: PropTypes.string,
@@ -54,7 +54,7 @@ export class ClusterSelector extends React.Component {
         const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
 
         return (
-            <React.Fragment>
+            <Fragment>
                 <div className="creation-view-controls-labels">
                     <div>
                         {name}
@@ -139,7 +139,7 @@ export class ClusterSelector extends React.Component {
                         </div>
                     </div>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 
@@ -203,7 +203,7 @@ export class ClusterSelector extends React.Component {
 
                 if (validValue || id === 0) {
                     return (
-                        <React.Fragment key={id}>
+                        <Fragment key={id}>
                             <div
                                 className="matching-labels-container"
                                 style={{ display: 'flex', marginBottom: '20px' }}
@@ -252,7 +252,7 @@ export class ClusterSelector extends React.Component {
                                     ''
                                 )}
                             </div>
-                        </React.Fragment>
+                        </Fragment>
                     )
                 }
                 return ''

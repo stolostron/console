@@ -11,7 +11,7 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmSelect } from '@stolostron/ui-components'
+import { AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

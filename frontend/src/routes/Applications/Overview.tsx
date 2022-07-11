@@ -3,7 +3,7 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'

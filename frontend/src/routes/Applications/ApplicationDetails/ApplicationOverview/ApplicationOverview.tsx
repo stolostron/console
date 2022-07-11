@@ -7,7 +7,7 @@ import {
     AcmInlineStatusGroup,
     AcmPageContent,
     ListItems,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,

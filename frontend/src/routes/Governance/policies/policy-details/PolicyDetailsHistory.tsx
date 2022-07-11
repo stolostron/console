@@ -2,7 +2,7 @@
 
 import { PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '@stolostron/ui-components'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
 import { useRecoilState } from 'recoil'

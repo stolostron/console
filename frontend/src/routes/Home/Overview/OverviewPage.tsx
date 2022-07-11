@@ -15,7 +15,7 @@ import {
     AcmScrollable,
     AcmSummaryList,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

@@ -13,7 +13,7 @@ import {
     AcmPageHeader,
     AcmTable,
     compareStrings,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import isMatch from 'lodash/isMatch'
 import {
     AgentK8sResource,

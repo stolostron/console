@@ -4,6 +4,7 @@ module.exports = {
     preset: 'ts-jest/presets/js-with-ts',
     testEnvironment: 'jsdom',
     automock: false,
+    clearMocks: true,
     testResultsProcessor: 'jest-sonar-reporter',
     setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
     moduleNameMapper: {
@@ -30,6 +31,7 @@ module.exports = {
     collectCoverageFrom: [
         '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         '<rootDir>/src/*.{tsx,ts,jsx,js}',
+        '!<rootDir>/src/**/*.stories.tsx',
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',

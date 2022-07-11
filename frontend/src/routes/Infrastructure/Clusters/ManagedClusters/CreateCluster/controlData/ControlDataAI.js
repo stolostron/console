@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
+
 import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'

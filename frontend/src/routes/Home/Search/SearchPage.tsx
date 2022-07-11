@@ -14,9 +14,9 @@ import {
     AcmPage,
     AcmScrollable,
     AcmSearchbar,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import _ from 'lodash'
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { userPreferencesState } from '../../../atoms'

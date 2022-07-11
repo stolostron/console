@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '@stolostron/ui-components'
+import { Provider } from '../../ui-components'
 import {
     isDraft,
     getIsSNOCluster,

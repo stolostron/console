@@ -11,7 +11,7 @@ import {
     AcmPageContent,
     AcmPageHeader,
     AcmTable,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'

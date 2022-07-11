@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '@stolostron/ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '../../ui-components'
 import Handlebars from 'handlebars'
 import { Location } from 'history'
 import _ from 'lodash'

@@ -2,8 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '@stolostron/ui-components'
-import React, { Fragment, useCallback, useState } from 'react'
+import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
+import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
