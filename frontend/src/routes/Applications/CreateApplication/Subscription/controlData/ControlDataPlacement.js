@@ -15,10 +15,7 @@
 
 import React from 'react'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
-import ClusterSelector, {
-    reverse as reverseClusterSelector,
-    summarize as summarizeClusterSelector,
-} from '../common/ClusterSelector'
+import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
@@ -99,11 +96,11 @@ const setAvailableRules = (control, result) => {
                         const getLabels = () => {
                             return clusterSelector.matchExpressions
                                 .map(({ key, operator, values }) => {
-                                    return `${key}${operator === 'In' ? '=' : '!='}${values.join(', ')}`
+                                    return `${key} "${operator}" ${values.join(', ')}`
                                 })
                                 .join('; ')
                         }
-                        selector = i18n('creation.app.clusters.matching', [ruleName, getLabels()])
+                        selector = i18n('creation.app.clusters.expressions', [ruleName, getLabels()])
                     }
                 } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
                     selector = enableHubSelfManagement?.active
@@ -191,7 +188,7 @@ export const updatePlacementControls = (control) => {
 export const updateNewRuleControls = (control) => {
     const { availableData, availableInfo, groupControlData } = control
     const active = availableData[control.active]
-    control.info = availableInfo[control?.active]
+    control.info = availableInfo ? availableInfo[control?.active] : ''
     const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
     selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, 'metadata.name'))
 }
@@ -295,7 +292,6 @@ const placementData = async () => [
         component: <ClusterSelector />,
         available: [],
         onSelect: updatePlacementControls,
-        reverse: reverseClusterSelector,
         summarize: summarizeSelectorControl,
     },
     {

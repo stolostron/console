@@ -507,8 +507,8 @@
     color: #3d70b2;
     display: flex;
     position: absolute;
-    top: 8px;
-    right: 5px;
+    top: 16px;
+    right: 10px;
     z-index: 100;
 }
 .temptifly-controls-delete-button svg,
