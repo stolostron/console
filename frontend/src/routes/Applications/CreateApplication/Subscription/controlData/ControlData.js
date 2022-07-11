@@ -137,6 +137,7 @@ export const controlData = async () => [
                 title: 'creation.app.channel.title',
                 collapsable: true,
                 collapsed: false,
+                subgroup: true,
                 info: getSharedSubscriptionWarning,
                 editing: { editMode: true },
             },

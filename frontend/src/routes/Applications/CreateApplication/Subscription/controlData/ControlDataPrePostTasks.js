@@ -22,7 +22,7 @@ const prePostTasks = [
         id: 'perPostSection',
         type: 'section',
         title: 'creation.app.section.prePost',
-        overline: true,
+        subgroup: true,
         collapsable: true,
         collapsed: true,
         info: getSharedSubscriptionWarning,
