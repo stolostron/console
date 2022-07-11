@@ -8,10 +8,17 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { managedClustersState, policiesState, policyreportState } from '../../../atoms'
+import { managedClusterInfosState, managedClustersState, policiesState, policyreportState } from '../../../atoms'
 import { nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy, PolicyReport } from '../../../resources'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterKind,
+    Policy,
+    PolicyReport,
+} from '../../../resources'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 
@@ -60,6 +67,49 @@ const getAddonResponse = {
         ],
     },
 }
+
+const managedClusterInfos: ManagedClusterInfo[] = [
+    {
+        apiVersion: 'internal.open-cluster-management.io/v1beta1',
+        kind: 'ManagedClusterInfo',
+        metadata: {
+            creationTimestamp: '2022-06-27T13:03:37Z',
+            labels: {
+                openshiftVersion: '4.10.5',
+                vendor: 'OpenShift',
+                name: 'local-cluster',
+                'installer.name': 'multiclusterhub',
+                clusterID: '5b56530b-a1cd-407b-9a90-1a35ffa0d184',
+                cloud: 'Amazon',
+                'local-cluster': 'true',
+            },
+            name: 'local-cluster',
+            namespace: 'local-cluster',
+            resourceVersion: '4236111',
+            uid: 'e98d2bac-4a21-4a9c-8f52-bcaae1d0fc90',
+        },
+        spec: {
+            loggingCA:
+                'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURKVENDQWcyZ0F3SUJBZ0lJWEpsc0xPUWRWeEF3RFFZSktvWklodmNOQVFFTEJRQXdJREVlTUJ3R0ExVUUKQXhNVmIyTnRMV3RzZFhOMFpYSnNaWFF0Ykc5bloyVnlNQjRYRFRJeU1EWXlOekV6TURFeU9Gb1hEVEl6TURZeQpOekV6TURFeU9Wb3dJREVlTUJ3R0ExVUVBeE1WYjJOdExXdHNkWE4wWlhKc1pYUXRiRzluWjJWeU1JSUJJakFOCkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXFnc2gzaS9ZWVRvNDdZeHFTelZaRkczQk1Wbk4KdlRITXlidy9UK0p2aFdUd1VrY3Npdk9hWmJrYWppdnkwUGIxKys3c1BPWFZrL0NVYzY3c2daaTQ3WGx2TEJHQwphOEorM2dvQzZUM3gzbUdZOFBkd2JpRExwVlN6RlJteTl6aExWaGVpMkNDdnpqWDgxbUhVaGs3RkVGNDczVFhBCkpMU0pHM3FlbEsvUUt3aStJeWZsb0ZUWUl2TkZkSm9jbjI0RTh6MTRNUzI1d3NlRzVrR1EvZHJ0K21ISUdSK3UKUm5CdTJPYW5ybW9iaUpPcWErZEJidC9nTXVvbTNlcVgrWUdNVmtTSDIrTEVDN2VEMVQwQUpWVWZLWXNYOG1kTApNTWwvaWZORVd2T2t5WHEzVVpjK2FORFlNSDRJTkNvUHdQaTJXSHVoQjZNamRrdEdTMHEwRCtVK2VRSURBUUFCCm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVUKNjVlWk4rVGVqTEtEZU9Sc0M5NjljZXNLa3U0d0h3WURWUjBqQkJnd0ZvQVU2NWVaTitUZWpMS0RlT1JzQzk2OQpjZXNLa3U0d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFIZ1BMTTdVc2NZaWdwUDZud1I0UWFKMnhmTUNHR3QvCjZoREtSSmJjYTlNcUZYSk1KVjd6c3hNeC8zbUJlNkEwQ3lReS9yMWx4RWpJWW9TUTFieUw3MnJFR296MWs4UWoKWUhjRVFuTFFMUmhTWGpWUDdBTTN5MHU5VDBOVWhRclUwa2ROV2orc2lVMk9XdlJvSnd6alIwVHlMcGpJUytxYgovV0lZQWJHZ2dKL3hPdk40YUdZMWJURnlWbjdPbmkweFBQQ3VOR2RFRFlNUHVvbmZTSG5YS2paTnRCNi9ZRndoCm9QWGgyTWgzRTdMYjFIOHFzSG1mYUxMOE50bSt4VCtjVThJU0w3TVlndGFlY2ViM3RmbkRjTTRFU1NEYmJwZTEKWVYxT1NnbEpDcHBvdWZKM0RPYmdPMHR4R1ZLYTdPTGZnaTdnNi95ZVpmUEEwZ1ltMUpoQnVxYz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=',
+            masterEndpoint: 'https://api.sno-410-2xlarge-2zrhh.dev07.red-chesterfield.com:6443',
+        },
+        status: {
+            loggingPort: {
+                name: 'https',
+                port: 443,
+                protocol: 'TCP',
+            },
+            loggingEndpoint: {
+                hostname: 'klusterlet-addon-workmgr.open-cluster-management-agent-addon.svc',
+                ip: '',
+            },
+            kubeVendor: 'OpenShift',
+            consoleURL: 'https://console-openshift-console.apps.sno-410-2xlarge-2zrhh.dev07.red-chesterfield.com',
+            version: 'v1.23.3+e419edf',
+            cloudVendor: 'Amazon',
+        },
+    },
+]
 
 const managedClusters: ManagedCluster[] = [
     {
@@ -138,6 +188,10 @@ const managedClusters: ManagedCluster[] = [
                 {
                     name: 'id.k8s.io',
                     value: 'managed-cluster',
+                },
+                {
+                    name: 'platform.open-cluster-management.io',
+                    value: 'AKS',
                 },
             ],
             conditions: [
@@ -468,6 +522,7 @@ it('should render overview page with expected data', async () => {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(managedClustersState, managedClusters)
+                snapshot.set(managedClusterInfosState, managedClusterInfos)
                 snapshot.set(policiesState, mockPolices)
                 snapshot.set(policyreportState, mockPolicyReports)
             }}
