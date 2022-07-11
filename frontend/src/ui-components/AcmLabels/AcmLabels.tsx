@@ -8,7 +8,7 @@ const useStyles = makeStyles({
     acmLabel: {
         display: 'inline-grid',
         '--pf-c-label__text--MaxWidth': 'unset',
-    }
+    },
 })
 export function AcmLabels(props: {
     labels?: string[] | Record<string, string>
