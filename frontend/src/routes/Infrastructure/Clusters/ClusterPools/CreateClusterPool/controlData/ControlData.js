@@ -34,6 +34,7 @@ const fixupControlsForClusterPool = (controlData) => {
     map['detailStep'].title = 'Cluster pool details'
     map['name'].name = 'clusterPool.creation.ocp.name'
     map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
+    map['name'].reverse = 'ClusterPool[0].metadata.name'
     map['region'].reverse = 'ClusterPool[0].metadata.labels.region'
 
     let inx = controlData.findIndex(({ id }) => id === 'additional')
