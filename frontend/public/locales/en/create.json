@@ -286,6 +286,7 @@
     "clusterPool.placeholder.creation.ocp.namespace": "Select or create a namespace",
     "clusterPool.creation.ocp.choose.distribution": "Select the type of Kubernetes distribution to use for your cluster pool.",
     "clusterPool.creation.success.title": "Cluster pool created",
+    "clusterPool.creation.validation.unique.name": "This cluster pool name must be unique in this namespace: {{0}}.",
     "clusterPool.creation.success.message": "{{name}} was successfully created.",
     "tooltip.text.overview": "View operations details across all of your providers.",
     "tooltip.text.search": "Find resources across clusters with keywords and filters.",
