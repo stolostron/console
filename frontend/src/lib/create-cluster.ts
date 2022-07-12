@@ -105,18 +105,23 @@ export async function createCluster(resources: any[]) {
 
     // if there were errors, delete any cluster resources
     if (errors.length > 0) {
-        let resourcesToDelete: IResource[] = [
-            {
-                apiVersion: ManagedClusterApiVersion,
-                kind: ManagedClusterKind,
-                metadata: { name: namespace },
-            },
-            {
-                apiVersion: ClusterDeploymentApiVersion,
-                kind: ClusterDeploymentKind,
-                metadata: { name: namespace, namespace },
-            },
-        ]
+        let resourcesToDelete: IResource[] = []
+        // if trying to create ManagedCluster, cleanup
+        if (resources.find((r) => r.kind === ManagedClusterKind)) {
+            resourcesToDelete = [
+                {
+                    apiVersion: ManagedClusterApiVersion,
+                    kind: ManagedClusterKind,
+                    metadata: { name: namespace },
+                },
+                {
+                    apiVersion: ClusterDeploymentApiVersion,
+                    kind: ClusterDeploymentKind,
+                    metadata: { name: namespace, namespace },
+                },
+            ]
+        }
+        // if trying to create ClusterInstall, cleanup
         if (resources.find((r) => r.kind === AgentClusterInstallKind)) {
             resourcesToDelete = resources
                 .filter((r) => r.apiVersion && r.kind && r.metadata?.name && r.metadata?.namespace)
