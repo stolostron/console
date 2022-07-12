@@ -3,7 +3,6 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import { Title, TitleSizes, Gallery, Tile, Stack } from '@patternfly/react-core'
 import Tooltip from '../components/Tooltip'
