@@ -1,4 +1,3 @@
-@import './control-panel-cards.css';
 @import './control-panel-controls.css';
 @import './control-panel-finish.css';
 @keyframes flash {
@@ -838,34 +837,7 @@
     align-items: center;
     cursor: pointer;
 }
-.temptifly-controls .tf--grid-container .tf--provider-card-container,
-.creation-view-controls .tf--grid-container .tf--provider-card-container {
-    position: relative;
-}
-.temptifly-controls .tf--grid-container .tf--provider-card-container .card-checkmark,
-.creation-view-controls .tf--grid-container .tf--provider-card-container .card-checkmark {
-    pointer-events: none;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    fill: blue;
-}
-.temptifly-controls .tf--grid-container .tf--create-cluster-page__provider-card-isDisabled,
-.creation-view-controls .tf--grid-container .tf--create-cluster-page__provider-card-isDisabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
-.temptifly-controls .tf--grid-container .tf--provider-card-isDisabled,
-.creation-view-controls .tf--grid-container .tf--provider-card-isDisabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
-.temptifly-controls .tf--grid-container .card-tooltip-container,
-.creation-view-controls .tf--grid-container .card-tooltip-container {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-}
+
 .temptifly-controls.showEditor .creation-view-controls-card-container,
 .creation-view-controls.showEditor .creation-view-controls-card-container {
     margin-bottom: 20px;
@@ -879,202 +851,6 @@
     flex-direction: column;
 }
 
-.pf-c-tile.pf-m-display-lg .temptifly-controls.showEditor .tf--grid,
-.creation-view-controls.showEditor .tf--grid,
-.temptifly-controls .tf--grid-container .tf--grid,
-.creation-view-controls .tf--grid-container .tf--grid {
-    margin-right: 2%;
-    width: 100%;
-}
-.temptifly-controls.showEditor .tf--grid .creation-view-controls-cards-title-container,
-.creation-view-controls.showEditor .tf--grid .creation-view-controls-cards-title-container,
-.temptifly-controls .tf--grid-container .tf--grid .creation-view-controls-cards-title-container,
-.creation-view-controls .tf--grid-container .tf--grid .creation-view-controls-cards-title-container {
-    cursor: pointer;
-    display: flex;
-}
-.temptifly-controls.showEditor .tf--provider-card,
-.creation-view-controls.showEditor .tf--provider-card,
-.temptifly-controls .tf--grid-container .tf--provider-card,
-.creation-view-controls .tf--grid-container .tf--provider-card {
-    margin: 10px 16px 0 0;
-}
-.temptifly-controls.showEditor .tf--provider-card .tf--provider-card-container,
-.creation-view-controls.showEditor .tf--provider-card .tf--provider-card-container,
-.temptifly-controls .tf--grid-container .tf--provider-card .tf--provider-card-container,
-.creation-view-controls .tf--grid-container .tf--provider-card .tf--provider-card-container {
-    width: 250px;
-}
-.temptifly-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card-isSelected::before,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card-isSelected::before,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card-isSelected::before,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card-isSelected::before {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    pointer-events: none;
-    content: '';
-    border: 2px solid #06c;
-    border-radius: 4px;
-}
-.temptifly-controls.showEditor .tf--provider-card .tf--provider-card-container .tf--create-cluster-page__provider-card,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card {
-    width: 250px;
-    height: 136px;
-    margin: 0 10px 10px 0;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-}
-.temptifly-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card:hover,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card:hover,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card:hover,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card:hover {
-    color: #06c;
-    border: 1px solid #06c;
-}
-.temptifly-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > * {
-    flex: 2 1 auto;
-    display: flex;
-    justify-content: center;
-}
-.temptifly-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > img,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > img,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > img,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > img,
-.temptifly-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > svg,
-.creation-view-controls.showEditor
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > svg,
-.temptifly-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > svg,
-.creation-view-controls
-    .tf--grid-container
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card
-    > *
-    > svg {
-    margin-top: 24px;
-    width: 55px;
-    height: 55px;
-}
-.temptifly-controls .tf--grid-container.small .tf--provider-card .tf--provider-card-container,
-.creation-view-controls .tf--grid-container.small .tf--provider-card .tf--provider-card-container {
-    width: 250px;
-}
-.temptifly-controls
-    .tf--grid-container.small
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card,
-.creation-view-controls
-    .tf--grid-container.small
-    .tf--provider-card
-    .tf--provider-card-container
-    .tf--create-cluster-page__provider-card {
-    width: 250px;
-    height: 136px;
-}
 .temptifly .pf-c-wizard .pf-c-wizard__main-body,
 .creation-view .pf-c-wizard .pf-c-wizard__main-body {
     padding-bottom: 0;
@@ -1095,4 +871,14 @@
     box-shadow: none;
     padding: 0 0 0 22px;
     margin-left: 0px;
+}
+
+.temptifly .pf-c-wizard .pf-c-tile {
+    --pf-c-tile--TranslateY: none;
+    --pf-c-tile--Transition: none;
+}
+
+.temptifly .pf-c-wizard .pf-c-tile::after {
+    transition: none;
+    transform: none;
 }

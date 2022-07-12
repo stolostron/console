@@ -3,7 +3,6 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import { Title, TitleSizes, Gallery, Tile, Stack } from '@patternfly/react-core'
 import Tooltip from '../components/Tooltip'
@@ -59,15 +58,11 @@ class ControlPanelCards extends React.Component {
     }
 
     render() {
-        const { i18n, control, showEditor } = this.props
+        const { i18n, control } = this.props
         const { available = [], availableMap } = control
         const { collapsed } = this.state
         let { active } = control
         active = active || []
-        const gridClasses = classNames({
-            'tf--grid-container': true,
-            small: showEditor,
-        })
 
         const availableCards = Object.keys(availableMap).reduce((acc, curr) => {
             if (available.includes(curr)) {
@@ -79,7 +74,7 @@ class ControlPanelCards extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-card-container" ref={this.setControlRef.bind(this, control)}>
-                    <div className={gridClasses}>
+                    <div>
                         <div className={'tf--grid'}>
                             <Stack hasGutter>
                                 {Object.keys(cardGroups).map((group) => {
