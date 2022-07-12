@@ -34,9 +34,6 @@ const fixupControlsForClusterPool = (controlData) => {
     map['detailStep'].title = 'Cluster pool details'
     map['name'].name = 'clusterPool.creation.ocp.name'
     map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
-    // map['name'].validation.contextTester = function (active, map, i18n) {
-    //     console.log(this)
-    // }.bind(map['name'])
     map['region'].reverse = 'ClusterPool[0].metadata.labels.region'
 
     let inx = controlData.findIndex(({ id }) => id === 'additional')
