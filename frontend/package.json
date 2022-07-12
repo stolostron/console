@@ -37,7 +37,7 @@
         "@material-ui/styles": "^4.11.5",
         "@octokit/rest": "18.12.0",
         "@octokit/types": "6.34.0",
-        "@patternfly-labs/react-form-wizard": "^1.7.19",
+        "@patternfly-labs/react-form-wizard": "^1.8.1",
         "@patternfly/patternfly": "^4.196.7",
         "@patternfly/react-charts": "^6.55.11",
         "@patternfly/react-code-editor": "4.52.3",
