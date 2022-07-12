@@ -82,8 +82,8 @@ export const getDiagramElements = (appData, topology, resourceStatuses, canUpdat
 //link the search objects to this node;
 export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelmReleases, topology) => {
     const { name, type } = node
-
-    if (!isDeployableResource(node) && R.includes(type, ['cluster', 'application', 'placements'])) {
+    const isDesign = _.get(node, 'specs.isDesign', false)
+    if (!isDeployableResource(node) && R.includes(type, ['cluster', 'application', 'placements']) && isDesign) {
         return //ignore these types
     }
 

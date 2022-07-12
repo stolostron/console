@@ -110,6 +110,7 @@ describe('setSubscriptionDeployStatus with time window', () => {
         namespace: 'ns',
         apiversion: 'apps.open-cluster-management.io/v1',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -182,6 +183,7 @@ describe('setSubscriptionDeployStatus with local hub subscription error', () => 
         namespace: 'ns',
         apiversion: 'test',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -233,6 +235,7 @@ describe('setSubscriptionDeployStatus with hub error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -276,6 +279,7 @@ describe('setSubscriptionDeployStatus with Failed phase subscription statuses', 
         namespace: 'ns',
         apiversion: 'test',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local-cluster',
@@ -338,6 +342,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             subscriptionModel: [],
         },
     }
@@ -374,6 +379,7 @@ describe('setSubscriptionDeployStatus with error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -422,6 +428,7 @@ describe('setSubscriptionDeployStatus with hub no status', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -461,6 +468,7 @@ describe('setSubscriptionDeployStatus with remote no status', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -511,6 +519,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -1436,6 +1445,7 @@ describe('setApplicationDeployStatus for ARGO', () => {
         cluster: 'local-cluster',
         namespace: 'default',
         specs: {
+            isDesign: true,
             relatedApps: [
                 {
                     name: 'app1',
@@ -1543,6 +1553,7 @@ describe('setApplicationDeployStatus 2', () => {
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             raw: {
                 metadata: {
@@ -1574,6 +1585,7 @@ describe('setApplicationDeployStatus application', () => {
         namespace: 'default',
         id: 'member--application',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             raw: {
                 metadata: {
@@ -1622,6 +1634,7 @@ describe('setApplicationDeployStatus no selector', () => {
         namespace: 'default',
         id: 'member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
         },
     }
@@ -1662,6 +1675,7 @@ describe('setApplicationDeployStatus channels', () => {
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             channels: ['subsdata'],
         },
