@@ -108,7 +108,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
             )
         }
     }
-    useEffect(updateRoleBindings, [data])
+    useEffect(updateRoleBindings, [data, clusterSet])
 
     if (prevClusterSet?.metadata?.deletionTimestamp) {
         return (
