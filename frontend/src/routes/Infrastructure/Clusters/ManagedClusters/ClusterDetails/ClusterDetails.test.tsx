@@ -1123,7 +1123,7 @@ describe('ClusterDetails', () => {
 
 const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
 
-describe('ClusterDetails for On Premise', () => {
+describe.skip('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
     })
