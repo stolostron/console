@@ -54,7 +54,6 @@ describe('ClusterSets page', () => {
     test('renders', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!)
         await waitForText('Submariner')
-        await waitForText('Multi-cluster network status')
     })
     test('can create a managed cluster set', async () => {
         await clickByText('Create cluster set')
@@ -87,6 +86,5 @@ describe('ClusterSets page without Submariner', () => {
     test('renders', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!)
         await waitForNotText('Submariner')
-        await waitForNotText('Multi-cluster network status')
     })
 })
