@@ -1,12 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../resources'
 import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClusterSetsState } from '../../../../../atoms'
 import { canUser, checkAdminAccess } from '../../../../../lib/rbac-util'
-
-const GLOBAL_SET_NAME = 'global'
 
 // returns a list of cluster sets that the user is authorized to attach managed clusters to
 export function useCanJoinClusterSets() {
@@ -24,7 +22,7 @@ export function useCanJoinClusterSets() {
             adminAccessCheck.then((adminAccess) => {
                 if (adminAccess.status!.allowed) {
                     return setCanJoinClusterSets(
-                        managedClusterSets.filter((set) => set?.metadata?.name !== GLOBAL_SET_NAME)
+                        managedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
                     )
                 } else {
                     const requests = Promise.allSettled(
@@ -43,7 +41,7 @@ export function useCanJoinClusterSets() {
                             authorizedClusterSetNames.includes(mcs.metadata.name!)
                         )
                         return setCanJoinClusterSets(
-                            authorizedClusterSets.filter((set) => set?.metadata?.name !== GLOBAL_SET_NAME)
+                            authorizedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
                         )
                     })
                 }
