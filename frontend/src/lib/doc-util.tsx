@@ -35,6 +35,7 @@ export const DOC_LINKS = {
     CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-a-cluster-on-premises`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managedclustersets`,
+    GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/clusters/managing-your-clusters#globalclusterset`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
     SUBMARINER: `${DOC_BASE_PATH}/add-ons/index#submariner`,

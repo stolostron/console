@@ -15,12 +15,13 @@ import {
     Flex,
     FlexItem,
     PageSection,
+    Popover,
     Stack,
     Text,
     TextContent,
     TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -31,7 +32,6 @@ import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
-    clusterPoolsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClusterSetBindingsState,
@@ -47,15 +47,14 @@ import {
     deleteResource,
     ManagedClusterSet,
     ManagedClusterSetDefinition,
-    managedClusterSetLabel,
     mapAddons,
     mapClusters,
     ResourceErrorCode,
+    isGlobalClusterSet,
 } from '../../../../resources'
 import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
-import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
 
@@ -83,7 +82,6 @@ export default function ClusterSetsPage() {
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
-            clusterPoolsState,
             agentClusterInstallsState,
         ])
     )
@@ -177,7 +175,6 @@ const PageActions = () => {
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation()
-    const { isSubmarinerAvailable } = useContext(PluginContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
@@ -191,9 +188,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
         return () => canCreateManagedClusterSet.abort()
     }, [])
 
-    const [clusterPools, managedClusterSetBindings] = useRecoilValue(
-        waitForAll([clusterPoolsState, managedClusterSetBindingsState])
-    )
+    const [managedClusterSetBindings] = useRecoilValue(waitForAll([managedClusterSetBindingsState]))
 
     const modalColumns = useMemo(
         () => [
@@ -204,16 +199,6 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 ),
                 sort: 'name',
             },
-            ...(isSubmarinerAvailable
-                ? [
-                      {
-                          header: t('table.networkStatus'),
-                          cell: (managedClusterSet: ManagedClusterSet) => {
-                              return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                          },
-                      },
-                  ]
-                : []),
             {
                 header: t('table.clusters'),
                 sort: 'status',
@@ -221,21 +206,8 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
                 ),
             },
-            {
-                header: t('table.clusterPools'),
-                cell: (managedClusterSet: ManagedClusterSet) => {
-                    const pools = clusterPools.filter(
-                        (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                    )
-                    if (pools.length === 0) {
-                        return '-'
-                    } else {
-                        return pools.length
-                    }
-                },
-            },
         ],
-        [t, clusterPools, isSubmarinerAvailable]
+        [t]
     )
 
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
@@ -258,47 +230,43 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (managedClusterSet: ManagedClusterSet) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                <Link
-                                    to={NavigationPath.clusterSetOverview.replace(
-                                        ':id',
-                                        managedClusterSet.metadata.name as string
-                                    )}
-                                >
-                                    {managedClusterSet.metadata.name}
-                                </Link>
-                            </span>
+                            <>
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    <Link
+                                        to={NavigationPath.clusterSetOverview.replace(
+                                            ':id',
+                                            managedClusterSet.metadata.name as string
+                                        )}
+                                    >
+                                        {managedClusterSet.metadata.name}
+                                    </Link>
+                                </span>
+                                {isGlobalClusterSet(managedClusterSet) && (
+                                    <Popover
+                                        bodyContent={
+                                            <>
+                                                <Trans
+                                                    i18nKey="learn.global.clusterSet"
+                                                    components={{ bold: <strong /> }}
+                                                />
+                                                <TextContent>
+                                                    {viewDocumentation(DOC_LINKS.GLOBAL_CLUSTER_SET, t)}
+                                                </TextContent>
+                                            </>
+                                        }
+                                    >
+                                        <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
+                                            <OutlinedQuestionCircleIcon />
+                                        </AcmButton>
+                                    </Popover>
+                                )}
+                            </>
                         ),
                     },
-                    ...(isSubmarinerAvailable
-                        ? [
-                              {
-                                  header: t('table.networkStatus'),
-                                  cell: (managedClusterSet: ManagedClusterSet) => {
-                                      return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                                  },
-                              },
-                          ]
-                        : []),
                     {
                         header: t('table.clusters'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
                             return <ClusterStatuses managedClusterSet={managedClusterSet} />
-                        },
-                    },
-                    {
-                        header: t('table.clusterPools'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const pools = clusterPools.filter(
-                                (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                            )
-                            if (pools.length === 0) {
-                                return '-'
-                            } else {
-                                return pools.length === 1
-                                    ? t('clusterPools.one')
-                                    : t('clusterPools.multiple', { number: pools.length })
-                            }
                         },
                     },
                     {
