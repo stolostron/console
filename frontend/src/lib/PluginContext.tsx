@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { createContext } from 'react'
+import { Extension } from '../plugin-extensions/types'
 
 export const PluginContext = createContext<{
     isACMAvailable?: boolean
@@ -8,6 +9,7 @@ export const PluginContext = createContext<{
     isApplicationsAvailable?: boolean
     isGovernanceAvailable?: boolean
     isSearchAvailable?: boolean
+    acmExtensions?: Extension[]
 }>({
     isACMAvailable: true,
     isOverviewAvailable: true,
@@ -15,4 +17,5 @@ export const PluginContext = createContext<{
     isApplicationsAvailable: true,
     isGovernanceAvailable: true,
     isSearchAvailable: true,
+    acmExtensions: [],
 })

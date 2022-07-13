@@ -5,7 +5,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { TFunction } from 'i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -63,6 +63,8 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { PluginContext } from '../../lib/PluginContext'
+import { isAddActionProps } from '../../plugin-extensions/extensions/addAction'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -218,6 +220,7 @@ export default function ApplicationsOverview() {
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
+    const { acmExtensions } = useContext(PluginContext)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
@@ -868,6 +871,15 @@ export default function ApplicationsOverview() {
                         })
                     },
                     isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
+                })
+            }
+
+            // Plugin custom extension for row action
+            if(acmExtensions) {
+                acmExtensions.every((e) => {
+                    if (isAddActionProps(e)) {
+                      actions.push(e.properties.iAcmRowAction)
+                    }
                 })
             }
 
