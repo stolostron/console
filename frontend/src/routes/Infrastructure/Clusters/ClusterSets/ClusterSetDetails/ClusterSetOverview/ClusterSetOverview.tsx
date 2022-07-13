@@ -8,8 +8,8 @@ import {
     AcmPageContent,
 } from '../../../../../../ui-components'
 import { PageSection, Popover } from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useContext } from 'react'
+import { OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -18,20 +18,39 @@ import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkS
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { PluginContext } from '../../../../../../lib/PluginContext'
+import { ManagedClusterSetBindingModal } from '../../components/ManagedClusterSetBindingModal'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation()
     const { isSubmarinerAvailable } = useContext(PluginContext)
     const { push } = useHistory()
-    const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
+    const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings, clusterRoleBindings } =
+        useContext(ClusterSetContext)
 
     const unhealthySubmariners = submarinerAddons!.filter(
         (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
     )
 
+    const [showManagedClusterSetBindingModal, setShowManagedClusterSetBindingModal] = useState(false)
+    let users = 0
+    let groups = 0
+    clusterRoleBindings?.forEach((binding) => {
+        if (binding.roleRef.name === `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`) {
+            users += 1
+        } else if (
+            binding.roleRef.name === `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
+        ) {
+            groups += 1
+        }
+    })
+
     return (
         <AcmPageContent id="overview">
             <PageSection>
+                <ManagedClusterSetBindingModal
+                    clusterSet={showManagedClusterSetBindingModal ? clusterSet : undefined}
+                    onClose={() => setShowManagedClusterSetBindingModal(false)}
+                />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
@@ -52,24 +71,39 @@ export function ClusterSetOverviewPageContent() {
                         {
                             key: t('table.clusterSetBinding'),
                             keyAction: (
-                                <Popover
-                                    bodyContent={
-                                        <Trans
-                                            i18nKey="clusterSetBinding.edit.message"
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    }
-                                >
-                                    <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
-                                        <OutlinedQuestionCircleIcon />
+                                <Fragment>
+                                    <Popover
+                                        bodyContent={
+                                            <Trans
+                                                i18nKey="clusterSetBinding.edit.message"
+                                                components={{ bold: <strong /> }}
+                                            />
+                                        }
+                                    >
+                                        <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
+                                            <OutlinedQuestionCircleIcon />
+                                        </AcmButton>
+                                    </Popover>
+                                    <AcmButton
+                                        onClick={() => {
+                                            setShowManagedClusterSetBindingModal(true)
+                                        }}
+                                        variant="link"
+                                        style={{ padding: 0, paddingLeft: '6px' }}
+                                    >
+                                        <PencilAltIcon />
                                     </AcmButton>
-                                </Popover>
+                                </Fragment>
                             ),
                             value: clusterSetBindings?.length ? (
                                 <AcmLabels labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)} />
                             ) : (
                                 '-'
                             ),
+                        },
+                        {
+                            key: t('table.userManagement'),
+                            value: `Users ${users ? users : '-'}, Groups ${groups ? groups : '-'}`,
                         },
                     ]}
                 />

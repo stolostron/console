@@ -9,7 +9,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '../../../../../ui-components'
-import { createContext, Fragment, Suspense, useContext } from 'react'
+import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
@@ -27,6 +27,8 @@ import {
     Cluster,
     ClusterDeployment,
     ClusterPool,
+    ClusterRoleBinding,
+    listClusterRoleBindings,
     ManagedClusterAddOn,
     ManagedClusterSet,
     ManagedClusterSetBinding,
@@ -43,6 +45,7 @@ import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/Install
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
+import { useQuery } from '../../../../../lib/useQuery'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -51,6 +54,7 @@ export const ClusterSetContext = createContext<{
     readonly submarinerAddons: ManagedClusterAddOn[] | undefined
     readonly clusterSetBindings: ManagedClusterSetBinding[] | undefined
     readonly clusterDeployments: ClusterDeployment[] | undefined
+    readonly clusterRoleBindings: ClusterRoleBinding[] | undefined
 }>({
     clusterSet: undefined,
     clusters: undefined,
@@ -58,6 +62,7 @@ export const ClusterSetContext = createContext<{
     submarinerAddons: undefined,
     clusterSetBindings: undefined,
     clusterDeployments: undefined,
+    clusterRoleBindings: undefined,
 })
 
 export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -86,6 +91,24 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     )
 
     const clusterSetBindings = useClusterSetBindings(clusterSet)
+    const [clusterRoleBindingsCache, setClusterRoleBindingsCache] = useState<ClusterRoleBinding[]>([])
+    const { data, startPolling } = useQuery(listClusterRoleBindings)
+    useEffect(startPolling, [startPolling])
+
+    const updateRoleBindings = () => {
+        if (data) {
+            setClusterRoleBindingsCache(
+                data.filter((item) => {
+                    const role = item.roleRef.name
+                    return (
+                        role.startsWith('open-cluster-management:managedclusterset:') &&
+                        role.endsWith(`:${clusterSet!.metadata.name!}`)
+                    )
+                })
+            )
+        }
+    }
+    useEffect(updateRoleBindings, [data])
 
     if (prevClusterSet?.metadata?.deletionTimestamp) {
         return (
@@ -149,6 +172,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                 submarinerAddons,
                 clusterSetBindings,
                 clusterDeployments,
+                clusterRoleBindings: clusterRoleBindingsCache,
             }}
         >
             <Suspense fallback={<Fragment />}>
