@@ -360,7 +360,11 @@ const mockGroup = {
 
 describe('ClusterSetDetails page', () => {
     beforeEach(async () => {
-        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+        ]
         nockIgnoreRBAC()
         render(<Component />)
         await waitForNocks(getNocks)
@@ -589,6 +593,7 @@ describe('ClusterSetDetails error', () => {
         </RecoilRoot>
     )
     test('renders error page when cluster set does not exist', async () => {
+        nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('Not found')
     })
@@ -617,6 +622,7 @@ describe('ClusterSetDetails deletion', () => {
         </RecoilRoot>
     )
     test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
+        nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('test-cluster-set is being deleted.')
     })
@@ -624,7 +630,11 @@ describe('ClusterSetDetails deletion', () => {
 
 describe('ClusterSetDetails page without Submariner', () => {
     beforeEach(async () => {
-        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+        ]
         nockIgnoreRBAC()
         render(
             <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
