@@ -306,7 +306,7 @@ describe('Create Argo Application Set', () => {
         await clickByText('Enter or select a repository path')
         await clickByText('application-test')
 
-        await typeByPlaceholderText('Enter the remote namespace', 'gitops-ns')
+        await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
         await clickByText('Next')
 
         // Sync policy
@@ -346,11 +346,11 @@ describe('Create Argo Application Set', () => {
         await clickByText(channelHelm.spec.pathname)
         // // nock.recorder.rec()
 
-        await typeByPlaceholderText('Enter the chart name', chartName)
-        await typeByPlaceholderText('Enter the package version', 'v1')
+        await typeByPlaceholderText('Enter the name of the Helm chart', chartName)
+        await typeByPlaceholderText('Enter the version or versions', 'v1')
 
         // remote namespace
-        await typeByPlaceholderText('Enter the remote namespace', 'gitops-ns')
+        await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
         await clickByText('Next')
 
         // sync policy
