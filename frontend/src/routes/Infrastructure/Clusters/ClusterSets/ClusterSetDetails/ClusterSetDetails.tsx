@@ -94,6 +94,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     const [clusterRoleBindingsCache, setClusterRoleBindingsCache] = useState<ClusterRoleBinding[]>([])
     const { data, startPolling } = useQuery(listClusterRoleBindings)
     useEffect(startPolling, [startPolling])
+    const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     const updateRoleBindings = () => {
         if (data) {
@@ -209,7 +210,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 {t('tab.overview')}
                                             </Link>
                                         </AcmSecondaryNavItem>
-                                        {isSubmarinerAvailable && (
+                                        {isSubmarinerAvailable && !isGlobalClusterSet && (
                                             <AcmSecondaryNavItem
                                                 isActive={
                                                     location.pathname ===
@@ -226,33 +227,43 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 </Link>
                                             </AcmSecondaryNavItem>
                                         )}
-                                        <AcmSecondaryNavItem
-                                            isActive={
-                                                location.pathname ===
-                                                NavigationPath.clusterSetClusters.replace(':id', match.params.id)
-                                            }
-                                        >
-                                            <Link
-                                                to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}
+                                        {!isGlobalClusterSet && (
+                                            <AcmSecondaryNavItem
+                                                isActive={
+                                                    location.pathname ===
+                                                    NavigationPath.clusterSetClusters.replace(':id', match.params.id)
+                                                }
                                             >
-                                                {t('tab.clusters')}
-                                            </Link>
-                                        </AcmSecondaryNavItem>
-                                        <AcmSecondaryNavItem
-                                            isActive={
-                                                location.pathname ===
-                                                NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
-                                            }
-                                        >
-                                            <Link
-                                                to={NavigationPath.clusterSetClusterPools.replace(
-                                                    ':id',
-                                                    match.params.id
-                                                )}
+                                                <Link
+                                                    to={NavigationPath.clusterSetClusters.replace(
+                                                        ':id',
+                                                        match.params.id
+                                                    )}
+                                                >
+                                                    {t('tab.clusters')}
+                                                </Link>
+                                            </AcmSecondaryNavItem>
+                                        )}
+                                        {!isGlobalClusterSet && (
+                                            <AcmSecondaryNavItem
+                                                isActive={
+                                                    location.pathname ===
+                                                    NavigationPath.clusterSetClusterPools.replace(
+                                                        ':id',
+                                                        match.params.id
+                                                    )
+                                                }
                                             >
-                                                {t('tab.clusterPools')}
-                                            </Link>
-                                        </AcmSecondaryNavItem>
+                                                <Link
+                                                    to={NavigationPath.clusterSetClusterPools.replace(
+                                                        ':id',
+                                                        match.params.id
+                                                    )}
+                                                >
+                                                    {t('tab.clusterPools')}
+                                                </Link>
+                                            </AcmSecondaryNavItem>
+                                        )}
                                         <AcmSecondaryNavItem
                                             isActive={
                                                 location.pathname ===
@@ -280,6 +291,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                             <Route exact path={NavigationPath.clusterSetClusters}>
                                 <ClusterSetClustersPageContent />
                             </Route>
+
                             <Route exact path={NavigationPath.clusterSetClusterPools}>
                                 <ClusterSetClusterPoolsPageContent />
                             </Route>

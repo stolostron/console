@@ -485,7 +485,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await waitForText('mock-user')
         await clickByLabel('Actions', 0)
@@ -500,7 +500,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await clickByText('Add user or group')
         await waitForText(
@@ -537,7 +537,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await clickByText('Add user or group')
         await waitForText(

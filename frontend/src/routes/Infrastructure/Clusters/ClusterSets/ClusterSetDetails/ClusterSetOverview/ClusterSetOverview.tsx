@@ -43,6 +43,7 @@ export function ClusterSetOverviewPageContent() {
             groups += 1
         }
     })
+    const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     return (
         <AcmPageContent id="overview">
@@ -58,7 +59,7 @@ export function ClusterSetOverviewPageContent() {
                             key: t('table.name'),
                             value: clusterSet?.metadata.name,
                         },
-                        ...(isSubmarinerAvailable
+                        ...(isSubmarinerAvailable && !isGlobalClusterSet
                             ? [
                                   {
                                       key: t('table.networkStatus'),
@@ -103,7 +104,7 @@ export function ClusterSetOverviewPageContent() {
                         },
                         {
                             key: t('table.userManagement'),
-                            value: `Users ${users ? users : '-'}, Groups ${groups ? groups : '-'}`,
+                            value: `Users ${users ? users : '-'}  Groups ${groups ? groups : '-'}`,
                         },
                     ]}
                 />
