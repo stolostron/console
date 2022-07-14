@@ -28,25 +28,6 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 const unavailable = '-unavailable-'
 
-async function getClusterStatus(name) {
-    let successImportStatus = false
-    const localClusterNS = {
-        apiVersion: NamespaceApiVersion,
-        kind: NamespaceKind,
-        metadata: {
-            name,
-        },
-    }
-    const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], [localClusterNS])
-    const managedCluster = authorizedNamespaces.find((ns) => ns === name)
-    if (managedCluster) {
-        successImportStatus = true
-    }
-    return successImportStatus
-}
-
-const enableHubSelfManagement = getClusterStatus('local-cluster')
-
 export const loadExistingPlacementRules = () => {
     let nsControl = undefined
 
@@ -242,7 +223,7 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-const placementData = async (test) => [
+const placementData = async (isLocalCluster) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -270,7 +251,7 @@ const placementData = async (test) => [
         opaque: false,
         placeholder: 'creation.app.settings.existingRule',
         reverse: reverseExistingRule,
-        fetchAvailable: loadExistingPlacementRules(),
+        fetchAvailable: loadExistingPlacementRules(isLocalCluster),
         onSelect: updateNewRuleControls,
         validation: {},
         summarize: () => {},
@@ -283,7 +264,7 @@ const placementData = async (test) => [
     {
         id: 'enableHubSelfManagement',
         type: 'hidden',
-        active: await enableHubSelfManagement,
+        active: isLocalCluster,
     },
     {
         type: 'custom',
@@ -296,10 +277,8 @@ const placementData = async (test) => [
     {
         id: onlineClusterCheckbox,
         type: 'radio',
-        name: (await enableHubSelfManagement)
-            ? 'creation.app.settings.onlineClusters'
-            : 'creation.app.settings.onlineClustersOnly',
-        tooltip: (await enableHubSelfManagement)
+        name: isLocalCluster ? 'creation.app.settings.onlineClusters' : 'creation.app.settings.onlineClustersOnly',
+        tooltip: isLocalCluster
             ? 'tooltip.creation.app.settings.onlineClusters'
             : 'tooltip.creation.app.settings.onlineClustersOnly',
         active: false,
@@ -310,7 +289,7 @@ const placementData = async (test) => [
     },
     {
         id: localClusterCheckbox,
-        type: test ? 'radio' : 'hidden',
+        type: isLocalCluster ? 'radio' : 'hidden',
         name: 'creation.app.settings.localClusters',
         tooltip: 'tooltip.creation.app.settings.localClusters',
         onSelect: updatePlacementControls,

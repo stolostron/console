@@ -59,7 +59,7 @@ export const updateNSControls = (nsControl, globalControl) => {
     return updateControlsForNS(nsControl, nsControl, globalControl)
 }
 
-export const controlData = async (test) => [
+export const controlData = async (isLocalCluster) => [
     {
         id: 'main',
         type: 'section',
@@ -168,7 +168,7 @@ export const controlData = async (test) => [
                         title: 'channel.type.git',
                         tooltip: 'tooltip.creation.app.channel.git',
                         change: {
-                            insertControlData: await gitChannelData(test),
+                            insertControlData: await gitChannelData(isLocalCluster),
                         },
                     },
                     {
@@ -177,7 +177,7 @@ export const controlData = async (test) => [
                         title: 'channel.type.helmrepo',
                         tooltip: 'tooltip.channel.type.helmrepo',
                         change: {
-                            insertControlData: await helmReleaseChannelData(),
+                            insertControlData: await helmReleaseChannelData(isLocalCluster),
                         },
                     },
                     {
@@ -186,7 +186,7 @@ export const controlData = async (test) => [
                         title: 'channel.type.objectbucket',
                         tooltip: 'tooltip.channel.type.objectbucket',
                         change: {
-                            insertControlData: await objectstoreChannelData(),
+                            insertControlData: await objectstoreChannelData(isLocalCluster),
                         },
                     },
                     {
@@ -196,7 +196,7 @@ export const controlData = async (test) => [
                         tooltip: 'tooltip.channel.type.other',
                         hidden: true, // only show this if editing existing app
                         change: {
-                            insertControlData: await otherChannelData(),
+                            insertControlData: await otherChannelData(isLocalCluster),
                         },
                     },
                 ],

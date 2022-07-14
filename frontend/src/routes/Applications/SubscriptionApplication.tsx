@@ -113,13 +113,12 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     )
 
     let clusters = useAllClusters()
-    const isLocalCluster = clusters.find(
+    const localCluster = clusters.find(
         (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
     )
-    const test = isLocalCluster ? true : false
-    debugger
+    const isLocalCluster = localCluster ? true : false
     useEffect(() => {
-        getControlData(test)
+        getControlData(isLocalCluster)
             .then((cd) => {
                 setControlData(cd)
             })

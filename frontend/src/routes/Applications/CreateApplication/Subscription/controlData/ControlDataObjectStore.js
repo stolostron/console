@@ -15,7 +15,7 @@ import { VALIDATE_URL } from '../../../../../components/TemplateEditor'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 
-const objectstoreChannelData = async () => [
+const objectstoreChannelData = async (isLocalCluster) => [
     ///////////////////////  Objectstore  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -95,7 +95,7 @@ const objectstoreChannelData = async () => [
         reverse: ['Subscription[0].metadata.annotations["apps.open-cluster-management.io/bucket-path"]'],
     },
 
-    ...(await placementData()),
+    ...(await placementData(isLocalCluster)),
 ]
 
 export default objectstoreChannelData
