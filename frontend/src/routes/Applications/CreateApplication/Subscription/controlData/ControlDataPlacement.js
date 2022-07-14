@@ -17,10 +17,9 @@ import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWin
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
+import { listPlacementRules } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
 
 const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'

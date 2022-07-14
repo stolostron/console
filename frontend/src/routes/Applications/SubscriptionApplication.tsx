@@ -112,7 +112,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
 
-    let clusters = useAllClusters()
+    const clusters = useAllClusters()
     const localCluster = clusters.find(
         (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
     )
@@ -125,7 +125,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             .catch((err) => {
                 return err
             })
-    }, [])
+    }, [isLocalCluster])
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
