@@ -104,7 +104,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const history = useHistory()
     const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
-    const [controlData, setControlData] = useState<any>('')
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
@@ -117,15 +116,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
     )
     const isLocalCluster = localCluster ? true : false
-    useEffect(() => {
-        getControlData(isLocalCluster)
-            .then((cd) => {
-                setControlData(cd)
-            })
-            .catch((err) => {
-                return err
-            })
-    }, [isLocalCluster])
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -360,13 +350,12 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const isFetchControl = editApplication ? fetchControl : true
 
     return (
-        controlData &&
         isFetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
                 monacoEditor={<MonacoEditor />}
-                controlData={controlData}
+                controlData={getControlData(isLocalCluster)}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}

@@ -222,7 +222,7 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-const placementData = async (isLocalCluster) => [
+const placementData = (isLocalCluster) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {

@@ -15,7 +15,7 @@ import { VALIDATE_URL } from '../../../../../components/TemplateEditor'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 
-const helmReleaseChannelData = async (isLocalCluster) => [
+const helmReleaseChannelData = (isLocalCluster) => [
     ///////////////////////  HelmRelease  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -139,7 +139,7 @@ const helmReleaseChannelData = async (isLocalCluster) => [
         editing: { hidden: true }, // if editing existing app, hide this field initially
     },
 
-    ...(await placementData(isLocalCluster)),
+    ...placementData(isLocalCluster),
 ]
 
 export default helmReleaseChannelData

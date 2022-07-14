@@ -13,7 +13,7 @@
 
 import placementData from './ControlDataPlacement'
 
-const otherChannelData = async (isLocalCluster) => [
+const otherChannelData = (isLocalCluster) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -41,7 +41,7 @@ const otherChannelData = async (isLocalCluster) => [
         available: [],
         reverse: 'Channel[0].spec.pathname',
     },
-    ...(await placementData(isLocalCluster)),
+    ...placementData(isLocalCluster),
 ]
 
 export default otherChannelData
