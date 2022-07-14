@@ -39,23 +39,6 @@
         "properties": {
             "perspective": "acm",
             "section": "mce-infrastructure",
-            "id": "mce-bare-metal-assets",
-            "name": "%plugin__mce~Bare metal assets%",
-            "href": "/multicloud/infrastructure/bare-metal-assets"
-        }
-    },
-    {
-        "type": "console.page/route",
-        "properties": {
-            "path": "/multicloud/infrastructure/bare-metal-assets",
-            "component": { "$codeRef": "baremetalassets.default" }
-        }
-    },
-    {
-        "type": "console.navigation/href",
-        "properties": {
-            "perspective": "acm",
-            "section": "mce-infrastructure",
             "id": "mce-automations",
             "name": "%plugin__mce~Automation%",
             "href": "/multicloud/infrastructure/automations"
