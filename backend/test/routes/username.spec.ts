@@ -17,25 +17,23 @@ describe('username Route', function () {
         const res = await request('GET', '/username')
         expect(res.statusCode).toEqual(200)
         const { body } = await parseResponseJsonBody(res)
-        expect(body).toEqual({ username: 'testuser'})
+        expect(body).toEqual({ username: 'testuser' })
     })
     it('should return empty string if no username provided', async function () {
         nock(process.env.CLUSTER_API_URL)
             .post('/apis/authentication.k8s.io/v1/tokenreviews')
             .reply(200, {
                 status: {
-                    user: {}
+                    user: {},
                 },
             })
         const res = await request('GET', '/username')
         expect(res.statusCode).toEqual(200)
         const { body } = await parseResponseJsonBody(res)
-        expect(body).toEqual({ username: ''})
+        expect(body).toEqual({ username: '' })
     })
     it('should handle errors', async function () {
-        nock(process.env.CLUSTER_API_URL)
-            .post('/apis/authentication.k8s.io/v1/tokenreviews')
-            .replyWithError('failed')
+        nock(process.env.CLUSTER_API_URL).post('/apis/authentication.k8s.io/v1/tokenreviews').replyWithError('failed')
         const res = await request('GET', '/username')
         expect(res.statusCode).toEqual(500)
     })

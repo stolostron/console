@@ -52,9 +52,7 @@ describe(`consoleLinks Route`, function () {
         })
     })
     it('should handle errors', async function () {
-        nock(process.env.CLUSTER_API_URL)
-            .get('/apis/console.openshift.io/v1/consolelinks')
-            .replyWithError('failed')
+        nock(process.env.CLUSTER_API_URL).get('/apis/console.openshift.io/v1/consolelinks').replyWithError('failed')
         const res = await request('GET', '/console-links')
         expect(res.statusCode).toEqual(500)
     })
