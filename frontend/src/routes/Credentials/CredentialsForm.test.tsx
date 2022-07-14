@@ -337,58 +337,6 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create bmc (Bare Metal) credentials', async () => {
-        render(<AddCredentialsTest />)
-
-        const providerConnection = createProviderConnection(
-            'bmc',
-            {
-                libvirtURI: 'qemu+ssh://libvirtURI',
-                sshKnownHosts: 'sshKnownHosts',
-                imageMirror: 'image.mirror:123/abc',
-                bootstrapOSImage:
-                    'https://mirror.openshift.com/rhcos-46.82.202011260640-0-qemu.qcow2.gz?sha256=123456789012345678901234567890123456789012345678901234567890abcd',
-                clusterOSImage:
-                    'https://mirror.openshift.com/rhcos-46.82.202011260640-0-openstack.qcow2.gz?sha256=123456789012345678901234567890123456789012345678901234567890abcd',
-                additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-            },
-            true
-        )
-
-        // Credentials type
-        await clickByTestId('bmc')
-        await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
-        await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('Next')
-
-        // bmc credentials
-        await typeByTestId('libvirtURI', providerConnection.stringData?.libvirtURI!)
-        await typeByTestId('sshKnownHosts', providerConnection.stringData?.sshKnownHosts!)
-        await clickByText('Next')
-
-        // bmc disconnected
-        await typeByTestId('imageMirror', providerConnection.stringData?.imageMirror!)
-        await typeByTestId('bootstrapOSImage', providerConnection.stringData?.bootstrapOSImage!)
-        await typeByTestId('clusterOSImage', providerConnection.stringData?.clusterOSImage!)
-        await typeByTestId('additionalTrustBundle', providerConnection.stringData?.additionalTrustBundle!)
-        await clickByText('Next')
-
-        // skip proxy
-        await clickByText('Next')
-
-        // Pull secret
-        await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
-        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('Next')
-
-        // Add Credentials
-        const createNock = nockCreate({ ...providerConnection })
-        await clickByText('Add')
-        await waitForNock(createNock)
-    })
-
     it('should create ans (Ansible) credentials', async () => {
         render(<AddCredentialsTest />)
 

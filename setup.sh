@@ -41,6 +41,6 @@ REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirect
 oc patch OAuthClient multicloudingress --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"
 
 # Create route to the search-api service on the target cluster.
-oc create route passthrough search-api --service=search-search-api --insecure-policy=Redirect -n $INSTALLATION_NAMESPACE
+oc get route search-api -n $INSTALLATION_NAMESPACE &>/dev/null || oc create route passthrough search-api --service=search-search-api --insecure-policy=Redirect -n $INSTALLATION_NAMESPACE
 SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE |grep search-api | awk '{print $2}')
 echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env

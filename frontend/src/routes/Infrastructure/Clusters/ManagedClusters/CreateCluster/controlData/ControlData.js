@@ -15,10 +15,8 @@ import getControlDataGCP from './ControlDataGCP'
 import getControlDataAZR from './ControlDataAZR'
 import getControlDataVMW from './ControlDataVMW'
 import getControlDataRHV from './ControlDataRHV'
-import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
-import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
 import { Label } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
@@ -29,14 +27,6 @@ const installConfig = Handlebars.compile(installConfigHbs)
 const cimTemplate = Handlebars.compile(cimTemplateHbs)
 const aiTemplate = Handlebars.compile(aiTemplateHbs)
 const hypershiftTemplate = Handlebars.compile(hypershiftTemplateHbs)
-
-export const getActiveCardID = (control, fetchData = {}) => {
-    const { requestedUIDs } = fetchData
-    if (requestedUIDs && requestedUIDs.length) {
-        return 'BMC'
-    }
-    return null
-}
 
 export const getControlData = (
     warning,
@@ -134,19 +124,6 @@ export const getControlData = (
                 section: 'Infrastructure providers',
             },
             {
-                id: 'BMC',
-                logo: <ServerIcon color="slategray" />,
-                title: 'cluster.create.baremetal.subtitle',
-                text: <DeprecatedLabel />,
-                change: {
-                    insertControlData: getControlDataBMC(),
-                    replacements: {
-                        'install-config': { template: installConfig, encode: true, newTab: true },
-                    },
-                },
-                section: 'Infrastructure providers',
-            },
-            {
                 id: 'OpenStack',
                 logo: <RedHatLogo />,
                 title: 'cluster.create.redhat.subtitle',
@@ -207,7 +184,6 @@ export const getControlData = (
                 section: 'Assisted installation',
             },
         ],
-        active: getActiveCardID,
         validation: {
             notification: 'creation.ocp.cluster.must.select.infrastructure',
             required: true,

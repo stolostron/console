@@ -10,7 +10,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { namespacesState, settingsState } from '../../../../../atoms'
+import { namespacesState, settingsState, clusterPoolsState } from '../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../ManagedClusters/CreateCluster/style.css'
 
@@ -102,6 +102,7 @@ export function CreateClusterPool() {
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
     const [settings] = useRecoilState(settingsState)
+    const [clusterPools] = useRecoilState(clusterPoolsState)
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
@@ -187,6 +188,28 @@ export function CreateClusterPool() {
                         }
                     })
                 })
+                break
+            case 'name':
+                control.validation.contextTester = (
+                    active: string | undefined,
+                    templateObjectMap: { [x: string]: { ClusterPool: { $raw: { metadata: { namespace: any } } }[] } }
+                ) => {
+                    if (clusterPools.length) {
+                        const namespace = templateObjectMap['<<main>>'].ClusterPool[0].$raw.metadata.namespace
+                        if (namespace) {
+                            if (
+                                clusterPools.findIndex((pool) => {
+                                    return pool?.metadata?.name === active && pool?.metadata?.namespace === namespace
+                                }) !== -1
+                            ) {
+                                return t('clusterPool.creation.validation.unique.name', [namespace])
+                            }
+                        }
+                    }
+                    if (!control?.validation?.tester.test(active)) {
+                        return t(control?.validation?.notification, [active])
+                    }
+                }
                 break
             case 'namespace':
                 control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
