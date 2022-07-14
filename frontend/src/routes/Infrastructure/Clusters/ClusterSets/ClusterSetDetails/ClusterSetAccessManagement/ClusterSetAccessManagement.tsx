@@ -7,6 +7,7 @@ import {
     createResource,
     deleteResource,
     Group,
+    isGlobalClusterSet,
     listClusterRoleBindings,
     listGroups,
     listUsers,
@@ -305,7 +306,7 @@ function AddUsersModal(props: {
     ]
 
     const getUserRoles = () => {
-        return clusterSet?.metadata.name === 'global' ? roles.filter((role) => role.id !== 'admin') : roles
+        return isGlobalClusterSet(clusterSet!) ? roles.filter((userRole) => userRole.id !== 'admin') : roles
     }
 
     return (
@@ -344,7 +345,8 @@ function AddUsersModal(props: {
                                         <AcmSelect
                                             id="role"
                                             variant="typeahead"
-                                            maxHeight="6em"
+                                            maxHeight="12em"
+                                            menuAppendTo="parent"
                                             isRequired
                                             label=""
                                             placeholder={
@@ -376,7 +378,7 @@ function AddUsersModal(props: {
                             &nbsp;
                             <AcmSelect
                                 id="role"
-                                maxHeight="10em"
+                                maxHeight="12em"
                                 menuAppendTo="parent"
                                 isRequired
                                 label={t('access.add.role')}
@@ -384,9 +386,9 @@ function AddUsersModal(props: {
                                 value={role}
                                 onChange={(role) => setRole(role)}
                             >
-                                {getUserRoles().map((role) => (
-                                    <SelectOption key={role.role} value={role.role} description={role.role}>
-                                        {role.displayName}
+                                {getUserRoles().map((userRole) => (
+                                    <SelectOption key={userRole.role} value={userRole.role} description={userRole.role}>
+                                        {userRole.displayName}
                                     </SelectOption>
                                 ))}
                             </AcmSelect>
