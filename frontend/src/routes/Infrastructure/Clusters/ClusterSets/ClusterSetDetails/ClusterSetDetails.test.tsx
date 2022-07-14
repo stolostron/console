@@ -511,7 +511,7 @@ describe('ClusterSetDetails page', () => {
         )
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
-        await clickByText('Select role', 1)
+        await clickByText('Select role')
         await waitForText('Cluster set admin', true)
         await waitForText('Cluster set view', true)
         await waitForText('Cluster set bind', true)
@@ -553,7 +553,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Groups')
         await clickByPlaceholderText('Select group')
         await clickByText(mockGroup.metadata.name!)
-        await clickByText('Select role', 1)
+        await clickByText('Select role')
         await clickByText('Cluster set view')
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
@@ -599,7 +599,7 @@ describe('Global ClusterSetDetails page', () => {
         )
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
-        await clickByText('Select role', 1)
+        await clickByText('Select role')
         await waitForNotText('Cluster set admin')
         await waitForText('Cluster set view', true)
         await waitForText('Cluster set bind', true)
