@@ -297,6 +297,7 @@ export interface AcmTableProps<T> {
     items?: T[]
     addSubRows?: (item: T) => IRow[] | undefined
     initialSelectedItems?: T[]
+    disabledItems?: T[]
     columns: IAcmTableColumn<T>[]
     keyFn: (item: T) => string
     groupFn?: (item: T) => string | null
@@ -372,6 +373,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // State that is only stored in the component state
     const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
+    const [disabled, setDisabled] = useState<{ [uid: string]: boolean }>({})
     const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
     const [expanded, setExpanded] = useState<{ [uid: string]: boolean }>({})
     const [openGroups, setOpenGroups] = useState<{ [key: string]: boolean }>({})
@@ -454,6 +456,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 initialSelected[key] = true
             })
             setSelected(initialSelected)
+        }
+        if (props.disabledItems?.length) {
+            const initialDisabled: { [uid: string]: boolean } = {}
+
+            props.disabledItems.forEach((item) => {
+                const key = keyFn(item)
+                initialDisabled[key] = true
+            })
+            setDisabled(initialDisabled)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.initialSelectedItems])
@@ -649,6 +660,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     ...groupSummary,
                     isOpen,
                     selected: selected[key] === true,
+                    disableSelection: disabled[key] === true,
                     props: { key: group, group },
                 })
             } else {
@@ -656,6 +668,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     isOpen,
                     selected: selected[key] === true,
                     props: { key, group },
+                    disableSelection: disabled[key] === true,
                     cells: itemToCells(item, key),
                 })
             }
@@ -967,7 +980,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                     onSelectAll={() => {
                                         const newSelected: { [uid: string]: boolean } = {}
                                         for (const tableItem of filtered) {
-                                            newSelected[tableItem.key] = true
+                                            if (!disabled[tableItem.key]) {
+                                                newSelected[tableItem.key] = true
+                                            }
                                         }
                                         setSelected(newSelected)
                                         /* istanbul ignore next */

@@ -190,6 +190,15 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
 
     const [managedClusterSetBindings] = useRecoilValue(waitForAll([managedClusterSetBindingsState]))
 
+    function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
+        if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {
+            return -1
+        } else if (!isGlobalClusterSet(a) && isGlobalClusterSet(b)) {
+            return 1
+        }
+        return a.metadata?.name && b.metadata?.name ? a.metadata?.name.localeCompare(b.metadata?.name) : 0
+    }
+
     const modalColumns = useMemo(
         () => [
             {
@@ -197,11 +206,9 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <span style={{ whiteSpace: 'nowrap' }}>{managedClusterSet.metadata.name}</span>
                 ),
-                sort: 'name',
             },
             {
                 header: t('table.clusters'),
-                sort: 'status',
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
                 ),
@@ -214,20 +221,23 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
         return managedClusterSet.metadata.name!
     }
 
+    const disabledResources = props.managedClusterSets?.filter((resource) => isGlobalClusterSet(resource))
+
     return (
         <Fragment>
             <CreateClusterSetModal
                 isOpen={createClusterSetModalOpen}
                 onClose={() => setCreateClusterSetModalOpen(false)}
             />
-            <BulkActionModel<ManagedClusterSet> {...modalProps} />
+            <BulkActionModel {...modalProps} />
             <AcmTable<ManagedClusterSet>
                 plural="clusterSets"
                 items={props.managedClusterSets}
+                disabledItems={disabledResources}
                 columns={[
                     {
                         header: t('table.name'),
-                        sort: 'metadata.name',
+                        sort: clusterSetSortFn,
                         search: 'metadata.name',
                         cell: (managedClusterSet: ManagedClusterSet) => (
                             <>
