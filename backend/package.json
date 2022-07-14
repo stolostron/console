@@ -11,7 +11,7 @@
         "tsc": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc -c green,blue,cyan,magenta",
-        "jest": "node --experimental-vm-modules node_modules/.bin/jest",
+        "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
         "eslint": "eslint src test --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src test",
@@ -48,6 +48,7 @@
         "concurrently": "7.1.0",
         "eslint": "8.15.0",
         "jest": "27.x.x",
+        "jest-sonar-reporter": "^2.0.0",
         "nock": "13.2.4",
         "nodemon": "^2.0.19",
         "pino-zen": "2.0.5",
@@ -75,7 +76,39 @@
         ],
         "moduleNameMapper": {
             "(\\.{1,2}/.*)\\.js$": "$1"
-        }
+        },
+        "testEnvironment": "node",
+        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "collectCoverage": true,
+        "coverageThreshold": {
+            "global": {
+                "branches": 0,
+                "functions": 0,
+                "lines": 0,
+                "statements": 0
+            }
+        },
+        "coverageReporters": [
+            "text",
+            "text-summary",
+            "html",
+            "lcov"
+        ],
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!**/node_modules/**"
+        ],
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "jsx",
+            "json",
+            "node"
+        ],
+        "watchPathIgnorePatterns": [
+            "coverage"
+        ]
     },
     "eslintConfig": {
         "parser": "@typescript-eslint/parser",
