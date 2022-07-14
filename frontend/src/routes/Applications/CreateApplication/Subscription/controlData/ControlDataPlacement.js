@@ -242,7 +242,7 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-const placementData = async () => [
+const placementData = async (test) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -310,7 +310,7 @@ const placementData = async () => [
     },
     {
         id: localClusterCheckbox,
-        type: (await enableHubSelfManagement) ? 'radio' : 'hidden',
+        type: test ? 'radio' : 'hidden',
         name: 'creation.app.settings.localClusters',
         tooltip: 'tooltip.creation.app.settings.localClusters',
         onSelect: updatePlacementControls,

@@ -120,7 +120,7 @@ export const reverseSubReconcileRate = (control, templateObject) => {
     return control
 }
 
-const githubChannelData = async () => [
+const githubChannelData = async (test) => [
     ///////////////////////  github  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -270,7 +270,7 @@ const githubChannelData = async () => [
 
     ...prePostTasks,
 
-    ...(await placementData()),
+    ...(await placementData(test)),
 ]
 
 export default githubChannelData

@@ -59,7 +59,7 @@ export const updateNSControls = (nsControl, globalControl) => {
     return updateControlsForNS(nsControl, nsControl, globalControl)
 }
 
-export const controlData = async () => [
+export const controlData = async (test) => [
     {
         id: 'main',
         type: 'section',
@@ -168,7 +168,7 @@ export const controlData = async () => [
                         title: 'channel.type.git',
                         tooltip: 'tooltip.creation.app.channel.git',
                         change: {
-                            insertControlData: await gitChannelData(),
+                            insertControlData: await gitChannelData(test),
                         },
                     },
                     {

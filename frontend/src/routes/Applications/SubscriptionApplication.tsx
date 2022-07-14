@@ -46,6 +46,7 @@ import helmTemplate from './CreateApplication/Subscription/templates/templateHel
 import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 interface CreationStatus {
     status: string
@@ -110,8 +111,15 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
+
+    let clusters = useAllClusters()
+    const isLocalCluster = clusters.find(
+        (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
+    )
+    const test = isLocalCluster ? true : false
+    debugger
     useEffect(() => {
-        getControlData()
+        getControlData(test)
             .then((cd) => {
                 setControlData(cd)
             })
