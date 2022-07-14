@@ -22,7 +22,7 @@ import {
     nockPatch,
 } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
     clickByPlaceholderText,
@@ -285,10 +285,10 @@ const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
     },
 }
 
-const Component = () => (
+const Component = (props: { initialEntryId?: string }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
-            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+            snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockGlobalManagedClusterSet])
             snapshot.set(clusterDeploymentsState, mockClusterDeployments)
             snapshot.set(managedClusterInfosState, [
                 ...mockManagedClusterInfos,
@@ -307,7 +307,12 @@ const Component = () => (
         }}
     >
         <MemoryRouter
-            initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+            initialEntries={[
+                NavigationPath.clusterSetDetails.replace(
+                    ':id',
+                    props.initialEntryId ? props.initialEntryId : mockManagedClusterSet.metadata!.name!
+                ),
+            ]}
         >
             <Switch>
                 <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
@@ -356,6 +361,27 @@ const mockGroup = {
         uid: '98d01b86-7721-4b98-b145-58df2bff2f6e',
     },
     users: [],
+}
+
+const mockGlobalClusterRoleBinding: ClusterRoleBinding = {
+    apiVersion: RbacApiVersion,
+    kind: ClusterRoleBindingKind,
+    metadata: {
+        name: 'cluster-set-binding',
+        uid: '88723604-037e-4e42-9f46-13839752b3be',
+    },
+    subjects: [
+        {
+            kind: 'User',
+            apiGroup: 'rbac.authorization.k8s.io',
+            name: 'mock-user',
+        },
+    ],
+    roleRef: {
+        apiGroup: 'rbac.authorization.k8s.io',
+        kind: 'ClusterRole',
+        name: `open-cluster-management:managedclusterset:admin:${mockGlobalManagedClusterSet.metadata.name!}`,
+    },
 }
 
 describe('ClusterSetDetails page', () => {
@@ -648,5 +674,28 @@ describe('ClusterSetDetails page without Submariner', () => {
         await waitForText('Details')
 
         await waitForNotText('Submariner add-ons')
+    })
+})
+
+describe('ClusterSetDetails page global clusterset', () => {
+    beforeEach(async () => {
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockGlobalClusterRoleBinding, [mockGlobalClusterRoleBinding]),
+        ]
+        nockIgnoreRBAC()
+        render(
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+                <Component initialEntryId={mockGlobalManagedClusterSet.metadata.name!} />
+            </PluginContext.Provider>
+        )
+        await waitForNocks(getNocks)
+    })
+    test('does not render Submariner, Cluster pools or Discovered clusters tab', async () => {
+        await waitForText(mockGlobalManagedClusterSet.metadata.name!, true)
+        await waitForNotText('Submariner add-ons')
+        await waitForNotText('Managed clusters')
+        await waitForNotText('Cluster pools')
     })
 })

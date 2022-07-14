@@ -36,11 +36,11 @@ export function ClusterSetOverviewPageContent() {
     let groups = 0
     clusterRoleBindings?.forEach((binding) => {
         if (binding.roleRef.name === `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`) {
-            users += 1
+            groups += 1
         } else if (
             binding.roleRef.name === `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
         ) {
-            groups += 1
+            users += 1
         }
     })
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
@@ -104,70 +104,82 @@ export function ClusterSetOverviewPageContent() {
                         },
                         {
                             key: t('table.userManagement'),
-                            value: `Users ${users ? users : '-'}  Groups ${groups ? groups : '-'}`,
+                            value: `Users ${users ? users : '-'} Groups ${groups ? groups : '-'}`,
                         },
                     ]}
                 />
-                <div style={{ marginTop: '24px' }}>
-                    <AcmCountCardSection
-                        id="summary-status"
-                        title={t('summary.status')}
-                        cards={[
-                            ...(isSubmarinerAvailable
-                                ? [
-                                      {
-                                          id: 'submariners',
-                                          count: submarinerAddons!.length,
-                                          title: t('submariner.addons'),
-                                          linkText: t('summary.submariner.launch'),
-                                          onLinkClick: () =>
-                                              push(
-                                                  NavigationPath.clusterSetSubmariner.replace(
-                                                      ':id',
-                                                      clusterSet!.metadata.name!
-                                                  )
-                                              ),
-                                          countClick: () =>
-                                              push(
-                                                  NavigationPath.clusterSetSubmariner.replace(
-                                                      ':id',
-                                                      clusterSet!.metadata.name!
-                                                  )
-                                              ),
-                                          isDanger: unhealthySubmariners.length > 0,
-                                      },
-                                  ]
-                                : []),
-                            {
-                                id: 'clusters',
-                                count: clusters!.length,
-                                title: t('Clusters'),
-                                linkText: t('summary.clusters.launch'),
-                                onLinkClick: () =>
-                                    push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)),
-                                countClick: () =>
-                                    push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)),
-                                isDanger:
-                                    clusters!.filter((cluster) => clusterDangerStatuses.includes(cluster.status))
-                                        .length > 0,
-                            },
-                            {
-                                id: 'clusterPools',
-                                count: clusterPools!.length,
-                                title: t('clusterPools'),
-                                linkText: t('summary.clusterPools.launch'),
-                                onLinkClick: () =>
-                                    push(
-                                        NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)
-                                    ),
-                                countClick: () =>
-                                    push(
-                                        NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)
-                                    ),
-                            },
-                        ]}
-                    />
-                </div>
+                {!isGlobalClusterSet && (
+                    <div style={{ marginTop: '24px' }}>
+                        <AcmCountCardSection
+                            id="summary-status"
+                            title={t('summary.status')}
+                            cards={[
+                                ...(isSubmarinerAvailable
+                                    ? [
+                                          {
+                                              id: 'submariners',
+                                              count: submarinerAddons!.length,
+                                              title: t('submariner.addons'),
+                                              linkText: t('summary.submariner.launch'),
+                                              onLinkClick: () =>
+                                                  push(
+                                                      NavigationPath.clusterSetSubmariner.replace(
+                                                          ':id',
+                                                          clusterSet!.metadata.name!
+                                                      )
+                                                  ),
+                                              countClick: () =>
+                                                  push(
+                                                      NavigationPath.clusterSetSubmariner.replace(
+                                                          ':id',
+                                                          clusterSet!.metadata.name!
+                                                      )
+                                                  ),
+                                              isDanger: unhealthySubmariners.length > 0,
+                                          },
+                                      ]
+                                    : []),
+                                {
+                                    id: 'clusters',
+                                    count: clusters!.length,
+                                    title: t('Clusters'),
+                                    linkText: t('summary.clusters.launch'),
+                                    onLinkClick: () =>
+                                        push(
+                                            NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)
+                                        ),
+                                    countClick: () =>
+                                        push(
+                                            NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)
+                                        ),
+                                    isDanger:
+                                        clusters!.filter((cluster) => clusterDangerStatuses.includes(cluster.status))
+                                            .length > 0,
+                                },
+                                {
+                                    id: 'clusterPools',
+                                    count: clusterPools!.length,
+                                    title: t('clusterPools'),
+                                    linkText: t('summary.clusterPools.launch'),
+                                    onLinkClick: () =>
+                                        push(
+                                            NavigationPath.clusterSetClusterPools.replace(
+                                                ':id',
+                                                clusterSet!.metadata.name!
+                                            )
+                                        ),
+                                    countClick: () =>
+                                        push(
+                                            NavigationPath.clusterSetClusterPools.replace(
+                                                ':id',
+                                                clusterSet!.metadata.name!
+                                            )
+                                        ),
+                                },
+                            ]}
+                        />
+                    </div>
+                )}
             </PageSection>
         </AcmPageContent>
     )
