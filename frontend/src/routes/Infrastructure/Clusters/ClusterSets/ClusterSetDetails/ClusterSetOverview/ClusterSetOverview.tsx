@@ -36,10 +36,8 @@ export function ClusterSetOverviewPageContent() {
     let groups = 0
     clusterRoleBindings?.forEach((binding) => {
         binding.subjects.forEach((subject) => {
-            if(subject.kind === 'Group')
-                groups += 1
-            if(subject.kind === 'User')
-                users += 1
+            if (subject.kind === 'Group') groups += 1
+            if (subject.kind === 'User') users += 1
         })
     })
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
