@@ -22,7 +22,7 @@ import {
     nockPatch,
 } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
     clickByPlaceholderText,
@@ -285,10 +285,12 @@ const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
     },
 }
 
-const Component = () => (
+const Component = (props: { isGlobal?: boolean }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
-            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+            snapshot.set(managedClusterSetsState, [
+                props.isGlobal ? mockGlobalManagedClusterSet : mockManagedClusterSet,
+            ])
             snapshot.set(clusterDeploymentsState, mockClusterDeployments)
             snapshot.set(managedClusterInfosState, [
                 ...mockManagedClusterInfos,
@@ -307,7 +309,12 @@ const Component = () => (
         }}
     >
         <MemoryRouter
-            initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+            initialEntries={[
+                NavigationPath.clusterSetDetails.replace(
+                    ':id',
+                    props.isGlobal ? mockGlobalManagedClusterSet.metadata.name! : mockManagedClusterSet.metadata.name!
+                ),
+            ]}
         >
             <Switch>
                 <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
@@ -505,6 +512,9 @@ describe('ClusterSetDetails page', () => {
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
         await clickByText('Select role', 1)
+        await waitForText('Cluster set admin', true)
+        await waitForText('Cluster set view', true)
+        await waitForText('Cluster set bind', true)
         await clickByText('Cluster set admin', 1)
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
@@ -528,6 +538,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Add')
         await waitForNocks([createNock])
     })
+
     test('can add groups to the cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
             mockClusterRoleBinding,
@@ -565,6 +576,33 @@ describe('ClusterSetDetails page', () => {
         })
         await clickByText('Add')
         await waitForNocks([createNock])
+    })
+})
+
+describe('Global ClusterSetDetails page', () => {
+    beforeEach(async () => {
+        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        nockIgnoreRBAC()
+        render(<Component isGlobal />)
+        await waitForNocks(getNocks)
+    })
+    test('correct roles are present for global clustersets', async () => {
+        const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
+            mockClusterRoleBinding,
+        ])
+        await waitForText(mockGlobalManagedClusterSet.metadata.name!, true)
+        await clickByText('Access management')
+        await waitForNocks([nock])
+        await clickByText('Add user or group', 1)
+        await waitForText(
+            'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
+        )
+        await clickByPlaceholderText('Select user')
+        await clickByText(mockUser.metadata.name!)
+        await clickByText('Select role', 1)
+        await waitForNotText('Cluster set admin')
+        await waitForText('Cluster set view', true)
+        await waitForText('Cluster set bind', true)
     })
 })
 

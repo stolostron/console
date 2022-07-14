@@ -373,7 +373,6 @@ function AddUsersModal(props: {
                                     group={filteredGroups.find((group) => group.metadata.name === userGroup)}
                                 />
                             )}
-                            {clusterSet?.metadata.name === 'global' ? console.log('test') : null}
                             &nbsp;
                             <AcmSelect
                                 id="role"
