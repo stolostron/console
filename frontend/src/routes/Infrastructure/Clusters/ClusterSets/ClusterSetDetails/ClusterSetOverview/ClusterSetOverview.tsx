@@ -35,13 +35,12 @@ export function ClusterSetOverviewPageContent() {
     let users = 0
     let groups = 0
     clusterRoleBindings?.forEach((binding) => {
-        if (binding.roleRef.name === `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`) {
-            groups += 1
-        } else if (
-            binding.roleRef.name === `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
-        ) {
-            users += 1
-        }
+        binding.subjects.forEach((subject) => {
+            if(subject.kind === 'Group')
+                groups += 1
+            if(subject.kind === 'User')
+                users += 1
+        })
     })
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
