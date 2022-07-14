@@ -97,7 +97,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     const updateRoleBindings = () => {
-        if (data) {
+        if (data && clusterSet?.metadata.name) {
             setClusterRoleBindingsCache(
                 data.filter((item) => {
                     const role = item.roleRef.name

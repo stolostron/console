@@ -31,13 +31,23 @@ export function ClusterSetOverviewPageContent() {
         (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
     )
 
+    const navigateToClusterSet = () => {
+        if (clusterSet?.metadata?.name) {
+            push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!))
+        }
+    }
+
     const [showManagedClusterSetBindingModal, setShowManagedClusterSetBindingModal] = useState(false)
     let users = 0
     let groups = 0
     clusterRoleBindings?.forEach((binding) => {
         binding.subjects.forEach((subject) => {
-            if (subject.kind === 'Group') groups += 1
-            if (subject.kind === 'User') users += 1
+            if (subject.kind === 'Group') {
+                groups += 1
+            }
+            if (subject.kind === 'User') {
+                users += 1
+            }
         })
     })
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
@@ -141,14 +151,8 @@ export function ClusterSetOverviewPageContent() {
                                     count: clusters!.length,
                                     title: t('Clusters'),
                                     linkText: t('summary.clusters.launch'),
-                                    onLinkClick: () =>
-                                        push(
-                                            NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)
-                                        ),
-                                    countClick: () =>
-                                        push(
-                                            NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)
-                                        ),
+                                    onLinkClick: navigateToClusterSet,
+                                    countClick: navigateToClusterSet,
                                     isDanger:
                                         clusters!.filter((cluster) => clusterDangerStatuses.includes(cluster.status))
                                             .length > 0,
