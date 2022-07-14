@@ -47,7 +47,7 @@ export const mockGlobalManagedClusterSet: ManagedClusterSet = {
     apiVersion: ManagedClusterSetApiVersion,
     kind: ManagedClusterSetKind,
     metadata: {
-        name: 'global'
+        name: 'global',
     },
     spec: {},
 }
