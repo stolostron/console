@@ -60,11 +60,6 @@ export enum NavigationPath {
     infraEnvironmentHosts = '/multicloud/infrastructure/environments/details/:namespace/:name/hosts',
     infraEnvironmentOverview = '/multicloud/infrastructure/environments/details/:namespace/:name/overview',
 
-    // Infrastructure - Bare Metal Assets
-    bareMetalAssets = '/multicloud/infrastructure/bare-metal-assets',
-    createBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/create',
-    editBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/edit/:namespace/:name',
-
     // Infrastructure - Automations
     ansibleAutomations = '/multicloud/infrastructure/automations',
     addAnsibleAutomation = '/multicloud/infrastructure/automations/add',

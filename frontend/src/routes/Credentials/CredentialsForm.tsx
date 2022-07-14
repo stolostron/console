@@ -62,7 +62,6 @@ const credentialProviders: Provider[] = [
     Provider.azure,
     Provider.gcp,
     Provider.vmware,
-    Provider.baremetal,
     Provider.hybrid,
     Provider.hypershift,
 ]

@@ -2,12 +2,13 @@
 
 import { IResource } from './resource'
 
+export interface MatchExpressions {
+    key: string
+    operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
+    values?: string[]
+}
 export interface Selector {
-    matchExpressions?: {
-        key: string
-        operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
-        values?: string[]
-    }[]
+    matchExpressions?: MatchExpressions[]
     matchLabels?: Record<string, string>
 }
 
