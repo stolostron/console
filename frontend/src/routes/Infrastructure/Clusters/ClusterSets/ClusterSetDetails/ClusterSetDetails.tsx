@@ -291,7 +291,6 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                             <Route exact path={NavigationPath.clusterSetClusters}>
                                 <ClusterSetClustersPageContent />
                             </Route>
-
                             <Route exact path={NavigationPath.clusterSetClusterPools}>
                                 <ClusterSetClusterPoolsPageContent />
                             </Route>
