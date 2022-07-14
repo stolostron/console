@@ -250,7 +250,7 @@ const placementData = (isLocalCluster) => [
         opaque: false,
         placeholder: 'creation.app.settings.existingRule',
         reverse: reverseExistingRule,
-        fetchAvailable: loadExistingPlacementRules(isLocalCluster),
+        fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,
         validation: {},
         summarize: () => {},
