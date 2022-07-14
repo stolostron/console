@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Cluster,
     ClusterDeployment,
-    ManagedCluster,
     ManagedClusterKind,
     managedClusterSetLabel,
     patchResource,
@@ -18,18 +18,27 @@ import {
     AcmPageHeader,
     AcmTable,
     compareStrings,
+    IAcmTableColumn,
 } from '../../../../../../ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
-import { useContext, useState } from 'react'
+import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { clusterCuratorsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { ClusterSetContext } from '../ClusterSetDetails'
+import { useAllClusters } from '../../../ManagedClusters/components/useAllClusters'
+import {
+    useClusterDistributionColumn,
+    useClusterLabelsColumn,
+    useClusterNameColumn,
+    useClusterNodesColumn,
+    useClusterProviderColumn,
+} from '../../../ManagedClusters/ManagedClusters'
 
 export function ClusterSetManageResourcesPage() {
     const { t } = useTranslation()
@@ -67,39 +76,95 @@ export function ClusterSetManageResourcesContent() {
     const deploymentDictionary = new Map<string | undefined, ClusterDeployment>()
     clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 
-    const [managedClusters, managedClusterSets] = useRecoilValue(
-        waitForAll([managedClustersState, managedClusterSetsState])
-    )
+    const clusters = useAllClusters()
+    const [managedClusterSets] = useRecoilValue([managedClustersState, managedClusterSetsState])
+    const [clusterCurators] = useRecoilState(clusterCuratorsState)
+
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
-    const [selectedResources, setSelectedResources] = useState<ManagedCluster[]>(
-        [...managedClusters].filter(
-            (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
-        )
+    const [selectedResources, setSelectedResources] = useState<Cluster[]>(
+        [...clusters].filter((resource) => resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name)
     )
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
-    const availableResources = [...managedClusters].filter((resource) => {
-        const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
+    const availableResources = [...clusters].filter((resource) => {
+        const clusterSet = resource.labels?.[managedClusterSetLabel]
         return (
             // check deployment for a clusterpool claim reference, as we cannot change the set of claimed clusters
-            deploymentDictionary.get(resource.metadata.name)?.spec?.clusterPoolRef?.claimName == undefined &&
+            deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef?.claimName == undefined &&
             (clusterSet === undefined ||
                 canJoinClusterSetList?.includes(clusterSet) ||
                 // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
                 // since we query the rbac list against the actual available ManagedClusterSets
                 // the cluster set specified in the label is not among the list
                 (!canJoinClusterSetList?.includes(clusterSet) &&
-                    !managedClusterSets.find(
-                        (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
-                    )))
+                    !managedClusterSets.find((mcs) => mcs.metadata.name === resource.labels?.[managedClusterSetLabel])))
         )
     })
     const notSelectedResources = availableResources.filter(
-        (ar) => selectedResources.find((sr) => sr.metadata!.uid === ar.metadata!.uid) === undefined
+        (ar) => selectedResources.find((sr) => sr?.uid === ar?.uid) === undefined
     )
     const removedResources = notSelectedResources.filter(
-        (resource) => resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+        (resource) => resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+    )
+
+    const clusterNameColumn = useClusterNameColumn()
+    const clusterProviderColumn = useClusterProviderColumn()
+    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
+    const clusterNodesColumn = useClusterNodesColumn()
+    const clusterLabelsColumn = useClusterLabelsColumn()
+
+    const columns = useMemo<IAcmTableColumn<Cluster>[]>(
+        () => [
+            clusterNameColumn,
+            clusterProviderColumn,
+            clusterDistributionColumn,
+            clusterLabelsColumn,
+            clusterNodesColumn,
+            {
+                header: t('table.assignedToSet'),
+                sort: (a: Cluster, b: Cluster) =>
+                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
+                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+            },
+        ],
+        [
+            clusterNameColumn,
+            clusterProviderColumn,
+            clusterDistributionColumn,
+            clusterLabelsColumn,
+            clusterNodesColumn,
+            t,
+        ]
+    )
+
+    const columnsModal = useMemo<IAcmTableColumn<Cluster>[]>(
+        () => [
+            clusterNameColumn,
+            {
+                header: t('table.assignedToSet'),
+                sort: (a: Cluster, b: Cluster) =>
+                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
+                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+            },
+            {
+                header: t('table.change'),
+                cell: (resource) => {
+                    if (removedResources.find((removedResource) => removedResource!.uid === resource!.uid)) {
+                        return t('managedClusterSet.form.removed')
+                    } else if (resource!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name) {
+                        return t('managedClusterSet.form.unchanged')
+                    } else {
+                        return resource!.labels?.[managedClusterSetLabel] === undefined
+                            ? t('managedClusterSet.form.added')
+                            : t('managedClusterSet.form.transferred')
+                    }
+                },
+            },
+        ],
+        [clusterNameColumn, clusterSet, removedResources, t]
     )
 
     return (
@@ -116,39 +181,14 @@ export function ClusterSetManageResourcesContent() {
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>
-                <AcmTable<ManagedCluster>
+                <AcmTable<Cluster>
                     plural="resources"
                     items={isLoading ? undefined : availableResources}
                     initialSelectedItems={selectedResources}
-                    onSelect={(resources: ManagedCluster[]) => setSelectedResources(resources)}
-                    keyFn={(resource: ManagedCluster) => resource.metadata!.uid!}
+                    onSelect={(resources: Cluster[]) => setSelectedResources(resources)}
+                    keyFn={(resource: Cluster) => resource?.uid!}
                     key="clusterSetManageClustersTable"
-                    columns={[
-                        {
-                            header: t('table.name'),
-                            sort: 'metadata.name',
-                            search: 'metadata.name',
-                            cell: (resource: ManagedCluster) => (
-                                <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>
-                            ),
-                        },
-                        {
-                            header: t('table.kind'),
-                            sort: 'kind',
-                            search: 'kind',
-                            cell: (resource: ManagedCluster) => resource.kind,
-                        },
-                        {
-                            header: t('table.assignedToSet'),
-                            sort: (a: ManagedCluster, b: ManagedCluster) =>
-                                compareStrings(
-                                    a?.metadata!.labels?.[managedClusterSetLabel],
-                                    b?.metadata!.labels?.[managedClusterSetLabel]
-                                ),
-                            search: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
-                            cell: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
-                        },
-                    ]}
+                    columns={columns}
                     emptyState={
                         <AcmEmptyState
                             key="mcEmptyState"
@@ -182,7 +222,7 @@ export function ClusterSetManageResourcesContent() {
                     </ActionGroup>
                 )}
             </AcmForm>
-            <BulkActionModel<ManagedCluster>
+            <BulkActionModel<Cluster>
                 open={showConfirmModal}
                 title={t('manageClusterSet.form.modal.title')}
                 action={t('save')}
@@ -195,79 +235,42 @@ export function ClusterSetManageResourcesContent() {
                 description={
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                 }
-                columns={[
-                    {
-                        header: t('table.name'),
-                        sort: 'metadata.name',
-                        cell: (resource) => <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>,
-                    },
-                    {
-                        header: t('table.kind'),
-                        sort: 'kind',
-                        cell: (resource: ManagedCluster) => resource.kind,
-                    },
-                    {
-                        header: t('table.change'),
-                        cell: (resource) => {
-                            if (
-                                removedResources.find(
-                                    (removedResource) => removedResource.metadata!.uid === resource.metadata!.uid
-                                )
-                            ) {
-                                return t('managedClusterSet.form.removed')
-                            } else if (
-                                resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
-                            ) {
-                                return t('managedClusterSet.form.unchanged')
-                            } else {
-                                return resource.metadata!.labels?.[managedClusterSetLabel] === undefined
-                                    ? t('managedClusterSet.form.added')
-                                    : t('managedClusterSet.form.transferred')
-                            }
-                        },
-                    },
-                    {
-                        header: t('table.assignedToSet'),
-                        sort: (a: ManagedCluster, b: ManagedCluster) =>
-                            compareStrings(
-                                a?.metadata!.labels?.[managedClusterSetLabel],
-                                b?.metadata!.labels?.[managedClusterSetLabel]
-                            ),
-                        cell: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
-                    },
-                ]}
-                keyFn={(item) => item.metadata!.uid!}
-                actionFn={(resource: ManagedCluster) => {
+                columns={columnsModal}
+                keyFn={(item) => item.uid!}
+                actionFn={(resource: Cluster) => {
                     // return dummy promise if the resource is not changed
                     if (
-                        selectedResources.find((sr) => sr.metadata!.uid === resource.metadata!.uid) &&
-                        resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!
+                        selectedResources.find((sr) => sr.uid === resource.uid) &&
+                        resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!
                     ) {
                         return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
                     }
 
                     const isSelected = selectedResources.find(
-                        (selectedResource) => selectedResource.metadata!.uid === resource.metadata!.uid
+                        (selectedResource) => selectedResource.uid === resource.uid
                     )
-                    const isRemoved = removedResources.find(
-                        (removedResource) => removedResource.metadata!.uid === resource.metadata!.uid
-                    )
+                    const isRemoved = removedResources.find((removedResource) => removedResource.uid === resource.uid)
                     let op: 'remove' | 'replace' | 'add' = 'remove'
                     if (isRemoved) op = 'remove'
                     if (isSelected) {
-                        op = resource.metadata!.labels?.[managedClusterSetLabel] === undefined ? 'add' : 'replace'
+                        op = resource.labels?.[managedClusterSetLabel] === undefined ? 'add' : 'replace'
                     }
 
-                    if (resource.kind === ManagedClusterKind) {
-                        return patchClusterSetLabel(resource.metadata!.name!, op, clusterSet!.metadata.name)
-                    } else {
-                        return patchResource(resource, [
+                    if (resource?.managedCluster?.kind === ManagedClusterKind) {
+                        return patchClusterSetLabel(resource.name!, op, clusterSet!.metadata.name)
+                    } else if (resource?.managedCluster) {
+                        return patchResource(resource?.managedCluster, [
                             {
                                 op,
                                 path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
                                 value: clusterSet?.metadata.name,
                             },
                         ])
+                    } else {
+                        return {
+                            promise: Promise.resolve(),
+                            abort: () => {},
+                        }
                     }
                 }}
             />

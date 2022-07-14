@@ -70,6 +70,7 @@ export type Cluster = {
     name?: string
     displayName?: string
     namespace?: string
+    uid?: string
     status: ClusterStatus
     statusMessage?: string
     provider?: Provider
@@ -91,6 +92,7 @@ export type Cluster = {
     isCurator: boolean
     isHostedCluster: boolean
     clusterSet?: string
+    managedCluster?: ManagedCluster
     owner: {
         createdBy?: string
         claimedBy?: string
@@ -256,6 +258,7 @@ export function getCluster(
             managedCluster?.metadata.name ??
             clusterDeployment?.metadata.namespace ??
             managedClusterInfo?.metadata.namespace,
+        uid: managedCluster?.metadata.uid,
         status,
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster),
@@ -281,6 +284,7 @@ export function getCluster(
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
             managedClusterInfo?.metadata?.labels?.[managedClusterSetLabel] ||
             clusterDeployment?.metadata?.labels?.[managedClusterSetLabel],
+        managedCluster,
         owner: getOwner(clusterDeployment, clusterClaim),
         creationTimestamp:
             clusterDeployment?.metadata.creationTimestamp ??
