@@ -6,7 +6,7 @@ import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import {
     applicationSetsState,
     channelsState,
@@ -17,7 +17,6 @@ import {
     namespacesState,
     placementDecisionsState,
     placementsState,
-    secretsState,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -34,10 +33,10 @@ import {
     Placement,
     PlacementKind,
     reconcileResources,
-    unpackProviderConnection,
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
+import { ansibleCredentialsValue } from '../../../selectors'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -71,21 +70,14 @@ export function EditArgoApplicationSet() {
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
     const [namespaces] = useRecoilState(namespacesState)
-    const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const providerConnections = secrets.map(unpackProviderConnection)
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
         .filter(isType)
     const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
-    const availableAnsibleCredentials = providerConnections
-        .filter(
-            (providerConnection) =>
-                providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-                !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-        )
+    const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
 

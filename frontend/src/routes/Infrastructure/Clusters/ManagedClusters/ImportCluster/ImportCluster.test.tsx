@@ -303,6 +303,7 @@ describe('ImportCluster', () => {
 
         // Advance to Review step and submit the form
         await clickByText('Next')
+        await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
 
@@ -333,6 +334,7 @@ describe('ImportCluster', () => {
 
         // Advance to Review step and submit the form
         await clickByText('Next')
+        await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
 
@@ -356,6 +358,7 @@ describe('ImportCluster', () => {
         await typeByTestId('kubeConfigEntry', 'Test text')
 
         // Advance to Review step and submit the form
+        await clickByText('Next')
         await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
@@ -383,6 +386,7 @@ describe('ImportCluster', () => {
 
         // Advance to Review step and submit the form
         await clickByText('Next')
+        await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
 
@@ -395,6 +399,7 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
 
         // Advance to Review step and submit the form
+        await clickByText('Next')
         await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
@@ -414,6 +419,7 @@ describe('ImportCluster', () => {
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
 
         // Advance to Review step and submit the form
+        await clickByText('Next')
         await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
@@ -487,6 +493,7 @@ describe('Import Discovered Cluster', () => {
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
 
         // Advance to Review step and submit the form
+        await clickByText('Next')
         await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')

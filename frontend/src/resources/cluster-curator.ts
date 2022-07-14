@@ -11,6 +11,8 @@ export type ClusterCuratorApiVersionType = 'cluster.open-cluster-management.io/v
 export const ClusterCuratorKind = 'ClusterCurator'
 export type ClusterCuratorKindType = 'ClusterCurator'
 
+export type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
+
 export const ClusterCuratorDefinition: IResourceDefinition = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -21,7 +23,7 @@ export interface ClusterCurator {
     kind: ClusterCuratorKindType
     metadata: Metadata
     spec?: {
-        desiredCuration?: string | undefined
+        desiredCuration?: Curation
         install?: {
             towerAuthSecret?: string
             prehook?: ClusterCuratorAnsibleJob[]

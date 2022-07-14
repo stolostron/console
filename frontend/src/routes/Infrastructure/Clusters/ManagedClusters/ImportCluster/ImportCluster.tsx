@@ -4,12 +4,23 @@ import {
     DescriptionListGroup,
     DescriptionListTerm,
     SelectOption,
+    Split,
+    SplitItem,
     Switch,
     Text,
 } from '@patternfly/react-core'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
-import { AcmLabelsInput, AcmPage, AcmPageHeader, AcmSelect, AcmToastContext } from '../../../../../ui-components'
-import { cloneDeep, keyBy, pick } from 'lodash'
+import {
+    AcmButton,
+    AcmIcon,
+    AcmIconVariant,
+    AcmLabelsInput,
+    AcmPage,
+    AcmPageHeader,
+    AcmSelect,
+    AcmToastContext,
+} from '../../../../../ui-components'
+import { cloneDeep, groupBy, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
@@ -18,6 +29,9 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import {
+    ClusterCuratorDefinition,
+    ClusterCuratorKind,
+    createClusterCurator,
     createProject,
     createResource,
     KlusterletAddonConfig,
@@ -31,6 +45,7 @@ import {
     ResourceErrorCode,
     Secret,
     SecretApiVersion,
+    SecretDefinition,
     SecretKind,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -50,6 +65,12 @@ import {
     WizTextArea,
     WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
+import { useRecoilValue } from 'recoil'
+import {
+    ansibleCredentialsValue,
+    clusterCuratorSupportedCurationsValue,
+    validClusterCuratorTemplatesValue,
+} from '../../../../../selectors'
 
 const acmSchema = [...schema, ...kac]
 
@@ -74,6 +95,7 @@ type State = {
     kacDefaultLabels: Labels
     kacManagedClusterSet: string
     kacAdditionalLabels: Labels
+    templateName: string
     token: string
     server: string
     kubeconfig: string
@@ -86,6 +108,7 @@ type Action =
     | ({ type: 'setAdditionalLabels' } & Pick<State, 'additionalLabels'>)
     | { type: 'computeAdditionalLabels'; labels: State['additionalLabels'] }
     | { type: 'computeKACAdditionalLabels'; labels: State['kacAdditionalLabels'] }
+    | ({ type: 'setTemplateName' } & Pick<State, 'templateName'>)
     | ({ type: 'setToken' } & Pick<State, 'token'>)
     | ({ type: 'setServer' } & Pick<State, 'server'>)
     | ({ type: 'setKubeconfig' } & Pick<State, 'kubeconfig'>)
@@ -105,6 +128,7 @@ const getInitialState = (initialClusterName: State['clusterName'], initialServer
         kacDefaultLabels: defaultLabels,
         kacManagedClusterSet: '',
         kacAdditionalLabels: {},
+        templateName: '',
         token: '',
         server: initialServer,
         kubeconfig: '',
@@ -163,6 +187,8 @@ function reducer(state: State, action: Action): State {
                 kacAdditionalLabels: pick(action.labels, kacAdditionalLabelKeys),
             }
         }
+        case 'setTemplateName':
+            return { ...state, templateName: action.templateName }
         case 'setToken':
             return state.importMode === ImportMode.token ? { ...state, token: action.token } : state
         case 'setServer':
@@ -343,20 +369,22 @@ export default function ImportClusterPage() {
                                 }
                             }
 
-                            const resourceMap = keyBy(resources, 'kind')
-
-                            // create ManagedCluster
-                            if (resourceMap['ManagedCluster']) {
-                                await createResource(resourceMap['ManagedCluster']).promise
-                            }
-                            // create KlusterletAddonConfig
-                            if (resourceMap['KlusterletAddonConfig']) {
-                                await createResource(resourceMap['KlusterletAddonConfig']).promise
-                            }
-
-                            // create Secret
-                            if (resourceMap['Secret']) {
-                                await createResource(resourceMap['Secret']).promise
+                            const resourceGroups = groupBy(resources, 'kind')
+                            // create resources
+                            for (const kind of [
+                                ManagedClusterKind,
+                                KlusterletAddonConfigKind,
+                                ClusterCuratorKind,
+                                SecretKind,
+                            ]) {
+                                if (resourceGroups[kind]?.length) {
+                                    for (const resource of resourceGroups[kind]) {
+                                        await (kind === ClusterCuratorKind
+                                            ? createClusterCurator(resource)
+                                            : createResource(resource)
+                                        ).promise
+                                    }
+                                }
                             }
                             history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
                         } catch (err) {
@@ -411,7 +439,7 @@ export default function ImportClusterPage() {
                                 label={t('import.form.clusterName.label')}
                                 placeholder={t('import.form.clusterName.placeholder')}
                                 required
-                                onValueChange={(clusterName) =>
+                                onValueChange={(clusterName: any) =>
                                     dispatch({
                                         type: 'setClusterName',
                                         clusterName: (clusterName as State['clusterName']) ?? '',
@@ -436,16 +464,21 @@ export default function ImportClusterPage() {
                                 hidden={() => canJoinClusterSets === undefined}
                                 required={mustJoinClusterSet}
                                 options={canJoinClusterSets?.map((mcs) => mcs.metadata.name as string) || []}
-                                onValueChange={(managedClusterSet) =>
+                                onValueChange={(managedClusterSet: any) =>
                                     dispatch({
                                         type: 'setManagedClusterSet',
-                                        managedClusterSet: (managedClusterSet as string) ?? '',
+                                        managedClusterSet: (managedClusterSet as State['managedClusterSet']) ?? '',
                                     })
                                 }
                             />
                         </WizItemSelector>
                         <AdditionalLabels state={state} dispatch={dispatch} />
                         <AutoImportControls state={state} dispatch={dispatch} />
+                    </Section>
+                </Step>
+                <Step label={t('Automation')} id="automation">
+                    <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
+                        <AutomationTemplate state={state} dispatch={dispatch} />
                     </Section>
                 </Step>
             </Wizard>
@@ -649,16 +682,28 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                 targetKind={SecretKind}
                 targetPath="metadata.namespace"
             />
+            <Sync
+                kind={ManagedClusterKind}
+                path="metadata.name"
+                targetKind={ClusterCuratorKind}
+                targetPath="metadata.name"
+            />
+            <Sync
+                kind={ManagedClusterKind}
+                path="metadata.name"
+                targetKind={ClusterCuratorKind}
+                targetPath="metadata.namespace"
+            />
             <WizItemSelector selectKey="metadata.name" selectValue={secretName}>
                 <WizTextInput
                     id="server"
                     path="stringData.server"
                     label={t('import.server')}
                     placeholder={t('import.server.place')}
-                    onValueChange={(server) =>
+                    onValueChange={(server: any) =>
                         dispatch({ type: 'setServer', server: (server as State['server']) ?? '' })
                     }
-                    required
+                    required={importMode === ImportMode.token}
                     hidden={() => importMode !== ImportMode.token}
                 />
                 <WizTextInput
@@ -666,9 +711,11 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     path="stringData.token"
                     label={t('import.token')}
                     placeholder={t('import.token.place')}
-                    onValueChange={(token) => dispatch({ type: 'setToken', token: (token as State['token']) ?? '' })}
+                    onValueChange={(token: any) =>
+                        dispatch({ type: 'setToken', token: (token as State['token']) ?? '' })
+                    }
                     secret
-                    required
+                    required={importMode === ImportMode.token}
                     hidden={() => importMode !== ImportMode.token}
                 />
                 <WizTextArea
@@ -676,14 +723,150 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     path="stringData.kubeconfig"
                     label={t('import.auto.config.label')}
                     placeholder={t('import.auto.config.prompt')}
-                    onValueChange={(kubeconfig) =>
+                    onValueChange={(kubeconfig: any) =>
                         dispatch({ type: 'setKubeconfig', kubeconfig: (kubeconfig as State['kubeconfig']) ?? '' })
                     }
                     secret
-                    required
+                    required={importMode === ImportMode.kubeconfig}
                     hidden={() => importMode !== ImportMode.kubeconfig}
                 />
             </WizItemSelector>
         </>
+    )
+}
+
+const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> }) => {
+    const { t } = useTranslation()
+    const curatorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+    const resources = useItem() as any[]
+    const mode = useDisplayMode()
+    const { update } = useData()
+    const {
+        state: { clusterName, templateName },
+        dispatch,
+    } = props
+
+    const onChangeAutomationTemplate = useCallback(
+        (templateName) => {
+            // Delete any previously generated YAML
+            const curatorIndex = resources.findIndex(
+                (item) => item.kind === ClusterCuratorKind && item?.metadata?.name === clusterName
+            )
+            if (curatorIndex >= 0) {
+                resources.splice(curatorIndex, 1)
+            }
+            supportedCurations.forEach((curationType) => {
+                const index = resources.findIndex(
+                    (item) => item.kind === SecretKind && item?.metadata?.name === `toweraccess-${curationType}`
+                )
+                if (index >= 0) {
+                    resources.splice(curatorIndex, 1)
+                }
+            })
+
+            // Add new YAML for ClusterCurator and secrets
+            if (templateName) {
+                // TODO: include namespace in key
+                const curatorTemplate = curatorTemplates.find((template) => template.metadata.name === templateName)
+                if (curatorTemplate) {
+                    const curator = {
+                        ...ClusterCuratorDefinition,
+                        metadata: {
+                            name: clusterName,
+                            namespace: clusterName,
+                        },
+                        spec: cloneDeep(curatorTemplate.spec),
+                    }
+                    resources.push(curator)
+                    supportedCurations.forEach((curationType) => {
+                        const curation = curator.spec?.[curationType]
+                        if (curation?.towerAuthSecret) {
+                            const matchingSecret = ansibleCredentials.find(
+                                (s) =>
+                                    s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
+                                    s.metadata.namespace === curatorTemplate.metadata.namespace
+                            )
+                            if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+                                const secretName = `toweraccess-${curationType}`
+                                const copiedSecret = {
+                                    ...SecretDefinition,
+                                    type: 'Opaque',
+                                    metadata: {
+                                        name: secretName,
+                                        namespace: clusterName,
+                                        labels: {
+                                            'cluster.open-cluster-management.io/type': 'ans',
+                                            'cluster.open-cluster-management.io/copiedFromSecretName':
+                                                matchingSecret.metadata.name,
+                                            'cluster.open-cluster-management.io/copiedFromNamespace':
+                                                matchingSecret.metadata.namespace,
+                                            'cluster.open-cluster-management.io/backup': 'cluster',
+                                        },
+                                    },
+                                    stringData: cloneDeep(matchingSecret.stringData),
+                                }
+                                curation.towerAuthSecret = secretName
+                                resources.push(copiedSecret)
+                            }
+                        }
+                    })
+                }
+            }
+            dispatch({ type: 'setTemplateName', templateName })
+            update()
+        },
+        [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations, update]
+    )
+
+    const controlId = 'templateName'
+    const controlLabel = t('template.clusterCreate.name')
+    return mode === DisplayMode.Details ? (
+        <DescriptionListGroup>
+            <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
+            <DescriptionListDescription id={controlId}>{templateName}</DescriptionListDescription>
+        </DescriptionListGroup>
+    ) : (
+        <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('template.clusterCreate.select.placeholder')}
+            labelHelp={t('template.clusterImport.tooltip')}
+            helperText={
+                <Split>
+                    <SplitItem isFilled />
+                    <SplitItem>
+                        <AcmButton
+                            variant="link"
+                            style={{ paddingRight: '0px' }}
+                            onClick={() =>
+                                window.open(
+                                    `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                                    'add-automation-template'
+                                )
+                            }
+                        >
+                            {t('creation.ocp.cloud.add.template')}
+                            <AcmIcon
+                                style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                icon={AcmIconVariant.openNewTab}
+                            />
+                        </AcmButton>
+                    </SplitItem>
+                </Split>
+            }
+            value={templateName}
+            onChange={onChangeAutomationTemplate}
+        >
+            {Object.values(curatorTemplates).map((template) => {
+                const templateName = template.metadata.name
+                return (
+                    <SelectOption key={templateName} value={templateName}>
+                        {templateName}
+                    </SelectOption>
+                )
+            })}
+        </AcmSelect>
     )
 }
