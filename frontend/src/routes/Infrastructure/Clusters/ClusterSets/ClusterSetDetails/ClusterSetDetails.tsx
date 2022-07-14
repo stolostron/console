@@ -271,7 +271,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             }
                                         >
                                             <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
-                                                {t('tab.access')}
+                                                {t('tab.userManagement')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                     </AcmSecondaryNav>
