@@ -24,7 +24,7 @@ import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import { clusterCuratorsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
@@ -77,7 +77,7 @@ export function ClusterSetManageResourcesContent() {
     clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 
     const clusters = useAllClusters()
-    const [managedClusterSets] = useRecoilValue(waitForAll([managedClustersState, managedClusterSetsState]))
+    const [managedClusterSets] = useRecoilValue([managedClustersState, managedClusterSetsState])
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
