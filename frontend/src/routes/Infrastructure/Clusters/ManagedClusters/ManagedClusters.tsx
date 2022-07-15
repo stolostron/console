@@ -229,7 +229,8 @@ export function ClustersTable(props: {
                 title: t('managed.upgrade.plural'),
                 click: (managedClusters: Array<Cluster>) => {
                     if (!managedClusters) return
-                    setUpgradeClusters(managedClusters)
+                    const managedClustersNoHypershift = managedClusters.filter((mc) => !mc.isHostedCluster)
+                    setUpgradeClusters(managedClustersNoHypershift)
                 },
                 variant: 'bulk-action',
             },

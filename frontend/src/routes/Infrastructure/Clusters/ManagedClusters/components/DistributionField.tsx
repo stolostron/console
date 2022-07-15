@@ -213,7 +213,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates && !props.cluster?.isHostedCluster) {
         // UPGRADE AVAILABLE
         return (
             <>

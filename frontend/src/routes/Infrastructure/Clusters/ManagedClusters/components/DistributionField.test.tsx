@@ -354,6 +354,7 @@ describe('DistributionField', () => {
             isHive: false,
             isManaged: true,
             isCurator: true,
+            isHostedCluster: false,
             isSNOCluster: false,
             owner: {},
         }
