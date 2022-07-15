@@ -164,7 +164,7 @@ export function ClusterSetManageResourcesContent() {
                 },
             },
         ],
-        [clusterNameColumn, clusterProviderColumn, clusterSet, removedResources, t]
+        [clusterNameColumn, clusterSet, removedResources, t]
     )
 
     return (
