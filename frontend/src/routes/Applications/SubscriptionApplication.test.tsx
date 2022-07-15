@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import moment from 'moment'
 import { nockIgnoreRBAC } from '../../lib/nock-util'
-import { waitForTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { Application, ApplicationApiVersion, ApplicationKind } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
@@ -96,8 +95,11 @@ describe('Create Subscription Application page', () => {
     test('can render Create Subscription Application Page', async () => {
         window.scrollBy = () => {}
         render(<Component />)
-        await waitForTestId('cancel-button-portal-id')
-        await waitForTestId('create-button-portal-id')
+        expect(screen.getAllByText('Create application')).toBeTruthy()
+        const createButton = screen.queryByTestId('create-button-portal-id')
+        const cancelButton = screen.queryByTestId('cancel-button-portal-id')
+        expect(createButton).toBeTruthy()
+        expect(cancelButton).toBeTruthy()
     })
 
     test('can render Edit Subscription Application Page', async () => {
