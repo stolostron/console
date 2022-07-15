@@ -51,7 +51,7 @@ import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useL
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
 import logo from './assets/RHACM-Logo.svg?url'
-import { LoadData } from './atoms'
+import { LoadData, logout } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
@@ -214,29 +214,6 @@ function UserDropdown() {
                 // eslint-disable-next-line no-console
                 console.error(error)
             })
-    }
-
-    async function logout() {
-        const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(getBackendUrl() + '/configure')
-        await fetchGet(getBackendUrl() + '/logout').catch(noop)
-
-        const iframe = document.createElement('iframe')
-        iframe.setAttribute('type', 'hidden')
-        iframe.name = 'hidden-form'
-        document.body.appendChild(iframe)
-
-        const form = document.createElement('form')
-        form.method = 'POST'
-        form.target = 'hidden-form'
-        const url = new URL(tokenEndpointResult.data.token_endpoint)
-        form.action = `${url.protocol}//${url.host}/logout`
-        document.body.appendChild(form)
-
-        form.submit()
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        location.pathname = '/'
     }
 
     function LogoutButton() {
