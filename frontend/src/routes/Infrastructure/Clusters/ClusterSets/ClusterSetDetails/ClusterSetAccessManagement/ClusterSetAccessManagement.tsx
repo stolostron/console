@@ -11,6 +11,7 @@ import {
     listClusterRoleBindings,
     listGroups,
     listUsers,
+    ManagedClusterSet,
     RbacApiVersion,
     ResourceErrorCode,
     User,
@@ -291,22 +292,22 @@ function AddUsersModal(props: {
         {
             id: 'admin',
             displayName: t('access.clusterSet.role.admin'),
-            role: `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name!}`,
         },
         {
             id: 'view',
             displayName: t('access.clusterSet.role.view'),
-            role: `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name!}`,
         },
         {
             id: 'bind',
             displayName: t('Cluster set bind'),
-            role: `open-cluster-management:managedclusterset:bind:${clusterSet!.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name!}`,
         },
     ]
 
-    const getUserRoles = () => {
-        return isGlobalClusterSet(clusterSet!) ? roles.filter((userRole) => userRole.id !== 'admin') : roles
+    const getUserRoles = (clusterSet: ManagedClusterSet) => {
+        return isGlobalClusterSet(clusterSet) ? roles.filter((userRole) => userRole.id !== 'admin') : roles
     }
 
     return (
@@ -386,7 +387,7 @@ function AddUsersModal(props: {
                                 value={role}
                                 onChange={(role) => setRole(role)}
                             >
-                                {getUserRoles().map((userRole) => (
+                                {clusterSet && getUserRoles(clusterSet).map((userRole) => (
                                     <SelectOption key={userRole.role} value={userRole.role} description={userRole.role}>
                                         {userRole.displayName}
                                     </SelectOption>
