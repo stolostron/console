@@ -603,6 +603,28 @@ describe('Global ClusterSetDetails page', () => {
         await waitForNotText('Cluster set admin')
         await waitForText('Cluster set view', true)
         await waitForText('Cluster set bind', true)
+        await clickByText('Cluster set bind')
+        const createNock = nockCreate({
+            apiVersion: RbacApiVersion,
+            kind: ClusterRoleBindingKind,
+            metadata: {
+                generateName: `${mockGlobalManagedClusterSet?.metadata.name}-`,
+            },
+            subjects: [
+                {
+                    kind: 'User',
+                    apiGroup: 'rbac.authorization.k8s.io',
+                    name: mockUser!.metadata.name!,
+                },
+            ],
+            roleRef: {
+                apiGroup: 'rbac.authorization.k8s.io',
+                kind: 'ClusterRole',
+                name: `open-cluster-management:managedclusterset:bind:${mockGlobalManagedClusterSet!.metadata.name!}`,
+            },
+        })
+         await clickByText('Add')
+         await waitForNocks([createNock])
     })
 })
 

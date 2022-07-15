@@ -121,6 +121,11 @@ export function ClusterSetAccessManagement() {
                         `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
                     ) {
                         return t('access.clusterSet.role.view')
+                    } else if (
+                        clusterRoleBinding.roleRef.name ===
+                        `open-cluster-management:managedclusterset:bind:${clusterSet!.metadata.name!}`
+                    ) {
+                        return t('Cluster set bind')
                     }
                     return '-'
                 },
