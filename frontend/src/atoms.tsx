@@ -3,6 +3,7 @@ import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { noop } from 'lodash'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallKind,
@@ -87,6 +88,8 @@ import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    fetchGet,
+    backendUrl,
 } from './resources'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
@@ -330,6 +333,13 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [])
 
     useEffect(() => {
+        function tokenExpired() {
+            if (process.env.NODE_ENV === 'production') {
+                window.location.reload()
+            } else {
+                window.location.href = `${backendUrl}/login`
+            }
+        }
         function checkLoggedIn() {
             fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
                 credentials: 'include',
@@ -340,20 +350,12 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 200:
                             break
                         default:
-                            if (process.env.NODE_ENV === 'production') {
-                                window.location.reload()
-                            } else {
-                                window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
-                            }
+                            tokenExpired()
                             break
                     }
                 })
                 .catch(() => {
-                    if (process.env.NODE_ENV === 'production') {
-                        window.location.reload()
-                    } else {
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
-                    }
+                    tokenExpired()
                 })
                 .finally(() => {
                     setTimeout(checkLoggedIn, 30 * 1000)
@@ -365,4 +367,27 @@ export function LoadData(props: { children?: ReactNode }) {
     if (loading) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
+}
+
+export async function logout() {
+    const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(backendUrl + '/configure')
+    await fetchGet(backendUrl + '/logout').catch(noop)
+
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('type', 'hidden')
+    iframe.name = 'hidden-form'
+    document.body.appendChild(iframe)
+
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.target = 'hidden-form'
+    const url = new URL(tokenEndpointResult.data.token_endpoint)
+    form.action = `${url.protocol}//${url.host}/logout`
+    document.body.appendChild(form)
+
+    form.submit()
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    location.pathname = '/'
 }

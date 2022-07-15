@@ -295,7 +295,7 @@ export function deleteRequest(url: string): IRequestResult {
 
 // --- FETCH FUNCTIONS ---
 
-export function fetchGet<T = unknown>(url: string, signal: AbortSignal) {
+export function fetchGet<T = unknown>(url: string, signal?: AbortSignal) {
     return fetchRetry<T>({
         method: 'GET',
         url,
