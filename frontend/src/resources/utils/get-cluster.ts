@@ -87,6 +87,7 @@ export type Cluster = {
     isHive: boolean
     isManaged: boolean
     isCurator: boolean
+    isHostedCluster: boolean
     clusterSet?: string
     owner: {
         createdBy?: string
@@ -236,6 +237,7 @@ export function getCluster(
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
+        isHostedCluster: getIsHostedCluster(managedCluster),
         isSNOCluster: getIsSNOCluster(agentClusterInstall),
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
@@ -959,5 +961,16 @@ export function getClusterStatus(
         return { status: cdStatus, statusMessage }
     } else {
         return { status: mcStatus, statusMessage }
+    }
+}
+
+export function getIsHostedCluster(managedCluster?: ManagedCluster) {
+    if (
+        managedCluster?.metadata.annotations &&
+        managedCluster?.metadata.annotations['cluster.open-cluster-management.io/hypershiftdeployment']
+    ) {
+        return true
+    } else {
+        return false
     }
 }

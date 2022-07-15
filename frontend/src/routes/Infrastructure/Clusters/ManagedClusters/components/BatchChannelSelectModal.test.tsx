@@ -13,6 +13,7 @@ const mockClusterNoAvailable: Cluster = {
     status: ClusterStatus.ready,
     isHive: false,
     isCurator: false,
+    isHostedCluster: false,
     owner: {},
     distribution: {
         k8sVersion: '1.19',
@@ -84,6 +85,7 @@ const mockClusterReady1: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -125,6 +127,7 @@ const mockClusterReady2: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -166,6 +169,7 @@ const mockClusterOffline: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
