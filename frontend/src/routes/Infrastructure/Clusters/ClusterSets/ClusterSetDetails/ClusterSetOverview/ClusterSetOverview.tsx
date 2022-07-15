@@ -50,6 +50,16 @@ export function ClusterSetOverviewPageContent() {
             }
         })
     })
+    let userManagementCount = ''
+    if (users === 0 && groups === 0) {
+        userManagementCount = t('table.none')
+    } else {
+        userManagementCount =
+            t(users === 1 ? 'table.user' : 'table.user_plural', { count: users }) +
+            ', ' +
+            t(groups === 1 ? 'table.group' : 'table.group_plural', { count: groups })
+    }
+
     const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     return (
@@ -111,7 +121,7 @@ export function ClusterSetOverviewPageContent() {
                         },
                         {
                             key: t('table.userManagement'),
-                            value: `Users ${users ? users : '-'} Groups ${groups ? groups : '-'}`,
+                            value: userManagementCount,
                         },
                     ]}
                 />
