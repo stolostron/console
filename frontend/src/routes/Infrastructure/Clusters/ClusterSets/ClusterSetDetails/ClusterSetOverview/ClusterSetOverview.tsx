@@ -71,7 +71,7 @@ export function ClusterSetOverviewPageContent() {
                             key: t('table.name'),
                             value: clusterSet?.metadata.name,
                         },
-                        ...(isSubmarinerAvailable && !isGlobalClusterSet
+                        ...(isSubmarinerAvailable && !isGlobalClusterSet(clusterSet!)
                             ? [
                                   {
                                       key: t('table.networkStatus'),
@@ -120,7 +120,7 @@ export function ClusterSetOverviewPageContent() {
                         },
                     ]}
                 />
-                {!isGlobalClusterSet && (
+                {!isGlobalClusterSet(clusterSet) && (
                     <div style={{ marginTop: '24px' }}>
                         <AcmCountCardSection
                             id="summary-status"

@@ -28,6 +28,7 @@ import {
     ClusterDeployment,
     ClusterPool,
     ClusterRoleBinding,
+    isGlobalClusterSet,
     listClusterRoleBindings,
     ManagedClusterAddOn,
     ManagedClusterSet,
@@ -94,7 +95,6 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     const [clusterRoleBindingsCache, setClusterRoleBindingsCache] = useState<ClusterRoleBinding[]>([])
     const { data, startPolling } = useQuery(listClusterRoleBindings)
     useEffect(startPolling, [startPolling])
-    const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     const updateRoleBindings = () => {
         if (data && clusterSet?.metadata.name) {
@@ -210,7 +210,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 {t('tab.overview')}
                                             </Link>
                                         </AcmSecondaryNavItem>
-                                        {isSubmarinerAvailable && !isGlobalClusterSet && (
+                                        {isSubmarinerAvailable && !isGlobalClusterSet(clusterSet) && (
                                             <AcmSecondaryNavItem
                                                 isActive={
                                                     location.pathname ===
@@ -227,7 +227,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 </Link>
                                             </AcmSecondaryNavItem>
                                         )}
-                                        {!isGlobalClusterSet && (
+                                        {!isGlobalClusterSet(clusterSet) && (
                                             <AcmSecondaryNavItem
                                                 isActive={
                                                     location.pathname ===
@@ -244,7 +244,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 </Link>
                                             </AcmSecondaryNavItem>
                                         )}
-                                        {!isGlobalClusterSet && (
+                                        {!isGlobalClusterSet(clusterSet) && (
                                             <AcmSecondaryNavItem
                                                 isActive={
                                                     location.pathname ===
