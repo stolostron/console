@@ -46,6 +46,7 @@ import helmTemplate from './CreateApplication/Subscription/templates/templateHel
 import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 interface CreationStatus {
     status: string
@@ -103,22 +104,18 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const history = useHistory()
     const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
-    const [controlData, setControlData] = useState<any>('')
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
-    useEffect(() => {
-        getControlData()
-            .then((cd) => {
-                setControlData(cd)
-            })
-            .catch((err) => {
-                return err
-            })
-    }, [])
+
+    const clusters = useAllClusters()
+    const localCluster = clusters.find(
+        (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
+    )
+    const isLocalCluster = localCluster ? true : false
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -353,13 +350,12 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const isFetchControl = editApplication ? fetchControl : true
 
     return (
-        controlData &&
         isFetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
                 monacoEditor={<MonacoEditor />}
-                controlData={controlData}
+                controlData={getControlData(isLocalCluster)}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}

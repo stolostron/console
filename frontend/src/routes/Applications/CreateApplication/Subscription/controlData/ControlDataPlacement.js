@@ -17,35 +17,15 @@ import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWin
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
+import { listPlacementRules } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
 
 const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 const unavailable = '-unavailable-'
-
-async function getClusterStatus(name) {
-    let successImportStatus = false
-    const localClusterNS = {
-        apiVersion: NamespaceApiVersion,
-        kind: NamespaceKind,
-        metadata: {
-            name,
-        },
-    }
-    const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], [localClusterNS])
-    const managedCluster = authorizedNamespaces.find((ns) => ns === name)
-    if (managedCluster) {
-        successImportStatus = true
-    }
-    return successImportStatus
-}
-
-const enableHubSelfManagement = getClusterStatus('local-cluster')
 
 export const loadExistingPlacementRules = () => {
     let nsControl = undefined
@@ -242,7 +222,7 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-const placementData = async () => [
+const placementData = (isLocalCluster) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -283,7 +263,7 @@ const placementData = async () => [
     {
         id: 'enableHubSelfManagement',
         type: 'hidden',
-        active: await enableHubSelfManagement,
+        active: isLocalCluster,
     },
     {
         type: 'custom',
@@ -296,10 +276,8 @@ const placementData = async () => [
     {
         id: onlineClusterCheckbox,
         type: 'radio',
-        name: (await enableHubSelfManagement)
-            ? 'creation.app.settings.onlineClusters'
-            : 'creation.app.settings.onlineClustersOnly',
-        tooltip: (await enableHubSelfManagement)
+        name: isLocalCluster ? 'creation.app.settings.onlineClusters' : 'creation.app.settings.onlineClustersOnly',
+        tooltip: isLocalCluster
             ? 'tooltip.creation.app.settings.onlineClusters'
             : 'tooltip.creation.app.settings.onlineClustersOnly',
         active: false,
@@ -310,7 +288,7 @@ const placementData = async () => [
     },
     {
         id: localClusterCheckbox,
-        type: (await enableHubSelfManagement) ? 'radio' : 'hidden',
+        type: isLocalCluster ? 'radio' : 'hidden',
         name: 'creation.app.settings.localClusters',
         tooltip: 'tooltip.creation.app.settings.localClusters',
         onSelect: updatePlacementControls,
