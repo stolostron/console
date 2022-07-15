@@ -22,7 +22,11 @@ import {
 } from '../../../../../atoms'
 
 // returns the clusters assigned to a ManagedClusterSet
-export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool?: ClusterPool | undefined) {
+export function useClusters(
+    managedClusterSet: ManagedClusterSet | undefined,
+    clusterPool?: ClusterPool | undefined,
+    isGlobalClusterSet?: boolean
+) {
     const [
         managedClusters,
         clusterDeployments,
@@ -48,10 +52,13 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
     let groupManagedClusters: ManagedCluster[] = []
     let groupClusterDeployments: ClusterDeployment[] = []
 
-    if (managedClusterSet) {
-        groupManagedClusters = managedClusters.filter(
-            (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
-        )
+    if (managedClusterSet || isGlobalClusterSet === true) {
+        groupManagedClusters =
+            isGlobalClusterSet === true
+                ? managedClusters
+                : managedClusters.filter(
+                      (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+                  )
         groupClusterDeployments = clusterDeployments.filter(
             (cd) =>
                 cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
