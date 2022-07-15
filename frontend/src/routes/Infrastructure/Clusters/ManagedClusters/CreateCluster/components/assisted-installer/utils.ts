@@ -26,6 +26,7 @@ import {
     clusterDeploymentsState,
     configMapsState,
     infraEnvironmentsState,
+    provisioningsState,
 } from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
@@ -339,6 +340,15 @@ export const useInfraEnv = ({ name, namespace }: { name: string; namespace: stri
     return useMemo(
         () => infraEnvs.find((ie) => ie.metadata.name === name && ie.metadata.namespace === namespace),
         [name, namespace, infraEnvs]
+    )
+}
+
+export const useProvisioningResource = () => {
+    const [provisionings] = useRecoilValue(waitForAll([provisioningsState]))
+    return useMemo(
+        // One of its kind
+        () => provisionings.find((prov) => prov.metadata.name === 'provisioning-configuration'),
+        [provisionings]
     )
 }
 

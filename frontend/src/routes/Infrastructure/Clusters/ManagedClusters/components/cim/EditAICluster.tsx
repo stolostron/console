@@ -29,11 +29,12 @@ import {
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
     useOnDeleteHost,
+    useProvisioningResource,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
+import { getInfraEnvNMStates, isBMPlatform, isProvisioningNetworkDisabled } from '../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 
 const {
@@ -67,6 +68,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const clusterDeployment = useClusterDeployment({ name, namespace })
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
     const infraEnv = useInfraEnv({ name, namespace })
+    const provisioning = useProvisioningResource()
 
     const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
 
@@ -236,6 +238,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 }
                                 fetchInfraEnv={fetchInfraEnv}
                                 isBMPlatform={isBMPlatform(infraEnv)}
+                                isProvisioningNetworkDisabled={isProvisioningNetworkDisabled(provisioning)}
                                 isPreviewOpen={isPreviewOpen}
                                 setPreviewOpen={setPreviewOpen}
                                 fetchManagedClusters={fetchManagedClusters}

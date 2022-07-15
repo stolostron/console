@@ -23,8 +23,9 @@ import {
     getOnCreateBMH,
     getOnSaveISOParams,
     useInfraEnv,
+    useProvisioningResource,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { getInfraEnvNMStates, isBMPlatform } from '../utils'
+import { getInfraEnvNMStates, isBMPlatform, isProvisioningNetworkDisabled } from '../utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 
@@ -52,6 +53,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
 
     const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
+
+    const provisioning = useProvisioningResource()
 
     const infraAgents = useMemo(
         () =>
@@ -163,6 +166,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                 bareMetalHosts={infraBMHs}
                                 aiConfigMap={aiConfigMap}
                                 infraNMStates={infraNMStates}
+                                isProvisioningNetworkDisabled={isProvisioningNetworkDisabled(provisioning)}
                             />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>
@@ -183,6 +187,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 usedHostnames={usedHostnames}
                 isBMPlatform={isBMPlatform(infrastructures[0])}
+                isProvisioningNetworkDisabled={isProvisioningNetworkDisabled(provisioning)}
             />
         </>
     )

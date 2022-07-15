@@ -125,6 +125,8 @@ import {
     PolicySet,
     PolicySetApiVersion,
     PolicySetKind,
+    ProvisioningApiVersion,
+    ProvisioningKind,
     Secret,
     SecretApiVersion,
     SecretKind,
@@ -198,6 +200,7 @@ export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
+export const provisioningsState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
@@ -279,6 +282,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
     const [, setPlacementDecisionsState] = useRecoilState(placementDecisionsState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
+    const [, setProvisionings] = useRecoilState(provisioningsState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
@@ -341,6 +345,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
         addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
+        addSetter(ProvisioningApiVersion, ProvisioningKind, setProvisionings)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
@@ -389,6 +394,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setPolicyAutomationState,
         setPolicyReports,
         setPolicySetsState,
+        setProvisionings,
         setSecrets,
         setSubmarinerConfigs,
         setSubscriptionReportsState,

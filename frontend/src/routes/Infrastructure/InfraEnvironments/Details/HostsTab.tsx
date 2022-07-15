@@ -35,6 +35,7 @@ type HostsTabProps = {
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
     aiConfigMap: CIM.ConfigMapK8sResource
     infraNMStates?: CIM.NMStateK8sResource[]
+    isProvisioningNetworkDisabled: boolean
 }
 
 const HostsTab: React.FC<HostsTabProps> = ({
@@ -44,6 +45,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
     bareMetalHosts,
     aiConfigMap,
     infraNMStates = [],
+    isProvisioningNetworkDisabled,
 }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
@@ -111,6 +113,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
                                 onEdit={onSaveBMH}
                                 fetchSecret={fetchSecret}
                                 usedHostnames={usedHostnames}
+                                isProvisioningNetworkDisabled={isProvisioningNetworkDisabled}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                         </CardBody>
