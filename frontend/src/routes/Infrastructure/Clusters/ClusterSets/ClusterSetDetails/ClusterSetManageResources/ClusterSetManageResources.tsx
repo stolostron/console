@@ -139,6 +139,35 @@ export function ClusterSetManageResourcesContent() {
         ]
     )
 
+    const columnsModal = useMemo<IAcmTableColumn<Cluster>[]>(
+        () => [
+            clusterNameColumn,
+            {
+                header: t('table.change'),
+                cell: (resource) => {
+                    if (removedResources.find((removedResource) => removedResource!.uid === resource!.uid)) {
+                        return t('managedClusterSet.form.removed')
+                    } else if (resource!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name) {
+                        return t('managedClusterSet.form.unchanged')
+                    } else {
+                        return resource!.labels?.[managedClusterSetLabel] === undefined
+                            ? t('managedClusterSet.form.added')
+                            : t('managedClusterSet.form.transferred')
+                    }
+                },
+            },
+            clusterProviderColumn,
+            {
+                header: t('table.assignedToSet'),
+                sort: (a: Cluster, b: Cluster) =>
+                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
+                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+            },
+        ],
+        [clusterNameColumn, clusterProviderColumn, clusterSet, removedResources, t]
+    )
+
     return (
         <>
             <AcmForm>
@@ -207,7 +236,7 @@ export function ClusterSetManageResourcesContent() {
                 description={
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                 }
-                columns={columns}
+                columns={columnsModal}
                 keyFn={(item) => item.uid!}
                 actionFn={(resource: Cluster) => {
                     // return dummy promise if the resource is not changed
