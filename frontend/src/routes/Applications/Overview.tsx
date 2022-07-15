@@ -64,7 +64,6 @@ import {
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { PluginContext } from '../../lib/PluginContext'
-import { isAddActionProps } from '../../plugin-extensions/extensions/addAction'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -244,6 +243,8 @@ export default function ApplicationsOverview() {
     const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
     const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+
+    const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
     const getTimeWindow = useCallback(
         (app: IResource) => {
@@ -874,11 +875,25 @@ export default function ApplicationsOverview() {
                 })
             }
 
-            // Plugin custom extension for row action
-            if(acmExtensions) {
-                acmExtensions.every((e) => {
-                    if (isAddActionProps(e)) {
-                      actions.push(e.properties.iAcmRowAction)
+            if (acmExtensions?.applicationAction?.length) {
+                acmExtensions.applicationAction.forEach((appAction) => {
+                    if (appAction?.model ? isResourceTypeOf(resource, appAction?.model) : isOCPAppResource(resource)) {
+                        const ModalComp = appAction.component
+                        const close = () => setPluginModal(<ModalComp isOpen={false} />)
+                        actions.push({
+                            id: appAction.id,
+                            tooltip: appAction?.tooltip,
+                            tooltipProps: appAction?.tooltipProps,
+                            addSeparator: appAction?.addSeparator,
+                            isAriaDisabled: appAction?.isAriaDisabled,
+                            isDisabled:
+                                !canCreateApplication ||
+                                (appAction?.isDisabled ? appAction?.isDisabled(resource) : false),
+                            title: appAction.title,
+                            click: (item) => {
+                                setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+                            },
+                        })
                     }
                 })
             }
@@ -891,10 +906,12 @@ export default function ApplicationsOverview() {
             argoApplications,
             canDeleteApplication,
             canDeleteApplicationSet,
+            canCreateApplication,
             channels,
             history,
             placementRules,
             subscriptions,
+            acmExtensions,
             t,
         ]
     )
@@ -953,6 +970,7 @@ export default function ApplicationsOverview() {
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
+            {pluginModal}
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}
