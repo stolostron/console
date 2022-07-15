@@ -36,7 +36,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                 sort: 'name',
             },
             {
-                header: t('table.clusters'),
+                header: t('table.cluster.statuses'),
                 sort: 'status',
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />

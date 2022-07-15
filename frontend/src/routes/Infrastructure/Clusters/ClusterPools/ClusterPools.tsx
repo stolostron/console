@@ -297,7 +297,7 @@ export function ClusterPoolsTable(props: {
                         },
                     },
                     {
-                        header: t('table.clusters'),
+                        header: t('table.cluster.statuses'),
                         cell: (clusterPool: ClusterPool) => {
                             return <ClusterStatuses clusterPool={clusterPool} />
                         },

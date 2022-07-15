@@ -208,7 +208,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 ),
             },
             {
-                header: t('table.clusters'),
+                header: t('table.cluster.statuses'),
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
                 ),
@@ -274,9 +274,13 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         ),
                     },
                     {
-                        header: t('table.clusters'),
+                        header: t('table.cluster.statuses'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
-                            return <ClusterStatuses managedClusterSet={managedClusterSet} />
+                            return isGlobalClusterSet(managedClusterSet) ? (
+                                <ClusterStatuses isGlobalClusterSet={true} />
+                            ) : (
+                                <ClusterStatuses managedClusterSet={managedClusterSet} />
+                            )
                         },
                     },
                     {

@@ -2137,7 +2137,7 @@
     "table.clusterPool": "Cluster pool",
     "table.clusterPools": "Cluster pools",
     "table.clusterRole": "Cluster role",
-    "table.clusters": "Cluster status",
+    "table.cluster.statuses": "Cluster status",
     "table.clusterSet": "Cluster set",
     "table.clusterSetBinding": "Namespace bindings",
     "table.clustersInUse": "Clusters in use",
