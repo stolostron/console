@@ -33,7 +33,7 @@ export function ClusterSetOverviewPageContent() {
 
     const navigateToClusterSet = () => {
         if (clusterSet?.metadata?.name) {
-            push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!))
+            push(NavigationPath.clusterSetClusters.replace(':id', clusterSet.metadata.name))
         }
     }
 
@@ -54,7 +54,7 @@ export function ClusterSetOverviewPageContent() {
     if (users === 0 && groups === 0) {
         userManagementCount = t('table.none')
     } else {
-        userManagementCount = t('table.user', { count: users }) + ', ' + t('table.group', { count: groups })
+        userManagementCount = `${t('table.user', { count: users })} ,   ${t('table.group', { count: groups })}`
     }
 
     return (
@@ -71,7 +71,7 @@ export function ClusterSetOverviewPageContent() {
                             key: t('table.name'),
                             value: clusterSet?.metadata.name,
                         },
-                        ...(isSubmarinerAvailable && !isGlobalClusterSet(clusterSet!)
+                        ...(isSubmarinerAvailable && !isGlobalClusterSet(clusterSet)
                             ? [
                                   {
                                       key: t('table.networkStatus'),
@@ -120,7 +120,7 @@ export function ClusterSetOverviewPageContent() {
                         },
                     ]}
                 />
-                {!isGlobalClusterSet(clusterSet!) && (
+                {!isGlobalClusterSet(clusterSet) && (
                     <div style={{ marginTop: '24px' }}>
                         <AcmCountCardSection
                             id="summary-status"

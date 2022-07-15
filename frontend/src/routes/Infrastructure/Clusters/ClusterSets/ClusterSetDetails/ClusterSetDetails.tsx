@@ -103,7 +103,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                     const role = item.roleRef.name
                     return (
                         role.startsWith('open-cluster-management:managedclusterset:') &&
-                        role.endsWith(`:${clusterSet!.metadata.name!}`)
+                        role.endsWith(`:${clusterSet.metadata.name}`)
                     )
                 })
             )
