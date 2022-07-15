@@ -13,7 +13,7 @@ import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { clusterDangerStatuses } from '../../../../../../resources'
+import { clusterDangerStatuses, isGlobalClusterSet } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
@@ -54,13 +54,8 @@ export function ClusterSetOverviewPageContent() {
     if (users === 0 && groups === 0) {
         userManagementCount = t('table.none')
     } else {
-        userManagementCount =
-            t(users === 1 ? 'table.user' : 'table.user_plural', { count: users }) +
-            ', ' +
-            t(groups === 1 ? 'table.group' : 'table.group_plural', { count: groups })
+        userManagementCount = t('table.user', { count: users }) + ', ' + t('table.group', { count: groups })
     }
-
-    const isGlobalClusterSet = clusterSet?.metadata?.name === 'global'
 
     return (
         <AcmPageContent id="overview">
