@@ -120,7 +120,7 @@ export function ClusterSetOverviewPageContent() {
                         },
                     ]}
                 />
-                {!isGlobalClusterSet(clusterSet) && (
+                {!isGlobalClusterSet(clusterSet!) && (
                     <div style={{ marginTop: '24px' }}>
                         <AcmCountCardSection
                             id="summary-status"
