@@ -143,6 +143,13 @@ export function ClusterSetManageResourcesContent() {
         () => [
             clusterNameColumn,
             {
+                header: t('table.assignedToSet'),
+                sort: (a: Cluster, b: Cluster) =>
+                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
+                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+            },
+            {
                 header: t('table.change'),
                 cell: (resource) => {
                     if (removedResources.find((removedResource) => removedResource!.uid === resource!.uid)) {
@@ -155,14 +162,6 @@ export function ClusterSetManageResourcesContent() {
                             : t('managedClusterSet.form.transferred')
                     }
                 },
-            },
-            clusterProviderColumn,
-            {
-                header: t('table.assignedToSet'),
-                sort: (a: Cluster, b: Cluster) =>
-                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
-                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
-                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
             },
         ],
         [clusterNameColumn, clusterProviderColumn, clusterSet, removedResources, t]
