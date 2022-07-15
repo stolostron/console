@@ -71,7 +71,6 @@ const Search = lazy(() => import('./routes/Home/Search/Search'))
 
 // INFRASTRUCTURE
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const BareMetalAssets = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssets'))
 const Automations = lazy(() => import('./routes/Infrastructure/Automations/Automations'))
 const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
 
@@ -374,12 +373,6 @@ export default function App() {
                         type: 'route',
                         route: NavigationPath.clusters,
                         component: Clusters,
-                    },
-                    {
-                        title: 'Bare metal assets',
-                        type: 'route',
-                        route: NavigationPath.bareMetalAssets,
-                        component: BareMetalAssets,
                     },
                     {
                         title: 'Automation',

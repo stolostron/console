@@ -1,10 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-module.exports = {
+import type { Config } from '@jest/types'
+
+const config: Config.InitialOptions = {
     preset: 'ts-jest/presets/js-with-ts',
     testEnvironment: 'jsdom',
     automock: false,
     clearMocks: true,
+    onlyChanged: false,
     testResultsProcessor: 'jest-sonar-reporter',
     setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
     moduleNameMapper: {
@@ -13,6 +16,7 @@ module.exports = {
         '\\.(css|less)$': 'identity-obj-proxy',
         'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
     },
+    watchAll: false,
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
     transform: {
@@ -26,8 +30,10 @@ module.exports = {
     transformIgnorePatterns: [
         'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid)',
     ],
+    ci: true,
+    collectCoverage: true,
     coverageDirectory: './coverage',
-    coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
+    coverageReporters: ['text', 'text-summary', 'html', ['lcov', { projectRoot: '../' }]],
     collectCoverageFrom: [
         '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         '<rootDir>/src/*.{tsx,ts,jsx,js}',
@@ -36,5 +42,8 @@ module.exports = {
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',
     ],
+    reporters: ['default'],
     bail: true,
 }
+
+export default config
