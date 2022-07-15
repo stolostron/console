@@ -387,11 +387,16 @@ function AddUsersModal(props: {
                                 value={role}
                                 onChange={(role) => setRole(role)}
                             >
-                                {clusterSet && getUserRoles(clusterSet).map((userRole) => (
-                                    <SelectOption key={userRole.role} value={userRole.role} description={userRole.role}>
-                                        {userRole.displayName}
-                                    </SelectOption>
-                                ))}
+                                {clusterSet &&
+                                    getUserRoles(clusterSet).map((userRole) => (
+                                        <SelectOption
+                                            key={userRole.role}
+                                            value={userRole.role}
+                                            description={userRole.role}
+                                        >
+                                            {userRole.displayName}
+                                        </SelectOption>
+                                    ))}
                             </AcmSelect>
                             <AcmAlertGroup isInline canClose />
                             <ActionGroup>
