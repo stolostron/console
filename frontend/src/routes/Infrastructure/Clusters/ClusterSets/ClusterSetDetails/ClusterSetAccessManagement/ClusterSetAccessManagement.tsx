@@ -122,7 +122,7 @@ export function ClusterSetAccessManagement() {
                         return t('access.clusterSet.role.view')
                     } else if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet!.metadata.name}`
+                        `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name}`
                     ) {
                         return t('Cluster set bind')
                     }
