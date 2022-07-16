@@ -3,17 +3,8 @@ import { request } from '../mock-request'
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import nock from 'nock'
 
-interface FormatedConsoleLink {
-    url: string
-    name: string
-    icon: string
-}
-
 describe(`consoleLinks Route`, function () {
     it(`should return a map of console links to include in the app launcher`, async function () {
-        nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
-            status: 200,
-        })
         nock(process.env.CLUSTER_API_URL)
             .get('/apis/console.openshift.io/v1/consolelinks')
             .reply(200, {
@@ -59,5 +50,10 @@ describe(`consoleLinks Route`, function () {
                 },
             ],
         })
+    })
+    it('should handle errors', async function () {
+        nock(process.env.CLUSTER_API_URL).get('/apis/console.openshift.io/v1/consolelinks').replyWithError('failed')
+        const res = await request('GET', '/console-links')
+        expect(res.statusCode).toEqual(500)
     })
 })

@@ -1272,7 +1272,7 @@ export default class TemplateEditor extends React.Component {
 
                             setTimeout(() => {
                                 const viewClassname = showEditor ? 'creation-view-controls' : 'SplitPane  vertical '
-                                document.getElementsByClassName(viewClassname)[0].scrollTo({
+                                document.getElementsByClassName(viewClassname)[0]?.scrollTo({
                                     top: 0,
                                     left: 0,
                                     behavior: 'smooth',

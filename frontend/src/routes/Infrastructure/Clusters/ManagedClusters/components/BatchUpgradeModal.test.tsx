@@ -42,6 +42,7 @@ const mockClusterNoAvailable: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -81,6 +82,7 @@ const mockClusterReady1: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -120,6 +122,7 @@ const mockClusterReady2: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -159,6 +162,7 @@ const mockClusterOffline: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
@@ -198,6 +202,7 @@ const mockClusterFailedUpgrade: Cluster = {
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }
