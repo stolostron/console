@@ -11,7 +11,6 @@ import {
     listClusterRoleBindings,
     listGroups,
     listUsers,
-    ManagedClusterSet,
     RbacApiVersion,
     ResourceErrorCode,
     User,
@@ -113,17 +112,17 @@ export function ClusterSetAccessManagement() {
                 cell: (clusterRoleBinding: ClusterRoleBinding) => {
                     if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`
+                        `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name}`
                     ) {
                         return t('access.clusterSet.role.admin')
                     } else if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
+                        `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name}`
                     ) {
                         return t('access.clusterSet.role.view')
                     } else if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:bind:${clusterSet!.metadata.name!}`
+                        `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet!.metadata.name}`
                     ) {
                         return t('Cluster set bind')
                     }
@@ -297,21 +296,21 @@ function AddUsersModal(props: {
         {
             id: 'admin',
             displayName: t('access.clusterSet.role.admin'),
-            role: `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name}`,
         },
         {
             id: 'view',
             displayName: t('access.clusterSet.role.view'),
-            role: `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name}`,
         },
         {
             id: 'bind',
             displayName: t('Cluster set bind'),
-            role: `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name!}`,
+            role: `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name}`,
         },
     ]
 
-    const getUserRoles = (clusterSet: ManagedClusterSet) => {
+    const getUserRoles = () => {
         return isGlobalClusterSet(clusterSet) ? roles.filter((userRole) => userRole.id !== 'admin') : roles
     }
 
@@ -393,7 +392,7 @@ function AddUsersModal(props: {
                                 onChange={(role) => setRole(role)}
                             >
                                 {clusterSet &&
-                                    getUserRoles(clusterSet).map((userRole) => (
+                                    getUserRoles().map((userRole) => (
                                         <SelectOption
                                             key={userRole.role}
                                             value={userRole.role}
