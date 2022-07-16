@@ -623,8 +623,8 @@ describe('Global ClusterSetDetails page', () => {
                 name: `open-cluster-management:managedclusterset:bind:${mockGlobalManagedClusterSet!.metadata.name!}`,
             },
         })
-         await clickByText('Add')
-         await waitForNocks([createNock])
+        await clickByText('Add')
+        await waitForNocks([createNock])
     })
 })
 
