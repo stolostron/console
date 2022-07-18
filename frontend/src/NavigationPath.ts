@@ -22,6 +22,8 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Managed Clusters
     clusters = '/multicloud/infrastructure/clusters',
     managedClusters = '/multicloud/infrastructure/clusters/managed',
+    createInfrastructure = '/multicloud/infrastructure/clusters/create/infrastructure',
+    createControlPlane = '/multicloud/infrastructure/clusters/create/control-plane',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:id',

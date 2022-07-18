@@ -41,6 +41,7 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../resources'
+import { getDateTimeCell } from '../../helpers/table-row-helpers'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
@@ -50,7 +51,6 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
-import { getDateTimeCell } from '../../helpers/table-row-helpers'
 
 function InfraEnvLinkButton() {
     const { t } = useTranslation()
@@ -108,7 +108,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
-                                    click: () => history.push(NavigationPath.createCluster),
+                                    click: () => history.push(NavigationPath.createInfrastructure),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
