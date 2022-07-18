@@ -3,7 +3,7 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -456,6 +456,7 @@ export default function ApplicationsOverview() {
 
             const semicolon = value.label?.indexOf(';', labelIdx)
             const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+            const resourceName = value.name
             transformedData.push(
                 generateTransformData({
                     apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
@@ -468,6 +469,7 @@ export default function ApplicationsOverview() {
                     },
                     status: {
                         cluster: value.cluster,
+                        resourceName,
                     },
                 } as OCPAppResource)
             )
@@ -789,15 +791,15 @@ export default function ApplicationsOverview() {
                 title: t('Search application'),
                 click: () => {
                     const [apigroup, apiversion] = resource.apiVersion.split('/')
-                    const { cluster } = resource.status
+                    const resourceName = resource.status?.resourceName
                     const searchLink = getSearchLink({
                         properties: {
-                            name: resource.metadata?.name,
+                            name: resourceName ? resourceName : resource.metadata?.name,
                             namespace: resource.metadata?.namespace,
                             kind: resource.kind.toLowerCase(),
                             apigroup,
                             apiversion,
-                            cluster: cluster ? cluster : 'local-cluster',
+                            cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
                         },
                     })
                     history.push(searchLink)

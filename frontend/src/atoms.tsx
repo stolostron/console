@@ -2,6 +2,7 @@
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { noop } from 'lodash'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
@@ -62,6 +63,7 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    fetchGet,
     getBackendUrl,
     GitOpsCluster,
     GitOpsClusterApiVersion,
@@ -99,8 +101,8 @@ import {
     NamespaceApiVersion,
     NamespaceKind,
     NMStateConfigApiVersion,
-    OCPAppResource,
     NMStateConfigKind,
+    OCPAppResource,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -140,6 +142,9 @@ import {
     SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
+    UserPreference,
+    UserPreferenceApiVersion,
+    UserPreferenceKind,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -200,6 +205,7 @@ export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
+export const userPreferencesState = AtomArray<UserPreference>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -281,6 +287,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
     const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
     const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
+    const [, setUserPreferencesState] = useRecoilState(userPreferencesState)
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -338,6 +345,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
+        addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
         return setters
     }, [
         setAgentClusterInstalls,
@@ -388,6 +396,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setSubscriptionReportsState,
         setSubscriptionsState,
         setSubscriptionOperatorsState,
+        setUserPreferencesState,
     ])
 
     useEffect(() => {
@@ -496,6 +505,13 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [setSettings, setters])
 
     useEffect(() => {
+        function tokenExpired() {
+            if (process.env.NODE_ENV === 'production') {
+                logout()
+            } else {
+                window.location.href = `${getBackendUrl()}/login`
+            }
+        }
         function checkLoggedIn() {
             fetch(`${getBackendUrl()}/authenticated`, {
                 credentials: 'include',
@@ -506,20 +522,12 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 200:
                             break
                         default:
-                            if (process.env.NODE_ENV === 'production') {
-                                window.location.reload()
-                            } else {
-                                window.location.href = `${getBackendUrl()}/login`
-                            }
+                            tokenExpired()
                             break
                     }
                 })
                 .catch(() => {
-                    if (process.env.NODE_ENV === 'production') {
-                        window.location.reload()
-                    } else {
-                        window.location.href = `${getBackendUrl()}/login`
-                    }
+                    tokenExpired()
                 })
                 .finally(() => {
                     setTimeout(checkLoggedIn, 30 * 1000)
@@ -541,4 +549,27 @@ export function usePolicies() {
         () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
         [policies]
     )
+}
+
+export async function logout() {
+    const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(getBackendUrl() + '/configure')
+    await fetchGet(getBackendUrl() + '/logout').catch(noop)
+
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('type', 'hidden')
+    iframe.name = 'hidden-form'
+    document.body.appendChild(iframe)
+
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.target = 'hidden-form'
+    const url = new URL(tokenEndpointResult.data.token_endpoint)
+    form.action = `${url.protocol}//${url.host}/logout`
+    document.body.appendChild(form)
+
+    form.submit()
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    location.pathname = '/'
 }

@@ -1,7 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ExpandableSection, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '@stolostron/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'

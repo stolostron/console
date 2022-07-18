@@ -318,7 +318,12 @@ export default class TemplateEditor extends React.Component {
             const rect = this.editorPanel.getBoundingClientRect()
             const width = rect.width - 10
             let height = window.innerHeight - rect.top
-            height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+            const header = document.getElementsByClassName('creation-view-yaml-header')[0]
+            if (header) {
+                height = height - header.getBoundingClientRect().height
+            } else {
+                height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+            }
             this.setState({ showCondensed: width < 500 })
             this.editors.forEach((editor) => {
                 editor.layout({ width, height })
@@ -1238,10 +1243,7 @@ export default class TemplateEditor extends React.Component {
         if (createBtn && !showWizard && isLoaded) {
             const { hasPermissions = true } = createControl
             const titleText = !hasPermissions ? (i18n ? i18n('button.save.access.denied') : 'Denied') : undefined
-            let disableButton = true
-            if (this.isDirty && hasPermissions) {
-                disableButton = false
-            }
+            let disableButton = !hasPermissions
             const portal = document.getElementById(createBtn)
             const label = isEditing
                 ? i18n
@@ -1270,7 +1272,7 @@ export default class TemplateEditor extends React.Component {
 
                             setTimeout(() => {
                                 const viewClassname = showEditor ? 'creation-view-controls' : 'SplitPane  vertical '
-                                document.getElementsByClassName(viewClassname)[0].scrollTo({
+                                document.getElementsByClassName(viewClassname)[0]?.scrollTo({
                                     top: 0,
                                     left: 0,
                                     behavior: 'smooth',

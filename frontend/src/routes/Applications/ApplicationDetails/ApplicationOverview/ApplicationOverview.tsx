@@ -7,7 +7,7 @@ import {
     AcmInlineStatusGroup,
     AcmPageContent,
     ListItems,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -43,9 +43,9 @@ import {
     getClusterCountString,
     getClusterList,
     getShortDateTime,
+    getSearchLink,
 } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
-import { getSearchLink } from '../../helpers/resource-helper'
 import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
 import {
@@ -71,6 +71,8 @@ import { Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 
+const clusterResourceStatusText = 'Cluster resource status'
+const clusterResourceStatusTooltip = 'Status represents the subscription selection within Resource topology.'
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
@@ -84,7 +86,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
-    //const [managedClusters] = useRecoilState(managedClustersState)
+
     let managedClusters = useAllClusters()
     managedClusters = managedClusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -122,9 +124,9 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     namespaces,
                 }
             }
-            fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces }) => {
+            fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces: fetchedNamespaces }) => {
                 // see if the user has access to all namespaces
-                if (!authorizedNamespaces || authorizedNamespaces?.length < namespaces?.length) {
+                if (!authorizedNamespaces || authorizedNamespaces?.length < fetchedNamespaces?.length) {
                     setHasSyncPermission(false)
                 } else {
                     setHasSyncPermission(true)
@@ -173,10 +175,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     value: cluster,
                 },
                 {
-                    key: t('Cluster resource status'),
+                    key: t(clusterResourceStatusText),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
+                        <Tooltip content={t(clusterResourceStatusTooltip)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
@@ -252,16 +254,16 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                 },
                 {
-                    key: t('Cluster resource status'),
+                    key: t(clusterResourceStatusText),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
+                        <Tooltip content={t(clusterResourceStatusTooltip)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
                 },
                 {
-                    key: t('Respository Resource'),
+                    key: t('Repository Resource'),
                     value: (
                         <ResourceLabels
                             appRepos={appRepos as any[]}
@@ -337,10 +339,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
                 },
                 {
-                    key: t('Cluster resource status'),
+                    key: t(clusterResourceStatusText),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
+                        <Tooltip content={t(clusterResourceStatusTooltip)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),

@@ -374,6 +374,12 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
     return finalNetworkMock
 }
 
+export function nockRequest(pathname: string, response: object, statusCode = 200) {
+    return nock(process.env.JEST_DEFAULT_HOST as string)
+        .get(pathname)
+        .reply(statusCode, response)
+}
+
 export const mockBadRequestStatus = {
     kind: StatusKind,
     apiVersion: StatusApiVersion,

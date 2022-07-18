@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterStatus, getSecret, ResourceError, Secret } from '../../../../../resources'
-import { AcmAlert, AcmButton, AcmInlineCopy } from '@stolostron/ui-components'
-import { onCopy } from '@stolostron/ui-components/lib/utils'
+import { AcmAlert, AcmButton, AcmInlineCopy } from '../../../../../ui-components'
+import { onCopy } from '../../../../../ui-components/utils'
 import {
     Alert,
     AlertVariant,

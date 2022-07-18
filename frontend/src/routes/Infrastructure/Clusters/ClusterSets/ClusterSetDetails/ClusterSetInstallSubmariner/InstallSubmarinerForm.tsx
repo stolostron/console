@@ -33,7 +33,7 @@ import {
     AcmPageHeader,
     Provider,
     ProviderLongTextMap,
-} from '@stolostron/ui-components'
+} from '../../../../../../ui-components'
 import { List, ListItem, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState } from 'react'

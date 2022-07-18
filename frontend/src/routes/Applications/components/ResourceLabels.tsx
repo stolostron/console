@@ -3,11 +3,12 @@
 import { Divider, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import React from 'react'
+
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
 import LabelWithPopover from './LabelWithPopover'
 import { TFunction } from 'i18next'
 import '../css/ResourceLabels.css'
+import { Fragment } from 'react'
 
 function repoSort(appRepos: any) {
     return _.sortBy(appRepos, ['pathName', 'gitBranch', 'gitPath'])
@@ -77,7 +78,7 @@ export function ResourceLabels(props: {
                                     }
                                 }
                                 return (
-                                    <React.Fragment key={`${type}-${repo.pathname}-${repo.gitBranch}-${repo.gitPath}`}>
+                                    <Fragment key={`${type}-${repo.pathname}-${repo.gitBranch}-${repo.gitPath}`}>
                                         {index > 0 && (
                                             <StackItem>
                                                 <Divider />
@@ -92,7 +93,7 @@ export function ResourceLabels(props: {
                                                     </a>
                                                 </StackItem>
                                                 {repoTypeAttributes.length > 0 && (
-                                                    <React.Fragment>
+                                                    <Fragment>
                                                         {repoTypeAttributes.map((attrib: any) => {
                                                             return (
                                                                 <StackItem
@@ -112,11 +113,11 @@ export function ResourceLabels(props: {
                                                                 </StackItem>
                                                             )
                                                         })}
-                                                    </React.Fragment>
+                                                    </Fragment>
                                                 )}
                                             </Stack>
                                         </StackItem>
-                                    </React.Fragment>
+                                    </Fragment>
                                 )
                             })}
                         </Stack>

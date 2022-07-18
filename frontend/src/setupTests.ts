@@ -6,6 +6,7 @@ import { configure } from '@testing-library/dom'
 import '@testing-library/jest-dom'
 import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
+import 'jest-axe/extend-expect'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports

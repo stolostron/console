@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '@stolostron/ui-components'
+import { Provider } from '../../ui-components'
 import {
     isDraft,
     getIsSNOCluster,
@@ -87,6 +87,7 @@ export type Cluster = {
     isHive: boolean
     isManaged: boolean
     isCurator: boolean
+    isHostedCluster: boolean
     clusterSet?: string
     owner: {
         createdBy?: string
@@ -236,6 +237,7 @@ export function getCluster(
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
+        isHostedCluster: getIsHostedCluster(managedCluster),
         isSNOCluster: getIsSNOCluster(agentClusterInstall),
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
@@ -331,8 +333,8 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
         clusterPoolNamespace: clusterDeployment?.spec?.clusterPoolRef?.namespace,
         clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
         secrets: {
-            kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
-            kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef.name,
+            kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name,
+            kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name,
             installConfig: clusterDeployment?.spec?.provisioning?.installConfigSecretRef?.name,
         },
         lifetime: clusterClaim?.spec?.lifetime,
@@ -959,5 +961,16 @@ export function getClusterStatus(
         return { status: cdStatus, statusMessage }
     } else {
         return { status: mcStatus, statusMessage }
+    }
+}
+
+export function getIsHostedCluster(managedCluster?: ManagedCluster) {
+    if (
+        managedCluster?.metadata.annotations &&
+        managedCluster?.metadata.annotations['cluster.open-cluster-management.io/hypershiftdeployment']
+    ) {
+        return true
+    } else {
+        return false
     }
 }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Page } from '@patternfly/react-core'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { isMatch } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, Suspense, useMemo, useState } from 'react'

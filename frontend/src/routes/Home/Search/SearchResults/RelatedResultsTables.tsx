@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { Stack } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '@stolostron/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import _ from 'lodash'
 import { useCallback } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'

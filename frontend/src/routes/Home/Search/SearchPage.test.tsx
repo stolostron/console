@@ -9,36 +9,44 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { wait } from '../../../lib/test-util'
-import {
-    GetMessagesDocument,
-    SavedSearchesDocument,
-    SearchCompleteDocument,
-    SearchSchemaDocument,
-} from './search-sdk/search-sdk'
+import { userPreferencesState } from '../../../atoms'
+import { nockRequest } from '../../../lib/nock-util'
+import { wait, waitForNocks } from '../../../lib/test-util'
+import { UserPreference } from '../../../resources/userpreference'
+import { GetMessagesDocument, SearchCompleteDocument, SearchSchemaDocument } from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
+
+const mockUserPreferences: UserPreference[] = [
+    {
+        apiVersion: 'console.open-cluster-management.io/v1',
+        kind: 'UserPreference',
+        metadata: {
+            name: 'kube-admin',
+        },
+        spec: {
+            savedSearches: [
+                {
+                    description: 'testSavedQueryDesc1',
+                    id: '1609811592984',
+                    name: 'testSavedQuery1',
+                    searchText: 'kind:pod',
+                },
+            ],
+        },
+    },
+]
+
+const getUsernameResponse = {
+    body: {
+        username: 'kube:admin',
+    },
+    statusCode: 200,
+}
 
 describe('SearchPage', () => {
     it('should render default search page correctly', async () => {
+        const getUsernameNock = nockRequest('/username', getUsernameResponse)
         const mocks = [
-            {
-                request: {
-                    query: SavedSearchesDocument,
-                },
-                result: {
-                    data: {
-                        items: [
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                                __typename: 'userSearch',
-                            },
-                        ],
-                    },
-                },
-            },
             {
                 request: {
                     query: SearchSchemaDocument,
@@ -63,7 +71,11 @@ describe('SearchPage', () => {
             },
         ]
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(userPreferencesState, mockUserPreferences)
+                }}
+            >
                 <Router history={createBrowserHistory()}>
                     <MockedProvider mocks={mocks}>
                         <SearchPage />
@@ -71,6 +83,10 @@ describe('SearchPage', () => {
                 </Router>
             </RecoilRoot>
         )
+
+        // Wait for username resource requests to finish
+        await waitForNocks([getUsernameNock])
+
         // Test the loading state while apollo query finishes - testing that saved searches card label is not present
         expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
         // This wait pauses till apollo query is returning data
@@ -84,25 +100,8 @@ describe('SearchPage', () => {
     })
 
     it('should render page with errors', async () => {
+        const getUsernameNock = nockRequest('/username', getUsernameResponse)
         const mocks = [
-            {
-                request: {
-                    query: SavedSearchesDocument,
-                },
-                result: {
-                    data: {
-                        items: [
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                                __typename: 'userSearch',
-                            },
-                        ],
-                    },
-                },
-            },
             {
                 request: {
                     query: SearchSchemaDocument,
@@ -131,7 +130,11 @@ describe('SearchPage', () => {
             },
         ]
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(userPreferencesState, mockUserPreferences)
+                }}
+            >
                 <Router history={createBrowserHistory()}>
                     <MockedProvider mocks={mocks}>
                         <SearchPage />
@@ -139,6 +142,10 @@ describe('SearchPage', () => {
                 </Router>
             </RecoilRoot>
         )
+
+        // Wait for username resource requests to finish
+        await waitForNocks([getUsernameNock])
+
         // Test the loading state while apollo query finishes - testing that saved searches card label is not present
         expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
         // This wait pauses till apollo query is returning data
@@ -152,26 +159,8 @@ describe('SearchPage', () => {
     })
 
     it('should render search page correctly and add a search', async () => {
+        const getUsernameNock = nockRequest('/username', getUsernameResponse)
         const mocks = [
-            {
-                request: {
-                    query: SavedSearchesDocument,
-                },
-                result: {
-                    data: {
-                        items: [
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                                __typename: 'userSearch',
-                            },
-                        ],
-                    },
-                },
-            },
-
             {
                 request: {
                     query: SearchSchemaDocument,
@@ -198,7 +187,7 @@ describe('SearchPage', () => {
                 },
                 result: {
                     data: {
-                        searchComplete: ['cluster', 'pod', 'deployment'],
+                        searchComplete: ['configmap', 'pod', 'deployment'],
                     },
                 },
             },
@@ -221,7 +210,11 @@ describe('SearchPage', () => {
             },
         ]
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(userPreferencesState, mockUserPreferences)
+                }}
+            >
                 <Router history={createBrowserHistory()}>
                     <MockedProvider mocks={mocks}>
                         <SearchPage />
@@ -229,6 +222,10 @@ describe('SearchPage', () => {
                 </Router>
             </RecoilRoot>
         )
+
+        // Wait for username resource requests to finish
+        await waitForNocks([getUsernameNock])
+
         // Test the loading state while apollo query finishes - testing that saved searches card label is not present
         expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
         // This wait pauses till apollo query is returning data
@@ -237,20 +234,13 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
-        const searchbar = screen.getByRole('combobox') // getByText('Search items')
+        const searchbar = screen.getByRole('combobox')
         expect(searchbar).toBeTruthy()
         userEvent.click(searchbar)
         userEvent.type(searchbar, 'kind ')
-
-        // check if the three values are diplayed
-        await waitFor(() => expect(screen.queryByText('cluster')).toBeTruthy())
-        await waitFor(() => expect(screen.queryByText('pod')).toBeTruthy())
-        await waitFor(() => expect(screen.queryByText('deployment')).toBeTruthy())
-
-        // click on a value
-        const suggestionItem = screen.getByText('deployment')
-        expect(suggestionItem).toBeTruthy()
-        userEvent.click(suggestionItem)
+        expect(screen.queryByText('kind:')).toBeTruthy()
+        expect(screen.queryByRole('listbox')).toBeTruthy()
+        userEvent.type(searchbar, 'deployment ')
 
         // check searchbar updated properly
         await waitFor(() => expect(screen.queryByText('kind:deployment')).toBeTruthy())

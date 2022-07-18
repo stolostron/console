@@ -271,6 +271,7 @@ const Component = () => (
                 submarinerAddons: undefined,
                 clusterSetBindings: undefined,
                 clusterDeployments: [mockClusterDeploymentClaimed],
+                clusterRoleBindings: [],
             }}
         >
             <MemoryRouter

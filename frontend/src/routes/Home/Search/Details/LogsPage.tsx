@@ -4,7 +4,7 @@
 import { makeStyles } from '@material-ui/styles'
 import { Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { LogViewer } from '@patternfly/react-log-viewer'
-import { AcmAlert, AcmLoadingPage, AcmSelect } from '@stolostron/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmSelect } from '../../../../ui-components'
 import { useEffect, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClustersState } from '../../../../atoms'

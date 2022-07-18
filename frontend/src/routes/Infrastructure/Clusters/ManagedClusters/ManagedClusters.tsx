@@ -19,7 +19,7 @@ import {
     ITableFilter,
     Provider,
     ProviderLongTextMap,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -229,7 +229,8 @@ export function ClustersTable(props: {
                 title: t('managed.upgrade.plural'),
                 click: (managedClusters: Array<Cluster>) => {
                     if (!managedClusters) return
-                    setUpgradeClusters(managedClusters)
+                    const managedClustersNoHypershift = managedClusters.filter((mc) => !mc.isHostedCluster)
+                    setUpgradeClusters(managedClustersNoHypershift)
                 },
                 variant: 'bulk-action',
             },

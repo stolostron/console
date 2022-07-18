@@ -11,12 +11,12 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 import { SearchInput } from '@patternfly/react-core'
 import { getSearchNames } from '../helpers/filterHelper'
 
-class Search extends React.Component {
+class Search extends Component {
     static propTypes = {
         onNameSearch: PropTypes.func,
         searchName: PropTypes.string,

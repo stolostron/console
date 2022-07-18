@@ -6,7 +6,7 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
 import { patchResource } from '../../../../../../resources'
 import { agentsState, clusterImageSetsState, configMapsState, nmStateConfigsState } from '../../../../../../atoms'

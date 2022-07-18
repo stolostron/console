@@ -2,8 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { gql } from '@apollo/client'
 import * as Apollo from '@apollo/client'
+import { gql } from '@apollo/client'
 export type Maybe<T> = T | null
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> }
@@ -68,19 +68,6 @@ export type Message = {
     description?: Maybe<Scalars['String']>
 }
 
-export type Mutation = {
-    deleteSearch?: Maybe<Scalars['JSON']>
-    saveSearch?: Maybe<Scalars['JSON']>
-}
-
-export type MutationDeleteSearchArgs = {
-    resource?: Maybe<Scalars['JSON']>
-}
-
-export type MutationSaveSearchArgs = {
-    resource?: Maybe<Scalars['JSON']>
-}
-
 export type PlacementRule = {
     _uid?: Maybe<Scalars['String']>
     name?: Maybe<Scalars['String']>
@@ -99,7 +86,6 @@ export type Query = {
     messages?: Maybe<Array<Maybe<Message>>>
     searchComplete?: Maybe<Array<Maybe<Scalars['String']>>>
     searchSchema?: Maybe<Scalars['JSON']>
-    savedSearches?: Maybe<Array<Maybe<UserSearch>>>
 }
 
 export type QueryApplicationsArgs = {
@@ -169,31 +155,6 @@ export type Subscription = {
     status?: Maybe<Scalars['String']>
 }
 
-export type UserSearch = {
-    id?: Maybe<Scalars['String']>
-    name?: Maybe<Scalars['String']>
-    description?: Maybe<Scalars['String']>
-    searchText?: Maybe<Scalars['String']>
-}
-
-export type SaveSearchMutationVariables = Exact<{
-    resource: Scalars['JSON']
-}>
-
-export type SaveSearchMutation = Pick<Mutation, 'saveSearch'>
-
-export type DeleteSearchMutationVariables = Exact<{
-    resource: Scalars['JSON']
-}>
-
-export type DeleteSearchMutation = Pick<Mutation, 'deleteSearch'>
-
-export type SavedSearchesQueryVariables = Exact<{ [key: string]: never }>
-
-export type SavedSearchesQuery = {
-    items?: Maybe<Array<Maybe<Pick<UserSearch, 'id' | 'name' | 'description' | 'searchText'>>>>
-}
-
 export type SearchSchemaQueryVariables = Exact<{ [key: string]: never }>
 
 export type SearchSchemaQuery = Pick<Query, 'searchSchema'>
@@ -254,116 +215,6 @@ export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetMessagesQuery = { messages?: Maybe<Array<Maybe<Pick<Message, 'id' | 'kind' | 'description'>>>> }
 
-export const SaveSearchDocument = gql`
-    mutation saveSearch($resource: JSON!) {
-        saveSearch(resource: $resource)
-    }
-`
-export type SaveSearchMutationFn = Apollo.MutationFunction<SaveSearchMutation, SaveSearchMutationVariables>
-
-/**
- * __useSaveSearchMutation__
- *
- * To run a mutation, you first call `useSaveSearchMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSaveSearchMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [saveSearchMutation, { data, loading, error }] = useSaveSearchMutation({
- *   variables: {
- *      resource: // value for 'resource'
- *   },
- * });
- */
-export function useSaveSearchMutation(
-    baseOptions?: Apollo.MutationHookOptions<SaveSearchMutation, SaveSearchMutationVariables>
-) {
-    const options = { ...defaultOptions, ...baseOptions }
-    return Apollo.useMutation<SaveSearchMutation, SaveSearchMutationVariables>(SaveSearchDocument, options)
-}
-export type SaveSearchMutationHookResult = ReturnType<typeof useSaveSearchMutation>
-export type SaveSearchMutationResult = Apollo.MutationResult<SaveSearchMutation>
-export type SaveSearchMutationOptions = Apollo.BaseMutationOptions<SaveSearchMutation, SaveSearchMutationVariables>
-export const DeleteSearchDocument = gql`
-    mutation deleteSearch($resource: JSON!) {
-        deleteSearch(resource: $resource)
-    }
-`
-export type DeleteSearchMutationFn = Apollo.MutationFunction<DeleteSearchMutation, DeleteSearchMutationVariables>
-
-/**
- * __useDeleteSearchMutation__
- *
- * To run a mutation, you first call `useDeleteSearchMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteSearchMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [deleteSearchMutation, { data, loading, error }] = useDeleteSearchMutation({
- *   variables: {
- *      resource: // value for 'resource'
- *   },
- * });
- */
-export function useDeleteSearchMutation(
-    baseOptions?: Apollo.MutationHookOptions<DeleteSearchMutation, DeleteSearchMutationVariables>
-) {
-    const options = { ...defaultOptions, ...baseOptions }
-    return Apollo.useMutation<DeleteSearchMutation, DeleteSearchMutationVariables>(DeleteSearchDocument, options)
-}
-export type DeleteSearchMutationHookResult = ReturnType<typeof useDeleteSearchMutation>
-export type DeleteSearchMutationResult = Apollo.MutationResult<DeleteSearchMutation>
-export type DeleteSearchMutationOptions = Apollo.BaseMutationOptions<
-    DeleteSearchMutation,
-    DeleteSearchMutationVariables
->
-export const SavedSearchesDocument = gql`
-    query savedSearches {
-        items: savedSearches {
-            id
-            name
-            description
-            searchText
-        }
-    }
-`
-
-/**
- * __useSavedSearchesQuery__
- *
- * To run a query within a React component, call `useSavedSearchesQuery` and pass it any options that fit your needs.
- * When your component renders, `useSavedSearchesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useSavedSearchesQuery({
- *   variables: {
- *   },
- * });
- */
-export function useSavedSearchesQuery(
-    baseOptions?: Apollo.QueryHookOptions<SavedSearchesQuery, SavedSearchesQueryVariables>
-) {
-    const options = { ...defaultOptions, ...baseOptions }
-    return Apollo.useQuery<SavedSearchesQuery, SavedSearchesQueryVariables>(SavedSearchesDocument, options)
-}
-export function useSavedSearchesLazyQuery(
-    baseOptions?: Apollo.LazyQueryHookOptions<SavedSearchesQuery, SavedSearchesQueryVariables>
-) {
-    const options = { ...defaultOptions, ...baseOptions }
-    return Apollo.useLazyQuery<SavedSearchesQuery, SavedSearchesQueryVariables>(SavedSearchesDocument, options)
-}
-export type SavedSearchesQueryHookResult = ReturnType<typeof useSavedSearchesQuery>
-export type SavedSearchesLazyQueryHookResult = ReturnType<typeof useSavedSearchesLazyQuery>
-export type SavedSearchesQueryResult = Apollo.QueryResult<SavedSearchesQuery, SavedSearchesQueryVariables>
 export const SearchSchemaDocument = gql`
     query searchSchema {
         searchSchema

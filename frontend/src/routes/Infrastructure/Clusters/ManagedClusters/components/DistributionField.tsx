@@ -9,7 +9,7 @@ import {
     CuratorCondition,
     getLatestAnsibleJob,
 } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
@@ -213,7 +213,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates && !props.cluster?.isHostedCluster) {
         // UPGRADE AVAILABLE
         return (
             <>

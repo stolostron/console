@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, ReactNode, Suspense, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../lib/acm-i18next'
