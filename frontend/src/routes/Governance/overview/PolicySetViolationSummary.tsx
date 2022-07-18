@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card } from '@patternfly/react-core'
-import { AcmDonutChart } from '@stolostron/ui-components'
+import { AcmDonutChart } from '../../../ui-components'
 import { useMemo } from 'react'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'

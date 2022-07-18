@@ -22,7 +22,7 @@ import {
     nockPatch,
 } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
     clickByPlaceholderText,
@@ -285,10 +285,10 @@ const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
     },
 }
 
-const Component = () => (
+const Component = (props: { initialEntryId?: string }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
-            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+            snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockGlobalManagedClusterSet])
             snapshot.set(clusterDeploymentsState, mockClusterDeployments)
             snapshot.set(managedClusterInfosState, [
                 ...mockManagedClusterInfos,
@@ -307,7 +307,12 @@ const Component = () => (
         }}
     >
         <MemoryRouter
-            initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+            initialEntries={[
+                NavigationPath.clusterSetDetails.replace(
+                    ':id',
+                    props.initialEntryId ? props.initialEntryId : mockManagedClusterSet.metadata!.name!
+                ),
+            ]}
         >
             <Switch>
                 <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
@@ -358,9 +363,34 @@ const mockGroup = {
     users: [],
 }
 
+const mockGlobalClusterRoleBinding: ClusterRoleBinding = {
+    apiVersion: RbacApiVersion,
+    kind: ClusterRoleBindingKind,
+    metadata: {
+        name: 'cluster-set-binding',
+        uid: '88723604-037e-4e42-9f46-13839752b3be',
+    },
+    subjects: [
+        {
+            kind: 'User',
+            apiGroup: 'rbac.authorization.k8s.io',
+            name: 'mock-user',
+        },
+    ],
+    roleRef: {
+        apiGroup: 'rbac.authorization.k8s.io',
+        kind: 'ClusterRole',
+        name: `open-cluster-management:managedclusterset:admin:${mockGlobalManagedClusterSet.metadata.name!}`,
+    },
+}
+
 describe('ClusterSetDetails page', () => {
     beforeEach(async () => {
-        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+        ]
         nockIgnoreRBAC()
         render(<Component />)
         await waitForNocks(getNocks)
@@ -481,7 +511,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await waitForText('mock-user')
         await clickByLabel('Actions', 0)
@@ -496,7 +526,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await clickByText('Add user or group')
         await waitForText(
@@ -533,7 +563,7 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('Access management')
+        await clickByText('User management', 0)
         await waitForNocks([nock])
         await clickByText('Add user or group')
         await waitForText(
@@ -589,6 +619,7 @@ describe('ClusterSetDetails error', () => {
         </RecoilRoot>
     )
     test('renders error page when cluster set does not exist', async () => {
+        nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('Not found')
     })
@@ -617,6 +648,7 @@ describe('ClusterSetDetails deletion', () => {
         </RecoilRoot>
     )
     test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
+        nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('test-cluster-set is being deleted.')
     })
@@ -624,7 +656,11 @@ describe('ClusterSetDetails deletion', () => {
 
 describe('ClusterSetDetails page without Submariner', () => {
     beforeEach(async () => {
-        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+        ]
         nockIgnoreRBAC()
         render(
             <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
@@ -638,5 +674,28 @@ describe('ClusterSetDetails page without Submariner', () => {
         await waitForText('Details')
 
         await waitForNotText('Submariner add-ons')
+    })
+})
+
+describe('ClusterSetDetails page global clusterset', () => {
+    beforeEach(async () => {
+        const getNocks = [
+            nockClusterList(mockUser, [mockUser]),
+            nockClusterList(mockGroup, [mockGroup]),
+            nockClusterList(mockGlobalClusterRoleBinding, [mockGlobalClusterRoleBinding]),
+        ]
+        nockIgnoreRBAC()
+        render(
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+                <Component initialEntryId={mockGlobalManagedClusterSet.metadata.name!} />
+            </PluginContext.Provider>
+        )
+        await waitForNocks(getNocks)
+    })
+    test('does not render Submariner, Cluster pools or Discovered clusters tab', async () => {
+        await waitForText(mockGlobalManagedClusterSet.metadata.name!, true)
+        await waitForNotText('Submariner add-ons')
+        await waitForNotText('Managed clusters')
+        await waitForNotText('Cluster pools')
     })
 })

@@ -1,14 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import React, { Fragment, useReducer, useEffect, useState } from 'react'
-import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmModal, AcmButton, AcmForm, AcmTextInput, AcmTextArea, AcmAlert } from '@stolostron/ui-components'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { SavedSearchesDocument, useSaveSearchMutation, UserSearch } from '../../search-sdk/search-sdk'
-import { searchClient } from '../../search-sdk/search-client'
-import SuggestQueryTemplates from '../SuggestedQueryTemplates'
 import { makeStyles } from '@material-ui/styles'
+import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '../../../../../ui-components'
+import { Fragment, useEffect, useReducer, useState } from 'react'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import {
+    createUserPreference,
+    patchUserPreference,
+    SavedSearch,
+    UserPreference,
+} from '../../../../../resources/userpreference'
+import SuggestQueryTemplates from '../SuggestedQueryTemplates'
 
 type IState = {
     searchName: string
@@ -31,30 +35,28 @@ const useStyles = makeStyles({
     },
 })
 
-export const SaveAndEditSearchModal = (props: any) => {
+export const SaveAndEditSearchModal = (props: {
+    savedSearch: SavedSearch | undefined
+    onClose: () => void
+    setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
+    savedSearchQueries: SavedSearch[]
+    userPreference?: UserPreference
+}) => {
+    const { savedSearch, onClose, setSelectedSearch, savedSearchQueries, userPreference } = props
     const { t } = useTranslation()
     const [state, dispatch] = useReducer(reducer, initState)
     const { searchName, searchDesc } = state
-    const [saveSearchMutation, { error }] = useSaveSearchMutation({ client: searchClient })
-    const [isError, setIsError] = useState<boolean>(false)
+    const [updateError, setUpdateError] = useState<string | undefined>()
     const [isNameConflict, setIsNameConflict] = useState<boolean>(false)
     const classes = useStyles()
 
     useEffect(() => {
-        dispatch({ field: 'searchName', value: props.editSearch?.name ?? '' })
-        dispatch({ field: 'searchDesc', value: props.editSearch?.description ?? '' })
+        dispatch({ field: 'searchName', value: savedSearch?.name ?? '' })
+        dispatch({ field: 'searchDesc', value: savedSearch?.description ?? '' })
         return () => {
             setIsNameConflict(false)
         }
-    }, [props.editSearch])
-
-    useEffect(() => {
-        dispatch({ field: 'searchName', value: '' })
-        dispatch({ field: 'searchDesc', value: '' })
-        return () => {
-            setIsNameConflict(false)
-        }
-    }, [props.saveSearch])
+    }, [savedSearch])
 
     function reducer(state: IState, { field, value }: ActionType) {
         return {
@@ -64,13 +66,13 @@ export const SaveAndEditSearchModal = (props: any) => {
     }
 
     function onChange(value: string, e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) {
-        const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as UserSearch[])
-        const allSavedQueryNames = [...suggestedQueryTemplates, ...props.savedSearchQueries].map(
-            (savedQuery: UserSearch) => savedQuery.name?.toLowerCase() || ''
+        const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
+        const allSavedQueryNames = [...suggestedQueryTemplates, ...savedSearchQueries].map(
+            (savedQuery: SavedSearch) => savedQuery.name?.toLowerCase() || ''
         )
         if (
             allSavedQueryNames.includes(value.toLowerCase()) &&
-            props.editSearch?.name.toLowerCase() !== value.toLowerCase()
+            savedSearch?.name.toLowerCase() !== value.toLowerCase()
         ) {
             setIsNameConflict(true)
         } else if (isNameConflict) {
@@ -79,51 +81,79 @@ export const SaveAndEditSearchModal = (props: any) => {
         dispatch({ field: e.currentTarget.name, value: value })
     }
 
-    function SaveSearch() {
-        const id = props.editSearch ? props.editSearch.id : Date.now().toString()
-        const searchText = props.editSearch ? props.editSearch.searchText : props.saveSearch
-        props.editSearch ?? props.setSelectedSearch(searchName)
-        saveSearchMutation({
-            variables: {
-                resource: {
+    function setRequestError(err: any) {
+        if (err && err.message) {
+            setUpdateError(err.message)
+        } else {
+            setUpdateError('There was an error while performing the delete request.')
+        }
+    }
+
+    function CreateUpdateSavedSearch() {
+        const id = savedSearch && savedSearch.id ? savedSearch.id : Date.now().toString()
+        const searchText = (savedSearch && savedSearch.searchText) ?? ''
+        setUpdateError(undefined)
+        if (!userPreference) {
+            createUserPreference([
+                {
                     id: id,
                     name: searchName,
                     description: searchDesc,
                     searchText: searchText,
                 },
-            },
-            refetchQueries: [{ query: SavedSearchesDocument }],
-        }).then((res) => {
-            if (res.errors) {
-                setIsError(true)
-                return null
-            }
-            props.onClose()
-            return null
-        })
+            ])
+                .then(() => {
+                    props.onClose()
+                    setSelectedSearch(searchName)
+                })
+                .catch((err) => {
+                    setRequestError(err)
+                })
+        } else {
+            patchUserPreference(userPreference, 'replace', {
+                id: id,
+                name: searchName,
+                description: searchDesc,
+                searchText: searchText,
+            })
+                .promise.then(() => props.onClose())
+                .catch((err) => {
+                    setRequestError(err)
+                })
+        }
     }
 
     const isSubmitDisabled = () => {
-        return state.searchName === '' || (!props.editSearch && props.saveSearch === '') || isNameConflict
+        return state.searchName === '' || !savedSearch || isNameConflict
     }
 
     return (
         <Fragment>
             <AcmModal
                 variant={ModalVariant.small}
-                isOpen={props.editSearch !== undefined || props.saveSearch !== undefined}
+                isOpen={savedSearch !== undefined}
                 title={t('Save search')}
-                onClose={props.onClose}
+                onClose={() => {
+                    onClose()
+                    setUpdateError(undefined)
+                }}
                 actions={[
                     <AcmButton
                         isDisabled={isSubmitDisabled()}
                         key="confirm"
                         variant={ButtonVariant.primary}
-                        onClick={SaveSearch}
+                        onClick={CreateUpdateSavedSearch}
                     >
                         {t('Save')}
                     </AcmButton>,
-                    <AcmButton key="cancel" variant={ButtonVariant.link} onClick={props.onClose}>
+                    <AcmButton
+                        key="cancel"
+                        variant={ButtonVariant.link}
+                        onClick={() => {
+                            onClose()
+                            setUpdateError(undefined)
+                        }}
+                    >
                         {t('Cancel')}
                     </AcmButton>,
                 ]}
@@ -133,7 +163,7 @@ export const SaveAndEditSearchModal = (props: any) => {
                         {t('Name your search and provide a description so that you can access it in the future.')}
                     </p>
                 }
-                {props.saveSearch === '' && !props.editSearch && (
+                {!savedSearch && (
                     <AcmAlert
                         noClose
                         variant={'danger'}
@@ -142,14 +172,13 @@ export const SaveAndEditSearchModal = (props: any) => {
                         subtitle={t('Enter search text')}
                     />
                 )}
-                {isError && <AcmAlert noClose variant={'danger'} title={error!.message} />}
+                {updateError && <AcmAlert noClose variant={'danger'} title={updateError} />}
                 {isNameConflict && (
                     <AcmAlert
                         isInline
                         noClose
                         variant={'warning'}
                         title={t(
-                            // TODO - Handle interpolation
                             'A saved search query is already using the name {{searchName}}. Please choose a different name.',
                             { searchName }
                         )}

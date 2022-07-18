@@ -23,7 +23,7 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext, AcmDrawerProps } from '@stolostron/ui-components'
+import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

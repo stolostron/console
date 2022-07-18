@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Fragment } from 'react'
+import { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import {
     Button,
@@ -22,7 +22,7 @@ const PAGE_SIZES = {
     VALUES: [10, 20, 50, 75, 100],
 }
 
-class DetailsTable extends React.Component {
+class DetailsTable extends Component {
     static propTypes = {
         handleOpen: PropTypes.func,
         id: PropTypes.string,

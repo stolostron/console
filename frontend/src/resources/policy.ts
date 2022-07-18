@@ -2,6 +2,7 @@
 import { IResourceDefinition } from '.'
 import { Metadata } from './metadata'
 import { ResourceRef } from './resource-ref'
+import { MatchExpressions } from './selector'
 
 export const PolicyApiVersion = 'policy.open-cluster-management.io/v1'
 export type PolicyApiVersionType = 'policy.open-cluster-management.io/v1'
@@ -37,7 +38,12 @@ export interface PolicyTemplate {
         kind: string
         metadata: { name: string }
         spec: {
-            namespaceSelector: { exclude?: string[]; include?: string[] }
+            namespaceSelector?: {
+                exclude?: string[]
+                include?: string[]
+                matchLabels?: Record<string, string>
+                matchExpressions?: MatchExpressions[]
+            }
             objecttemplates?: {
                 complianceType: string
                 objectDefinition: {

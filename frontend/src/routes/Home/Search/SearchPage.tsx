@@ -14,29 +14,27 @@ import {
     AcmPage,
     AcmScrollable,
     AcmSearchbar,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import _ from 'lodash'
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { userPreferencesState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
+import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
-import {
-    useGetMessagesQuery,
-    UserSearch,
-    useSavedSearchesQuery,
-    useSearchCompleteQuery,
-    useSearchSchemaQuery,
-} from './search-sdk/search-sdk'
+import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
-
+const savedSearches = 'Saved searches'
 const useStyles = makeStyles({
     actionGroup: {
         backgroundColor: 'var(--pf-global--BackgroundColor--100)',
@@ -54,19 +52,20 @@ const useStyles = makeStyles({
 // Adds AcmAlert to page if there's errors from the Apollo queries.
 function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
     const { t } = useTranslation()
+    const notEnabled = 'not enabled'
     if (schemaError || completeError) {
         return (
             <div style={{ marginBottom: '1rem' }}>
                 <AcmAlert
                     noClose
                     variant={
-                        schemaError?.message.includes('not enabled') || completeError?.message.includes('not enabled')
+                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
                             ? 'info'
                             : 'danger'
                     }
                     isInline
                     title={
-                        schemaError?.message.includes('not enabled') || completeError?.message.includes('not enabled')
+                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
                             ? t('search.filter.info.title')
                             : t('search.filter.errors.title')
                     }
@@ -75,19 +74,21 @@ function HandleErrors(schemaError: ApolloError | undefined, completeError: Apoll
             </div>
         )
     }
+    return <Fragment />
 }
 
 function RenderSearchBar(props: {
     searchQuery: string
-    setCurrentQuery: React.Dispatch<React.SetStateAction<string>>
     setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
     queryErrors: boolean
     setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
-    savedSearchQueries: UserSearch[]
+    savedSearchQueries: SavedSearch[]
+    userPreference?: UserPreference
 }) {
-    const { searchQuery, setCurrentQuery, queryErrors, setQueryErrors, savedSearchQueries, setSelectedSearch } = props
+    const { searchQuery, queryErrors, savedSearchQueries, setQueryErrors, setSelectedSearch, userPreference } = props
     const { t } = useTranslation()
-    const [saveSearch, setSaveSearch] = useState<string>()
+    const [saveSearch, setSaveSearch] = useState<SavedSearch>()
+    const history = useHistory()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const searchSchemaResults = useSearchSchemaQuery({
@@ -126,9 +127,10 @@ function RenderSearchBar(props: {
             <PageSection>
                 <SaveAndEditSearchModal
                     setSelectedSearch={setSelectedSearch}
-                    saveSearch={saveSearch}
+                    savedSearch={saveSearch}
                     onClose={() => setSaveSearch(undefined)}
                     savedSearchQueries={savedSearchQueries}
+                    userPreference={userPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
                 {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
@@ -152,17 +154,23 @@ function RenderSearchBar(props: {
                                   )
                         }
                         currentQueryCallback={(newQuery) => {
-                            setCurrentQuery(newQuery)
-                            updateBrowserUrl(newQuery)
+                            updateBrowserUrl(history, newQuery)
                             if (newQuery !== searchQuery) {
-                                setSelectedSearch('Saved searches')
+                                setSelectedSearch(savedSearches)
                             }
                         }}
                         toggleInfoModal={toggle}
                     />
                     <AcmButton
                         style={{ marginLeft: '1rem' }}
-                        onClick={() => setSaveSearch(searchQuery)}
+                        onClick={() =>
+                            setSaveSearch({
+                                id: '',
+                                name: '',
+                                description: '',
+                                searchText: searchQuery,
+                            })
+                        }
                         isDisabled={searchQuery === ''}
                     >
                         {t('Save search')}
@@ -176,38 +184,35 @@ function RenderSearchBar(props: {
 function RenderDropDownAndNewTab(props: {
     selectedSearch: string
     setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
-    setCurrentQuery: React.Dispatch<React.SetStateAction<string>>
-    savedSearchQueries: UserSearch[]
+    savedSearchQueries: SavedSearch[]
 }) {
-    const { selectedSearch, setSelectedSearch, setCurrentQuery, savedSearchQueries } = props
+    const { selectedSearch, setSelectedSearch, savedSearchQueries } = props
     const classes = useStyles()
     const { t } = useTranslation()
+    const history = useHistory()
 
     const SelectQuery = useCallback(
         (id: string) => {
             if (id === 'savedSearchesID') {
-                setCurrentQuery('')
-                updateBrowserUrl('')
-                setSelectedSearch('Saved searches')
+                updateBrowserUrl(history, '')
+                setSelectedSearch(savedSearches)
             } else {
-                const selectedQuery = savedSearchQueries!.filter((query) => query!.id === id)
-                setCurrentQuery(selectedQuery[0]!.searchText || '')
-                updateBrowserUrl(selectedQuery[0]!.searchText || '')
-                setSelectedSearch(selectedQuery[0]!.name || '')
+                const selectedQuery = savedSearchQueries.filter((query) => query.id === id)
+                updateBrowserUrl(history, selectedQuery[0].searchText || '')
+                setSelectedSearch(selectedQuery[0].name || '')
             }
         },
-        [savedSearchQueries, setCurrentQuery, setSelectedSearch]
+        [history, savedSearchQueries, setSelectedSearch]
     )
 
-    function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: UserSearch[] }) {
-        const { savedSearchQueries, selectedSearch } = props
+    function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: SavedSearch[] }) {
         const dropdownItems: any[] = useMemo(() => {
-            const items: any[] = savedSearchQueries.map((query) => {
-                return { id: query!.id, text: query!.name }
+            const items: any[] = props.savedSearchQueries.map((query) => {
+                return { id: query.id, text: query.name }
             })
-            items.unshift({ id: 'savedSearchesID', text: 'Saved searches' })
+            items.unshift({ id: 'savedSearchesID', text: savedSearches })
             return items
-        }, [savedSearchQueries])
+        }, [props.savedSearchQueries])
 
         return (
             <div className={classes.dropdown}>
@@ -217,7 +222,7 @@ function RenderDropDownAndNewTab(props: {
                     onSelect={(id) => {
                         SelectQuery(id)
                     }}
-                    text={selectedSearch}
+                    text={props.selectedSearch}
                     dropdownItems={dropdownItems}
                     isKebab={false}
                 />
@@ -254,27 +259,27 @@ export default function SearchPage() {
         prefillSearchQuery: searchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
-    const [currentQuery, setCurrentQuery] = useState(searchQuery)
-    const [selectedSearch, setSelectedSearch] = useState('Saved searches')
+    const [userPreferences] = useRecoilState(userPreferencesState)
+    const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
+    const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
 
     useEffect(() => {
-        setCurrentQuery(currentQuery)
-    }, [currentQuery])
+        getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
+    }, [userPreferences])
+
+    const userSavedSearches = useMemo(() => {
+        return userPreference?.spec?.savedSearches ?? []
+    }, [userPreference])
+
     useEffect(() => {
         if (searchQuery === '') {
-            setSelectedSearch('Saved searches')
+            setSelectedSearch(savedSearches)
         }
     }, [searchQuery])
 
     const query = convertStringToQuery(searchQuery)
-
-    const { data } = useSavedSearchesQuery({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    })
-    const savedSearchQueries = (data?.items as UserSearch[]) ?? ([] as UserSearch[])
-
     const msgQuery = useGetMessagesQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
@@ -282,7 +287,7 @@ export default function SearchPage() {
         if (msgQuery.data?.messages) {
             setQueryMessages(msgQuery.data?.messages)
         }
-    }, [queryMessages, msgQuery])
+    }, [msgQuery.data])
 
     return (
         <AcmPage
@@ -292,8 +297,7 @@ export default function SearchPage() {
                     <RenderDropDownAndNewTab
                         selectedSearch={selectedSearch}
                         setSelectedSearch={setSelectedSearch}
-                        setCurrentQuery={setCurrentQuery}
-                        savedSearchQueries={savedSearchQueries}
+                        savedSearchQueries={userSavedSearches}
                     />
                 </div>
             }
@@ -302,21 +306,24 @@ export default function SearchPage() {
                 <RenderSearchBar
                     setSelectedSearch={setSelectedSearch}
                     searchQuery={searchQuery}
-                    setCurrentQuery={setCurrentQuery}
                     queryErrors={queryErrors}
                     setQueryErrors={setQueryErrors}
-                    savedSearchQueries={savedSearchQueries}
+                    savedSearchQueries={userSavedSearches}
+                    userPreference={userPreference}
                 />
-                {!queryErrors ? (
-                    searchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
+                {!queryErrors &&
+                    (searchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
                         <SearchResults
                             currentQuery={searchQuery}
                             preSelectedRelatedResources={preSelectedRelatedResources}
                         />
                     ) : (
-                        <SavedSearchQueries setSelectedSearch={setSelectedSearch} setCurrentQuery={setCurrentQuery} />
-                    )
-                ) : null}
+                        <SavedSearchQueries
+                            savedSearches={userSavedSearches}
+                            setSelectedSearch={setSelectedSearch}
+                            userPreference={userPreference}
+                        />
+                    ))}
             </AcmScrollable>
         </AcmPage>
     )

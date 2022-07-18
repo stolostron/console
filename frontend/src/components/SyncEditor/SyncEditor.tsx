@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
@@ -14,7 +14,7 @@ import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 
-export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
+export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
     variant?: string
     editorTitle?: string
     code?: string

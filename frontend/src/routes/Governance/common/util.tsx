@@ -23,7 +23,7 @@ import {
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
-import { IAlertContext } from '@stolostron/ui-components'
+import { IAlertContext } from '../../../ui-components'
 
 export interface PolicyCompliance {
     policyName: string

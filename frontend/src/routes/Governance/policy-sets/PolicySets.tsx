@@ -8,7 +8,7 @@ import {
     ToolbarGroup,
     ToolbarItem,
 } from '@patternfly/react-core'
-import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
+import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

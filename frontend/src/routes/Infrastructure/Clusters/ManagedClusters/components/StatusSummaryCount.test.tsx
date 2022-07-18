@@ -124,6 +124,7 @@ const mockCluster: Cluster = {
     isHive: false,
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
 }

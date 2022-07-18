@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection } from '@patternfly/react-core'
-import { AcmDrawerContext } from '@stolostron/ui-components'
+import { AcmDrawerContext } from '../../../../ui-components'
 import { cloneDeep } from 'lodash'
 import { useContext, useEffect, useState } from 'react'
 import Topology from '../../../../components/Topology/Topology'

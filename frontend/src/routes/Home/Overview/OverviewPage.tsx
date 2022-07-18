@@ -15,7 +15,7 @@ import {
     AcmScrollable,
     AcmSummaryList,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -24,26 +24,37 @@ import {
     applicationsState,
     argoApplicationsState,
     managedClusterInfosState,
-    managedClustersState,
     policyreportState,
     usePolicies,
 } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { getProvider, ManagedClusterInfo, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import {
+    Cluster,
+    ClusterStatus,
+    ManagedClusterInfo,
+    Policy,
+    PolicyReport,
+    PolicyReportResults,
+} from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../Search/search-sdk/search-sdk'
 
-function getClusterSummary(clusters: any, selectedCloud: string, setSelectedCloud: Dispatch<SetStateAction<string>>) {
+function getClusterSummary(
+    clusters: Cluster[],
+    selectedCloud: string,
+    setSelectedCloud: Dispatch<SetStateAction<string>>
+) {
     const clusterSummary = clusters.reduce(
-        (prev: any, curr: any) => {
+        (prev: any, curr: Cluster) => {
             // Data for Providers section.
             // Get cloud label. If not available set to Other until the label is present.
-            const cloudLabel = curr.metadata?.labels?.cloud || 'Other'
-            const cloud = getProvider(curr) || Provider.other
+            const cloudLabel = curr?.labels?.cloud || 'Other'
+            const cloud = curr.provider || Provider.other
             const provider = prev.providers.find((p: any) => p.provider === cloud)
             if (provider) {
                 provider.clusterCount = provider.clusterCount + 1
@@ -70,19 +81,13 @@ function getClusterSummary(clusters: any, selectedCloud: string, setSelectedClou
             // Collect stats if cluster matches selected cloud filter. Defaults to all.
             if (selectedCloud === '' || selectedCloud === cloud) {
                 // Data for Summary section.
-                prev.clusterNames.add(curr.metadata.name)
-                prev.kubernetesTypes.add(curr.metadata.labels.vendor ?? 'Other')
-                prev.regions.add(curr.metadata.labels.region ?? 'Other')
+                prev.clusterNames.add(curr.name)
+                prev.kubernetesTypes.add(curr.labels?.vendor ?? 'Other')
+                prev.regions.add(curr.labels?.region ?? 'Other')
 
-                const clusterConditions = _.get(curr, 'status.conditions') || []
-                const isReady =
-                    _.get(
-                        clusterConditions.find((c: any) => c.type === 'ManagedClusterConditionAvailable'),
-                        'status'
-                    ) === 'True'
-
+                const clusterStatus: ClusterStatus = curr.status
                 // Data for Cluster status pie chart.
-                if (isReady) {
+                if (clusterStatus === 'ready') {
                     prev.ready = prev.ready + 1
                 } else {
                     prev.offline = prev.offline + 1
@@ -200,13 +205,11 @@ function PageActions() {
 
 export default function OverviewPage() {
     const { t } = useTranslation()
-    const [managedClusters] = useRecoilState(managedClustersState)
     const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
     const [policyReports] = useRecoilState(policyreportState)
     const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
-    const [clusters, setClusters] = useState<any[]>([])
     const [selectedCloud, setSelectedCloud] = useState<string>('')
     const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
     const [summaryData, setSummaryData] = useState<any>({
@@ -216,10 +219,17 @@ export default function OverviewPage() {
         offline: 0,
         providers: [],
     })
-
-    if (!_.isEqual(clusters, managedClusters || [])) {
-        setClusters(managedClusters || [])
-    }
+    const allClusters: Cluster[] = useAllClusters()
+    const clusters: Cluster[] = useMemo(() => {
+        return allClusters.filter((cluster) => {
+            // don't show clusters in cluster pools in table
+            if (cluster.hive.clusterPool) {
+                return cluster.hive.clusterClaimName !== undefined
+            } else {
+                return true
+            }
+        })
+    }, [allClusters])
 
     const nonCompliantClusters = useMemo(() => {
         const nonCompliantClustersSet = new Set<string>()
@@ -236,8 +246,8 @@ export default function OverviewPage() {
     }, [policies, selectedClusterNames])
 
     const compliantClusters = useMemo(() => {
-        const tempClusters =
-            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.metadata?.name)
+        const tempClusters: string[] =
+            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((c) => c.name ?? '')
         return tempClusters.filter((c) => !nonCompliantClusters.has(c))
     }, [selectedClusterNames, clusters, nonCompliantClusters])
 
@@ -282,49 +292,35 @@ export default function OverviewPage() {
     const { policyReportCriticalCount, policyReportImportantCount, policyReportModerateCount, policyReportLowCount } =
         useMemo(() => {
             const clustersToSearch: string[] =
-                selectedClusterNames.length > 0
-                    ? selectedClusterNames
-                    : clusters.map((cluster) => cluster.metadata.name)
+                selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.name ?? '')
             const policyReportsForSelectedClusters = policyReports.filter((policyReport: PolicyReport) =>
                 clustersToSearch.find((clusterName: string) => clusterName === policyReport.scope?.name)
             )
 
-            const policyReportCriticalCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const criticalResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '4'
-                    )
-                    return total + criticalResults.length
-                },
-                0
-            )
-            const policyReportImportantCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const importantResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '3'
-                    )
-                    return total + importantResults.length
-                },
-                0
-            )
-            const policyReportModerateCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const moderateResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '2'
-                    )
-                    return total + moderateResults.length
-                },
-                0
-            )
-            const policyReportLowCount = policyReportsForSelectedClusters.reduce(
-                (total: number, currentValue: PolicyReport) => {
-                    const lowResults = currentValue.results.filter(
-                        (result: PolicyReportResults) => result.properties.total_risk === '1'
-                    )
-                    return total + lowResults.length
-                },
-                0
-            )
+            let policyReportCriticalCount = 0
+            let policyReportImportantCount = 0
+            let policyReportModerateCount = 0
+            let policyReportLowCount = 0
+            policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
+                policyReport.results.forEach((result: PolicyReportResults) => {
+                    if (result.source === 'insights') {
+                        switch (result.properties.total_risk) {
+                            case '4':
+                                policyReportCriticalCount++
+                                break
+                            case '3':
+                                policyReportImportantCount++
+                                break
+                            case '2':
+                                policyReportModerateCount++
+                                break
+                            case '1':
+                                policyReportLowCount++
+                                break
+                        }
+                    }
+                })
+            })
 
             return {
                 policyReportCriticalCount,
@@ -363,10 +359,10 @@ export default function OverviewPage() {
                 href: buildSummaryLinks('application', true),
             },
             {
-                isLoading: !managedClusters,
+                isLoading: !clusters,
                 isPrimary: false,
                 description: 'Clusters',
-                count: selectedClusterNames.length > 0 ? selectedClusterNames.length : managedClusters.length || 0,
+                count: selectedClusterNames.length > 0 ? selectedClusterNames.length : clusters.length || 0,
                 href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
             },
             {
@@ -401,8 +397,8 @@ export default function OverviewPage() {
         argoApps,
         buildSummaryLinks,
         cloudLabelFilter,
+        clusters,
         kubernetesTypes?.size,
-        managedClusters,
         nodeCount,
         regions?.size,
         searchError,

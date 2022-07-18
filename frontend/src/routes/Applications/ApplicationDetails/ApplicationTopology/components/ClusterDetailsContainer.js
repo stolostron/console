@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
 import PropTypes from 'prop-types'
 import {
     Select,
@@ -15,9 +14,10 @@ import {
     AccordionContent,
     AccordionToggle,
 } from '@patternfly/react-core'
+import { Component } from 'react'
 import { processResourceActionLink, getPercentage, inflateKubeValue, getAge } from '../helpers/diagram-helpers'
 
-class ClusterDetailsContainer extends React.Component {
+class ClusterDetailsContainer extends Component {
     static propTypes = {
         clusterDetailsContainerControl: PropTypes.shape({
             clusterDetailsContainerData: PropTypes.object,

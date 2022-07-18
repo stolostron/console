@@ -12,8 +12,8 @@
 'use strict'
 
 import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
-import React from 'react'
-import { AcmIcon, AcmIconVariant } from '@stolostron/ui-components'
+
+import { AcmIcon, AcmIconVariant } from '../../../../../ui-components'
 
 const prePostTasks = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ const prePostTasks = [
         id: 'perPostSection',
         type: 'section',
         title: 'creation.app.section.prePost',
-        overline: true,
+        subgroup: true,
         collapsable: true,
         collapsed: true,
         info: getSharedSubscriptionWarning,

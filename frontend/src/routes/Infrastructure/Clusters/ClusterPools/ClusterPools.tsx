@@ -23,7 +23,7 @@ import {
     AcmTable,
     IAcmTableButtonAction,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -297,7 +297,7 @@ export function ClusterPoolsTable(props: {
                         },
                     },
                     {
-                        header: t('table.clusters'),
+                        header: t('table.cluster.statuses'),
                         cell: (clusterPool: ClusterPool) => {
                             return <ClusterStatuses clusterPool={clusterPool} />
                         },

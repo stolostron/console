@@ -17,7 +17,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../resources'
-import { Provider } from '@stolostron/ui-components'
+import { Provider } from '../ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -34,11 +34,29 @@ export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     },
 }
 
+export const mockGlobalClusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'global',
+    },
+    spec: {},
+}
+
 export const mockManagedClusterSet: ManagedClusterSet = {
     apiVersion: ManagedClusterSetApiVersion,
     kind: ManagedClusterSetKind,
     metadata: {
         name: 'test-cluster-set',
+    },
+    spec: {},
+}
+
+export const mockGlobalManagedClusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'global',
     },
     spec: {},
 }

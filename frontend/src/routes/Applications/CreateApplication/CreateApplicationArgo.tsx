@@ -2,7 +2,7 @@
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
-import { AcmToastContext } from '@stolostron/ui-components'
+import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'

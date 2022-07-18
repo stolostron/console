@@ -10,7 +10,7 @@ import {
     AcmPageHeader,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import { TFunction } from 'i18next'
 import {
     createContext,

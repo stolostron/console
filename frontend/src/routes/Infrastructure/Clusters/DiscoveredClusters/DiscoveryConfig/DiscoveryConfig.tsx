@@ -26,7 +26,7 @@ import {
     AcmSubmit,
     AcmToastContext,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

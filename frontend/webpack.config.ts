@@ -12,11 +12,12 @@ import ReactRefreshTypeScript from 'react-refresh-typescript'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
+import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin';
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-
+    const locales = ['en']
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         resolve: {
             extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -77,6 +78,18 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
                 'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation'),
             }) as unknown as webpack.WebpackPluginInstance,
+            ...locales.map((locale) => {
+                return new MergeJsonWebpackPlugin({
+                    files: [
+                        `./public/locales/${locale}/translation.json`,
+                        `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
+                      ],
+                    output: {
+                        "fileName": `./multicloud/locales/${locale}/translation.json`
+                    },
+                    space: 4
+                })
+            }), 
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&

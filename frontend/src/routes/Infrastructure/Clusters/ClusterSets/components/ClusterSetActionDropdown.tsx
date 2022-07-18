@@ -5,6 +5,7 @@ import {
     ManagedClusterSet,
     ManagedClusterSetDefinition,
     ResourceErrorCode,
+    isGlobalClusterSet,
 } from '../../../../../resources'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -35,7 +36,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                 sort: 'name',
             },
             {
-                header: t('table.clusters'),
+                header: t('table.cluster.statuses'),
                 sort: 'status',
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
@@ -45,50 +46,62 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         [t]
     )
 
-    const actions = [
-        {
-            id: 'edit-bindings',
-            text: t('set.edit-bindings'),
-            click: () => setShowManagedClusterSetBindingModal(true),
-            isAriaDisabled: true,
-            rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'bind')],
-        },
-        {
-            id: 'manage-clusterSet-resources',
-            text: t('set.manage-resources'),
-            click: (managedClusterSet: ManagedClusterSet) => {
-                history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
+    const actions = useMemo(() => {
+        let actions = [
+            {
+                id: 'edit-bindings',
+                text: t('set.edit-bindings'),
+                click: () => setShowManagedClusterSetBindingModal(true),
+                isAriaDisabled: true,
+                rbac: [
+                    rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'bind'),
+                ],
             },
-            isAriaDisabled: true,
-            rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'join')],
-        },
-        {
-            id: 'delete-clusterSet',
-            text: t('set.delete'),
-            click: (managedClusterSet: ManagedClusterSet) => {
-                setModalProps({
-                    open: true,
-                    isDanger: true,
-                    icon: 'warning',
-                    title: t('bulk.title.deleteSet'),
-                    action: t('delete'),
-                    processing: t('deleting'),
-                    resources: [managedClusterSet],
-                    description: t('bulk.message.deleteSet'),
-                    columns: modalColumns,
-                    keyFn: (managedClusterSet) => managedClusterSet.metadata.name! as string,
-                    actionFn: deleteResource,
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                    confirmText: managedClusterSet.metadata.name!,
-                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                })
+            {
+                id: 'manage-clusterSet-resources',
+                text: t('set.manage-resources'),
+                click: (managedClusterSet: ManagedClusterSet) => {
+                    history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
+                },
+                isAriaDisabled: true,
+                rbac: [
+                    rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'join'),
+                ],
             },
-            isAriaDisabled: true,
-            rbac: [rbacDelete(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name)],
-        },
-    ]
+            {
+                id: 'delete-clusterSet',
+                text: t('set.delete'),
+                click: (managedClusterSet: ManagedClusterSet) => {
+                    setModalProps({
+                        open: true,
+                        isDanger: true,
+                        icon: 'warning',
+                        title: t('bulk.title.deleteSet'),
+                        action: t('delete'),
+                        processing: t('deleting'),
+                        resources: [managedClusterSet],
+                        description: t('bulk.message.deleteSet'),
+                        columns: modalColumns,
+                        keyFn: (managedClusterSet) => managedClusterSet.metadata.name! as string,
+                        actionFn: deleteResource,
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        confirmText: managedClusterSet.metadata.name!,
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+                isAriaDisabled: true,
+                rbac: [rbacDelete(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name)],
+            },
+        ]
+
+        if (isGlobalClusterSet(props.managedClusterSet)) {
+            actions = actions.filter((action) => action.id !== 'manage-clusterSet-resources')
+            actions = actions.filter((action) => action.id !== 'delete-clusterSet')
+        }
+        return actions
+    }, [history, modalColumns, props.managedClusterSet, t])
 
     return (
         <>

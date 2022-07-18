@@ -1,35 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Router } from 'react-router-dom'
-import { createBrowserHistory } from 'history'
-import { render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
+import { render, screen, waitFor } from '@testing-library/react'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
 import { wait } from '../../../../lib/test-util'
+import { SearchResultCountDocument } from '../search-sdk/search-sdk'
 import SavedSearchQueries from './SavedSearchQueries'
-import { SavedSearchesDocument, SearchResultCountDocument } from '../search-sdk/search-sdk'
 
 describe('SavedSearchQueries Page', () => {
     it('should render page with correct data', async () => {
         const mocks = [
-            {
-                request: {
-                    query: SavedSearchesDocument,
-                },
-                result: {
-                    data: {
-                        items: [
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                                __typename: 'userSearch',
-                            },
-                        ],
-                    },
-                },
-            },
             {
                 request: {
                     query: SearchResultCountDocument,
@@ -118,7 +100,17 @@ describe('SavedSearchQueries Page', () => {
         render(
             <Router history={createBrowserHistory()}>
                 <MockedProvider mocks={mocks}>
-                    <SavedSearchQueries setSelectedSearch={() => {}} setCurrentQuery={() => {}} />
+                    <SavedSearchQueries
+                        savedSearches={[
+                            {
+                                description: 'testSavedQueryDesc1',
+                                id: '1609811592984',
+                                name: 'testSavedQuery1',
+                                searchText: 'kind:pod',
+                            },
+                        ]}
+                        setSelectedSearch={() => {}}
+                    />
                 </MockedProvider>
             </Router>
         )

@@ -9,7 +9,14 @@ import {
     ManagedClusterSetBindingKind,
     resultsSettled,
 } from '../../../../../resources'
-import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmModal, AcmMultiSelect, AcmSubmit } from '@stolostron/ui-components'
+import {
+    AcmAlertContext,
+    AcmAlertGroup,
+    AcmForm,
+    AcmModal,
+    AcmMultiSelect,
+    AcmSubmit,
+} from '../../../../../ui-components'
 import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -67,6 +74,8 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             label={t('clusterSetBinding.edit.select.label')}
                             placeholder={t('clusterSetBinding.edit.select.placeholder')}
                             value={selectedNamespaces}
+                            menuAppendTo="parent"
+                            maxHeight="18em"
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
                         >
                             {namespaces.map((namespace) => {

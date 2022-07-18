@@ -224,6 +224,7 @@ export const subscriptionInputRed1 = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         clustersNames: ['braveman', 'braveman2'],
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
@@ -279,6 +280,7 @@ export const subscriptionInputYellow = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
         },
@@ -323,6 +325,7 @@ export const subscriptionGreenNotPlacedYellow = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
         },
@@ -1299,7 +1302,9 @@ export const appNoChannelRed = {
     cluster: null,
     clusterName: null,
     type: 'application',
-    specs: {},
+    specs: {
+        isDesign: true,
+    },
 }
 
 export const appNoChannelGreen = {
@@ -1308,6 +1313,7 @@ export const appNoChannelGreen = {
     clusterName: null,
     type: 'application',
     specs: {
+        isDesign: true,
         channels: ['aaa'],
     },
 }

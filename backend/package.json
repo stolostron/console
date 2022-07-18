@@ -11,7 +11,7 @@
         "tsc": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc -c green,blue,cyan,magenta",
-        "jest": "node --experimental-vm-modules node_modules/.bin/jest",
+        "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
         "eslint": "eslint src test --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src test",
@@ -20,11 +20,11 @@
     },
     "dependencies": {
         "abort-controller": "3.0.0",
-        "dotenv": "16.0.0",
+        "dotenv": "16.0.1",
         "event-stream": "4.0.1",
         "find-my-way": "5.6.0",
         "get-value": "3.0.1",
-        "got": "11.8.3",
+        "got": "11.8.5",
         "node-fetch": "2.6.7",
         "pino": "7.11.0",
         "pluralize": "8.0.0",
@@ -34,29 +34,30 @@
     },
     "devDependencies": {
         "@types/dotenv": "8.2.0",
-        "@types/eslint": "8.4.2",
+        "@types/eslint": "8.4.5",
         "@types/event-stream": "4.0.0",
         "@types/get-value": "3.0.2",
-        "@types/jest": "27.5.0",
-        "@types/node": "14.18.16",
-        "@types/node-fetch": "2.6.1",
+        "@types/jest": "27.5.2",
+        "@types/node": "14.18.22",
+        "@types/node-fetch": "2.6.2",
         "@types/pino": "7.0.4",
         "@types/pluralize": "0.0.29",
-        "@types/prettier": "2.6.0",
+        "@types/prettier": "2.6.3",
         "@types/raw-body": "2.3.0",
-        "@typescript-eslint/eslint-plugin": "5.22.0",
-        "@typescript-eslint/parser": "5.22.0",
-        "concurrently": "7.1.0",
-        "eslint": "8.15.0",
+        "@typescript-eslint/eslint-plugin": "5.30.6",
+        "@typescript-eslint/parser": "5.30.6",
+        "concurrently": "7.2.2",
+        "eslint": "8.20.0",
         "jest": "27.x.x",
-        "nock": "13.2.4",
-        "nodemon": "2.0.16",
-        "pino-zen": "2.0.5",
-        "prettier": "2.6.2",
-        "rollup": "2.72.1",
+        "jest-sonar-reporter": "^2.0.0",
+        "nock": "13.2.8",
+        "nodemon": "^2.0.19",
+        "pino-zen": "2.0.7",
+        "prettier": "2.7.1",
+        "rollup": "2.77.0",
         "ts-jest": "27.x.x",
-        "ts-node": "10.7.0",
-        "typescript": "4.6.4"
+        "ts-node": "10.9.1",
+        "typescript": "4.7.4"
     },
     "prettier": {
         "printWidth": 120,
@@ -76,7 +77,39 @@
         ],
         "moduleNameMapper": {
             "(\\.{1,2}/.*)\\.js$": "$1"
-        }
+        },
+        "testEnvironment": "node",
+        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "collectCoverage": true,
+        "coverageThreshold": {
+            "global": {
+                "branches": 0,
+                "functions": 0,
+                "lines": 0,
+                "statements": 0
+            }
+        },
+        "coverageReporters": [
+            "text",
+            "text-summary",
+            "html",
+            "lcov"
+        ],
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!**/node_modules/**"
+        ],
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "jsx",
+            "json",
+            "node"
+        ],
+        "watchPathIgnorePatterns": [
+            "coverage"
+        ]
     },
     "eslintConfig": {
         "parser": "@typescript-eslint/parser",
