@@ -356,7 +356,7 @@ export default function App() {
                         component: Automations,
                     },
                     {
-                        title: 'Infrastructure environments',
+                        title: 'Host inventory',
                         type: 'route',
                         route: NavigationPath.infraEnvironments,
                         component: InfraEnvironments,

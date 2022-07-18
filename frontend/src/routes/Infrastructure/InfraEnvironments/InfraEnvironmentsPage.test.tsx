@@ -88,7 +88,7 @@ describe('Infrastructure Environments page', () => {
     test('can render', async () => {
         render(<Component />)
 
-        await waitForText('Infrastructure environments', true)
+        await waitForText('Host inventory', true)
 
         // the top-level hint
         await waitForTestId('createInfraEnv')
