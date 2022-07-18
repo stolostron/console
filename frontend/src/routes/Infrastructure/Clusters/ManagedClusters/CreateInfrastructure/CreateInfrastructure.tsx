@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
-import { AcmIcon, AcmIconVariant, Provider } from '@stolostron/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
