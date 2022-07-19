@@ -38,13 +38,6 @@ import {
     QuestionCircleIcon,
     RedhatIcon,
 } from '@patternfly/react-icons'
-import {
-    AcmIcon,
-    AcmIconVariant,
-    AcmTablePaginationContextProvider,
-    AcmToastGroup,
-    AcmToastProvider,
-} from './ui-components'
 import { t } from 'i18next'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
@@ -60,7 +53,15 @@ import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
+import { fetchGet } from './resources'
 import { ThemeSwitcher } from './theme'
+import {
+    AcmIcon,
+    AcmIconVariant,
+    AcmTablePaginationContextProvider,
+    AcmToastGroup,
+    AcmToastProvider,
+} from './ui-components'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -122,9 +123,9 @@ function launchToOCP(urlSuffix: string, newTab: boolean) {
 
 function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
     if (process.env.NODE_ENV === 'test') return
-    api<{ gitVersion: string }>('/multicloud/version/')
-        .then(({ gitVersion }) => {
-            if (parseFloat(gitVersion.substr(1, 4)) >= 1.2) {
+    fetchGet<{ gitVersion: string }>('/multicloud/version')
+        .then((result) => {
+            if (parseFloat(result.data.gitVersion.substr(1, 4)) >= 1.2) {
                 switcherExists(true)
             } else {
                 switcherExists(false)

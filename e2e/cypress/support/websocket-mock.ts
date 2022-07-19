@@ -80,6 +80,15 @@ export function setupWebsocketMock() {
 
 export function websocketMockCreateResourceEvent(resource: IResource) {
     if (!Cypress.env('mock')) return
-
     websocketMockQueue.push(['ADDED', resource])
+}
+
+export function websocketMockModifyResourceEvent(resource: IResource) {
+    if (!Cypress.env('mock')) return
+    websocketMockQueue.push(['MODIFIED', resource])
+}
+
+export function websocketMockDeleteResourceEvent(resource: IResource) {
+    if (!Cypress.env('mock')) return
+    websocketMockQueue.push(['DELETED', resource])
 }

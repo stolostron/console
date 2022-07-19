@@ -10,6 +10,8 @@ import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
+const isMock = process.env.MOCK === 'true'
+
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
     abort: () => void
@@ -267,10 +269,16 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
+    // if (isMock) {
+    //     const createdResource = mockCreateResource(resource)
+    //     return {
+    //         promise: Promise.resolve(createdResource as unknown as ResultType),
+    //         abort: () => null,
+    //     }
+    // }
+
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (options?.dryRun) url += '?dryRun=All'
-
-    // socket.emit("post", url, resource)
     return postRequest<Resource, ResultType>(url, resource)
 }
 
@@ -563,6 +571,11 @@ export async function fetchRetry<T>(options: {
     headers?: Record<string, string>
     disableRedirectUnauthorizedLogin?: boolean
 }): Promise<{ headers: Headers; status: number; data: T }> {
+    if (isMock) {
+        const result = mockFetch(options) as Promise<{ headers: Headers; status: number; data: T }>
+        if (result !== undefined) return result
+    }
+
     let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
     let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
 
@@ -734,4 +747,25 @@ export async function fetchRetry<T>(options: {
         delay *= 2
         retries--
     }
+}
+
+function mockFetch(options: { method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'; url: string; data?: unknown }) {
+    let url = options.url
+    if (!url.includes('/multicloud')) return
+    url = url.slice(url.indexOf('/multicloud'))
+
+    switch (url) {
+        case '/multicloud/authenticated':
+            return Promise.resolve({ status: 200 })
+        case '/multicloud/username':
+            return Promise.resolve({ status: 200, data: { body: { username: 'MOCK' } } })
+        case '/multicloud/version':
+            return Promise.resolve({ status: 200, data: { gitVersion: 'v1.24.0+9546431' } })
+        case '/multicloud/console-links':
+            return Promise.resolve({ status: 200, data: { data: {} } })
+        case '/multicloud/proxy/search':
+            return Promise.resolve({ status: 200, data: { data: { searchResult: [{ items: [] }] } } })
+    }
+
+    return undefined
 }

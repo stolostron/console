@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { noop } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { io } from 'socket.io-client'
-import { noop } from 'lodash'
 import { LoadingPage } from './components/LoadingPage'
+import { eventQueue, resetEventQueue, ResourceEvent } from './data/event-queue'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -217,19 +218,6 @@ interface Settings {
     awsPrivateWizardStep?: 'enabled' | 'disabled'
 }
 
-interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
-    object: {
-        kind: string
-        apiVersion: string
-        metadata: {
-            name: string
-            namespace: string
-            resourceVersion: string
-        }
-    }
-}
-
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
     const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
@@ -394,20 +382,29 @@ export function LoadData(props: { children?: ReactNode }) {
     ])
 
     useEffect(() => {
-        const eventQueue: WatchEvent[] = []
+        resetEventQueue()
 
         function processEventQueue() {
             if (eventQueue.length === 0) return
 
             const resourceTypeMap = eventQueue?.reduce((resourceTypeMap, eventData) => {
-                const apiVersion = eventData.object.apiVersion
+                if (eventData.type === 'RESET') {
+                    setLoading(true)
+                    // TODO CLEAR DATA
+                    return resourceTypeMap
+                }
+                if (eventData.type === 'LOADED') {
+                    setLoading(false)
+                    return resourceTypeMap
+                }
+                const apiVersion = eventData.resource.apiVersion
                 const groupVersion = apiVersion.split('/')[0]
-                const kind = eventData.object.kind
+                const kind = eventData.resource.kind
                 if (!resourceTypeMap[groupVersion]) resourceTypeMap[groupVersion] = {}
                 if (!resourceTypeMap[groupVersion][kind]) resourceTypeMap[groupVersion][kind] = []
                 resourceTypeMap[groupVersion][kind].push(eventData)
                 return resourceTypeMap
-            }, {} as Record<string, Record<string, WatchEvent[]>>)
+            }, {} as Record<string, Record<string, ResourceEvent[]>>)
             eventQueue.length = 0
 
             for (const groupVersion in resourceTypeMap) {
@@ -421,14 +418,14 @@ export function LoadData(props: { children?: ReactNode }) {
                                 for (const watchEvent of watchEvents) {
                                     const index = newResources.findIndex(
                                         (resource) =>
-                                            resource.metadata?.name === watchEvent.object.metadata.name &&
-                                            resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                                            resource.metadata?.name === watchEvent.resource.metadata!.name &&
+                                            resource.metadata?.namespace === watchEvent.resource.metadata!.namespace
                                     )
                                     switch (watchEvent.type) {
                                         case 'ADDED':
                                         case 'MODIFIED':
-                                            if (index !== -1) newResources[index] = watchEvent.object
-                                            else newResources.push(watchEvent.object)
+                                            if (index !== -1) newResources[index] = watchEvent.resource
+                                            else newResources.push(watchEvent.resource)
                                             break
                                         case 'DELETED':
                                             if (index !== -1) newResources.splice(index, 1)
@@ -447,16 +444,16 @@ export function LoadData(props: { children?: ReactNode }) {
         socket.on('connect', () => {
             console.debug('websocket', 'connect')
             socket.on('ADDED', (resource: IResource) => {
-                eventQueue.push({ type: 'ADDED', object: resource as any })
+                eventQueue.push({ type: 'ADDED', resource: resource as any })
             })
             socket.on('MODIFIED', (resource: IResource) => {
-                eventQueue.push({ type: 'MODIFIED', object: resource as any })
+                eventQueue.push({ type: 'MODIFIED', resource: resource as any })
                 if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
                     setSettings((resource as ConfigMap).data as Settings)
                 }
             })
             socket.on('DELETED', (resource: IResource) => {
-                eventQueue.push({ type: 'DELETED', object: resource as any })
+                eventQueue.push({ type: 'DELETED', resource: resource as any })
             })
             socket.on('LOADED', () => {
                 setLoading(false)
@@ -494,10 +491,7 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
         function checkLoggedIn() {
-            fetch(`${getBackendUrl()}/authenticated`, {
-                credentials: 'include',
-                headers: { accept: 'application/json' },
-            })
+            fetchGet(`${getBackendUrl()}/authenticated`)
                 .then((res) => {
                     switch (res.status) {
                         case 200:

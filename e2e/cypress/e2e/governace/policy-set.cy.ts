@@ -2,6 +2,7 @@
 /// <reference types="cypress" />
 
 import crypto from 'crypto'
+import { IResource } from '../../support/websocket-mock'
 
 describe('policy set', () => {
     const namespace: string = `cypress-${crypto.randomBytes(4).toString('hex')}`
@@ -55,7 +56,7 @@ describe('policy set', () => {
                 kind: 'PolicySet',
                 metadata: { name: policySetName, namespace },
                 spec: {},
-            },
+            } as IResource,
             { alias: 'createPolicySet' }
         )
         cy.mockCreateResource({
