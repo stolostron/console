@@ -38,6 +38,7 @@ const config: Config.InitialOptions = {
         '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         '<rootDir>/src/*.{tsx,ts,jsx,js}',
         '!<rootDir>/src/**/*.stories.tsx',
+        '!<rootDir>/src/ui-components/**/index.ts',
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',
