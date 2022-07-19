@@ -5,21 +5,6 @@ import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
 export const controlDataCIM = [
-    /////////////////////// ACM Credentials  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hybrid',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: false,
-        },
-        available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
@@ -37,6 +22,21 @@ export const controlDataCIM = [
         additionalProps: {
             promptSshPublicKey: false,
         },
+    },
+    /////////////////////// ACM Credentials  /////////////////////////////////////
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'hybrid',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: false,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
     },
     ...automationControlData,
     {

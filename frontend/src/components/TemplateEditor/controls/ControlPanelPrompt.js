@@ -28,7 +28,7 @@ class ControlPanelPrompt extends React.Component {
         const text = i18n(prompt)
 
         const createPopupWindow = () => {
-            window.open(`${window.location.origin}${url}`, `${id}`)
+            window.open(`${window.location.origin}${url}`, '_self')
         }
 
         return (

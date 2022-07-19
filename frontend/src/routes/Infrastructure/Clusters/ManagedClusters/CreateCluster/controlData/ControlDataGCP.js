@@ -257,21 +257,6 @@ export const getControlDataGCP = (includeAutomation = true, includeSno = false) 
 const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'gcp',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
@@ -311,6 +296,21 @@ const controlDataGCP = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'gcp',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        onSelect: onChangeConnection,
+        prompts: CREATE_CLOUD_CONNECTION,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
