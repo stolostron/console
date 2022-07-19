@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
-import { ClusterInstallationProgress } from 'openshift-assisted-ui-lib/cim'
+import { ClusterInstallationProgress, getSupportedCM } from 'openshift-assisted-ui-lib/cim'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { agentMachinesState, clusterImageSetsState, nodePoolsState } from '../../../../../../atoms'
+import { agentMachinesState, clusterImageSetsState, configMapsState, nodePoolsState } from '../../../../../../atoms'
 import { createResource, deleteResource, getResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { launchToOCP } from '../../../../../../lib/ocp-utils'
@@ -11,8 +11,8 @@ import { launchToOCP } from '../../../../../../lib/ocp-utils'
 const AIHypershiftClusterDetails: React.FC = () => {
     const { hostedCluster, agents } = useContext(ClusterContext)
 
-    const [nodePools, clusterImageSets, agentMachines] = useRecoilValue(
-        waitForAll([nodePoolsState, clusterImageSetsState, agentMachinesState])
+    const [nodePools, clusterImageSets, agentMachines, configMaps] = useRecoilValue(
+        waitForAll([nodePoolsState, clusterImageSetsState, agentMachinesState, configMapsState])
     )
 
     const clusterNodePools = nodePools.filter(
@@ -20,6 +20,8 @@ const AIHypershiftClusterDetails: React.FC = () => {
             np.metadata.namespace === hostedCluster?.metadata.namespace &&
             np.spec.clusterName === hostedCluster?.metadata.name
     )
+
+    const supportedVersionCM = getSupportedCM(configMaps)
 
     return (
         <>
@@ -38,6 +40,7 @@ const AIHypershiftClusterDetails: React.FC = () => {
                         onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches).promise}
                         onAddNodePool={(nodePool) => createResource(nodePool).promise}
                         launchToOCP={launchToOCP}
+                        supportedVersionCM={supportedVersionCM}
                     />
                 </AcmExpandableCard>
             </div>
