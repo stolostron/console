@@ -45,7 +45,6 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@stolostron/ui-components'
-import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
@@ -60,7 +59,6 @@ import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
-import { fetchGet, getBackendUrl } from './resources'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
