@@ -333,13 +333,6 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [])
 
     useEffect(() => {
-        function tokenExpired() {
-            if (process.env.NODE_ENV === 'production') {
-                window.location.reload()
-            } else {
-                window.location.href = `${backendUrl}/login`
-            }
-        }
         function checkLoggedIn() {
             fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
                 credentials: 'include',
@@ -367,6 +360,14 @@ export function LoadData(props: { children?: ReactNode }) {
     if (loading) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
+}
+
+export async function tokenExpired() {
+    if (process.env.NODE_ENV === 'production') {
+        logout()
+    } else {
+        window.location.href = `${backendUrl}/login`
+    }
 }
 
 export async function logout() {

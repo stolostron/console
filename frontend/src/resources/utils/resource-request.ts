@@ -3,6 +3,7 @@
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
+import { tokenExpired } from '../../atoms'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -328,7 +329,7 @@ export function fetchDelete(url: string, signal: AbortSignal) {
 export async function fetchRetry<T>(options: {
     method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'
     url: string
-    signal: AbortSignal
+    signal?: AbortSignal
     data?: unknown
     retries?: number
     delay?: number
@@ -366,7 +367,7 @@ export async function fetchRetry<T>(options: {
                 redirect: 'manual',
             })
         } catch (err) {
-            if (options.signal.aborted) {
+            if (options.signal?.aborted) {
                 throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
             }
 
@@ -415,11 +416,7 @@ export async function fetchRetry<T>(options: {
                 if (status.status !== 'Success') {
                     if (status.code === 401) {
                         // 401 is returned from kubernetes in a Status object if token is not valid
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
-                        }
+                        tokenExpired()
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
                         throw new ResourceError(status.message as string, status.code as number)
@@ -441,11 +438,7 @@ export async function fetchRetry<T>(options: {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
                     if (!options.disableRedirectUnauthorizedLogin) {
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
-                        }
+                        tokenExpired()
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
                 case 404:
