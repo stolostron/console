@@ -4,6 +4,7 @@ import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from '.'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { tokenExpired } from '../../atoms'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
@@ -661,11 +662,7 @@ export async function fetchRetry<T>(options: {
                 if (status.status !== 'Success') {
                     if (status.code === 401) {
                         // 401 is returned from kubernetes in a Status object if token is not valid
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${getBackendUrl()}/login`
-                        }
+                        tokenExpired()
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
                         throw new ResourceError(status.message as string, status.code as number)
@@ -687,11 +684,7 @@ export async function fetchRetry<T>(options: {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
                     if (!options.disableRedirectUnauthorizedLogin) {
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${getBackendUrl()}/login`
-                        }
+                        tokenExpired()
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
                 case 404:
