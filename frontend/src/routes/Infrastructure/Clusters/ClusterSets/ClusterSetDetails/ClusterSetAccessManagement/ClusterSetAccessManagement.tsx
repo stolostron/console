@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
 import {
     ClusterRoleBinding,
     ClusterRoleBindingKind,
@@ -8,6 +7,7 @@ import {
     createResource,
     deleteResource,
     Group,
+    isGlobalClusterSet,
     listClusterRoleBindings,
     listGroups,
     listUsers,
@@ -37,6 +37,8 @@ import {
     PageSection,
     Popover,
     SelectOption,
+    Split,
+    SplitItem,
     ToggleGroup,
     ToggleGroupItem,
 } from '@patternfly/react-core'
@@ -110,14 +112,19 @@ export function ClusterSetAccessManagement() {
                 cell: (clusterRoleBinding: ClusterRoleBinding) => {
                     if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`
+                        `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name}`
                     ) {
                         return t('access.clusterSet.role.admin')
                     } else if (
                         clusterRoleBinding.roleRef.name ===
-                        `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
+                        `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name}`
                     ) {
                         return t('access.clusterSet.role.view')
+                    } else if (
+                        clusterRoleBinding.roleRef.name ===
+                        `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name}`
+                    ) {
+                        return t('Cluster set bind')
                     }
                     return '-'
                 },
@@ -244,18 +251,6 @@ export function ClusterSetAccessManagement() {
     )
 }
 
-const useStyles = makeStyles({
-    container: {
-        display: 'flex',
-        '& .pf-c-form__group': {
-            flex: 1,
-        },
-        '& .pf-c-toggle-group': {
-            alignSelf: 'flex-end',
-        },
-    },
-})
-
 function AddUsersModal(props: {
     isOpen: boolean
     onClose: () => void
@@ -263,7 +258,6 @@ function AddUsersModal(props: {
     users?: User[]
     groups?: Group[]
 }) {
-    const classes = useStyles()
     const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [type, setType] = useState<'User' | 'Group'>('User')
@@ -298,6 +292,28 @@ function AddUsersModal(props: {
         setUserGroup(undefined)
     }
 
+    const roles = [
+        {
+            id: 'admin',
+            displayName: t('access.clusterSet.role.admin'),
+            role: `open-cluster-management:managedclusterset:admin:${clusterSet && clusterSet.metadata.name}`,
+        },
+        {
+            id: 'view',
+            displayName: t('access.clusterSet.role.view'),
+            role: `open-cluster-management:managedclusterset:view:${clusterSet && clusterSet.metadata.name}`,
+        },
+        {
+            id: 'bind',
+            displayName: t('Cluster set bind'),
+            role: `open-cluster-management:managedclusterset:bind:${clusterSet && clusterSet.metadata.name}`,
+        },
+    ]
+
+    const getUserRoles = () => {
+        return isGlobalClusterSet(clusterSet) ? roles.filter((userRole) => userRole.id !== 'admin') : roles
+    }
+
     return (
         <AcmModal variant={ModalVariant.medium} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
             <AcmForm style={{ gap: 0 }}>
@@ -306,43 +322,58 @@ function AddUsersModal(props: {
                         <>
                             <div>{t('access.add.message')}</div>
                             &nbsp;
-                            <div className={classes.container}>
-                                <AcmSelect
-                                    id="role"
-                                    variant="typeahead"
-                                    maxHeight="6em"
-                                    isRequired
-                                    label={t('access.add.userGroup')}
-                                    placeholder={type === 'User' ? t('access.select.user') : t('access.select.group')}
-                                    value={userGroup}
-                                    onChange={(userGroup) => setUserGroup(userGroup)}
-                                >
-                                    {type === 'User'
-                                        ? filteredUsers.map((item: User) => (
-                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                                                  {item.metadata.name}
-                                              </SelectOption>
-                                          ))
-                                        : filteredGroups.map((item: Group) => (
-                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                                                  {item.metadata.name}
-                                              </SelectOption>
-                                          ))}
-                                </AcmSelect>
-                                <ToggleGroup>
-                                    <ToggleGroupItem
-                                        text={t('access.users')}
-                                        buttonId="user"
-                                        isSelected={type === 'User'}
-                                        onChange={() => selectType('User')}
-                                    />
-                                    <ToggleGroupItem
-                                        text={t('access.groups')}
-                                        buttonId="group"
-                                        isSelected={type === 'Group'}
-                                        onChange={() => selectType('Group')}
-                                    />
-                                </ToggleGroup>
+                            <div>
+                                <div className="pf-c-form__group-label">
+                                    <span className="pf-c-form__label pf-c-form__label-text">
+                                        {t('access.add.userGroup')}
+                                    </span>
+                                    <span className="pf-c-form__label-required">*</span>
+                                </div>
+                                <Split hasGutter>
+                                    <SplitItem>
+                                        <ToggleGroup title="test">
+                                            <ToggleGroupItem
+                                                text={t('access.users')}
+                                                buttonId="user"
+                                                isSelected={type === 'User'}
+                                                onChange={() => selectType('User')}
+                                            />
+                                            <ToggleGroupItem
+                                                text={t('access.groups')}
+                                                buttonId="group"
+                                                isSelected={type === 'Group'}
+                                                onChange={() => selectType('Group')}
+                                            />
+                                        </ToggleGroup>
+                                    </SplitItem>
+                                    <SplitItem isFilled>
+                                        <AcmSelect
+                                            id="role"
+                                            variant="typeahead"
+                                            maxHeight="12em"
+                                            menuAppendTo="parent"
+                                            isRequired
+                                            label=""
+                                            placeholder={
+                                                type === 'User' ? t('access.select.user') : t('access.select.group')
+                                            }
+                                            value={userGroup}
+                                            onChange={(userGroup) => setUserGroup(userGroup)}
+                                        >
+                                            {type === 'User'
+                                                ? filteredUsers.map((item: User) => (
+                                                      <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                          {item.metadata.name}
+                                                      </SelectOption>
+                                                  ))
+                                                : filteredGroups.map((item: Group) => (
+                                                      <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                          {item.metadata.name}
+                                                      </SelectOption>
+                                                  ))}
+                                        </AcmSelect>
+                                    </SplitItem>
+                                </Split>
                             </div>
                             {type === 'Group' && (
                                 <GroupUsersPopover
@@ -352,7 +383,7 @@ function AddUsersModal(props: {
                             &nbsp;
                             <AcmSelect
                                 id="role"
-                                maxHeight="10em"
+                                maxHeight="12em"
                                 menuAppendTo="parent"
                                 isRequired
                                 label={t('access.add.role')}
@@ -360,22 +391,16 @@ function AddUsersModal(props: {
                                 value={role}
                                 onChange={(role) => setRole(role)}
                             >
-                                {[
-                                    {
-                                        displayName: t('access.clusterSet.role.admin'),
-                                        role: `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata
-                                            .name!}`,
-                                    },
-                                    {
-                                        displayName: t('access.clusterSet.role.view'),
-                                        role: `open-cluster-management:managedclusterset:view:${clusterSet!.metadata
-                                            .name!}`,
-                                    },
-                                ].map((role) => (
-                                    <SelectOption key={role.role} value={role.role} description={role.role}>
-                                        {role.displayName}
-                                    </SelectOption>
-                                ))}
+                                {clusterSet &&
+                                    getUserRoles().map((userRole) => (
+                                        <SelectOption
+                                            key={userRole.role}
+                                            value={userRole.role}
+                                            description={userRole.role}
+                                        >
+                                            {userRole.displayName}
+                                        </SelectOption>
+                                    ))}
                             </AcmSelect>
                             <AcmAlertGroup isInline canClose />
                             <ActionGroup>
