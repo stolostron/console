@@ -132,8 +132,7 @@ export function getClusterActions(cluster: Cluster) {
         !(
             cluster.provider === Provider.hybrid &&
             [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
-        ) ||
-        cluster.isSNOCluster
+        )
     ) {
         actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
     }
