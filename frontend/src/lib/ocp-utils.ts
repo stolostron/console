@@ -29,7 +29,7 @@ export function launchToOCP(urlSuffix: string, newTab: boolean) {
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
     if (process.env.NODE_ENV === 'test') return
-    fetchGet<{ gitVersion: string }>('/multicloud/version/')
+    fetchGet<{ gitVersion: string }>('/multicloud/version')
         .then((result) => {
             if (parseFloat(result.data.gitVersion.substr(1, 4)) >= 1.2) {
                 switcherExists(true)

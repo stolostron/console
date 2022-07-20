@@ -7,7 +7,6 @@
         "postinstall": "concurrently npm:ci:* -c green,blue,magenta",
         "ci:frontend": "cd frontend && npm ci",
         "ci:backend": "cd backend && npm ci",
-        "ci:testing": "cd testing && npm ci",
         "frontend:reinstall": "cd frontend && npm reinstall",
         "backend:reinstall": "cd backend && npm reinstall",
         "start": "concurrently npm:frontend npm:backend -n frontend,backend -c green,blue",

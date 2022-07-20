@@ -1,6 +1,6 @@
 cypress/screenshots
 cypress/videos
-test-report.xmlecho $?
+test-report.xml
 junit-reports/
 mochawesome-report/
 mochawesome-reports/
