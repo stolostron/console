@@ -2,7 +2,7 @@
 import { lstat, readdir, readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist']
+const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist', 'cypress_cache']
 
 var filesChanged = false
 
@@ -28,5 +28,5 @@ export async function fixCopyright(directory: string, extensions = ['.ts', '.tsx
 
 fixCopyright('.').then(() => {
     // exit code 1 if files change to block pre-commit
-    process.exit(filesChanged ? 1: 0)
+    process.exit(filesChanged ? 1 : 0)
 })

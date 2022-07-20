@@ -5,7 +5,7 @@ import { lstat, readdir } from 'fs/promises'
 import { join } from 'path'
 import readline from 'readline'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist']
+const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist', 'cypress_cache']
 
 async function checkFile(path: string) {
     try {
