@@ -18,7 +18,7 @@ jobs:
                   cache: 'npm'
                   cache-dependency-path: '**/package-lock.json'
             - run: npm ci
-            - run: npm run setup
+            # - run: npm run setup
             - run: cd testing && npm ci
             - run: cd testing && npm run e2e
             - uses: actions/upload-artifact@v3
