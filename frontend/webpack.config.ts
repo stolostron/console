@@ -85,7 +85,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                         `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
                       ],
                     output: {
-                        "fileName": `./multicloud/locales/${locale}/translation.json`
+                        "fileName": `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`
                     },
                     space: 4
                 })
@@ -94,7 +94,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
                 new CopyPlugin({
-                    patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html'] } }],
+                    patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html', '**/translation.json'] } }],
                 }),
             isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
             isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
