@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -17,6 +20,9 @@ import {
     ProjectRequest,
     ProjectRequestApiVersion,
     ProjectRequestKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
     Secret,
     SecretApiVersion,
     SecretKind,
@@ -26,6 +32,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+    clusterCuratorsState,
     discoveredClusterState,
     discoveryConfigState,
     managedClusterSetsState,
@@ -33,7 +40,14 @@ import {
 } from '../../../../../atoms'
 import { mockBadRequestStatus, nockCreate, nockGet, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
-import { clickByTestId, clickByText, typeByTestId, waitForNocks, waitForText } from '../../../../../lib/test-util'
+import {
+    clickBySelector,
+    clickByTestId,
+    clickByText,
+    typeByTestId,
+    waitForNocks,
+    waitForText,
+} from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
@@ -251,12 +265,100 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     },
 }
 
+const clusterCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'test',
+        namespace: 'test-ii',
+        labels: {
+            'open-cluster-management': 'curator',
+        },
+    },
+    spec: {
+        desiredCuration: undefined,
+        install: {
+            prehook: [
+                {
+                    name: 'test',
+                    extra_vars: {},
+                },
+            ],
+            towerAuthSecret: 'ansible-connection',
+        },
+    },
+}
+
+const mockClusterCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'foobar',
+        namespace: 'foobar',
+        labels: {
+            'open-cluster-management': 'curator',
+        },
+    },
+    spec: {
+        install: {
+            prehook: [
+                {
+                    name: 'test',
+                    extra_vars: {},
+                },
+            ],
+            towerAuthSecret: 'toweraccess-install',
+        },
+    },
+}
+
+const providerConnectionAnsible: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'ansible-connection',
+        namespace: 'test-ii',
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+        },
+    },
+    stringData: {
+        host: 'test',
+        token: 'test',
+    },
+    type: 'Opaque',
+}
+
+const mockProviderConnectionAnsibleCopied: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'toweraccess-install',
+        namespace: 'foobar',
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+            'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+            'cluster.open-cluster-management.io/backup': 'cluster',
+        },
+    },
+    stringData: {
+        host: 'test',
+        token: 'test',
+    },
+    type: 'Opaque',
+}
+
+const mockClusterCurators = [clusterCurator]
+
 describe('ImportCluster', () => {
     const Component = () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+                    snapshot.set(clusterCuratorsState, mockClusterCurators)
+                    snapshot.set(secretsState, [providerConnectionAnsible as Secret])
                 }}
             >
                 <AcmToastProvider>
@@ -290,10 +392,8 @@ describe('ImportCluster', () => {
         const kacNock = nockCreate(mockKac, mockKacResponse)
         const importSecretNock = nockGet(mockSecretResponse)
 
-        render(<Component />)
+        const { container } = render(<Component />)
 
-        // TODO REMOVE
-        await new Promise((resolve) => setTimeout(resolve, 500))
         await typeByTestId('clusterName', 'foobar')
 
         await clickByText('Select a cluster set')
@@ -301,13 +401,63 @@ describe('ImportCluster', () => {
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
 
-        // Advance to Review step and submit the form
+        // Advance to Automation step; choose automation template then clear
         await clickByText('Next')
+        await clickByText('Select an Ansible job template')
+        await clickByText(mockClusterCurators[0].metadata.name!)
+        await clickBySelector(container, '#templateName-label button[aria-label="Clear all"]')
+
+        // Advance to Review step and submit the form
         await clickByText('Next')
         await waitForText('Submit')
         await clickByText('Submit')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importSecretNock])
+    })
+
+    test('can create resources with ansible template', async () => {
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const mockCluster = JSON.parse(JSON.stringify(mockManagedCluster))
+        const mockClusterResponse = JSON.parse(JSON.stringify(mockManagedClusterResponse))
+        const mockKac = JSON.parse(JSON.stringify(mockKlusterletAddonConfig))
+        const mockKacResponse = JSON.parse(JSON.stringify(mockKlusterletAddonConfigResponse))
+        mockCluster.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockClusterResponse.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockKac.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockKacResponse.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        const managedClusterNock = nockCreate(mockCluster, mockClusterResponse)
+        const kacNock = nockCreate(mockKac, mockKacResponse)
+        const importSecretNock = nockGet(mockSecretResponse)
+        const ansibleCopiedNock = nockCreate(mockProviderConnectionAnsibleCopied)
+        const clusterCuratorNock = nockCreate(mockClusterCurator)
+
+        render(<Component />)
+
+        await typeByTestId('clusterName', 'foobar')
+
+        await clickByText('Select a cluster set')
+        await clickByText(mockManagedClusterSet.metadata.name!)
+        await clickByTestId('label-input-button')
+        await typeByTestId('additionalLabels', 'foo=bar{enter}')
+
+        // Advance to Automation step
+        await clickByText('Next')
+        await clickByText('Select an Ansible job template')
+        await clickByText(mockClusterCurators[0].metadata.name!)
+
+        // Advance to Review step and submit the form
+        await clickByText('Next')
+        await waitForText('Submit')
+        await clickByText('Submit')
+
+        await waitForNocks([
+            projectNock,
+            managedClusterNock,
+            kacNock,
+            importSecretNock,
+            ansibleCopiedNock,
+            clusterCuratorNock,
+        ])
     })
 
     test('can import without KlusterletAddonConfig for MCE', async () => {
