@@ -1026,6 +1026,18 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                         />
                     </StackItem>
                 ) : null}
+                {policyHasDeletePruneBehavior(props.item.policy) ? (
+                    <StackItem>
+                        <AcmAlert
+                            variant="warning"
+                            title={t('Some policies have the Prune parameter set.')}
+                            message={t(
+                                'Deleting this policy might delete some related objects on the managed cluster(s).'
+                            )}
+                            isInline
+                        />
+                    </StackItem>
+                ) : null}
                 {error && (
                     <StackItem>
                         <Alert variant="danger" title={error} isInline />
@@ -1034,4 +1046,16 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
             </Stack>
         </Modal>
     )
+}
+
+function policyHasDeletePruneBehavior(policy: Policy) {
+    if (policy.spec.disabled || policy.spec.remediationAction.endsWith('nform')) {
+        return false
+    }
+    return policy.spec['policy-templates']?.some((tmpl) => {
+        if (tmpl.objectDefinition.kind !== 'ConfigurationPolicy' || !tmpl.objectDefinition.spec.pruneObjectBehavior?.startsWith('Delete')) {
+            return false
+        }
+        return policy.spec.remediationAction.endsWith('nforce') || tmpl.objectDefinition.spec.remediationAction.endsWith('nforce')
+    })
 }
