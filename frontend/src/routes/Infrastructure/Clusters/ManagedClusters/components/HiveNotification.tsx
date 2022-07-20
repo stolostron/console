@@ -55,6 +55,10 @@ export function HiveNotification() {
         ClusterStatus.deprovisionfailed,
     ]
 
+    if (cluster?.provider === Provider.hypershift) {
+        return null
+    }
+
     if (!provisionStatuses.includes(/* istanbul ignore next */ cluster?.status ?? '')) {
         return null
     }

@@ -51,9 +51,9 @@ import { configure } from './lib/configure'
 import { DOC_HOME } from './lib/doc-util'
 import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
+import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
-import { fetchGet } from './resources'
 import { ThemeSwitcher } from './theme'
 import {
     AcmIcon,
@@ -94,49 +94,6 @@ interface IRouteGroup {
     type: 'group'
     title: string
     routes: IRoute[]
-}
-
-function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
-    return fetch(url, headers).then((response) => {
-        if (!response.ok) {
-            throw new Error(response.statusText)
-        }
-        return response.json() as Promise<T>
-    })
-}
-
-function launchToOCP(urlSuffix: string, newTab: boolean) {
-    api<{ data: { consoleURL: string } }>(
-        '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
-    )
-        .then(({ data }) => {
-            if (newTab) {
-                window.open(`${data.consoleURL}/${urlSuffix}`)
-            } else {
-                location.href = `${data.consoleURL}/${urlSuffix}`
-            }
-        })
-        .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error(error)
-        })
-}
-
-function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
-    if (process.env.NODE_ENV === 'test') return
-    fetchGet<{ gitVersion: string }>('/multicloud/version')
-        .then((result) => {
-            if (parseFloat(result.data.gitVersion.substr(1, 4)) >= 1.2) {
-                switcherExists(true)
-            } else {
-                switcherExists(false)
-            }
-        })
-        .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error(error)
-            switcherExists(false)
-        })
 }
 
 function UserDropdownToggle() {
@@ -683,7 +640,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                     isActive={!!route.routes.find((route) => location.pathname === route.route)}
                                 >
                                     {route.routes.map((route) => (
-                                        <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                        <NavItem key={route.route} isActive={location.pathname.startsWith(route.route)}>
                                             <Link id={route.id} to={route.route}>
                                                 {route.title}
                                             </Link>
@@ -691,7 +648,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                     ))}
                                 </NavExpandable>
                             ) : (
-                                <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                <NavItem key={route.route} isActive={location.pathname.startsWith(route.route)}>
                                     <Link id={route.id} to={route.route}>
                                         {route.title}
                                     </Link>

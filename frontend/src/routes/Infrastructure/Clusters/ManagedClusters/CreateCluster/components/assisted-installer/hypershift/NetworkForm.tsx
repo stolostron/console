@@ -1,16 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { HostedClusterNetworkStep, LoadingState } from 'openshift-assisted-ui-lib/cim'
 import { agentsState } from '../../../../../../../../atoms'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
+import isMatch from 'lodash/isMatch'
 
-import { onSaveAgent } from '../utils'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { Secret } from '../../../../../../../../resources'
-
-const { HostedClusterNetworkStep, LoadingState } = CIM
 
 type FormControl = {
     active: any
@@ -30,7 +28,8 @@ type NetworkFormProps = {
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, controlProps }) => {
-    const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking } = React.useContext(HypershiftAgentContext)
+    const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace } =
+        React.useContext(HypershiftAgentContext)
     const [agents] = useRecoilValue(waitForAll([agentsState]))
 
     const formRef = React.useRef<FormikProps<any>>(null)
@@ -109,18 +108,28 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, contro
     }
     */
 
-    const requestedAgentIDs =
-        nodePools?.reduce<string[]>((ids, nodePool) => {
-            ids.push(...(nodePool.autoSelectHosts ? nodePool.autoSelectedAgentIDs : nodePool.selectedAgentIDs))
-            return ids
-        }, []) || []
+    const { matchingAgents, count } = nodePools?.reduce<{ matchingAgents: string[]; count: number }>(
+        (acc, nodePool) => {
+            const labels = nodePool.agentLabels.reduce((acc, curr) => {
+                acc[curr.key] = curr.value
+                return acc
+            }, {} as { [key: string]: string })
+            const mAgents = agents.filter(
+                (a) => a.metadata.namespace === infraEnvNamespace && isMatch(a.metadata.labels || {}, labels)
+            )
+            acc.matchingAgents.push(...mAgents)
+            acc.count += nodePool.count
+            return acc
+        },
+        { matchingAgents: [], count: 0 }
+    ) || { matchingAgents: [], count: 0 }
 
     return agents ? (
         <HostedClusterNetworkStep
             formRef={formRef}
-            agents={agents.filter((a) => requestedAgentIDs.includes(a.metadata?.uid))}
+            agents={matchingAgents}
+            count={count}
             onValuesChanged={onValuesChanged}
-            onEditHostname={onSaveAgent}
             initAdvancedNetworking={isAdvancedNetworking}
             initSSHPublicKey={controlProps?.stringData?.['ssh-publickey']}
         />

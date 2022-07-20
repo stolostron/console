@@ -14,7 +14,7 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         /* istanbul ignore next */
         const map: { [key: string]: string } = {
             'install-config.yaml': cluster?.hive.secrets?.installConfig ?? '',
-            kubeconfig: cluster?.hive.secrets?.kubeconfig ?? '',
+            kubeconfig: cluster?.kubeconfig ?? '',
         }
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
@@ -40,7 +40,7 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
             isAriaDisabled: !props.canGetSecret,
             tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
         })
-    cluster?.hive.secrets?.kubeconfig &&
+    cluster?.kubeconfig &&
         dropdownItems.push({
             id: 'kubeconfig',
             text: 'kubeconfig',

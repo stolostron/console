@@ -32,11 +32,13 @@ import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
+    hostedClustersState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
+    nodePoolsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
@@ -74,6 +76,8 @@ export default function ClusterSetsPage() {
         certificateSigningRequests,
         managedClusterAddons,
         agentClusterInstalls,
+        hostedClusters,
+        nodePools,
     ] = useRecoilValue(
         waitForAll([
             managedClusterSetsState,
@@ -83,6 +87,8 @@ export default function ClusterSetsPage() {
             certificateSigningRequestsState,
             managedClusterAddonsState,
             agentClusterInstallsState,
+            hostedClustersState,
+            nodePoolsState,
         ])
     )
 
@@ -94,7 +100,9 @@ export default function ClusterSetsPage() {
         managedClusterAddons,
         undefined,
         undefined,
-        agentClusterInstalls
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools
     )
     clusters = clusters.filter((cluster) => cluster?.clusterSet)
 
