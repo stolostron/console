@@ -136,7 +136,7 @@ export default function SearchResults(props: { currentQuery: string; preSelected
         )
     }
 
-    if (error || !data || !data.searchResult) {
+    if (error) {
         return (
             <PageSection>
                 <AcmAlert
