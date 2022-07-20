@@ -610,13 +610,11 @@ describe('CreateCluster', () => {
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
+        await clickByText('Next')
 
         // connection
         await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
         await clickByText(providerConnectionAws.metadata.name!)
-        await clickByText('Next')
-
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
@@ -682,13 +680,11 @@ describe('CreateCluster', () => {
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
+        await clickByText('Next')
 
         // connection
         await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
         await clickByText(providerConnectionAws.metadata.name!)
-        await clickByText('Next')
-
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
@@ -755,13 +751,11 @@ describe('CreateCluster', () => {
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
+        await clickByText('Next')
 
         // connection
         await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
         await clickByText(providerConnectionAws.metadata.name!)
-        await clickByText('Next')
-
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
@@ -907,14 +901,12 @@ describe('CreateCluster', () => {
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
+        await clickByText('Next')
 
         // connection
         await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
-        await clickByText('Next')
-
         // step 2 -- the name and imageset
+        await clickByText(providerConnectionAws.metadata.name!)
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
