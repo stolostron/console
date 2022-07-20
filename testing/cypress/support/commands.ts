@@ -9,7 +9,7 @@ Cypress.Commands.add('multiselect', { prevSubject: 'element' }, (subject: JQuery
 })
 
 Cypress.Commands.add('login', () => {
-    // if (Cypress.env('mock')) return
+    if (Cypress.env('mock')) return
 
     cy.exec('oc whoami -t').then((result) => {
         cy.setCookie('acm-access-token-cookie', result.stdout)
