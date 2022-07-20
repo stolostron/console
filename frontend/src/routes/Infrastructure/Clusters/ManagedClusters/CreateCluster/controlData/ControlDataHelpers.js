@@ -193,9 +193,6 @@ export const setAvailableConnections = (control, secrets) => {
         control.isLoaded = true
     })
     control.available = connections.map((secret) => secret.metadata.name)
-    if (control.available.length) {
-        control.active = control.available[0]
-    }
 }
 
 export const setAvailableTemplates = (control, templates) => {
