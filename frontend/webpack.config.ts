@@ -85,7 +85,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                         `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
                       ],
                     output: {
-                        "fileName": `./multicloud/locales/${locale}/translation.json`
+                        "fileName": `./standalone/locales/${locale}/translation.json`
                     },
                     space: 4
                 })

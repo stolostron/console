@@ -20,7 +20,7 @@ i18n
     // init i18next
     .init({
         backend: {
-            loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
+            loadPath: '/standalone/locales/{{lng}}/{{ns}}.json',
         },
         compatibilityJSON: 'v3',
         fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
