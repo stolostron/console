@@ -1,3 +1,5 @@
+import { fetchGet } from '../resources'
+
 /* Copyright Contributors to the Open Cluster Management project */
 function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     return fetch(url, headers).then((response) => {
@@ -27,9 +29,9 @@ export function launchToOCP(urlSuffix: string, newTab: boolean) {
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
     if (process.env.NODE_ENV === 'test') return
-    api<{ gitVersion: string }>('/multicloud/version/')
-        .then(({ gitVersion }) => {
-            if (parseFloat(gitVersion.substr(1, 4)) >= 1.2) {
+    fetchGet<{ gitVersion: string }>('/multicloud/version/')
+        .then((result) => {
+            if (parseFloat(result.data.gitVersion.substr(1, 4)) >= 1.2) {
                 switcherExists(true)
             } else {
                 switcherExists(false)
