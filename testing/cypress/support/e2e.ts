@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import '@cypress/code-coverage/support'
 import './commands'
 
 declare global {

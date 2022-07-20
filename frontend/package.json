@@ -135,6 +135,8 @@
         "@typescript-eslint/parser": "5.30.6",
         "babel-jest": "28.1.1",
         "babel-loader": "8.2.5",
+        "babel-plugin-istanbul": "^6.1.1",
+        "babel-plugin-transform-class-properties": "^6.24.1",
         "browserify-fs": "1.0.0",
         "buffer": "6.0.3",
         "bundle-loader": "0.5.6",

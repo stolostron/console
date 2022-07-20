@@ -1,6 +1,8 @@
-screenshots
-videos
-junit-report
-junit-reports
-mochawesome-report
-mochawesome-reports
+cypress/screenshots
+cypress/videos
+junit-report/
+junit-reports/
+mochawesome-report/
+mochawesome-reports/
+# .nyc_output
+# coverage

@@ -4,19 +4,22 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "open": "cypress open --env mock=true",
         "cypress:open": "cypress open --env mock=true",
         "e2e": "concurrently npm:e2e:* --prefix-colors blue,cyan --kill-others --success first",
         "e2e:frontend": "cd ../frontend && npm run start:mock",
         "e2e:cypress": "npm run delete:reports && cypress run --env mock=true --config video=false",
         "pree2e": "npm run delete:reports",
-        "delete:reports": "rm mochawesome-report/* || true && rm junit-report/* || true",
+        "delete:reports": "rm -rf mochawesome-report mochawesome-reports junit-report junit-reports || true",
         "poste2e": "npm run combine:junit && npm run combine:mochawesome",
-        "combine:junit": "jrm junit-report/junit.xml junit-reports/*.xml && rm -rf junit-reports",
-        "combine:mochawesome": "mochawesome-merge mochawesome-reports/*.json > mochawesome-report/mochawesome.json && marge mochawesome-report/mochawesome.json && rm -rf mochawesome-reports"
+        "combine:junit": "mkdir junit-report || true && jrm junit-report/junit.xml junit-reports/*.xml && rm -rf junit-reports",
+        "combine:mochawesome": "mkdir mochawesome-report || true && mochawesome-merge mochawesome-reports/*.json > mochawesome-report/mochawesome.json && marge mochawesome-report/mochawesome.json && rm -rf mochawesome-reports",
+        "results": "open mochawesome-report/mochawesome.html"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@cypress/code-coverage": "^3.10.0",
         "concurrently": "^7.3.0",
         "cypress": "^10.3.0",
         "cypress-multi-reporters": "^1.6.1",
