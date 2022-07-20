@@ -1,10 +1,10 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ExpandableSection, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import {
     ClosedDeleteModalProps,
     DeleteResourceModal,
@@ -19,27 +19,12 @@ import RelatedResultsTiles from './RelatedResultsTiles'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
 
 function SearchResultTables(props: {
+    data: ISearchResult[]
     currentQuery: string
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
 }) {
-    const { currentQuery, setDeleteResource } = props
+    const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
-    const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    })
-
-    useEffect(() => {
-        if (!called) {
-            fireSearchQuery({
-                variables: { input: [convertStringToQuery(currentQuery)] },
-            })
-        } else {
-            refetch &&
-                refetch({
-                    input: [convertStringToQuery(currentQuery)],
-                })
-        }
-    }, [fireSearchQuery, currentQuery, called, refetch])
 
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
@@ -66,44 +51,8 @@ function SearchResultTables(props: {
         [currentQuery, setDeleteResource, t]
     )
 
-    if (loading) {
-        return (
-            <PageSection>
-                <AcmLoadingPage />
-            </PageSection>
-        )
-    }
-
-    if (error || !data || !data.searchResult) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={t('Error querying search results')}
-                    subtitle={error ? error.message : ''}
-                />
-            </PageSection>
-        )
-    }
-
-    const searchResultItems: ISearchResult[] = data.searchResult[0]?.items || []
-    if (searchResultItems.length === 0) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'info'}
-                    isInline={true}
-                    title={t('No results found for the current search criteria.')}
-                />
-            </PageSection>
-        )
-    }
-
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
-    for (const searchResultItem of searchResultItems) {
+    for (const searchResultItem of data) {
         const existing = kindSearchResultItems[searchResultItem.kind]
         if (!existing) {
             kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
@@ -115,7 +64,7 @@ function SearchResultTables(props: {
 
     return (
         <Fragment>
-            {searchResultItems.length >= 10000 ? (
+            {data.length >= 10000 ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}
@@ -159,6 +108,60 @@ export default function SearchResults(props: { currentQuery: string; preSelected
         const queryFilters = convertStringToQuery(currentQuery)
         return queryFilters.keywords.length > 0
     }, [currentQuery])
+
+    const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    })
+
+    useEffect(() => {
+        if (!called) {
+            fireSearchQuery({
+                variables: { input: [convertStringToQuery(currentQuery)] },
+            })
+        } else {
+            refetch &&
+                refetch({
+                    input: [convertStringToQuery(currentQuery)],
+                })
+        }
+    }, [fireSearchQuery, currentQuery, called, refetch])
+
+    const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
+
+    if (loading) {
+        return (
+            <PageSection>
+                <AcmLoadingPage />
+            </PageSection>
+        )
+    }
+
+    if (error || !data || !data.searchResult) {
+        return (
+            <PageSection>
+                <AcmAlert
+                    noClose={true}
+                    variant={'danger'}
+                    isInline={true}
+                    title={t('Error querying search results')}
+                    subtitle={error ? error.message : ''}
+                />
+            </PageSection>
+        )
+    }
+
+    if (searchResultItems.length === 0) {
+        return (
+            <PageSection>
+                <AcmAlert
+                    noClose={true}
+                    variant={'info'}
+                    isInline={true}
+                    title={t('No results found for the current search criteria.')}
+                />
+            </PageSection>
+        )
+    }
 
     return (
         <Fragment>
@@ -206,7 +209,11 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                     </ExpandableSection>
                 )}
             </PageSection>
-            <SearchResultTables currentQuery={currentQuery} setDeleteResource={setDeleteResource} />
+            <SearchResultTables
+                data={searchResultItems}
+                currentQuery={currentQuery}
+                setDeleteResource={setDeleteResource}
+            />
         </Fragment>
     )
 }

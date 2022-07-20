@@ -2,11 +2,11 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
 import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
+import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultCountQuery } from '../search-sdk/search-sdk'
@@ -53,9 +53,9 @@ export default function SavedSearchQueries(props: {
         return (
             <PageSection>
                 <AcmExpandableWrapper withCount={false} expandable={false}>
-                    <AcmCountCard loading />
-                    <AcmCountCard loading />
-                    <AcmCountCard loading />
+                    <AcmCountCard key={1} loading />
+                    <AcmCountCard key={2} loading />
+                    <AcmCountCard key={3} loading />
                 </AcmExpandableWrapper>
             </PageSection>
         )
@@ -148,7 +148,7 @@ export default function SavedSearchQueries(props: {
                     {suggestedQueryTemplates.map((query, index) => {
                         return (
                             <AcmCountCard
-                                key={parseInt(query.id)}
+                                key={index}
                                 cardHeader={{
                                     hasIcon: true,
                                     title: query.name,
