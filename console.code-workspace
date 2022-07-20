@@ -7,7 +7,7 @@
             "path": "backend"
         },
         {
-            "path": "e2e"
+            "path": "testing"
         }
     ],
     "settings": {
