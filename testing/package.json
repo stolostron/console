@@ -8,13 +8,15 @@
         "cypress:open": "cypress open --env mock=true",
         "e2e": "concurrently npm:e2e:* --prefix-colors blue,cyan --kill-others --success first",
         "e2e:frontend": "cd ../frontend && npm run start:mock",
-        "e2e:cypress": "npm run delete:reports && cypress run --env mock=true --config video=false",
-        "pree2e": "npm run delete:reports",
-        "delete:reports": "rm -rf mochawesome-report mochawesome-reports junit-report junit-reports || true",
+        "e2e:cypress": "npm run clean && cypress run --env mock=true --config video=false && npm run summary",
+        "pree2e": "npm run clean",
+        "clean": "rm -rf mochawesome-report mochawesome-reports junit-report junit-reports .nyc_output coverage || true",
         "poste2e": "npm run combine:junit && npm run combine:mochawesome",
         "combine:junit": "mkdir junit-report || true && jrm junit-report/junit.xml junit-reports/*.xml && rm -rf junit-reports",
         "combine:mochawesome": "mkdir mochawesome-report || true && mochawesome-merge mochawesome-reports/*.json > mochawesome-report/mochawesome.json && marge mochawesome-report/mochawesome.json && rm -rf mochawesome-reports",
-        "results": "open mochawesome-report/mochawesome.html"
+        "results": "open mochawesome-report/mochawesome.html",
+        "summary": "nyc report --report-dir ./coverage --temp-dir .nyc_output --reporter=text-summary --exclude-after-remap false",
+        "lcov": "open coverage/lcov-report/index.html"
     },
     "author": "",
     "license": "ISC",
@@ -28,5 +30,14 @@
         "mochawesome": "^7.1.3",
         "mochawesome-merge": "^4.2.1",
         "mochawesome-report-generator": "^6.2.0"
+    },
+    "nyc": {
+        "all": true,
+        "include": [
+            "../frontend/src/**/*.js",
+            "../frontend/src/**/*.jsx",
+            "../frontend/src/**/*.ts",
+            "../frontend/src/**/*.tsx"
+        ]
     }
 }

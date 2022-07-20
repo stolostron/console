@@ -5,5 +5,5 @@
         "@babel/preset-typescript",
         ["@babel/preset-env", { "modules": "auto" }]
     ],
-    "plugins": ["@babel/transform-runtime", "transform-class-properties", "istanbul"]
+    "plugins": ["@babel/transform-runtime"]
 }

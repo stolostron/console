@@ -6,13 +6,6 @@ import crypto from 'crypto'
 const namespace: string = `default`
 const policySetName = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
-describe('acm page', () => {
-    it('load page', () => {
-        cy.visit(`/`)
-        cy.get('.pf-c-page__main').contains('Red Hat', { timeout: 5 * 60 * 1000 })
-    })
-})
-
 describe('create policy set', () => {
     it('navigate to policy-set wizard', () => {
         cy.navigate('nav-governance', 'subnav-policy-sets')

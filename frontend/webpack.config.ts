@@ -60,14 +60,20 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
                     exclude: /node_modules/,
-                    loader: 'ts-loader',
-                    options: {
-                        configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
-                        transpileOnly: true,
-                        getCustomTransformers: () => ({
-                            before: [isDevelopment && ReactRefreshTypeScript()].filter(Boolean),
-                        }),
-                    },
+                    use: [
+                        'coverage-istanbul-loader',
+                        {
+                            loader: 'ts-loader',
+                            options: {
+                                configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+                                transpileOnly: true,
+                                getCustomTransformers: () => ({
+                                    before: [isDevelopment && ReactRefreshTypeScript()].filter(Boolean),
+                                }),
+                            },
+                        },
+                    ],
+
                     type: 'javascript/auto',
                 },
             ],
