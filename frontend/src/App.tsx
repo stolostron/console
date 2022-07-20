@@ -84,6 +84,7 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 interface IRoute {
     type: 'route'
+    id: string
     route: NavigationPath
     title: string
     component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
@@ -322,18 +323,21 @@ export default function App() {
                 routes: [
                     {
                         title: 'Welcome',
+                        id: 'nav-welcome',
                         type: 'route',
                         route: NavigationPath.welcome,
                         component: WelcomePage,
                     },
                     {
                         title: 'Overview',
+                        id: 'nav-overview',
                         type: 'route',
                         route: NavigationPath.overview,
                         component: OverviewPage,
                     },
                     {
                         title: 'Search',
+                        id: 'nav-search',
                         type: 'route',
                         route: NavigationPath.search,
                         component: Search,
@@ -346,18 +350,21 @@ export default function App() {
                 routes: [
                     {
                         title: 'Clusters',
+                        id: 'nav-clusters',
                         type: 'route',
                         route: NavigationPath.clusters,
                         component: Clusters,
                     },
                     {
                         title: 'Automation',
+                        id: 'nav-automation',
                         type: 'route',
                         route: NavigationPath.ansibleAutomations,
                         component: Automations,
                     },
                     {
                         title: 'Host inventory',
+                        id: 'nav-host-inventory',
                         type: 'route',
                         route: NavigationPath.infraEnvironments,
                         component: InfraEnvironments,
@@ -366,12 +373,14 @@ export default function App() {
             },
             {
                 title: 'Applications',
+                id: 'nav-applications',
                 type: 'route',
                 route: NavigationPath.applications,
                 component: Applications,
             },
             {
                 title: 'Governance',
+                id: 'nav-governance',
                 type: 'route',
                 route: NavigationPath.governance,
                 component: Governance,
@@ -379,6 +388,7 @@ export default function App() {
 
             {
                 title: 'Credentials',
+                id: 'nav-credentials',
                 type: 'route',
                 route: NavigationPath.credentials,
                 component: Credentials,
@@ -405,10 +415,14 @@ export default function App() {
                                     {routes.map((route) =>
                                         route.type === 'group' ? (
                                             route.routes.map((route) => (
-                                                <Route path={route.route} component={route.component} />
+                                                <Route
+                                                    key={route.route}
+                                                    path={route.route}
+                                                    component={route.component}
+                                                />
                                             ))
                                         ) : (
-                                            <Route path={route.route} component={route.component} />
+                                            <Route key={route.route} path={route.route} component={route.component} />
                                         )
                                     )}
                                     <Route path="*">
@@ -468,8 +482,11 @@ function AppHeader() {
                 .catch((error) => {
                     // eslint-disable-next-line no-console
                     console.error(error)
-                    setExtraItems({})
+                    // setExtraItems({})
                 })
+            return () => {
+                appLinks.abort()
+            }
         }, [])
 
         const extraMenuItems = []
@@ -667,13 +684,17 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                 >
                                     {route.routes.map((route) => (
                                         <NavItem key={route.route} isActive={location.pathname === route.route}>
-                                            <Link to={route.route}>{route.title}</Link>
+                                            <Link id={route.id} to={route.route}>
+                                                {route.title}
+                                            </Link>
                                         </NavItem>
                                     ))}
                                 </NavExpandable>
                             ) : (
                                 <NavItem key={route.route} isActive={location.pathname === route.route}>
-                                    <Link to={route.route}>{route.title}</Link>
+                                    <Link id={route.id} to={route.route}>
+                                        {route.title}
+                                    </Link>
                                 </NavItem>
                             )
                         )}

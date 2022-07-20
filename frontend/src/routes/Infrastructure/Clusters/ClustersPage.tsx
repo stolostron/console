@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import ClusterPoolsPage from './ClusterPools/ClusterPools'
 import ClusterSetsPage from './ClusterSets/ClusterSets'
 import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
@@ -62,18 +62,26 @@ export function ClustersPage() {
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.managedClusters)}
                             >
-                                <Link to={NavigationPath.clusters}>{t('Managed clusters')}</Link>
+                                <Link id="subnav-cluster-list" to={NavigationPath.clusters}>
+                                    {t('Managed clusters')}
+                                </Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
-                                <Link to={NavigationPath.clusterSets}>{t('Cluster sets')}</Link>
+                                <Link id="subnav-cluster-sets" to={NavigationPath.clusterSets}>
+                                    {t('Cluster sets')}
+                                </Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
-                                <Link to={NavigationPath.clusterPools}>{t('Cluster pools')}</Link>
+                                <Link id="subnav-cluster-pools" to={NavigationPath.clusterPools}>
+                                    {t('Cluster pools')}
+                                </Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                             >
-                                <Link to={NavigationPath.discoveredClusters}>{t('Discovered clusters')}</Link>
+                                <Link id="subnav-discovered-clusters" to={NavigationPath.discoveredClusters}>
+                                    {t('Discovered clusters')}
+                                </Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }

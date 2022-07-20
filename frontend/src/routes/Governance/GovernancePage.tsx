@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, ReactNode, Suspense, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
 import GovernanceOverview from './overview/Overview'
 import PoliciesPage from './policies/Policies'
@@ -31,17 +31,23 @@ export default function GovernancePage() {
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={isOverview}>
-                                <Link to={NavigationPath.governance}>{t('Overview')}</Link>
+                                <Link id="subnav-overview" to={NavigationPath.governance}>
+                                    {t('Overview')}
+                                </Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
                             >
-                                <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
+                                <Link id="subnav-policy-sets" to={NavigationPath.policySets}>
+                                    {t('Policy sets')}
+                                </Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
                             >
-                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
+                                <Link id="subnav-policies" to={NavigationPath.policies}>
+                                    {t('Policies')}
+                                </Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }

@@ -3,9 +3,10 @@ import { noop } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
-import { io } from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 import { LoadingPage } from './components/LoadingPage'
 import { eventQueue, resetEventQueue, ResourceEvent } from './data/event-queue'
+import { startMockCluster } from './data/mock-cluster'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -148,6 +149,9 @@ import {
     UserPreferenceApiVersion,
     UserPreferenceKind,
 } from './resources'
+
+const isMock = process.env.MOCK === 'true'
+
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -440,45 +444,51 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        const socket = io({ path: '/multicloud/socket.io' })
-        socket.on('connect', () => {
-            console.debug('websocket', 'connect')
-            socket.on('ADDED', (resource: IResource) => {
-                eventQueue.push({ type: 'ADDED', resource: resource as any })
+        let socket: Socket | undefined
+        if (!isMock) {
+            socket = io({ path: '/multicloud/socket.io' })
+            socket.on('connect', () => {
+                console.debug('websocket', 'connect')
+                socket?.on('ADDED', (resource: IResource) => {
+                    eventQueue.push({ type: 'ADDED', resource: resource as any })
+                })
+                socket?.on('MODIFIED', (resource: IResource) => {
+                    eventQueue.push({ type: 'MODIFIED', resource: resource as any })
+                    if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
+                        setSettings((resource as ConfigMap).data as Settings)
+                    }
+                })
+                socket?.on('DELETED', (resource: IResource) => {
+                    eventQueue.push({ type: 'DELETED', resource: resource as any })
+                })
+                socket?.on('LOADED', () => {
+                    setLoading(false)
+                })
             })
-            socket.on('MODIFIED', (resource: IResource) => {
-                eventQueue.push({ type: 'MODIFIED', resource: resource as any })
-                if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
-                    setSettings((resource as ConfigMap).data as Settings)
+            socket.on('error', () => {
+                console.debug('websocket', 'error')
+            })
+            socket.on('reconnect', () => {
+                console.debug('websocket', 'reconnect')
+            })
+            socket.on('disconnect', () => {
+                console.debug('websocket', 'disconnect')
+                setLoading(true)
+                for (const setter of Object.values(setters)) {
+                    for (const set of Object.values(setter)) {
+                        set([])
+                    }
                 }
             })
-            socket.on('DELETED', (resource: IResource) => {
-                eventQueue.push({ type: 'DELETED', resource: resource as any })
-            })
-            socket.on('LOADED', () => {
-                setLoading(false)
-            })
-        })
-        socket.on('error', () => {
-            console.debug('websocket', 'error')
-        })
-        socket.on('reconnect', () => {
-            console.debug('websocket', 'reconnect')
-        })
-        socket.on('disconnect', () => {
-            console.debug('websocket', 'disconnect')
-            setLoading(true)
-            for (const setter of Object.values(setters)) {
-                for (const set of Object.values(setter)) {
-                    set([])
-                }
-            }
-        })
+        } else {
+            setLoading(false)
+            startMockCluster()
+        }
 
         const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
-            socket.disconnect()
+            socket?.disconnect()
         }
     }, [setSettings, setters])
 

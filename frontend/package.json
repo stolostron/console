@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
+        "start:mock": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children --env mock=true",
         "storybook": "start-storybook -p 9000",
         "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc": "tsc --noEmit",

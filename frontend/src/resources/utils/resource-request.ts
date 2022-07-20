@@ -3,7 +3,14 @@
 import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from '.'
-import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import {
+    ApplicationKind,
+    NamespaceKind,
+    SelfSubjectAccessReviewKind,
+    SubscriptionApiVersion,
+    SubscriptionKind,
+} from '..'
+import { mockCreateResource, mockDeleteResource, mockGetResource, mockListResources } from '../../data/mock-cluster'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
@@ -269,13 +276,29 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    // if (isMock) {
-    //     const createdResource = mockCreateResource(resource)
-    //     return {
-    //         promise: Promise.resolve(createdResource as unknown as ResultType),
-    //         abort: () => null,
-    //     }
-    // }
+    if (isMock) {
+        if (resource.kind === SelfSubjectAccessReviewKind) {
+            return {
+                promise: Promise.resolve({ ...resource, status: { allowed: true } } as unknown as ResultType),
+                abort: () => null,
+            }
+        }
+
+        if (mockGetResource(resource)) {
+            throw new ResourceError('Conflict', ResourceErrorCode.Conflict)
+        }
+        if (!options?.dryRun) {
+            const createdResource = mockCreateResource(resource)
+            return {
+                promise: Promise.resolve(createdResource as unknown as ResultType),
+                abort: () => null,
+            }
+        }
+        return {
+            promise: Promise.resolve(resource as unknown as ResultType),
+            abort: () => null,
+        }
+    }
 
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (options?.dryRun) url += '?dryRun=All'
@@ -286,6 +309,9 @@ export function replaceResource<Resource extends IResource, ResultType = Resourc
     resource: Resource,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
+    if (isMock) {
+        throw new Error('replaceResource not implemented for mock mode')
+    }
     let url = getBackendUrl() + getResourceNameApiPath(resource)
     if (options?.dryRun) url += '?dryRun=All'
     return putRequest<Resource, ResultType>(url, resource)
@@ -296,6 +322,9 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     data: unknown,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
+    if (isMock) {
+        throw new Error('patchResource not implemented for mock mode')
+    }
     let url = getBackendUrl() + getResourceNameApiPath(resource)
     if (options?.dryRun) url += '?dryRun=All'
     const headers: Record<string, string> = {}
@@ -311,6 +340,19 @@ export function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: { dryRun?: boolean }
 ): IRequestResult {
+    if (isMock) {
+        if (!mockGetResource(resource)) {
+            throw new ResourceError('Not found', ResourceErrorCode.NotFound)
+        }
+        if (!options?.dryRun) {
+            mockDeleteResource(resource)
+        }
+        return {
+            promise: Promise.resolve(),
+            abort: () => null,
+        }
+    }
+
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     let url = getBackendUrl() + getResourceNameApiPath(resource)
@@ -363,6 +405,14 @@ export function listResources<Resource extends IResource>(
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
+    if (isMock) {
+        const resources = mockListResources(resource)
+        return {
+            promise: Promise.resolve(resources as Resource[]),
+            abort: () => null,
+        }
+    }
+
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
@@ -399,6 +449,14 @@ export function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     labels?: string[]
 ): IRequestResult<Resource[]> {
+    if (isMock) {
+        const resources = mockListResources(resource)
+        return {
+            promise: Promise.resolve(resources as Resource[]),
+            abort: () => null,
+        }
+    }
+
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
@@ -416,6 +474,14 @@ export function listNamespacedResources<Resource extends IResource>(
     },
     labels?: string[]
 ): IRequestResult<Resource[]> {
+    if (isMock) {
+        const resources = mockListResources(resource)
+        return {
+            promise: Promise.resolve(resources as Resource[]),
+            abort: () => null,
+        }
+    }
+
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
