@@ -17,6 +17,6 @@ before(() => {
         preserve: ['_csrf', '_oauth_proxy', 'acm-access-token-cookie'],
     })
     cy.login()
-    cy.visit(`/`)
+    cy.visit(`/`, { timeout: 5 * 60 * 1000 })
     cy.get('.pf-c-page__main').contains('Red Hat', { timeout: 5 * 60 * 1000 })
 })
