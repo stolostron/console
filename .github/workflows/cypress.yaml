@@ -7,19 +7,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            # - uses: redhat-actions/openshift-tools-installer@v1
-            #   with:
-            #       source: 'mirror'
-            #       oc: '4'
-            # - run: oc login --token ${{ secrets.TOKEN }} ${{ secrets.APISERVER }} --insecure-skip-tls-verify=true
             - uses: actions/setup-node@v2
               with:
                   node-version: '14'
                   cache: 'npm'
                   cache-dependency-path: '**/package-lock.json'
             - run: npm ci
-            # - run: npm run setup
-            - run: cd testing && npm ci
             - run: cd testing && npm run e2e
             - uses: actions/upload-artifact@v3
               if: failure()
