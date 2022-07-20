@@ -12,17 +12,6 @@ export const controlDataCIM = [
         type: 'step',
         title: 'Cluster details',
     },
-    {
-        id: 'ai',
-        type: 'custom',
-        component: <DetailsForm />,
-        providerId: 'ai',
-        mustValidate: true,
-        encodeValues: ['pullSecret'],
-        additionalProps: {
-            promptSshPublicKey: false,
-        },
-    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -37,6 +26,17 @@ export const controlDataCIM = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
+    },
+    {
+        id: 'ai',
+        type: 'custom',
+        component: <DetailsForm />,
+        providerId: 'ai',
+        mustValidate: true,
+        encodeValues: ['pullSecret'],
+        additionalProps: {
+            promptSshPublicKey: false,
+        },
     },
     ...automationControlData,
     {

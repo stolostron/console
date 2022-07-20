@@ -13,17 +13,6 @@ export const controlDataHypershift = [
         type: 'step',
         title: 'Cluster details',
     },
-    {
-        id: 'hypershift',
-        type: 'custom',
-        component: <DetailsForm />,
-        providerId: 'hypershift',
-        mustValidate: true,
-        encodeValues: ['pullSecret'],
-        additionalProps: {
-            promptSshPublicKey: false,
-        },
-    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -38,6 +27,17 @@ export const controlDataHypershift = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
+    },
+    {
+        id: 'hypershift',
+        type: 'custom',
+        component: <DetailsForm />,
+        providerId: 'hypershift',
+        mustValidate: true,
+        encodeValues: ['pullSecret'],
+        additionalProps: {
+            promptSshPublicKey: false,
+        },
     },
     {
         id: 'hypershiftHostsStep',

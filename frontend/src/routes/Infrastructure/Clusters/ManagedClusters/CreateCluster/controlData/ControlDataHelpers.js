@@ -193,6 +193,9 @@ export const setAvailableConnections = (control, secrets) => {
         control.isLoaded = true
     })
     control.available = connections.map((secret) => secret.metadata.name)
+    if (control.available.length) {
+        control.active = control.available[0]
+    }
 }
 
 export const setAvailableTemplates = (control, templates) => {
@@ -296,11 +299,6 @@ export function getOSTNetworkingControlData() {
 }
 
 export const clusterDetailsControlData = [
-    {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
     {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
