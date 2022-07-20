@@ -57,7 +57,7 @@ const Component = () => {
     )
 }
 
-describe('Edit AI Cluster', () => {
+describe.skip('Edit AI Cluster', () => {
     test('can be rendered', async () => {
         const nocks = [
             nockGet(pullSecretMock, pullSecretMock),

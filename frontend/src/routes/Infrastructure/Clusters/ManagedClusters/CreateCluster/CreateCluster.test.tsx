@@ -816,7 +816,7 @@ describe('CreateCluster', () => {
         await waitForNocks(createNocks)
     })
 
-    test(
+    test.skip(
         'can create On Premise cluster',
         async () => {
             const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]

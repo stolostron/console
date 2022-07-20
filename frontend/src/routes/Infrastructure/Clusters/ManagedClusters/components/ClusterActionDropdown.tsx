@@ -8,6 +8,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
+import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -18,6 +19,7 @@ import {
     ClusterDeployment,
     ClusterDeploymentDefinition,
     ClusterStatus,
+    HostedClusterDefinition,
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
@@ -45,6 +47,7 @@ export function getClusterActions(cluster: Cluster) {
         'destroy-cluster',
         'ai-edit',
         'ai-scale-up',
+        'destroy-hypershift-cluster',
     ]
 
     // ClusterCurator
@@ -117,6 +120,10 @@ export function getClusterActions(cluster: Cluster) {
         actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
     }
 
+    if (!cluster.isHypershift || cluster.status === ClusterStatus.destroying) {
+        actionIds = actionIds.filter((id) => id !== 'destroy-hypershift-cluster')
+    }
+
     if (cluster.provider !== Provider.hybrid) {
         actionIds = actionIds.filter((id) => id !== 'ai-edit')
     }
@@ -184,8 +191,14 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     )
 
     const destroyRbac = useMemo(
-        () => [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-        [cluster.name, cluster.namespace]
+        () => [
+            rbacDelete(
+                cluster.provider === Provider.hypershift ? HostedClusterDefinition : ClusterDeploymentDefinition,
+                cluster.namespace,
+                cluster.name
+            ),
+        ],
+        [cluster.name, cluster.namespace, cluster.provider]
     )
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
@@ -413,6 +426,32 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'ai-scale-up',
                 text: t('managed.ai.scaleUp'),
                 click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
+            },
+            {
+                id: 'destroy-hypershift-cluster',
+                text: t('managed.destroy'),
+                click: (cluster: Cluster) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.destroy'),
+                        action: t('destroy'),
+                        processing: t('destroying'),
+                        resources: [cluster],
+                        description: t('bulk.message.destroy'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => deleteHypershiftCluster(cluster),
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: cluster.displayName,
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+                isAriaDisabled: true,
+                rbac: destroyRbac,
             },
         ],
         [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
