@@ -5,6 +5,13 @@ import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
 export const controlDataCIM = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  AI form  /////////////////////////////////////
+    {
+        id: 'aiDetailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -19,13 +26,6 @@ export const controlDataCIM = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
-    },
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
-    {
-        id: 'aiDetailStep',
-        type: 'step',
-        title: 'Cluster details',
     },
     {
         id: 'ai',

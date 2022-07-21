@@ -297,11 +297,6 @@ export function getOSTNetworkingControlData() {
 
 export const clusterDetailsControlData = [
     {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
         placeholder: 'creation.ocp.name.placeholder',

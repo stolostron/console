@@ -27,6 +27,11 @@ const controlDataRHV = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',

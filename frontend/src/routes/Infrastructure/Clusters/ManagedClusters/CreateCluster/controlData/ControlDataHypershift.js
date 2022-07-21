@@ -6,6 +6,13 @@ import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
 export const controlDataHypershift = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  AI form  /////////////////////////////////////
+    {
+        id: 'hypershiftDetailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -20,13 +27,6 @@ export const controlDataHypershift = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
-    },
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
-    {
-        id: 'hypershiftDetailStep',
-        type: 'step',
-        title: 'Cluster details',
     },
     {
         id: 'hypershift',
