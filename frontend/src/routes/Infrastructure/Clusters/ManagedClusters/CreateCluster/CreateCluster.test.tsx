@@ -562,7 +562,7 @@ describe('CreateCluster', () => {
                     })
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -604,10 +604,6 @@ describe('CreateCluster', () => {
         const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -676,10 +672,6 @@ describe('CreateCluster', () => {
         const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
 
@@ -750,10 +742,6 @@ describe('CreateCluster', () => {
         const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -902,10 +890,6 @@ describe('CreateCluster', () => {
         )
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
