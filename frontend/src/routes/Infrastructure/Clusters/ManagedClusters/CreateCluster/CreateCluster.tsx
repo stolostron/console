@@ -345,10 +345,8 @@ export default function CreateClusterPage() {
     }
 
     function onControlChange(control: any) {
-        switch (control.id) {
-            case 'connection':
-                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-                break
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
         }
     }
 

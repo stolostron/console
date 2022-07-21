@@ -196,6 +196,7 @@ function reducer(state: State, action: Action): State {
         case 'setKubeconfig':
             return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
     }
+    return state
 }
 
 export default function ImportClusterPage() {
@@ -282,14 +283,13 @@ export default function ImportClusterPage() {
 
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
     const toggleDrawerExpanded = useCallback(() => {
-        setDrawerExpanded((drawerExpanded) => {
-            localStorage.setItem('yaml', (!drawerExpanded).toString())
-            return !drawerExpanded
+        setDrawerExpanded((expanded) => {
+            localStorage.setItem('yaml', (!expanded).toString())
+            return !expanded
         })
     }, [])
 
     function WizardSyncEditor() {
-        const { isACMAvailable } = useContext(PluginContext)
         const resources = useItem() // Wizard framework sets this context
         const { update } = useData() // Wizard framework sets this context
 
@@ -313,18 +313,20 @@ export default function ImportClusterPage() {
         return <WizardSyncEditor />
     }
 
+    const pageTitle = t('page.header.import-cluster')
+
     return (
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('page.header.import-cluster')}
+                    title={pageTitle}
                     breadcrumb={[
                         { text: t('Clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.import-cluster'), to: '' },
+                        { text: pageTitle, to: '' },
                     ]}
                     titleTooltip={
                         <>
-                            {t('page.header.import-cluster.tooltip')}
+                            {pageTitle}
                             <a
                                 href={DOC_LINKS.IMPORT_CLUSTER}
                                 target="_blank"
@@ -504,37 +506,39 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
     const mode = useDisplayMode()
 
     const managedCluster = resources.find((item) => item.kind === ManagedClusterKind) as ManagedCluster
-    const kac = resources.find((item) => item.kind === KlusterletAddonConfigKind) as KlusterletAddonConfig
+    const klusterletAddonConfig = resources.find(
+        (item) => item.kind === KlusterletAddonConfigKind
+    ) as KlusterletAddonConfig
 
     const syncLabels = useCallback(
-        (defaultLabels: Labels, managedClusterSet: string, additionalLabels: Labels) => {
+        (defaults: Labels, clusterSet: string, labels: Labels) => {
             managedCluster.metadata.labels = {
-                ...defaultLabels,
-                [managedClusterSetLabel]: managedClusterSet,
-                ...additionalLabels,
+                ...defaults,
+                [managedClusterSetLabel]: clusterSet,
+                ...labels,
             }
-            if (!managedClusterSet) {
+            if (!clusterSet) {
                 delete managedCluster.metadata.labels[managedClusterSetLabel]
             }
-            if (kac) {
-                kac.spec.clusterLabels = {
-                    ...defaultLabels,
-                    [managedClusterSetLabel]: managedClusterSet,
-                    ...additionalLabels,
+            if (klusterletAddonConfig) {
+                klusterletAddonConfig.spec.clusterLabels = {
+                    ...defaults,
+                    [managedClusterSetLabel]: clusterSet,
+                    ...labels,
                 }
-                if (!managedClusterSet) {
-                    delete kac.spec.clusterLabels[managedClusterSetLabel]
+                if (!clusterSet) {
+                    delete klusterletAddonConfig.spec.clusterLabels[managedClusterSetLabel]
                 }
             }
-            dispatch({ type: 'setManagedClusterSet', managedClusterSet })
-            dispatch({ type: 'setAdditionalLabels', additionalLabels })
+            dispatch({ type: 'setManagedClusterSet', managedClusterSet: clusterSet })
+            dispatch({ type: 'setAdditionalLabels', additionalLabels: labels })
             update()
         },
-        [dispatch, managedCluster, kac, update]
+        [dispatch, managedCluster, klusterletAddonConfig, update]
     )
 
     const onChangeAdditionalLabels = useCallback(
-        (additionalLabels: Labels) => syncLabels(defaultLabels, managedClusterSet, additionalLabels),
+        (labels: Labels) => syncLabels(defaultLabels, managedClusterSet, labels),
         [defaultLabels, managedClusterSet, syncLabels]
     )
 
@@ -566,7 +570,7 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
             label={controlLabel}
             buttonLabel={t('label.add')}
             value={additionalLabels}
-            onChange={(additionalLabels) => onChangeAdditionalLabels(additionalLabels as Labels)}
+            onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
             placeholder={t('labels.edit.placeholder')}
         />
     )
@@ -599,8 +603,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         [clusterName]
     )
 
-    const getImportModeDescription = (mode: ImportMode) => {
-        switch (mode) {
+    const getImportModeDescription = (m: ImportMode) => {
+        switch (m) {
             case ImportMode.manual:
                 return t('import.mode.manual')
             case ImportMode.token:
@@ -608,15 +612,16 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             case ImportMode.kubeconfig:
                 return t('import.mode.kubeconfig')
         }
+        return '-'
     }
 
     const onChangeImportMode = useCallback(
-        (importMode) => {
+        (m) => {
             const secretIndex = resources.findIndex(
                 (item) => item.kind === 'Secret' && item?.metadata?.name === secretName
             )
             const deleteCount = secretIndex >= 0 ? 1 : 0
-            switch (importMode) {
+            switch (m) {
                 case ImportMode.manual:
                     // Delete auto-import secret
                     if (deleteCount) {
@@ -638,7 +643,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     break
                 }
             }
-            dispatch({ type: 'setImportMode', importMode })
+            dispatch({ type: 'setImportMode', importMode: m })
             update()
         },
         [autoImportSecret, dispatch, kubeconfig, resources, server, token, update]
@@ -667,10 +672,10 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     }
                     isRequired
                 >
-                    {Object.values(ImportMode).map((mode) => {
+                    {Object.values(ImportMode).map((m) => {
                         return (
-                            <SelectOption key={mode} value={mode}>
-                                {getImportModeDescription(mode)}
+                            <SelectOption key={m} value={m}>
+                                {getImportModeDescription(m)}
                             </SelectOption>
                         )
                     })}
@@ -700,9 +705,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     path="stringData.server"
                     label={t('import.server')}
                     placeholder={t('import.server.place')}
-                    onValueChange={(server: any) =>
-                        dispatch({ type: 'setServer', server: (server as State['server']) ?? '' })
-                    }
+                    onValueChange={(s: any) => dispatch({ type: 'setServer', server: (s as State['server']) ?? '' })}
                     required={importMode === ImportMode.token}
                     hidden={() => importMode !== ImportMode.token}
                 />
@@ -711,9 +714,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     path="stringData.token"
                     label={t('import.token')}
                     placeholder={t('import.token.place')}
-                    onValueChange={(token: any) =>
-                        dispatch({ type: 'setToken', token: (token as State['token']) ?? '' })
-                    }
+                    onValueChange={(t: any) => dispatch({ type: 'setToken', token: (t as State['token']) ?? '' })}
                     secret
                     required={importMode === ImportMode.token}
                     hidden={() => importMode !== ImportMode.token}
@@ -723,8 +724,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                     path="stringData.kubeconfig"
                     label={t('import.auto.config.label')}
                     placeholder={t('import.auto.config.prompt')}
-                    onValueChange={(kubeconfig: any) =>
-                        dispatch({ type: 'setKubeconfig', kubeconfig: (kubeconfig as State['kubeconfig']) ?? '' })
+                    onValueChange={(k: any) =>
+                        dispatch({ type: 'setKubeconfig', kubeconfig: (k as State['kubeconfig']) ?? '' })
                     }
                     secret
                     required={importMode === ImportMode.kubeconfig}
@@ -749,7 +750,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
     } = props
 
     const onChangeAutomationTemplate = useCallback(
-        (templateName) => {
+        (teplate) => {
             // Delete any previously generated YAML
             const curatorIndex = resources.findIndex(
                 (item) => item.kind === ClusterCuratorKind && item?.metadata?.name === clusterName
@@ -767,9 +768,9 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             })
 
             // Add new YAML for ClusterCurator and secrets
-            if (templateName) {
+            if (teplate) {
                 // TODO: include namespace in key
-                const curatorTemplate = curatorTemplates.find((template) => template.metadata.name === templateName)
+                const curatorTemplate = curatorTemplates.find((template) => template.metadata.name === teplate)
                 if (curatorTemplate) {
                     const curator = {
                         ...ClusterCuratorDefinition,
@@ -814,7 +815,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
                     })
                 }
             }
-            dispatch({ type: 'setTemplateName', templateName })
+            dispatch({ type: 'setTemplateName', templateName: teplate })
             update()
         },
         [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations, update]
