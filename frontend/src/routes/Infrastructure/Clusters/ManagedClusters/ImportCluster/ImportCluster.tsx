@@ -1,52 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable react-hooks/exhaustive-deps */
 import {
-    ActionGroup,
-    Button,
-    Drawer,
-    DrawerColorVariant,
-    DrawerContent,
-    DrawerContentBody,
-    DrawerPanelContent,
-    FormGroup,
-    Label,
-    Page,
-    PageSection,
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
     SelectOption,
+    Split,
+    SplitItem,
     Switch,
     Text,
 } from '@patternfly/react-core'
-import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
-import useResizeObserver from '@react-hook/resize-observer'
 import {
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
-    AcmForm,
+    AcmIcon,
+    AcmIconVariant,
     AcmLabelsInput,
-    AcmPageContent,
+    AcmPage,
     AcmPageHeader,
     AcmSelect,
-    AcmSubmit,
-    AcmTextArea,
-    AcmTextInput,
+    AcmToastContext,
 } from '../../../../../ui-components'
-import { keyBy } from 'lodash'
-import { Fragment, useContext, useEffect, useRef, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/SyncDiff'
+import { cloneDeep, groupBy, pick } from 'lodash'
+import { Dispatch, useCallback, useContext, useLayoutEffect, useMemo, useReducer, useState } from 'react'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import {
+    ClusterCuratorDefinition,
+    ClusterCuratorKind,
+    createClusterCurator,
     createProject,
     createResource,
+    KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
+    ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
     managedClusterSetLabel,
@@ -54,226 +45,199 @@ import {
     ResourceErrorCode,
     Secret,
     SecretApiVersion,
+    SecretDefinition,
     SecretKind,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
-import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import schema from './schema.json'
 import kac from './kac.json'
-
-const minWizardSize = 1000
-const defaultPanelSize = 600
-const EDITOR_CHANGES = 'Other YAML changes'
+import {
+    DisplayMode,
+    Section,
+    Step,
+    Sync,
+    useData,
+    useDisplayMode,
+    useItem,
+    Wizard,
+    WizItemSelector,
+    WizSingleSelect,
+    WizTextArea,
+    WizTextInput,
+} from '@patternfly-labs/react-form-wizard'
+import { useRecoilValue } from 'recoil'
+import {
+    ansibleCredentialsValue,
+    clusterCuratorSupportedCurationsValue,
+    validClusterCuratorTemplatesValue,
+} from '../../../../../selectors'
 
 const acmSchema = [...schema, ...kac]
 
+enum ImportMode {
+    manual = 'manual',
+    token = 'token',
+    kubeconfig = 'kubeconfig',
+}
+
+function escapePath(key: string) {
+    return key.replace(/\./g, '\\.')
+}
+
+type Labels = Record<string, string>
+
+type State = {
+    clusterName: string
+    importMode: ImportMode
+    defaultLabels: Labels
+    managedClusterSet: string
+    additionalLabels: Labels
+    kacDefaultLabels: Labels
+    kacManagedClusterSet: string
+    kacAdditionalLabels: Labels
+    templateName: string
+    token: string
+    server: string
+    kubeconfig: string
+}
+
+type Action =
+    | ({ type: 'setClusterName' } & Pick<State, 'clusterName'>)
+    | ({ type: 'setImportMode' } & Pick<State, 'importMode'>)
+    | ({ type: 'setManagedClusterSet' } & Pick<State, 'managedClusterSet'>)
+    | ({ type: 'setAdditionalLabels' } & Pick<State, 'additionalLabels'>)
+    | { type: 'computeAdditionalLabels'; labels: State['additionalLabels'] }
+    | { type: 'computeKACAdditionalLabels'; labels: State['kacAdditionalLabels'] }
+    | ({ type: 'setTemplateName' } & Pick<State, 'templateName'>)
+    | ({ type: 'setToken' } & Pick<State, 'token'>)
+    | ({ type: 'setServer' } & Pick<State, 'server'>)
+    | ({ type: 'setKubeconfig' } & Pick<State, 'kubeconfig'>)
+
+const getInitialState = (initialClusterName: State['clusterName'], initialServer: State['server']): State => {
+    const defaultLabels = {
+        cloud: 'auto-detect',
+        vendor: 'auto-detect',
+        name: initialClusterName,
+    }
+    return {
+        clusterName: initialClusterName,
+        importMode: ImportMode.manual,
+        defaultLabels,
+        managedClusterSet: '',
+        additionalLabels: {},
+        kacDefaultLabels: defaultLabels,
+        kacManagedClusterSet: '',
+        kacAdditionalLabels: {},
+        templateName: '',
+        token: '',
+        server: initialServer,
+        kubeconfig: '',
+    }
+}
+
+function reducer(state: State, action: Action): State {
+    switch (action.type) {
+        case 'setClusterName':
+            return {
+                ...state,
+                clusterName: action.clusterName,
+                defaultLabels: { ...state.defaultLabels, name: action.clusterName },
+                kacDefaultLabels: { ...state.kacDefaultLabels, name: action.clusterName },
+            }
+        case 'setImportMode':
+            return { ...state, importMode: action.importMode }
+        case 'setManagedClusterSet':
+            return {
+                ...state,
+                managedClusterSet: action.managedClusterSet,
+                kacManagedClusterSet: action.managedClusterSet,
+            }
+        case 'setAdditionalLabels':
+            return { ...state, additionalLabels: action.additionalLabels, kacAdditionalLabels: action.additionalLabels }
+        case 'computeAdditionalLabels': {
+            // Update cluster set
+            const managedClusterSet = action.labels?.[managedClusterSetLabel] ?? ''
+            // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
+            // Changed default labels get added to additional labels to shadow the defaults
+            const additionalLabelKeys = Object.keys(action.labels).filter(
+                (key) =>
+                    key !== managedClusterSetLabel &&
+                    (!Object.keys(state.defaultLabels).includes(key) || state.defaultLabels[key] !== action.labels[key])
+            )
+            return {
+                ...state,
+                managedClusterSet,
+                additionalLabels: pick(action.labels, additionalLabelKeys),
+            }
+        }
+        case 'computeKACAdditionalLabels': {
+            // Update cluster set
+            const kacManagedClusterSet = action.labels?.[managedClusterSetLabel] ?? ''
+            // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
+            // Changed default labels get added to additional labels to shadow the defaults
+            const kacAdditionalLabelKeys = Object.keys(action.labels).filter(
+                (key) =>
+                    key !== managedClusterSetLabel &&
+                    (!Object.keys(state.kacDefaultLabels).includes(key) ||
+                        state.kacDefaultLabels[key] !== action.labels[key])
+            )
+            return {
+                ...state,
+                kacManagedClusterSet,
+                kacAdditionalLabels: pick(action.labels, kacAdditionalLabelKeys),
+            }
+        }
+        case 'setTemplateName':
+            return { ...state, templateName: action.templateName }
+        case 'setToken':
+            return state.importMode === ImportMode.token ? { ...state, token: action.token } : state
+        case 'setServer':
+            return state.importMode === ImportMode.token ? { ...state, server: action.server } : state
+        case 'setKubeconfig':
+            return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
+    }
+    return state
+}
+
 export default function ImportClusterPage() {
     const { t } = useTranslation()
-    const pageRef = useRef(null)
-    const { isACMAvailable } = useContext(PluginContext)
-    const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('import-cluster-yaml') === 'true')
-    const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('1400px')
-
-    useResizeObserver(pageRef, (entry) => {
-        const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
-        setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
-    })
-
-    const [importResources, setImportResources] = useState<any | undefined>([])
-    const [importSyncs, setImportSyncs] = useState<any | undefined>([])
-    function onFormChange(resources: any, syncs: any) {
-        setImportResources(resources)
-        setImportSyncs(syncs)
-    }
-    const [stateChanges, setStateChanges] = useState<SyncDiffType>()
-    const [editorChanges, setEditorChanges] = useState<{ resources: any[] }>()
-
-    return (
-        <div ref={pageRef} style={{ height: '100%' }}>
-            <Page
-                additionalGroupedContent={
-                    <Fragment>
-                        <AcmPageHeader
-                            title={t('page.header.import-cluster')}
-                            breadcrumb={[
-                                { text: t('Clusters'), to: NavigationPath.clusters },
-                                { text: t('page.header.import-cluster'), to: '' },
-                            ]}
-                            titleTooltip={
-                                <>
-                                    {t('page.header.import-cluster.tooltip')}
-                                    <a
-                                        href={DOC_LINKS.IMPORT_CLUSTER}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        style={{ display: 'block', marginTop: '4px' }}
-                                    >
-                                        {t('Learn more')}
-                                    </a>
-                                </>
-                            }
-                            switches={
-                                <Fragment>
-                                    <Switch
-                                        label="YAML"
-                                        isChecked={drawerExpanded}
-                                        onChange={() => {
-                                            localStorage.setItem('import-cluster-yaml', (!drawerExpanded).toString())
-                                            setDrawerExpanded(!drawerExpanded)
-                                            setStateChanges(undefined)
-                                            setEditorChanges(undefined)
-                                        }}
-                                    />
-                                </Fragment>
-                            }
-                        />
-                    </Fragment>
-                }
-                groupProps={{ sticky: 'top' }}
-            >
-                <Drawer isExpanded={drawerExpanded} isInline={true}>
-                    <DrawerContent
-                        panelContent={
-                            <DrawerPanelContent
-                                isResizable={true}
-                                defaultSize="600px"
-                                maxSize={drawerMaxSize}
-                                minSize="400px"
-                                colorVariant={DrawerColorVariant.light200}
-                            >
-                                <SyncEditor
-                                    editorTitle={'Import cluster YAML'}
-                                    variant="toolbar"
-                                    id="code-content"
-                                    schema={isACMAvailable ? acmSchema : schema}
-                                    resources={importResources}
-                                    syncs={importSyncs}
-                                    onClose={(): void => {
-                                        setDrawerExpanded(false)
-                                    }}
-                                    onStatusChange={(statusChanges: SyncDiffType): void => {
-                                        setStateChanges(statusChanges)
-                                    }}
-                                    onEditorChange={(changes: { resources: any[] }): void => {
-                                        setEditorChanges(changes)
-                                    }}
-                                />
-                            </DrawerPanelContent>
-                        }
-                    >
-                        <DrawerContentBody>
-                            <AcmPageContent id="import-cluster">
-                                <PageSection variant="light" isFilled>
-                                    <ImportClusterPageContent
-                                        onFormChange={onFormChange}
-                                        editorChanges={editorChanges}
-                                        stateChanges={stateChanges}
-                                    />
-                                </PageSection>
-                            </AcmPageContent>
-                        </DrawerContentBody>
-                    </DrawerContent>
-                </Drawer>
-            </Page>
-        </div>
-    )
-}
-
-enum ImportMode {
-    manual,
-    token,
-    kubeconfig,
-}
-
-const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges, stateChanges }) => {
-    const { t } = useTranslation()
-    const alertContext = useContext(AcmAlertContext)
+    const toastContext = useContext(AcmToastContext)
     const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
+    const location = useLocation<CancelBackState>()
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
-    const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterDisplayName') ?? '')
-    const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
-    const [submitted, setSubmitted] = useState<boolean>(false)
-    const [importSecret, setImportSecret] = useState<Secret | undefined>()
-    const [token, setToken] = useState<string | undefined>('')
-    const [server, setServer] = useState<string | undefined>(sessionStorage.getItem('DiscoveredClusterApiURL') ?? '')
-    const [kubeConfig, setKubeConfig] = useState<string | undefined>()
-    const [importMode, setImportMode] = useState<ImportMode>(ImportMode.manual)
-    const [discovered] = useState<boolean>(sessionStorage.getItem('DiscoveredClusterDisplayName') ? true : false)
-    const [importResources, setImportResources] = useState<any | undefined>([])
+    const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
+    const initialServer = sessionStorage.getItem('DiscoveredClusterApiURL') ?? ''
+    const [discovered] = useState<boolean>(!!initialClusterName)
 
-    useEffect(() => {
-        /* istanbul ignore next */
-        const clusterLabels: Record<string, string> = {
-            cloud: 'auto-detect',
-            vendor: 'auto-detect',
-            name: clusterName,
-            ...additionalLabels,
-        }
-        if (managedClusterSet) {
-            clusterLabels[managedClusterSetLabel] = managedClusterSet
-        }
-        let clusterAnnotations: Record<string, string> = {}
+    const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
+
+    const defaultData = useMemo(() => {
+        const clusterAnnotations: Record<string, string> = {}
         if (discovered) {
-            clusterAnnotations = {
-                'open-cluster-management/created-via': 'discovery',
-            }
+            clusterAnnotations['open-cluster-management/created-via'] = 'discovery'
         }
         const resources = []
         resources.push({
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
             metadata: {
-                name: clusterName,
-                labels: clusterLabels,
+                name: initialClusterName,
+                labels: state.defaultLabels,
                 annotations: clusterAnnotations,
             },
             spec: { hubAcceptsClient: true },
         })
-
-        switch (importMode) {
-            case ImportMode.kubeconfig:
-                resources.push({
-                    apiVersion: SecretApiVersion,
-                    kind: SecretKind,
-                    metadata: {
-                        name: 'auto-import-secret',
-                        namespace: clusterName,
-                    },
-                    stringData: {
-                        autoImportRetry: '2',
-                        kubeconfig: kubeConfig,
-                    },
-                    type: 'Opaque',
-                })
-                break
-            case ImportMode.token:
-                resources.push({
-                    apiVersion: SecretApiVersion,
-                    kind: SecretKind,
-                    metadata: {
-                        name: 'auto-import-secret',
-                        namespace: clusterName,
-                    },
-                    stringData: {
-                        autoImportRetry: '2',
-                        token: token,
-                        server: server,
-                    },
-                    type: 'Opaque',
-                })
-        }
         if (isACMAvailable) {
             resources.push({
                 apiVersion: KlusterletAddonConfigApiVersion,
                 kind: KlusterletAddonConfigKind,
-                metadata: { name: clusterName, namespace: clusterName },
+                metadata: { name: initialClusterName, namespace: initialClusterName },
                 spec: {
-                    clusterName: clusterName,
-                    clusterNamespace: clusterName,
-                    clusterLabels: { ...clusterLabels },
+                    clusterName: initialClusterName,
+                    clusterNamespace: initialClusterName,
+                    clusterLabels: { ...state.kacDefaultLabels },
                     applicationManager: { enabled: true, argocdCluster: false },
                     policyController: { enabled: true },
                     searchCollector: { enabled: true },
@@ -282,271 +246,628 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges, 
                 },
             })
         }
-        setImportResources(resources)
-        const syncs = [
-            { path: 'ManagedCluster[0].metadata.name', setState: setClusterName },
-            { path: 'Secret[0].stringData.server', setState: setServer },
-            { path: 'Secret[0].stringData.token', setState: setToken },
-            { path: 'Secret[0].stringData.kubeconfig', setState: setKubeConfig },
-            {
-                path: ['ManagedCluster', 0, 'metadata', 'labels', 'cluster.open-cluster-management.io/clusterset'],
-                setState: setManagedClusterSet,
-            },
-        ]
-        onFormChange(resources, syncs)
-    }, [
-        importMode,
-        discovered,
-        clusterName,
-        additionalLabels,
-        kubeConfig,
-        managedClusterSet,
-        token,
-        server,
-        isACMAvailable,
-    ])
+        return resources
+    }, [discovered, initialClusterName, isACMAvailable, state.defaultLabels, state.kacDefaultLabels])
 
-    const onReset = () => {
-        setClusterName('')
-        setManagedClusterSet(undefined)
-        setAdditionaLabels({})
-        setSubmitted(false)
-        setImportSecret(undefined)
+    const syncs = [
+        {
+            path: 'ManagedCluster[0].metadata.name',
+            setState: (clusterName: State['clusterName']) => dispatch({ type: 'setClusterName', clusterName }),
+        },
+        {
+            path: 'ManagedCluster[0].metadata.labels',
+            setState: (labels: State['additionalLabels']) => dispatch({ type: 'computeAdditionalLabels', labels }),
+        },
+        {
+            path: 'Secret[0].stringData.server',
+            setState: (server: State['server']) => dispatch({ type: 'setServer', server }),
+        },
+        {
+            path: 'Secret[0].stringData.token',
+            setState: (token: State['token']) => dispatch({ type: 'setToken', token }),
+        },
+        {
+            path: 'Secret[0].stringData.kubeconfig',
+            setState: (kubeconfig: State['kubeconfig']) => dispatch({ type: 'setKubeconfig', kubeconfig }),
+        },
+        ...(isACMAvailable
+            ? [
+                  {
+                      path: 'KlusterletAddonConfig[0].spec.clusterLabels',
+                      setState: (labels: State['additionalLabels']) =>
+                          dispatch({ type: 'computeKACAdditionalLabels', labels }),
+                  },
+              ]
+            : []),
+    ]
+
+    const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
+    const toggleDrawerExpanded = useCallback(() => {
+        setDrawerExpanded((expanded) => {
+            localStorage.setItem('yaml', (!expanded).toString())
+            return !expanded
+        })
+    }, [])
+
+    function WizardSyncEditor() {
+        const resources = useItem() // Wizard framework sets this context
+        const { update } = useData() // Wizard framework sets this context
+
+        return (
+            <SyncEditor
+                editorTitle={t('Import cluster YAML')}
+                variant="toolbar"
+                id="code-content"
+                schema={isACMAvailable ? acmSchema : schema}
+                resources={resources}
+                secrets={['*.stringData.token', '*.stringData.kubeconfig']}
+                syncs={syncs}
+                onEditorChange={(changes: { resources: any[] }): void => {
+                    update(changes?.resources)
+                }}
+            />
+        )
     }
 
-    return (
-        <AcmAlertProvider>
-            <AcmForm id="import-cluster-form">
-                <AcmTextInput
-                    id="clusterName"
-                    label={t('import.form.clusterName.label')}
-                    value={clusterName}
-                    spellCheck="false"
-                    isDisabled={submitted}
-                    onChange={(name) => setClusterName(name)}
-                    placeholder={t('import.form.clusterName.placeholder')}
-                    isRequired
-                />
-                <AcmSelect
-                    id="managedClusterSet"
-                    label={t('import.form.managedClusterSet.label')}
-                    placeholder={
-                        canJoinClusterSets?.length === 0
-                            ? t('import.no.cluster.sets.available')
-                            : t('import.form.managedClusterSet.placeholder')
-                    }
-                    labelHelp={t('import.form.managedClusterSet.labelHelp')}
-                    value={managedClusterSet}
-                    onChange={(mcs) => setManagedClusterSet(mcs)}
-                    isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0 || submitted}
-                    hidden={canJoinClusterSets === undefined}
-                    helperText={
-                        <Text component="small">
-                            <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
-                        </Text>
-                    }
-                    isRequired={mustJoinClusterSet}
-                >
-                    {canJoinClusterSets?.map((mcs) => (
-                        <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
-                            {mcs.metadata.name}
-                        </SelectOption>
-                    ))}
-                </AcmSelect>
-                <AcmLabelsInput
-                    id="additionalLabels"
-                    label={t('import.form.labels.label')}
-                    buttonLabel={t('label.add')}
-                    value={additionalLabels}
-                    onChange={(label) => setAdditionaLabels(label)}
-                    placeholder={t('labels.edit.placeholder')}
-                    isDisabled={submitted}
-                />
-                <AcmSelect
-                    id="import-mode"
-                    label={t('import.mode.select')}
-                    placeholder={t('import.mode.default')}
-                    value={
-                        importMode === ImportMode.manual
-                            ? t('import.mode.manual')
-                            : importMode === ImportMode.token
-                            ? t('import.mode.token')
-                            : importMode === ImportMode.kubeconfig
-                            ? t('import.mode.kubeconfig')
-                            : ''
-                    }
-                    onChange={(value) => setImportMode(value as unknown as ImportMode)}
-                    helperText={
-                        importMode === ImportMode.manual
-                            ? t('import.description')
-                            : importMode === ImportMode.kubeconfig
-                            ? t('import.credential.explanation')
-                            : ''
-                    }
-                    isRequired
-                >
-                    <SelectOption key="manual-import" value={ImportMode.manual}>
-                        {t('import.mode.manual')}
-                    </SelectOption>
-                    <SelectOption key="credentials" value={ImportMode.token}>
-                        {t('import.mode.token')}
-                    </SelectOption>
-                    <SelectOption key="kubeconfig" value={ImportMode.kubeconfig}>
-                        {t('import.mode.kubeconfig')}
-                    </SelectOption>
-                </AcmSelect>
-                <AcmTextInput
-                    id="server"
-                    label={t('import.server')}
-                    placeholder={t('import.server.place')}
-                    spellCheck="false"
-                    value={server}
-                    onChange={(server) => setServer(server)}
-                    isRequired
-                    hidden={importMode !== ImportMode.token}
-                />
-                <AcmTextInput
-                    id="token"
-                    label={t('import.token')}
-                    placeholder={t('import.token.place')}
-                    spellCheck="false"
-                    value={token}
-                    onChange={(token) => setToken(token)}
-                    isRequired
-                    hidden={importMode !== ImportMode.token}
-                />
-                <AcmTextArea
-                    id="kubeConfigEntry"
-                    label={t('import.auto.config.label')}
-                    placeholder={t('import.auto.config.prompt')}
-                    spellCheck="false"
-                    value={kubeConfig}
-                    onChange={(file) => setKubeConfig(file)}
-                    hidden={importMode !== ImportMode.kubeconfig}
-                    isRequired
-                />
-                {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-                    <FormGroup fieldId="diffs" label={t(EDITOR_CHANGES)}>
-                        <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
-                    </FormGroup>
-                )}
-                <AcmAlertGroup isInline canClose />
-                <ActionGroup>
-                    <AcmSubmit
-                        id="submit"
-                        variant="primary"
-                        isDisabled={
-                            !clusterName ||
-                            submitted ||
-                            (importMode === ImportMode.kubeconfig && !kubeConfig) ||
-                            (importMode === ImportMode.token && (!server || !token))
-                        }
-                        onClick={async () => {
-                            setSubmitted(true)
-                            alertContext.clearAlerts()
+    function getWizardSyncEditor() {
+        return <WizardSyncEditor />
+    }
 
-                            // creating pure form resources or form resources modified by editor
-                            let resources = importResources
-                            let createName = clusterName
-                            if (editorChanges?.resources) {
-                                resources = editorChanges?.resources
-                                const managedCluster = resources.find(
-                                    (resource: { kind: string }) => resource.kind === 'ManagedCluster'
-                                )
-                                createName = managedCluster?.metadata?.name ?? createName
+    const pageTitle = t('page.header.import-cluster')
+
+    return (
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={pageTitle}
+                    breadcrumb={[
+                        { text: t('Clusters'), to: NavigationPath.clusters },
+                        { text: pageTitle, to: '' },
+                    ]}
+                    titleTooltip={
+                        <>
+                            {pageTitle}
+                            <a
+                                href={DOC_LINKS.IMPORT_CLUSTER}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('Learn more')}
+                            </a>
+                        </>
+                    }
+                    switches={
+                        <Switch
+                            id="yaml-switch"
+                            label="YAML"
+                            isChecked={drawerExpanded}
+                            onChange={toggleDrawerExpanded}
+                        />
+                    }
+                />
+            }
+        >
+            <Wizard
+                title={t('page.header.import-cluster')}
+                showHeader={false}
+                showYaml={drawerExpanded}
+                yamlEditor={getWizardSyncEditor}
+                defaultData={defaultData}
+                onSubmit={function (data: unknown): Promise<void> {
+                    toastContext.clearAlerts()
+
+                    const resources = data as any[]
+
+                    return new Promise(async (resolve, reject) => {
+                        try {
+                            // create the project
+                            try {
+                                await createProject(state.clusterName).promise
+                            } catch (err) {
+                                const resourceError = err as ResourceError
+                                if (resourceError.code !== ResourceErrorCode.Conflict) {
+                                    throw err
+                                }
                             }
 
-                            /* istanbul ignore next */
-                            return new Promise(async (resolve, reject) => {
-                                try {
-                                    // create the project
-                                    try {
-                                        await createProject(createName).promise
-                                    } catch (err) {
-                                        const resourceError = err as ResourceError
-                                        if (resourceError.code !== ResourceErrorCode.Conflict) {
-                                            throw err
-                                        }
+                            const resourceGroups = groupBy(resources, 'kind')
+                            // create resources
+                            for (const kind of [
+                                ManagedClusterKind,
+                                KlusterletAddonConfigKind,
+                                ClusterCuratorKind,
+                                SecretKind,
+                            ]) {
+                                if (resourceGroups[kind]?.length) {
+                                    for (const resource of resourceGroups[kind]) {
+                                        await (kind === ClusterCuratorKind
+                                            ? createClusterCurator(resource)
+                                            : createResource(resource)
+                                        ).promise
                                     }
-
-                                    const resourceMap = keyBy(resources, 'kind')
-                                    // create ManagedCluster
-                                    if (resourceMap['ManagedCluster']) {
-                                        await createResource(resourceMap['ManagedCluster']).promise
-                                    }
-                                    // create KlusterletAddonConfig
-                                    if (resourceMap['KlusterletAddonConfig']) {
-                                        await createResource(resourceMap['KlusterletAddonConfig']).promise
-                                    }
-
-                                    // open cluster page or import secret
-                                    if (importMode === ImportMode.kubeconfig || importMode === ImportMode.token) {
-                                        // create Secret
-                                        if (resourceMap['Secret']) {
-                                            await createResource(resourceMap['Secret']).promise
-                                        }
-                                        history.push(NavigationPath.clusterDetails.replace(':id', createName as string))
-                                    } else {
-                                        setImportSecret(await pollImportYamlSecret(createName))
-                                    }
-                                } catch (err) {
-                                    if (err instanceof Error) {
-                                        alertContext.addAlert({
-                                            type: 'danger',
-                                            title: err.name,
-                                            message: err.message,
-                                        })
-                                    }
-                                    setSubmitted(false)
-                                    reject()
-                                } finally {
-                                    resolve(undefined)
                                 }
-                            })
-                        }}
-                        label={
-                            submitted
-                                ? t('import.form.submitted')
-                                : importMode === ImportMode.manual
-                                ? t('import.form.submit')
-                                : t('import.auto.button')
+                            }
+                            history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
+                        } catch (err) {
+                            if (err instanceof Error) {
+                                toastContext.addAlert({
+                                    type: 'danger',
+                                    title: err.name,
+                                    message: err.message,
+                                })
+                            } else {
+                                reject()
+                            }
+                        } finally {
+                            resolve(undefined)
                         }
-                        processingLabel={t('import.generating')}
-                    />
+                    })
+                }}
+                onCancel={function (): void {
+                    cancelNavigation(location, history, NavigationPath.clusters)
+                }}
+            >
+                <Step label={t('Details')} id="details">
+                    <Section label={t('Details')}>
+                        <Sync
+                            kind={ManagedClusterKind}
+                            targetKind={KlusterletAddonConfigKind}
+                            path="metadata.name"
+                            targetPath="metadata.name"
+                        />
+                        <Sync
+                            kind={ManagedClusterKind}
+                            targetKind={KlusterletAddonConfigKind}
+                            path="metadata.name"
+                            targetPath="metadata.namespace"
+                        />
+                        <Sync
+                            kind={ManagedClusterKind}
+                            targetKind={KlusterletAddonConfigKind}
+                            path="metadata.name"
+                            targetPath="spec.clusterName"
+                        />
+                        <Sync
+                            kind={ManagedClusterKind}
+                            targetKind={KlusterletAddonConfigKind}
+                            path="metadata.name"
+                            targetPath="spec.clusterNamespace"
+                        />
+                        <WizItemSelector selectKey="kind" selectValue={ManagedClusterKind}>
+                            <WizTextInput
+                                id="clusterName"
+                                path="metadata.name"
+                                label={t('import.form.clusterName.label')}
+                                placeholder={t('import.form.clusterName.placeholder')}
+                                required
+                                onValueChange={(clusterName: any) =>
+                                    dispatch({
+                                        type: 'setClusterName',
+                                        clusterName: (clusterName as State['clusterName']) ?? '',
+                                    })
+                                }
+                            />
+                            <WizSingleSelect
+                                id="managedClusterSet"
+                                path={`metadata.labels.${escapePath(managedClusterSetLabel)}`}
+                                label={t('import.form.managedClusterSet.label')}
+                                placeholder={
+                                    canJoinClusterSets?.length === 0
+                                        ? t('import.no.cluster.sets.available')
+                                        : t('import.form.managedClusterSet.placeholder')
+                                }
+                                helperText={
+                                    <Text component="small">
+                                        <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
+                                    </Text>
+                                }
+                                disabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
+                                hidden={() => canJoinClusterSets === undefined}
+                                required={mustJoinClusterSet}
+                                options={canJoinClusterSets?.map((mcs) => mcs.metadata.name as string) || []}
+                                onValueChange={(managedClusterSet: any) =>
+                                    dispatch({
+                                        type: 'setManagedClusterSet',
+                                        managedClusterSet: (managedClusterSet as State['managedClusterSet']) ?? '',
+                                    })
+                                }
+                            />
+                        </WizItemSelector>
+                        <AdditionalLabels state={state} dispatch={dispatch} />
+                        <AutoImportControls state={state} dispatch={dispatch} />
+                    </Section>
+                </Step>
+                <Step label={t('Automation')} id="automation">
+                    <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
+                        <AutomationTemplate state={state} dispatch={dispatch} />
+                    </Section>
+                </Step>
+            </Wizard>
+        </AcmPage>
+    )
+}
 
-                    {submitted ? (
-                        <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
-                            {t('import.importmode.importsaved')}
-                        </Label>
-                    ) : (
-                        <Link to={NavigationPath.clusters} id="cancel">
-                            <Button variant="link">{t('cancel')}</Button>
-                        </Link>
-                    )}
-                </ActionGroup>
-                {importSecret && (
-                    <Fragment>
-                        <ImportCommand importSecret={importSecret}>
-                            <ActionGroup>
-                                <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
-                                    <Button variant="primary">{t('import.footer.viewcluster')}</Button>
-                                </Link>
-                                <AcmButton
-                                    variant="secondary"
-                                    role="link"
-                                    onClick={() => {
-                                        sessionStorage.getItem('DiscoveredClusterConsoleURL')
-                                            ? history.push(NavigationPath.discoveredClusters)
-                                            : onReset()
-                                    }}
-                                >
-                                    {t('import.footer.importanother')}
-                                </AcmButton>
-                            </ActionGroup>
-                        </ImportCommand>
-                    </Fragment>
-                )}
-            </AcmForm>
-        </AcmAlertProvider>
+const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) => {
+    const {
+        state: {
+            defaultLabels,
+            managedClusterSet,
+            kacDefaultLabels,
+            additionalLabels,
+            kacManagedClusterSet,
+            kacAdditionalLabels,
+        },
+        dispatch,
+    } = props
+    const { t } = useTranslation()
+    const resources = useItem() as any[]
+    const { update } = useData()
+    const mode = useDisplayMode()
+
+    const managedCluster = resources.find((item) => item.kind === ManagedClusterKind) as ManagedCluster
+    const klusterletAddonConfig = resources.find(
+        (item) => item.kind === KlusterletAddonConfigKind
+    ) as KlusterletAddonConfig
+
+    const syncLabels = useCallback(
+        (defaults: Labels, clusterSet: string, labels: Labels) => {
+            managedCluster.metadata.labels = {
+                ...defaults,
+                [managedClusterSetLabel]: clusterSet,
+                ...labels,
+            }
+            if (!clusterSet) {
+                delete managedCluster.metadata.labels[managedClusterSetLabel]
+            }
+            if (klusterletAddonConfig) {
+                klusterletAddonConfig.spec.clusterLabels = {
+                    ...defaults,
+                    [managedClusterSetLabel]: clusterSet,
+                    ...labels,
+                }
+                if (!clusterSet) {
+                    delete klusterletAddonConfig.spec.clusterLabels[managedClusterSetLabel]
+                }
+            }
+            dispatch({ type: 'setManagedClusterSet', managedClusterSet: clusterSet })
+            dispatch({ type: 'setAdditionalLabels', additionalLabels: labels })
+            update()
+        },
+        [dispatch, managedCluster, klusterletAddonConfig, update]
+    )
+
+    const onChangeAdditionalLabels = useCallback(
+        (labels: Labels) => syncLabels(defaultLabels, managedClusterSet, labels),
+        [defaultLabels, managedClusterSet, syncLabels]
+    )
+
+    useLayoutEffect(() => {
+        syncLabels(defaultLabels, managedClusterSet, additionalLabels)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels)])
+
+    useLayoutEffect(() => {
+        syncLabels(kacDefaultLabels, kacManagedClusterSet, kacAdditionalLabels)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(kacAdditionalLabels), kacManagedClusterSet, JSON.stringify(kacDefaultLabels)])
+
+    const controlId = 'additionalLabels'
+    const controlLabel = t('import.form.labels.label')
+    return mode === DisplayMode.Details ? (
+        <DescriptionListGroup>
+            <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
+            <DescriptionListDescription id={controlId}>
+                {additionalLabels &&
+                    Object.keys(additionalLabels)
+                        .map((key) => (additionalLabels[key] ? `${key}=${additionalLabels[key]}` : key))
+                        .join(', ')}
+            </DescriptionListDescription>
+        </DescriptionListGroup>
+    ) : (
+        <AcmLabelsInput
+            id={controlId}
+            label={controlLabel}
+            buttonLabel={t('label.add')}
+            value={additionalLabels}
+            onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
+            placeholder={t('labels.edit.placeholder')}
+        />
+    )
+}
+
+const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> }) => {
+    const {
+        state: { clusterName, importMode, kubeconfig, server, token },
+        dispatch,
+    } = props
+    const { t } = useTranslation()
+    const secretName = 'auto-import-secret'
+    const resources = useItem() as any[]
+    const { update } = useData()
+    const mode = useDisplayMode()
+
+    const autoImportSecret = useMemo(
+        (): Secret => ({
+            apiVersion: SecretApiVersion,
+            kind: SecretKind,
+            metadata: {
+                name: secretName,
+                namespace: clusterName,
+            },
+            stringData: {
+                autoImportRetry: '2',
+            },
+            type: 'Opaque',
+        }),
+        [clusterName]
+    )
+
+    const getImportModeDescription = (m: ImportMode) => {
+        switch (m) {
+            case ImportMode.manual:
+                return t('import.mode.manual')
+            case ImportMode.token:
+                return t('import.mode.token')
+            case ImportMode.kubeconfig:
+                return t('import.mode.kubeconfig')
+        }
+        return '-'
+    }
+
+    const onChangeImportMode = useCallback(
+        (m) => {
+            const secretIndex = resources.findIndex(
+                (item) => item.kind === 'Secret' && item?.metadata?.name === secretName
+            )
+            const deleteCount = secretIndex >= 0 ? 1 : 0
+            switch (m) {
+                case ImportMode.manual:
+                    // Delete auto-import secret
+                    if (deleteCount) {
+                        resources.splice(secretIndex, 1)
+                    }
+                    break
+                case ImportMode.kubeconfig: {
+                    // Insert/Replace auto-import secret
+                    const kubeconfigSecret = cloneDeep(autoImportSecret)
+                    kubeconfigSecret.stringData = { ...kubeconfigSecret.stringData, kubeconfig }
+                    resources.splice(deleteCount ? secretIndex : 1, deleteCount, kubeconfigSecret)
+                    break
+                }
+                case ImportMode.token: {
+                    // Insert/Replace auto-import secret
+                    const tokenSecret = cloneDeep(autoImportSecret)
+                    tokenSecret.stringData = { ...tokenSecret.stringData, token, server }
+                    resources.splice(deleteCount ? secretIndex : 1, deleteCount, tokenSecret)
+                    break
+                }
+            }
+            dispatch({ type: 'setImportMode', importMode: m })
+            update()
+        },
+        [autoImportSecret, dispatch, kubeconfig, resources, server, token, update]
+    )
+
+    const controlId = 'import-mode'
+    const controlLabel = t('import.mode.select')
+    return (
+        <>
+            {mode === DisplayMode.Details ? (
+                <DescriptionListGroup>
+                    <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
+                    <DescriptionListDescription id={controlId}>
+                        {getImportModeDescription(importMode)}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            ) : (
+                <AcmSelect
+                    id={controlId}
+                    label={controlLabel}
+                    placeholder={t('import.mode.default')}
+                    value={importMode}
+                    onChange={onChangeImportMode}
+                    helperText={
+                        importMode === ImportMode.manual ? t('import.description') : t('import.credential.explanation')
+                    }
+                    isRequired
+                >
+                    {Object.values(ImportMode).map((m) => {
+                        return (
+                            <SelectOption key={m} value={m}>
+                                {getImportModeDescription(m)}
+                            </SelectOption>
+                        )
+                    })}
+                </AcmSelect>
+            )}
+            <Sync
+                kind={ManagedClusterKind}
+                path="metadata.name"
+                targetKind={SecretKind}
+                targetPath="metadata.namespace"
+            />
+            <Sync
+                kind={ManagedClusterKind}
+                path="metadata.name"
+                targetKind={ClusterCuratorKind}
+                targetPath="metadata.name"
+            />
+            <Sync
+                kind={ManagedClusterKind}
+                path="metadata.name"
+                targetKind={ClusterCuratorKind}
+                targetPath="metadata.namespace"
+            />
+            <WizItemSelector selectKey="metadata.name" selectValue={secretName}>
+                <WizTextInput
+                    id="server"
+                    path="stringData.server"
+                    label={t('import.server')}
+                    placeholder={t('import.server.place')}
+                    onValueChange={(s: any) => dispatch({ type: 'setServer', server: (s as State['server']) ?? '' })}
+                    required={importMode === ImportMode.token}
+                    hidden={() => importMode !== ImportMode.token}
+                />
+                <WizTextInput
+                    id="token"
+                    path="stringData.token"
+                    label={t('import.token')}
+                    placeholder={t('import.token.place')}
+                    onValueChange={(t: any) => dispatch({ type: 'setToken', token: (t as State['token']) ?? '' })}
+                    secret
+                    required={importMode === ImportMode.token}
+                    hidden={() => importMode !== ImportMode.token}
+                />
+                <WizTextArea
+                    id="kubeConfigEntry"
+                    path="stringData.kubeconfig"
+                    label={t('import.auto.config.label')}
+                    placeholder={t('import.auto.config.prompt')}
+                    onValueChange={(k: any) =>
+                        dispatch({ type: 'setKubeconfig', kubeconfig: (k as State['kubeconfig']) ?? '' })
+                    }
+                    secret
+                    required={importMode === ImportMode.kubeconfig}
+                    hidden={() => importMode !== ImportMode.kubeconfig}
+                />
+            </WizItemSelector>
+        </>
+    )
+}
+
+const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> }) => {
+    const { t } = useTranslation()
+    const curatorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+    const resources = useItem() as any[]
+    const mode = useDisplayMode()
+    const { update } = useData()
+    const {
+        state: { clusterName, templateName },
+        dispatch,
+    } = props
+
+    const onChangeAutomationTemplate = useCallback(
+        (teplate) => {
+            // Delete any previously generated YAML
+            const curatorIndex = resources.findIndex(
+                (item) => item.kind === ClusterCuratorKind && item?.metadata?.name === clusterName
+            )
+            if (curatorIndex >= 0) {
+                resources.splice(curatorIndex, 1)
+            }
+            supportedCurations.forEach((curationType) => {
+                const index = resources.findIndex(
+                    (item) => item.kind === SecretKind && item?.metadata?.name === `toweraccess-${curationType}`
+                )
+                if (index >= 0) {
+                    resources.splice(curatorIndex, 1)
+                }
+            })
+
+            // Add new YAML for ClusterCurator and secrets
+            if (teplate) {
+                // TODO: include namespace in key
+                const curatorTemplate = curatorTemplates.find((template) => template.metadata.name === teplate)
+                if (curatorTemplate) {
+                    const curator = {
+                        ...ClusterCuratorDefinition,
+                        metadata: {
+                            name: clusterName,
+                            namespace: clusterName,
+                        },
+                        spec: cloneDeep(curatorTemplate.spec),
+                    }
+                    resources.push(curator)
+                    supportedCurations.forEach((curationType) => {
+                        const curation = curator.spec?.[curationType]
+                        if (curation?.towerAuthSecret) {
+                            const matchingSecret = ansibleCredentials.find(
+                                (s) =>
+                                    s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
+                                    s.metadata.namespace === curatorTemplate.metadata.namespace
+                            )
+                            if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+                                const secretName = `toweraccess-${curationType}`
+                                const copiedSecret = {
+                                    ...SecretDefinition,
+                                    type: 'Opaque',
+                                    metadata: {
+                                        name: secretName,
+                                        namespace: clusterName,
+                                        labels: {
+                                            'cluster.open-cluster-management.io/type': 'ans',
+                                            'cluster.open-cluster-management.io/copiedFromSecretName':
+                                                matchingSecret.metadata.name,
+                                            'cluster.open-cluster-management.io/copiedFromNamespace':
+                                                matchingSecret.metadata.namespace,
+                                            'cluster.open-cluster-management.io/backup': 'cluster',
+                                        },
+                                    },
+                                    stringData: cloneDeep(matchingSecret.stringData),
+                                }
+                                curation.towerAuthSecret = secretName
+                                resources.push(copiedSecret)
+                            }
+                        }
+                    })
+                }
+            }
+            dispatch({ type: 'setTemplateName', templateName: teplate })
+            update()
+        },
+        [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations, update]
+    )
+
+    const controlId = 'templateName'
+    const controlLabel = t('template.clusterCreate.name')
+    return mode === DisplayMode.Details ? (
+        <DescriptionListGroup>
+            <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
+            <DescriptionListDescription id={controlId}>{templateName}</DescriptionListDescription>
+        </DescriptionListGroup>
+    ) : (
+        <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('template.clusterCreate.select.placeholder')}
+            labelHelp={t('template.clusterImport.tooltip')}
+            helperText={
+                <Split>
+                    <SplitItem isFilled />
+                    <SplitItem>
+                        <AcmButton
+                            variant="link"
+                            style={{ paddingRight: '0px' }}
+                            onClick={() =>
+                                window.open(
+                                    `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                                    'add-automation-template'
+                                )
+                            }
+                        >
+                            {t('creation.ocp.cloud.add.template')}
+                            <AcmIcon
+                                style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                icon={AcmIconVariant.openNewTab}
+                            />
+                        </AcmButton>
+                    </SplitItem>
+                </Split>
+            }
+            value={templateName}
+            onChange={onChangeAutomationTemplate}
+        >
+            {Object.values(curatorTemplates).map((template) => {
+                const templateName = template.metadata.name
+                return (
+                    <SelectOption key={templateName} value={templateName}>
+                        {templateName}
+                    </SelectOption>
+                )
+            })}
+        </AcmSelect>
     )
 }

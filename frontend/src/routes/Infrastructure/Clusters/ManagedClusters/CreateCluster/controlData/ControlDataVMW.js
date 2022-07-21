@@ -37,6 +37,29 @@ export const getControlDataVMW = (
 }
 
 const controlDataVMW = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'vmw',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
+        onSelect: onChangeConnection,
+        encode: ['cacertificate'],
+    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////

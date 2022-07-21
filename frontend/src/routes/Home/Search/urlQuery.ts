@@ -20,7 +20,7 @@ export function updateBrowserUrl(history: any, currentQuery: string) {
 export function transformBrowserUrlToSearchString(urlQuery: string) {
     // Example browser url string:
     // .../multicloud/home/search?filters={"textsearch":"kind%3Adeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod
-    const prefillSearchQuery = ''
+    const presetSearchQuery = ''
     const preSelectedRelatedResources: string[] = []
     if (urlQuery !== '') {
         const paramString = queryString.parse(urlQuery)
@@ -37,9 +37,9 @@ export function transformBrowserUrlToSearchString(urlQuery: string) {
         const relatedArray = relatedString?.split(',')
 
         return {
-            prefillSearchQuery: filterString,
+            presetSearchQuery: filterString,
             preSelectedRelatedResources: relatedArray,
         }
     }
-    return { prefillSearchQuery, preSelectedRelatedResources }
+    return { presetSearchQuery, preSelectedRelatedResources }
 }

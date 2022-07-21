@@ -3,7 +3,7 @@
 import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useSetRecoilState } from 'recoil'
 import { discoveredApplicationsState, discoveredOCPAppResourcesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { queryRemoteArgoApps, queryOCPAppResources } from '../../lib/search'
@@ -26,8 +26,8 @@ export default function ApplicationsPage() {
     useEffect(startPollingOCPResources, [startPollingOCPResources])
     const [timedOut, setTimedOut] = useState<boolean>()
 
-    const [, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
-    const [, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+    const setDiscoveredAppilcations = useSetRecoilState(discoveredApplicationsState)
+    const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredAppilcations(remoteArgoApps)

@@ -3,15 +3,11 @@ import * as React from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { FormikProps } from 'formik'
 import { agentsState, clusterImageSetsState, infraEnvironmentsState } from '../../../../../../../../atoms'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-// import { getValue } from 'temptifly'
+import { useRecoilValue, waitForAll } from 'recoil'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-// import isEqual from 'lodash/isEqual'
-import { global_success_color_100 as okColor, global_danger_color_100 as dangerColor } from '@patternfly/react-tokens'
 import { getClusterImageSet } from './utils'
 
-const { HostedClusterHostsStep, LoadingState, getAgentsForSelection } = CIM
+const { HostedClusterHostsStep, LoadingState } = CIM
 
 type FormControl = {
     active: any // CIM.HostsFormValues
@@ -27,25 +23,6 @@ type FormControl = {
 type HostsFormProps = {
     control: FormControl
     handleChange: (control: FormControl) => void
-}
-
-const HostsAvailableValue = () => {
-    const { nodePools } = React.useContext(HypershiftAgentContext)
-    const [agents] = useRecoilState(agentsState)
-    const availableAgents = getAgentsForSelection(agents).map((a) => a.metadata.uid)
-
-    const agentsAvailable = nodePools?.every(({ selectedAgentIDs, autoSelectedAgentIDs, autoSelectHosts }) =>
-        (autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs).every((id) => availableAgents.includes(id))
-    )
-    return agentsAvailable ? (
-        <>
-            <CheckCircleIcon color={okColor.value} /> All hosts are available
-        </>
-    ) : (
-        <>
-            <ExclamationCircleIcon color={dangerColor.value} size="sm" /> Requested hosts are not available
-        </>
-    )
 }
 
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
@@ -77,7 +54,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
 
     control.summary = () => [
         {
-            term: 'Infrastructure environment',
+            term: 'Hosts namespace',
             desc: control.active.agentNamespace,
         },
         {
@@ -87,52 +64,11 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         {
             term: 'Hosts count',
             desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
-                acc += (nodePool.autoSelectHosts ? nodePool.autoSelectedAgentIDs : nodePool.selectedAgentIDs).length
+                acc += nodePool.count
                 return acc
             }, 0),
         },
-        {
-            term: 'Hosts available',
-            valueComponent: <HostsAvailableValue />,
-        },
     ]
-
-    /*
-    control.reverse = (
-        control: {
-            active: FormControl['active']
-        },
-        templateObject: any
-    ) => {
-        const yamlNodePools = templateObject.NodePool?.map((np: any) => np['$raw']);
-        const active = {
-            ...control.active,
-            agentNamespace: getValue(templateObject, 'HostedCluster[0].spec.platform.agent.agentNamespace'),
-            nodePools: yamlNodePools?.map((np: any) => {
-                const name = np.metadata.name;
-                const formNodePool = nodePools?.find((n) => n.name === name)
-                return {
-                    name,
-                    clusterName,
-                    releaseImage: np.spec.release.image || initReleaseImage,
-                    count: np.spec.replicas,
-                    agentLabels: formNodePool?.agentLabels || [],
-                    autoSelectedAgentIDs: formNodePool?.autoSelectedAgentIDs || [],
-                    autoSelectHosts: formNodePool?.autoSelectHosts === undefined ? true : formNodePool?.autoSelectHosts,
-                    selectedAgentIDs: formNodePool?.selectedAgentIDs || [],
-                }
-            }) || []
-        }
-
-        if (!isEqual(active, control.active)) {
-            control.active = active
-        }
-
-        if (formRef.current && !isEqual(active, formRef.current.values)) {
-            formRef.current.setValues(active)
-        }
-    }
-    */
 
     return agents ? (
         <HostedClusterHostsStep

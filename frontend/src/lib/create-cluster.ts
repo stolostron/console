@@ -61,6 +61,10 @@ export async function createCluster(resources: any[]) {
                 ;({ name: namespace } = metadata)
                 break
 
+            case 'HostedCluster':
+                ;({ name: namespace } = metadata)
+                break
+
             default:
                 if (spec && spec.clusterNamespace) {
                     namespace = spec.clusterNamespace

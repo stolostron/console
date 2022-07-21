@@ -15,8 +15,8 @@ import {
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { clusterCuratorTemplatesValue } from '../../../selectors'
+import { configMapsState, subscriptionOperatorsState } from '../../../atoms'
+import { ansibleCredentialsValue, clusterCuratorTemplatesValue } from '../../../selectors'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -30,7 +30,6 @@ import {
     deleteResource,
     getTemplateJobsNum,
     LinkAnsibleCredential,
-    unpackProviderConnection,
     isAnsibleOperatorInstalled,
 } from '../../../resources'
 
@@ -83,14 +82,8 @@ export default function AnsibleAutomationsPage() {
 
 function AnsibleJobTemplateTable() {
     // Load Data
-    const [secrets] = useRecoilState(secretsState)
-    const providerConnections = secrets.map(unpackProviderConnection)
     const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
         open: false,

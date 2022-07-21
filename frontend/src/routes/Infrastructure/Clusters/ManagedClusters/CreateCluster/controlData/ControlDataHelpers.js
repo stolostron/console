@@ -297,11 +297,6 @@ export function getOSTNetworkingControlData() {
 
 export const clusterDetailsControlData = [
     {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
         placeholder: 'creation.ocp.name.placeholder',
@@ -648,17 +643,14 @@ export const arrayItemHasKey = (options, key) => {
 export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')
 
 export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, controlData) => {
+    const klusterletAddonConfigIdx = controlData.findIndex((control) => control.id === 'includeKlusterletAddonConfig')
+    if (klusterletAddonConfigIdx > -1) {
+        controlData[klusterletAddonConfigIdx].active = includeKlusterletAddonConfig
+        return
+    }
     controlData.push({
         id: 'includeKlusterletAddonConfig',
         type: 'hidden',
         active: includeKlusterletAddonConfig,
-    })
-}
-
-export const appendWarning = (warning, controlData) => {
-    controlData.push({
-        id: 'warning',
-        type: 'custom',
-        component: warning,
     })
 }

@@ -470,6 +470,27 @@ const setRegions = (control, controlData) => {
 }
 
 const controlDataAZR = [
+    ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        onSelect: setRegions,
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'azr',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
+    },
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////
     {

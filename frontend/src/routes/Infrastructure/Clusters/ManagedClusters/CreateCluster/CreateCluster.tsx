@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
-import { get, keyBy, set } from 'lodash'
+import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -19,9 +19,13 @@ import {
     managedClustersState,
     secretsState,
     settingsState,
-    agentsState,
 } from '../../../../../atoms'
-import { clusterCuratorTemplatesValue } from '../../../../../selectors'
+import {
+    ansibleCredentialsValue,
+    clusterCuratorSupportedCurationsValue,
+    providerConnectionsValue,
+    validClusterCuratorTemplatesValue,
+} from '../../../../../selectors'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -34,8 +38,6 @@ import {
     IResource,
     ProviderConnection,
     Secret,
-    unpackProviderConnection,
-    patchResource,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -85,7 +87,9 @@ const useStyles = makeStyles({
 export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
-    const [secrets] = useRecoilState(secretsState)
+    const secrets = useRecoilValue(secretsState)
+    const providerConnections = useRecoilValue(providerConnectionsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
 
@@ -105,27 +109,14 @@ export default function CreateClusterPage() {
         }
     }, [connectionControl, secrets])
 
-    const providerConnections = secrets.map(unpackProviderConnection)
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
-
-    const [settings] = useRecoilState(settingsState)
-    type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
-    const basicCurations: Curation[] = ['install', 'upgrade']
-    const allCurations: Curation[] = [...basicCurations, 'scale', 'destroy']
-    const supportedCurations = settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
-
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const curatorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
-    const [, setSelectedTemplate] = useState('')
+    const settings = useRecoilValue(settingsState)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const managedClusters = useRecoilValue(managedClustersState)
+    const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
     const [warning, setWarning] = useState<WarningContextType>()
-    const [agents] = useRecoilState(agentsState)
     const hypershiftValues = useHypershiftContextValues()
 
     // Is there a way how to get this without fetching all InfraEnvs?
@@ -157,8 +148,8 @@ export default function CreateClusterPage() {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
-            const clusterDeployment = get(map, 'ClusterDeployment')
-            const clusterName = clusterDeployment?.metadata?.name
+            const cluster = map?.ClusterDeployment || map?.HostedCluster
+            const clusterName = cluster?.metadata?.name
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -171,32 +162,6 @@ export default function CreateClusterPage() {
                 })
                 return 'ERROR'
             } else {
-                // patch hypershift agents
-                const hypershiftAgentNs = get(map, 'HostedCluster.spec.platform.agent.agentNamespace')
-                if (hypershiftAgentNs) {
-                    setCreationStatus({ status: 'IN_PROGRESS', messages: ['Patching hosts...'] })
-                    const nodePoolPatches = hypershiftValues.nodePools?.map(
-                        ({ autoSelectHosts, autoSelectedAgentIDs, selectedAgentIDs, agentLabels }) => {
-                            const requestedAgentIDs = autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs
-                            const agentsToPatch = agents.filter((a) => requestedAgentIDs.includes(a.metadata.uid))
-                            return agentsToPatch.map(
-                                (a) =>
-                                    patchResource(a, [
-                                        {
-                                            op: a.metadata.labels ? 'replace' : 'add',
-                                            path: '/metadata/labels',
-                                            value: {
-                                                ...(a.metadata.labels || {}),
-                                                ...agentLabels,
-                                            },
-                                        },
-                                    ]).promise
-                            )
-                        }
-                    )
-                    nodePoolPatches && (await Promise.allSettled(nodePoolPatches))
-                }
-
                 const isClusterCurator = (resource: any) => {
                     return resource.kind === 'ClusterCurator'
                 }
@@ -326,22 +291,7 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName': {
-                const availableData = curatorTemplates.filter((curatorTemplate) =>
-                    supportedCurations.every(
-                        // each curation with any hooks must have a secret reference and the secret must exist
-                        (curation) =>
-                            !(
-                                curatorTemplate?.spec?.[curation]?.prehook?.length ||
-                                curatorTemplate?.spec?.[curation]?.posthook?.length
-                            ) ||
-                            (curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                ansibleCredentials.find(
-                                    (secret) =>
-                                        secret.metadata.name === curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                        secret.metadata.namespace === curatorTemplate.metadata.namespace
-                                ))
-                    )
-                )
+                const availableData = validCuratorTemplates
                 // TODO: Need to keep namespace information
                 control.available = availableData.map((curatorTemplate) => curatorTemplate.metadata.name)
                 control.availableData = availableData
@@ -349,7 +299,7 @@ export default function CreateClusterPage() {
                 break
             }
             case 'supportedCurations':
-                control.active = supportedCurations
+                control.active = cloneDeep(supportedCurations)
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {
@@ -420,49 +370,10 @@ export default function CreateClusterPage() {
     }
 
     function onControlChange(control: any) {
-        switch (control.id) {
-            case 'templateName':
-                setSelectedTemplate(control.active)
-                break
-            case 'connection':
-                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-                break
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
         }
     }
-
-    // const onControlSelect = (control: any) => {
-    //     if (control.controlId === 'infrastructure') {
-    //         if (
-    //             (control.active?.includes('CIM') || control.active?.includes('CIM-Hypershift')) &&
-    //             !isInfraEnvAvailable
-    //         ) {
-    //             setWarning({
-    //                 title: t('cim.infra.missing.warning.title'),
-    //                 text: t('cim.infra.missing.warning.text'),
-    //                 linkText: t('cim.infra.manage.link'),
-    //                 linkTo: NavigationPath.infraEnvironments,
-    //             })
-    //         } else if (control.active?.includes('BMC')) {
-    //             setWarning({
-    //                 title: t('bareMetalAsset.warning.title'),
-    //                 text: t('bareMetalAsset.warning.text'),
-    //                 linkText: t('Learn more'),
-    //                 linkTo: DOC_LINKS.CREATE_CLUSTER_ON_PREMISE,
-    //                 isExternalLink: true,
-    //             })
-    //         } else {
-    //             setWarning(undefined)
-    //         }
-    //     }
-    // }
-
-    // const controlData = getControlData(
-    //     <Warning />,
-    //     onControlSelect,
-    //     settings.awsPrivateWizardStep === 'enabled',
-    //     settings.singleNodeOpenshift === 'enabled',
-    //     isACMAvailable /* includeKlusterletAddonConfig */
-    // )
 
     let controlData: any[]
     const breadcrumbs = [
@@ -501,7 +412,7 @@ export default function CreateClusterPage() {
             break
         case 'CIM':
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(isACMAvailable)
+            controlData = getControlDataCIM(isACMAvailable, <Warning />)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
             break
         case 'AI':

@@ -44,6 +44,28 @@ export const getControlDataOST = (
 }
 
 const controlDataOST = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'ost',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        onSelect: onChangeConnection,
+        prompts: CREATE_CLOUD_CONNECTION,
+    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////

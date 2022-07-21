@@ -3,26 +3,35 @@ import React from 'react'
 import DetailsForm from '../components/assisted-installer/hypershift/DetailsForm'
 import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
-import {
-    automationControlData,
-    CREATE_CLOUD_CONNECTION,
-    appendKlusterletAddonConfig,
-    appendWarning,
-} from './ControlDataHelpers'
+import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
-export const getControlDataHypershift = (includeKlusterletAddonConfig = true, warning) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
-    appendWarning(warning, controlDataHypershift)
-    return controlDataHypershift
-}
-
-const controlDataHypershift = [
+export const getControlDataHypershift = (includeKlusterletAddonConfig = true, warning) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
         id: 'hypershiftDetailStep',
         type: 'step',
         title: 'Cluster details',
+    },
+    {
+        id: 'warning',
+        type: 'custom',
+        component: warning,
+    },
+    /////////////////////// ACM Credentials  /////////////////////////////////////
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'hypershift',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: false,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
     },
     {
         id: 'hypershift',
@@ -38,7 +47,7 @@ const controlDataHypershift = [
     {
         id: 'hypershiftHostsStep',
         type: 'step',
-        title: 'Node Pools',
+        title: 'Nodepools',
         disabled: true,
     },
     {
@@ -60,6 +69,11 @@ const controlDataHypershift = [
         component: <NetworkForm />,
         providerId: 'hypershift',
         mustValidate: true,
+    },
+    {
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
     },
     ...automationControlData,
 ]

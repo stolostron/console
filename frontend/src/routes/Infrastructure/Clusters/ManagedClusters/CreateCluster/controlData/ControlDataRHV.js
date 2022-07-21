@@ -30,6 +30,28 @@ export const getControlDataRHV = (includeAutomation = true, includeKlusterletAdd
 }
 
 const controlDataRHV = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'redhatvirtualization',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
+        encode: ['cacertificate'],
+    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
