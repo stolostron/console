@@ -61,6 +61,11 @@ export const getControlData = (
         component: warning,
     },
     {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
+    },
+    {
         id: 'includeKlusterletAddonConfig',
         type: 'hidden',
         active: includeKlusterletAddonConfig,

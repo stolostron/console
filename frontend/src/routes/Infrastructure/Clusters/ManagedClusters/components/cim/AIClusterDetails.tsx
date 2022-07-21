@@ -10,6 +10,7 @@ import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretK
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
+import { listMultiClusterEngines } from '../../../../../../resources/multi-cluster-engine'
 
 const {
     ClusterDeploymentProgress,
@@ -64,25 +65,17 @@ const AIClusterDetails: React.FC = () => {
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
 
     useEffect(() => {
-        const checkNs = async () => {
+        const getAssistedServiceNS = async () => {
             try {
-                await getResource({
-                    apiVersion: 'v1',
-                    kind: 'namespace',
-                    metadata: { name: 'open-cluster-management' },
-                }).promise
-                setAiNamespace('open-cluster-management')
+                const [multiClusterEngine] = await listMultiClusterEngines().promise
+                setAiNamespace(multiClusterEngine.spec?.targetNamespace ?? 'multicluster-engine')
             } catch {
-                try {
-                    await getResource({ apiVersion: 'v1', kind: 'namespace', metadata: { name: 'rhacm' } }).promise
-                    setAiNamespace('rhacm')
-                } catch {
-                    setNamespaceError(true)
-                }
+                setNamespaceError(true)
             }
         }
-        checkNs()
+        getAssistedServiceNS()
     }, [])
+
     const [clusterAgents, cluster] = useMemo(() => {
         const clusterAgents = agents
             ? agents.filter(

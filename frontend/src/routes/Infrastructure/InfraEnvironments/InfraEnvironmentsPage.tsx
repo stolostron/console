@@ -126,6 +126,112 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
         open: false,
     })
 
+    const infraAgentsFiltered: {
+        [key: string]: {
+            infraAgents: CIM.AgentK8sResource[]
+            errorAgents: CIM.AgentK8sResource[]
+            warningAgents: CIM.AgentK8sResource[]
+        }
+    } = {}
+
+    infraEnvs.forEach((infraEnv) => {
+        const infraAgents = agents.filter((a) =>
+            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+        )
+        const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
+        const warningAgents = infraAgents.filter((a) =>
+            [
+                'pending-for-input',
+                'insufficient',
+                'insufficient-unbound',
+                'disconnected-unbound',
+                'disconnected',
+            ].includes(getAgentStatus(a).status.key)
+        )
+
+        infraAgentsFiltered[infraEnv.metadata.uid] = {
+            infraAgents,
+            errorAgents,
+            warningAgents,
+        }
+    })
+
+    const onClickBulkDeleteInfraEnvs = (infraEnvs: CIM.InfraEnvK8sResource[]) => {
+        setModalProps({
+            open: true,
+            title: t('bulk.title.delete.infraenv'),
+            action: t('delete'),
+            processing: t('deleting'),
+            resources: infraEnvs,
+            description: t('bulk.message.delete.infraenv'),
+            columns: [
+                {
+                    header: t('infraEnv.tableHeader.name'),
+                    cell: 'metadata.name',
+                    sort: 'metadata.name',
+                },
+                {
+                    header: t('infraEnv.tableHeader.hosts'),
+                    cell: (infraEnv) => {
+                        const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+
+                        const HostsStatusGroupCell = (
+                            <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
+                                {infraAgents.length ? (
+                                    <AcmInlineStatusGroup
+                                        healthy={infraAgents.length - errorAgents.length - warningAgents.length}
+                                        danger={errorAgents.length}
+                                        warning={warningAgents.length}
+                                    />
+                                ) : (
+                                    0
+                                )}
+                            </Link>
+                        )
+
+                        return infraAgents.length ? (
+                            <Flex>
+                                <FlexItem>{HostsStatusGroupCell}</FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <Popover
+                                        aria-label="Infraenv cannot be deleted popover"
+                                        headerContent={<div>Cannot be deleted</div>}
+                                        bodyContent={<div>{t('infraEnv.rowAction.delete.desc')}</div>}
+                                    >
+                                        <Button variant="link" icon={<InfoCircleIcon color={blueInfoColor.value} />}>
+                                            Cannot be deleted
+                                        </Button>
+                                    </Popover>
+                                </FlexItem>
+                            </Flex>
+                        ) : (
+                            HostsStatusGroupCell
+                        )
+                    },
+                },
+            ],
+            keyFn: (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid as string,
+            actionFn: (infraEnv: InfraEnvK8sResource) => {
+                const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                if (infraAgents.length) {
+                    return {
+                        promise: Promise.resolve(),
+                        abort: () => {},
+                    }
+                }
+
+                return deleteInfraEnv(infraEnv, infraEnvs, agents)
+            },
+            close: () => {
+                setModalProps({ open: false })
+            },
+            isDanger: true,
+            icon: 'warning',
+            confirmText: t('confirm').toLowerCase(),
+            disableSubmitButton: isDeleteDisabled(infraEnvs, agents),
+        })
+    }
+
     return (
         <>
             <BulkActionModel<CIM.InfraEnvK8sResource> {...modalProps} />
@@ -187,15 +293,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     {
                         header: t('infraEnv.tableHeader.hosts'),
                         cell: (infraEnv) => {
-                            const infraAgents = agents.filter((a) =>
-                                isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
-                            )
-                            const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
-                            const warningAgents = infraAgents.filter((a) =>
-                                ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
-                                    getAgentStatus(a).status.key
-                                )
-                            )
+                            const { infraAgents, errorAgents, warningAgents } =
+                                infraAgentsFiltered[infraEnv.metadata.uid]
 
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -216,9 +315,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         header: '',
                         cellTransforms: [fitContent],
                         cell: (infraEnv) => {
-                            const infraAgents = agents.filter((a) =>
-                                isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
-                            )
+                            const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
                             const actions = []
                             if (infraAgents.length > 0) {
                                 actions.push({
@@ -294,95 +391,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     {
                         id: 'delete',
                         title: t('infraEnv.delete.plural'),
-                        click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.title.delete.infraenv'),
-                                action: t('delete'),
-                                processing: t('deleting'),
-                                resources: infraEnvs,
-                                description: t('bulk.message.delete.infraenv'),
-                                columns: [
-                                    {
-                                        header: t('infraEnv.tableHeader.name'),
-                                        cell: 'metadata.name',
-                                        sort: 'metadata.name',
-                                    },
-                                    {
-                                        header: t('infraEnv.tableHeader.hosts'),
-                                        cell: (infraEnv) => {
-                                            const infraAgents = agents.filter((a) =>
-                                                isMatch(
-                                                    a.metadata.labels,
-                                                    infraEnv.status?.agentLabelSelector?.matchLabels
-                                                )
-                                            )
-                                            const errorAgents = infraAgents.filter(
-                                                (a) => getAgentStatus(a).status.key === 'error'
-                                            )
-                                            const warningAgents = infraAgents.filter((a) =>
-                                                ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
-                                                    getAgentStatus(a).status.key
-                                                )
-                                            )
-
-                                            const HostsStatusGroupCell = (
-                                                <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
-                                                    {infraAgents.length ? (
-                                                        <AcmInlineStatusGroup
-                                                            healthy={
-                                                                infraAgents.length -
-                                                                errorAgents.length -
-                                                                warningAgents.length
-                                                            }
-                                                            danger={errorAgents.length}
-                                                            warning={warningAgents.length}
-                                                        />
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </Link>
-                                            )
-
-                                            return infraAgents.length ? (
-                                                <Flex>
-                                                    <FlexItem>{HostsStatusGroupCell}</FlexItem>
-                                                    <FlexItem align={{ default: 'alignRight' }}>
-                                                        <Popover
-                                                            aria-label="Infraenv cannot be deleted popover"
-                                                            headerContent={<div>Cannot be deleted</div>}
-                                                            bodyContent={
-                                                                <div>{t('infraEnv.rowAction.delete.desc')}</div>
-                                                            }
-                                                        >
-                                                            <Button
-                                                                variant="link"
-                                                                icon={<InfoCircleIcon color={blueInfoColor.value} />}
-                                                            >
-                                                                Cannot be deleted
-                                                            </Button>
-                                                        </Popover>
-                                                    </FlexItem>
-                                                </Flex>
-                                            ) : (
-                                                HostsStatusGroupCell
-                                            )
-                                        },
-                                    },
-                                ],
-                                keyFn: (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid as string,
-                                actionFn: (infraEnv: CIM.InfraEnvK8sResource) => {
-                                    return deleteInfraEnv(infraEnv, infraEnvs, agents)
-                                },
-                                close: () => {
-                                    setModalProps({ open: false })
-                                },
-                                isDanger: true,
-                                icon: 'warning',
-                                confirmText: t('confirm').toLowerCase(),
-                                disableSubmitButton: isDeleteDisabled(infraEnvs, agents),
-                            })
-                        },
+                        click: onClickBulkDeleteInfraEnvs,
                         variant: 'bulk-action',
                     },
                 ]}
