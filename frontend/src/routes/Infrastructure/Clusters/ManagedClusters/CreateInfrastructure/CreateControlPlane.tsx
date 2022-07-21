@@ -8,6 +8,7 @@ import {
     ICatalogCard,
     PageHeader,
     PatternFlyColor,
+    CatalogColor,
 } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -49,7 +50,13 @@ export function CreateControlPlane() {
                         items: [{ text: t('Hosted cluster') }],
                     },
                 ],
-                onClick: () => history.push(NavigationPath.createCluster),
+                badge: t('Tech preview'),
+                badgeColor: CatalogColor.orange,
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=CIMHypershift',
+                    }),
             },
             {
                 id: 'standalone',
@@ -76,7 +83,7 @@ export function CreateControlPlane() {
                         items: [{ text: t('ACM Hub') }, { text: t('Hosting service cluster') }],
                     },
                 ],
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () => history.push(NavigationPath.createDicoverHost),
             },
         ]
         return newCards
@@ -98,7 +105,7 @@ export function CreateControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control Plane')}
+                title={t('Control plane type')}
                 description={t('Next, select a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />

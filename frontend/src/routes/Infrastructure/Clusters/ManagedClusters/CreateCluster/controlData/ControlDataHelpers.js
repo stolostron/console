@@ -341,6 +341,16 @@ export const clusterDetailsControlData = [
         active: false,
         tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
     },
+    {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
+    },
 ]
 
 export const networkingControlData = [
@@ -636,3 +646,19 @@ export const arrayItemHasKey = (options, key) => {
 }
 
 export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')
+
+export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, controlData) => {
+    controlData.push({
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
+    })
+}
+
+export const appendWarning = (warning, controlData) => {
+    controlData.push({
+        id: 'warning',
+        type: 'custom',
+        component: warning,
+    })
+}

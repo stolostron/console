@@ -3,24 +3,20 @@ import React from 'react'
 import DetailsForm from '../components/assisted-installer/hypershift/DetailsForm'
 import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
-import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
+import {
+    automationControlData,
+    CREATE_CLOUD_CONNECTION,
+    appendKlusterletAddonConfig,
+    appendWarning,
+} from './ControlDataHelpers'
 
-export const controlDataHypershift = [
-    /////////////////////// ACM Credentials  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hypershift',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: false,
-        },
-        available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
+export const getControlDataHypershift = (includeKlusterletAddonConfig = true, warning) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
+    appendWarning(warning, controlDataHypershift)
+    return controlDataHypershift
+}
+
+const controlDataHypershift = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {

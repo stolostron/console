@@ -24,33 +24,26 @@ import {
     onChangeDisconnect,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
 
-export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+const installConfig = Handlebars.compile(installConfigHbs)
+
+export const getControlDataOST = (
+    includeAutomation = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataOST)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
 }
 
 const controlDataOST = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'ost',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
@@ -90,6 +83,19 @@ const controlDataOST = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['OpenStack'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            OpenStack: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

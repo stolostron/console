@@ -17,8 +17,13 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 const GCPregions = [
     'asia-east1',
@@ -248,30 +253,18 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+export const getControlDataGCP = (
+    includeAutomation = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataGCP)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
 
 const controlDataGCP = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'gcp',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
@@ -311,6 +304,19 @@ const controlDataGCP = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['GCP'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            GCP: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

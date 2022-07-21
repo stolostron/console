@@ -24,6 +24,7 @@ export enum NavigationPath {
     managedClusters = '/multicloud/infrastructure/clusters/managed',
     createInfrastructure = '/multicloud/infrastructure/clusters/create/infrastructure',
     createControlPlane = '/multicloud/infrastructure/clusters/create/control-plane',
+    createDicoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
@@ -99,6 +100,8 @@ export enum NavigationPath {
     addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+
+    emptyPath = '',
 }
 
 export type CancelBackState = { cancelBack?: boolean }

@@ -21,9 +21,14 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
 } from './ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -112,7 +117,12 @@ const updateWorkerZones = (control, controlData) => {
     typeZones.active = []
 }
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+export const getControlDataAWS = (
+    includeAutomation = true,
+    includeAwsPrivate = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
     if (includeAwsPrivate) {
@@ -124,6 +134,7 @@ export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = 
         }
     }
     if (includeAutomation) controlData.push(...automationControlData)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     return controlData
 }
 
@@ -662,23 +673,6 @@ export const AWSworkerInstanceTypes = [
 ]
 
 const controlDataAWS = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        providerId: 'aws',
-        onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
@@ -718,6 +712,19 @@ const controlDataAWS = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['AWS'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            AWS: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

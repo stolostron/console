@@ -17,8 +17,13 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
@@ -434,8 +439,13 @@ const ApplicationCreationPage = [
     },
 ]
 
-export const getControlDataAZR = (includeAutomation = true, includeSno = false) => {
+export const getControlDataAZR = (
+    includeAutomation = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataAZR)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -460,22 +470,6 @@ const setRegions = (control, controlData) => {
 }
 
 const controlDataAZR = [
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        onSelect: setRegions,
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'azr',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -514,6 +508,19 @@ const controlDataAZR = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['Azure'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            Azure: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

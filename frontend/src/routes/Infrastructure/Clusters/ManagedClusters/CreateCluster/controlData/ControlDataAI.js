@@ -2,24 +2,14 @@
 
 import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
-import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
+import { automationControlData, CREATE_CLOUD_CONNECTION, appendKlusterletAddonConfig } from './ControlDataHelpers'
 
-export const controlDataCIM = [
-    /////////////////////// ACM Credentials  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hybrid',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: false,
-        },
-        available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
+export const getControlDataCIM = (includeKlusterletAddonConfig = true) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataCIM)
+    return controlDataCIM
+}
+
+const controlDataCIM = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
@@ -63,7 +53,12 @@ export const controlDataCIM = [
     },
 ]
 
-export const controlDataAI = _.cloneDeep(controlDataCIM)
+export const getControlDataAI = (includeKlusterletAddonConfig = true) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAI)
+    return controlDataAI
+}
+
+const controlDataAI = _.cloneDeep(controlDataCIM)
 
 const aiStep = controlDataAI.find((data) => data.id === 'ai')
 aiStep.additionalProps.promptSshPublicKey = true

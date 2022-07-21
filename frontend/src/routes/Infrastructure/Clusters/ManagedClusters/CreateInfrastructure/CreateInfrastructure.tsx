@@ -44,7 +44,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=AWS',
+                    }),
             },
             {
                 id: 'baremetal',
@@ -58,8 +62,6 @@ export function CreateInfrastructure() {
                         ),
                     },
                 ],
-                badge: t('Tech preview'),
-                badgeColor: CatalogColor.orange,
                 onClick: () => history.push(NavigationPath.createControlPlane),
             },
             // {
@@ -90,7 +92,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=GCP',
+                    }),
             },
             {
                 id: 'azure',
@@ -105,7 +111,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=Azure',
+                    }),
             },
             {
                 id: 'openstack',
@@ -118,7 +128,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.openstack),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=OpenStack',
+                    }),
             },
             {
                 id: 'rhv',
@@ -131,7 +145,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.redhatvirtualization),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=RHV',
+                    }),
             },
             {
                 id: 'vsphere',
@@ -146,7 +164,11 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.vmware),
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.createCluster,
+                        search: '?infrastructureType=vSphere',
+                    }),
             },
         ]
         return newCards

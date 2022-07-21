@@ -10,6 +10,7 @@ import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import CreateClusterPage from './ManagedClusters/CreateCluster/CreateCluster'
 import { CreateControlPlane } from './ManagedClusters/CreateInfrastructure/CreateControlPlane'
+import { CreateDiscoverHost } from './ManagedClusters/CreateInfrastructure/CreateDiscoverHost'
 import { CreateInfrastructure } from './ManagedClusters/CreateInfrastructure/CreateInfrastructure'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 
@@ -18,6 +19,7 @@ export default function Clusters() {
         <Switch>
             <Route exact path={NavigationPath.createInfrastructure} component={CreateInfrastructure} />
             <Route exact path={NavigationPath.createControlPlane} component={CreateControlPlane} />
+            <Route exact path={NavigationPath.createDicoverHost} component={CreateDiscoverHost} />
             <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
             <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
             <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />

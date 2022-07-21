@@ -39,10 +39,12 @@ import {
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { getControlData } from './controlData/ControlData'
 import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
+import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
+import cimTemplate from './templates/assisted-installer/cim-template.hbs'
+import aiTemplate from './templates/assisted-installer/ai-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
 import {
     HypershiftAgentContext,
@@ -50,9 +52,16 @@ import {
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
 
 import './style.css'
+import getControlDataAWS from './controlData/ControlDataAWS'
+import getControlDataGCP from './controlData/ControlDataGCP'
+import getControlDataAZR from './controlData/ControlDataAZR'
+import getControlDataVMW from './controlData/ControlDataVMW'
+import getControlDataOST from './controlData/ControlDataOST'
+import getControlDataRHV from './controlData/ControlDataRHV'
+import { getControlDataHypershift } from './controlData/ControlDataHypershift'
+import { getControlDataAI, getControlDataCIM } from './controlData/ControlDataAI'
 
 const { isAIFlowInfraEnv } = CIM
-
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -85,6 +94,8 @@ export default function CreateClusterPage() {
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
+    const controlPlaneBreadCrumb = { text: t('Control Plane'), to: NavigationPath.createControlPlane }
+    const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
@@ -275,7 +286,7 @@ export default function CreateClusterPage() {
     }
 
     //compile templates
-    const template = Handlebars.compile(hiveTemplate)
+    let template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
     Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
     Handlebars.registerHelper('append', append)
@@ -389,6 +400,20 @@ export default function CreateClusterPage() {
         }
     }
 
+    const infrastructureType = urlParams.get('infrastructureType') || ''
+    useEffect(() => {
+        if ((infrastructureType === 'CIM' || infrastructureType === 'CIMHypershift') && !isInfraEnvAvailable) {
+            setWarning({
+                title: t('cim.infra.missing.warning.title'),
+                text: t('cim.infra.missing.warning.text'),
+                linkText: t('cim.infra.manage.link'),
+                linkTo: NavigationPath.infraEnvironments,
+            })
+        } else {
+            setWarning(undefined)
+        }
+    }, [infrastructureType, isInfraEnvAvailable, t])
+
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
         return null
@@ -405,39 +430,90 @@ export default function CreateClusterPage() {
         }
     }
 
-    const onControlSelect = (control: any) => {
-        if (control.controlId === 'infrastructure') {
-            if (
-                (control.active?.includes('CIM') || control.active?.includes('CIM-Hypershift')) &&
-                !isInfraEnvAvailable
-            ) {
-                setWarning({
-                    title: t('cim.infra.missing.warning.title'),
-                    text: t('cim.infra.missing.warning.text'),
-                    linkText: t('cim.infra.manage.link'),
-                    linkTo: NavigationPath.infraEnvironments,
-                })
-            } else if (control.active?.includes('BMC')) {
-                setWarning({
-                    title: t('bareMetalAsset.warning.title'),
-                    text: t('bareMetalAsset.warning.text'),
-                    linkText: t('Learn more'),
-                    linkTo: DOC_LINKS.CREATE_CLUSTER_ON_PREMISE,
-                    isExternalLink: true,
-                })
-            } else {
-                setWarning(undefined)
-            }
-        }
+    // const onControlSelect = (control: any) => {
+    //     if (control.controlId === 'infrastructure') {
+    //         if (
+    //             (control.active?.includes('CIM') || control.active?.includes('CIM-Hypershift')) &&
+    //             !isInfraEnvAvailable
+    //         ) {
+    //             setWarning({
+    //                 title: t('cim.infra.missing.warning.title'),
+    //                 text: t('cim.infra.missing.warning.text'),
+    //                 linkText: t('cim.infra.manage.link'),
+    //                 linkTo: NavigationPath.infraEnvironments,
+    //             })
+    //         } else if (control.active?.includes('BMC')) {
+    //             setWarning({
+    //                 title: t('bareMetalAsset.warning.title'),
+    //                 text: t('bareMetalAsset.warning.text'),
+    //                 linkText: t('Learn more'),
+    //                 linkTo: DOC_LINKS.CREATE_CLUSTER_ON_PREMISE,
+    //                 isExternalLink: true,
+    //             })
+    //         } else {
+    //             setWarning(undefined)
+    //         }
+    //     }
+    // }
+
+    // const controlData = getControlData(
+    //     <Warning />,
+    //     onControlSelect,
+    //     settings.awsPrivateWizardStep === 'enabled',
+    //     settings.singleNodeOpenshift === 'enabled',
+    //     isACMAvailable /* includeKlusterletAddonConfig */
+    // )
+
+    let controlData: any[]
+    const breadcrumbs = [
+        { text: t('Clusters'), to: NavigationPath.clusters },
+        { text: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+    ]
+
+    switch (infrastructureType) {
+        case 'AWS':
+            controlData = getControlDataAWS(
+                true,
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'GCP':
+            controlData = getControlDataGCP(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            break
+        case 'Azure':
+            controlData = getControlDataAZR(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            break
+        case 'vSphere':
+            controlData = getControlDataVMW(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            break
+        case 'OpenStack':
+            controlData = getControlDataOST(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            break
+        case 'RHV':
+            controlData = getControlDataRHV(true, isACMAvailable)
+            break
+        case 'CIMHypershift':
+            template = Handlebars.compile(hypershiftTemplate)
+            controlData = getControlDataHypershift(isACMAvailable, <Warning />)
+            breadcrumbs.push(controlPlaneBreadCrumb)
+            break
+        case 'CIM':
+            template = Handlebars.compile(cimTemplate)
+            controlData = getControlDataCIM(isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            break
+        case 'AI':
+            template = Handlebars.compile(aiTemplate)
+            controlData = getControlDataAI(isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            break
+        default:
+            controlData = []
     }
 
-    const controlData = getControlData(
-        <Warning />,
-        onControlSelect,
-        settings.awsPrivateWizardStep === 'enabled',
-        settings.singleNodeOpenshift === 'enabled',
-        isACMAvailable /* includeKlusterletAddonConfig */
-    )
+    breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
 
     return (
         <AcmPage
@@ -457,10 +533,7 @@ export default function CreateClusterPage() {
                             </a>
                         </>
                     }
-                    breadcrumb={[
-                        { text: t('Clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.create-cluster'), to: '' },
-                    ]}
+                    breadcrumb={breadcrumbs}
                     switches={switches}
                     actions={portals}
                 />
