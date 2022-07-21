@@ -6,6 +6,7 @@ export CYPRESS_CACHE_FOLDER = "/go/src/github.com/stolostron/console/cypress_cac
 
 .PHONY: install
 install:
+	yum install -y xorg-x11-server-Xvfb gtk2-devel gtk3-devel libnotify-devel GConf2 nss libXScrnSaver alsa-lib
 	npm ci --no-optional
 	npm run postinstall
 
