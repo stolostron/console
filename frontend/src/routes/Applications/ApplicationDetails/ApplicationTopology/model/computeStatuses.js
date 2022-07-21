@@ -850,9 +850,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                             labelValue: t('Error'),
                             value:
                                 reason ||
-                                t(
-                                    'Some resources failed to deploy. Use View resource YAML link below to view the details.'
-                                ),
+                                t('Some resources failed to deploy. Use View resource YAML link to view the details.'),
                             status: failureStatus,
                         })
                     }
@@ -860,7 +858,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                         details.push({
                             labelValue: t('Warning'),
                             value: t(
-                                'Some resources failed to deploy. Use View resource YAML link below to view the details.'
+                                'Some resources failed to deploy. Use View resource YAML link to view the details.'
                             ),
                             status: warningStatus,
                         })
