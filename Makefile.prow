@@ -25,4 +25,4 @@ unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-    CYPRESS_CACHE_FOLDER=/go/src/github.com/stolostron/console/cypress_cache npm run test
+	npm run test
