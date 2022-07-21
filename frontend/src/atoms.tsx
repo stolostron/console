@@ -538,13 +538,6 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [setSettings, setters])
 
     useEffect(() => {
-        function tokenExpired() {
-            if (process.env.NODE_ENV === 'production') {
-                logout()
-            } else {
-                window.location.href = `${getBackendUrl()}/login`
-            }
-        }
         function checkLoggedIn() {
             fetch(`${getBackendUrl()}/authenticated`, {
                 credentials: 'include',
@@ -582,6 +575,14 @@ export function usePolicies() {
         () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
         [policies]
     )
+}
+
+export async function tokenExpired() {
+    if (process.env.NODE_ENV === 'production') {
+        logout()
+    } else {
+        window.location.href = `${getBackendUrl()}/login`
+    }
 }
 
 export async function logout() {
