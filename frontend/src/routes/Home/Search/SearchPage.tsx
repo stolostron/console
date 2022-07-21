@@ -4,6 +4,14 @@
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import _ from 'lodash'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { userPreferencesState } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { NavigationPath } from '../../../NavigationPath'
+import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
 import {
     AcmActionGroup,
     AcmAlert,
@@ -15,14 +23,6 @@ import {
     AcmScrollable,
     AcmSearchbar,
 } from '../../../ui-components'
-import _ from 'lodash'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { userPreferencesState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
@@ -78,35 +78,42 @@ function HandleErrors(schemaError: ApolloError | undefined, completeError: Apoll
 }
 
 function RenderSearchBar(props: {
-    searchQuery: string
+    presetSearchQuery: string
     setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
     queryErrors: boolean
     setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
     savedSearchQueries: SavedSearch[]
     userPreference?: UserPreference
 }) {
-    const { searchQuery, queryErrors, savedSearchQueries, setQueryErrors, setSelectedSearch, userPreference } = props
+    const { presetSearchQuery, queryErrors, savedSearchQueries, setQueryErrors, setSelectedSearch, userPreference } =
+        props
     const { t } = useTranslation()
-    const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const history = useHistory()
+    const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
+    const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
+
+    useEffect(() => {
+        setCurrentSearch(presetSearchQuery)
+    }, [presetSearchQuery])
+
     const searchSchemaResults = useSearchSchemaQuery({
-        skip: searchQuery.endsWith(':') || operators.some((operator: string) => searchQuery.endsWith(operator)),
+        skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
 
     const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
-        const value = getSearchCompleteString(searchQuery)
-        const query = convertStringToQuery(searchQuery)
+        const value = getSearchCompleteString(currentSearch)
+        const query = convertStringToQuery(currentSearch)
         query.filters = query.filters.filter((filter) => {
             return filter.property !== value
         })
         return { searchCompleteValue: value, searchCompleteQuery: query }
-    }, [searchQuery])
+    }, [currentSearch])
 
     const searchCompleteResults = useSearchCompleteQuery({
-        skip: !searchQuery.endsWith(':') && !operators.some((operator: string) => searchQuery.endsWith(operator)),
+        skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
             property: searchCompleteValue,
@@ -121,6 +128,17 @@ function RenderSearchBar(props: {
             setQueryErrors(false)
         }
     }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
+
+    const saveSearchTooltip = useMemo(() => {
+        if (
+            savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentSearch) !== undefined
+        ) {
+            return t('A saved search already exists for the current search criteria.')
+        } else if (currentSearch === '' || currentSearch.endsWith(':')) {
+            return t('Enter valid search criteria to save a search.')
+        }
+        return undefined
+    }, [currentSearch, savedSearchQueries, t])
 
     return (
         <Fragment>
@@ -137,11 +155,11 @@ function RenderSearchBar(props: {
                 <div style={{ display: 'flex' }}>
                     <AcmSearchbar
                         loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
-                        queryString={searchQuery}
+                        queryString={currentSearch}
                         suggestions={
-                            searchQuery === '' ||
-                            (!searchQuery.endsWith(':') &&
-                                !operators.some((operator: string) => searchQuery.endsWith(operator)))
+                            currentSearch === '' ||
+                            (!currentSearch.endsWith(':') &&
+                                !operators.some((operator: string) => currentSearch.endsWith(operator)))
                                 ? formatSearchbarSuggestions(
                                       _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
                                       'filter',
@@ -150,28 +168,40 @@ function RenderSearchBar(props: {
                                 : formatSearchbarSuggestions(
                                       _.get(searchCompleteResults, 'data.searchComplete', []),
                                       'value',
-                                      searchQuery // pass current search query in order to de-dupe already selected values
+                                      currentSearch // pass current search query in order to de-dupe already selected values
                                   )
                         }
                         currentQueryCallback={(newQuery) => {
-                            updateBrowserUrl(history, newQuery)
-                            if (newQuery !== searchQuery) {
+                            setCurrentSearch(newQuery)
+                            if (newQuery === '') {
+                                updateBrowserUrl(history, newQuery)
+                            }
+                            if (newQuery !== currentSearch) {
                                 setSelectedSearch(savedSearches)
                             }
                         }}
                         toggleInfoModal={toggle}
+                        updateBrowserUrl={updateBrowserUrl}
                     />
                     <AcmButton
-                        style={{ marginLeft: '1rem' }}
+                        style={{ marginLeft: '16px', width: '138px', padding: '6px, 16px' }}
                         onClick={() =>
                             setSaveSearch({
                                 id: '',
                                 name: '',
                                 description: '',
-                                searchText: searchQuery,
+                                searchText: currentSearch,
                             })
                         }
-                        isDisabled={searchQuery === ''}
+                        isDisabled={
+                            currentSearch === '' ||
+                            currentSearch.endsWith(':') ||
+                            savedSearchQueries.find(
+                                (savedQuery: SavedSearch) => savedQuery.searchText === currentSearch
+                            ) !== undefined
+                        }
+                        tooltip={saveSearchTooltip}
+                        variant={'link'}
                     >
                         {t('Save search')}
                     </AcmButton>
@@ -256,7 +286,7 @@ export default function SearchPage() {
     // useEffect using window.location to trigger re-render doesn't work cause react hooks can't use window
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {
-        prefillSearchQuery: searchQuery = '',
+        presetSearchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
     const [userPreferences] = useRecoilState(userPreferencesState)
@@ -274,12 +304,12 @@ export default function SearchPage() {
     }, [userPreference])
 
     useEffect(() => {
-        if (searchQuery === '') {
+        if (presetSearchQuery === '') {
             setSelectedSearch(savedSearches)
         }
-    }, [searchQuery])
+    }, [presetSearchQuery])
 
-    const query = convertStringToQuery(searchQuery)
+    const query = convertStringToQuery(presetSearchQuery)
     const msgQuery = useGetMessagesQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
@@ -304,17 +334,17 @@ export default function SearchPage() {
         >
             <AcmScrollable>
                 <RenderSearchBar
+                    presetSearchQuery={presetSearchQuery}
                     setSelectedSearch={setSelectedSearch}
-                    searchQuery={searchQuery}
                     queryErrors={queryErrors}
                     setQueryErrors={setQueryErrors}
                     savedSearchQueries={userSavedSearches}
                     userPreference={userPreference}
                 />
                 {!queryErrors &&
-                    (searchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
+                    (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
                         <SearchResults
-                            currentQuery={searchQuery}
+                            currentQuery={presetSearchQuery}
                             preSelectedRelatedResources={preSelectedRelatedResources}
                         />
                     ) : (

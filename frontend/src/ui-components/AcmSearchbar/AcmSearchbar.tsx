@@ -3,11 +3,12 @@
 // @types/react-tag-autocomplete is not up-to-date with react-tag-autocomplete library
 // using the following line to override for time being
 declare module 'react-tag-autocomplete'
-
+import { Button } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import { createRef, useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import ReactTags from 'react-tag-autocomplete'
 import './AcmSearchbar.css'
 import { convertStringToTags } from './helper'
@@ -27,12 +28,14 @@ type AcmSearchbarProps = {
     suggestions: DropdownSuggestionsProps[]
     currentQueryCallback: (query: string) => void
     toggleInfoModal: () => void
+    updateBrowserUrl: (history: any, currentQuery: string) => void
 }
 
 export function AcmSearchbar(props: AcmSearchbarProps) {
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const history = useHistory()
     const reactTags: any = createRef()
-    const { loadingSuggestions, suggestions, queryString, currentQueryCallback, toggleInfoModal } = props
+    const { loadingSuggestions, suggestions, queryString, currentQueryCallback, toggleInfoModal, updateBrowserUrl } =
+        props
     const [currentQuery, setCurrentQuery] = useState(queryString)
     const [searchbarTags, setSearchbarTags] = useState(convertStringToTags(currentQuery))
 
@@ -42,8 +45,15 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
         setSearchbarTags(convertStringToTags(queryString))
     }, [queryString])
 
+    function keyDownHandler(event: React.KeyboardEvent) {
+        if (event.key === 'Enter' && currentQuery !== '' && !currentQuery.endsWith(':')) {
+            updateBrowserUrl(history, currentQuery)
+        }
+    }
+
     return (
-        <div className={'searchbar-container'}>
+        <div className={'searchbar-container'} onKeyDown={keyDownHandler}>
+            <SearchIcon className={'search-icon'} noVerticalAlign />
             <ReactTags
                 ref={reactTags}
                 ariaLabelText={'search-bar'}
@@ -150,7 +160,17 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
                 noVerticalAlign
                 title={'Open help modal'}
             />
-            <SearchIcon className={'search-icon'} noVerticalAlign />
+            <Button
+                id="inputDropdownButton1"
+                variant="control"
+                onClick={() => {
+                    if (currentQuery !== '' && !currentQuery.endsWith(':')) {
+                        updateBrowserUrl(history, currentQuery)
+                    }
+                }}
+            >
+                {'Run search'}
+            </Button>
         </div>
     )
 }

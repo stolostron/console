@@ -3,7 +3,7 @@
 import { fireEvent, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-
+import { updateBrowserUrl } from '../../routes/Home/Search/urlQuery'
 import { AcmSearchbar } from './AcmSearchbar'
 
 describe('AcmSearchbar', () => {
@@ -14,6 +14,7 @@ describe('AcmSearchbar', () => {
             suggestions={[]}
             currentQueryCallback={(query: string) => query}
             toggleInfoModal={() => null}
+            updateBrowserUrl={updateBrowserUrl}
         />
     )
     const BlankSearchbar = () => (
@@ -32,6 +33,7 @@ describe('AcmSearchbar', () => {
             ]}
             currentQueryCallback={(query: string) => query}
             toggleInfoModal={() => null}
+            updateBrowserUrl={updateBrowserUrl}
         />
     )
     const PrefilledSearchbar = () => (
@@ -50,6 +52,7 @@ describe('AcmSearchbar', () => {
             ]}
             currentQueryCallback={(query: string) => query}
             toggleInfoModal={() => null}
+            updateBrowserUrl={updateBrowserUrl}
         />
     )
 
@@ -60,6 +63,7 @@ describe('AcmSearchbar', () => {
             suggestions={[]}
             currentQueryCallback={(query: string) => query}
             toggleInfoModal={() => null}
+            updateBrowserUrl={updateBrowserUrl}
         />
     )
 
