@@ -522,27 +522,32 @@ export const architectureData = [
     },
 ]
 
+const versionRegex = /release:([\d]+)\.([\d]+)\.([\d]+)/
+function versionGreater(version, x, y) {
+    console.log(`CHECKING: ${version}`)
+    const matches = version.match(versionRegex)
+    if (matches && parseInt(matches[1], 10) >= x && parseInt(matches[2]) > y) {
+        return true
+    }
+    return false
+}
+
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    //NOTE: We will need to adjust this in the future for new OCP versions!
+    const imageSet = getControlByID(controlData, 'imageSet')
     if (
         singleNodeFeatureFlag &&
         singleNodeFeatureFlag.active &&
         imageSet &&
-        imageSet.active &&
-        (imageSet.active.includes('release:4.8') ||
-            imageSet.active.includes('release:4.9') ||
-            imageSet.active.includes('release:4.10'))
-    ) {
-        return false
+        imageSet.active) {
+        return !versionGreater(imageSet.active, 4, 7)
     }
     return true
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
+    return imageSet && imageSet.active && versionGreater(imageSet.active, 4, 6)
 }
 
 export const isHidden_SNO = (control, controlData) => {
