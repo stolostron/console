@@ -144,13 +144,12 @@ export class ClusterSelector extends Component {
     }
 
     validation(exceptions) {
-        const { control, controlId, i18n } = this.props
+        const { control, i18n } = this.props
         if (_.get(control, activeModeStr, false)) {
             const labelNameSet = new Set()
             control.active.clusterLabelsList.map((item) => {
                 const { id, labelName, labelValue, validValue } = item
                 const invalidLabel = (validValue || id === 0) && (!labelName || labelName.length === 0)
-                const invalidValue = (validValue || id === 0) && (!labelValue || labelValue.length === 0)
 
                 // Add exception if no input for labels or values
                 if (invalidLabel) {
