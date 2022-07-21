@@ -134,37 +134,18 @@ export class ClusterSelector extends React.Component {
     }
 
     validation(exceptions) {
-        const { control, controlId, i18n } = this.props
+        const { control, i18n } = this.props
         if (_.get(control, activeModeStr, false)) {
-            if (Object.keys(control.active.clusterLabelsList).length === 0) {
-                //no cluster labels set
-                exceptions.push({
-                    row: 1,
-                    text: i18n('creation.missing.clusterSelector.value'),
-                    type: 'error',
-                    controlId: `clusterSelector-labels-section-${controlId}`,
-                })
-            }
-
             const labelNameSet = new Set()
             control.active.clusterLabelsList.map((item) => {
-                const { id, labelName, labelValue, validValue } = item
+                const { id, labelName, validValue } = item
                 const invalidLabel = (validValue || id === 0) && (!labelName || labelName.length === 0)
-                const invalidValue = (validValue || id === 0) && (!labelValue || labelValue.length === 0)
 
                 // Add exception if no input for labels or values
                 if (invalidLabel) {
                     exceptions.push({
                         row: 1,
                         text: i18n('creation.missing.clusterSelector.label'),
-                        type: 'error',
-                        controlId: `labelName-${id}`,
-                    })
-                }
-                if (invalidValue) {
-                    exceptions.push({
-                        row: 1,
-                        text: i18n('creation.missing.clusterSelector.value'),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
@@ -223,7 +204,6 @@ export class ClusterSelector extends React.Component {
                                         placeholder={i18n('clusterSelector.value.placeholder.field')}
                                         isDisabled={isReadOnly}
                                         onChange={(value) => this.handleChange(value, 'labelValue', id)}
-                                        isRequired
                                     />
                                 </div>
 
