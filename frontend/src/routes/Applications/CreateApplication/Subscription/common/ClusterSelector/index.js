@@ -146,16 +146,6 @@ export class ClusterSelector extends Component {
     validation(exceptions) {
         const { control, controlId, i18n } = this.props
         if (_.get(control, activeModeStr, false)) {
-            if (Object.keys(control.active.clusterLabelsList).length === 0) {
-                //no cluster labels set
-                exceptions.push({
-                    row: 1,
-                    text: i18n('creation.missing.clusterSelector.value'),
-                    type: 'error',
-                    controlId: `clusterSelector-labels-section-${controlId}`,
-                })
-            }
-
             const labelNameSet = new Set()
             control.active.clusterLabelsList.map((item) => {
                 const { id, labelName, labelValue, validValue } = item
@@ -167,14 +157,6 @@ export class ClusterSelector extends Component {
                     exceptions.push({
                         row: 1,
                         text: i18n('creation.missing.clusterSelector.label'),
-                        type: 'error',
-                        controlId: `labelName-${id}`,
-                    })
-                }
-                if (invalidValue) {
-                    exceptions.push({
-                        row: 1,
-                        text: i18n('creation.missing.clusterSelector.value'),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
@@ -232,7 +214,6 @@ export class ClusterSelector extends Component {
                                         placeholder={i18n('clusterSelector.value.placeholder.field')}
                                         isDisabled={isReadOnly}
                                         onChange={(value) => this.handleChange(value, 'labelValue', id)}
-                                        isRequired
                                     />
                                 </div>
 
