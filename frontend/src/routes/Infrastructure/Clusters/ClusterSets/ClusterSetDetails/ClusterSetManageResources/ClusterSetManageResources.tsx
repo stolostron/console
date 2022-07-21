@@ -25,7 +25,7 @@ import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { clusterCuratorsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
+import { clusterCuratorsState, managedClusterSetsState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -77,7 +77,7 @@ export function ClusterSetManageResourcesContent() {
     clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 
     const clusters = useAllClusters()
-    const [managedClusterSets] = useRecoilValue([managedClustersState, managedClusterSetsState])
+    const managedClusterSets = useRecoilValue(managedClusterSetsState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
