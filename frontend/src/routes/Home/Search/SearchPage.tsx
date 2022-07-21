@@ -137,6 +137,7 @@ function RenderSearchBar(props: {
         } else if (currentSearch === '' || currentSearch.endsWith(':')) {
             return t('Enter valid search criteria to save a search.')
         }
+        return undefined
     }, [currentSearch, savedSearchQueries, t])
 
     return (

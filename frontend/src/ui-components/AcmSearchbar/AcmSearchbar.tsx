@@ -45,8 +45,14 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
         setSearchbarTags(convertStringToTags(queryString))
     }, [queryString])
 
+    function keyDownHandler(event: React.KeyboardEvent) {
+        if (event.key === 'Enter' && currentQuery !== '' && !currentQuery.endsWith(':')) {
+            updateBrowserUrl(history, currentQuery)
+        }
+    }
+
     return (
-        <div className={'searchbar-container'}>
+        <div className={'searchbar-container'} onKeyDown={keyDownHandler}>
             <SearchIcon className={'search-icon'} noVerticalAlign />
             <ReactTags
                 ref={reactTags}
@@ -158,7 +164,7 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
                 id="inputDropdownButton1"
                 variant="control"
                 onClick={() => {
-                    if (currentQuery !== '' || !currentQuery.endsWith(':')) {
+                    if (currentQuery !== '' && !currentQuery.endsWith(':')) {
                         updateBrowserUrl(history, currentQuery)
                     }
                 }}
