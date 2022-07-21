@@ -116,8 +116,6 @@ function requiredValidationMessage() {
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-const EDITOR_CHANGES = 'Other YAML changes'
-
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
@@ -389,8 +387,8 @@ export function AcmDataFormDefault(props: {
             })}
 
             {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-                <FormSection key={EDITOR_CHANGES}>
-                    <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
+                <FormSection key="editor-changes">
+                    <Title headingLevel="h2">{t('Other YAML changes')}</Title>
                     <FormGroup fieldId="diffs">
                         <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
@@ -528,8 +526,8 @@ export function AcmDataFormWizard(props: {
                 )}
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
                 {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-                    <FormSection key={EDITOR_CHANGES}>
-                        <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
+                    <FormSection key="editor-changes">
+                        <Title headingLevel="h2">{t('Other YAML changes')}</Title>
                         <FormGroup fieldId="diffs">
                             <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
                         </FormGroup>

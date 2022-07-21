@@ -178,7 +178,6 @@ describe('add ansible job template page', () => {
 
         // add template
         const createNock = nockCreate(mockClusterCurator)
-        nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await clickByText('Add')
         await waitForNock(createNock)
     })

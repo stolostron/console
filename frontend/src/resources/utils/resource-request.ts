@@ -16,6 +16,7 @@ import { isLocalSubscription } from '../../routes/Applications/helpers/subscript
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
+import { tokenExpired } from '../../atoms'
 
 const isMock = process.env.MOCK === 'true'
 
@@ -742,11 +743,7 @@ export async function fetchRetry<T>(options: {
                 if (status.status !== 'Success') {
                     if (status.code === 401) {
                         // 401 is returned from kubernetes in a Status object if token is not valid
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${getBackendUrl()}/login`
-                        }
+                        tokenExpired()
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
                         throw new ResourceError(status.message as string, status.code as number)
@@ -768,11 +765,7 @@ export async function fetchRetry<T>(options: {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
                     if (!options.disableRedirectUnauthorizedLogin) {
-                        if (process.env.NODE_ENV === 'production') {
-                            window.location.reload()
-                        } else {
-                            window.location.href = `${getBackendUrl()}/login`
-                        }
+                        tokenExpired()
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
                 case 404:

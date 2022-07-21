@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
-import { get, keyBy, set } from 'lodash'
+import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -20,7 +20,12 @@ import {
     secretsState,
     settingsState,
 } from '../../../../../atoms'
-import { clusterCuratorTemplatesValue } from '../../../../../selectors'
+import {
+    ansibleCredentialsValue,
+    clusterCuratorSupportedCurationsValue,
+    providerConnectionsValue,
+    validClusterCuratorTemplatesValue,
+} from '../../../../../selectors'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -33,7 +38,6 @@ import {
     IResource,
     ProviderConnection,
     Secret,
-    unpackProviderConnection,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -74,7 +78,9 @@ const useStyles = makeStyles({
 export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
-    const [secrets] = useRecoilState(secretsState)
+    const secrets = useRecoilValue(secretsState)
+    const providerConnections = useRecoilValue(providerConnectionsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
 
@@ -92,22 +98,10 @@ export default function CreateClusterPage() {
         }
     }, [connectionControl, secrets])
 
-    const providerConnections = secrets.map(unpackProviderConnection)
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
-
-    const [settings] = useRecoilState(settingsState)
-    type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
-    const basicCurations: Curation[] = ['install', 'upgrade']
-    const allCurations: Curation[] = [...basicCurations, 'scale', 'destroy']
-    const supportedCurations = settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
-
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const curatorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
-    const [, setSelectedTemplate] = useState('')
+    const settings = useRecoilValue(settingsState)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const managedClusters = useRecoilValue(managedClustersState)
+    const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
@@ -286,22 +280,7 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName': {
-                const availableData = curatorTemplates.filter((curatorTemplate) =>
-                    supportedCurations.every(
-                        // each curation with any hooks must have a secret reference and the secret must exist
-                        (curation) =>
-                            !(
-                                curatorTemplate?.spec?.[curation]?.prehook?.length ||
-                                curatorTemplate?.spec?.[curation]?.posthook?.length
-                            ) ||
-                            (curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                ansibleCredentials.find(
-                                    (secret) =>
-                                        secret.metadata.name === curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                        secret.metadata.namespace === curatorTemplate.metadata.namespace
-                                ))
-                    )
-                )
+                const availableData = validCuratorTemplates
                 // TODO: Need to keep namespace information
                 control.available = availableData.map((curatorTemplate) => curatorTemplate.metadata.name)
                 control.availableData = availableData
@@ -309,7 +288,7 @@ export default function CreateClusterPage() {
                 break
             }
             case 'supportedCurations':
-                control.active = supportedCurations
+                control.active = cloneDeep(supportedCurations)
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {
@@ -366,13 +345,8 @@ export default function CreateClusterPage() {
     }
 
     function onControlChange(control: any) {
-        switch (control.id) {
-            case 'templateName':
-                setSelectedTemplate(control.active)
-                break
-            case 'connection':
-                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-                break
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
         }
     }
 
