@@ -534,7 +534,7 @@ function versionGreater(version, x, y) {
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
-    const imageSet = getControlByID(controlData, 'imageSet')
+    const imageSet = controlData.find(({ id }) => id === 'imageSet')
     if (
         singleNodeFeatureFlag &&
         singleNodeFeatureFlag.active &&
