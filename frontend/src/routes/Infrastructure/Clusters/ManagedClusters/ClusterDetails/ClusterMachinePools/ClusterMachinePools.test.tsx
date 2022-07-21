@@ -29,8 +29,6 @@ const mockCluster: Cluster = {
         isHibernatable: true,
         clusterPool: undefined,
         secrets: {
-            kubeconfig: '',
-            kubeadmin: '',
             installConfig: '',
         },
     },
@@ -40,6 +38,9 @@ const mockCluster: Cluster = {
     isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeconfig: '',
+    kubeadmin: '',
+    isHypershift: false,
 }
 
 describe('ClusterMachinePools', () => {

@@ -1,5 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CIM } from 'openshift-assisted-ui-lib'
+import {
+    HostedClusterK8sResource,
+    AgentMachineK8sResource,
+    NodePoolK8sResource,
+    AgentClusterInstallK8sResource,
+    AgentK8sResource,
+    BareMetalHostK8sResource,
+    InfraEnvK8sResource,
+    InfrastructureK8sResource,
+    NMStateK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { noop } from 'lodash'
@@ -7,7 +17,6 @@ import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
-    AgentClusterInstallVersion,
     AgentKind,
     AgentKindVersion,
     AnsibleJob,
@@ -145,6 +154,15 @@ import {
     UserPreference,
     UserPreferenceApiVersion,
     UserPreferenceKind,
+    HostedClusterKind,
+    HostedClusterApiVersion,
+    NodePoolKind,
+    NodePoolApiVersion,
+    AgentMachineApiVersion,
+    AgentMachineKind,
+    CustomResourceDefinition,
+    CustomResourceDefinitionApiVersion,
+    CustomResourceDefinitionKind,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -157,8 +175,8 @@ export const THROTTLE_EVENTS_DELAY = 500
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
 
-export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
-export const agentsState = AtomArray<CIM.AgentK8sResource>()
+export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
+export const agentsState = AtomArray<AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const appProjectsState = AtomArray<IResource>()
 export const applicationSetsState = AtomArray<ApplicationSet>()
@@ -166,7 +184,7 @@ export const applicationsState = AtomArray<Application>()
 export const argoApplicationsState = AtomArray<ArgoApplication>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
-export const bareMetalHostsState = AtomArray<CIM.BareMetalHostK8sResource>()
+export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
 export const channelsState = AtomArray<Channel>()
 export const clusterClaimsState = AtomArray<ClusterClaim>()
@@ -181,8 +199,8 @@ export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const helmReleaseState = AtomArray<HelmRelease>()
-export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
-export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
+export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
+export const infrastructuresState = AtomArray<InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
 export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
 export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
@@ -191,7 +209,7 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
-export const nmStateConfigsState = AtomArray<CIM.NMStateK8sResource>()
+export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
 export const policySetsState = AtomArray<PolicySet>()
@@ -206,6 +224,10 @@ export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const userPreferencesState = AtomArray<UserPreference>()
+export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
+export const nodePoolsState = AtomArray<NodePoolK8sResource>()
+export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
+export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -288,6 +310,10 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
     const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
     const [, setUserPreferencesState] = useRecoilState(userPreferencesState)
+    const [, setHostedClustersState] = useRecoilState(hostedClustersState)
+    const [, setNodePoolsState] = useRecoilState(nodePoolsState)
+    const [, setAgentMachinesState] = useRecoilState(agentMachinesState)
+    const [, setCustomResourceDefinitionsState] = useRecoilState(customResourceDefinitionsState)
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -310,7 +336,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
         addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
         addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
-        addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(AgentKindVersion, AgentKind, setAgents)
         addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
         addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
@@ -346,6 +371,10 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
+        addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
+        addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
+        addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
+        addSetter(CustomResourceDefinitionApiVersion, CustomResourceDefinitionKind, setCustomResourceDefinitionsState)
         return setters
     }, [
         setAgentClusterInstalls,
@@ -397,6 +426,10 @@ export function LoadData(props: { children?: ReactNode }) {
         setSubscriptionsState,
         setSubscriptionOperatorsState,
         setUserPreferencesState,
+        setHostedClustersState,
+        setNodePoolsState,
+        setAgentMachinesState,
+        setCustomResourceDefinitionsState,
     ])
 
     useEffect(() => {

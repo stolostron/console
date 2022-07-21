@@ -129,6 +129,11 @@ const definitions: IWatchOptions[] = [
     { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
     { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
     { kind: 'UserPreference', apiVersion: 'console.open-cluster-management.io/v1' },
+    { kind: 'HostedCluster', apiVersion: 'hypershift.openshift.io/v1alpha1' },
+    { kind: 'NodePool', apiVersion: 'hypershift.openshift.io/v1alpha1' },
+    { kind: 'AgentMachine', apiVersion: 'capi-provider.agent-install.openshift.io/v1alpha1' },
+    { kind: 'CustomResourceDefinition', apiVersion: 'apiextensions.k8s.io/v1' },
+    { kind: 'ConfigMap', apiVersion: 'v1', labelSelector: { 'hypershift.openshift.io/supported-versions': 'true' } },
 ]
 
 export function startWatching(): void {

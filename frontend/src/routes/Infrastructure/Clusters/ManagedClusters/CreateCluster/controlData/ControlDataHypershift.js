@@ -42,7 +42,7 @@ export const controlDataHypershift = [
     {
         id: 'hypershiftHostsStep',
         type: 'step',
-        title: 'Node Pools',
+        title: 'Nodepools',
         disabled: true,
     },
     {

@@ -48,8 +48,6 @@ const mockCluster: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: undefined,
-            kubeadmin: undefined,
-            kubeconfig: undefined,
         },
     },
     isHive: true,
@@ -58,6 +56,9 @@ const mockCluster: Cluster = {
     isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: undefined,
+    kubeconfig: undefined,
+    isHypershift: false,
 }
 
 function rbacPatchManagedCluster() {

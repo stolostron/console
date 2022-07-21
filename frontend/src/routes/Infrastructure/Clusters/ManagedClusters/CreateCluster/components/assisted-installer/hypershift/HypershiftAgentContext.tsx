@@ -7,10 +7,7 @@ export type NodePoolFormValue = {
     clusterName: string
     releaseImage: string
     count: number
-    agentLabels: string[]
-    autoSelectedAgentIDs: string[]
-    autoSelectHosts: boolean
-    selectedAgentIDs: string[]
+    agentLabels: { key: string; value: string }[]
 }
 
 export type HypershiftAgentContextType = {
