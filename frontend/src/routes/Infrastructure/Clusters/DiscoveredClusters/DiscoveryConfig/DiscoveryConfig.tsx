@@ -344,7 +344,8 @@ export function DiscoveryConfigPageContent(props: {
                 canCreateDiscoveryConfig.abort()
             }
         }
-    }, [editing, discoveryConfig.metadata.namespace, alertContext, t])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editing, discoveryConfig.metadata.namespace, t])
 
     return (
         <AcmForm>
