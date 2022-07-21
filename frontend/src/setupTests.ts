@@ -21,9 +21,13 @@ process.env.REACT_APP_BACKEND_PATH = ''
 JestFetchMock.enableMocks()
 fetchMock.dontMock()
 // browser fetch works with relative URL; cross-fetch does not
-global.fetch = jest.fn((input, reqInit) =>
-    fetchMock(typeof input === 'string' ? new URL(input, process.env.JEST_DEFAULT_HOST).toString() : input, reqInit)
-)
+global.fetch = jest.fn((input, reqInit) => {
+    const newInput =
+        typeof input === 'string' || input instanceof URL
+            ? new URL(input.toString(), process.env.JEST_DEFAULT_HOST).toString()
+            : input
+    return fetchMock(newInput, reqInit)
+})
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)

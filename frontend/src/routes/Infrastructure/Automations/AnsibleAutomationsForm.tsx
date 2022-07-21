@@ -14,8 +14,8 @@ import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '../../.
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { configMapsState, secretsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { configMapsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -36,9 +36,9 @@ import {
     listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
-    unpackProviderConnection,
 } from '../../../resources'
 import schema from './schema.json'
+import { ansibleCredentialsValue } from '../../../selectors'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -53,15 +53,9 @@ export default function AnsibleAutomationsFormPage({
     }
 
     const [error, setError] = useState<Error>()
-    const [secrets] = useRecoilState(secretsState)
-    const providerConnections = secrets.map(unpackProviderConnection)
     const [clusterCuratorTemplate, setClusterCuratorTemplate] = useState<ClusterCurator | undefined>()
 
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
     useEffect(() => {
         if (isEditing || isViewing) {

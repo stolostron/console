@@ -18,6 +18,8 @@ export function AcmLabelsInput(props: {
     const ValidationContext = useValidationContext()
     const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null)
 
+    const { value } = props
+
     function addLabel(input: string) {
         /* istanbul ignore next */
         const newlabels = input
@@ -70,8 +72,8 @@ export function AcmLabelsInput(props: {
                         inputRef.current?.focus()
                     }}
                 >
-                    {props.value &&
-                        Object.keys(props.value).map((key) => (
+                    {value &&
+                        Object.keys(value).map((key) => (
                             <Label
                                 className="label-pill"
                                 key={key}
@@ -84,7 +86,7 @@ export function AcmLabelsInput(props: {
                                 closeBtnProps={{ id: `remove-${key}` }}
                             >
                                 {key}
-                                {props.value && props.value[key].trim() != '' && '=' + props.value[key]}
+                                {typeof value[key] === 'string' && value[key].trim() !== '' && `=${value[key]}`}
                             </Label>
                         ))}
                     <TextInput
