@@ -583,20 +583,13 @@ export const architectureData = [
 const versionRegex = /release:([\d]+)\.([\d]+)\.([\d]+)/
 function versionGreater(version, x, y) {
     const matches = version.match(versionRegex)
-    if (matches && parseInt(matches[1], 10) >= x && parseInt(matches[2]) > y) {
-        return true
-    }
-    return false
+    return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2]) > y
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
     const imageSet = getControlByID(controlData, 'imageSet')
-    if (
-        singleNodeFeatureFlag &&
-        singleNodeFeatureFlag.active &&
-        imageSet &&
-        imageSet.active) {
+    if (singleNodeFeatureFlag && singleNodeFeatureFlag.active && imageSet && imageSet.active) {
         return !versionGreater(imageSet.active, 4, 7)
     }
     return true
