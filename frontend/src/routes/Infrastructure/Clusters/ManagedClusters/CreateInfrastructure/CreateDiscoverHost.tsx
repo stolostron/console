@@ -59,15 +59,12 @@ export function CreateDiscoverHost() {
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
-    const breadcrumbs = useMemo(() => {
-        const newBreadcrumbs: ICatalogBreadcrumb[] = [
+    const breadcrumbs = [
             { label: t('Clusters'), to: NavigationPath.clusters },
             { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
             { label: t('Control Plane'), to: NavigationPath.createControlPlane },
             { label: t('Hosts') },
         ]
-        return newBreadcrumbs
-    }, [t])
 
     const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
 
@@ -78,7 +75,7 @@ export function CreateDiscoverHost() {
                 description={t('Choose an option based on your hosts.')}
                 breadcrumbs={breadcrumbs}
             />
-            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} onCancel={() => history.push(NavigationPath.clusters)}/>
         </Fragment>
     )
 }
