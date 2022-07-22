@@ -1123,7 +1123,7 @@ describe('ClusterDetails', () => {
 
 const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
 
-describe.skip('ClusterDetails for On Premise', () => {
+describe('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
     })
@@ -1146,7 +1146,7 @@ describe.skip('ClusterDetails for On Premise', () => {
         await waitForTestId('col-header-memory')
         await waitForTestId('col-header-disk')
 
-        await waitForText('Waiting for hosts...')
+        await waitForText('ai:Waiting for hosts...')
 
         // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
         await waitForText('Assisted installation')
