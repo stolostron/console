@@ -54,7 +54,13 @@ export function CreateControlPlane() {
                         items: [{ text: t('Hosted cluster') }],
                     },
                 ],
-                onClick: isHypershiftEnabled ? () => history.push(NavigationPath.createCluster) : undefined,
+                onClick: isHypershiftEnabled
+                    ? () =>
+                          history.push({
+                              pathname: NavigationPath.createCluster,
+                              search: '?infrastructureType=CIMHypershift',
+                          })
+                    : undefined,
                 alertTitle: isHypershiftEnabled
                     ? undefined
                     : t('Hosted control plane operator must be enabled in order to continue'),
@@ -92,7 +98,7 @@ export function CreateControlPlane() {
                         items: [{ text: t('ACM Hub') }, { text: t('Hosting service cluster') }],
                     },
                 ],
-                onClick: () => history.push(NavigationPath.createCluster),
+                onClick: () => history.push(NavigationPath.createDicoverHost),
             },
         ]
         return newCards
@@ -112,7 +118,7 @@ export function CreateControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control Plane')}
+                title={t('Control plane type')}
                 description={t('Next, select a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />

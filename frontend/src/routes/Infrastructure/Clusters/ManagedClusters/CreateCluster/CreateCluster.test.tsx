@@ -536,7 +536,7 @@ const mockKlusterletAddonSecretAws = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-describe('CreateCluster', () => {
+describe('CreateCluster AWS', () => {
     const Component = () => {
         return (
             <RecoilRoot
@@ -556,7 +556,7 @@ describe('CreateCluster', () => {
                     })
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -598,10 +598,6 @@ describe('CreateCluster', () => {
         const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -670,10 +666,6 @@ describe('CreateCluster', () => {
         const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
 
@@ -745,10 +737,6 @@ describe('CreateCluster', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
-
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
@@ -811,6 +799,128 @@ describe('CreateCluster', () => {
         await waitForNocks(createNocks)
     })
 
+    test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
+
+        // create the form
+        const { container } = render(
+            <PluginContext.Provider value={{ isACMAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('Select a credential')
+        //screen.debug(debug(), 2000000)
+        await clickByText(providerConnectionAws.metadata.name!)
+
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- nodes
+        await clickByText('Next')
+
+        // step 5 -- the network
+        await clickByText('Next')
+
+        // skipping private configuration
+        await clickByText('Next')
+
+        // skipping proxy
+        await clickByText('Next')
+
+        // step 6 - integration - skipping ansible template
+        await clickByText('Next')
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedClusterAws),
+            nockCreate(mockMachinePoolAws),
+            nockCreate(mockProviderConnectionSecretCopiedAws),
+            nockCreate(mockPullSecretAws),
+            nockCreate(mockInstallConfigSecretAws),
+            nockCreate(mockPrivateSecretAws),
+            nockCreate(mockClusterDeploymentAws),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        // expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('Creating cluster ...')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
+})
+
+describe('CreateCluster on premise', () => {
+    const Component = () => {
+        return (
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(managedClusterSetsState, [])
+                    snapshot.set(secretsState, [
+                        providerConnection as Secret,
+                        providerConnectionAnsible as Secret,
+                        providerConnectionAws as Secret,
+                    ])
+                    snapshot.set(clusterCuratorsState, mockClusterCurators)
+                    snapshot.set(settingsState, {
+                        ansibleIntegration: 'enabled',
+                        singleNodeOpenshift: 'enabled',
+                        awsPrivateWizardStep: 'enabled',
+                    })
+                }}
+            >
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=CIM`]}>
+                    <Route path={NavigationPath.createCluster}>
+                        <CreateClusterPage />
+                    </Route>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    }
+
+    let consoleInfos: string[]
+    const originalConsoleInfo = console.info
+    const originalConsoleGroup = console.group
+    const originalConsoleGroupCollapsed = console.groupCollapsed
+
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        consoleInfos = []
+        console.info =
+            console.groupCollapsed =
+            console.group =
+                (message?: any, ...optionalParams: any[]) => {
+                    if (message) {
+                        consoleInfos = [...consoleInfos, message, ...optionalParams]
+                    }
+                }
+    })
+
+    afterEach(() => {
+        console.info = originalConsoleInfo
+        console.group = originalConsoleGroup
+        console.groupCollapsed = originalConsoleGroupCollapsed
+    })
+
     test(
         'can create On Premise cluster',
         async () => {
@@ -819,8 +929,6 @@ describe('CreateCluster', () => {
 
             // Create On Premise cluster
             // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
-            await clickByTestId('use-existing-discovered-hosts')
-            await clickByText('Next')
 
             // wait for tables/combos to fill in
             await waitForNocks(initialNocks)
@@ -882,76 +990,4 @@ describe('CreateCluster', () => {
         },
         2 * 60 * 1000
     )
-
-    test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
-        window.scrollBy = () => {}
-
-        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
-
-        // create the form
-        const { container } = render(
-            <PluginContext.Provider value={{ isACMAvailable: false }}>
-                <Component />
-            </PluginContext.Provider>
-        )
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-        await clickByText('Next')
-
-        // wait for tables/combos to fill in
-        await waitForNocks(initialNocks)
-
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
-
-        // step 2 -- the name and imageset
-        await typeByTestId('eman', clusterName!)
-        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
-        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
-        await clickByText('Next')
-
-        // step 3 -- nodes
-        await clickByText('Next')
-
-        // step 5 -- the network
-        await clickByText('Next')
-
-        // skipping private configuration
-        await clickByText('Next')
-
-        // skipping proxy
-        await clickByText('Next')
-
-        // step 6 - integration - skipping ansible template
-        await clickByText('Next')
-
-        // nocks for cluster creation
-        const createNocks = [
-            // create aws namespace (project)
-            nockCreate(mockClusterProject, mockClusterProjectResponse),
-
-            // create the managed cluster
-            nockCreate(mockManagedClusterAws),
-            nockCreate(mockMachinePoolAws),
-            nockCreate(mockProviderConnectionSecretCopiedAws),
-            nockCreate(mockPullSecretAws),
-            nockCreate(mockInstallConfigSecretAws),
-            nockCreate(mockPrivateSecretAws),
-            nockCreate(mockClusterDeploymentAws),
-        ]
-
-        // click create button
-        await clickByText('Create')
-
-        // expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('Creating cluster ...')
-
-        // make sure creating
-        await waitForNocks(createNocks)
-    })
 })

@@ -15,10 +15,16 @@ import {
     isHidden_SNO,
     onChangeSNO,
     architectureData,
+    appendKlusterletAddonConfig,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
 
-export const getControlDataRHV = (includeAutomation = true) => {
+const installConfig = Handlebars.compile(installConfigHbs)
+
+export const getControlDataRHV = (includeAutomation = true, includeKlusterletAddonConfig = true) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataRHV)
     if (includeAutomation) return [...controlDataRHV, ...automationControlData]
     return [...controlDataRHV]
 }
@@ -109,6 +115,19 @@ const controlDataRHV = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['RHV'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            RHV: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

@@ -5,13 +5,18 @@ import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
-export const controlDataHypershift = [
+export const getControlDataHypershift = (includeKlusterletAddonConfig = true, warning) => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
         id: 'hypershiftDetailStep',
         type: 'step',
         title: 'Cluster details',
+    },
+    {
+        id: 'warning',
+        type: 'custom',
+        component: warning,
     },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
@@ -64,6 +69,11 @@ export const controlDataHypershift = [
         component: <NetworkForm />,
         providerId: 'hypershift',
         mustValidate: true,
+    },
+    {
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
     },
     ...automationControlData,
 ]

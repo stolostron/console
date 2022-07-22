@@ -337,6 +337,64 @@ export const clusterDetailsControlData = [
         active: false,
         tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
     },
+    {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
+    },
+]
+
+export const clusterPoolDetailsControlData = [
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.name',
+        tooltip: 'tooltip.creation.ocp.name',
+        placeholder: 'creation.ocp.name.placeholder',
+        id: 'name',
+        type: 'text',
+        validation: {
+            constraint: VALID_DNS_LABEL,
+            notification: 'import.form.invalid.dns.label',
+            required: true,
+        },
+        reverse: 'ClusterDeployment[0].metadata.name',
+    },
+    {
+        name: 'creation.ocp.clusterSet',
+        tooltip: 'tooltip.creation.ocp.clusterSet',
+        id: 'clusterSet',
+        type: 'singleselect',
+        placeholder: 'placeholder.creation.ocp.clusterSet',
+        validation: {
+            required: false,
+        },
+        available: [],
+    },
+    {
+        name: 'creation.ocp.baseDomain',
+        tooltip: 'tooltip.creation.ocp.baseDomain',
+        placeholder: 'placeholder.creation.ocp.baseDomain',
+        id: 'baseDomain',
+        type: 'text',
+        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
+    },
+    {
+        name: 'cluster.create.ocp.fips',
+        id: 'fips',
+        type: 'checkbox',
+        active: false,
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
+    },
 ]
 
 export const networkingControlData = [
@@ -629,3 +687,16 @@ export const arrayItemHasKey = (options, key) => {
 }
 
 export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')
+
+export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, controlData) => {
+    const klusterletAddonConfigIdx = controlData.findIndex((control) => control.id === 'includeKlusterletAddonConfig')
+    if (klusterletAddonConfigIdx > -1) {
+        controlData[klusterletAddonConfigIdx].active = includeKlusterletAddonConfig
+        return
+    }
+    controlData.push({
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
+    })
+}
