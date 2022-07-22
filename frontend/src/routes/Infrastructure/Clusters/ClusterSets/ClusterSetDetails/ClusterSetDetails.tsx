@@ -178,10 +178,12 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
         >
             <Suspense fallback={<Fragment />}>
                 <Switch>
-                    <Route exact path={NavigationPath.clusterSetManage}>
-                        <ClusterSetManageResourcesPage />
-                    </Route>
-                    {isSubmarinerAvailable && (
+                    {!isGlobalClusterSet(clusterSet) && (
+                        <Route exact path={NavigationPath.clusterSetManage}>
+                            <ClusterSetManageResourcesPage />
+                        </Route>
+                    )}
+                    {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
                         <Route exact path={NavigationPath.clusterSetSubmarinerInstall}>
                             <InstallSubmarinerFormPage />
                         </Route>
@@ -283,17 +285,21 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                             <Route exact path={NavigationPath.clusterSetOverview}>
                                 <ClusterSetOverviewPageContent />
                             </Route>
-                            {isSubmarinerAvailable && (
+                            {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
                                 <Route exact path={NavigationPath.clusterSetSubmariner}>
                                     <ClusterSetSubmarinerPageContent />
                                 </Route>
                             )}
-                            <Route exact path={NavigationPath.clusterSetClusters}>
-                                <ClusterSetClustersPageContent />
-                            </Route>
-                            <Route exact path={NavigationPath.clusterSetClusterPools}>
-                                <ClusterSetClusterPoolsPageContent />
-                            </Route>
+                            {!isGlobalClusterSet(clusterSet) && (
+                                <Route exact path={NavigationPath.clusterSetClusters}>
+                                    <ClusterSetClustersPageContent />
+                                </Route>
+                            )}
+                            {!isGlobalClusterSet(clusterSet) && (
+                                <Route exact path={NavigationPath.clusterSetClusterPools}>
+                                    <ClusterSetClusterPoolsPageContent />
+                                </Route>
+                            )}
                             <Route exact path={NavigationPath.clusterSetAccess}>
                                 <ClusterSetAccessManagement />
                             </Route>
