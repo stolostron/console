@@ -12,6 +12,6 @@
     },
     "dependencies": {
         "@console/pluginAPI": "*",
-        "mce": "2.1.x"
+        "mce": ">=2.1"
     }
 }
