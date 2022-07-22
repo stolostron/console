@@ -45,35 +45,37 @@ const Component = () => {
     )
 }
 
-describe.skip('Infrastructure Environment Details page', () => {
+describe('Infrastructure Environment Details page', () => {
     test('can render', async () => {
         const initialNocks = [nockGet(mockPullSecret)]
         render(<Component />)
-        await waitForText('Environment details', true)
+        await waitForText('ai:Environment details')
         await waitForNocks(initialNocks)
 
         // The Overview tab
-        await waitForText('Infrastructure Environment name')
+        await waitForText('ai:Infrastructure Environment name')
 
         // Open discovery ISO dialog
         await clickHostAction('With Discovery ISO')
 
         // Discovery ISO config dialog
-        await clickByText('ai:Generate Discovery ISO')
+        // remove space `ai: ` once ai lib is updated
+        await clickByText('ai: Generate Discovery ISO')
 
         // Discovery ISO download state
-        await waitForText('Discovery ISO is ready to download')
-        await waitForText('Download Discovery ISO')
+        // remove space `ai: ` once ai lib is updated
+        await waitForText('ai: Discovery ISO is ready for download')
+        await waitForText('ai:Download Discovery ISO')
 
         // note: the input-element ID is auto-generated
         // await waitForTestId('text-input-1')
         // await waitFor(() => expect(getByTestId('text-input-1')).toHaveValue(mockInfraEnv1.status.isoDownloadURL))
 
-        await clickByText('Close')
-        await waitForNotText('Download Discovery ISO')
+        await clickByText('ai:Close')
+        await waitForNotText('ai:Download Discovery ISO')
 
         // The Hosts tab
         await clickByText('Hosts')
-        await waitForText('Hosts may take a few minutes to appear here after booting.')
+        await waitForText('ai:Hosts may take a few minutes to appear here after booting.')
     })
 })
