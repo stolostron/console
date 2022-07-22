@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon } from '@patternfly/react-icons'
+import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     CatalogCardItemType,
     ItemView,
@@ -12,12 +12,18 @@ import {
 } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { customResourceDefinitionsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
     const history = useHistory()
+    const [crds] = useRecoilState(customResourceDefinitionsState)
+
+    const isHypershiftEnabled = crds.some(({ metadata }) => metadata.name === 'hostedclusters.hypershift.openshift.io')
 
     const cards = useMemo(() => {
         const newCards: ICatalogCard[] = [
@@ -28,9 +34,7 @@ export function CreateControlPlane() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            t(
-                                'Run OpenShift in a hyperscale manner with many control planes hosted on a central hosting service cluster.'
-                            )
+                            'Run OpenShift in a hyperscale manner with many control planes hosted on a central hosting service cluster.'
                         ),
                     },
                     {
@@ -50,13 +54,18 @@ export function CreateControlPlane() {
                         items: [{ text: t('Hosted cluster') }],
                     },
                 ],
+                onClick: isHypershiftEnabled ? () => history.push(NavigationPath.createCluster) : undefined,
+                alertTitle: isHypershiftEnabled
+                    ? undefined
+                    : t('Hosted control plane operator must be enabled in order to continue'),
+                alertVariant: 'info',
+                alertContent: (
+                    <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noopener noreferrer">
+                        {t('View documentation')} <ExternalLinkAltIcon />
+                    </a>
+                ),
                 badge: t('Tech preview'),
                 badgeColor: CatalogColor.orange,
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=CIMHypershift',
-                    }),
             },
             {
                 id: 'standalone',
@@ -87,7 +96,7 @@ export function CreateControlPlane() {
             },
         ]
         return newCards
-    }, [history, t])
+    }, [history, t, isHypershiftEnabled])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -100,8 +109,6 @@ export function CreateControlPlane() {
         return newBreadcrumbs
     }, [t])
 
-    const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
-
     return (
         <Fragment>
             <PageHeader
@@ -109,7 +116,13 @@ export function CreateControlPlane() {
                 description={t('Next, select a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />
-            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView
+                items={cards}
+                itemKeyFn={keyFn}
+                itemToCardFn={(card) => card}
+                onBack={() => history.push(NavigationPath.createInfrastructure)}
+                onCancel={() => history.push(NavigationPath.clusters)}
+            />
         </Fragment>
     )
 }

@@ -181,8 +181,6 @@ export function CreateInfrastructure() {
         [t]
     )
 
-    const onBack = useCallback(() => history.push(NavigationPath.clusters), [history])
-
     return (
         <Fragment>
             <PageHeader
@@ -190,7 +188,12 @@ export function CreateInfrastructure() {
                 description={t('First, choose your infrastructure provider.')}
                 breadcrumbs={breadcrumbs}
             />
-            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView
+                items={cards}
+                itemKeyFn={keyFn}
+                itemToCardFn={(card) => card}
+                onCancel={() => history.push(NavigationPath.clusters)}
+            />
         </Fragment>
     )
 }

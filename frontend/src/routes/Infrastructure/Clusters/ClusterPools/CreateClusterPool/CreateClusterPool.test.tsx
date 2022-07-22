@@ -229,7 +229,6 @@ describe('CreateClusterPool', () => {
 
         // step 1 -- the infrastructure
         await clickByTestId('amazon-web-services')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -237,6 +236,7 @@ describe('CreateClusterPool', () => {
         // connection
         await clickByPlaceholderText('Select a credential')
         await clickByText(providerConnection.metadata.name!)
+        await clickByText('Next')
 
         // step 2 -- the name, namespace and imageset
         await typeByTestId('eman', clusterName!)

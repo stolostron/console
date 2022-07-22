@@ -18,6 +18,8 @@ import {
     ManagedClusterKind,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
+    createResources,
+    IResource,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -731,3 +733,7 @@ export const onMassDeleteHost = (
 export const fetchInfraEnv = (name: string, namespace: string) =>
     getResource({ apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'InfraEnv', metadata: { namespace, name } })
         .promise
+
+export const importYaml = (yamlContent: unknown) => {
+    return createResources(yamlContent as IResource[])
+}

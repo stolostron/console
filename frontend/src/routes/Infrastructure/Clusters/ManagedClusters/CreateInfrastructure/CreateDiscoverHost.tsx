@@ -1,11 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-    CatalogCardItemType,
-    ItemView,
-    ICatalogBreadcrumb,
-    ICatalogCard,
-    PageHeader,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -60,11 +54,11 @@ export function CreateDiscoverHost() {
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
     const breadcrumbs = [
-            { label: t('Clusters'), to: NavigationPath.clusters },
-            { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
-            { label: t('Control Plane'), to: NavigationPath.createControlPlane },
-            { label: t('Hosts') },
-        ]
+        { label: t('Clusters'), to: NavigationPath.clusters },
+        { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+        { label: t('Control Plane'), to: NavigationPath.createControlPlane },
+        { label: t('Hosts') },
+    ]
 
     const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
 
@@ -75,7 +69,13 @@ export function CreateDiscoverHost() {
                 description={t('Choose an option based on your hosts.')}
                 breadcrumbs={breadcrumbs}
             />
-            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} onCancel={() => history.push(NavigationPath.clusters)}/>
+            <ItemView
+                items={cards}
+                itemKeyFn={keyFn}
+                itemToCardFn={(card) => card}
+                onBack={onBack}
+                onCancel={() => history.push(NavigationPath.clusters)}
+            />
         </Fragment>
     )
 }

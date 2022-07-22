@@ -542,7 +542,7 @@ const mockKlusterletAddonSecretAws = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-describe('CreateCluster', () => {
+describe('CreateCluster AWS', () => {
     const Component = () => {
         return (
             <RecoilRoot
@@ -805,78 +805,6 @@ describe('CreateCluster', () => {
         await waitForNocks(createNocks)
     })
 
-    test.skip(
-        'can create On Premise cluster',
-        async () => {
-            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
-            render(<Component />)
-
-            // Create On Premise cluster
-            // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
-            await clickByTestId('use-existing-discovered-hosts')
-            await clickByText('Next')
-
-            // wait for tables/combos to fill in
-            await waitForNocks(initialNocks)
-
-            // check integration of AI in the left-side navigation
-            await waitForText('Cluster details', true)
-            await waitForText('Review and save')
-            await waitForText('Cluster hosts')
-            await waitForText('Cluster network')
-            await waitForText('Review')
-
-            // fill-in Cluster details
-            await typeByTestId('form-input-name-field', clusterName)
-            await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
-
-            await clickByTestId('form-input-highAvailabilityMode-field')
-            await waitForText('SNO enables you to install OpenShift using only one host.')
-            await clickByTestId('form-input-highAvailabilityMode-field')
-
-            await waitForText('OpenShift 4.8.15') // single value of combobox
-            await typeByTestId('additionalLabels', 'myLabelKey=myValue')
-            await clickByTestId('form-input-pullSecret-field')
-
-            await typeByTestId('form-input-pullSecret-field', pullSecretAI)
-
-            // transition to Automation
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            await clickByText('Next')
-            // The test is flaky here
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            await waitForText('Ansible Automation Template')
-
-            // skip Automation to the Review and Save step
-            await clickByText('Next')
-            await waitForText('Infrastructure provider credential')
-
-            await waitForText(
-                'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
-            )
-
-            // Let's save it
-            const createNocks = [
-                nockCreate(mockClusterProject, mockClusterProjectResponse),
-                nockCreate(mockClusterDeploymentAI),
-                nockCreate(mockManagedClusterAI),
-                nockCreate(mockAgentClusterInstall),
-                nockCreate(mockPullSecretAI),
-                nockCreate(mockKlusterletAddonConfigAI),
-            ]
-
-            await clickByText('Save')
-
-            // make sure creating
-            await waitForNocks(createNocks)
-
-            // next step (Hosts selection) is tested in the HostsForm.test
-
-            // screen.debug(undefined, -1)
-        },
-        2 * 60 * 1000
-    )
-
     test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
         window.scrollBy = () => {}
 
@@ -944,4 +872,128 @@ describe('CreateCluster', () => {
         // make sure creating
         await waitForNocks(createNocks)
     })
+})
+
+describe('CreateCluster on premise', () => {
+    const Component = () => {
+        return (
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(managedClusterSetsState, [])
+                    snapshot.set(secretsState, [
+                        providerConnection as Secret,
+                        providerConnectionAnsible as Secret,
+                        providerConnectionAws as Secret,
+                    ])
+                    snapshot.set(clusterCuratorsState, mockClusterCurators)
+                    snapshot.set(settingsState, {
+                        ansibleIntegration: 'enabled',
+                        singleNodeOpenshift: 'enabled',
+                        awsPrivateWizardStep: 'enabled',
+                    })
+                }}
+            >
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=CIM`]}>
+                    <Route path={NavigationPath.createCluster}>
+                        <CreateClusterPage />
+                    </Route>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    }
+
+    let consoleInfos: string[]
+    const originalConsoleInfo = console.info
+    const originalConsoleGroup = console.group
+    const originalConsoleGroupCollapsed = console.groupCollapsed
+
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        consoleInfos = []
+        console.info =
+            console.groupCollapsed =
+            console.group =
+                (message?: any, ...optionalParams: any[]) => {
+                    if (message) {
+                        consoleInfos = [...consoleInfos, message, ...optionalParams]
+                    }
+                }
+    })
+
+    afterEach(() => {
+        console.info = originalConsoleInfo
+        console.group = originalConsoleGroup
+        console.groupCollapsed = originalConsoleGroupCollapsed
+    })
+
+    test(
+        'can create On Premise cluster',
+        async () => {
+            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
+            render(<Component />)
+
+            // Create On Premise cluster
+            // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
+
+            // wait for tables/combos to fill in
+            await waitForNocks(initialNocks)
+
+            // check integration of AI in the left-side navigation
+            await waitForText('Cluster details', true)
+            await waitForText('Review and save')
+            await waitForText('Cluster hosts')
+            await waitForText('Cluster network')
+            await waitForText('Review')
+
+            // fill-in Cluster details
+            await typeByTestId('form-input-name-field', clusterName)
+            await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
+
+            await clickByTestId('form-input-highAvailabilityMode-field')
+            await waitForText('ai:SNO enables you to install OpenShift using only one host.')
+            await clickByTestId('form-input-highAvailabilityMode-field')
+
+            await waitForText('OpenShift 4.8.15') // single value of combobox
+            await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+            await clickByTestId('form-input-pullSecret-field')
+
+            await typeByTestId('form-input-pullSecret-field', pullSecretAI)
+
+            // transition to Automation
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            await clickByText('Next')
+            // The test is flaky here
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            await waitForText('Ansible Automation Template')
+
+            // skip Automation to the Review and Save step
+            await clickByText('Next')
+            await waitForText('Infrastructure provider credential')
+
+            await waitForText(
+                'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
+            )
+
+            // Let's save it
+            const createNocks = [
+                nockCreate(mockClusterProject, mockClusterProjectResponse),
+                nockCreate(mockClusterDeploymentAI),
+                nockCreate(mockManagedClusterAI),
+                nockCreate(mockAgentClusterInstall),
+                nockCreate(mockPullSecretAI),
+                nockCreate(mockKlusterletAddonConfigAI),
+            ]
+
+            await clickByText('Save')
+
+            // make sure creating
+            await waitForNocks(createNocks)
+
+            // next step (Hosts selection) is tested in the HostsForm.test
+
+            // screen.debug(undefined, -1)
+        },
+        2 * 60 * 1000
+    )
 })

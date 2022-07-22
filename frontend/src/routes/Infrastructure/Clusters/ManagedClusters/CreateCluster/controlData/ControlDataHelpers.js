@@ -348,6 +348,54 @@ export const clusterDetailsControlData = [
     },
 ]
 
+export const clusterPoolDetailsControlData = [
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        name: 'creation.ocp.name',
+        tooltip: 'tooltip.creation.ocp.name',
+        placeholder: 'creation.ocp.name.placeholder',
+        id: 'name',
+        type: 'text',
+        validation: {
+            constraint: VALID_DNS_LABEL,
+            notification: 'import.form.invalid.dns.label',
+            required: true,
+        },
+        reverse: 'ClusterDeployment[0].metadata.name',
+    },
+    {
+        name: 'creation.ocp.clusterSet',
+        tooltip: 'tooltip.creation.ocp.clusterSet',
+        id: 'clusterSet',
+        type: 'singleselect',
+        placeholder: 'placeholder.creation.ocp.clusterSet',
+        validation: {
+            required: false,
+        },
+        available: [],
+    },
+    {
+        name: 'creation.ocp.baseDomain',
+        tooltip: 'tooltip.creation.ocp.baseDomain',
+        placeholder: 'placeholder.creation.ocp.baseDomain',
+        id: 'baseDomain',
+        type: 'text',
+        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
+    },
+    {
+        name: 'cluster.create.ocp.fips',
+        id: 'fips',
+        type: 'checkbox',
+        active: false,
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
+    },
+]
+
 export const networkingControlData = [
     ///////////////////////  networking  /////////////////////////////////////
     {
@@ -590,27 +638,24 @@ export const architectureData = [
     },
 ]
 
+const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+function versionGreater(version, x, y) {
+    const matches = version.match(versionRegex)
+    return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
+}
+
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
     const imageSet = getControlByID(controlData, 'imageSet')
-    //NOTE: We will need to adjust this in the future for new OCP versions!
-    if (
-        singleNodeFeatureFlag &&
-        singleNodeFeatureFlag.active &&
-        imageSet &&
-        imageSet.active &&
-        (imageSet.active.includes('release:4.8') ||
-            imageSet.active.includes('release:4.9') ||
-            imageSet.active.includes('release:4.10'))
-    ) {
-        return false
+    if (singleNodeFeatureFlag && singleNodeFeatureFlag.active && imageSet && imageSet.active) {
+        return !versionGreater(imageSet.active, 4, 7)
     }
     return true
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
     const imageSet = getControlByID(controlData, 'imageSet')
-    return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
+    return imageSet && imageSet.active && versionGreater(imageSet.active, 4, 6)
 }
 
 export const isHidden_SNO = (control, controlData) => {
