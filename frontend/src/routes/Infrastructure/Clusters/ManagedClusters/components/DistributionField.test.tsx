@@ -335,6 +335,7 @@ describe('DistributionField', () => {
             name: 'clusterName',
             displayName: 'clusterName',
             namespace: 'clusterName',
+            uid: 'clusterName-uid',
             provider: undefined,
             status: ClusterStatus.ready,
             distribution: data,

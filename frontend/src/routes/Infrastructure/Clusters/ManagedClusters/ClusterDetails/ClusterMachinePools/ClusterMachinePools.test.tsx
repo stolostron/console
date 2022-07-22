@@ -15,6 +15,7 @@ const mockCluster: Cluster = {
     name: clusterName,
     displayName: clusterName,
     namespace: clusterName,
+    uid: clusterName,
     status: ClusterStatus.ready,
     distribution: {
         k8sVersion: '1.19',
