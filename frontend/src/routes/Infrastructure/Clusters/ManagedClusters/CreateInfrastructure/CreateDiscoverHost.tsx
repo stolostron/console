@@ -60,7 +60,7 @@ export function CreateDiscoverHost() {
         { label: t('Hosts') },
     ]
 
-    const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
+    const onBack = useCallback(() => history.push(NavigationPath.createControlPlane), [history])
 
     return (
         <Fragment>
