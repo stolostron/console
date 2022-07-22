@@ -5,7 +5,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { TFunction } from 'i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -63,6 +63,7 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { PluginContext } from '../../lib/PluginContext'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -218,6 +219,7 @@ export default function ApplicationsOverview() {
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
+    const { acmExtensions } = useContext(PluginContext)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
@@ -241,6 +243,8 @@ export default function ApplicationsOverview() {
     const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
     const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+
+    const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
     const getTimeWindow = useCallback(
         (app: IResource) => {
@@ -871,6 +875,29 @@ export default function ApplicationsOverview() {
                 })
             }
 
+            if (acmExtensions?.applicationAction?.length) {
+                acmExtensions.applicationAction.forEach((appAction) => {
+                    if (appAction?.model ? isResourceTypeOf(resource, appAction?.model) : isOCPAppResource(resource)) {
+                        const ModalComp = appAction.component
+                        const close = () => setPluginModal(<ModalComp isOpen={false} />)
+                        actions.push({
+                            id: appAction.id,
+                            tooltip: appAction?.tooltip,
+                            tooltipProps: appAction?.tooltipProps,
+                            addSeparator: appAction?.addSeparator,
+                            isAriaDisabled: appAction?.isAriaDisabled,
+                            isDisabled:
+                                !canCreateApplication ||
+                                (appAction?.isDisabled ? appAction?.isDisabled(resource) : false),
+                            title: appAction.title,
+                            click: (item) => {
+                                setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+                            },
+                        })
+                    }
+                })
+            }
+
             return actions
         },
         [
@@ -879,10 +906,12 @@ export default function ApplicationsOverview() {
             argoApplications,
             canDeleteApplication,
             canDeleteApplicationSet,
+            canCreateApplication,
             channels,
             history,
             placementRules,
             subscriptions,
+            acmExtensions,
             t,
         ]
     )
@@ -941,6 +970,7 @@ export default function ApplicationsOverview() {
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
+            {pluginModal}
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}
