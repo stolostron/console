@@ -232,7 +232,7 @@ export function ClusterSetManageResourcesContent() {
                     // return dummy promise if the resource is not changed
                     if (
                         selectedResources.find((sr) => sr.uid === resource.uid) &&
-                        resource.clusterSet === clusterSet?.metadata.name!
+                        resource.clusterSet === clusterSet?.metadata.name
                     ) {
                         return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
                     }
