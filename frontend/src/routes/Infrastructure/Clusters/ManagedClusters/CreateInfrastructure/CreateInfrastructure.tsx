@@ -192,6 +192,7 @@ export function CreateInfrastructure() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
+                onBack={() => history.push(NavigationPath.clusters)}
                 onCancel={() => history.push(NavigationPath.clusters)}
             />
         </Fragment>

@@ -54,7 +54,13 @@ export function CreateControlPlane() {
                         items: [{ text: t('Hosted cluster') }],
                     },
                 ],
-                onClick: isHypershiftEnabled ? () => history.push(NavigationPath.createCluster) : undefined,
+                onClick: isHypershiftEnabled
+                    ? () =>
+                          history.push({
+                              pathname: NavigationPath.createCluster,
+                              search: '?infrastructureType=CIMHypershift',
+                          })
+                    : undefined,
                 alertTitle: isHypershiftEnabled
                     ? undefined
                     : t('Hosted control plane operator must be enabled in order to continue'),
