@@ -15,13 +15,12 @@ import {
     Flex,
     FlexItem,
     PageSection,
-    Popover,
     Stack,
     Text,
     TextContent,
     TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -57,6 +56,7 @@ import {
 import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
+import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
 
@@ -259,25 +259,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                         {managedClusterSet.metadata.name}
                                     </Link>
                                 </span>
-                                {isGlobalClusterSet(managedClusterSet) && (
-                                    <Popover
-                                        bodyContent={
-                                            <>
-                                                <Trans
-                                                    i18nKey="learn.global.clusterSet"
-                                                    components={{ bold: <strong /> }}
-                                                />
-                                                <TextContent>
-                                                    {viewDocumentation(DOC_LINKS.GLOBAL_CLUSTER_SET, t)}
-                                                </TextContent>
-                                            </>
-                                        }
-                                    >
-                                        <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
-                                            <OutlinedQuestionCircleIcon />
-                                        </AcmButton>
-                                    </Popover>
-                                )}
+                                {isGlobalClusterSet(managedClusterSet) && <GlobalClusterSetPopover />}
                             </>
                         ),
                     },
