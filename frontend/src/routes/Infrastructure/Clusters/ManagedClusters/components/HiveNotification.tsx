@@ -108,8 +108,8 @@ export function HiveNotification() {
 export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
     const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
-    if (cluster && cluster.namespace && openShiftConsoleUrl) {
-        const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+    if (cluster && cluster.name && cluster.namespace && openShiftConsoleUrl) {
+        const response = getHivePod(cluster.namespace, cluster.name, cluster.status)
         response.then((job) => {
             const podName = job?.metadata.name || ''
             const containerName = podName.includes('uninstall') ? 'deprovision' : 'hive'
