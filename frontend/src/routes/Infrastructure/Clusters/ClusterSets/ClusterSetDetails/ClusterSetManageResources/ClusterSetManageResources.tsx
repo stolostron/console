@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    Cluster,
-    ClusterDeployment,
-    ManagedClusterKind,
-    managedClusterSetLabel,
-    patchResource,
-    ResourceErrorCode,
-} from '../../../../../../resources'
+import { Cluster, ClusterDeployment, ResourceErrorCode } from '../../../../../../resources'
 import {
     AcmAlertGroup,
     AcmButton,
@@ -83,29 +76,29 @@ export function ClusterSetManageResourcesContent() {
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
     const [selectedResources, setSelectedResources] = useState<Cluster[]>(
-        [...clusters].filter((resource) => resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name)
+        [...clusters].filter((resource) => resource.clusterSet === clusterSet?.metadata.name)
     )
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
     const availableResources = [...clusters].filter((resource) => {
-        const clusterSet = resource.labels?.[managedClusterSetLabel]
+        const clusterSet = resource.clusterSet
         return (
-            // check deployment for a clusterpool claim reference, as we cannot change the set of claimed clusters
-            deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef?.claimName == undefined &&
+            // check deployment for a clusterpool reference, as we cannot change the set of clusters from pools
+            !deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef &&
             (clusterSet === undefined ||
                 canJoinClusterSetList?.includes(clusterSet) ||
                 // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
                 // since we query the rbac list against the actual available ManagedClusterSets
                 // the cluster set specified in the label is not among the list
                 (!canJoinClusterSetList?.includes(clusterSet) &&
-                    !managedClusterSets.find((mcs) => mcs.metadata.name === resource.labels?.[managedClusterSetLabel])))
+                    !managedClusterSets.find((mcs) => mcs.metadata.name === resource.clusterSet)))
         )
     })
     const notSelectedResources = availableResources.filter(
         (ar) => selectedResources.find((sr) => sr?.uid === ar?.uid) === undefined
     )
     const removedResources = notSelectedResources.filter(
-        (resource) => resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+        (resource) => resource.clusterSet === clusterSet?.metadata.name
     )
 
     const clusterNameColumn = useClusterNameColumn()
@@ -123,10 +116,9 @@ export function ClusterSetManageResourcesContent() {
             clusterNodesColumn,
             {
                 header: t('table.assignedToSet'),
-                sort: (a: Cluster, b: Cluster) =>
-                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
-                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
-                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                sort: (a: Cluster, b: Cluster) => compareStrings(a.clusterSet, b.clusterSet),
+                search: (resource) => resource.clusterSet ?? '-',
+                cell: (resource) => resource.clusterSet ?? '-',
             },
         ],
         [
@@ -144,20 +136,19 @@ export function ClusterSetManageResourcesContent() {
             clusterNameColumn,
             {
                 header: t('table.assignedToSet'),
-                sort: (a: Cluster, b: Cluster) =>
-                    compareStrings(a?.labels?.[managedClusterSetLabel], b?.labels?.[managedClusterSetLabel]),
-                search: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
-                cell: (resource) => resource?.labels?.[managedClusterSetLabel] ?? '-',
+                sort: (a: Cluster, b: Cluster) => compareStrings(a.clusterSet, b.clusterSet),
+                search: (resource) => resource.clusterSet ?? '-',
+                cell: (resource) => resource.clusterSet ?? '-',
             },
             {
                 header: t('table.change'),
                 cell: (resource) => {
                     if (removedResources.find((removedResource) => removedResource!.uid === resource!.uid)) {
                         return t('managedClusterSet.form.removed')
-                    } else if (resource!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name) {
+                    } else if (resource!.clusterSet === clusterSet?.metadata.name) {
                         return t('managedClusterSet.form.unchanged')
                     } else {
-                        return resource!.labels?.[managedClusterSetLabel] === undefined
+                        return resource!.clusterSet === undefined
                             ? t('managedClusterSet.form.added')
                             : t('managedClusterSet.form.transferred')
                     }
@@ -241,7 +232,7 @@ export function ClusterSetManageResourcesContent() {
                     // return dummy promise if the resource is not changed
                     if (
                         selectedResources.find((sr) => sr.uid === resource.uid) &&
-                        resource.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!
+                        resource.clusterSet === clusterSet?.metadata.name!
                     ) {
                         return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
                     }
@@ -253,25 +244,15 @@ export function ClusterSetManageResourcesContent() {
                     let op: 'remove' | 'replace' | 'add' = 'remove'
                     if (isRemoved) op = 'remove'
                     if (isSelected) {
-                        op = resource.labels?.[managedClusterSetLabel] === undefined ? 'add' : 'replace'
+                        op = resource.clusterSet === undefined ? 'add' : 'replace'
                     }
-
-                    if (resource?.managedCluster?.kind === ManagedClusterKind) {
-                        return patchClusterSetLabel(resource.name!, op, clusterSet!.metadata.name)
-                    } else if (resource?.managedCluster) {
-                        return patchResource(resource?.managedCluster, [
-                            {
-                                op,
-                                path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                                value: clusterSet?.metadata.name,
-                            },
-                        ])
-                    } else {
+                    if (clusterSet?.metadata.name) {
+                        return patchClusterSetLabel(resource.name, op, clusterSet.metadata.name, resource.isManaged)
+                    } else
                         return {
                             promise: Promise.resolve(),
                             abort: () => {},
                         }
-                    }
                 }}
             />
         </>
