@@ -58,8 +58,6 @@ export function CreateInfrastructure() {
                         ),
                     },
                 ],
-                badge: t('Tech preview'),
-                badgeColor: CatalogColor.orange,
                 onClick: () => history.push(NavigationPath.createControlPlane),
             },
             // {

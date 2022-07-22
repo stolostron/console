@@ -49,6 +49,7 @@ export const DOC_LINKS = {
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#ansible-config-cluster`,
     POLICIES: `${DOC_BASE_PATH}/governance/governance#policy-overview`,
     POLICY_SETS: `${DOC_BASE_PATH}/governance/governance#policy-overview`,
+    HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/managing-your-clusters#hosted-control-plane-intro`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {
