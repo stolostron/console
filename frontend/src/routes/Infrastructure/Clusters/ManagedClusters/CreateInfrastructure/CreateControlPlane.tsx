@@ -109,8 +109,6 @@ export function CreateControlPlane() {
         return newBreadcrumbs
     }, [t])
 
-    const onBack = useCallback(() => history.push(NavigationPath.createInfrastructure), [history])
-
     return (
         <Fragment>
             <PageHeader
@@ -118,7 +116,13 @@ export function CreateControlPlane() {
                 description={t('Next, select a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />
-            <ItemView items={cards} itemKeyFn={keyFn} itemToCardFn={(card) => card} onBack={onBack} />
+            <ItemView
+                items={cards}
+                itemKeyFn={keyFn}
+                itemToCardFn={(card) => card}
+                onBack={() => history.push(NavigationPath.createInfrastructure)}
+                onCancel={() => history.push(NavigationPath.clusters)}
+            />
         </Fragment>
     )
 }
