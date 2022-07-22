@@ -58,6 +58,7 @@ export interface PolicyTemplate {
             remediationAction: string
             severity: string
             maxClusterRoleBindingUsers?: number
+            pruneObjectBehavior?: string
         }
     }
 }

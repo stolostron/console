@@ -219,7 +219,7 @@ describe('setSubscriptionDeployStatus with local hub subscription error', () => 
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -261,7 +261,7 @@ describe('setSubscriptionDeployStatus with hub error', () => {
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -326,7 +326,7 @@ describe('setSubscriptionDeployStatus with Failed phase subscription statuses', 
         {
             labelValue: 'Warning',
             status: 'warning',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -411,7 +411,7 @@ describe('setSubscriptionDeployStatus with error', () => {
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
