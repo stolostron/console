@@ -32,6 +32,7 @@ import {
     useClusterNodesColumn,
     useClusterProviderColumn,
 } from '../../../ManagedClusters/ManagedClusters'
+import { noop } from 'lodash'
 
 export function ClusterSetManageResourcesPage() {
     const { t } = useTranslation()
@@ -81,16 +82,15 @@ export function ClusterSetManageResourcesContent() {
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
     const availableResources = [...clusters].filter((resource) => {
-        const clusterSet = resource.clusterSet
         return (
             // check deployment for a clusterpool reference, as we cannot change the set of clusters from pools
             !deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef &&
-            (clusterSet === undefined ||
-                canJoinClusterSetList?.includes(clusterSet) ||
+            (resource.clusterSet === undefined ||
+                canJoinClusterSetList?.includes(resource.clusterSet) ||
                 // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
                 // since we query the rbac list against the actual available ManagedClusterSets
                 // the cluster set specified in the label is not among the list
-                (!canJoinClusterSetList?.includes(clusterSet) &&
+                (!canJoinClusterSetList?.includes(resource.clusterSet) &&
                     !managedClusterSets.find((mcs) => mcs.metadata.name === resource.clusterSet)))
         )
     })
@@ -143,12 +143,12 @@ export function ClusterSetManageResourcesContent() {
             {
                 header: t('table.change'),
                 cell: (resource) => {
-                    if (removedResources.find((removedResource) => removedResource!.uid === resource!.uid)) {
+                    if (removedResources.find((removedResource) => removedResource.uid === resource.uid)) {
                         return t('managedClusterSet.form.removed')
-                    } else if (resource!.clusterSet === clusterSet?.metadata.name) {
+                    } else if (resource.clusterSet === clusterSet?.metadata.name) {
                         return t('managedClusterSet.form.unchanged')
                     } else {
-                        return resource!.clusterSet === undefined
+                        return resource.clusterSet === undefined
                             ? t('managedClusterSet.form.added')
                             : t('managedClusterSet.form.transferred')
                     }
@@ -177,7 +177,7 @@ export function ClusterSetManageResourcesContent() {
                     items={isLoading ? undefined : availableResources}
                     initialSelectedItems={selectedResources}
                     onSelect={(resources: Cluster[]) => setSelectedResources(resources)}
-                    keyFn={(resource: Cluster) => resource?.uid!}
+                    keyFn={(resource: Cluster) => resource.uid}
                     key="clusterSetManageClustersTable"
                     columns={columns}
                     emptyState={
@@ -227,7 +227,7 @@ export function ClusterSetManageResourcesContent() {
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                 }
                 columns={columnsModal}
-                keyFn={(item) => item.uid!}
+                keyFn={(item) => item.uid}
                 actionFn={(resource: Cluster) => {
                     // return dummy promise if the resource is not changed
                     if (
@@ -248,11 +248,12 @@ export function ClusterSetManageResourcesContent() {
                     }
                     if (clusterSet?.metadata.name) {
                         return patchClusterSetLabel(resource.name, op, clusterSet.metadata.name, resource.isManaged)
-                    } else
+                    } else {
                         return {
                             promise: Promise.resolve(),
-                            abort: () => {},
+                            abort: noop,
                         }
+                    }
                 }}
             />
         </>
