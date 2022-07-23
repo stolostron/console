@@ -19,6 +19,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { ManagedClusterSetBindingModal } from '../../components/ManagedClusterSetBindingModal'
+import { GlobalClusterSetPopover } from '../../components/GlobalClusterSetPopover'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation()
@@ -69,7 +70,12 @@ export function ClusterSetOverviewPageContent() {
                     leftItems={[
                         {
                             key: t('table.name'),
-                            value: clusterSet?.metadata.name,
+                            value: (
+                                <>
+                                    {clusterSet?.metadata.name}
+                                    {isGlobalClusterSet(clusterSet) && <GlobalClusterSetPopover />}
+                                </>
+                            ),
                         },
                         ...(isSubmarinerAvailable && !isGlobalClusterSet(clusterSet)
                             ? [
