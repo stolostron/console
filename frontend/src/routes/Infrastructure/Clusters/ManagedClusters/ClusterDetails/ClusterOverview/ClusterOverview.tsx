@@ -36,6 +36,7 @@ import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
+import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
 
 const { getClusterProperties } = CIM
 
@@ -212,6 +213,14 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 key: t('table.clusterPool'),
                 value: cluster?.hive?.clusterPool,
             },
+            automationTemplate: {
+                key: 'Automation template',
+                value: cluster?.clusterSet! && (
+                    <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>
+                        {cluster?.clusterSet}
+                    </Link>
+                ),
+            },
         }
 
     let leftItems = [
@@ -230,6 +239,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         clusterProperties.claimedBy,
         clusterProperties.clusterSet,
         clusterProperties.clusterPool,
+        clusterProperties.automationTemplate,
     ]
 
     // should only show channel for ocp clusters with version
@@ -287,6 +297,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     return (
         <AcmPageContent id="overview">
             <PageSection>
+                <TemplateSummaryModal></TemplateSummaryModal>
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}
