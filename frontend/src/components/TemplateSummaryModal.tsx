@@ -12,8 +12,8 @@ export interface ITemplateSummaryModalProps {
 TODO: 
     clean up doc, 
     remove redundancy where possible,
-    testing
-    style review
+    testing,
+    style review,
 */
 
 function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
