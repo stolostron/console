@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP} from '../../../../../../components/TemplateEditor'
+import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,

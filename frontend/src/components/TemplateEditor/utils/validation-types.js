@@ -18,7 +18,6 @@ const IP_ADDRESS_TESTER = {
                 return false
             }
         }
-
     },
 }
 
