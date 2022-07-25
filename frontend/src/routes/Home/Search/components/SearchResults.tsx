@@ -2,10 +2,10 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { Card, CardHeader, CardTitle, PageSection, Stack } from '@patternfly/react-core'
-import { AcmAlert, AcmExpandableWrapper, AcmLoadingPage, AcmTable, AcmTile } from '../../../../ui-components'
 import _ from 'lodash'
 import { Fragment, ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmAlert, AcmExpandableWrapper, AcmLoadingPage, AcmTable, AcmTile } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import {
@@ -284,7 +284,7 @@ function RenderSearchTables(
 
     return (
         <Fragment>
-            {searchResultItems.length >= 10000 ? (
+            {searchResultItems.length >= 1000 ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}

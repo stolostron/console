@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { uniqBy, get, set } from 'lodash'
-import { getClusterName, addClusters } from './utils'
-import { createReplicaChild } from './topologySubscription'
+import { get, set, uniqBy } from 'lodash'
 import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
-import { convertStringToQuery } from '../helpers/search-helper'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { convertStringToQuery } from '../helpers/search-helper'
+import { createReplicaChild } from './topologySubscription'
+import { addClusters, getClusterName } from './utils'
 
 export function getAppSetTopology(application) {
     const links = []
@@ -247,7 +247,7 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
             query: SearchResultRelatedItemsDocument,
             variables: {
                 input: [{ ...query }],
-                limit: 10000,
+                limit: 1000,
             },
             fetchPolicy: 'network-only',
         })

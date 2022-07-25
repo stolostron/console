@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { convertStringToQuery } from '../helpers/search-helper'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { get, set } from 'lodash'
+import { convertStringToQuery } from '../helpers/search-helper'
 
 export async function getSubscriptionResourceStatuses(application, appData) {
     // need to constantly get search data since it will change even if subscription data doesn't
@@ -44,7 +44,7 @@ async function getResourceStatuses(application, appData) {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only', // cache-first will result in stale search data
     })
@@ -148,7 +148,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query, relatedKinds }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })

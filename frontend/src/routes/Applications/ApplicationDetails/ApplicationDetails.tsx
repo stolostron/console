@@ -2,15 +2,6 @@
 
 import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
-import {
-    AcmActionGroup,
-    AcmAlert,
-    AcmLoadingPage,
-    AcmPage,
-    AcmPageHeader,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '../../../ui-components'
 import { TFunction } from 'i18next'
 import {
     createContext,
@@ -50,6 +41,15 @@ import {
     ApplicationSetDefinition,
     ApplicationSetKind,
 } from '../../../resources'
+import {
+    AcmActionGroup,
+    AcmAlert,
+    AcmLoadingPage,
+    AcmPage,
+    AcmPageHeader,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+} from '../../../ui-components'
 import { searchClient } from '../../Home/Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Home/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -284,7 +284,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             query: {
                 filters: [],
                 keywords: [],
-                limit: 10000,
+                limit: 1000,
             },
         },
     })

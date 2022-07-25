@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { convertStringToQuery } from '../helpers/search-helper'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import _ from 'lodash'
+import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
+import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { convertStringToQuery } from '../helpers/search-helper'
 
 export async function getArgoResourceStatuses(application, appData, topology) {
     const argoSource = await getArgoSource(application, appData)
@@ -55,7 +55,7 @@ async function getArgoSource(application, appData) {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })
@@ -133,7 +133,7 @@ async function getResourceStatuses(name, namespace, appData, topology, argoSourc
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })
@@ -189,7 +189,7 @@ export const getArgoSecret = (appData, resourceStatuses = {}) => {
                 query: SearchResultRelatedItemsDocument,
                 variables: {
                     input: [{ ...query }],
-                    limit: 10000,
+                    limit: 1000,
                 },
                 fetchPolicy: 'network-only',
             })

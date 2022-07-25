@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
+import { fireManagedClusterView } from '../../../../resources/managedclusterview'
+import { getResource } from '../../../../resources/utils/resource-request'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '../../../../ui-components'
 
 const useStyles = makeStyles({
     headerContainer: {
@@ -57,7 +59,7 @@ export default function YAMLPage(props: {
     const [editMode, setEditMode] = useState<boolean>(false)
     const [userCanEdit, setUserCanEdit] = useState<boolean | undefined>(undefined)
     const [editedResourceYaml, setEditedResourceYaml] = useState<string>('')
-    const [updateResourceError, setUpdateResourceError] = useState(undefined)
+    const [updateResourceError, setUpdateResourceError] = useState<string | undefined>(undefined)
     const [editorHeight, setEditorHeight] = useState('500px')
     const classes = useStyles()
 
@@ -112,8 +114,33 @@ export default function YAMLPage(props: {
         )
             .then((actionResponse) => {
                 if (actionResponse.actionDone === 'ActionDone') {
-                    setEditMode(false)
-                    setEditedResourceYaml(jsYaml.dump(actionResponse.result, { indent: 2 }))
+                    if (cluster === 'local-cluster') {
+                        getResource({
+                            apiVersion: apiversion,
+                            kind,
+                            metadata: { namespace, name },
+                        })
+                            .promise.then((response: any) => {
+                                setEditedResourceYaml(jsYaml.dump(response, { indent: 2 }))
+                            })
+                            .catch((err) => {
+                                console.error('Error getting resource: ', err)
+                                setUpdateResourceError(`Error getting new resource YAML: ${err.message}`)
+                            })
+                    } else {
+                        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+                            .then((viewResponse: any) => {
+                                if (viewResponse?.message) {
+                                    setUpdateResourceError(`Error getting new resource YAML: ${viewResponse.message}`)
+                                } else {
+                                    setEditedResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
+                                }
+                            })
+                            .catch((err) => {
+                                console.error('Error getting resource: ', err)
+                                setUpdateResourceError(`Error getting new resource YAML: ${err}`)
+                            })
+                    }
                 } else {
                     setUpdateResourceError(actionResponse.message)
                 }
