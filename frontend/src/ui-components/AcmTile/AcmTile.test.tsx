@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { axe } from 'jest-axe'
+import { configureAxe } from 'jest-axe'
 import { AcmTile } from './AcmTile'
+const axe = configureAxe({
+    rules: {
+        'aria-required-parent': { enabled: false },
+    },
+})
 
 describe('AcmTile', () => {
     const LoadingTile = () => {

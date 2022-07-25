@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ToggleGroup, ToggleGroupItem, ButtonVariant, TooltipPosition } from '@patternfly/react-core'
+import { ButtonVariant, ToggleGroup, ToggleGroupItem, TooltipPosition } from '@patternfly/react-core'
 import { fitContent, IRow, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
+import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
-import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 const axe = configureAxe({
     rules: {
         'scope-attr-valid': { enabled: false },
@@ -499,7 +499,7 @@ describe('AcmTable', () => {
     test('can customize search placeholder', () => {
         const customPlaceholder = 'Other placeholder'
         const { container } = render(<Table searchPlaceholder={customPlaceholder} />)
-        expect(container.querySelector('div.pf-c-toolbar input.pf-c-search-input__text-input')).toHaveAttribute(
+        expect(container.querySelector('div.pf-c-toolbar .pf-m-search-filter input')).toHaveAttribute(
             'placeholder',
             customPlaceholder
         )
