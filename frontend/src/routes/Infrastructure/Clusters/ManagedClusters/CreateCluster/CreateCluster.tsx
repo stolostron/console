@@ -98,7 +98,7 @@ export default function CreateClusterPage() {
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
-    const controlPlaneBreadCrumb = { text: t('Control Plane'), to: NavigationPath.createControlPlane }
+    const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
 
     // if a connection is added outside of wizard, add it to connection selection

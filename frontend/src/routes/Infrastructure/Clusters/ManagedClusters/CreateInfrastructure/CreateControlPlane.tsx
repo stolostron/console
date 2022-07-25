@@ -18,6 +18,8 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
+const clusterTypeTooltips = 'Red Hat Advanced Cluster Management or multicluster engine operator'
+
 export function CreateControlPlane() {
     const [t] = useTranslation()
     const history = useHistory()
@@ -95,7 +97,21 @@ export function CreateControlPlane() {
                         type: CatalogCardItemType.List,
                         title: t('Available cluster types'),
                         icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
-                        items: [{ text: t('ACM Hub') }, { text: t('Hosting service cluster') }],
+                        items: [
+                            {
+                                text: t('Multicluster Hub'),
+                                help: {
+                                    text: t(clusterTypeTooltips),
+                                },
+                            },
+                            {
+                                text: t('Hosting service cluster'),
+                                help: {
+                                    text: t(clusterTypeTooltips),
+                                },
+                            },
+                            { text: t('Dedicated control plane') },
+                        ],
                     },
                 ],
                 onClick: () => history.push(NavigationPath.createDicoverHost),
@@ -110,7 +126,7 @@ export function CreateControlPlane() {
         const newBreadcrumbs: ICatalogBreadcrumb[] = [
             { label: t('Clusters'), to: NavigationPath.clusters },
             { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
-            { label: t('Control Plane') },
+            { label: t('Control plane type') },
         ]
         return newBreadcrumbs
     }, [t])
