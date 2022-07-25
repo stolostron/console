@@ -14,26 +14,32 @@ if (process.env.NODE_ENV === 'development') {
         }
     }
     if (theme === 'dark') {
-        document.documentElement.classList.add('pf-theme-dark')
+        setDarkTheme()
+    } else {
+        setLightTheme()
     }
 }
 
 function toggleTheme() {
     if (document.documentElement.classList.contains('pf-theme-dark')) {
-        setLightTheme()
+        setLightTheme(true)
     } else {
-        setDarkTheme()
+        setDarkTheme(true)
     }
 }
 
-function setLightTheme() {
+export function setLightTheme(save?: boolean) {
     document.documentElement.classList.remove('pf-theme-dark')
-    localStorage.setItem('theme', 'light')
+    if (save) {
+        localStorage.setItem('theme', 'light')
+    }
 }
 
-function setDarkTheme() {
+function setDarkTheme(save?: boolean) {
     document.documentElement.classList.add('pf-theme-dark')
-    localStorage.setItem('theme', 'dark')
+    if (save) {
+        localStorage.setItem('theme', 'dark')
+    }
 }
 
 export function ThemeSwitcher(props: { style?: CSSProperties }) {
