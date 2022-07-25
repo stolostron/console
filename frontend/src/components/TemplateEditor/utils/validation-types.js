@@ -8,10 +8,15 @@ import { Address4, Address6 } from 'ip-address'
 const IP_ADDRESS_TESTER = {
     test: (value) => {
         try {
-            new Address4(value).isValid() || new Address6(value).isValid()
+            new Address4(value)
             return true
         } catch {
-            return false
+            try {
+                new Address6(value)
+                return true
+            } catch {
+                return false
+            }
         }
     },
 }

@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// eslint-disable-next-line no-use-before-define
 
 import {
     getValue,

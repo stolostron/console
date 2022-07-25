@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line no-use-before-define
 import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
 import {
     CREATE_CLOUD_CONNECTION,

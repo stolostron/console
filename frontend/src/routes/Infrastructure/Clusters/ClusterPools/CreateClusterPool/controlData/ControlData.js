@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line no-use-before-define
-
 import Handlebars from 'handlebars'
 import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
 import { keyBy, cloneDeep } from 'lodash'
