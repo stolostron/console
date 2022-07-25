@@ -11,22 +11,6 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import {
-    AcmAlertContext,
-    AcmButton,
-    AcmForm,
-    AcmFormSection,
-    AcmIcon,
-    AcmIconVariant,
-    AcmMultiSelect,
-    AcmPage,
-    AcmPageContent,
-    AcmPageHeader,
-    AcmSelect,
-    AcmSubmit,
-    AcmToastContext,
-    Provider,
-} from '../../../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -47,6 +31,22 @@ import {
     ResourceError,
     Secret,
 } from '../../../../../resources'
+import {
+    AcmAlertContext,
+    AcmButton,
+    AcmForm,
+    AcmFormSection,
+    AcmIcon,
+    AcmIconVariant,
+    AcmMultiSelect,
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmSelect,
+    AcmSubmit,
+    AcmToastContext,
+    Provider,
+} from '../../../../../ui-components'
 
 const discoveryVersions = ['4.7', '4.8', '4.9', '4.10']
 
@@ -344,7 +344,8 @@ export function DiscoveryConfigPageContent(props: {
                 canCreateDiscoveryConfig.abort()
             }
         }
-    }, [editing, discoveryConfig.metadata.namespace, alertContext, t])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editing, discoveryConfig.metadata.namespace, t])
 
     return (
         <AcmForm>
