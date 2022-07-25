@@ -388,7 +388,14 @@ export default function ImportClusterPage() {
                                     }
                                 }
                             }
-                            history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
+                            toastContext.addAlert({
+                                title: t('success.create.created', [state.clusterName]),
+                                type: 'success',
+                                autoClose: true,
+                            })
+                            setTimeout(() => {
+                                history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
+                            }, 2000)
                         } catch (err) {
                             if (err instanceof Error) {
                                 toastContext.addAlert({
