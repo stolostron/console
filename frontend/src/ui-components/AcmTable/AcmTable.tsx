@@ -320,7 +320,7 @@ export interface AcmTableProps<T> {
     searchPlaceholder?: string
     initialSort?: ISortBy | undefined
     sort?: ISortBy | undefined
-    setSort?: (sort: ISortBy | undefined) => void
+    setSort?: (sort: ISortBy) => void
     showToolbar?: boolean
     gridBreakPoint?: TableGridBreakpoint
     perPageOptions?: PerPageOptions[]
@@ -786,7 +786,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             } else if (!search) {
                 // entering a filtered state; save sort setting use fuzzy match sort
                 setPreFilterSort(sort)
-                setSort(undefined)
+                setSort({})
             }
         },
         // setSort/setSearch/setPage can come from props, but setPreFilterSort is only from state and therefore
