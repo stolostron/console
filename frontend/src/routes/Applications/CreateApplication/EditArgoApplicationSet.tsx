@@ -14,7 +14,6 @@ import {
     managedClusterSetsState,
     managedClustersState,
     namespacesState,
-    placementDecisionsState,
     placementsState,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
@@ -66,7 +65,6 @@ export function EditArgoApplicationSet() {
     const params: { namespace?: string; name?: string } = useParams()
     const [applicationSets] = useRecoilState(applicationSetsState)
     const [placements] = useRecoilState(placementsState)
-    const [placementDecisions] = useRecoilState(placementDecisionsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
     const [namespaces] = useRecoilState(namespacesState)
