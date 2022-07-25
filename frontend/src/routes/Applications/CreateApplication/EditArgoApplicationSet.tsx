@@ -2,7 +2,6 @@
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
-import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -34,9 +33,10 @@ import {
     PlacementKind,
     reconcileResources,
 } from '../../../resources'
+import { ansibleCredentialsValue } from '../../../selectors'
+import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
-import { ansibleCredentialsValue } from '../../../selectors'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -100,7 +100,7 @@ export function EditArgoApplicationSet() {
             isPlacementUsedByApplicationSet(applicationSet, placement)
         )
         setExistingResources([applicationSet, ...applicationSetPlacements])
-    }, [applicationSets, history, params.name, params.namespace, placementDecisions, placements])
+    }, [applicationSets, history, params.name, params.namespace, placements])
 
     if (existingResources === undefined) {
         return <LoadingPage />

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
-import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -21,6 +20,7 @@ import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
+import { AcmToastContext } from '../../../ui-components'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import schema from './schema.json'
 
