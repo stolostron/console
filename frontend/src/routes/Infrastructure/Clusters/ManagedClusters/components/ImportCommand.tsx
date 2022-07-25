@@ -76,7 +76,7 @@ export function ImportCommandContainer() {
         return (
             <>
                 <div style={{ marginBottom: '12px' }}>
-                    <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                    <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} message={t('import.command.pendingimport.message')}/>
                 </div>
                 <ImportCommand importSecret={importSecret} />
             </>
