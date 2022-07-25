@@ -391,7 +391,7 @@ export default function ImportClusterPage() {
                             toastContext.addAlert({
                                 title: t('success.create.created', [state.clusterName]),
                                 type: 'success',
-                                autoClose: true
+                                autoClose: true,
                             })
                             setTimeout(() => {
                                 history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
