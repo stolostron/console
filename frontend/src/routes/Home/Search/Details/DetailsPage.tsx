@@ -3,13 +3,13 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { makeStyles } from '@material-ui/styles'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import { getResource } from '../../../../resources/utils/resource-request'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
 
@@ -68,13 +68,12 @@ export default function DetailsPage() {
 
     useEffect(() => {
         if (cluster === 'local-cluster') {
-            const resourceResult = getResource({
+            getResource({
                 apiVersion: apiversion,
                 kind,
                 metadata: { namespace, name },
-            }).promise
-            resourceResult
-                .then((response) => {
+            })
+                .promise.then((response) => {
                     setResource(response)
                 })
                 .catch((err) => {

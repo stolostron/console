@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import _ from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { getQueryStringForResource, getArgoSecret } from './resourceStatusesArgo'
-import _ from 'lodash'
+import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
 
 export async function getAppSetResourceStatuses(application, appData) {
     const { name, namespace, appSetApps } = application
@@ -49,7 +49,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })

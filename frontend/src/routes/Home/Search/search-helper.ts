@@ -108,8 +108,8 @@ export const convertStringToQuery = (searchText: string) => {
     return {
         keywords,
         filters,
-        // Limit results to 10000 for better performance - we show a info alert to user asking them to refine search.
-        limit: 10000,
+        // Limit results to  for better performance - we show a info alert to user asking them to refine search.
+        limit: 1000,
     }
 }
 

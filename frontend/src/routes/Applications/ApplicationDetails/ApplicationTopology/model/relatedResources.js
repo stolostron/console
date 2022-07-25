@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { get, set } from 'lodash'
 
 export async function getRelatedResources(reports = []) {
     const promises = []
@@ -88,7 +88,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query, relatedKinds }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })

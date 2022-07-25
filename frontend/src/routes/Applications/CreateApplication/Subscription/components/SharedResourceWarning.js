@@ -106,7 +106,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                     query: SearchResultRelatedItemsDocument,
                     variables: {
                         input: [{ ...query }],
-                        limit: 10000,
+                        limit: 1000,
                     },
                     fetchPolicy: 'cache-first',
                 })

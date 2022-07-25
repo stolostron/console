@@ -64,7 +64,7 @@ function SearchResultTables(props: {
 
     return (
         <Fragment>
-            {data.length >= 10000 ? (
+            {data.length >= 1000 ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}
