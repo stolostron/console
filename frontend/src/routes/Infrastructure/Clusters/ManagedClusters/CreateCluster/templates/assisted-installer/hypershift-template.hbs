@@ -4,8 +4,8 @@ kind: HostedCluster
 metadata:
   name: '{{{hypershift.name}}}'
   namespace: '{{{hypershift.name}}}'
-  labels:
   {{#if hypershift.managedClusterSet}}
+  labels:
     "cluster.open-cluster-management.io/clusterset": '{{{hypershift.managedClusterSet}}}'
   {{/if}}
 spec:

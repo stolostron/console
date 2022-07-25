@@ -13,12 +13,6 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
-    Project,
-    ProjectApiVersion,
-    ProjectKind,
-    ProjectRequest,
-    ProjectRequestApiVersion,
-    ProjectRequestKind,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
@@ -28,7 +22,10 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+    agentsState,
     clusterCuratorsState,
+    clusterImageSetsState,
+    infraEnvironmentsState,
     managedClusterSetsState,
     managedClustersState,
     secretsState,
@@ -56,6 +53,14 @@ import {
     mockClusterDeploymentAI,
     clusterImageSet,
     mockClusterImageSet,
+    mockAgents,
+    mockTestInfraWithAgents,
+    mockTestInfraWithAgents2,
+    mockTestInfraNoAgents,
+    mockAgent2,
+    pullSecretAI,
+    mockClusterProject,
+    mockClusterProjectResponse,
 } from './CreateCluster.sharedmocks'
 import { PluginContext } from '../../../../../lib/PluginContext'
 
@@ -236,19 +241,6 @@ const mockMachinePoolAws: MachinePool = {
 }
 
 //////////////////////////////// CREATE MOCKS //////////////////////////////////////////
-const mockClusterProject: ProjectRequest = {
-    apiVersion: ProjectRequestApiVersion,
-    kind: ProjectRequestKind,
-    metadata: { name: clusterName },
-}
-
-const mockClusterProjectResponse: Project = {
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
-    metadata: {
-        name: clusterName,
-    },
-}
 
 const mockManagedClusterAI: ManagedCluster = {
     apiVersion: 'cluster.open-cluster-management.io/v1',
@@ -264,7 +256,6 @@ const mockManagedClusterAI: ManagedCluster = {
     spec: { hubAcceptsClient: true },
 }
 
-const pullSecretAI = '{"auths":{"cloud.openshift.com":{"auth":"b3BlbSKIPPED","email":"my@email.somewhere.com"}}}'
 const mockPullSecretAI = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -554,6 +545,13 @@ describe('CreateCluster AWS', () => {
                         singleNodeOpenshift: 'enabled',
                         awsPrivateWizardStep: 'enabled',
                     })
+                    snapshot.set(agentsState, [...mockAgents, mockAgent2])
+                    snapshot.set(infraEnvironmentsState, [
+                        mockTestInfraWithAgents,
+                        mockTestInfraWithAgents2,
+                        mockTestInfraNoAgents,
+                    ])
+                    snapshot.set(clusterImageSetsState, mockClusterImageSet)
                 }}
             >
                 <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
