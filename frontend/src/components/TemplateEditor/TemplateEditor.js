@@ -63,6 +63,7 @@ export default class TemplateEditor extends React.Component {
             creationStatus: PropTypes.string,
             creationMsg: PropTypes.array,
             resetStatus: PropTypes.func,
+            backButtonOverride: PropTypes.func,
         }).isRequired,
         editorReadOnly: PropTypes.bool,
         fetchControl: PropTypes.shape({
@@ -436,6 +437,7 @@ export default class TemplateEditor extends React.Component {
                 setEditorReadOnly={this.setEditorReadOnly.bind(this)}
                 controlProps={this.props.controlProps}
                 resetStatus={this.state.resetStatus}
+                backButtonOverride={this.props.createControl.backButtonOverride}
             />
         )
     }

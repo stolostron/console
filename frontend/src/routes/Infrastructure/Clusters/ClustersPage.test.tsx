@@ -17,7 +17,7 @@ describe('Cluster Management', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('Managed clusters')
+        await waitForText('Cluster list')
         await waitForText('Discovered clusters')
     })
 })

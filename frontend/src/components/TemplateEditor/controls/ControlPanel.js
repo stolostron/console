@@ -48,6 +48,7 @@ class ControlPanel extends React.Component {
         showEditor: PropTypes.bool,
         showPortals: PropTypes.object,
         templateYAML: PropTypes.any,
+        backButtonOverride: PropTypes.func,
     }
 
     constructor(props) {
@@ -197,6 +198,7 @@ class ControlPanel extends React.Component {
             resetStatus,
             isEditing,
             creationStatus,
+            backButtonOverride,
         } = this.props
         return (
             <ControlPanelWizard
@@ -213,6 +215,7 @@ class ControlPanel extends React.Component {
                 resetStatus={resetStatus}
                 isEditing={isEditing}
                 creationStatus={creationStatus}
+                backButtonOverride={backButtonOverride}
             />
         )
     }
