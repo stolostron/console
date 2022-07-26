@@ -381,6 +381,10 @@ export default function CreateClusterPage() {
         { text: t('Infrastructure'), to: NavigationPath.createInfrastructure },
     ]
 
+    function backButtonOverrideFunc() {
+        history.goBack()
+    }
+
     switch (infrastructureType) {
         case 'AWS':
             controlData = getControlDataAWS(
@@ -473,6 +477,7 @@ export default function CreateClusterPage() {
                                         resetStatus: () => {
                                             setCreationStatus(undefined)
                                         },
+                                        backButtonOverride: backButtonOverrideFunc,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
                                     i18n={i18n}

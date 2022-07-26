@@ -85,6 +85,7 @@ export default class TemplateEditor extends React.Component {
         title: PropTypes.string,
         type: PropTypes.string,
         wizardClassName: PropTypes.string,
+        backButtonOverride: PropTypes.func,
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -436,6 +437,7 @@ export default class TemplateEditor extends React.Component {
                 setEditorReadOnly={this.setEditorReadOnly.bind(this)}
                 controlProps={this.props.controlProps}
                 resetStatus={this.state.resetStatus}
+                backButtonOverride={this.props.createControl.backButtonOverride}
             />
         )
     }
