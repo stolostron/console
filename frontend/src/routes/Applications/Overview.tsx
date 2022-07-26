@@ -447,10 +447,7 @@ export default function ApplicationsOverview() {
                         hr.metadata.name === itemLabel &&
                         hr.metadata.namespace === discoveredOCPAppResources[i].namespace
                 )
-                if (
-                    helmRelease &&
-                    helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']
-                ) {
+                if (helmRelease && helmRelease.metadata.annotations?.[hostingSubAnnotationStr]) {
                     // don't list helm subscription apps as ocp
                     continue
                 }
@@ -500,7 +497,7 @@ export default function ApplicationsOverview() {
             )
         })
         return transformedData
-    }, [discoveredOCPAppResources, generateTransformData, argoApplicationsHashSet])
+    }, [discoveredOCPAppResources, helmReleases, generateTransformData, argoApplicationsHashSet])
 
     const tableItems: IResource[] = useMemo(
         () => [
