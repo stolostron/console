@@ -66,6 +66,7 @@ import {
     WizTextArea,
     WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
+import { useSetHasValue } from '@patternfly-labs/react-form-wizard/lib/src/contexts/HasValueProvider'
 import { useRecoilValue } from 'recoil'
 import {
     ansibleCredentialsValue,
@@ -758,6 +759,11 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
         dispatch,
     } = props
     const [selectedTemplateName, setSelectedTemplateName] = useState<ClusterCurator | undefined>()
+
+    const setHasValue = useSetHasValue()
+    useLayoutEffect(() => {
+        if (templateName) setHasValue()
+    }, [setHasValue, templateName])
 
     const onChangeAutomationTemplate = useCallback(
         (template) => {
