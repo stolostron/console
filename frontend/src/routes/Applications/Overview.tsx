@@ -16,6 +16,7 @@ import {
     channelsState,
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
+    helmReleaseState,
     namespacesState,
     placementRulesState,
     subscriptionsState,
@@ -219,6 +220,7 @@ export default function ApplicationsOverview() {
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
+    const [helmReleases] = useRecoilState(helmReleaseState)
     const { acmExtensions } = useContext(PluginContext)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
@@ -411,7 +413,9 @@ export default function ApplicationsOverview() {
                 // don't list subscription apps as ocp
                 continue
             }
+
             let itemLabel = ''
+            let isManagedByHelm = false
             const labels: [] =
                 (discoveredOCPAppResources[i] as any).label &&
                 (discoveredOCPAppResources[i] as any).label
@@ -433,7 +437,24 @@ export default function ApplicationsOverview() {
                     if (annotation === 'app.kubernetes.io/instance') {
                         argoInstanceLabelValue = value
                     }
+                    if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+                        isManagedByHelm = true
+                    }
                 })
+            if (itemLabel && isManagedByHelm) {
+                const helmRelease = helmReleases.find(
+                    (hr) =>
+                        hr.metadata.name === itemLabel &&
+                        hr.metadata.namespace === discoveredOCPAppResources[i].namespace
+                )
+                if (
+                    helmRelease &&
+                    helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']
+                ) {
+                    // don't list helm subscription apps as ocp
+                    continue
+                }
+            }
             if (itemLabel) {
                 const key = `${itemLabel}-${(discoveredOCPAppResources[i] as any).namespace}-${
                     (discoveredOCPAppResources[i] as any).cluster
