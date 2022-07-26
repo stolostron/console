@@ -50,9 +50,12 @@ export const getFormChanges = (
             // remove any form changes on top of user changes (for decoration purposes--reconcile prevents the yaml change)
             // remove any user changes which are now the same as the form
             if (!isEmpty(userEdits)) {
+                // changes made by form
                 const changeMap = keyBy(yamlChanges, (edit) => {
-                    return JSON.stringify(edit.$p)
+                    return JSON.stringify(edit.$y ? edit.$p.slice(0, -1) : edit.$p)
                 })
+
+                // changes made by user
                 remainingEdits = userEdits.filter((edit: ChangeType) => {
                     const { $u, $y, $p } = edit
                     const val = get(change.parsed, $p) as MappingType
@@ -228,15 +231,14 @@ const getChanges = (
                     switch (kind) {
                         case 'A': {
                             if (item.kind === 'N') {
-                                chng = { $t: 'N', $a: pathArr, $p: path }
+                                chng = { $t: 'N', $a: pathArr, $p: path, $y: true }
                                 if (isCustomEdit) {
                                     chng.$u = item.rhs
                                     chng.$f = 'new'
-                                    chng.$y = true
                                 } else {
                                     if (Array.isArray(obj.$v)) {
                                         obj.$v.some((itm: { $v: any; rhs: any; $k: any }) => {
-                                            if (itm.$v === item.rhs) {
+                                            if ((!itm.$v && item.rhs === '') || itm.$v === item.rhs) {
                                                 chng.$a = [...pathArr, '$v', itm.$k]
                                                 chng.$p = [...path, itm.$k]
                                                 return true

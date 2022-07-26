@@ -26,6 +26,7 @@ import {
     generateSource,
     getUniqueName,
     cacheUserData,
+    cloneControlData,
 } from './utils/source-utils'
 import { logCreateErrors, logSourceErrors } from './utils/logger'
 import { validateControls } from './utils/validate-controls'
@@ -150,7 +151,7 @@ export default class TemplateEditor extends React.Component {
         const { editor, template, showSecrets, otherYAMLTabs } = state
         if (!controlData) {
             // initialize control data
-            const cd = cloneDeep(initialControlData)
+            const cd = cloneControlData(initialControlData)
             controlData = initializeControls(cd, editor, onControlInitialize, i18n)
             newState = { ...newState, controlData }
 
@@ -165,7 +166,7 @@ export default class TemplateEditor extends React.Component {
             // editing an existing set of resources??
             const customResources = get(fetchControl, 'resources')
             if (customResources) {
-                editStack = { customResources, editor, i18n }
+                editStack = { customResources: cloneDeep(customResources), editor, i18n }
             }
 
             // generate source from template or stack of resources
@@ -628,7 +629,7 @@ export default class TemplateEditor extends React.Component {
             // insert control data into main control data
             if (insertControlData) {
                 // splice control data with data from this card
-                parentControlData.splice(insertInx + 1, 0, ...cloneDeep(insertControlData))
+                parentControlData.splice(insertInx + 1, 0, ...cloneControlData(insertControlData))
 
                 // if this card control is in a group, tell each control
                 // what group control it belongs to
@@ -1351,7 +1352,7 @@ export default class TemplateEditor extends React.Component {
     resetEditor() {
         const { controlData: initialControlData, onControlInitialize } = this.props
         const { template, editStack = {}, resetInx, editor, i18n } = this.state
-        const cd = cloneDeep(initialControlData)
+        const cd = cloneControlData(initialControlData)
         const controlData = initializeControls(cd, editor, onControlInitialize, i18n)
         const otherYAMLTabs = []
         if (editStack.initialized) {

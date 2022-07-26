@@ -35,7 +35,7 @@ import {
     unpackProviderConnection,
     updateAppResources,
 } from '../../resources'
-import '../Applications/CreateApplication/Subscription/style.css'
+import './style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
 // Template Data

@@ -13,6 +13,7 @@ import capitalize from 'lodash/capitalize'
 import isEmpty from 'lodash/isEmpty'
 import get from 'lodash/get'
 import set from 'lodash/set'
+import omit from 'lodash/omit'
 
 export const ControlMode = Object.freeze({
     TABLE_ONLY: 'TABLE_ONLY',
@@ -232,6 +233,18 @@ export const cacheUserData = (controlData) => {
             sessionStorage.setItem(storageKey, JSON.stringify(control.userData))
         }
     })
+}
+
+export const cloneControlData = (controlData) => {
+    const clonedData = []
+    controlData.forEach((control) => {
+        const clone = cloneDeep(omit(control, ['component']))
+        if (control.component) {
+            clone.component = control.component
+        }
+        clonedData.push(clone)
+    })
+    return clonedData
 }
 
 export const getResourceID = (resource) => {
