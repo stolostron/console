@@ -56,8 +56,8 @@
         "properties": {
             "perspective": "acm",
             "section": "mce-infrastructure",
-            "id": "mce-infrastructure-environments",
-            "name": "%plugin__mce~Infrastructure environments%",
+            "id": "mce-host-inventory",
+            "name": "%plugin__mce~Host inventory%",
             "href": "/multicloud/infrastructure/environments"
         }
     },
