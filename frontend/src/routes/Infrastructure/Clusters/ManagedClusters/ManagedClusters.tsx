@@ -184,6 +184,7 @@ export function ClustersTable(props: {
     const clusterNameColumn = useClusterNameColumn()
     const clusterStatusColumn = useClusterStatusColumn()
     const clusterProviderColumn = useClusterProviderColumn()
+    const clusterControlPlaneColumn = useClusterControlPlaneColumn()
     const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
     const clusterLabelsColumn = useClusterLabelsColumn()
     const clusterNodesColumn = useClusterNodesColumn()
@@ -199,6 +200,7 @@ export function ClustersTable(props: {
             clusterNameColumn,
             clusterStatusColumn,
             clusterProviderColumn,
+            clusterControlPlaneColumn,
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
@@ -215,6 +217,7 @@ export function ClustersTable(props: {
             clusterNameColumn,
             clusterStatusColumn,
             clusterProviderColumn,
+            clusterControlPlaneColumn,
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
@@ -474,6 +477,23 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
         sort: 'provider',
         search: 'provider',
         cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
+    }
+}
+
+export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.controlplane'),
+        cell: (cluster) => {
+            if (cluster.name === 'local-cluster') {
+                return t('ACM hub')
+            }
+            if (cluster.isHostedCluster) {
+                return t('Hosted')
+            } else {
+                return t('Standalone')
+            }
+        },
     }
 }
 
