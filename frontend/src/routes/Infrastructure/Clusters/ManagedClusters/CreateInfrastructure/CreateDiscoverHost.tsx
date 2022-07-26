@@ -56,7 +56,7 @@ export function CreateDiscoverHost() {
     const breadcrumbs = [
         { label: t('Clusters'), to: NavigationPath.clusters },
         { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
-        { label: t('Control Plane'), to: NavigationPath.createControlPlane },
+        { label: t('Control plane type'), to: NavigationPath.createControlPlane },
         { label: t('Hosts') },
     ]
 

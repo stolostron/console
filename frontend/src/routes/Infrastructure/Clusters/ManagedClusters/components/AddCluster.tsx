@@ -33,7 +33,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={NavigationPath.createCluster}
+                                to={NavigationPath.createInfrastructure}
                             >
                                 {t('managed.createCluster')}
                             </AcmButton>
