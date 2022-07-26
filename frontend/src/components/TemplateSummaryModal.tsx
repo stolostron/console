@@ -29,6 +29,7 @@ const useStyles = makeStyles({
     tableHeader: { padding: '0px 0px 8px 0px' },
     tableData: { padding: '8px 0px' },
     linkOut: { paddingBottom: '15px' },
+    externalLinkIcon: { marginLeft: '4px', verticalAlign: 'middle' },
 })
 
 export function TemplateSummaryControl(props: { control?: any }) {
@@ -159,7 +160,7 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
 
 export function TemplateLinkOutControl(props: { control?: any }) {
     const { control } = props
-
+    const classes = useStyles()
     const isActive = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
     const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
     const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === isActive)
@@ -176,6 +177,7 @@ export function TemplateLinkOutControl(props: { control?: any }) {
 export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
     const { templateCurator } = props
     const { t } = useTranslation()
+    const classes = useStyles()
     const history = useHistory()
     if (!templateCurator) return <></>
     return (
@@ -192,7 +194,7 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
                 }
             >
                 {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
-                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                <ExternalLinkAltIcon className={classes.externalLinkIcon} />
             </Button>
         </div>
     )
