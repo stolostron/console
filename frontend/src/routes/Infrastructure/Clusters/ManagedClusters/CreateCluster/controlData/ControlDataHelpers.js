@@ -595,7 +595,6 @@ export const automationControlData = [
     },
     {
         type: 'custom',
-        name: 'curator summary',
         id: 'curatorSummary',
         component: <TemplateSummaryExpandable></TemplateSummaryExpandable>,
     },

@@ -2526,6 +2526,7 @@
     "Unprocessable entity": "Unprocessable entity",
     "update": "Update",
     "updating": "Updating",
+    "Upgrade": "Upgrade",
     "upgrade.ansible.pending.title": "Upgrade pending",
     "upgrade.ansible.posthook": "Upgrade posthook jobs are running",
     "upgrade.ansible.posthook.failure": "Upgrade posthook jobs have failed:",

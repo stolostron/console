@@ -18,11 +18,9 @@ export interface ITemplateSummaryModalProps {
 
 /*
 TODO: 
-    clean up doc, 
     remove redundancy where possible,
     testing,
     style review,
-    translation strings
 */
 const useStyles = makeStyles({
     expandableSection: {
@@ -31,20 +29,6 @@ const useStyles = makeStyles({
     tableHeader: { padding: '0px 0px 8px 0px' },
     tableData: { padding: '8px 0px' },
 })
-// const classes = useStyles()
-
-const getCircularReplacer = () => {
-    const seen = new WeakSet()
-    return (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-            if (seen.has(value)) {
-                return
-            }
-            seen.add(value)
-        }
-        return value
-    }
-}
 
 export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurator; control?: any }) {
     let { clusterCurator, control } = props
@@ -53,23 +37,14 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
     const classes = useStyles()
 
-    const isActive = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
+    const activeTemplateName = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
     const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
-    const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === isActive)
-    // const CCSpec =
-    // console.log('1', JSON.stringify(control, getCircularReplacer()))
-    // console.log('checking control active: ', clusterCuratorTemplateName)
-    console.log('control active template: ', selectedTemplate)
+    const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === activeTemplateName)
 
     if (selectedTemplate) {
         clusterCurator = selectedTemplate
     }
-    // if (control) {
-    //     console.log('control preview: ', control)
-    //     const clusterCuratorSpec = getControlByID(control.step.controls, 'clusterCuratorSpec')
-    //     console.log('props: ', props)
-    //     console.log('checking curator spec: ', clusterCuratorSpec)
-    // }
+
     if (!clusterCurator) return <></>
     return (
         <div>
@@ -77,7 +52,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                 <ExpandableSection
                     onToggle={() => setInstallExpandable(!isInstallExpandableOpen)}
                     isExpanded={isInstallExpandableOpen}
-                    toggleText="Install"
+                    toggleText={t('install')}
                     isIndented
                 >
                     <ComposableTable
@@ -105,7 +80,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
                     isExpanded={isUpgradeExpandableOpen}
                     className={classes.expandableSection}
-                    toggleText="Upgrade"
+                    toggleText={t('Upgrade')}
                     isIndented
                 >
                     <ComposableTable
