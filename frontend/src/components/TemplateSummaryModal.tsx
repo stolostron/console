@@ -30,20 +30,22 @@ const useStyles = makeStyles({
     tableData: { padding: '8px 0px' },
 })
 
-export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurator; control?: any }) {
-    let { clusterCurator, control } = props
+export function TemplateSummaryControl(props: { control?: any }) {
+    const { control } = props
+
+    const isActive = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
+    const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
+    const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === isActive)
+
+    return <TemplateSummaryExpandable clusterCurator={selectedTemplate} />
+}
+
+export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurator }) {
+    const { clusterCurator } = props
     const { t } = useTranslation()
     const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
     const classes = useStyles()
-
-    const activeTemplateName = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
-    const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
-    const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === activeTemplateName)
-
-    if (selectedTemplate) {
-        clusterCurator = selectedTemplate
-    }
 
     if (!clusterCurator) return <></>
     return (
