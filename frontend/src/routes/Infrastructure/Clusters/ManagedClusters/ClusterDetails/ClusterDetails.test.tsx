@@ -1161,7 +1161,7 @@ describe('ClusterDetails for On Premise', () => {
     })
 })
 
-describe('Automation Details ', () => {
+describe('Automation Details', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         render(<Component />)
