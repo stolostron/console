@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '../../../../../../resources'
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorDefinition,
+    ClusterCuratorKind,
+    ClusterStatus,
+    ManagedClusterDefinition,
+} from '../../../../../../resources'
 import {
     AcmButton,
     AcmDescriptionList,
@@ -46,6 +53,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
 
     const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } =
         {
@@ -215,10 +223,16 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             },
             automationTemplate: {
                 key: 'Automation template',
-                value: cluster?.clusterSet! && (
-                    <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>
-                        {cluster?.clusterSet}
-                    </Link>
+                value: true && (
+                    <AcmButton
+                        variant="link"
+                        isInline
+                        onClick={() => setCuratorSummaryModalIsOpen(true)}
+                        // isDisabled={cluster.status === ClusterStatus.hibernating}
+                        tooltip={t('hibernating.tooltip')}
+                    >
+                        {'View template'}
+                    </AcmButton>
                 ),
             },
         }
@@ -294,10 +308,41 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         details = <AIHypershiftClusterDetails />
     }
 
+    const testTemplate: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: {
+            name: 'test-curator',
+            namespace: 'default',
+        },
+        spec: {
+            desiredCuration: 'install',
+            install: {
+                towerAuthSecret: '123',
+                prehook: [{ name: 'prehook-1' }, { name: 'prehook-2' }],
+                posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
+            },
+            upgrade: {
+                desiredUpdate: '',
+                channel: '',
+                upstream: '',
+                towerAuthSecret: '123',
+                prehook: [],
+                posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
+            },
+        },
+    }
+
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                <TemplateSummaryModal></TemplateSummaryModal>
+                <TemplateSummaryModal
+                    curatorTemplate={testTemplate}
+                    isOpen={curatorSummaryModalIsOpen}
+                    close={() => {
+                        setCuratorSummaryModalIsOpen(false)
+                    }}
+                ></TemplateSummaryModal>
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}

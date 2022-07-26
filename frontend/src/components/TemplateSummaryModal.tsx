@@ -1,11 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ExpandableSection, ModalVariant } from '@patternfly/react-core'
+import { makeStyles } from '@material-ui/styles'
+import { ExpandableSection, ModalVariant, TextVariants, Text, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { ClusterCurator, ClusterCuratorAnsibleJob, ClusterCuratorApiVersion, ClusterCuratorKind } from '../resources'
 import { AcmModal } from '../ui-components'
+import { useTranslation } from '../lib/acm-i18next'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useHistory } from 'react-router-dom'
+import { NavigationPath } from '../NavigationPath'
+import { useState } from 'react'
 
 export interface ITemplateSummaryModalProps {
-    curatorTemplate?: ClusterCurator
+    curatorTemplate: ClusterCurator
+    isOpen: boolean
+    close: () => void
 }
 
 /*
@@ -14,23 +22,41 @@ TODO:
     remove redundancy where possible,
     testing,
     style review,
+    translation strings
 */
+const useStyles = makeStyles({
+    expandableSection: {
+        paddingTop: '20px',
+    },
+    tableHeader: { padding: '0px 0px 8px 0px' },
+    tableData: { padding: '8px 0px' },
+})
+// const classes = useStyles()
 
 function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
     const curator = props.clusterCurator
+    const { t } = useTranslation()
+    const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
+    const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
+    const classes = useStyles()
     return (
         <div>
             {curator.spec?.install && (
-                <ExpandableSection toggleText="Install" isIndented>
+                <ExpandableSection
+                    onToggle={() => setInstallExpandable(!isInstallExpandableOpen)}
+                    isExpanded={isInstallExpandableOpen}
+                    toggleText="Install"
+                    isIndented
+                >
                     <ComposableTable
-                        title="Pre-install Ansible job template"
+                        title={t('Pre-install Ansible job template')}
                         curatorJobs={
                             curator.spec.install.prehook?.map((job: ClusterCuratorAnsibleJob) => job.name) as string[]
                         }
                     ></ComposableTable>
-                    <div style={{ paddingTop: '20px' }}>
+                    <div className={classes.expandableSection}>
                         <ComposableTable
-                            title="Post-install Ansible job template"
+                            title={t('Post-install Ansible job template')}
                             curatorJobs={
                                 curator.spec.install.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
@@ -41,16 +67,22 @@ function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
                 </ExpandableSection>
             )}
             {curator.spec?.upgrade && (
-                <ExpandableSection style={{ paddingTop: '20px' }} toggleText="Upgrade" isIndented>
+                <ExpandableSection
+                    onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
+                    isExpanded={isUpgradeExpandableOpen}
+                    className={classes.expandableSection}
+                    toggleText="Upgrade"
+                    isIndented
+                >
                     <ComposableTable
-                        title="Pre-upgrade Ansible job template"
+                        title={t('Pre-upgrade Ansible job template')}
                         curatorJobs={
                             curator.spec.upgrade.prehook?.map((job: ClusterCuratorAnsibleJob) => job.name) as string[]
                         }
                     ></ComposableTable>
-                    <div style={{ paddingTop: '20px' }}>
+                    <div className={classes.expandableSection}>
                         <ComposableTable
-                            title="Post-upgrade Ansible job template"
+                            title={t('Post-upgrade Ansible job template')}
                             curatorJobs={
                                 curator.spec.upgrade.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
@@ -66,9 +98,16 @@ function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
     )
 }
 
-export default function TemplateSummaryModalProps(props: ITemplateSummaryModalProps) {
+export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) {
+    const { curatorTemplate, isOpen, close } = props
+    const { t } = useTranslation()
     return (
-        <AcmModal variant={ModalVariant.medium} isOpen={true}>
+        <AcmModal
+            title={t('Automation template for {{curatorName}}', { curatorName: curatorTemplate.metadata.name })}
+            variant={ModalVariant.medium}
+            isOpen={isOpen}
+            onClose={close}
+        >
             <TemplateSummaryExpandable clusterCurator={testTemplate}></TemplateSummaryExpandable>
         </AcmModal>
     )
@@ -87,14 +126,17 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
             </Thead>
             {curatorJobs && (
                 <Tbody>
-                    {curatorJobs.length > 0 &&
+                    {curatorJobs.length > 0 ? (
                         curatorJobs.map((item) => (
                             <Tr key={item}>
                                 <Td style={{ padding: '8px 0px' }} dataLabel={item}>
                                     {item}
                                 </Td>
                             </Tr>
-                        ))}
+                        ))
+                    ) : (
+                        <Text component={TextVariants.small}>none selected</Text>
+                    )}
                 </Tbody>
             )}
         </TableComposable>
@@ -120,8 +162,32 @@ const testTemplate: ClusterCurator = {
             channel: '',
             upstream: '',
             towerAuthSecret: '123',
-            prehook: [{ name: 'prehook-1' }, { name: 'prehook-2' }],
+            prehook: [],
             posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
         },
     },
+}
+
+export function templateLinkOut(props: { curator: ClusterCurator }) {
+    const { curator } = props
+    const { t } = useTranslation()
+    const history = useHistory()
+    return (
+        <div>
+            <Button
+                isInline
+                variant={ButtonVariant.link}
+                onClick={() =>
+                    history.push(
+                        NavigationPath.editAnsibleAutomation
+                            .replace(':namespace', curator.metadata?.namespace as string)
+                            .replace(':name', curator.metadata?.name as string)
+                    )
+                }
+            >
+                {t('View {{curatorName}}', { curatorName: curator.metadata.name })}
+                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+            </Button>
+        </div>
+    )
 }
