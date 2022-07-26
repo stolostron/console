@@ -33,15 +33,40 @@ const useStyles = makeStyles({
 })
 // const classes = useStyles()
 
-function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
-    const curator = props.clusterCurator
+const getCircularReplacer = () => {
+    const seen = new WeakSet()
+    return (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            if (seen.has(value)) {
+                return
+            }
+            seen.add(value)
+        }
+        return value
+    }
+}
+
+export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurator; control?: any }) {
+    let { clusterCurator, control } = props
     const { t } = useTranslation()
     const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
     const classes = useStyles()
+    const clusterCuratorTemplateName = control?.step.controls?.find((cc: any) => cc.id === 'templateName')
+    // const CCSpec =
+    // console.log('1', JSON.stringify(control, getCircularReplacer()))
+    console.log('checking control active: ', clusterCuratorTemplateName)
+    console.log('control: ', control)
+    // if (control) {
+    //     console.log('control preview: ', control)
+    //     const clusterCuratorSpec = getControlByID(control.step.controls, 'clusterCuratorSpec')
+    //     console.log('props: ', props)
+    //     console.log('checking curator spec: ', clusterCuratorSpec)
+    // }
+    if (!clusterCurator) return <></>
     return (
         <div>
-            {curator.spec?.install && (
+            {clusterCurator.spec?.install && (
                 <ExpandableSection
                     onToggle={() => setInstallExpandable(!isInstallExpandableOpen)}
                     isExpanded={isInstallExpandableOpen}
@@ -51,14 +76,16 @@ function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
                     <ComposableTable
                         title={t('Pre-install Ansible job template')}
                         curatorJobs={
-                            curator.spec.install.prehook?.map((job: ClusterCuratorAnsibleJob) => job.name) as string[]
+                            clusterCurator.spec.install.prehook?.map(
+                                (job: ClusterCuratorAnsibleJob) => job.name
+                            ) as string[]
                         }
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
                             title={t('Post-install Ansible job template')}
                             curatorJobs={
-                                curator.spec.install.posthook?.map(
+                                clusterCurator.spec.install.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
                                 ) as string[]
                             }
@@ -66,7 +93,7 @@ function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
                     </div>
                 </ExpandableSection>
             )}
-            {curator.spec?.upgrade && (
+            {clusterCurator.spec?.upgrade && (
                 <ExpandableSection
                     onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
                     isExpanded={isUpgradeExpandableOpen}
@@ -77,14 +104,16 @@ function TemplateSummaryExpandable(props: { clusterCurator: ClusterCurator }) {
                     <ComposableTable
                         title={t('Pre-upgrade Ansible job template')}
                         curatorJobs={
-                            curator.spec.upgrade.prehook?.map((job: ClusterCuratorAnsibleJob) => job.name) as string[]
+                            clusterCurator.spec.upgrade.prehook?.map(
+                                (job: ClusterCuratorAnsibleJob) => job.name
+                            ) as string[]
                         }
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
                             title={t('Post-upgrade Ansible job template')}
                             curatorJobs={
-                                curator.spec.upgrade.posthook?.map(
+                                clusterCurator.spec.upgrade.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
                                 ) as string[]
                             }

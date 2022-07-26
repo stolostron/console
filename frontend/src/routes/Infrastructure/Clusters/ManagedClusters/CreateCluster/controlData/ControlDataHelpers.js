@@ -15,6 +15,7 @@ import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
+import { TemplateSummaryExpandable } from '../../../../../../components/TemplateSummaryModal'
 
 const OpenNewTab = () => (
     <svg width="24px" height="24px" x="0px" y="0px" viewBox="0 0 1024 1024" xmlSpace="preserve" role="presentation">
@@ -591,6 +592,12 @@ export const automationControlData = [
             required: false,
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
+    },
+    {
+        type: 'custom',
+        name: 'curator summary',
+        id: 'curatorSummary',
+        component: <TemplateSummaryExpandable></TemplateSummaryExpandable>,
     },
     {
         id: 'clusterCuratorSpec',
