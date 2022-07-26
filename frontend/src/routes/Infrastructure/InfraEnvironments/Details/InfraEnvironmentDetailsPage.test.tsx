@@ -59,12 +59,10 @@ describe('Infrastructure Environment Details page', () => {
         await clickHostAction('With Discovery ISO')
 
         // Discovery ISO config dialog
-        // remove space `ai: ` once ai lib is updated
-        await clickByText('ai: Generate Discovery ISO')
+        await clickByText('ai:Generate Discovery ISO')
 
         // Discovery ISO download state
-        // remove space `ai: ` once ai lib is updated
-        await waitForText('ai: Discovery ISO is ready for download')
+        await waitForText('ai:Discovery ISO is ready for download')
         await waitForText('ai:Download Discovery ISO')
 
         // note: the input-element ID is auto-generated
