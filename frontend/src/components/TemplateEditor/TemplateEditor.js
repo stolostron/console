@@ -63,6 +63,7 @@ export default class TemplateEditor extends React.Component {
             creationStatus: PropTypes.string,
             creationMsg: PropTypes.array,
             resetStatus: PropTypes.func,
+            backButtonOverride: PropTypes.func,
         }).isRequired,
         editorReadOnly: PropTypes.bool,
         fetchControl: PropTypes.shape({
@@ -85,7 +86,6 @@ export default class TemplateEditor extends React.Component {
         title: PropTypes.string,
         type: PropTypes.string,
         wizardClassName: PropTypes.string,
-        backButtonOverride: PropTypes.func,
     }
 
     static getDerivedStateFromProps(props, state) {
