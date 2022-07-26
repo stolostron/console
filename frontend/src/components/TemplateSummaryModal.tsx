@@ -156,10 +156,11 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
     )
 }
 
-export function templateLinkOut(props: { curator: ClusterCurator }) {
-    const { curator } = props
+export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
+    const { templateCurator } = props
     const { t } = useTranslation()
     const history = useHistory()
+    if (!templateCurator) return <></>
     return (
         <div>
             <Button
@@ -168,12 +169,12 @@ export function templateLinkOut(props: { curator: ClusterCurator }) {
                 onClick={() =>
                     history.push(
                         NavigationPath.editAnsibleAutomation
-                            .replace(':namespace', curator.metadata?.namespace as string)
-                            .replace(':name', curator.metadata?.name as string)
+                            .replace(':namespace', templateCurator.metadata?.namespace as string)
+                            .replace(':name', templateCurator.metadata?.name as string)
                     )
                 }
             >
-                {t('View {{curatorName}}', { curatorName: curator.metadata.name })}
+                {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
                 <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
             </Button>
         </div>

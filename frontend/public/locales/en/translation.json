@@ -2605,7 +2605,7 @@
     "vCenter server": "vCenter server",
     "vCenter username": "vCenter username",
     "Version": "Version",
-    "View {{curatorName}}": "View {{curatorName}}",
+    "View {{templateName}}": "View {{templateName}}",
     "View all placement rules in {{0}} namespace": "View all placement rules in {{0}} namespace",
     "View all subscriptions in {{0}} namespace": "View all subscriptions in {{0}} namespace",
     "View application": "View application",
