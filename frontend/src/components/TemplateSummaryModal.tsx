@@ -16,12 +16,6 @@ export interface ITemplateSummaryModalProps {
     close: () => void
 }
 
-/*
-TODO: 
-    remove redundancy where possible,
-    testing,
-    style review,
-*/
 const useStyles = makeStyles({
     expandableSection: {
         paddingTop: '20px',
