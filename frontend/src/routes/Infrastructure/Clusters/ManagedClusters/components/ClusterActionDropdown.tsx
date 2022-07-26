@@ -29,6 +29,7 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
+import { UpdateAutomationModal } from './UpdateAutomationModal'
 
 /**
  * Function to return cluster actions available to a cluster
@@ -48,6 +49,7 @@ export function getClusterActions(cluster: Cluster) {
         'ai-edit',
         'ai-scale-up',
         'destroy-hypershift-cluster',
+        'update-automation-template',
     ]
 
     // ClusterCurator
@@ -146,6 +148,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
     const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
@@ -205,6 +208,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     let actions = useMemo(
         () => [
+            {
+                id: 'update-automation-template',
+                text: t('Update automation template'),
+                click: (_cluster: Cluster) => setShowUpdateAutomationModal(true),
+                isAriaDisabled: true,
+                rbac: [rbacPatch(ClusterCuratorDefinition, cluster.namespace)],
+            },
             {
                 id: 'edit-labels',
                 text: t('managed.editLabels'),
@@ -459,6 +469,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)
     return (
         <>
+            <UpdateAutomationModal
+                clusters={[cluster]}
+                open={showUpdateAutomationModal}
+                close={() => setShowUpdateAutomationModal(false)}
+            />
             <EditLabels
                 resource={
                     showEditLabels
