@@ -15,7 +15,7 @@ import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
-import { TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
+import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 
 const OpenNewTab = () => (
     <svg width="24px" height="24px" x="0px" y="0px" viewBox="0 0 1024 1024" xmlSpace="preserve" role="presentation">
@@ -595,8 +595,13 @@ export const automationControlData = [
     },
     {
         type: 'custom',
+        id: 'curatorLinkOut',
+        component: <TemplateLinkOutControl />,
+    },
+    {
+        type: 'custom',
         id: 'curatorSummary',
-        component: <TemplateSummaryControl></TemplateSummaryControl>,
+        component: <TemplateSummaryControl />,
     },
     {
         id: 'clusterCuratorSpec',
