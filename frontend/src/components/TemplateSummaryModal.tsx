@@ -52,11 +52,18 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
     const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
     const classes = useStyles()
-    const clusterCuratorTemplateName = control?.step.controls?.find((cc: any) => cc.id === 'templateName')
+
+    const isActive = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
+    const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
+    const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === isActive)
     // const CCSpec =
     // console.log('1', JSON.stringify(control, getCircularReplacer()))
-    console.log('checking control active: ', clusterCuratorTemplateName)
-    console.log('control: ', control)
+    // console.log('checking control active: ', clusterCuratorTemplateName)
+    console.log('control active template: ', selectedTemplate)
+
+    if (selectedTemplate) {
+        clusterCurator = selectedTemplate
+    }
     // if (control) {
     //     console.log('control preview: ', control)
     //     const clusterCuratorSpec = getControlByID(control.step.controls, 'clusterCuratorSpec')
