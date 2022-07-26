@@ -1422,7 +1422,6 @@
     "infraEnv.tableHeader.namespace": "Namespace",
     "infraenvs": "infraenvs",
     "Infrastructure": "Infrastructure",
-    "Infrastructure environments": "Infrastructure environments",
     "install": "Install",
     "Install plan approved": "Install plan approved",
     "Install the operator through OperatorHub.": "Install the operator through OperatorHub.",
