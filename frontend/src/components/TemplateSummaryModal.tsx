@@ -2,7 +2,7 @@
 import { makeStyles } from '@material-ui/styles'
 import { ExpandableSection, ModalVariant, TextVariants, Text, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { ClusterCurator, ClusterCuratorAnsibleJob, ClusterCuratorApiVersion, ClusterCuratorKind } from '../resources'
+import { ClusterCurator, ClusterCuratorAnsibleJob } from '../resources'
 import { AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -108,7 +108,7 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
             isOpen={isOpen}
             onClose={close}
         >
-            <TemplateSummaryExpandable clusterCurator={testTemplate}></TemplateSummaryExpandable>
+            <TemplateSummaryExpandable clusterCurator={curatorTemplate}></TemplateSummaryExpandable>
         </AcmModal>
     )
 }
@@ -141,31 +141,6 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
             )}
         </TableComposable>
     )
-}
-
-const testTemplate: ClusterCurator = {
-    apiVersion: ClusterCuratorApiVersion,
-    kind: ClusterCuratorKind,
-    metadata: {
-        name: 'test-curator',
-        namespace: 'default',
-    },
-    spec: {
-        desiredCuration: 'install',
-        install: {
-            towerAuthSecret: '123',
-            prehook: [{ name: 'prehook-1' }, { name: 'prehook-2' }],
-            posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
-        },
-        upgrade: {
-            desiredUpdate: '',
-            channel: '',
-            upstream: '',
-            towerAuthSecret: '123',
-            prehook: [],
-            posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
-        },
-    },
 }
 
 export function templateLinkOut(props: { curator: ClusterCurator }) {

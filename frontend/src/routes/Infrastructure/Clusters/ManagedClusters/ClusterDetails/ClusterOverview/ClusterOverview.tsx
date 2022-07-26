@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    ClusterCurator,
-    ClusterCuratorApiVersion,
-    ClusterCuratorDefinition,
-    ClusterCuratorKind,
-    ClusterStatus,
-    ManagedClusterDefinition,
-} from '../../../../../../resources'
+import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '../../../../../../resources'
 import {
     AcmButton,
     AcmDescriptionList,
@@ -222,16 +215,10 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 value: cluster?.hive?.clusterPool,
             },
             automationTemplate: {
-                key: 'Automation template',
-                value: true && (
-                    <AcmButton
-                        variant="link"
-                        isInline
-                        onClick={() => setCuratorSummaryModalIsOpen(true)}
-                        // isDisabled={cluster.status === ClusterStatus.hibernating}
-                        tooltip={t('hibernating.tooltip')}
-                    >
-                        {'View template'}
+                key: t('Automation template'),
+                value: clusterCurator && (
+                    <AcmButton variant="link" isInline onClick={() => setCuratorSummaryModalIsOpen(true)}>
+                        {t('View template')}
                     </AcmButton>
                 ),
             },
@@ -308,41 +295,18 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         details = <AIHypershiftClusterDetails />
     }
 
-    const testTemplate: ClusterCurator = {
-        apiVersion: ClusterCuratorApiVersion,
-        kind: ClusterCuratorKind,
-        metadata: {
-            name: 'test-curator',
-            namespace: 'default',
-        },
-        spec: {
-            desiredCuration: 'install',
-            install: {
-                towerAuthSecret: '123',
-                prehook: [{ name: 'prehook-1' }, { name: 'prehook-2' }],
-                posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
-            },
-            upgrade: {
-                desiredUpdate: '',
-                channel: '',
-                upstream: '',
-                towerAuthSecret: '123',
-                prehook: [],
-                posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
-            },
-        },
-    }
-
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                <TemplateSummaryModal
-                    curatorTemplate={testTemplate}
-                    isOpen={curatorSummaryModalIsOpen}
-                    close={() => {
-                        setCuratorSummaryModalIsOpen(false)
-                    }}
-                ></TemplateSummaryModal>
+                {clusterCurator && (
+                    <TemplateSummaryModal
+                        curatorTemplate={clusterCurator}
+                        isOpen={curatorSummaryModalIsOpen}
+                        close={() => {
+                            setCuratorSummaryModalIsOpen(false)
+                        }}
+                    ></TemplateSummaryModal>
+                )}
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}

@@ -949,6 +949,12 @@ const mockClusterCurator: ClusterCurator = {
         install: {
             towerAuthSecret: 'ansible-credential-i',
             prehook: [],
+            posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
+        },
+        upgrade: {
+            towerAuthSecret: 'ansible-credential-i',
+            prehook: [],
+            posthook: [],
         },
     },
 }
@@ -1009,7 +1015,7 @@ describe('ClusterDetails', () => {
     test('overview page opens logs', async () => {
         const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
-        await clickByText('View logs')
+        await clickByText('View logs', 1)
         await waitForNocks(nocks)
         await waitForCalled(window.open as jest.Mock)
     })
@@ -1152,5 +1158,29 @@ describe('ClusterDetails for On Premise', () => {
         await waitForText('Assisted installation')
 
         // screen.debug(undefined, -1)
+    })
+})
+
+describe('Automation Details ', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        render(<Component />)
+    })
+
+    test('summary link is visible', async () => {
+        await waitForText(clusterName, true)
+        await waitForText('Automation template', true)
+        await waitForText('View template', true)
+    })
+
+    test('modal displays correct values', async () => {
+        await clickByText('View template')
+        await waitForText('Automation template for test-cluster')
+
+        await waitForText('Install')
+        await waitForText('posthook-1')
+
+        await waitForText('Upgrade')
+        await waitForText('none selected', true)
     })
 })
