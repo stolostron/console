@@ -211,9 +211,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'update-automation-template',
                 text: t('Update automation template'),
-                click: (_cluster: Cluster) => setShowUpdateAutomationModal(true),
+                click: () => setShowUpdateAutomationModal(true),
                 isAriaDisabled: true,
-                rbac: [rbacPatch(ClusterCuratorDefinition, cluster.namespace)],
+                rbac: [rbacPatch(ClusterCuratorDefinition, cluster.namespace/*, secret*/)],
             },
             {
                 id: 'edit-labels',
@@ -225,8 +225,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'upgrade-cluster',
                 text: t('managed.upgrade'),
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                click: (_cluster: Cluster) => setShowUpgradeModal(true),
+                click: () => setShowUpgradeModal(true),
                 isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -236,8 +235,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'select-channel',
                 text: t('managed.selectChannel'),
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                click: (_cluster: Cluster) => setShowChannelSelectModal(true),
+                click: () => setShowChannelSelectModal(true),
                 isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),

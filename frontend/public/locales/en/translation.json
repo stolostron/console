@@ -1,5 +1,7 @@
 {
     "(1 of {{0}})": "(1 of {{0}})",
+    "{{count}} cluster cannot be edited ": "{{count}} cluster cannot be edited ",
+    "{{count}} cluster cannot be edited _plural": "{{count}} clusters cannot be edited ",
     "{{count}} clusters with unknown status": "{{count}} cluster with unknown status",
     "{{count}} clusters with unknown status_plural": "{{count}} clusters with unknown status",
     "{{count}} clusters with violations": "{{count}} cluster with violations",
@@ -138,6 +140,7 @@
     "Argo CD": "Argo CD",
     "ArgoCD": "ArgoCD",
     "Automation": "Automation",
+    "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.": "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.",
     "Automations": "Automations",
     "Available cluster types": "Available cluster types",
     "Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.": "Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.",

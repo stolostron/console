@@ -13,9 +13,11 @@ import {
     ResourceErrorCode,
     SecretDefinition,
     ClusterCuratorKind,
+    ClusterStatus,
 } from '../../../../../resources'
 import { makeStyles } from '@material-ui/styles'
 import {
+    AcmAlert,
     AcmButton,
     AcmForm,
     AcmIcon,
@@ -88,7 +90,15 @@ export function UpdateAutomationModal(props: {
         )
     }
 
-    const isupdatable = (cluster: Cluster) => !cluster.distribution?.isManagedOpenShift
+    console.log('props.clusters', props.clusters)
+
+    const isupdatable = (cluster: Cluster) => {
+        const isManagedOpenshift = cluster.distribution?.isManagedOpenShift
+        const isOpenshift = !!cluster.distribution?.ocp?.version
+        const isReady = cluster.status === ClusterStatus.ready
+        const isUpgrading = cluster.distribution?.upgradeInfo?.isUpgrading
+        return !!cluster.name && !isManagedOpenshift && isOpenshift && isReady && !isUpgrading
+    }
 
     const updatableClusters = useMemo<Cluster[] | undefined>(
         () => props.clusters && props.clusters.filter(isupdatable),
@@ -218,6 +228,8 @@ export function UpdateAutomationModal(props: {
         props.close()
     }
 
+    const nonUpdatableCount = props.clusters && updatableClusters && props.clusters.length - updatableClusters.length
+
     return (
         <AcmModal
             title={t('Update automation template')}
@@ -232,7 +244,7 @@ export function UpdateAutomationModal(props: {
                     key="confirm"
                     variant="primary"
                     onClick={onConfirm}
-                    isAriaDisabled={selectedCuratorTemplate === undefined}
+                    isAriaDisabled={selectedCuratorTemplate === undefined || updatableClusters?.length === 0}
                 >
                     {isUpdating ? t('Saving') : t('save')}
                 </Button>,
@@ -250,6 +262,19 @@ export function UpdateAutomationModal(props: {
         >
             <AcmForm>
                 <Stack hasGutter>
+                    <StackItem>
+                        {nonUpdatableCount && (
+                            <AcmAlert
+                                variant="warning"
+                                title={t('{{count}} cluster cannot be edited ', { count: nonUpdatableCount })}
+                                message={t(
+                                    'Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.'
+                                )}
+                                isInline
+                            />
+                        )}
+                    </StackItem>
+                    {/* {alert "1 cluster cannot be edited ..."} */}
                     <StackItem>{t('Update the automation template for the selected clusters.')}</StackItem>
                     <StackItem className={classes.select}>
                         <Flex>
