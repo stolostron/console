@@ -106,6 +106,23 @@ const mockManagedCluster5: ManagedCluster = {
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
+const mockManagedCluster6: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'local-cluster' },
+    spec: { hubAcceptsClient: true },
+}
+const mockManagedCluster7: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'hypershift-cluster',
+        annotations: {
+            'cluster.open-cluster-management.io/hypershiftdeployment': 'hypershift-cluster/hypershift-cluster',
+        },
+    },
+    spec: { hubAcceptsClient: true },
+}
 export const mockManagedClusters: ManagedCluster[] = [
     mockManagedCluster0,
     mockManagedCluster1,
@@ -264,6 +281,16 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
             },
         ],
     },
+}
+const mockManagedClusterInfo6: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+}
+const mockManagedClusterInfo7: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'hypershift-cluster', namespace: 'hypershift-cluster' },
 }
 export const mockManagedClusterInfos = [
     mockManagedClusterInfo0,
@@ -461,5 +488,31 @@ describe('Clusters Page RBAC', () => {
         await waitForText(mockManagedCluster0.metadata.name!)
         await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
+    })
+})
+
+describe('Clusters Page hypershift', () => {
+    test('should render hypershift clusters', async () => {
+        nockIgnoreRBAC()
+        const hypershiftMockManagedClusters: ManagedCluster[] = [mockManagedCluster6, mockManagedCluster7]
+        const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [
+            mockManagedClusterInfo6,
+            mockManagedClusterInfo7,
+        ]
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, hypershiftMockManagedClusters)
+                    snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+                    snapshot.set(managedClusterInfosState, hypershiftMockManagedClusterInfos)
+                    snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                }}
+            >
+                <MemoryRouter>
+                    <ManagedClusters />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText(mockManagedCluster6.metadata.name!)
     })
 })
