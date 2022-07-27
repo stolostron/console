@@ -762,7 +762,9 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
 
     const setHasValue = useSetHasValue()
     useLayoutEffect(() => {
-        if (templateName) setHasValue()
+        if (templateName) {
+            setHasValue()
+        }
     }, [setHasValue, templateName])
 
     const onChangeAutomationTemplate = useCallback(
@@ -786,7 +788,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             // Add new YAML for ClusterCurator and secrets
             if (template) {
                 // TODO: include namespace in key
-                const curatorTemplate = curatorTemplates.find((t) => t.metadata.name === template)
+                const curatorTemplate = curatorTemplates.find((cct) => cct.metadata.name === template)
                 if (curatorTemplate) {
                     setSelectedTemplateName(curatorTemplate)
                     const curator = {

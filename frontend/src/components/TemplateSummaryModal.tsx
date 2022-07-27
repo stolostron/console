@@ -43,7 +43,9 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
     const classes = useStyles()
 
-    if (!clusterCurator) return <></>
+    if (!clusterCurator) {
+        return <></>
+    }
     return (
         <div>
             {clusterCurator.spec?.install && (
@@ -54,7 +56,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     isIndented
                 >
                     <ComposableTable
-                        title={t('Pre-install Ansible job template')}
+                        title={t('template.preInstall.label')}
                         curatorJobs={
                             clusterCurator.spec.install.prehook?.map(
                                 (job: ClusterCuratorAnsibleJob) => job.name
@@ -63,7 +65,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
-                            title={t('Post-install Ansible job template')}
+                            title={t('template.postInstall.label')}
                             curatorJobs={
                                 clusterCurator.spec.install.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
@@ -82,7 +84,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     isIndented
                 >
                     <ComposableTable
-                        title={t('Pre-upgrade Ansible job template')}
+                        title={t('template.preUpgrade.label')}
                         curatorJobs={
                             clusterCurator.spec.upgrade.prehook?.map(
                                 (job: ClusterCuratorAnsibleJob) => job.name
@@ -91,7 +93,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
-                            title={t('Post-upgrade Ansible job template')}
+                            title={t('template.postUpgrade.label')}
                             curatorJobs={
                                 clusterCurator.spec.upgrade.posthook?.map(
                                     (job: ClusterCuratorAnsibleJob) => job.name
@@ -165,7 +167,6 @@ export function TemplateLinkOutControl(props: { control?: any }) {
             <TemplateLinkOut templateCurator={selectedTemplate} />{' '}
         </div>
     )
-    // return <TemplateSummaryExpandable clusterCurator={selectedTemplate} />
 }
 
 export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
@@ -173,7 +174,9 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
     const { t } = useTranslation()
     const classes = useStyles()
     const history = useHistory()
-    if (!templateCurator) return <></>
+    if (!templateCurator) {
+        return <></>
+    }
     return (
         <div>
             <Button
