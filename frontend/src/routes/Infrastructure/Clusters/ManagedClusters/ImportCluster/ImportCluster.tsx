@@ -757,7 +757,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
     } = props
 
     const onChangeAutomationTemplate = useCallback(
-        (teplate) => {
+        (template) => {
             // Delete any previously generated YAML
             const curatorIndex = resources.findIndex(
                 (item) => item.kind === ClusterCuratorKind && item?.metadata?.name === clusterName
@@ -775,9 +775,9 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             })
 
             // Add new YAML for ClusterCurator and secrets
-            if (teplate) {
+            if (template) {
                 // TODO: include namespace in key
-                const curatorTemplate = curatorTemplates.find((template) => template.metadata.name === teplate)
+                const curatorTemplate = curatorTemplates.find((t) => t.metadata.name === template)
                 if (curatorTemplate) {
                     const curator = {
                         ...ClusterCuratorDefinition,
@@ -822,7 +822,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
                     })
                 }
             }
-            dispatch({ type: 'setTemplateName', templateName: teplate })
+            dispatch({ type: 'setTemplateName', templateName: template })
             update()
         },
         [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations, update]
