@@ -44,9 +44,9 @@ describe('CreateInfrastructure', () => {
         await clickByTestId('aws')
     })
 
-    test('can select baremetal', async () => {
+    test('can select host inventory', async () => {
         render(<Component />)
-        await clickByTestId('baremetal')
+        await clickByTestId('hostinventory')
     })
 
     test('can select google', async () => {
