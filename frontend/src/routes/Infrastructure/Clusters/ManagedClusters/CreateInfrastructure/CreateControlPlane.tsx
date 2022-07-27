@@ -18,7 +18,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-const clusterTypeTooltips = 'Red Hat Advanced Cluster Management or multicluster engine operator'
+const clusterTypeTooltips = 'Required operator: Red Hat Advanced Cluster Management or multicluster engine'
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
