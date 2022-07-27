@@ -15,14 +15,32 @@ import {
     ClusterCuratorKind,
 } from '../../../../../resources'
 import { makeStyles } from '@material-ui/styles'
-import { AcmButton, AcmForm, AcmIcon, AcmIconVariant, AcmModal, AcmSelect, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
+import {
+    AcmButton,
+    AcmForm,
+    AcmIcon,
+    AcmIconVariant,
+    AcmModal,
+    AcmSelect,
+    AcmTable,
+    IAcmTableColumn,
+} from '../../../../../ui-components'
 import {
     ansibleCredentialsValue,
     clusterCuratorSupportedCurationsValue,
     validClusterCuratorTemplatesValue,
 } from '../../../../../selectors'
 import { clusterCuratorsState } from '../../../../../atoms'
-import { Button, ButtonVariant, Flex, FlexItem, ModalVariant, SelectOption, Stack, StackItem } from '@patternfly/react-core'
+import {
+    Button,
+    ButtonVariant,
+    Flex,
+    FlexItem,
+    ModalVariant,
+    SelectOption,
+    Stack,
+    StackItem,
+} from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue } from 'recoil'
@@ -48,7 +66,11 @@ const useStyles = makeStyles({
     },
 })
 
-export function UpdateAutomationModal(props: { close: () => void; open: boolean; clusters: Cluster[] }): JSX.Element {
+export function UpdateAutomationModal(props: {
+    close: () => void
+    open: boolean
+    clusters: Cluster[] | undefined
+}): JSX.Element {
     const { t } = useTranslation()
     const classes = useStyles()
     const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
@@ -66,12 +88,10 @@ export function UpdateAutomationModal(props: { close: () => void; open: boolean;
         )
     }
 
-    const isUpdateable = (cluster: Cluster) => {
-        cluster.distribution?.isManagedOpenShift
-    }
+    const isupdatable = (cluster: Cluster) => !cluster.distribution?.isManagedOpenShift
 
-    const updateableClusters = useMemo<Cluster[]>(
-        () => props.clusters && props.clusters.filter(isUpdateable),
+    const updatableClusters = useMemo<Cluster[] | undefined>(
+        () => props.clusters && props.clusters.filter(isupdatable),
         [props.clusters]
     )
 
@@ -92,7 +112,6 @@ export function UpdateAutomationModal(props: { close: () => void; open: boolean;
         if (selectedCuratorTemplate === undefined) {
             return
         }
-        
         setIsUpdating(true)
 
         // Set up resources to patch and/or create
@@ -148,50 +167,51 @@ export function UpdateAutomationModal(props: { close: () => void; open: boolean;
         })
 
         const results: IRequestResult[] = []
-        updateableClusters.forEach((cluster) => {
-            resources.forEach((resource) => {
-                const resourceCopy = {
-                    ...resource.resource,
-                    metadata: {
-                        ...(resource.resource.metadata || {}),
-                        ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
-                        namespace: cluster.name, // For curator and secrets, override namespace per cluster
-                    },
-                }
+        updatableClusters &&
+            updatableClusters.forEach((cluster) => {
+                resources.forEach((resource) => {
+                    const resourceCopy = {
+                        ...resource.resource,
+                        metadata: {
+                            ...(resource.resource.metadata || {}),
+                            ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
+                            namespace: cluster.name, // For curator and secrets, override namespace per cluster
+                        },
+                    }
 
-                const result = patchResource(resourceCopy, resource.data)
-                let createResult: IRequestResult | undefined = undefined
+                    const result = patchResource(resourceCopy, resource.data)
+                    let createResult: IRequestResult | undefined = undefined
 
-                results.push({
-                    promise: new Promise((resolve, reject) => {
-                        result.promise
-                            .then((data) => {
-                                return resolve(data)
-                            })
-                            .catch((err: ResourceError) => {
-                                if (err.code === ResourceErrorCode.NotFound) {
-                                    const combinedResource = { ...resourceCopy, ...resource.data }
-                                    createResult =
-                                        resourceCopy.kind === ClusterCuratorKind
-                                            ? createClusterCurator(combinedResource as ClusterCurator)
-                                            : createResource(combinedResource)
-                                    createResult.promise.then((data) => resolve(data)).catch((err) => reject(err))
-                                } else {
-                                    reject(err)
-                                }
-                                setIsUpdating(false)
-                            })
-                    }),
-                    abort: () => {
-                        result.abort()
-                        if (createResult) {
-                            createResult.abort()
-                        }
-                        setIsUpdating(false)
-                    },
+                    results.push({
+                        promise: new Promise((resolve, reject) => {
+                            result.promise
+                                .then((data) => {
+                                    return resolve(data)
+                                })
+                                .catch((err: ResourceError) => {
+                                    if (err.code === ResourceErrorCode.NotFound) {
+                                        const combinedResource = { ...resourceCopy, ...resource.data }
+                                        createResult =
+                                            resourceCopy.kind === ClusterCuratorKind
+                                                ? createClusterCurator(combinedResource as ClusterCurator)
+                                                : createResource(combinedResource)
+                                        createResult.promise.then((data) => resolve(data)).catch((err) => reject(err))
+                                    } else {
+                                        reject(err)
+                                    }
+                                    setIsUpdating(false)
+                                })
+                        }),
+                        abort: () => {
+                            result.abort()
+                            if (createResult) {
+                                createResult.abort()
+                            }
+                            setIsUpdating(false)
+                        },
+                    })
                 })
             })
-        })
         await Promise.allSettled(results.map((result) => result.promise))
         setSelectedCuratorTemplate(undefined)
         setIsUpdating(false)
@@ -263,12 +283,15 @@ export function UpdateAutomationModal(props: { close: () => void; open: boolean;
                                             selectedCuratorTemplate.metadata.namespace &&
                                             selectedCuratorTemplate.metadata.name
                                                 ? NavigationPath.editAnsibleAutomation
-                                                      .replace(':namespace', selectedCuratorTemplate.metadata.namespace as string)
+                                                      .replace(
+                                                          ':namespace',
+                                                          selectedCuratorTemplate.metadata.namespace as string
+                                                      )
                                                       .replace(':name', selectedCuratorTemplate.metadata.name as string)
                                                 : undefined,
                                         state: {
-                                            from: NavigationPath.managedClusters
-                                        }
+                                            from: NavigationPath.managedClusters,
+                                        },
                                     }}
                                 >
                                     {t('View selected template')}
@@ -283,13 +306,10 @@ export function UpdateAutomationModal(props: { close: () => void; open: boolean;
                     <StackItem className={classes.table}>
                         <AcmTable
                             columns={addAutomationTemplateColumns}
-                            items={updateableClusters}
-                            plural={t('clusters')}
+                            items={updatableClusters}
+                            plural={t('updatable clusters')}
                             keyFn={(c: Cluster) => c.name as string}
                             autoHidePagination={true}
-                            // emptyState={() => {
-
-                            // }}
                         />
                     </StackItem>
                 </Stack>
