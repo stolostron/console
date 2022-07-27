@@ -2,13 +2,13 @@
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     CatalogCardItemType,
-    ItemView,
+    CatalogColor,
     getPatternflyColor,
     ICatalogBreadcrumb,
     ICatalogCard,
+    ItemView,
     PageHeader,
     PatternFlyColor,
-    CatalogColor,
 } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -72,7 +72,7 @@ export function CreateControlPlane() {
                         {t('View documentation')} <ExternalLinkAltIcon />
                     </a>
                 ),
-                badge: t('Tech preview'),
+                badge: t('Technology preview'),
                 badgeColor: CatalogColor.orange,
             },
             {

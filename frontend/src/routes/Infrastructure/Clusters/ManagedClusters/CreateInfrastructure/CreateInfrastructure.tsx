@@ -50,20 +50,6 @@ export function CreateInfrastructure() {
                         search: '?infrastructureType=AWS',
                     }),
             },
-            {
-                id: 'baremetal',
-                icon: <AcmIcon icon={AcmIconVariant.baremetal} />,
-                title: t('Bare Metal'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'An OpenShift cluster running in a bare metal environment in your on-premises data center.'
-                        ),
-                    },
-                ],
-                onClick: () => history.push(NavigationPath.createControlPlane),
-            },
             // {
             //     id: 'alibaba',
             //     icon: <AcmIcon icon={AcmIconVariant.alibaba} />,
@@ -97,6 +83,18 @@ export function CreateInfrastructure() {
                         pathname: NavigationPath.createCluster,
                         search: '?infrastructureType=GCP',
                     }),
+            },
+            {
+                id: 'hostinventory',
+                icon: <AcmIcon icon={AcmIconVariant.baremetal} />,
+                title: t('Host inventory'),
+                items: [
+                    {
+                        type: CatalogCardItemType.Description,
+                        description: t('An OpenShift cluster running on available hosts from your inventory.'),
+                    },
+                ],
+                onClick: () => history.push(NavigationPath.createControlPlane),
             },
             {
                 id: 'azure',
