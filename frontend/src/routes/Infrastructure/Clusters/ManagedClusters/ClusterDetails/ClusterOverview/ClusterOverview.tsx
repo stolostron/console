@@ -36,6 +36,7 @@ import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
+import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
 
 const { getClusterProperties } = CIM
 
@@ -45,6 +46,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
 
     const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } =
         {
@@ -212,6 +214,14 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 key: t('table.clusterPool'),
                 value: cluster?.hive?.clusterPool,
             },
+            automationTemplate: {
+                key: t('Automation template'),
+                value: clusterCurator && (
+                    <AcmButton variant="link" isInline onClick={() => setCuratorSummaryModalIsOpen(true)}>
+                        {t('View template')}
+                    </AcmButton>
+                ),
+            },
         }
 
     let leftItems = [
@@ -230,6 +240,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         clusterProperties.claimedBy,
         clusterProperties.clusterSet,
         clusterProperties.clusterPool,
+        clusterProperties.automationTemplate,
     ]
 
     // should only show channel for ocp clusters with version
@@ -287,6 +298,15 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     return (
         <AcmPageContent id="overview">
             <PageSection>
+                {clusterCurator && (
+                    <TemplateSummaryModal
+                        curatorTemplate={clusterCurator}
+                        isOpen={curatorSummaryModalIsOpen}
+                        close={() => {
+                            setCuratorSummaryModalIsOpen(false)
+                        }}
+                    ></TemplateSummaryModal>
+                )}
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}
