@@ -23,6 +23,8 @@ import {
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
+    SecretDefinition,
+    SecretKind,
 } from '../../../../../resources'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -213,7 +215,12 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text: t('Update automation template'),
                 click: () => setShowUpdateAutomationModal(true),
                 isAriaDisabled: true,
-                rbac: [rbacPatch(ClusterCuratorDefinition, cluster.namespace/*, secret*/)],
+                rbac: [
+                    rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                    rbacPatch(SecretDefinition, cluster.namespace),
+                    rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+                    rbacCreate(SecretDefinition, cluster.namespace)
+                ],
             },
             {
                 id: 'edit-labels',
