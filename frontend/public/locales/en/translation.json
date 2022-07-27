@@ -86,6 +86,8 @@
     "An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.": "An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.",
     "An OpenShift cluster running in your Azure subscription that uses the ACM multicloud API.": "An OpenShift cluster running in your Azure subscription that uses the ACM multicloud API.",
     "An OpenShift cluster running in your Google Cloud subscription that uses the ACM multicloud API.": "An OpenShift cluster running in your Google Cloud subscription that uses the ACM multicloud API.",
+    "An OpenShift cluster running on available hosts from your inventory.": "An OpenShift cluster running on available hosts from your inventory.",
+    "An OpenShift cluster running on available hosts from your inventory. ": "An OpenShift cluster running on available hosts from your inventory. ",
     "An unexpected error occurred.": "An unexpected error occurred.",
     "An unknown error occurred.": "An unknown error occurred.",
     "Ansible Automation Platform": "Ansible Automation Platform",
