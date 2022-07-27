@@ -24,7 +24,6 @@ import {
     patchResource,
     ResourceErrorCode,
     SecretDefinition,
-    SecretKind,
 } from '../../../../../resources'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
