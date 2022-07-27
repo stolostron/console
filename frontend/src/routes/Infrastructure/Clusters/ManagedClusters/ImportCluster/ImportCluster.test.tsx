@@ -280,7 +280,7 @@ const clusterCurator: ClusterCurator = {
         install: {
             prehook: [
                 {
-                    name: 'test',
+                    name: 'test-prehook-install',
                     extra_vars: {},
                 },
             ],
@@ -303,7 +303,7 @@ const mockClusterCurator: ClusterCurator = {
         install: {
             prehook: [
                 {
-                    name: 'test',
+                    name: 'test-prehook-install',
                     extra_vars: {},
                 },
             ],
@@ -444,6 +444,11 @@ describe('ImportCluster', () => {
         await clickByText('Next')
         await clickByText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
+
+        // check automation summary
+        await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
+        await waitForText('Preinstall Ansible job templates')
+        await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
         // Advance to Review step and submit the form
         await clickByText('Next')

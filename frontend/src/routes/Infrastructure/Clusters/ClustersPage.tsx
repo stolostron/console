@@ -62,7 +62,7 @@ export function ClustersPage() {
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.managedClusters)}
                             >
-                                <Link to={NavigationPath.clusters}>{t('Managed clusters')}</Link>
+                                <Link to={NavigationPath.clusters}>{t('Cluster list')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
                                 <Link to={NavigationPath.clusterSets}>{t('Cluster sets')}</Link>

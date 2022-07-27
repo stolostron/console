@@ -401,7 +401,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('Details')
 
-        await clickByText('Managed clusters')
+        await clickByText('Cluster list')
         await waitForText(clusterSetCluster.metadata.name!)
 
         await clickByText('Cluster pools')

@@ -44,6 +44,7 @@ import {
     typeByTestId,
     typeByText,
     waitForNocks,
+    waitForNotText,
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -103,7 +104,7 @@ const clusterCurator: ClusterCurator = {
         install: {
             prehook: [
                 {
-                    name: 'test',
+                    name: 'test-prehook-install',
                     extra_vars: {},
                 },
             ],
@@ -126,7 +127,7 @@ const mockClusterCuratorInstall: ClusterCurator = {
         install: {
             prehook: [
                 {
-                    name: 'test',
+                    name: 'test-prehook-install',
                     extra_vars: {},
                 },
             ],
@@ -625,10 +626,18 @@ describe('CreateCluster AWS', () => {
         // skipping proxy
         await clickByText('Next')
 
-        // choose ansible template; then clear
+        // choose ansible template
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
+
+        // check template summary
+        await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
+        await waitForText('Preinstall Ansible job templates')
+        await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
+
+        // clear template
         await clickByTitle('Clear selected item')
+        await waitForNotText('View test')
         await clickByText('Next')
 
         // nocks for cluster creation

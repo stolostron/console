@@ -46,7 +46,7 @@ import {
     AcmToastProvider,
 } from './ui-components'
 import { t } from 'i18next'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
@@ -60,7 +60,7 @@ import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
-import { ThemeSwitcher } from './theme'
+import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
 
 // HOME
@@ -343,6 +343,13 @@ export default function App() {
         ],
         []
     )
+
+    // Enforce light mode for standalone
+    useLayoutEffect(() => {
+        if (process.env.NODE_ENV === 'production') {
+            setLightTheme(true)
+        }
+    }, [])
 
     return (
         <BrowserRouter>

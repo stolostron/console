@@ -44,9 +44,17 @@ spec:
   services:
   - service: APIServer
     servicePublishingStrategy:
+  {{#switch hypershift-network.apiPublishingStrategy}}
+    {{#case 'NodePort'}}
+      type: {{{hypershift-network.apiPublishingStrategy}}}
       nodePort:
-        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
-      type: NodePort
+        address: {{{hypershift-network.nodePortAddress}}}
+        port: {{{hypershift-network.nodePortPort}}}
+    {{/case}}
+    {{#case 'LoadBalancer'}}
+      type: {{{hypershift-network.apiPublishingStrategy}}}
+    {{/case}}
+  {{/switch}}
   - service: OAuthServer
     servicePublishingStrategy:
       type: Route

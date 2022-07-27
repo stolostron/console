@@ -24,6 +24,7 @@ export default function TemplateEditor(props: {
         creationStatus?: string
         creationMsg?: any[] | null | undefined
         resetStatus?: () => void
+        backButtonOverride?: () => void
     }
     i18n?: (key: string, arg: any) => string
     onControlInitialize?: (control: any) => void

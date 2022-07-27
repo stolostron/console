@@ -98,7 +98,7 @@ export default function CreateClusterPage() {
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
-    const controlPlaneBreadCrumb = { text: t('Control Plane'), to: NavigationPath.createControlPlane }
+    const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
 
     // if a connection is added outside of wizard, add it to connection selection
@@ -381,6 +381,10 @@ export default function CreateClusterPage() {
         { text: t('Infrastructure'), to: NavigationPath.createInfrastructure },
     ]
 
+    function backButtonOverrideFunc() {
+        history.goBack()
+    }
+
     switch (infrastructureType) {
         case 'AWS':
             controlData = getControlDataAWS(
@@ -473,6 +477,7 @@ export default function CreateClusterPage() {
                                         resetStatus: () => {
                                             setCreationStatus(undefined)
                                         },
+                                        backButtonOverride: backButtonOverrideFunc,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
                                     i18n={i18n}

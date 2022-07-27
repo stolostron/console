@@ -29,6 +29,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import {
+    ClusterCurator,
     ClusterCuratorDefinition,
     ClusterCuratorKind,
     createClusterCurator,
@@ -65,12 +66,14 @@ import {
     WizTextArea,
     WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
+import { useSetHasValue } from '@patternfly-labs/react-form-wizard/lib/src/contexts/HasValueProvider'
 import { useRecoilValue } from 'recoil'
 import {
     ansibleCredentialsValue,
     clusterCuratorSupportedCurationsValue,
     validClusterCuratorTemplatesValue,
 } from '../../../../../selectors'
+import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 
 const acmSchema = [...schema, ...kac]
 
@@ -485,7 +488,7 @@ export default function ImportClusterPage() {
                         <AutoImportControls state={state} dispatch={dispatch} />
                     </Section>
                 </Step>
-                <Step label={t('Automation')} id="automation">
+                <Step label={t('Automation')} id="automation" autohide={false}>
                     <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
                         <AutomationTemplate state={state} dispatch={dispatch} />
                     </Section>
@@ -755,6 +758,14 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
         state: { clusterName, templateName },
         dispatch,
     } = props
+    const [selectedTemplateName, setSelectedTemplateName] = useState<ClusterCurator | undefined>()
+
+    const setHasValue = useSetHasValue()
+    useLayoutEffect(() => {
+        if (templateName) {
+            setHasValue()
+        }
+    }, [setHasValue, templateName])
 
     const onChangeAutomationTemplate = useCallback(
         (template) => {
@@ -777,8 +788,9 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             // Add new YAML for ClusterCurator and secrets
             if (template) {
                 // TODO: include namespace in key
-                const curatorTemplate = curatorTemplates.find((t) => t.metadata.name === template)
+                const curatorTemplate = curatorTemplates.find((cct) => cct.metadata.name === template)
                 if (curatorTemplate) {
+                    setSelectedTemplateName(curatorTemplate)
                     const curator = {
                         ...ClusterCuratorDefinition,
                         metadata: {
@@ -836,45 +848,49 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             <DescriptionListDescription id={controlId}>{templateName}</DescriptionListDescription>
         </DescriptionListGroup>
     ) : (
-        <AcmSelect
-            id={controlId}
-            label={controlLabel}
-            placeholder={t('template.clusterCreate.select.placeholder')}
-            labelHelp={t('template.clusterImport.tooltip')}
-            helperText={
-                <Split>
-                    <SplitItem isFilled />
-                    <SplitItem>
-                        <AcmButton
-                            variant="link"
-                            style={{ paddingRight: '0px' }}
-                            onClick={() =>
-                                window.open(
-                                    `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
-                                    'add-automation-template'
-                                )
-                            }
-                        >
-                            {t('creation.ocp.cloud.add.template')}
-                            <AcmIcon
-                                style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                icon={AcmIconVariant.openNewTab}
-                            />
-                        </AcmButton>
-                    </SplitItem>
-                </Split>
-            }
-            value={templateName}
-            onChange={onChangeAutomationTemplate}
-        >
-            {Object.values(curatorTemplates).map((template) => {
-                const templateName = template.metadata.name
-                return (
-                    <SelectOption key={templateName} value={templateName}>
-                        {templateName}
-                    </SelectOption>
-                )
-            })}
-        </AcmSelect>
+        <>
+            <AcmSelect
+                id={controlId}
+                label={controlLabel}
+                placeholder={t('template.clusterCreate.select.placeholder')}
+                labelHelp={t('template.clusterImport.tooltip')}
+                helperText={
+                    <Split>
+                        <SplitItem isFilled />
+                        <SplitItem>
+                            <AcmButton
+                                variant="link"
+                                style={{ paddingRight: '0px' }}
+                                onClick={() =>
+                                    window.open(
+                                        `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                                        'add-automation-template'
+                                    )
+                                }
+                            >
+                                {t('creation.ocp.cloud.add.template')}
+                                <AcmIcon
+                                    style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                    icon={AcmIconVariant.openNewTab}
+                                />
+                            </AcmButton>
+                        </SplitItem>
+                    </Split>
+                }
+                value={templateName}
+                onChange={onChangeAutomationTemplate}
+            >
+                {Object.values(curatorTemplates).map((template) => {
+                    const templateName = template.metadata.name
+                    return (
+                        <SelectOption key={templateName} value={templateName}>
+                            {templateName}
+                        </SelectOption>
+                    )
+                })}
+            </AcmSelect>
+            <TemplateLinkOut templateCurator={selectedTemplateName} />
+            <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
+        </>
     )
 }

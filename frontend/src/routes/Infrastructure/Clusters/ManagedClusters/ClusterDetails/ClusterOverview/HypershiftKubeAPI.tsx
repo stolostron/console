@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import * as React from 'react'
 import jsYaml from 'js-yaml'
 import { getResource } from '../../../../../../resources'
 import { AcmInlineCopy } from '../../../../../../ui-components'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { ClusterContext } from '../ClusterDetails'
 
-type HypershiftKubeAPIProps = {
-    hostedCluster: HostedClusterK8sResource
-}
-
-const HypershiftKubeAPI = ({ hostedCluster }: HypershiftKubeAPIProps) => {
+export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
+    const { hostedCluster } = React.useContext(ClusterContext)
     const [hypershiftKubeAPI, setHypershiftKubeAPI] = React.useState<string>()
     const [error, setError] = React.useState(false)
 
@@ -36,12 +34,19 @@ const HypershiftKubeAPI = ({ hostedCluster }: HypershiftKubeAPIProps) => {
         hypershiftKubeconfig && fetchKubeconfig()
     }, [hypershiftKubeconfig, hostedCluster?.metadata.namespace])
 
+    return [hypershiftKubeAPI, error]
+}
+
+const HypershiftKubeAPI = () => {
+    const { t } = useTranslation()
+    const [hypershiftKubeAPI, error] = useHypershiftKubeconfig()
+
     return hypershiftKubeAPI ? (
         <AcmInlineCopy text={hypershiftKubeAPI} id="kube-api-server" />
     ) : error ? (
-        <>'Failed to fetch kubeconfig'</>
+        <>{t('Failed to fetch kubeconfig')}</>
     ) : (
-        <>'-'</>
+        <>-</>
     )
 }
 

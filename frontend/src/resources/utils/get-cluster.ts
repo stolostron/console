@@ -840,7 +840,8 @@ export function getClusterStatus(
         if (hostedCluster?.metadata?.deletionTimestamp) {
             return { status: ClusterStatus.destroying }
         }
-        if (hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'False') {
+        const availableCondition = hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')
+        if (!availableCondition || availableCondition.status === 'False') {
             return { status: ClusterStatus.creating }
         }
     }
