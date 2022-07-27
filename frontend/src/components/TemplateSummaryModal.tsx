@@ -129,7 +129,6 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
 
     return (
         <TableComposable aria-label="Simple table" variant={'compact'}>
-            {/* <Caption>Simple table using composable components</Caption> */}
             <Thead>
                 <Tr>
                     <Th style={{ padding: '0px 0px 8px 0px' }}>{title}</Th>
