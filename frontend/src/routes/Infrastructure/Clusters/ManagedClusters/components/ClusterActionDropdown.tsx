@@ -219,7 +219,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
                     rbacPatch(SecretDefinition, cluster.namespace),
                     rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-                    rbacCreate(SecretDefinition, cluster.namespace)
+                    rbacCreate(SecretDefinition, cluster.namespace),
                 ],
             },
             {
