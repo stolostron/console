@@ -35,6 +35,7 @@ import { ClusterContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
+import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 
 const { getClusterProperties } = CIM
 
@@ -157,7 +158,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 value: cluster?.kubeApiServer ? (
                     <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />
                 ) : cluster?.isHypershift && hostedCluster ? (
-                    <HypershiftKubeAPI hostedCluster={hostedCluster} />
+                    <HypershiftKubeAPI />
                 ) : undefined,
             },
             consoleUrl: {
@@ -288,7 +289,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             <PageSection>
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
-                <ImportCommandContainer />
+                {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}
                 <EditLabels
                     resource={
                         showEditLabels
