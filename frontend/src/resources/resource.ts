@@ -25,7 +25,8 @@ export interface ResourceList<Resource extends IResource> {
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
     const crd = globalCustomResourceDefinitions.find(
         (crd) =>
-            crd.spec.group === getResourceGroup(resourceDefinition) && crd.spec.names.kind === resourceDefinition.kind
+            crd.spec.group === getResourceGroup(resourceDefinition) &&
+            crd.spec.names.kind.toLowerCase() === resourceDefinition.kind.toLowerCase()
     )
 
     if (crd) return crd.spec.names.plural
