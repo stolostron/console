@@ -2,6 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
+import { globalCustomResourceDefinitions } from '../atoms'
 import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
@@ -22,6 +23,17 @@ export interface ResourceList<Resource extends IResource> {
 }
 
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+    const crd = globalCustomResourceDefinitions.find(
+        (crd) =>
+            crd.spec.group === getResourceGroup(resourceDefinition) && crd.spec.names.kind === resourceDefinition.kind
+    )
+
+    if (crd) return crd.spec.names.plural
+
+    if (resourceDefinition.kind.endsWith('s')) {
+        return resourceDefinition.kind.toLowerCase()
+    }
+
     return resourceDefinition.kind?.toLowerCase().endsWith('y')
         ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
         : resourceDefinition.kind?.toLowerCase() + 's'

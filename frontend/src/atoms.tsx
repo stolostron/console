@@ -1,24 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { noop } from 'lodash'
 import {
-    HostedClusterK8sResource,
-    AgentMachineK8sResource,
-    NodePoolK8sResource,
     AgentClusterInstallK8sResource,
     AgentK8sResource,
+    AgentMachineK8sResource,
     BareMetalHostK8sResource,
+    HostedClusterK8sResource,
     InfraEnvK8sResource,
     InfrastructureK8sResource,
     NMStateK8sResource,
+    NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { atom, SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
-import { noop } from 'lodash'
+import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentKind,
     AgentKindVersion,
+    AgentMachineApiVersion,
+    AgentMachineKind,
     AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
@@ -66,6 +68,9 @@ import {
     ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
+    CustomResourceDefinition,
+    CustomResourceDefinitionApiVersion,
+    CustomResourceDefinitionKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -80,6 +85,8 @@ import {
     HelmRelease,
     HelmReleaseApiVersion,
     HelmReleaseKind,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     InfraEnvApiVersion,
     InfraEnvKind,
     InfrastructureApiVersion,
@@ -111,6 +118,8 @@ import {
     NamespaceKind,
     NMStateConfigApiVersion,
     NMStateConfigKind,
+    NodePoolApiVersion,
+    NodePoolKind,
     OCPAppResource,
     Placement,
     PlacementApiVersionAlpha,
@@ -154,15 +163,6 @@ import {
     UserPreference,
     UserPreferenceApiVersion,
     UserPreferenceKind,
-    HostedClusterKind,
-    HostedClusterApiVersion,
-    NodePoolKind,
-    NodePoolApiVersion,
-    AgentMachineApiVersion,
-    AgentMachineKind,
-    CustomResourceDefinition,
-    CustomResourceDefinitionApiVersion,
-    CustomResourceDefinitionKind,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -228,6 +228,8 @@ export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
+
+export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -313,7 +315,12 @@ export function LoadData(props: { children?: ReactNode }) {
     const setHostedClustersState = useSetRecoilState(hostedClustersState)
     const setNodePoolsState = useSetRecoilState(nodePoolsState)
     const setAgentMachinesState = useSetRecoilState(agentMachinesState)
-    const setCustomResourceDefinitionsState = useSetRecoilState(customResourceDefinitionsState)
+
+    const [customResourceDefinitions, setCustomResourceDefinitionsState] =
+        useRecoilState(customResourceDefinitionsState)
+    useEffect(() => {
+        globalCustomResourceDefinitions = customResourceDefinitions
+    }, [customResourceDefinitions])
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
