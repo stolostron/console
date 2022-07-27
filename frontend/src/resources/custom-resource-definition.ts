@@ -17,4 +17,11 @@ export interface CustomResourceDefinition extends IResource {
     apiVersion: CustomResourceDefinitionApiVersionType
     kind: CustomResourceDefinitionKindType
     metadata: Metadata
+    spec: {
+        group: string
+        names: {
+            kind: string
+            plural: string
+        }
+    }
 }
