@@ -434,7 +434,11 @@ export const getAppChildResources = (
         let subWithPR
         const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
         placementRules.forEach((item) => {
-            if (referencedPR && referencedPR.name === item.metadata.name) {
+            if (
+                referencedPR &&
+                referencedPR.name === item.metadata.name &&
+                currentSub?.metadata?.namespace === item.metadata.namespace
+            ) {
                 subWithPR = { ...currentSub, rule: item }
             }
             const prHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
