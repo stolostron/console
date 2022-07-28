@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmRoute } from '@stolostron/ui-components'
+import { noop } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
-import { noop } from 'lodash'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
@@ -58,6 +58,9 @@ import {
     ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
+    CustomResourceDefinition,
+    CustomResourceDefinitionApiVersion,
+    CustomResourceDefinitionKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -101,9 +104,10 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
-    NMStateConfigKind,
     NMStateConfigApiVersion,
+    NMStateConfigKind,
     Placement,
+    PlacementApiVersionBeta,
     PlacementBinding,
     PlacementBindingApiVersion,
     PlacementBindingKind,
@@ -141,7 +145,6 @@ import {
     SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
-    PlacementApiVersionBeta,
 } from './resources'
 
 let atomArrayKey = 0
@@ -203,6 +206,8 @@ export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
+export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
+export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -284,6 +289,11 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
     const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
     const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
+    const [customResourceDefinitions, setCustomResourceDefinitionsState] =
+        useRecoilState(customResourceDefinitionsState)
+    useEffect(() => {
+        globalCustomResourceDefinitions = customResourceDefinitions
+    }, [customResourceDefinitions])
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -341,6 +351,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
+        addSetter(CustomResourceDefinitionApiVersion, CustomResourceDefinitionKind, setCustomResourceDefinitionsState)
         return setters
     }, [
         setAgentClusterInstalls,
@@ -391,6 +402,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setSubscriptionReportsState,
         setSubscriptionsState,
         setSubscriptionOperatorsState,
+        setCustomResourceDefinitionsState,
     ])
 
     useEffect(() => {
