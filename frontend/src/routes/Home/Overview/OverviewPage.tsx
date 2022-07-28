@@ -2,20 +2,6 @@
 // Copyright (c) 2021 Red Hat, Inc.
 import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
 import { PlusIcon } from '@patternfly/react-icons'
-import {
-    AcmActionGroup,
-    AcmAlert,
-    AcmButton,
-    AcmDonutChart,
-    AcmLaunchLink,
-    AcmLoadingPage,
-    AcmOverviewProviders,
-    AcmPage,
-    AcmPageHeader,
-    AcmScrollable,
-    AcmSummaryList,
-    Provider,
-} from '../../../ui-components'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -40,6 +26,20 @@ import {
 } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import {
+    AcmActionGroup,
+    AcmAlert,
+    AcmButton,
+    AcmDonutChart,
+    AcmLaunchLink,
+    AcmLoadingPage,
+    AcmOverviewProviders,
+    AcmPage,
+    AcmPageHeader,
+    AcmScrollable,
+    AcmSummaryList,
+    Provider,
+} from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../Search/search-sdk/search-sdk'
@@ -289,46 +289,53 @@ export default function OverviewPage() {
         }
     }, [clusters, selectedCloud, searchData, selectedClusterNames])
 
-    const { policyReportCriticalCount, policyReportImportantCount, policyReportModerateCount, policyReportLowCount } =
-        useMemo(() => {
-            const clustersToSearch: string[] =
-                selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.name ?? '')
-            const policyReportsForSelectedClusters = policyReports.filter((policyReport: PolicyReport) =>
-                clustersToSearch.find((clusterName: string) => clusterName === policyReport.scope?.name)
-            )
+    const {
+        policyReportCriticalCount,
+        policyReportImportantCount,
+        policyReportModerateCount,
+        policyReportLowCount,
+        clustersWithIssuesCount,
+    } = useMemo(() => {
+        const clustersToSearch: string[] =
+            selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.name ?? '')
+        const policyReportsForSelectedClusters = policyReports.filter((policyReport: PolicyReport) =>
+            clustersToSearch.find((clusterName: string) => clusterName === policyReport.scope?.name)
+        )
 
-            let policyReportCriticalCount = 0
-            let policyReportImportantCount = 0
-            let policyReportModerateCount = 0
-            let policyReportLowCount = 0
-            policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
-                policyReport.results.forEach((result: PolicyReportResults) => {
-                    if (result.source === 'insights') {
-                        switch (result.properties.total_risk) {
-                            case '4':
-                                policyReportCriticalCount++
-                                break
-                            case '3':
-                                policyReportImportantCount++
-                                break
-                            case '2':
-                                policyReportModerateCount++
-                                break
-                            case '1':
-                                policyReportLowCount++
-                                break
-                        }
-                    }
-                })
+        let policyReportCriticalCount = 0
+        let policyReportImportantCount = 0
+        let policyReportModerateCount = 0
+        let policyReportLowCount = 0
+        let clustersWithIssuesCount = 0
+        policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
+            const insightsFilteredResults = policyReport.results.filter((result) => result.source === 'insights')
+            insightsFilteredResults.length > 0 && clustersWithIssuesCount++
+            insightsFilteredResults.forEach((result: PolicyReportResults) => {
+                switch (result.properties.total_risk) {
+                    case '4':
+                        policyReportCriticalCount++
+                        break
+                    case '3':
+                        policyReportImportantCount++
+                        break
+                    case '2':
+                        policyReportModerateCount++
+                        break
+                    case '1':
+                        policyReportLowCount++
+                        break
+                }
             })
+        })
 
-            return {
-                policyReportCriticalCount,
-                policyReportImportantCount,
-                policyReportModerateCount,
-                policyReportLowCount,
-            }
-        }, [policyReports, selectedClusterNames, clusters])
+        return {
+            policyReportCriticalCount,
+            policyReportImportantCount,
+            policyReportModerateCount,
+            policyReportLowCount,
+            clustersWithIssuesCount,
+        }
+    }, [policyReports, selectedClusterNames, clusters])
 
     const { kubernetesTypes, regions, ready, offline, providers } = summaryData
     const provider = providers.find((p: any) => p.provider === selectedCloud)
@@ -581,8 +588,11 @@ export default function OverviewPage() {
                                     loading={!policyReportData}
                                     data={policyReportData}
                                     donutLabel={{
-                                        title: `${policyReports.length}`,
-                                        subTitle: t('Clusters with issues'),
+                                        title: `${clustersWithIssuesCount}`,
+                                        subTitle:
+                                            clustersWithIssuesCount === 1
+                                                ? t('Cluster with issues')
+                                                : t('Clusters with issues'),
                                     }}
                                     colorScale={[
                                         'var(--pf-global--danger-color--100)',
