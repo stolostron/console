@@ -90,8 +90,6 @@ export function UpdateAutomationModal(props: {
         )
     }
 
-    console.log('props.clusters', props.clusters)
-
     const isupdatable = (cluster: Cluster) => {
         const isManagedOpenshift = cluster.distribution?.isManagedOpenShift
         const isOpenshift = !!cluster.distribution?.ocp?.version
