@@ -62,7 +62,7 @@
         "i18next-http-backend": "1.4.0",
         "js-yaml": "4.1.0",
         "lodash": "4.17.21",
-        "moment": "2.29.3",
+        "moment": "^2.29.4",
         "moment-timezone": "0.5.34",
         "monaco-editor": "0.33.0",
         "openshift-assisted-ui-lib": "2.5.1-CIM-2.5",
