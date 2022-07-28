@@ -21,10 +21,11 @@ export interface PolicyAutomation {
 
 export interface PolicyAutomationSpec {
     automationDef: AutomationDef
-    mode: 'disabled' | 'once'
+    mode: 'disabled' | 'everyEvent' | 'once'
     policyRef: string
     eventHook?: 'noncompliant'
     rescanAfter?: string
+    delayAfterRunSeconds?: number
 }
 
 interface AutomationDef {

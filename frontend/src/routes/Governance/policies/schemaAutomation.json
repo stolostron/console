@@ -21,7 +21,7 @@
                     "type": "object",
                     "properties": {
                         "policyRef": { "type": "string" },
-                        "mode": { "enum": ["once", "disabled"] },
+                        "mode": { "enum": ["once", "everyEvent", "disabled"] },
                         "automationDef": {
                             "type": "object",
                             "properties": {
