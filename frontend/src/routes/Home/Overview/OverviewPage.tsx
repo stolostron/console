@@ -320,24 +320,42 @@ export default function OverviewPage() {
                 })
         }
     }, [firePolicyReportQuery, clusters, selectedClusterNames, searchPolicyReportCalled, searchPolicyReportRefetch])
-    const searchPolicyReportResult = searchPolicyReportData?.searchResult || []
-    const policyReportItems = searchPolicyReportResult[0]?.items || []
-    const policyReportCriticalCount = policyReportItems.reduce(
-        (total: any, currentValue: any) => total + currentValue.critical,
-        0
-    )
-    const policyReportImportantCount = policyReportItems.reduce(
-        (total: any, currentValue: any) => total + currentValue.important,
-        0
-    )
-    const policyReportModerateCount = policyReportItems.reduce(
-        (total: any, currentValue: any) => total + currentValue.moderate,
-        0
-    )
-    const policyReportLowCount = policyReportItems.reduce(
-        (total: any, currentValue: any) => total + currentValue.low,
-        0
-    )
+
+    const {
+        policyReportCriticalCount,
+        policyReportImportantCount,
+        policyReportModerateCount,
+        policyReportLowCount,
+        clustersWithIssuesCount,
+    } = useMemo(() => {
+        const searchPolicyReportResult = searchPolicyReportData?.searchResult || []
+        const policyReportItems = searchPolicyReportResult[0]?.items || []
+        const clustersWithIssuesCount = policyReportItems.filter((item: any) => item.numRuleViolations > 0).length
+        const policyReportCriticalCount = policyReportItems.reduce(
+            (total: any, currentValue: any) => total + currentValue.critical,
+            0
+        )
+        const policyReportImportantCount = policyReportItems.reduce(
+            (total: any, currentValue: any) => total + currentValue.important,
+            0
+        )
+        const policyReportModerateCount = policyReportItems.reduce(
+            (total: any, currentValue: any) => total + currentValue.moderate,
+            0
+        )
+        const policyReportLowCount = policyReportItems.reduce(
+            (total: any, currentValue: any) => total + currentValue.low,
+            0
+        )
+
+        return {
+            policyReportCriticalCount,
+            policyReportImportantCount,
+            policyReportModerateCount,
+            policyReportLowCount,
+            clustersWithIssuesCount,
+        }
+    }, [searchPolicyReportData?.searchResult])
 
     const { kubernetesTypes, regions, ready, offline, providers } = summaryData
     const provider = providers.find((p: any) => p.provider === selectedCloud)
@@ -635,8 +653,11 @@ export default function OverviewPage() {
                                             description={t('Overview of cluster issues')}
                                             data={policyReportData}
                                             donutLabel={{
-                                                title: `${policyReportItems.length}`,
-                                                subTitle: t('Clusters with issues'),
+                                                title: `${clustersWithIssuesCount}`,
+                                                subTitle:
+                                                    clustersWithIssuesCount === 1
+                                                        ? t('Cluster with issues')
+                                                        : t('Clusters with issues'),
                                             }}
                                             colorScale={[
                                                 'var(--pf-global--danger-color--100)',
