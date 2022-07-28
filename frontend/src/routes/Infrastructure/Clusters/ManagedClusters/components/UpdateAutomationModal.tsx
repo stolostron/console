@@ -260,8 +260,8 @@ export function UpdateAutomationModal(props: {
         >
             <AcmForm>
                 <Stack hasGutter>
-                    <StackItem>
-                        {nonUpdatableCount && (
+                    {nonUpdatableCount !== 0 && (
+                        <StackItem>
                             <AcmAlert
                                 variant="warning"
                                 title={t('{{count}} cluster cannot be edited ', { count: nonUpdatableCount })}
@@ -270,9 +270,8 @@ export function UpdateAutomationModal(props: {
                                 )}
                                 isInline
                             />
-                        )}
-                    </StackItem>
-                    {/* {alert "1 cluster cannot be edited ..."} */}
+                        </StackItem>
+                    )}
                     <StackItem>{t('Update the automation template for the selected clusters.')}</StackItem>
                     <StackItem className={classes.select}>
                         <Flex>
