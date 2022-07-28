@@ -294,7 +294,7 @@ export default function OverviewPage() {
         policyReportImportantCount,
         policyReportModerateCount,
         policyReportLowCount,
-        clustersWithIsuesCount,
+        clustersWithIssuesCount,
     } = useMemo(() => {
         const clustersToSearch: string[] =
             selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.name ?? '')
@@ -306,10 +306,10 @@ export default function OverviewPage() {
         let policyReportImportantCount = 0
         let policyReportModerateCount = 0
         let policyReportLowCount = 0
-        let clustersWithIsuesCount = 0
+        let clustersWithIssuesCount = 0
         policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
             const insightsFilteredResults = policyReport.results.filter((result) => result.source === 'insights')
-            insightsFilteredResults.length > 0 && clustersWithIsuesCount++
+            insightsFilteredResults.length > 0 && clustersWithIssuesCount++
             insightsFilteredResults.forEach((result: PolicyReportResults) => {
                 switch (result.properties.total_risk) {
                     case '4':
@@ -333,7 +333,7 @@ export default function OverviewPage() {
             policyReportImportantCount,
             policyReportModerateCount,
             policyReportLowCount,
-            clustersWithIsuesCount,
+            clustersWithIssuesCount,
         }
     }, [policyReports, selectedClusterNames, clusters])
 
@@ -588,9 +588,9 @@ export default function OverviewPage() {
                                     loading={!policyReportData}
                                     data={policyReportData}
                                     donutLabel={{
-                                        title: `${clustersWithIsuesCount}`,
+                                        title: `${clustersWithIssuesCount}`,
                                         subTitle:
-                                            clustersWithIsuesCount === 1
+                                            clustersWithIssuesCount === 1
                                                 ? t('Cluster with issues')
                                                 : t('Clusters with issues'),
                                     }}
