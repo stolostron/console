@@ -36,7 +36,7 @@ export function CreateControlPlane() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'Run OpenShift in a hyperscale manner with many control planes hosted on a central hosting service cluster.'
+                            'A fully capable cluster with a smaller resources requirements and quicker cluster creation.'
                         ),
                     },
                     {
@@ -115,6 +115,8 @@ export function CreateControlPlane() {
                     },
                 ],
                 onClick: () => history.push(NavigationPath.createDicoverHost),
+                badge: t('Classic'),
+                badgeColor: CatalogColor.purple,
             },
         ]
         return newCards
@@ -135,7 +137,7 @@ export function CreateControlPlane() {
         <Fragment>
             <PageHeader
                 title={t('Control plane type')}
-                description={t('Next, select a control plane type for your on-premise machine.')}
+                description={t('Choose a control plane type for your on-premise machine.')}
                 breadcrumbs={breadcrumbs}
             />
             <ItemView
