@@ -51,6 +51,7 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
+import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 
 function InfraEnvLinkButton() {
     const { t } = useTranslation()
@@ -172,6 +173,7 @@ export function ClustersTable(props: {
 
     const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
+    const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
@@ -243,6 +245,15 @@ export function ClustersTable(props: {
                 click: (managedClusters: Array<Cluster>) => {
                     if (!managedClusters) return
                     setSelectChannels(managedClusters)
+                },
+                variant: 'bulk-action',
+            },
+            {
+                id: 'updateAutomationTemplates',
+                title: t('Update automation template'),
+                click: (managedClusters: Array<Cluster>) => {
+                    if (!managedClusters) return
+                    setUpdateAutomationTemplates(managedClusters)
                 },
                 variant: 'bulk-action',
             },
@@ -402,6 +413,13 @@ export function ClustersTable(props: {
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
+            <UpdateAutomationModal
+                clusters={updateAutomationTemplates}
+                open={!!updateAutomationTemplates}
+                close={() => {
+                    setUpdateAutomationTemplates(undefined)
+                }}
+            />
             <BatchUpgradeModal
                 clusters={upgradeClusters}
                 open={!!upgradeClusters}
