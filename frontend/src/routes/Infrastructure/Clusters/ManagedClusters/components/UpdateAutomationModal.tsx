@@ -77,12 +77,12 @@ export function UpdateAutomationModal(props: {
     const classes = useStyles()
     const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const clusterCurators = useRecoilValue(clusterCuratorsState)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const [selectedCuratorTemplate, setSelectedCuratorTemplate] = useState<ClusterCurator | undefined>()
     const [isUpdating, setIsUpdating] = useState(false)
     const clusterProviders = useClusterProviderColumn()
     const distributionVersion = useClusterDistributionColumn(clusterCurators)
-    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
     const handleCuratorSelect = (uid: string | undefined) => {
         setSelectedCuratorTemplate(
@@ -153,6 +153,10 @@ export function UpdateAutomationModal(props: {
                         type: 'Opaque',
                         metadata: {
                             name: secretName,
+                        },
+                    }
+                    const copiedSecretSpec = {
+                        metadata: {
                             labels: {
                                 'cluster.open-cluster-management.io/type': 'ans',
                                 'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
@@ -161,8 +165,6 @@ export function UpdateAutomationModal(props: {
                                 'cluster.open-cluster-management.io/backup': 'cluster',
                             },
                         },
-                    }
-                    const copiedSecretSpec = {
                         stringData: cloneDeep(matchingSecret.stringData),
                     }
                     curation.towerAuthSecret = secretName
