@@ -36,7 +36,7 @@ export function CreateControlPlane() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A fully capable cluster with a smaller resources requirements and quicker cluster creation.'
+                            'A fully capable cluster with a smaller resource requirement and quicker cluster creation.'
                         ),
                     },
                     {
