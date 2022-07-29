@@ -13,13 +13,15 @@ import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { clusterDangerStatuses, isGlobalClusterSet } from '../../../../../../resources'
+import { clusterDangerStatuses, isGlobalClusterSet, ManagedClusterSetDefinition } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { ManagedClusterSetBindingModal } from '../../components/ManagedClusterSetBindingModal'
 import { GlobalClusterSetPopover } from '../../components/GlobalClusterSetPopover'
+import { rbacCreate } from '../../../../../../lib/rbac-util'
+import { RbacButton } from '../../../../../../components/Rbac'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation()
@@ -103,15 +105,24 @@ export function ClusterSetOverviewPageContent() {
                                             <OutlinedQuestionCircleIcon />
                                         </AcmButton>
                                     </Popover>
-                                    <AcmButton
+                                    <RbacButton
+                                        tooltip={t('You are not allowed to edit this resource')}
                                         onClick={() => {
                                             setShowManagedClusterSetBindingModal(true)
                                         }}
                                         variant="link"
                                         style={{ padding: 0, paddingLeft: '6px' }}
+                                        rbac={[
+                                            rbacCreate(
+                                                ManagedClusterSetDefinition,
+                                                undefined,
+                                                clusterSet!.metadata.name,
+                                                'bind'
+                                            ),
+                                        ]}
                                     >
                                         <PencilAltIcon />
-                                    </AcmButton>
+                                    </RbacButton>
                                 </Fragment>
                             ),
                             value: clusterSetBindings?.length ? (
