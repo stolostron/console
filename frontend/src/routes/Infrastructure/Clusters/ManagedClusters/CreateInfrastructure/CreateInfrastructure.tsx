@@ -40,7 +40,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('An OpenShift cluster in your AWS account that uses the ACM multicloud API.'),
+                        description: t('A Red Hat OpenShift cluster running in your AWS subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
@@ -72,9 +72,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t(
-                            'An OpenShift cluster running in your Google Cloud subscription that uses the ACM multicloud API.'
-                        ),
+                        description: t('A Red Hat OpenShift cluster running in your Google Cloud subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
@@ -91,7 +89,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('An OpenShift cluster running on available hosts from your inventory.'),
+                        description: t('A Red Hat OpenShift cluster running on available hosts from your inventory.'),
                     },
                 ],
                 onClick: () => history.push(NavigationPath.createControlPlane),
@@ -103,9 +101,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t(
-                            'An OpenShift cluster running in your Azure subscription that uses the ACM multicloud API.'
-                        ),
+                        description: t('A Red Hat OpenShift cluster running in your Azure subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
@@ -122,7 +118,9 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('Create and manage your clusters hosted on virtual machines.'),
+                        description: t(
+                            'A Red Hat OpenShift cluster hosted on the Red Hat OpenStack Platform in your on-premise data center.'
+                        ),
                     },
                 ],
                 labels: getCredentialLabels(Provider.openstack),
@@ -139,7 +137,9 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('Create and manage your clusters hosted on virtual machines.'),
+                        description: t(
+                            'A Red Hat OpenShift cluster running in a Red Hat Virtualization environment in your on-premise data center.'
+                        ),
                     },
                 ],
                 labels: getCredentialLabels(Provider.redhatvirtualization),
@@ -157,7 +157,7 @@ export function CreateInfrastructure() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'An OpenShift cluster running in a vSphere environment in your on-premises data center.'
+                            'A Red Hat OpenShift cluster running in a vSphere environment in your on-premise data center.'
                         ),
                     },
                 ],
@@ -183,7 +183,7 @@ export function CreateInfrastructure() {
         <Fragment>
             <PageHeader
                 title={t('Infrastructure')}
-                description={t('First, choose your infrastructure provider.')}
+                description={t('Choose your infrastructure provider.')}
                 breadcrumbs={breadcrumbs}
             />
             <ItemView
