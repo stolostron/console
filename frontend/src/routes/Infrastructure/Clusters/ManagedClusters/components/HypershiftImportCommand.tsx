@@ -28,7 +28,7 @@ export const HypershiftImportCommand = () => {
         fetchCredentials()
     }, [name, namespace])
 
-    const { v1ImportCommand, loading, error: importErr } = useImportCommand()
+    const { v1ImportCommand, loading, error: importErr } = useImportCommand(true)
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
 

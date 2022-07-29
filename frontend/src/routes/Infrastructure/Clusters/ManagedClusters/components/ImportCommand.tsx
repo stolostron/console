@@ -170,7 +170,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
     return new Promise(poll)
 }
 
-function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction) {
+function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction, oc?: boolean) {
     let klusterletCRD = importSecret.data?.['crdsv1.yaml']
     if (version === 'v1beta1') {
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
@@ -178,10 +178,11 @@ function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TF
     const importYaml = importSecret.data?.['import.yaml']
     const alreadyImported = t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
-    return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
+    const cliLib = oc ? 'oc' : 'kubectl'
+    return `echo "${klusterletCRD}" | base64 -d | ${cliLib} create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | ${cliLib} apply -f - || echo "${alreadyImported64}" | base64 -d`
 }
 
-export const useImportCommand = () => {
+export const useImportCommand = (oc?: boolean) => {
     const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
@@ -215,8 +216,8 @@ export const useImportCommand = () => {
         }
     }, [cluster, error, loading, importSecret, autoImportSecret])
 
-    const v1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1', t) : undefined
-    const v1Beta1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1beta1', t) : undefined
+    const v1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1', t, oc) : undefined
+    const v1Beta1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1beta1', t, oc) : undefined
     return { v1ImportCommand, v1Beta1ImportCommand, loading, error, autoImportSecret }
 }
 
