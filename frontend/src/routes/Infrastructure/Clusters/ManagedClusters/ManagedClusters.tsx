@@ -504,7 +504,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
         header: t('table.controlplane'),
         cell: (cluster) => {
             if (cluster.name === 'local-cluster') {
-                return t('ACM hub')
+                return t('Hub')
             }
             if (cluster.isHostedCluster) {
                 return t('Hosted')

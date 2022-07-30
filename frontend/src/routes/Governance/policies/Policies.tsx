@@ -1049,7 +1049,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
 }
 
 function policyHasDeletePruneBehavior(policy: Policy) {
-    if (policy.spec.disabled || policy.spec.remediationAction.endsWith('nform')) {
+    if (policy.spec.disabled || policy.spec.remediationAction?.endsWith('nform')) {
         return false
     }
     return policy.spec['policy-templates']?.some((tmpl) => {
@@ -1060,8 +1060,8 @@ function policyHasDeletePruneBehavior(policy: Policy) {
             return false
         }
         return (
-            policy.spec.remediationAction.endsWith('nforce') ||
-            tmpl.objectDefinition.spec.remediationAction.endsWith('nforce')
+            policy.spec.remediationAction?.endsWith('nforce') ||
+            tmpl.objectDefinition.spec.remediationAction?.endsWith('nforce')
         )
     })
 }

@@ -265,7 +265,6 @@ export function AnsibleAutomationsForm(props: {
                 type: 'Section',
                 title: t('template.information.title'),
                 wizardTitle: t('template.create.config.wizard.title'),
-                description: t('template.information.description'),
                 inputs: [
                     {
                         id: 'Template',
@@ -310,6 +309,7 @@ export function AnsibleAutomationsForm(props: {
                         type: 'Section',
                         title: t('template.create.install'),
                         wizardTitle: t('template.create.install.wizard.title'),
+                        description: t('template.information.description'),
                         inputs: [
                             {
                                 id: 'installPreJob',
@@ -353,6 +353,7 @@ export function AnsibleAutomationsForm(props: {
                         type: 'Section',
                         title: t('template.create.upgrade'),
                         wizardTitle: t('template.create.upgrade.wizard.title'),
+                        description: t('template.information.description'),
                         inputs: [
                             {
                                 id: 'upgradePreJob',
@@ -398,6 +399,7 @@ export function AnsibleAutomationsForm(props: {
                                   type: 'Section',
                                   title: t('template.create.scale'),
                                   wizardTitle: t('template.create.scale.wizard.title'),
+                                  description: t('template.information.description'),
                                   inputs: [
                                       {
                                           id: 'scalePreJob',
@@ -441,6 +443,7 @@ export function AnsibleAutomationsForm(props: {
                                   type: 'Section',
                                   title: t('template.create.destroy'),
                                   wizardTitle: t('template.create.destroy.wizard.title'),
+                                  description: t('template.information.description'),
                                   inputs: [
                                       {
                                           id: 'destroyPreJob',
@@ -566,7 +569,6 @@ function EditAnsibleJobModal(props: {
                     label={t('template.modal.name.label')}
                     id="job-name"
                     value={ansibleJob?.name}
-                    helperText={t('template.modal.name.helper.text')}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }
