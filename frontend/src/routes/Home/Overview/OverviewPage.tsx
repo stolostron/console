@@ -123,7 +123,10 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
             keywords: [],
             filters: [
                 { property: 'kind', values: ['pod'] },
-                { property: 'status', values: ['Pending', 'ContainerCreating', 'Waiting', 'Terminating'] },
+                {
+                    property: 'status',
+                    values: ['ContainerCreating', 'ContainerStatusUnknown', 'Pending', 'Terminating', 'Waiting'],
+                },
             ],
         },
         {
@@ -132,7 +135,16 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
                 { property: 'kind', values: ['pod'] },
                 {
                     property: 'status',
-                    values: ['Failed', 'CrashLoopBackOff', 'ImagePullBackOff', 'Terminated', 'OOMKilled', 'Unknown'],
+                    values: [
+                        'CrashLoopBackOff',
+                        'CreateContainerError',
+                        'Error',
+                        'Failed',
+                        'ImagePullBackOff',
+                        'OOMKilled',
+                        'Terminated',
+                        'Unknown',
+                    ],
                 },
             ],
         },
@@ -423,12 +435,12 @@ export default function OverviewPage() {
             {
                 key: 'Failed',
                 value: searchResult[3]?.count || 0,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled${urlClusterFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CError%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled%2CCreateContainerError${urlClusterFilter}"}`,
             },
             {
                 key: 'Pending',
                 value: searchResult[2]?.count || 0,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting${urlClusterFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting%2CContainerStatusUnknown${urlClusterFilter}"}`,
             },
             {
                 key: 'Running',
