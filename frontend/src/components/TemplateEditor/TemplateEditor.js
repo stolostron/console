@@ -445,9 +445,12 @@ export default class TemplateEditor extends React.Component {
         const { template, templateYAML, otherYAMLTabs, firstTemplateYAML, editStack, isFinalValidate, i18n } =
             this.state
 
-        // if custom editing on a tab, clear it now that user is using controls
+        // if user typed on a tab, save it to be merged with control changes
         otherYAMLTabs.forEach((tab) => {
-            delete tab.control.customYAML
+            if (tab.typingYAML) {
+                tab.typedYAML = tab.typingYAML
+                delete tab.typingYAML
+            }
         })
 
         // custom action when control is selected
@@ -999,8 +1002,16 @@ export default class TemplateEditor extends React.Component {
             templateYAML = yaml
         } else {
             tab = otherYAMLTabs[activeYAMLEditor - 1]
-            // protect user edits from being clobbered by form updates
-            tab.control.customYAML = yaml
+            // remember last form generated yaml so we can merge with it
+            // any later form changes
+            if (!tab.baseTemplateYAML) {
+                tab.baseTemplateYAML = tab.templateYAML
+            } else if (tab.mergedYAML) {
+                tab.baseTemplateYAML = tab.mergedYAML
+                delete tab.mergedYAML
+                delete tab.typedYAML
+            }
+            tab.typingYAML = yaml
             // update the yaml shown in this tab
             tab.templateYAML = yaml
         }

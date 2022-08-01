@@ -261,7 +261,6 @@ const addCodeSnippetsTemplateData = (mainTemplateData, replacements, controlMap)
             active,
             availableMap,
             hasCapturedUserSource,
-            customYAML,
             encode: encodeData = [],
             groupTemplateData,
             userData,
@@ -295,7 +294,6 @@ const addCodeSnippetsTemplateData = (mainTemplateData, replacements, controlMap)
                             if (new RegExp(/[\r\n]/).test(snippet)) {
                                 const snippetKey = `____${_id}-${idx}____`
                                 if (encode || encodeData.includes(_id)) {
-                                    snippet = customYAML || snippet
                                     encodeInfo.push({
                                         control,
                                         templateYAML: snippet,
