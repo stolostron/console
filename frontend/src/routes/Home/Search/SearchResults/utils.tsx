@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardHeader, ExpandableSection } from '@patternfly/react-core'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 
 export interface ISearchResult {
@@ -14,6 +14,14 @@ export function SearchResultExpandableCard(props: {
     defaultExpanded?: boolean
 }) {
     const [open, setOpen] = useState(props.defaultExpanded !== undefined ? props.defaultExpanded : false)
+
+    useEffect(() => {
+        setOpen(props.defaultExpanded !== undefined ? props.defaultExpanded : false)
+        return () => {
+            setOpen(false)
+        }
+    }, [props.defaultExpanded])
+
     return (
         <Card isRounded isExpanded={open}>
             <CardHeader>
