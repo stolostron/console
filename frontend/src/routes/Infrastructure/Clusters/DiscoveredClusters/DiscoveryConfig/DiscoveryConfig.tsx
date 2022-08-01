@@ -48,7 +48,7 @@ import {
     Provider,
 } from '../../../../../ui-components'
 
-const discoveryVersions = ['4.7', '4.8', '4.9', '4.10']
+const discoveryVersions = ['4.8', '4.9', '4.10', '4.11']
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation()
