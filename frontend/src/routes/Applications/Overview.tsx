@@ -114,8 +114,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
             return t('ApplicationSet')
         }
     } else if (isOCPAppResource(resource)) {
-        const label = resource.label
-        const isFlux = isFluxApplication(label)
+        const isFlux = isFluxApplication(resource.label)
         if (isFlux) {
             return t('Flux')
         }
@@ -708,8 +707,7 @@ export default function ApplicationsOverview() {
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
                         if (isOCPAppResource(item)) {
-                            const label = item.label
-                            const isFlux = isFluxApplication(label)
+                            const isFlux = isFluxApplication(item.label)
                             switch (value) {
                                 case 'openshiftapps':
                                     return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
@@ -846,8 +844,7 @@ export default function ApplicationsOverview() {
                     id: 'viewApplication',
                     title: t('View application'),
                     click: () => {
-                        const label = resource.label
-                        const isFlux = isFluxApplication(label)
+                        const isFlux = isFluxApplication(resource.label)
                         const resourceType = isFlux ? 'flux' : 'ocp'
                         history.push(
                             `${NavigationPath.applicationOverview
