@@ -242,6 +242,7 @@ export function UpdateAutomationModal(props: {
             actions={[
                 <Button
                     key="confirm"
+                    id="confirm"
                     variant="primary"
                     onClick={onConfirm}
                     isAriaDisabled={selectedCuratorTemplate === undefined || updatableClusters?.length === 0}
@@ -250,6 +251,7 @@ export function UpdateAutomationModal(props: {
                 </Button>,
                 <Button
                     key="cancel"
+                    id="cancel"
                     variant="link"
                     onClick={() => {
                         props.close()
@@ -297,6 +299,7 @@ export function UpdateAutomationModal(props: {
                             </FlexItem>
                             <FlexItem flex={{ default: 'flex_1' }}>
                                 <AcmButton
+                                    id="view-selected"
                                     isDisabled={!selectedCuratorTemplate}
                                     target="_blank"
                                     isInline

@@ -12,26 +12,14 @@ import {
     ProviderConnectionKind,
     Secret,
 } from '../../../../../resources'
-import { act, render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom'
 import { clusterCuratorsState, secretsState } from '../../../../../atoms'
-import { nockIgnoreRBAC /*nockPatch*/ } from '../../../../../lib/nock-util'
-import {
-    // clickByPlaceholderText,
-    clickByText,
-    wait,
-    // clickBySelector,
-    // clickByText,
-    // selectByText,
-    waitForNocks,
-    waitForNotText,
-    // waitForSelector,
-    waitForText,
-} from '../../../../../lib/test-util'
+import { nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
+import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
 
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
@@ -238,6 +226,7 @@ const clusterCurator: ClusterCurator = {
         labels: {
             'open-cluster-management': 'curator',
         },
+        uid: 'clusterCurator-uid',
     },
     spec: {
         desiredCuration: undefined,
@@ -278,8 +267,8 @@ const clusterCuratorReady1 = {
     apiVersion: ClusterCuratorDefinition.apiVersion,
     kind: ClusterCuratorDefinition.kind,
     metadata: {
-        name: 'cluster-1-ready1',
-        namespace: 'cluster-1-ready1',
+        name: 'cluster-1-ready',
+        namespace: 'cluster-1-ready',
     },
 }
 
@@ -324,12 +313,22 @@ describe('UpdateAutomationModal', () => {
 
     test('should render update automation modal with alert', async () => {
         render(<Component />)
-        // Show alert with automation support message and test close button
+
+        // Show alert with automation support message
         await waitForText('3 cluster cannot be edited') /* TODO - Pluralize not working - robdolares to fix*/
+        await waitFor(() =>
+            expect(screen.getByTestId('view-selected').getAttribute('aria-disabled')).not.toEqual('false')
+        )
+        await waitFor(() => expect(screen.getByTestId('confirm').getAttribute('aria-disabled')).not.toEqual('false'))
+
         await waitForText('Select a template', false)
         await clickByText('Select a template', 0)
         await waitForText(clusterCurator.metadata.name!)
         await clickByText(clusterCurator.metadata.name!)
+        await waitFor(() =>
+            expect(screen.getByTestId('view-selected').getAttribute('aria-disabled')).not.toEqual('true')
+        )
+        await waitFor(() => expect(screen.getByTestId('confirm').getAttribute('aria-disabled')).not.toEqual('true'))
     })
 
     test('should only show updatable clusters', async () => {
@@ -350,13 +349,10 @@ describe('UpdateAutomationModal', () => {
         await waitForText(clusterCurator.metadata.name!)
         await clickByText(clusterCurator.metadata.name!)
 
-        await act(async () => {
-            const submitButton = screen.getByText('Save')
-            expect(submitButton).toBeTruthy()
-            userEvent.click(submitButton)
+        const submitButton = screen.getByText('Save')
+        expect(submitButton).toBeTruthy()
+        userEvent.click(submitButton)
 
-            await waitForNocks([mockCuratorUpdate, mockSecretUpdate])
-            await wait()
-        })
+        await waitForNocks([mockCuratorUpdate, mockSecretUpdate])
     })
 })
