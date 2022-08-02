@@ -105,7 +105,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             rules: [
                 { token: 'number', foreground: 'ace12e' },
                 { token: 'type', foreground: '73bcf7' },
-                { token: 'string', foreground: 'f0ab00' },
+                { token: 'string.yaml', foreground: 'f0ab00' },
                 { token: 'keyword', foreground: 'cbc0ff' },
             ],
             colors: {
@@ -118,20 +118,19 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
         // create 'readonly-resource-editor' theme
         monaco.editor.defineTheme('readonly-resource-editor', {
-            base: 'vs',
+            base: 'vs-dark',
             inherit: true,
             rules: [
-                { background: 'e0e0e0' },
-                { token: 'number', foreground: '000000' },
-                { token: 'type', foreground: '000000' },
-                { token: 'string', foreground: '000000' },
-                { token: 'keyword', foreground: '0451a5' },
+                { token: 'number', foreground: 'b0b0b0' },
+                { token: 'type', foreground: 'b0b0b0' },
+                { token: 'string.yaml', foreground: '#b0b0b0' },
+                { token: 'keyword', foreground: 'b0b0b0' },
             ],
             colors: {
-                'editor.background': '#e0e0e0',
-                'editorGutter.background': '#e0e0e0',
-                'editorLineNumber.activeForeground': '#000000',
-                'editorLineNumber.foreground': '#000000',
+                'editor.background': editorBackground.value,
+                'editorGutter.background': '#292e34',
+                'editorLineNumber.activeForeground': '#fff',
+                'editorLineNumber.foreground': '#f0f0f0',
             },
         })
 
