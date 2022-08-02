@@ -416,10 +416,10 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b {
-    color: black;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     text-indent: 0px;
+    text-align: center;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
 .creation-view-controls-singleselect
