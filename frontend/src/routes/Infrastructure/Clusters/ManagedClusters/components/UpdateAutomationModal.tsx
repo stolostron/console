@@ -242,6 +242,7 @@ export function UpdateAutomationModal(props: {
             actions={[
                 <Button
                     key="confirm"
+                    id="confirm"
                     variant="primary"
                     onClick={onConfirm}
                     isAriaDisabled={selectedCuratorTemplate === undefined || updatableClusters?.length === 0}
@@ -250,6 +251,7 @@ export function UpdateAutomationModal(props: {
                 </Button>,
                 <Button
                     key="cancel"
+                    id="cancel"
                     variant="link"
                     onClick={() => {
                         props.close()
@@ -271,6 +273,7 @@ export function UpdateAutomationModal(props: {
                                     'Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.'
                                 )}
                                 isInline
+                                noClose
                             />
                         </StackItem>
                     )}
@@ -296,6 +299,7 @@ export function UpdateAutomationModal(props: {
                             </FlexItem>
                             <FlexItem flex={{ default: 'flex_1' }}>
                                 <AcmButton
+                                    id="view-selected"
                                     isDisabled={!selectedCuratorTemplate}
                                     target="_blank"
                                     isInline
