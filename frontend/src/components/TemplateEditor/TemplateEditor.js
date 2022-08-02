@@ -26,6 +26,7 @@ import {
     generateSource,
     getUniqueName,
     cacheUserData,
+    cloneControlData,
 } from './utils/source-utils'
 import { logCreateErrors, logSourceErrors } from './utils/logger'
 import { validateControls } from './utils/validate-controls'
@@ -151,7 +152,7 @@ export default class TemplateEditor extends React.Component {
         const { editor, template, showSecrets, otherYAMLTabs } = state
         if (!controlData) {
             // initialize control data
-            const cd = cloneDeep(initialControlData)
+            const cd = cloneControlData(initialControlData)
             controlData = initializeControls(cd, editor, onControlInitialize, i18n)
             newState = { ...newState, controlData }
 
@@ -166,7 +167,7 @@ export default class TemplateEditor extends React.Component {
             // editing an existing set of resources??
             const customResources = get(fetchControl, 'resources')
             if (customResources) {
-                editStack = { customResources, editor, i18n }
+                editStack = { customResources: cloneDeep(customResources), editor, i18n }
             }
 
             // generate source from template or stack of resources
@@ -446,9 +447,12 @@ export default class TemplateEditor extends React.Component {
         const { template, templateYAML, otherYAMLTabs, firstTemplateYAML, editStack, isFinalValidate, i18n } =
             this.state
 
-        // if custom editing on a tab, clear it now that user is using controls
+        // if user typed on a tab, save it to be merged with control changes
         otherYAMLTabs.forEach((tab) => {
-            delete tab.control.customYAML
+            if (tab.typingYAML) {
+                tab.typedYAML = tab.typingYAML
+                delete tab.typingYAML
+            }
         })
 
         // custom action when control is selected
@@ -630,7 +634,7 @@ export default class TemplateEditor extends React.Component {
             // insert control data into main control data
             if (insertControlData) {
                 // splice control data with data from this card
-                parentControlData.splice(insertInx + 1, 0, ...cloneDeep(insertControlData))
+                parentControlData.splice(insertInx + 1, 0, ...cloneControlData(insertControlData))
 
                 // if this card control is in a group, tell each control
                 // what group control it belongs to
@@ -1000,8 +1004,16 @@ export default class TemplateEditor extends React.Component {
             templateYAML = yaml
         } else {
             tab = otherYAMLTabs[activeYAMLEditor - 1]
-            // protect user edits from being clobbered by form updates
-            tab.control.customYAML = yaml
+            // remember last form generated yaml so we can merge with it
+            // any later form changes
+            if (!tab.baseTemplateYAML) {
+                tab.baseTemplateYAML = tab.templateYAML
+            } else if (tab.mergedYAML) {
+                tab.baseTemplateYAML = tab.mergedYAML
+                delete tab.mergedYAML
+                delete tab.typedYAML
+            }
+            tab.typingYAML = yaml
             // update the yaml shown in this tab
             tab.templateYAML = yaml
         }
@@ -1353,7 +1365,7 @@ export default class TemplateEditor extends React.Component {
     resetEditor() {
         const { controlData: initialControlData, onControlInitialize } = this.props
         const { template, editStack = {}, resetInx, editor, i18n } = this.state
-        const cd = cloneDeep(initialControlData)
+        const cd = cloneControlData(initialControlData)
         const controlData = initializeControls(cd, editor, onControlInitialize, i18n)
         const otherYAMLTabs = []
         if (editStack.initialized) {

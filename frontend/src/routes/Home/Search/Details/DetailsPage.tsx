@@ -2,24 +2,15 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { makeStyles } from '@material-ui/styles'
 import { useEffect, useState } from 'react'
-import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import { getResource } from '../../../../resources/utils/resource-request'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
-
-const useStyles = makeStyles({
-    customBreadcrumb: {
-        padding: '8px 0 0 8px',
-        marginBottom: '-20px',
-        backgroundColor: 'var(--pf-global--palette--white)',
-    },
-})
 
 function getResourceData() {
     let cluster = '',
@@ -64,7 +55,6 @@ export default function DetailsPage() {
     resourceUrlParams = `${resourceUrlParams}${apiversion !== '' ? `&apiversion=${apiversion}` : ''}`
     resourceUrlParams = `${resourceUrlParams}${namespace !== '' ? `&namespace=${namespace}` : ''}`
     resourceUrlParams = `${resourceUrlParams}${name !== '' ? `&name=${name}` : ''}`
-    const classes = useStyles()
 
     useEffect(() => {
         if (cluster === 'local-cluster') {
@@ -100,58 +90,61 @@ export default function DetailsPage() {
         setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
     }, [resource])
 
-    const location = useLocation()
-    const history = useHistory()
+    const location: {
+        pathname: string
+        state: {
+            search: string
+            fromSearch: string
+        }
+    } = useLocation()
+
+    let breadcrumbLink = ''
+    const prevLocState = window.history?.state?.state
+    if (prevLocState && prevLocState.from === NavigationPath.search) {
+        breadcrumbLink = NavigationPath.search
+        // If we came to resources page from search - return to search with previous search filters
+        const previousSearchState = location.state.fromSearch
+        if (previousSearchState) {
+            breadcrumbLink = `${NavigationPath.search}/${previousSearchState}`
+        }
+    } else {
+        breadcrumbLink = NavigationPath.search
+    }
 
     return (
         <AcmPage
             header={
-                <div>
-                    <div className={classes.customBreadcrumb}>
-                        <AcmButton
-                            variant={'link'}
-                            onClick={() => {
-                                const prevLocState = window.history?.state?.state
-                                if (prevLocState && prevLocState.from === NavigationPath.search) {
-                                    // If we came to resources page from search - return to search with previous search filters
-                                    history.goBack()
-                                } else {
-                                    // If we were redirected to search from elsewhere (ex: application page) - go to blank search page
-                                    window.location.href = NavigationPath.search
-                                }
-                            }}
-                        >
-                            {t('Search')}
-                        </AcmButton>
-                    </div>
-                    <AcmPageHeader
-                        title={name}
-                        navigation={
-                            <AcmSecondaryNav>
-                                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
+                <AcmPageHeader
+                    title={name}
+                    breadcrumb={[
+                        {
+                            text: t('Search'),
+                            to: breadcrumbLink,
+                        },
+                    ]}
+                    navigation={
+                        <AcmSecondaryNav>
+                            <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
+                                <Link
+                                    replace
+                                    to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
+                                >
+                                    YAML
+                                </Link>
+                            </AcmSecondaryNavItem>
+                            {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
+                                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
                                     <Link
                                         replace
-                                        to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
+                                        to={`${NavigationPath.resourceLogs}?${encodeURIComponent(resourceUrlParams)}`}
                                     >
-                                        YAML
+                                        Logs
                                     </Link>
                                 </AcmSecondaryNavItem>
-                                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                                    <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                                        <Link
-                                            replace
-                                            to={`${NavigationPath.resourceLogs}?${encodeURIComponent(
-                                                resourceUrlParams
-                                            )}`}
-                                        >
-                                            Logs
-                                        </Link>
-                                    </AcmSecondaryNavItem>
-                                )}
-                            </AcmSecondaryNav>
-                        }
-                    />
-                </div>
+                            )}
+                        </AcmSecondaryNav>
+                    }
+                />
             }
         >
             <Switch>

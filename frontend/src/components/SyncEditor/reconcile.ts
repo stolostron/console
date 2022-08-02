@@ -140,58 +140,74 @@ const mergeResources = (
     return customResources
 }
 
-const mapResources = (customResources: any[], formResources: any[]) => {
-    const usedSet = new Set()
+export const mapResources = (customResources: any[], formResources: any[]) => {
     const weakMap = new WeakMap()
+    const usedSet = new WeakSet()
     const removedSet = new Set()
-    formResources.forEach((res: IndexedType, inx: number) => (res.__id__ = inx))
 
     // do everything in our power to find a reasonable match
+
+    // first try matching everything by id (name/namespace/kind)
     customResources.forEach((resource) => {
         const resourceID = getResourceID(resource)
         if (resourceID) {
             // see if kind/name/namespace match
-            let inx = formResources.findIndex((res: { kind: any }) => {
+            const inx = formResources.findIndex((res: { kind: any }) => {
                 return resourceID === getResourceID(res)
             })
-            if (inx !== -1 && !usedSet.has(formResources[inx].__inx__)) {
+            if (inx !== -1 && !weakMap.has(resource)) {
                 // yes--use it
                 weakMap.set(resource, formResources[inx])
-            } else if (resource.kind) {
-                // try by resource kind
-                const groupByKind = groupBy(formResources, 'kind')
-                let resources: IndexedType[] = groupByKind[resource.kind]
-                if (resources?.length) {
-                    resources = resources.filter(({ __id__ }) => !usedSet.has(__id__))
-                    if (resources.length === 1) {
-                        // if only one resource of that kind, assume that's the one
-                        inx = formResources.findIndex(({ __id__ }) => __id__ === resources[0].__id__)
-                        weakMap.set(resource, formResources[inx])
-                    } else if (resources.length > 1) {
-                        // else find the best json match
-                        const matches = stringSimilarity.findBestMatch(
-                            JSON.stringify(resource),
-                            resources.map((res) => {
-                                return JSON.stringify(res)
-                            })
-                        )
-                        const res = resources.splice(matches?.bestMatchIndex ?? 0, 1) as unknown as IndexedType
-                        inx = formResources.findIndex(({ __id__ }) => __id__ === res.__id__)
-                        weakMap.set(resource, formResources[inx])
-                    } else {
-                        removedSet.add(resource)
-                    }
-                } else {
-                    removedSet.add(resource)
-                }
-            }
-            if (inx !== -1) {
-                usedSet.add(formResources[inx].__id__)
+                usedSet.add(formResources[inx])
             }
         }
     })
-    const addedResources = formResources.filter(({ __id__ }) => !usedSet.has(__id__))
-    formResources.forEach((res: { __id__: any }) => delete res.__id__)
+
+    // next try to match to another resource of it's kind if there's just one of that kind
+    // if that fails match by a similarity between resources
+    const groupByKind = groupBy(
+        formResources.filter((resource) => !usedSet.has(resource)),
+        'kind'
+    )
+    customResources.forEach((resource) => {
+        if (!weakMap.has(resource) && resource.kind) {
+            // try by resource kind
+            const unusedForm: IndexedType[] = groupByKind[resource.kind]
+            if (unusedForm?.length) {
+                if (unusedForm.length === 1) {
+                    // if only one resource of that kind, assume that's the one
+                    weakMap.set(resource, unusedForm[0])
+                    usedSet.add(unusedForm[0])
+                } else if (unusedForm.length > 1) {
+                    // else find the best json match in unused form resources of this type
+                    // don't compare encoded values
+                    const replacer = (_k: any, v: any) => {
+                        if (v?.length > 32) {
+                            try {
+                                Buffer.from(v, 'base64').toString('ascii')
+                                return ''
+                            } catch (e) {}
+                        }
+                        return v
+                    }
+                    const matches = stringSimilarity.findBestMatch(
+                        JSON.stringify(resource, replacer),
+                        unusedForm.map((res) => {
+                            return JSON.stringify(res, replacer)
+                        })
+                    )
+                    const res = unusedForm.splice(matches?.bestMatchIndex ?? 0, 1)
+                    weakMap.set(resource, res[0])
+                    usedSet.add(res[0])
+                } else {
+                    removedSet.add(resource)
+                }
+            } else {
+                removedSet.add(resource)
+            }
+        }
+    })
+    const addedResources = formResources.filter((resource) => !usedSet.has(resource))
     return { weakMap, addedResources, removedSet }
 }
 

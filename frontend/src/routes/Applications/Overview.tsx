@@ -90,6 +90,17 @@ function isOCPAppResource(resource: IApplicationResource): resource is OCPAppRes
     return 'label' in resource
 }
 
+function isFluxApplication(label: string) {
+    let isFlux = false
+    Object.entries(fluxAnnotations).forEach(([, values]) => {
+        const [nameAnnotation, namespaceAnnotation] = values
+        if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
+            isFlux = true
+        }
+    })
+    return isFlux
+}
+
 // Map resource kind to type column
 function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
@@ -103,14 +114,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
             return t('ApplicationSet')
         }
     } else if (isOCPAppResource(resource)) {
-        const label = resource.label
-        let isFlux = false
-        Object.entries(fluxAnnotations).forEach(([, values]) => {
-            const [nameAnnotation, namespaceAnnotation] = values
-            if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
-                isFlux = true
-            }
-        })
+        const isFlux = isFluxApplication(resource.label)
         if (isFlux) {
             return t('Flux')
         }
@@ -703,13 +707,7 @@ export default function ApplicationsOverview() {
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
                         if (isOCPAppResource(item)) {
-                            let isFlux = false
-                            Object.entries(fluxAnnotations).forEach(([, values]) => {
-                                const [nameAnnotation, namespaceAnnotation] = values
-                                if (item.label.includes(nameAnnotation) && item.label.includes(namespaceAnnotation)) {
-                                    isFlux = true
-                                }
-                            })
+                            const isFlux = isFluxApplication(item.label)
                             switch (value) {
                                 case 'openshiftapps':
                                     return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
@@ -813,17 +811,30 @@ export default function ApplicationsOverview() {
                 title: t('Search application'),
                 click: () => {
                     const [apigroup, apiversion] = resource.apiVersion.split('/')
+                    const isOCPorFluxApp = isOCPAppResource(resource)
+                    const label = isOCPorFluxApp ? resource.label : ''
+                    const isFlux = isFluxApplication(label)
                     const resourceName = resource.status?.resourceName
-                    const searchLink = getSearchLink({
-                        properties: {
-                            name: resourceName ? resourceName : resource.metadata?.name,
-                            namespace: resource.metadata?.namespace,
-                            kind: resource.kind.toLowerCase(),
-                            apigroup,
-                            apiversion,
-                            cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
-                        },
-                    })
+                    const searchLink = isOCPorFluxApp
+                        ? getSearchLink({
+                              properties: {
+                                  namespace: resource.metadata?.namespace,
+                                  label: !isFlux
+                                      ? `app=${resource.metadata?.name},app.kubernetes.io/part-of=${resource.metadata?.name}`
+                                      : `kustomize.toolkit.fluxcd.io/name=${resource.metadata?.name},helm.toolkit.fluxcd.io/name=${resource.metadata?.name}`,
+                                  cluster: resource.status.cluster,
+                              },
+                          })
+                        : getSearchLink({
+                              properties: {
+                                  name: resourceName ? resourceName : resource.metadata?.name,
+                                  namespace: resource.metadata?.namespace,
+                                  kind: resource.kind.toLowerCase(),
+                                  apigroup,
+                                  apiversion,
+                                  cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
+                              },
+                          })
                     history.push(searchLink)
                 },
             })
@@ -833,12 +844,15 @@ export default function ApplicationsOverview() {
                     id: 'viewApplication',
                     title: t('View application'),
                     click: () => {
+                        const isFlux = isFluxApplication(resource.label)
+                        const resourceType = isFlux ? 'flux' : 'ocp'
                         history.push(
                             `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string)}?apiVersion=ocp&cluster=${
-                                resource.status.cluster
-                            }`
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=${resourceType}&cluster=${resource.status.cluster}`
                         )
                     },
                 })
