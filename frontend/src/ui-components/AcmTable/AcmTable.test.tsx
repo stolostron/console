@@ -528,13 +528,13 @@ describe('AcmTable', () => {
         // verify previous sort column (UID) maintained
         expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('1')
 
-        // search for '.org'
+        // search for '.net'
         expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-        userEvent.type(getByPlaceholderText(placeholderString), '.org')
-        expect(queryByText('8 / 105')).toBeVisible()
+        userEvent.type(getByPlaceholderText(placeholderString), '.net')
+        expect(queryByText('25 / 105')).toBeVisible()
 
         // verify last sort order ignored
-        expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('8')
+        expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('51')
 
         // change sort during filter (Last Name)
         userEvent.click(getByText('Last Name'))
@@ -543,18 +543,18 @@ describe('AcmTable', () => {
         // clear filter
         expect(getByLabelText('Reset')).toBeVisible()
         userEvent.click(getByLabelText('Reset'))
-        expect(queryByText('7 / 105')).toBeNull()
+        expect(queryByText('25 / 105')).toBeNull()
 
         // verify sort order set during filter (Last Name) persists
         expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
 
-        // search for '.org'
+        // search for '.net'
         expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-        userEvent.type(getByPlaceholderText(placeholderString), '.org')
-        expect(queryByText('8 / 105')).toBeVisible()
+        userEvent.type(getByPlaceholderText(placeholderString), '.net')
+        expect(queryByText('25 / 105')).toBeVisible()
 
         // verify last sort order ignored
-        expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('8')
+        expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('51')
 
         // change sort during filter (Last Name)
         userEvent.click(getByText('Last Name'))
@@ -562,7 +562,7 @@ describe('AcmTable', () => {
 
         // clear filter by backspacing
         userEvent.type(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
-        expect(queryByText('7 / 105')).toBeNull()
+        expect(queryByText('25 / 105')).toBeNull()
 
         // verify sort order set during filter (Last Name) persists
         expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
