@@ -16,6 +16,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 const OpenNewTab = () => (
     <svg width="24px" height="24px" x="0px" y="0px" viewBox="0 0 1024 1024" xmlSpace="preserve" role="presentation">
@@ -32,7 +33,7 @@ export const CREATE_CLOUD_CONNECTION = {
     url: NavigationPath.addCredentials,
     positionBottomRight: true,
     id: 'add-provider-connection',
-    icon: <OpenNewTab />,
+    icon: <ExternalLinkAltIcon />,
 }
 
 export const CREATE_AUTOMATION_TEMPLATE = {
@@ -41,7 +42,7 @@ export const CREATE_AUTOMATION_TEMPLATE = {
     url: NavigationPath.addAnsibleAutomation,
     positionBottomRight: true,
     id: 'add-automation-template',
-    icon: <OpenNewTab />,
+    icon: <ExternalLinkAltIcon />,
 }
 export const LOAD_OCP_IMAGES = (provider) => {
     return {

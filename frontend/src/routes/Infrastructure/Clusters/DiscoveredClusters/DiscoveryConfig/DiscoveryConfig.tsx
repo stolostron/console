@@ -11,6 +11,7 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -36,8 +37,6 @@ import {
     AcmButton,
     AcmForm,
     AcmFormSection,
-    AcmIcon,
-    AcmIconVariant,
     AcmMultiSelect,
     AcmPage,
     AcmPageContent,
@@ -421,7 +420,7 @@ export function DiscoveryConfigPageContent(props: {
             <Flex style={{ marginTop: '0px' }}>
                 <FlexItem align={{ default: 'alignRight' }}>
                     <Link to={NavigationPath.addCredentials}>
-                        {t('discoveryConfig.connections.addCredentials')} <AcmIcon icon={AcmIconVariant.openNewTab} />
+                        {t('discoveryConfig.connections.addCredentials')} <ExternalLinkAltIcon />
                     </Link>
                 </FlexItem>
             </Flex>

@@ -12,8 +12,7 @@
 'use strict'
 
 import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
-
-import { AcmIcon, AcmIconVariant } from '../../../../../ui-components'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 const prePostTasks = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +40,7 @@ const prePostTasks = [
         validation: {},
         prompts: {
             prompt: 'creation.ocp.cloud.add.connection',
-            icon: <AcmIcon icon={AcmIconVariant.openNewTab} />,
+            icon: <ExternalLinkAltIcon />,
             type: 'link',
             url: '/multicloud/credentials/add', // launch to credential page
             positionBottomRight: true,

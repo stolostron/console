@@ -4,6 +4,7 @@
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -17,8 +18,6 @@ import {
     AcmAlert,
     AcmButton,
     AcmDropdown,
-    AcmIcon,
-    AcmIconVariant,
     AcmPage,
     AcmScrollable,
     AcmSearchbar,
@@ -271,7 +270,7 @@ function RenderDropDownAndNewTab(props: {
                     target="_blank"
                     rel="noreferrer"
                     id={'newsearchtab'}
-                    icon={<AcmIcon icon={AcmIconVariant.openNewTab} />}
+                    icon={<ExternalLinkAltIcon />}
                     iconPosition="right"
                 >
                     {t('Open new search tab')}
