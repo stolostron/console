@@ -183,6 +183,7 @@ class ControlPanelFinish extends React.Component {
         let desc
         let summaries
         switch (type) {
+            case 'reviewinfo':
             case 'text':
             case 'singleselect':
             case 'combobox':
