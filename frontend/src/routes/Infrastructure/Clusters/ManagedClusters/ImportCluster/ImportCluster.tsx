@@ -417,6 +417,8 @@ export default function ImportClusterPage() {
                 onCancel={function (): void {
                     cancelNavigation(location, history, NavigationPath.clusters)
                 }}
+                submitButtonText={t('Import')}
+                submittingButtonText={t('Importing')}
             >
                 <Step label={t('Details')} id="details">
                     <Section label={t('Details')}>

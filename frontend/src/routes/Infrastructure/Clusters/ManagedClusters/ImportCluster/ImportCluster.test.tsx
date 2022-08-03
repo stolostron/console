@@ -409,8 +409,8 @@ describe('ImportCluster', () => {
 
         // Advance to Review step and submit the form
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importSecretNock])
     })
@@ -452,8 +452,8 @@ describe('ImportCluster', () => {
 
         // Advance to Review step and submit the form
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([
             projectNock,
@@ -490,8 +490,8 @@ describe('ImportCluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, importSecretNock])
     })
@@ -515,8 +515,8 @@ describe('ImportCluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoSecretNock])
     })
@@ -542,8 +542,8 @@ describe('ImportCluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoTokenSecretNock])
     })
@@ -556,8 +556,8 @@ describe('ImportCluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock])
         await waitForText(mockBadRequestStatus.message, true)
@@ -576,8 +576,8 @@ describe('ImportCluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([createProjectNock, badRequestNock])
         await waitForText(mockBadRequestStatus.message, true)
@@ -650,8 +650,8 @@ describe('Import Discovered Cluster', () => {
         // Advance to Review step and submit the form
         await clickByText('Next')
         await clickByText('Next')
-        await waitForText('Submit')
-        await clickByText('Submit')
+        await waitForText('Import')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock])
     })
