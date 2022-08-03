@@ -115,6 +115,15 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             ]).promise
         },
         onDeleteHost,
+        onSetInstallationDiskId: (agent: CIM.AgentK8sResource, diskId: string) => {
+            return patchResource(agent, [
+                {
+                    op: 'replace',
+                    path: '/spec/installation_disk_id',
+                    value: diskId,
+                },
+            ]).promise
+        },
     }
 
     useEffect(() => {
