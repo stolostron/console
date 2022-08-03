@@ -126,7 +126,7 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
 
 function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
     const { curatorJobs, title } = props
-
+    const { t } = useTranslation()
     return (
         <TableComposable aria-label="Simple table" variant={'compact'}>
             <Thead>
@@ -145,7 +145,7 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
                             </Tr>
                         ))
                     ) : (
-                        <Text component={TextVariants.small}>none selected</Text>
+                        <Text component={TextVariants.small}>{t('None selected')}</Text>
                     )}
                 </Tbody>
             )}
