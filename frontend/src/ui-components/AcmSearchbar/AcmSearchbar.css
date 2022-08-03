@@ -3,6 +3,7 @@
     align-items: center;
     background-color: var(--pf-global--BackgroundColor--100);
     width: calc(100% - 154px);
+    height: 2.25rem;
 }
 .clear-button {
     width: 15px;
@@ -28,7 +29,7 @@
     color: var(--pf-global--link--Color--hover);
 }
 .search-icon {
-    height: 32px;
+    height: 100%;
     width: 32px;
     padding: 0 0.5rem;
     color: var(--pf-global--Color--200);
@@ -52,9 +53,9 @@
     padding-left: 32px;
     /* clicking anywhere will focus the input */
     cursor: text;
-    height: 2.25rem;
+    height: 100%;
     z-index: 1;
-    width: calc(100% - 106px);
+    width: calc(100% - 125px);
 }
 .react-tags.is-focused {
     transition: max-height 0.6s ease-out;
