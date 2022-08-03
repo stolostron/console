@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '../ui-components'
+import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -914,13 +914,11 @@ export function AcmDataFormInputs(props: {
                                                     onClick={input.prompt.callback}
                                                 >
                                                     {input.prompt.text}
-                                                    {input.prompt.linkType === LinkType.external ? (
-                                                        <ExternalLinkAltIcon />
-                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
-                                                        <AcmIcon
+                                                    {input.prompt.linkType === LinkType.external ||
+                                                    input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <ExternalLinkAltIcon
                                                             style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                                            icon={AcmIconVariant.openNewTab}
-                                                        ></AcmIcon>
+                                                        />
                                                     ) : null}
                                                 </AcmButton>
                                             </SplitItem>
@@ -941,13 +939,11 @@ export function AcmDataFormInputs(props: {
                                                     onClick={input.prompt.callback}
                                                 >
                                                     {input.prompt.text}
-                                                    {input.prompt.linkType === LinkType.external ? (
-                                                        <ExternalLinkAltIcon />
-                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
-                                                        <AcmIcon
+                                                    {input.prompt.linkType === LinkType.external ||
+                                                    input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <ExternalLinkAltIcon
                                                             style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                                            icon={AcmIconVariant.openNewTab}
-                                                        ></AcmIcon>
+                                                        />
                                                     ) : null}
                                                 </AcmButton>
                                             </SplitItem>
