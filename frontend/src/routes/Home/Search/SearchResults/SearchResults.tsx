@@ -174,24 +174,21 @@ export default function SearchResults(props: { currentQuery: string; preSelected
             />
             <PageSection>
                 {!isKeywordSearch && (
-                    <ExpandableSection
-                        onToggle={() => setShowRelatedResources(!showRelatedResources)}
-                        isExpanded={showRelatedResources}
-                        toggleContent={
-                            <div>
-                                <span>
-                                    {!showRelatedResources ? 'Show related resources' : 'Hide related resources'}{' '}
-                                </span>
-                                <Tooltip
-                                    content={t(
-                                        'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
-                                    )}
-                                >
-                                    <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
-                                </Tooltip>
-                            </div>
-                        }
-                    >
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                            <ExpandableSection
+                                onToggle={() => setShowRelatedResources(!showRelatedResources)}
+                                isExpanded={showRelatedResources}
+                                toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
+                            />
+                            <Tooltip
+                                content={t(
+                                    'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
+                                )}
+                            >
+                                <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
+                            </Tooltip>
+                        </div>
                         {showRelatedResources && (
                             <RelatedResultsTiles
                                 currentQuery={currentQuery}
@@ -199,14 +196,14 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                                 setSelectedKinds={setSelectedKinds}
                             />
                         )}
-                        {showRelatedResources && (
+                        {showRelatedResources && selectedKinds.length > 0 && (
                             <RelatedResultsTables
                                 currentQuery={currentQuery}
                                 selectedKinds={selectedKinds}
                                 setDeleteResource={setDeleteResource}
                             />
                         )}
-                    </ExpandableSection>
+                    </div>
                 )}
             </PageSection>
             <SearchResultTables
