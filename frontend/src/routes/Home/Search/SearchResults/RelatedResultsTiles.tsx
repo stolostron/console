@@ -1,6 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmExpandableWrapper, AcmTile } from '../../../../ui-components'
+import { Grid, GridItem } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmAlert, AcmTile } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery } from '../search-sdk/search-sdk'
@@ -22,12 +23,20 @@ export default function RelatedResultsTiles(props: {
     })
     if (loading) {
         return (
-            <AcmExpandableWrapper withCount={false} expandable={false}>
-                <AcmTile loading={true} title={'loading'} />
-                <AcmTile loading={true} title={'loading'} />
-                <AcmTile loading={true} title={'loading'} />
-                <AcmTile loading={true} title={'loading'} />
-            </AcmExpandableWrapper>
+            <Grid hasGutter>
+                <GridItem span={3}>
+                    <AcmTile loading={true} title={'loading'} />
+                </GridItem>
+                <GridItem span={3}>
+                    <AcmTile loading={true} title={'loading'} />
+                </GridItem>
+                <GridItem span={3}>
+                    <AcmTile loading={true} title={'loading'} />
+                </GridItem>
+                <GridItem span={3}>
+                    <AcmTile loading={true} title={'loading'} />
+                </GridItem>
+            </Grid>
         )
     } else if (error || !data || !data.searchResult) {
         return (
@@ -43,24 +52,26 @@ export default function RelatedResultsTiles(props: {
 
     const relatedCounts = data.searchResult[0]?.related || []
     return (
-        <AcmExpandableWrapper maxHeight={'10rem'} withCount={true} expandable={relatedCounts.length > 2}>
+        <Grid hasGutter>
             {relatedCounts.map((count) => {
                 return (
-                    <AcmTile
-                        key={`related-tile-${count!.kind}`}
-                        isSelected={selectedKinds.indexOf(count!.kind) > -1}
-                        title={''}
-                        onClick={() => {
-                            const updatedKinds =
-                                selectedKinds.indexOf(count!.kind) > -1
-                                    ? selectedKinds.filter((kind) => kind !== count!.kind)
-                                    : [count!.kind, ...selectedKinds]
-                            setSelectedKinds(updatedKinds)
-                        }}
-                        relatedResourceData={{ count: count!.count || 0, kind: count!.kind }}
-                    />
+                    <GridItem span={3}>
+                        <AcmTile
+                            key={`related-tile-${count!.kind}`}
+                            isSelected={selectedKinds.indexOf(count!.kind) > -1}
+                            title={''}
+                            onClick={() => {
+                                const updatedKinds =
+                                    selectedKinds.indexOf(count!.kind) > -1
+                                        ? selectedKinds.filter((kind) => kind !== count!.kind)
+                                        : [count!.kind, ...selectedKinds]
+                                setSelectedKinds(updatedKinds)
+                            }}
+                            relatedResourceData={{ count: count!.count || 0, kind: count!.kind }}
+                        />
+                    </GridItem>
                 )
             })}
-        </AcmExpandableWrapper>
+        </Grid>
     )
 }

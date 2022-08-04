@@ -5,6 +5,7 @@ import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -49,26 +50,30 @@ const useStyles = makeStyles({
 })
 
 // Adds AcmAlert to page if there's errors from the Apollo queries.
-function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
-    const { t } = useTranslation()
+function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined, t: TFunction) {
     const notEnabled = 'not enabled'
+    let errorCode = ''
+    let message = ''
+
     if (schemaError || completeError) {
+        if (schemaError) {
+            errorCode = schemaError?.graphQLErrors[0]?.extensions?.code as string
+            message = schemaError?.message
+        } else if (completeError) {
+            errorCode = completeError?.graphQLErrors[0]?.extensions?.code as string
+            message = completeError?.message
+        }
+
         return (
             <div style={{ marginBottom: '1rem' }}>
                 <AcmAlert
                     noClose
-                    variant={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? 'info'
-                            : 'danger'
-                    }
+                    variant={message.includes(notEnabled) ? 'info' : 'danger'}
                     isInline
                     title={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? t('search.filter.info.title')
-                            : t('search.filter.errors.title')
+                        message.includes(notEnabled) ? t('search.filter.info.title') : t('search.filter.errors.title')
                     }
-                    subtitle={schemaError?.message || completeError?.message}
+                    subtitle={errorCode !== '' ? `${errorCode}: ${message}` : message}
                 />
             </div>
         )
@@ -150,7 +155,9 @@ function RenderSearchBar(props: {
                     userPreference={userPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
-                {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
+                {searchSchemaResults.error ||
+                    (searchCompleteResults.error &&
+                        HandleErrors(searchSchemaResults.error, searchCompleteResults.error, t))}
                 <div style={{ display: 'flex' }}>
                     <AcmSearchbar
                         loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
