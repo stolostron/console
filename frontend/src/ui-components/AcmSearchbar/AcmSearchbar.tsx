@@ -46,8 +46,16 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
     }, [queryString])
 
     function keyDownHandler(event: React.KeyboardEvent) {
-        if (event.key === 'Enter' && currentQuery !== '' && !currentQuery.endsWith(':')) {
+        // dont run a search if the user has text in the input element.
+        const currentInputText = document.getElementsByClassName('react-tags__search-input')[0] as HTMLInputElement
+        if (
+            event.key === 'Enter' &&
+            currentQuery !== '' &&
+            !currentQuery.endsWith(':') &&
+            currentInputText.value === ''
+        ) {
             updateBrowserUrl(history, currentQuery)
+            document.getElementById('inputDropdownButton1')?.focus()
         }
     }
 
@@ -167,6 +175,13 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
                     if (currentQuery !== '' && !currentQuery.endsWith(':')) {
                         updateBrowserUrl(history, currentQuery)
                     }
+                }}
+                style={{
+                    width: '125px',
+                    height: '100%',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
                 }}
             >
                 {'Run search'}

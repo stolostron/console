@@ -12,8 +12,6 @@ import {
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
     AcmButton,
-    AcmIcon,
-    AcmIconVariant,
     AcmLabelsInput,
     AcmPage,
     AcmPageHeader,
@@ -74,6 +72,7 @@ import {
     validClusterCuratorTemplatesValue,
 } from '../../../../../selectors'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 const acmSchema = [...schema, ...kac]
 
@@ -882,10 +881,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
                                 }
                             >
                                 {t('creation.ocp.cloud.add.template')}
-                                <AcmIcon
-                                    style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                    icon={AcmIconVariant.openNewTab}
-                                />
+                                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
                             </AcmButton>
                         </SplitItem>
                     </Split>

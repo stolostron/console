@@ -233,9 +233,6 @@ describe('SearchResults Page', () => {
 
         // Test the related resources section is hidden behind expandable section and click
         screen.queryByText('Show related resources')?.click()
-
-        // Test that the related resource tiles display corrctly after expandable is opened
-        await waitFor(() => expect(screen.queryByText('Show all (3)')).toBeTruthy())
     })
 
     it('should render page with correct data from search WITHOUT keyword & preselected related resources', async () => {
@@ -438,7 +435,6 @@ describe('SearchResults Page', () => {
         await wait()
         // Test that the component has rendered correctly with data
         await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
-        await waitFor(() => expect(screen.queryByText('Show all (3)')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Related Node (1)')).toBeTruthy())
     })
 

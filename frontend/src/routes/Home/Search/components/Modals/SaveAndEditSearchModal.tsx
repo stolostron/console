@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '../../../../../ui-components'
 import { Fragment, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -12,6 +11,7 @@ import {
     SavedSearch,
     UserPreference,
 } from '../../../../../resources/userpreference'
+import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '../../../../../ui-components'
 import SuggestQueryTemplates from '../SuggestedQueryTemplates'
 
 type IState = {
@@ -89,6 +89,14 @@ export const SaveAndEditSearchModal = (props: {
         }
     }
 
+    function savedSearchSuccess() {
+        props.onClose()
+        if (window.location.search !== '') {
+            // only update the current saved search if the search has been run
+            setSelectedSearch(searchName)
+        }
+    }
+
     function CreateUpdateSavedSearch() {
         const id = savedSearch && savedSearch.id ? savedSearch.id : Date.now().toString()
         const searchText = (savedSearch && savedSearch.searchText) ?? ''
@@ -102,10 +110,7 @@ export const SaveAndEditSearchModal = (props: {
                     searchText: searchText,
                 },
             ])
-                .then(() => {
-                    props.onClose()
-                    setSelectedSearch(searchName)
-                })
+                .then(() => savedSearchSuccess())
                 .catch((err) => {
                     setRequestError(err)
                 })
@@ -116,7 +121,7 @@ export const SaveAndEditSearchModal = (props: {
                 description: searchDesc,
                 searchText: searchText,
             })
-                .promise.then(() => props.onClose())
+                .promise.then(() => savedSearchSuccess())
                 .catch((err) => {
                     setRequestError(err)
                 })

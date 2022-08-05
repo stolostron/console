@@ -6,7 +6,6 @@ import { ClusterCurator, ClusterCuratorAnsibleJob } from '../resources'
 import { AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../NavigationPath'
 import { useState } from 'react'
 
@@ -126,7 +125,7 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
 
 function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
     const { curatorJobs, title } = props
-
+    const { t } = useTranslation()
     return (
         <TableComposable aria-label="Simple table" variant={'compact'}>
             <Thead>
@@ -145,7 +144,7 @@ function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
                             </Tr>
                         ))
                     ) : (
-                        <Text component={TextVariants.small}>none selected</Text>
+                        <Text component={TextVariants.small}>{t('None selected')}</Text>
                     )}
                 </Tbody>
             )}
@@ -172,25 +171,26 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
     const { templateCurator } = props
     const { t } = useTranslation()
     const classes = useStyles()
-    const history = useHistory()
     if (!templateCurator) {
         return <></>
     }
     return (
         <div>
-            <Button
-                isInline
-                variant={ButtonVariant.link}
-                onClick={() =>
-                    history.push(
-                        NavigationPath.editAnsibleAutomation
-                            .replace(':namespace', templateCurator.metadata?.namespace as string)
-                            .replace(':name', templateCurator.metadata?.name as string)
-                    )
-                }
-            >
-                {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
-                <ExternalLinkAltIcon className={classes.externalLinkIcon} />
+            <Button isInline variant={ButtonVariant.link}>
+                <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={`${NavigationPath.editAnsibleAutomation
+                        .replace(':namespace', templateCurator.metadata?.namespace as string)
+                        .replace(':name', templateCurator.metadata?.name as string)}`}
+                    style={{ fontSize: '14px' }}
+                >
+                    {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
+                </a>
+                <ExternalLinkAltIcon
+                    style={{ marginLeft: '6px', verticalAlign: 'middle' }}
+                    className={classes.externalLinkIcon}
+                />
             </Button>
         </div>
     )

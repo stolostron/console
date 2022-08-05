@@ -20,8 +20,6 @@ import {
     AcmAlert,
     AcmButton,
     AcmForm,
-    AcmIcon,
-    AcmIconVariant,
     AcmModal,
     AcmSelect,
     AcmTable,
@@ -50,6 +48,7 @@ import { Link } from 'react-router-dom'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { cloneDeep } from 'lodash'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 const useStyles = makeStyles({
     body: {},
@@ -323,10 +322,7 @@ export function UpdateAutomationModal(props: {
                                     }}
                                 >
                                     {t('View selected template')}
-                                    <AcmIcon
-                                        style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                        icon={AcmIconVariant.openNewTab}
-                                    />
+                                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
                                 </AcmButton>
                             </FlexItem>
                         </Flex>

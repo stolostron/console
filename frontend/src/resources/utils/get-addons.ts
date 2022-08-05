@@ -42,12 +42,12 @@ export function mapAddons(
                 },
                 spec: {
                     addOnMeta: {
-                        displayName: mca.status?.addOnMeta.displayName ?? '',
-                        description: mca.status?.addOnMeta.description ?? '',
+                        displayName: mca.status?.addOnMeta?.displayName ?? '',
+                        description: mca.status?.addOnMeta?.description ?? '',
                     },
                     addOnConfiguration: {
-                        crdName: mca.status?.addOnConfiguration.crdName ?? '',
-                        crName: mca.status?.addOnConfiguration.crName ?? '',
+                        crdName: mca.status?.addOnConfiguration?.crdName ?? '',
+                        crName: mca.status?.addOnConfiguration?.crName ?? '',
                     },
                 },
             } as ClusterManagementAddOn

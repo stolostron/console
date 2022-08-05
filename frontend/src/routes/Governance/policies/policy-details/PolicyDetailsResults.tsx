@@ -167,21 +167,25 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                             .replace(':apiVersion', version)
                             .replace(':kind', kind)
                             .replace(':templateName', templateName)
+                        const templateLink = canCreatePolicy ? (
+                            templateDetailURL && (
+                                <span>
+                                    -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
+                                </span>
+                            )
+                        ) : (
+                            <Tooltip content={t('rbac.unauthorized')}>
+                                <span className="link-disabled">{`- ${t('View details')}`}</span>
+                            </Tooltip>
+                        )
+                        const templateExists = !(
+                            prunedMessage.includes('Failed to create policy template') ||
+                            prunedMessage.includes('check if you have CRD deployed')
+                        )
                         return (
                             <div>
                                 {/* message may need to be limited to 300 chars? */}
-                                {prunedMessage}{' '}
-                                {canCreatePolicy ? (
-                                    templateDetailURL && (
-                                        <span>
-                                            -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
-                                        </span>
-                                    )
-                                ) : (
-                                    <Tooltip content={t('rbac.unauthorized')}>
-                                        <span className="link-disabled">{`- ${t('View details')}`}</span>
-                                    </Tooltip>
-                                )}
+                                {prunedMessage} {templateExists && templateLink}
                             </div>
                         )
                     }
