@@ -168,7 +168,7 @@
     "bareMetalAsset.emptyState.subtitle": "Click <bold>Create bare metal asset</bold> or <bold>Import bare metal assets</bold> to create your resource.",
     "bareMetalAsset.emptyState.title": "You don't have any bare metal assets",
     "bareMetalAsset.importAction.button": "Open file",
-    "bareMetalAsset.importAction.message": "The first line of the CSV file must be a comma separated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role Optional:, username, password.",
+    "bareMetalAsset.importAction.message": "The first line of the CSV file must be a comma separated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role (optional), username, password.",
     "bareMetalAsset.importAction.title": "Specify CSV file",
     "bareMetalAsset.rowAction.deleteAsset.title": "Delete asset",
     "bareMetalAsset.rowAction.editAsset.title": "Edit asset",
