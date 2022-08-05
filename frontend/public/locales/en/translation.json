@@ -1644,6 +1644,7 @@
     "node.status.unknown": "Unknown",
     "Non compliant": "Non compliant",
     "None": "None",
+    "None selected": "None selected",
     "noProxyTip": "Add a comma-separated list of sites that bypass the proxy. The hub API server address must be included in this list. By default, all cluster egress traffic is sent through the proxy, including calls to hosting and cloud provider APIs.",
     "Not Created": "Not Created",
     "Not deployed": "Not deployed",
