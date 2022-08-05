@@ -66,7 +66,7 @@ export function AcmTile(props: AcmTileProps) {
             >
                 <div className={classes.relatedResourceContainer}>
                     <div className={classes.relatedResourceCount}>{count}</div>
-                    <div className={classes.relatedResourceKind}>{`Related ${props.relatedResourceData.kind}`}</div>
+                    <div className={classes.relatedResourceKind}>{props.relatedResourceData.kind}</div>
                 </div>
             </Tile>
         )

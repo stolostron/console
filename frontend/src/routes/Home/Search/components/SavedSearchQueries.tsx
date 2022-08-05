@@ -163,7 +163,7 @@ export default function SavedSearchQueries(props: {
                                 onCardClick={() => {
                                     updateBrowserUrl(history, query.searchText)
                                 }}
-                                count={data?.searchResult?.[index]?.count ?? 0}
+                                count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
                                 countTitle={t('Results')}
                                 onKeyPress={(KeyboardEvent: React.KeyboardEvent) =>
                                     handleKeyPress(KeyboardEvent, query)
