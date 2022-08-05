@@ -1313,6 +1313,8 @@
     "formerror.valid.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
     "formerror.validation.errors": "Fix validation errors",
     "Gateway timeout": "Gateway timeout",
+    "Generate command": "Generate command",
+    "Generating": "Generating",
     "Getting Started with Governance": "Getting Started with Governance",
     "Git": "Git",
     "Git branch": "Git branch",
