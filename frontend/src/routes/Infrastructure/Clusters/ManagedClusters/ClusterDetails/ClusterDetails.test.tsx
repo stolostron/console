@@ -1181,6 +1181,6 @@ describe('Automation Details', () => {
         await waitForText('posthook-1')
 
         await waitForText('Upgrade')
-        await waitForText('none selected', true)
+        await waitForText('None selected', true)
     })
 })
