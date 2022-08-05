@@ -137,7 +137,7 @@ export function CreateControlPlane() {
         <Fragment>
             <PageHeader
                 title={t('Control plane type')}
-                description={t('Choose a control plane type for your on-premise machine.')}
+                description={t('Next, select a control plane type for your cluster.')}
                 breadcrumbs={breadcrumbs}
             />
             <ItemView
