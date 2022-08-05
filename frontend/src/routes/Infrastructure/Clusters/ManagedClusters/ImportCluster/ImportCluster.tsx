@@ -19,7 +19,7 @@ import {
     AcmToastContext,
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
-import { Dispatch, useCallback, useContext, useLayoutEffect, useMemo, useReducer, useState } from 'react'
+import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -212,8 +212,19 @@ export default function ImportClusterPage() {
     const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
     const initialServer = sessionStorage.getItem('DiscoveredClusterApiURL') ?? ''
     const [discovered] = useState<boolean>(!!initialClusterName)
-
+    const [submitButtonText, setSubmitButtonText] = useState<string>()
+    const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
+
+    useEffect(() => {
+        if (state.importMode !== 'manual') {
+            setSubmitButtonText(t('Import'))
+            setSubmittingButtonText(t('Importing'))
+        } else {
+            setSubmitButtonText(t('Generate command'))
+            setSubmittingButtonText(t('Generating'))
+        }
+    }, [state.importMode, t])
 
     const defaultData = useMemo(() => {
         const clusterAnnotations: Record<string, string> = {}
@@ -416,6 +427,8 @@ export default function ImportClusterPage() {
                 onCancel={function (): void {
                     cancelNavigation(location, history, NavigationPath.clusters)
                 }}
+                submitButtonText={submitButtonText}
+                submittingButtonText={submittingButtonText}
             >
                 <Step label={t('Details')} id="details">
                     <Section label={t('Details')}>
