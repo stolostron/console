@@ -345,13 +345,18 @@ export default function ApplicationsOverview() {
         () =>
             argoApplications
                 .filter((argoApp) => {
+                    const resources = argoApp.status.resources
+                    let definedNamespace = ''
+                    resources.forEach((resource: any) => {
+                        definedNamespace = resource.namespace
+                    })
                     // cache Argo app signature for filtering OCP apps later
                     setArgoApplicationsHashSet(
                         (prev) =>
                             new Set(
                                 prev.add(
                                     `${argoApp.metadata.name}-${
-                                        argoApp.spec.destination.namespace
+                                        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
                                     }-${getArgoDestinationCluster(
                                         argoApp.spec.destination,
                                         managedClusters,
