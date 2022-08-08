@@ -30,7 +30,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     })
 
     const resources = _.get(appSetApps[0], 'status.resources')
-    const definedNamespace = ''
+    let definedNamespace = ''
     resources.forEach((resource) => {
         definedNamespace = _.get(resource, 'namespace')
     })
