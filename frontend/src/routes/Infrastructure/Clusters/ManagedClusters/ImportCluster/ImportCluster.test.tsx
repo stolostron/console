@@ -51,8 +51,8 @@ import {
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
-import { PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
