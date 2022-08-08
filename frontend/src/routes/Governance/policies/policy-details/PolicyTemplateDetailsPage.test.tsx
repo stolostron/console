@@ -2,6 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { managedClusterAddonsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 
@@ -24,7 +25,11 @@ jest.mock('react-router-dom', () => ({
 describe('Policy Template Details Page', () => {
     test('Should render Policy Template Details Page', async () => {
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClusterAddonsState, [])
+                }}
+            >
                 <MemoryRouter>
                     <PolicyTemplateDetailsPage />
                 </MemoryRouter>
