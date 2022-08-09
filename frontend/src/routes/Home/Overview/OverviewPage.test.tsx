@@ -9,7 +9,7 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterInfosState, managedClustersState, policiesState, policyreportState } from '../../../atoms'
-import { nockGet } from '../../../lib/nock-util'
+import { nockCreate, nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import {
     ManagedCluster,
@@ -18,6 +18,7 @@ import {
     ManagedClusterKind,
     Policy,
     PolicyReport,
+    SelfSubjectAccessReview,
 } from '../../../resources'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
@@ -65,6 +66,35 @@ const getAddonResponse = {
                 type: 'Processing',
             },
         ],
+    },
+}
+
+const mockGetSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+}
+
+const mockGetSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+    status: {
+        allowed: true,
     },
 }
 
@@ -361,8 +391,12 @@ const mockPolicyReports: PolicyReport[] = [
     },
 ]
 
-it('should render overview page in loading state', async () => {
+it('should render overview page in empty state', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
+    const getManageedClusterAccessRequeset = nockCreate(
+        mockGetSelfSubjectAccessRequest,
+        mockGetSelfSubjectAccessResponse
+    )
 
     render(
         <RecoilRoot>
@@ -375,14 +409,18 @@ it('should render overview page in loading state', async () => {
     )
 
     // Test the loading state while apollo query finishes
-    await waitFor(() => expect(screen.getByText('Loading')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock])
+    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
 })
 
 it('should render overview page in error state', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
+    const getManageedClusterAccessRequeset = nockCreate(
+        mockGetSelfSubjectAccessRequest,
+        mockGetSelfSubjectAccessResponse
+    )
     const mocks = [
         {
             request: {
@@ -408,7 +446,7 @@ it('should render overview page in error state', async () => {
     await wait()
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock])
+    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
 
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())

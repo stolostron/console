@@ -101,11 +101,6 @@ const useStyles = makeStyles({
             right: '-1rem',
         },
     },
-    count: {
-        color: (props: AcmCountCardProps) =>
-            props.count !== 0 ? 'var(--pf-global--link--Color)' : 'var(--pf-global--palette--black-900)',
-        fontSize: 'var(--pf-global--FontSize--3xl)',
-    },
     body: {
         position: (props: AcmCountCardProps) => (props.cardHeader ? 'absolute' : 'relative'),
         bottom: '0',
@@ -204,7 +199,15 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
                 </CardHeader>
             )}
             <CardBody className={classes.body}>
-                <div className={classes.count}>{count}</div>
+                {props.count !== 0 ? (
+                    <div
+                        style={{ color: 'var(--pf-global--link--Color)', fontSize: 'var(--pf-global--FontSize--3xl)' }}
+                    >
+                        {count}
+                    </div>
+                ) : (
+                    <div style={{ fontSize: 'var(--pf-global--FontSize--3xl)' }}>{count}</div>
+                )}
                 <div className={classes.countTitle}>{countTitle}</div>
             </CardBody>
             {cardFooter && (
