@@ -12,6 +12,18 @@ export const getControlDataCIM = (includeKlusterletAddonConfig = true, warning) 
         title: 'Cluster details',
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Host inventory',
+        type: 'reviewinfo',
+    },
+    {
+        id: 'controlplane',
+        name: 'Control plane type',
+        active: 'Standalone',
+        type: 'reviewinfo',
+    },
+    {
         id: 'warning',
         type: 'custom',
         component: warning,
@@ -79,6 +91,18 @@ export const getControlDataAI = (includeKlusterletAddonConfig = true) => [
         id: 'aiDetailStep',
         type: 'step',
         title: 'Cluster details',
+    },
+    {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Host inventory',
+        type: 'reviewinfo',
+    },
+    {
+        id: 'controlplane',
+        name: 'Control plane type',
+        active: 'Standalone',
+        type: 'reviewinfo',
     },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {

@@ -14,6 +14,18 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
         title: 'Cluster details',
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Host inventory',
+        type: 'reviewinfo',
+    },
+    {
+        id: 'controlplane',
+        name: 'Control plane type',
+        active: 'Hosted',
+        type: 'reviewinfo',
+    },
+    {
         id: 'warning',
         type: 'custom',
         component: warning,

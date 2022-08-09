@@ -37,6 +37,12 @@ const controlDataRHV = [
         title: 'Cluster details',
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'RHV',
+        type: 'reviewinfo',
+    },
+    {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',
