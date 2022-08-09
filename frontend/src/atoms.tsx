@@ -110,6 +110,9 @@ import {
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
     ManagedClusterSetKind,
+    MultiClusterEngine,
+    MultiClusterEngineApiVersion,
+    MultiClusterEngineKind,
     MultiClusterHub,
     MultiClusterHubApiVersion,
     MultiClusterHubKind,
@@ -207,6 +210,7 @@ export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
 export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding>()
 export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
+export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
@@ -294,6 +298,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
     const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
     const setManagedClusters = useSetRecoilState(managedClustersState)
+    const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
     const setMultiClusterHubs = useSetRecoilState(multiClusterHubState)
     const setNamespaces = useSetRecoilState(namespacesState)
     const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
@@ -368,6 +373,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
         addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
+        addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
         addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
@@ -417,6 +423,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setManagedClusterSets,
         setManagedClusters,
         setMultiClusterHubs,
+        setMultiClusterEngines,
         setNamespaces,
         setNMStateConfigs,
         setPlacementBindingsState,

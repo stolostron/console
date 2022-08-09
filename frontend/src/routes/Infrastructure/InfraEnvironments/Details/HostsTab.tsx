@@ -15,18 +15,12 @@ import {
     onMassDeleteHost,
     onSaveAgent,
     onSaveBMH,
+    useAssistedServiceConfigMap,
     useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
 
-const {
-    HostsNotShowingLink,
-    InfraEnvAgentTable,
-    EditBMHModal,
-    getAgentsHostsNames,
-    AgentAlerts,
-    DiscoveryTroubleshootingModal,
-} = CIM
+const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts, InfoAndTroubleshootingNotification } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -45,7 +39,6 @@ const HostsTab: React.FC<HostsTabProps> = ({
 }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [isDiscoveryHintModalOpen, setDiscoveryHintModalOpen] = useState(false)
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
@@ -53,29 +46,18 @@ const HostsTab: React.FC<HostsTabProps> = ({
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
+    const assistedServiceConfigMap = useAssistedServiceConfigMap()
 
     return (
         <>
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
             <AcmPageContent id="hosts">
                 <PageSection>
-                    <AgentAlerts infraEnv={infraEnv} bareMetalHosts={bareMetalHosts} docVersion={DOC_VERSION} />
-                    {!!infraAgents.length && (
-                        <Card isPlain isCompact>
-                            <CardBody>
-                                <HostsNotShowingLink
-                                    key="hosts-not-showing"
-                                    setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
-                                />
-                                {isDiscoveryHintModalOpen && (
-                                    <DiscoveryTroubleshootingModal
-                                        isOpen={isDiscoveryHintModalOpen}
-                                        setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
-                                    />
-                                )}
-                            </CardBody>
-                        </Card>
-                    )}
+                    <Card isPlain>
+                        <AgentAlerts infraEnv={infraEnv} bareMetalHosts={bareMetalHosts} docVersion={DOC_VERSION} />
+                        <InfoAndTroubleshootingNotification assistedServiceConfigMap={assistedServiceConfigMap} />
+                    </Card>
+                    <br />
                     <Card>
                         <CardBody>
                             <InfraEnvAgentTable

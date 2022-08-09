@@ -95,6 +95,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'BareMetalAsset', apiVersion: 'inventory.open-cluster-management.io/v1alpha1' },
     { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
+    { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
     { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
@@ -105,17 +106,7 @@ const definitions: IWatchOptions[] = [
     {
         kind: 'ConfigMap',
         apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
-    },
-    {
-        kind: 'ConfigMap',
-        apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'rhacm', 'metadata.name': 'assisted-service' },
-    },
-    {
-        kind: 'ConfigMap',
-        apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'open-cluster-management', 'metadata.name': 'assisted-service' },
+        fieldSelector: { 'metadata.name': 'assisted-service' },
     },
     {
         kind: 'ConfigMap',

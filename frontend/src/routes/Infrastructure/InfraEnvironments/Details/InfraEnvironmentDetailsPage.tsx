@@ -55,7 +55,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             nmStateConfigsState,
         ])
     )
-
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
 
     const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
