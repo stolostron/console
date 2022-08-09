@@ -21,7 +21,7 @@ import {
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
-const onlineClustersCheckbox = 'online-cluster-only-checkbox'
+const onlineClustersCheckblox = 'online-cluster-only-checkbox'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
 const specPathname = 'spec.pathname'
