@@ -396,7 +396,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
+                rbac: cluster.isHostedCluster ? [] : [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
                 id: 'destroy-cluster',
