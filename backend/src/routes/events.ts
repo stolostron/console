@@ -249,7 +249,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
     for (const uid in cache) {
         const existing = cache[uid]
         if (!matchesSelector(existing.resource, options.fieldSelector)) continue
-        if (!matchesSelector(existing.resource, options.labelSelector)) continue
+        if (!matchesSelector(existing.resource.metadata?.labels, options.labelSelector)) continue
         if (!items.find((resource) => resource.metadata.uid === uid)) {
             removeUids.push(uid)
         }
@@ -508,11 +508,12 @@ function deleteResource(resource: IResource) {
     delete cache[uid]
 }
 
-function matchesSelector(resource: IResource, selector?: Record<string, string>) {
+function matchesSelector(target?: object, selector?: Record<string, string>) {
+    if (target === undefined) return true
     if (selector === undefined) return true
     for (const key in selector) {
         const value = selector[key]
-        const resourceValue = get(resource, key) as unknown
+        const resourceValue = get(target, key) as unknown
         if (resourceValue !== value) return false
     }
     return true
