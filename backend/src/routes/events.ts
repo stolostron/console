@@ -509,7 +509,7 @@ function deleteResource(resource: IResource) {
 }
 
 function matchesSelector(target?: object, selector?: Record<string, string>) {
-    if (target === undefined) return true
+    if (target === undefined) return false
     if (selector === undefined) return true
     for (const key in selector) {
         const value = selector[key]
