@@ -50,7 +50,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             _.set(
                 node,
                 'specs.searchClusters',
-                hasMultipleSubs && node.type === 'application'
+                hasMultipleSubs && node.type !== 'application'
                     ? _.filter(clustersObjects, (cls) => _.includes(nodeClusters, _.get(cls, 'name', '')))
                     : clustersObjects // get all search clusters when one cluster node or this is the main app node
             )
