@@ -1,22 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { makeStyles } from '@material-ui/styles'
 import {
     Card,
-    CardHeaderMain,
-    CardHeader,
     CardFooter,
-    Title,
-    Text,
-    TextVariants,
-    Stack,
-    StackItem,
+    CardHeader,
+    CardHeaderMain,
     Gallery,
     GalleryItem,
+    Stack,
+    StackItem,
+    Text,
+    TextVariants,
+    Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
+import { Provider, ProviderIconMap, ProviderShortTextMap } from '../'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { AddCluster } from '../../../routes/Infrastructure/Clusters/ManagedClusters/components/AddCluster'
+import { AcmEmptyState } from '../../AcmEmptyState'
 import { AcmIcon } from '../../AcmIcons/AcmIcons'
-import { Provider, ProviderShortTextMap, ProviderIconMap } from '../'
 
 const useStyles = makeStyles({
     icon: {
@@ -54,6 +57,16 @@ type ProviderCardProps = {
 }
 
 export function AcmOverviewProviders(props: { providers: ProviderCardProps[] }) {
+    const { t } = useTranslation()
+    if (props.providers.length === 0) {
+        return (
+            <AcmEmptyState
+                title={t('managed.emptyStateHeader')}
+                message={<Trans i18nKey={'managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
+                action={<AddCluster type="button" />}
+            />
+        )
+    }
     return (
         <Gallery hasGutter>
             {props.providers.map((provider) => (
