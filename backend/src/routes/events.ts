@@ -248,8 +248,14 @@ async function listKubernetesObjects(options: IWatchOptions) {
     const removeUids: string[] = []
     for (const uid in cache) {
         const existing = cache[uid]
-        if (!matchesSelector(existing.resource, options.fieldSelector)) continue
-        if (!matchesSelector(existing.resource.metadata?.labels, options.labelSelector)) continue
+        if (options.fieldSelector && !matchesSelector(existing.resource, options.fieldSelector)) {
+            // skip as this object would not be in the items result for this list operation
+            continue
+        }
+        if (options.labelSelector && !matchesSelector(existing.resource.metadata?.labels, options.labelSelector)) {
+            // skip as this object would not be in the items result for this list operation
+            continue
+        }
         if (!items.find((resource) => resource.metadata.uid === uid)) {
             removeUids.push(uid)
         }
@@ -508,13 +514,12 @@ function deleteResource(resource: IResource) {
     delete cache[uid]
 }
 
-function matchesSelector(target?: object, selector?: Record<string, string>) {
+function matchesSelector(target: object | undefined, selector: Record<string, string>) {
     if (target === undefined) return false
-    if (selector === undefined) return true
     for (const key in selector) {
         const value = selector[key]
-        const resourceValue = get(target, key) as unknown
-        if (resourceValue !== value) return false
+        const targetValue = get(target, key) as unknown
+        if (targetValue !== value) return false
     }
     return true
 }
