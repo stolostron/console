@@ -16,6 +16,7 @@ export const showArgoApplicationSetLink = (node, details, t) => {
         })
 
         // show link to app set
+        const i = 0
         details.push({
             labelValue: t('props.show.yaml.argoset'),
             value: _.get(appSet[0], 'name', 'unknown'),
