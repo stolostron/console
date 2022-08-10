@@ -2,7 +2,12 @@
 import * as React from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { FormikProps } from 'formik'
-import { agentsState, clusterImageSetsState, infraEnvironmentsState } from '../../../../../../../../atoms'
+import {
+    agentsState,
+    clusterImageSetsState,
+    infraEnvironmentsState,
+    nodePoolsState,
+} from '../../../../../../../../atoms'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
@@ -28,8 +33,8 @@ type HostsFormProps = {
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     const { nodePools, setNodePools, clusterName, releaseImage, infraEnvNamespace, setInfraEnvNamespace } =
         React.useContext(HypershiftAgentContext)
-    const [agents, infraEnvironments, clusterImageSets] = useRecoilValue(
-        waitForAll([agentsState, infraEnvironmentsState, clusterImageSetsState])
+    const [agents, infraEnvironments, clusterImageSets, currentNodePools] = useRecoilValue(
+        waitForAll([agentsState, infraEnvironmentsState, clusterImageSetsState, nodePoolsState])
     )
 
     const formRef = React.useRef<FormikProps<any>>(null)
@@ -80,6 +85,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
             initInfraEnv={infraEnvNamespace}
             initReleaseImage={initReleaseImage}
             initNodePools={nodePools}
+            nodePools={currentNodePools}
         />
     ) : (
         <LoadingState />
