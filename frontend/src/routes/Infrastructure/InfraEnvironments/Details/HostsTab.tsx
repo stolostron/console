@@ -33,7 +33,6 @@ type HostsTabProps = {
     infraAgents: CIM.AgentK8sResource[]
     agentClusterInstalls: CIM.AgentClusterInstallK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
-    aiConfigMap: CIM.ConfigMapK8sResource
     infraNMStates?: CIM.NMStateK8sResource[]
 }
 
@@ -42,7 +41,6 @@ const HostsTab: React.FC<HostsTabProps> = ({
     infraAgents,
     agentClusterInstalls,
     bareMetalHosts,
-    aiConfigMap,
     infraNMStates = [],
 }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
@@ -61,12 +59,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
             <AcmPageContent id="hosts">
                 <PageSection>
-                    <AgentAlerts
-                        infraEnv={infraEnv}
-                        bareMetalHosts={bareMetalHosts}
-                        docVersion={DOC_VERSION}
-                        aiConfigMap={aiConfigMap}
-                    />
+                    <AgentAlerts infraEnv={infraEnv} bareMetalHosts={bareMetalHosts} docVersion={DOC_VERSION} />
                     {!!infraAgents.length && (
                         <Card isPlain isCompact>
                             <CardBody>

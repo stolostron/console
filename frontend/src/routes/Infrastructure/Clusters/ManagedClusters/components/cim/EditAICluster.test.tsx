@@ -71,7 +71,7 @@ describe('Edit AI Cluster', () => {
 
         await waitForText('ai:Cluster details')
         await waitForText('ai:Cluster hosts')
-        await waitForText('ai:Cluster network')
+        await waitForText('ai:Networking')
         await waitForText('ai:Review and create')
 
         await waitForTestId('form-static-openshiftVersion-field')
