@@ -10,7 +10,6 @@ import {
     agentClusterInstallsState,
     agentsState,
     bareMetalHostsState,
-    configMapsState,
     infrastructuresState,
     nmStateConfigsState,
 } from '../../../../atoms'
@@ -19,7 +18,6 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
 import {
-    getAIConfigMap,
     getOnCreateBMH,
     getOnSaveISOParams,
     importYaml,
@@ -48,12 +46,11 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     const [isBmcModalOpen, setBMCModalOpen] = useState(false)
     const [isBmcYamlModalOpen, setBMCYamlModalOpen] = useState(false)
 
-    const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures, nmStateConfigs] = useRecoilValue(
+    const [agentClusterInstalls, agents, bareMetalHosts, infrastructures, nmStateConfigs] = useRecoilValue(
         waitForAll([
             agentClusterInstallsState,
             agentsState,
             bareMetalHostsState,
-            configMapsState,
             infrastructuresState,
             nmStateConfigsState,
         ])
@@ -84,7 +81,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     )
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
-    const aiConfigMap = getAIConfigMap(configMaps)
     const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
 
     if (!infraEnv) {
@@ -219,7 +215,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                 infraEnv={infraEnv}
                                 infraAgents={infraAgents}
                                 bareMetalHosts={infraBMHs}
-                                aiConfigMap={aiConfigMap}
                                 infraNMStates={infraNMStates}
                             />
                         </Route>
