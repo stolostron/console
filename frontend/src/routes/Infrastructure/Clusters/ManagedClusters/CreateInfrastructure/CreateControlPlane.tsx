@@ -100,15 +100,11 @@ export function CreateControlPlane() {
                         items: [
                             {
                                 text: t('Multicluster Hub'),
-                                help: {
-                                    text: t(clusterTypeTooltips),
-                                },
+                                help: t(clusterTypeTooltips),
                             },
                             {
                                 text: t('Hosting service cluster'),
-                                help: {
-                                    text: t(clusterTypeTooltips),
-                                },
+                                help: t(clusterTypeTooltips),
                             },
                             { text: t('Dedicated control plane') },
                         ],
