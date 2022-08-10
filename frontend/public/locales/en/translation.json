@@ -2156,7 +2156,7 @@
     "Subscription ID": "Subscription ID",
     "Subscription Selector": "Subscription Selector",
     "Subscription updated": "Subscription updated",
-    "subscription.page.count.info": "subscription.page.count.info",
+    "subscription.page.count.info": "Displays the list of subscriptions created by this application. Click the drop-down menu to select a subscription and view its deployed resources in the topology. All Subscriptions option is only available if all resources can be displayed on one page.",
     "Subscriptions": "Subscriptions",
     "Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.": "Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.",
     "success": "Success",
