@@ -506,7 +506,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
             if (cluster.name === 'local-cluster') {
                 return t('Hub')
             }
-            if (cluster.isHostedCluster) {
+            if (cluster.isHostedCluster || cluster.isHypershift) {
                 return t('Hosted')
             } else {
                 return t('Standalone')
