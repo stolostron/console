@@ -517,6 +517,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             const key = keyFn(item)
             const group = (groupFn && groupFn(item)) || undefined
             const subRows = addSubRows?.(item)
+            // Establish key for subrow based on parent row
+            subRows?.map((row, idx) => (row.props = { key: `${key}-subrow-${idx}` }))
+
             const tableItem: ITableItem<T> = { item, subRows, key, group }
             for (let i = 0; i < columns.length; i++) {
                 const column = columns[i]
@@ -673,12 +676,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 })
             }
             if (allSubItems) {
-                allSubItems.forEach((item) => {
-                    const key = keyFn(item)
+                allSubItems.forEach((subItem, idx) => {
+                    // Establish key for subrow based on parent row
+                    const subKey = `${tableItem.key}-subrow-${idx}`
                     newRows.push({
                         parent: i + addedSubRowCount,
-                        props: { key },
-                        cells: itemToCells(item, key),
+                        props: { key: subKey },
+                        cells: itemToCells(subItem, subKey),
                     })
                 })
                 addedSubRowCount += allSubItems.length
