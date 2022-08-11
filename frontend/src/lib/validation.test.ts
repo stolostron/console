@@ -101,9 +101,9 @@ describe('validation', () => {
             [`should not allow non public key`, 'abcdefg', false],
         ])('%s', (_name, value, isValid) => {
             if (!isValid) {
-                expect(validatePublicSshKey(value, t)).toBeTruthy()
+                expect(validatePublicSshKey(value, t, true)).toBeTruthy()
             } else {
-                expect(validatePublicSshKey(value, t)).toBeUndefined()
+                expect(validatePublicSshKey(value, t, true)).toBeUndefined()
             }
         })
     })

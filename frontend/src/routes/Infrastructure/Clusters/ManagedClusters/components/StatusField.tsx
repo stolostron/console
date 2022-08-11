@@ -26,7 +26,7 @@ export function StatusField(props: { cluster: Cluster }) {
     })
 
     let type: StatusType
-    const isHybrid = props.cluster?.provider === Provider.hybrid
+    const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     switch (props.cluster?.status) {
         case ClusterStatus.ready:
             type = StatusType.healthy

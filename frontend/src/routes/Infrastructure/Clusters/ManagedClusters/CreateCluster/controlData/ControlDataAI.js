@@ -35,7 +35,7 @@ export const getControlDataCIM = (includeKlusterletAddonConfig = true, warning) 
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hybrid',
+        providerId: ['hybrid', 'hostinventory'],
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: false,
@@ -111,7 +111,7 @@ export const getControlDataAI = (includeKlusterletAddonConfig = true) => [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hybrid',
+        providerId: ['hybrid', 'hostinventory'],
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: false,

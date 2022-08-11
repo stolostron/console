@@ -150,9 +150,12 @@ export const setAvailableOCPMap = (control) => {
 }
 
 export const setAvailableConnections = (control, secrets) => {
-    const connections = secrets.filter(
-        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === control.providerId
-    )
+    const connections = secrets.filter((secret) => {
+        const cedentalsType = secret.metadata.labels?.['cluster.open-cluster-management.io/type']
+        return Array.isArray(control.providerId)
+            ? control.providerId.includes(cedentalsType)
+            : control.providerId === cedentalsType
+    })
     control.availableMap = {}
     connections?.forEach?.((c) => {
         const unpackedSecret = unpackProviderConnection(c)

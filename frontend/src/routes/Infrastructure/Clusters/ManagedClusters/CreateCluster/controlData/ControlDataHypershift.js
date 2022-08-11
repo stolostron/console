@@ -37,7 +37,7 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hypershift',
+        providerId: 'hostinventory',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: false,

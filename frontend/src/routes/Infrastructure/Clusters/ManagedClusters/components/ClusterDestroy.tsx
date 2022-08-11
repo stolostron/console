@@ -20,7 +20,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
     const { t } = useTranslation()
     const history = useHistory()
     const [configMaps] = useRecoilState(configMapsState)
-    const isHybrid = props.cluster?.provider === Provider.hybrid
+    const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     const { agentClusterInstall } = useContext(ClusterContext)
 
     return (

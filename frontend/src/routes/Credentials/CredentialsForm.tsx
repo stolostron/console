@@ -62,8 +62,8 @@ const credentialProviders: Provider[] = [
     Provider.azure,
     Provider.gcp,
     Provider.vmware,
+    Provider.hostinventory,
     Provider.hybrid,
-    Provider.hypershift,
 ]
 
 enum ProviderGroup {
@@ -83,8 +83,7 @@ const providerGroup: Record<string, string> = {
     [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
-    [Provider.hybrid]: ProviderGroup.Datacenter,
-    [Provider.hypershift]: ProviderGroup.Datacenter,
+    [Provider.hostinventory]: ProviderGroup.Datacenter,
 }
 
 export default function CredentialsFormPage() {
@@ -474,11 +473,8 @@ export function CredentialsForm(props: {
             case Provider.redhatcloud:
                 secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
+            case Provider.hostinventory:
             case Provider.hybrid:
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                break
-            case Provider.hypershift:
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-publickey'] = sshPublickey
@@ -662,7 +658,7 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                             Provider.redhatvirtualization,
                             Provider.hybrid,
-                            Provider.hypershift,
+                            Provider.hostinventory,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('Base DNS domain'),
@@ -1366,7 +1362,7 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                             Provider.redhatvirtualization,
                             Provider.hybrid,
-                            Provider.hypershift,
+                            Provider.hostinventory,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Pull secret'),
@@ -1411,7 +1407,8 @@ export function CredentialsForm(props: {
                             Provider.openstack,
                             Provider.redhatvirtualization,
                             Provider.vmware,
-                            Provider.hypershift,
+                            Provider.hybrid,
+                            Provider.hostinventory,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('SSH public key'),
@@ -1419,8 +1416,13 @@ export function CredentialsForm(props: {
                         labelHelp: t('The public SSH key to use to access your cluster machines.'),
                         value: sshPublickey,
                         onChange: setSshPublickey,
-                        validation: (value) => validatePublicSshKey(value, t),
-                        isRequired: true,
+                        validation: (value) =>
+                            validatePublicSshKey(
+                                value,
+                                t,
+                                ![Provider.hybrid, Provider.hostinventory].includes(credentialsType as Provider)
+                            ),
+                        isRequired: ![Provider.hybrid, Provider.hostinventory].includes(credentialsType as Provider),
                         isSecret: true,
                     },
                 ],
