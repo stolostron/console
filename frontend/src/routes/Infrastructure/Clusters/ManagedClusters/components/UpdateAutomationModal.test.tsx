@@ -158,6 +158,49 @@ const mockClusterNonOCP: Cluster = {
     isHypershift: false,
 }
 
+const mockClusterPending: Cluster = {
+    name: 'cluster-3-pending',
+    displayName: 'cluster-3-pending',
+    namespace: 'cluster-3-pending',
+    uid: 'cluster-3-pending-uid',
+    status: ClusterStatus.pending,
+    isHive: false,
+    distribution: {
+        k8sVersion: '1.19',
+        displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            isReadyUpdates: true,
+            isReadySelectChannels: false,
+            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+            currentVersion: '1.2.3',
+            desiredVersion: '1.2.3',
+            latestJob: {},
+        },
+    },
+    labels: undefined,
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
+}
+
 const mockClusterRoks: Cluster = {
     name: 'cluster-4-roks',
     displayName: 'cluster-4-roks',
@@ -187,49 +230,6 @@ const mockClusterRoks: Cluster = {
             latestJob: {},
         },
     },
-    hive: {
-        isHibernatable: true,
-        clusterPool: undefined,
-        secrets: {
-            installConfig: '',
-        },
-    },
-    isManaged: true,
-    isCurator: false,
-    isHostedCluster: false,
-    isSNOCluster: false,
-    owner: {},
-    kubeadmin: '',
-    kubeconfig: '',
-    isHypershift: false,
-}
-
-const mockClusterPending: Cluster = {
-    name: 'cluster-3-pending',
-    displayName: 'cluster-3-pending',
-    namespace: 'cluster-3-pending',
-    uid: 'cluster-3-pending-uid',
-    status: ClusterStatus.pending,
-    isHive: false,
-    distribution: {
-        k8sVersion: '1.19',
-        displayVersion: 'Openshift 1.2.3',
-        isManagedOpenShift: false,
-        upgradeInfo: {
-            upgradeFailed: false,
-            isUpgrading: false,
-            isReadyUpdates: true,
-            isReadySelectChannels: false,
-            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
-            currentVersion: '1.2.3',
-            desiredVersion: '1.2.3',
-            latestJob: {},
-        },
-    },
-    labels: undefined,
-    nodes: undefined,
-    kubeApiServer: '',
-    consoleURL: '',
     hive: {
         isHibernatable: true,
         clusterPool: undefined,
