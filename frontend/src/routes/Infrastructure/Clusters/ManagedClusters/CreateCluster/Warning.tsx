@@ -36,8 +36,11 @@ export const Warning = () => {
     }
 
     return (
-        <Alert title={warning?.title} variant={AlertVariant.warning} actionLinks={actionLinks} isInline>
-            {warning.text}
-        </Alert>
+        <>
+            <Alert title={warning?.title} variant={AlertVariant.warning} actionLinks={actionLinks} isInline>
+                {warning.text}
+            </Alert>
+            <br />
+        </>
     )
 }
