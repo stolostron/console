@@ -82,11 +82,11 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
                             values.splice(values.length - 1, 1)
                             tagToDelete.name = values.join(',')
                         } else {
-                            searchbarTags.splice(idx, 1)
+                            const newSearchbarTags = searchbarTags.splice(idx, 1)
+                            setSearchbarTags(newSearchbarTags)
                         }
                         setCurrentQuery(searchbarTags.map((tag) => tag.name).join(' '))
                         currentQueryCallback(searchbarTags.map((tag) => tag.name).join(' '))
-                        setSearchbarTags(searchbarTags)
                     }
                 }}
                 onAddition={(tag: DropdownSuggestionsProps) => {
