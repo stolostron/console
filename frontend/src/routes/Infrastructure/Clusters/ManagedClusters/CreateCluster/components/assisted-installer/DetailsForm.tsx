@@ -218,6 +218,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         handleChange(control)
     }, [additionalLabels])
 
+    useEffect(() => {
+        control.active = {
+            ...control.active,
+            pullSecret: controlProps?.stringData?.pullSecret || '',
+            baseDnsDomain: controlProps?.stringData?.baseDomain || '',
+        }
+        handleChange(control)
+    }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
+
     return clusterImages ? (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
@@ -226,8 +235,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                     onValuesChanged={onValuesChanged}
                     clusterImages={clusterImages}
                     usedClusterNames={usedClusterNames}
-                    pullSecret={controlProps?.stringData?.pullSecret}
-                    defaultBaseDomain={controlProps?.stringData?.baseDomain}
                     extensionAfter={extensionAfter}
                 />
             </ACMFeatureSupportLevelProvider>
