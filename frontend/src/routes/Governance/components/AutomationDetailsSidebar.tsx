@@ -228,6 +228,13 @@ export function AutomationDetailsSidebar(props: {
 
                     <DescriptionListGroup>
                         <DescriptionListTerm>
+                            <strong>{t('Policy automation mode')}</strong>
+                        </DescriptionListTerm>
+                        <DescriptionListDescription>{policyAutomationMatch.spec.mode}</DescriptionListDescription>
+                    </DescriptionListGroup>
+
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>
                             <strong>{t('Ansible tower URL')}</strong>
                         </DescriptionListTerm>
                         <DescriptionListDescription>
@@ -238,18 +245,20 @@ export function AutomationDetailsSidebar(props: {
                     </DescriptionListGroup>
                 </DescriptionList>
             </Stack>
-            <AcmTable<JobTableData>
-                key="ansible-job-history"
-                plural={'ansible jobs'}
-                items={jobItems}
-                columns={jobCols}
-                keyFn={(item) => item.name}
-                autoHidePagination={true}
-                initialSort={{
-                    index: 1,
-                    direction: 'desc',
-                }}
-            />
+            {policyAutomationMatch.spec.mode.toLowerCase() != 'disabled' && (
+                <AcmTable<JobTableData>
+                    key="ansible-job-history"
+                    plural={'ansible jobs'}
+                    items={jobItems}
+                    columns={jobCols}
+                    keyFn={(item) => item.name}
+                    autoHidePagination={true}
+                    initialSort={{
+                        index: 1,
+                        direction: 'desc',
+                    }}
+                />
+            )}
             <div style={{ display: 'flex', position: 'fixed', bottom: 0, padding: '1rem 0' }}>
                 <Button
                     variant="primary"
