@@ -127,13 +127,14 @@ export function getClusterActions(cluster: Cluster) {
         actionIds = actionIds.filter((id) => id !== 'destroy-hypershift-cluster')
     }
 
-    if (cluster.provider !== Provider.hybrid) {
+    if (cluster.provider !== Provider.hostinventory || cluster.isHypershift) {
         actionIds = actionIds.filter((id) => id !== 'ai-edit')
     }
 
     if (
         !(
-            cluster.provider === Provider.hybrid &&
+            cluster.provider === Provider.hostinventory &&
+            !cluster.isHypershift &&
             [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
         )
     ) {
@@ -196,12 +197,12 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const destroyRbac = useMemo(
         () => [
             rbacDelete(
-                cluster.provider === Provider.hypershift ? HostedClusterDefinition : ClusterDeploymentDefinition,
+                cluster.isHypershift ? HostedClusterDefinition : ClusterDeploymentDefinition,
                 cluster.namespace,
                 cluster.name
             ),
         ],
-        [cluster.name, cluster.namespace, cluster.provider]
+        [cluster.name, cluster.namespace, cluster.isHypershift]
     )
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))

@@ -84,7 +84,7 @@ export function CreateInfrastructure() {
             },
             {
                 id: 'hostinventory',
-                icon: <AcmIcon icon={AcmIconVariant.baremetal} />,
+                icon: <AcmIcon icon={AcmIconVariant.hybrid} />,
                 title: t('Host inventory'),
                 items: [
                     {

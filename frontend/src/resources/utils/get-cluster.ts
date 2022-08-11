@@ -406,13 +406,17 @@ export function getProvider(
     clusterDeployment?: ClusterDeployment,
     hostedCluster?: HostedClusterK8sResource
 ) {
+    if (hostedCluster?.spec?.platform?.agent) {
+        return Provider.hostinventory
+    }
+
     if (hostedCluster) {
         return Provider.hypershift
     }
 
     const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
     if (clusterInstallRef?.kind === AgentClusterInstallKind) {
-        return Provider.hybrid
+        return Provider.hostinventory
     }
 
     const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']

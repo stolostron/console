@@ -20,7 +20,10 @@ export function validateKubernetesDnsName(value: string, t: TFunction) {
     return undefined
 }
 
-export function validatePublicSshKey(value: string, t: TFunction) {
+export function validatePublicSshKey(value: string, t: TFunction, required: boolean) {
+    if (!value && !required) {
+        return undefined
+    }
     if (value) {
         // Public SSH key should start with 'ssh-rsa' or 'ssh-dss', for example
         // Second token is a base64 value, with first integer being the length of the first token

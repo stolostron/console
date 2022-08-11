@@ -204,7 +204,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             />
         )
     }
-    if (cluster?.hive.secrets?.installConfig || (cluster?.kubeconfig && cluster.provider !== Provider.hypershift)) {
+    if (cluster?.hive.secrets?.installConfig || (cluster?.kubeconfig && !cluster.isHypershift)) {
         clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
     }
     if (getClusterActions(cluster).length > 0) {
