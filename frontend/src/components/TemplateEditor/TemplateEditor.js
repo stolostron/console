@@ -325,7 +325,7 @@ export default class TemplateEditor extends React.Component {
             if (header) {
                 height = height - header.getBoundingClientRect().height
             } else {
-                height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+                height = height - (otherYAMLTabs.length > 0 ? 80 : 50)
             }
             this.setState({ showCondensed: width < 500 })
             this.editors.forEach((editor) => {

@@ -1742,6 +1742,7 @@
     "policies.unknown": "1 policy with unknown status",
     "policies.unknown_plural": "{{count}} policies with unknown status",
     "Policy automation created": "Policy automation created",
+    "Policy automation mode": "Policy automation mode",
     "Policy cluster compliance": "Policy cluster compliance",
     "Policy cluster compliance chart": "Policy cluster compliance chart",
     "Policy cluster violations": "Policy cluster violations",
