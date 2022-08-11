@@ -598,18 +598,34 @@ export default function PoliciesPage() {
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     if (selectedValues.includes('with-violations')) {
-                        if (item.policy.status?.compliant === 'NonCompliant') {
-                            return true
+                        if (item.policy.status?.status !== undefined) {
+                            for (let i = 0; i < item.policy.status?.status.length; i++) {
+                                const cl = item.policy.status?.status[i]
+                                if (cl.compliant !== undefined && cl.compliant == 'NonCompliant') {
+                                    return true
+                                }
+                            }
                         }
                     }
                     if (selectedValues.includes('without-violations')) {
-                        if (item.policy.status?.compliant === 'Compliant') {
-                            return true
+                        if (item.policy.status?.status !== undefined) {
+                            for (let i = 0; i < item.policy.status?.status.length; i++) {
+                                const cl = item.policy.status?.status[i]
+                                if (cl.compliant !== undefined && cl.compliant == 'Compliant') {
+                                    return true
+                                }
+                            }
                         }
                     }
                     if (selectedValues.includes('no-status')) {
-                        if (!item.policy.status?.compliant) {
+                        if (!item.policy.status?.status) {
                             return true
+                        }
+                        for (let i = 0; i < item.policy.status?.status.length; i++) {
+                            const cl = item.policy.status?.status[i]
+                            if (!cl.compliant) {
+                                return true
+                            }
                         }
                     }
                     return false
