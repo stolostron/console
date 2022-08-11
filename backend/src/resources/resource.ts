@@ -10,5 +10,6 @@ export interface IResource {
         managedFields?: unknown
         selfLink?: string
         uid?: string
+        labels?: Record<string, string>
     }
 }
