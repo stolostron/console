@@ -20,6 +20,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { clusterCuratorsState, secretsState } from '../../../../../atoms'
 import { nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { Provider } from '../../../../../ui-components/AcmProvider'
 
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
@@ -140,6 +141,52 @@ const mockClusterNonOCP: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
+}
+
+const mockClusterRoks: Cluster = {
+    name: 'cluster-4-roks',
+    displayName: 'cluster-4-roks',
+    namespace: 'cluster-4-roks',
+    uid: 'cluster-4-roks-uid',
+    status: ClusterStatus.ready,
+    isHive: false,
+    provider: Provider.ibm,
+    distribution: {
+        k8sVersion: '1.19',
+        ocp: {
+            availableUpdates: [],
+            desiredVersion: '',
+            upgradeFailed: false,
+            version: '1.2.3',
+        },
+        displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            isReadyUpdates: true,
+            isReadySelectChannels: false,
+            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2.9', '1.2'],
+            currentVersion: '1.2.3',
+            desiredVersion: '1.2.3',
+            latestJob: {},
+        },
+    },
     hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -288,7 +335,13 @@ const clusterCuratorPatch = {
 
 // TODO - const mockCreate
 
-const mockClusters: Array<Cluster> = [mockClusterNoAvailable, mockClusterReady1, mockClusterNonOCP, mockClusterPending]
+const mockClusters: Array<Cluster> = [
+    mockClusterNoAvailable,
+    mockClusterReady1,
+    mockClusterNonOCP,
+    mockClusterPending,
+    mockClusterRoks,
+]
 
 describe('UpdateAutomationModal', () => {
     beforeEach(() => {
@@ -315,7 +368,7 @@ describe('UpdateAutomationModal', () => {
         render(<Component />)
 
         // Show alert with automation support message
-        await waitForText('3 cluster cannot be edited') /* TODO - Pluralize not working - robdolares to fix*/
+        await waitForText('4 cluster cannot be edited') /* TODO - Pluralize not working in test - robdolares to fix*/
         await waitFor(() =>
             expect(screen.getByTestId('view-selected').getAttribute('aria-disabled')).not.toEqual('false')
         )
@@ -337,6 +390,7 @@ describe('UpdateAutomationModal', () => {
         await waitForText('cluster-1-ready')
         await waitForNotText('cluster-2-NonOCP')
         await waitForNotText('cluster-3-pending')
+        await waitForNotText('cluster-4-roks')
     })
 
     test('should select curator and patch', async () => {
