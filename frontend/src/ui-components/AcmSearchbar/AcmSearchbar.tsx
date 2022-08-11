@@ -75,18 +75,19 @@ export function AcmSearchbar(props: AcmSearchbarProps) {
                 }}
                 onDelete={(idx: number) => {
                     if (idx >= 0) {
+                        const newSearchbarTags = searchbarTags
                         // need to check if there are 2+ values @ tag[idx] - if there are we only delete the last one
-                        const tagToDelete = searchbarTags[idx]
+                        const tagToDelete = newSearchbarTags[idx]
                         if (tagToDelete.name.includes(',')) {
                             const values = tagToDelete.name.split(',')
                             values.splice(values.length - 1, 1)
                             tagToDelete.name = values.join(',')
                         } else {
-                            const newSearchbarTags = searchbarTags.splice(idx, 1)
-                            setSearchbarTags(newSearchbarTags)
+                            newSearchbarTags.splice(idx, 1)
                         }
-                        setCurrentQuery(searchbarTags.map((tag) => tag.name).join(' '))
-                        currentQueryCallback(searchbarTags.map((tag) => tag.name).join(' '))
+                        setCurrentQuery(newSearchbarTags.map((tag) => tag.name).join(' '))
+                        currentQueryCallback(newSearchbarTags.map((tag) => tag.name).join(' '))
+                        setSearchbarTags(newSearchbarTags)
                     }
                 }}
                 onAddition={(tag: DropdownSuggestionsProps) => {
