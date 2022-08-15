@@ -430,7 +430,7 @@
     "clusterClaim.create.title.pending": "Cluster claim created",
     "clusterClaim.create.title.success": "Cluster successfully claimed",
     "clusterClaim.delete": "Delete claim",
-    "clusterClaim.modal.viewCluster": "View cluster",
+    "clusterClaim.modal.viewCluster": "Clusters provides a list of all clusters managed or created by this hub",
     "clusterClaim.name.label": "Cluster claim name",
     "clusterClaim.name.placeholder": "Enter cluster claim name",
     "clusterClaim.warning": "You can create a cluster claim, but it will not be fulfilled immediately.",
