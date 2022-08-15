@@ -571,20 +571,13 @@ function createSubsCards(
             const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
             if (sub) {
                 return (
-                    <Fragment key={sub.metadata.name}>
-                        <div
-                            className="sub-card-container"
-                            style={{
-                                width: '100%',
-                                height: '6.75rem',
-                                display: 'grid',
-                                marginTop: '16px',
-                                fontSize: '14px',
-                                backgroundColor: 'white',
-                                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.1)',
-                                gridTemplateColumns: '33% 34% 33%',
-                            }}
-                        >
+                    <Card
+                        key={sub.metadata.name}
+                        style={{
+                            marginTop: '16px',
+                        }}
+                    >
+                        <CardBody className="sub-card-container">
                             <div className="sub-card-column add-right-border">
                                 <GripHorizontalIcon />
                                 <div className="sub-card-content">
@@ -633,8 +626,8 @@ function createSubsCards(
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    </Fragment>
+                        </CardBody>
+                    </Card>
                 )
             }
             return ''
