@@ -90,11 +90,21 @@ export function UpdateAutomationModal(props: {
     }
 
     const isupdatable = (cluster: Cluster) => {
+        const isReady = cluster.status === ClusterStatus.ready
         const isManagedOpenshift = cluster.distribution?.isManagedOpenShift
         const isOpenshift = !!cluster.distribution?.ocp?.version
-        const isReady = cluster.status === ClusterStatus.ready
         const isUpgrading = cluster.distribution?.upgradeInfo?.isUpgrading
-        return !!cluster.name && !isManagedOpenshift && isOpenshift && isReady && !isUpgrading
+        const isRoks = cluster.provider === 'ibm' && isOpenshift
+        const isCloudLabelSet = cluster.labels?.cloud === 'auto-detect'
+        return (
+            !!cluster.name &&
+            !isManagedOpenshift &&
+            isOpenshift &&
+            isReady &&
+            !isUpgrading &&
+            !isRoks &&
+            !isCloudLabelSet
+        )
     }
 
     const updatableClusters = useMemo<Cluster[] | undefined>(
