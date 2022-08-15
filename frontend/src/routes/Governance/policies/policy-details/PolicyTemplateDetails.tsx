@@ -65,10 +65,10 @@ export function PolicyTemplateDetails(props: {
         break
     }
 
-    function getRelatedObjects(resource: any) {
+    function getRelatedObjects(resource: any, clusterName: string) {
         return (
             resource?.status?.relatedObjects?.map((obj: any) => {
-                obj.cluster = resource.metadata.namespace
+                obj.cluster = clusterName
                 return obj
             }) ?? []
         )
@@ -82,14 +82,14 @@ export function PolicyTemplateDetails(props: {
                     setTemplateError(viewResponse.message)
                 } else {
                     setTemplate(viewResponse.result)
-                    setRelatedObjects(getRelatedObjects(viewResponse.result))
+                    setRelatedObjects(getRelatedObjects(viewResponse.result, clusterName))
                 }
             })
             .catch((err) => {
                 console.error('Error getting resource: ', err)
                 setTemplateError(err)
             })
-    }, [templateClusterName, templateNamespace, kind, apiGroup, apiVersion, templateName])
+    }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
 
     const descriptionItems = [
         {
