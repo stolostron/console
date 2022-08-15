@@ -13,6 +13,7 @@ export interface ITemplateSummaryModalProps {
     curatorTemplate: ClusterCurator
     isOpen: boolean
     close: () => void
+    isImportTemplateSummary?: boolean
 }
 
 const useStyles = makeStyles({
@@ -35,8 +36,11 @@ export function TemplateSummaryControl(props: { control?: any }) {
     return <TemplateSummaryExpandable clusterCurator={selectedTemplate} />
 }
 
-export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurator }) {
-    const { clusterCurator } = props
+export function TemplateSummaryExpandable(props: {
+    clusterCurator?: ClusterCurator
+    isImportTemplateSummary?: boolean
+}) {
+    const { clusterCurator, isImportTemplateSummary } = props
     const { t } = useTranslation()
     const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
     const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
@@ -47,7 +51,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
     }
     return (
         <div>
-            {clusterCurator.spec?.install && (
+            {clusterCurator.spec?.install && !isImportTemplateSummary && (
                 <ExpandableSection
                     onToggle={() => setInstallExpandable(!isInstallExpandableOpen)}
                     isExpanded={isInstallExpandableOpen}
@@ -109,7 +113,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
 }
 
 export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) {
-    const { curatorTemplate, isOpen, close } = props
+    const { curatorTemplate, isOpen, close, isImportTemplateSummary } = props
     const { t } = useTranslation()
     return (
         <AcmModal
@@ -118,7 +122,10 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
             isOpen={isOpen}
             onClose={close}
         >
-            <TemplateSummaryExpandable clusterCurator={curatorTemplate}></TemplateSummaryExpandable>
+            <TemplateSummaryExpandable
+                isImportTemplateSummary={isImportTemplateSummary}
+                clusterCurator={curatorTemplate}
+            ></TemplateSummaryExpandable>
         </AcmModal>
     )
 }

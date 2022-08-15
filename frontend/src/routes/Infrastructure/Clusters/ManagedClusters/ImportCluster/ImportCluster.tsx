@@ -899,7 +899,10 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
                 })}
             </AcmSelect>
             <TemplateLinkOut templateCurator={selectedTemplateName} />
-            <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
+            <TemplateSummaryExpandable
+                isImportTemplateSummary={true}
+                clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)}
+            />
         </>
     )
 }
