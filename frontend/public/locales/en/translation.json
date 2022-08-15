@@ -1701,7 +1701,7 @@
     "Package Filter": "Package Filter",
     "Package version": "Package version",
     "page.header.cluster-management": "Clusters",
-    "page.header.cluster-management.tooltip": "View clusters.",
+    "page.header.cluster-management.tooltip": "Clusters provides a list of all clusters managed or created by this hub.",
     "page.header.cluster-set.manage-assignments": "Manage resource assignments",
     "page.header.create-application": "Create application",
     "page.header.create-cluster": "Create cluster",
