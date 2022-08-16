@@ -369,7 +369,11 @@ export default function App() {
                                     {routes.map((route) =>
                                         route.type === 'group' ? (
                                             route.routes.map((route) => (
-                                                <Route key={route.title} path={route.route} component={route.component} />
+                                                <Route
+                                                    key={route.title}
+                                                    path={route.route}
+                                                    component={route.component}
+                                                />
                                             ))
                                         ) : (
                                             <Route key={route.title} path={route.route} component={route.component} />
