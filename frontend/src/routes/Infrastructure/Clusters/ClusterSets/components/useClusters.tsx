@@ -104,6 +104,8 @@ export function useClusters(
         clusterNames.includes(mca.metadata.namespace)
     )
 
+    const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata.namespace))
+
     const clusters: Cluster[] = mapClusters(
         groupClusterDeployments,
         groupManagedClusterInfos,
@@ -113,7 +115,7 @@ export function useClusters(
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
-        hostedClusters,
+        groupHostedClusters,
         nodePools
     )
 
