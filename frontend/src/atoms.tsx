@@ -237,7 +237,7 @@ export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
-interface Settings {
+export interface Settings {
     LOG_LEVEL?: string
     SAVED_SEARCH_LIMIT?: string
     ansibleIntegration?: 'enabled' | 'disabled'
