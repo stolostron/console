@@ -54,8 +54,14 @@ import { searchClient } from '../../Home/Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Home/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
-import { getAppChildResources, getAppSetRelatedResources, getSearchLink } from '../helpers/resource-helper'
+import {
+    getAppChildResources,
+    getAppSetRelatedResources,
+    getSearchLink,
+    isResourceTypeOf,
+} from '../helpers/resource-helper'
 import { getAppSetApps } from '../Overview'
+import { PluginContext } from '../../../lib/PluginContext'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
 import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
@@ -121,6 +127,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     })
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
+    const [pluginModal, setPluginModal] = useState<JSX.Element>()
+    const { acmExtensions } = useContext(PluginContext)
 
     const lastRefreshRef = useRef<any>()
     const history = useHistory()
@@ -274,6 +282,25 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 })
             },
         })
+    }
+
+    if (acmExtensions?.applicationAction?.length) {
+        if (applicationData) {
+            const selectedApp = applicationData.application.app
+            acmExtensions.applicationAction.forEach((appAction) => {
+                if (appAction?.model ? isResourceTypeOf(selectedApp, appAction?.model) : isOCPApp) {
+                    const ModalComp = appAction.component
+                    const close = () => setPluginModal(<></>)
+                    actions.push({
+                        id: appAction.id,
+                        text: appAction.title,
+                        click: async (item: any) => {
+                            setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+                        },
+                    })
+                }
+            })
+        }
     }
 
     const searchCompleteResults = useSearchCompleteQuery({
@@ -487,6 +514,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 <Fragment>
                     {searchError(searchCompleteResults.error, t)}
                     <DeleteResourceModal {...modalProps} />
+                    {pluginModal}
                     <Suspense fallback={<Fragment />}>
                         <Switch>
                             <Route exact path={NavigationPath.applicationOverview}>
