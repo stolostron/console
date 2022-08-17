@@ -423,7 +423,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: destroyRbac,
+                rbac: cluster.isHostedCluster ? [] : destroyRbac,
             },
             {
                 id: 'ai-edit',
@@ -465,7 +465,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: destroyRbac,
+                rbac: cluster.isHostedCluster ? [] : destroyRbac,
             },
         ],
         [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
