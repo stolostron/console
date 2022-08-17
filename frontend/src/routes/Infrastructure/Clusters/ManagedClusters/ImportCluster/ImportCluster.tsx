@@ -3,6 +3,7 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    Hint,
     SelectOption,
     Split,
     SplitItem,
@@ -33,6 +34,7 @@ import {
     createClusterCurator,
     createProject,
     createResource,
+    isAnsibleOperatorInstalled,
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
@@ -73,6 +75,9 @@ import {
 } from '../../../../../selectors'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { getOperatorError } from '../../../../../lib/error-output'
+import { configMapsState, subscriptionOperatorsState } from '../../../../../atoms'
+import { makeStyles } from '@material-ui/styles'
 
 const acmSchema = [...schema, ...kac]
 
@@ -215,6 +220,19 @@ export default function ImportClusterPage() {
     const [submitButtonText, setSubmitButtonText] = useState<string>()
     const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
+    const configMaps = useRecoilValue(configMapsState)
+    const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
+    const isOperatorInstalled = useMemo(
+        () => isAnsibleOperatorInstalled(subscriptionOperators),
+        [subscriptionOperators]
+    )
+
+    const useStyles = makeStyles({
+        hint: {
+            marginBottom: '16px',
+        },
+    })
+    const classes = useStyles()
 
     useEffect(() => {
         if (state.importMode !== 'manual') {
@@ -501,6 +519,11 @@ export default function ImportClusterPage() {
                     </Section>
                 </Step>
                 <Step label={t('Automation')} id="automation" autohide={false}>
+                    <Section label="" autohide={false}>
+                        {!isOperatorInstalled && (
+                            <Hint className={classes.hint}>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
+                        )}
+                    </Section>
                     <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
                         <AutomationTemplate state={state} dispatch={dispatch} />
                     </Section>
