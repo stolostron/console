@@ -2275,7 +2275,7 @@
     "template.clusterCreate.select.placeholder": "Select an Ansible job template",
     "template.clusterCreate.title": "Automation",
     "template.clusterCreate.tooltip": "Only templates with valid Ansible Automation Platform credentials are listed. When an automation template is selected, installAttemptsLimit will be set to 1 after the prehook automation job is completed. InstallAttemptsLimit can be changed again manually when the automation job is completed.",
-    "template.clusterImport.info": "Optional: Choose an automation job template to run Ansible jobs at different stages of the cluster lifecycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. Install stage automation jobs are not applicable to imported clusters.",
+    "template.clusterImport.info": "Optional: Choose an automation job template to run Ansible jobs at different stages of the cluster lifecycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. Install automation jobs will not be applied to imported clusters.",
     "template.clusterImport.tooltip": "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. Only templates with valid Ansible Automation Platform credentials are listed.",
     "template.create": "Create Ansible template",
     "template.create.config.wizard.title": "Configure Ansible job template name and Ansible credential",
