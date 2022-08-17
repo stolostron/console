@@ -26,6 +26,9 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    SubscriptionOperator,
+    SubscriptionOperatorApiVersion,
+    SubscriptionOperatorKind,
 } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -37,6 +40,7 @@ import {
     discoveryConfigState,
     managedClusterSetsState,
     secretsState,
+    subscriptionOperatorsState,
 } from '../../../../../atoms'
 import { mockBadRequestStatus, nockCreate, nockGet, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
@@ -46,6 +50,7 @@ import {
     clickByText,
     typeByTestId,
     waitForNocks,
+    waitForNotText,
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -349,16 +354,38 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
     type: 'Opaque',
 }
 
+const subscriptionOperator: SubscriptionOperator = {
+    apiVersion: SubscriptionOperatorApiVersion,
+    kind: SubscriptionOperatorKind,
+    metadata: {
+        name: 'ansible-automation-platform-operator',
+        namespace: 'ansible-automation-platform-operator',
+    },
+    status: {
+        conditions: [
+            {
+                reason: 'AllCatalogSourcesHealthy',
+                lastTransitionTime: '',
+                message: '',
+                type: '',
+                status: '',
+            },
+        ],
+    },
+    spec: {},
+}
+
 const mockClusterCurators = [clusterCurator]
 
 describe('ImportCluster', () => {
-    const Component = () => {
+    function Component(props: { subscriptions?: SubscriptionOperator[] }) {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(secretsState, [providerConnectionAnsible as Secret])
+                    snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
                 }}
             >
                 <AcmToastProvider>
@@ -403,6 +430,9 @@ describe('ImportCluster', () => {
 
         // Advance to Automation step; choose automation template then clear
         await clickByText('Next')
+        await waitForText(
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+        )
         await clickByText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickBySelector(container, '#templateName-label button[aria-label="Clear all"]')
@@ -432,7 +462,7 @@ describe('ImportCluster', () => {
         const ansibleCopiedNock = nockCreate(mockProviderConnectionAnsibleCopied)
         const clusterCuratorNock = nockCreate(mockClusterCurator)
 
-        render(<Component />)
+        render(<Component subscriptions={[subscriptionOperator]} />)
 
         await typeByTestId('clusterName', 'foobar')
 
@@ -443,6 +473,10 @@ describe('ImportCluster', () => {
 
         // Advance to Automation step
         await clickByText('Next')
+        await waitForText('Ansible Automation Template')
+        await waitForNotText(
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+        )
         await clickByText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
