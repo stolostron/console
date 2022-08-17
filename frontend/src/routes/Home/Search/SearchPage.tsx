@@ -9,7 +9,7 @@ import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { userPreferencesState, USER_SAVED_SEARCH_LIMIT } from '../../../atoms'
+import { userPreferencesState, useSavedSearchLimit } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
@@ -91,6 +91,7 @@ function RenderSearchBar(props: {
     const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
     const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const [open, toggleOpen] = useState<boolean>(false)
+    const savedSearchLimit = useSavedSearchLimit()
     const toggle = () => toggleOpen(!open)
 
     useEffect(() => {
@@ -129,7 +130,7 @@ function RenderSearchBar(props: {
     }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
 
     const saveSearchTooltip = useMemo(() => {
-        if (savedSearchQueries.length >= USER_SAVED_SEARCH_LIMIT) {
+        if (savedSearchQueries.length >= savedSearchLimit) {
             return t('Saved search query limit has been reached. Please delete a saved search to save another.')
         } else if (
             savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentSearch) !== undefined
@@ -139,7 +140,7 @@ function RenderSearchBar(props: {
             return t('Enter valid search criteria to save a search.')
         }
         return undefined
-    }, [currentSearch, savedSearchQueries, t])
+    }, [currentSearch, savedSearchLimit, savedSearchQueries, t])
 
     return (
         <Fragment>
@@ -200,7 +201,7 @@ function RenderSearchBar(props: {
                             savedSearchQueries.find(
                                 (savedQuery: SavedSearch) => savedQuery.searchText === currentSearch
                             ) !== undefined ||
-                            savedSearchQueries.length >= USER_SAVED_SEARCH_LIMIT
+                            savedSearchQueries.length >= savedSearchLimit
                         }
                         tooltip={saveSearchTooltip}
                         variant={'link'}

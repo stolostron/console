@@ -175,9 +175,6 @@ function AtomArray<T>() {
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
 
-// For performance reasons limit a user to only save, by default, 10 searches but they can configure this by setting the SAVED_SEARCH_LIMIT env variable.
-export const USER_SAVED_SEARCH_LIMIT = parseInt(process.env.SAVED_SEARCH_LIMIT || '10')
-
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
 
@@ -242,6 +239,7 @@ export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
 interface Settings {
     LOG_LEVEL?: string
+    SAVED_SEARCH_LIMIT?: string
     ansibleIntegration?: 'enabled' | 'disabled'
     singleNodeOpenshift?: 'enabled' | 'disabled'
     awsPrivateWizardStep?: 'enabled' | 'disabled'
@@ -592,6 +590,11 @@ export function usePolicies() {
         () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
         [policies]
     )
+}
+
+export function useSavedSearchLimit() {
+    const settings = useRecoilValue(settingsState)
+    return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }
 
 export async function tokenExpired() {
