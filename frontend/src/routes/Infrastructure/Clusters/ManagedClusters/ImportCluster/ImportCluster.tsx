@@ -67,7 +67,7 @@ import {
     WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
 import { useSetHasValue } from '@patternfly-labs/react-form-wizard/lib/src/contexts/HasValueProvider'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilValue } from 'recoil'
 import {
     ansibleCredentialsValue,
     clusterCuratorSupportedCurationsValue,
@@ -220,8 +220,8 @@ export default function ImportClusterPage() {
     const [submitButtonText, setSubmitButtonText] = useState<string>()
     const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
-    const [configMaps] = useRecoilState(configMapsState)
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+    const configMaps = useRecoilValue(configMapsState)
+    const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
     const isOperatorInstalled = useMemo(
         () => isAnsibleOperatorInstalled(subscriptionOperators),
         [subscriptionOperators]
