@@ -174,7 +174,7 @@ export default function SearchResults(props: { currentQuery: string; preSelected
             />
             <PageSection>
                 {!isKeywordSearch && (
-                    <div>
+                    <Stack hasGutter>
                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
                             <ExpandableSection
                                 onToggle={() => setShowRelatedResources(!showRelatedResources)}
@@ -203,7 +203,7 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                                 setDeleteResource={setDeleteResource}
                             />
                         )}
-                    </div>
+                    </Stack>
                 )}
             </PageSection>
             <SearchResultTables

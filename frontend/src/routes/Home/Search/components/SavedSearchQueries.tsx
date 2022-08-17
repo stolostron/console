@@ -4,6 +4,7 @@
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { USER_SAVED_SEARCH_LIMIT } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
 import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
@@ -99,8 +100,8 @@ export default function SavedSearchQueries(props: {
                 {savedSearches.length > 0 && (
                     <AcmExpandableWrapper
                         maxHeight={'16.5rem'}
-                        headerLabel={t('Saved searches')}
-                        withCount={true}
+                        headerLabel={t(`Saved searches ( ${savedSearches.length} / ${USER_SAVED_SEARCH_LIMIT} )`)}
+                        withCount={false}
                         expandable={true}
                     >
                         {savedSearches.map((savedSearch, index) => {

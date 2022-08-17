@@ -9,7 +9,7 @@ import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { userPreferencesState } from '../../../atoms'
+import { userPreferencesState, USER_SAVED_SEARCH_LIMIT } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
@@ -129,7 +129,9 @@ function RenderSearchBar(props: {
     }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
 
     const saveSearchTooltip = useMemo(() => {
-        if (
+        if (savedSearchQueries.length >= USER_SAVED_SEARCH_LIMIT) {
+            return t('Saved search query limit has been reached. Please delete a saved search to save another.')
+        } else if (
             savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentSearch) !== undefined
         ) {
             return t('A saved search already exists for the current search criteria.')
@@ -197,7 +199,8 @@ function RenderSearchBar(props: {
                             currentSearch.endsWith(':') ||
                             savedSearchQueries.find(
                                 (savedQuery: SavedSearch) => savedQuery.searchText === currentSearch
-                            ) !== undefined
+                            ) !== undefined ||
+                            savedSearchQueries.length >= USER_SAVED_SEARCH_LIMIT
                         }
                         tooltip={saveSearchTooltip}
                         variant={'link'}

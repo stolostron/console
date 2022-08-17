@@ -175,6 +175,9 @@ function AtomArray<T>() {
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
 
+// For performance reasons limit a user to only save, by default, 10 searches but they can configure this by setting the SAVED_SEARCH_LIMIT env variable.
+export const USER_SAVED_SEARCH_LIMIT = parseInt(process.env.SAVED_SEARCH_LIMIT || '10')
+
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
 
