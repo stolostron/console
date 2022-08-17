@@ -22,5 +22,5 @@ export type ApplicationActionProps = {
         kind: string
     }[]
     /** Modal component type*/
-    component: React.ComponentType<{ isOpen: boolean; close?: () => void; resource?: any }>
+    component: React.ComponentType<{ isOpen: boolean; close: () => void; resource?: any }>
 }
