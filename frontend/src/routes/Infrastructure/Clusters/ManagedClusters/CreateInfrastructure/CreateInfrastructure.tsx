@@ -40,7 +40,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster running in your AWS subscription.'),
+                        description: t('A Red Hat OpenShift cluster that is running in your AWS subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
@@ -72,7 +72,9 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster running in your Google Cloud subscription.'),
+                        description: t(
+                            'A Red Hat OpenShift cluster that is running in your Google Cloud subscription.'
+                        ),
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
@@ -89,7 +91,9 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster running on available hosts from your inventory.'),
+                        description: t(
+                            'A Red Hat OpenShift cluster that is running on available hosts from your inventory.'
+                        ),
                     },
                 ],
                 onClick: () => history.push(NavigationPath.createControlPlane),
@@ -101,7 +105,7 @@ export function CreateInfrastructure() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster running in your Azure subscription.'),
+                        description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
@@ -119,7 +123,7 @@ export function CreateInfrastructure() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A Red Hat OpenShift cluster hosted on the Red Hat OpenStack Platform in your on-premise data center.'
+                            'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenStack Platform in your on-premise data center.'
                         ),
                     },
                 ],
@@ -138,7 +142,7 @@ export function CreateInfrastructure() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A Red Hat OpenShift cluster running in a Red Hat Virtualization environment in your on-premise data center.'
+                            'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
                         ),
                     },
                 ],
@@ -157,7 +161,7 @@ export function CreateInfrastructure() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A Red Hat OpenShift cluster running in a vSphere environment in your on-premise data center.'
+                            'A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.'
                         ),
                     },
                 ],
