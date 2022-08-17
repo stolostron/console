@@ -303,7 +303,6 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             <PageSection>
                 {clusterCurator && (
                     <TemplateSummaryModal
-                        isImportTemplateSummary={clusterDeployment ? false : true}
                         curatorTemplate={clusterCurator}
                         isOpen={curatorSummaryModalIsOpen}
                         close={() => {

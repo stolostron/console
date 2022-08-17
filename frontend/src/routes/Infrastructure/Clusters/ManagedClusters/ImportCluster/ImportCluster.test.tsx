@@ -46,7 +46,6 @@ import {
     clickByText,
     typeByTestId,
     waitForNocks,
-    waitForNotText,
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -313,29 +312,6 @@ const mockClusterCurator: ClusterCurator = {
     },
 }
 
-const clusterCuratorUpgrade: ClusterCurator = {
-    apiVersion: ClusterCuratorApiVersion,
-    kind: ClusterCuratorKind,
-    metadata: {
-        name: 'foobar-curator-upgrade',
-        namespace: 'test-ii',
-        labels: {
-            'open-cluster-management': 'curator',
-        },
-    },
-    spec: {
-        upgrade: {
-            prehook: [
-                {
-                    name: 'test-prehook-upgrade',
-                    extra_vars: {},
-                },
-            ],
-            towerAuthSecret: 'ansible-connection',
-        },
-    },
-}
-
 const providerConnectionAnsible: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
@@ -381,7 +357,7 @@ describe('ImportCluster', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-                    snapshot.set(clusterCuratorsState, [clusterCuratorUpgrade, ...mockClusterCurators])
+                    snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(secretsState, [providerConnectionAnsible as Secret])
                 }}
             >
@@ -470,8 +446,10 @@ describe('ImportCluster', () => {
         await clickByText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
-        // choose automation
+        // check automation summary
         await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
+        await waitForText('Preinstall Ansible job templates')
+        await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
         // Advance to Review step and submit the form
         await clickByText('Next')
@@ -486,23 +464,6 @@ describe('ImportCluster', () => {
             ansibleCopiedNock,
             clusterCuratorNock,
         ])
-    })
-
-    test('hides install template summary for import', async () => {
-        render(<Component />)
-
-        await typeByTestId('clusterName', 'foobar')
-
-        // Advance to Automation step
-        await clickByText('Next')
-        await clickByText('Select an Ansible job template')
-        await clickByText(clusterCuratorUpgrade.metadata.name!)
-
-        // check automation summary, install should not be rendered, upgrade should be rendered
-        await waitForText(`View ${clusterCuratorUpgrade.metadata.name!}`)
-        await waitForText('Preupgrade Ansible job templates')
-        await waitForNotText('Preinstall Ansible job templates')
-        await waitForNotText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
     })
 
     test('can import without KlusterletAddonConfig for MCE', async () => {
