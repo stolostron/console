@@ -228,8 +228,8 @@ export default function ImportClusterPage() {
     )
 
     const useStyles = makeStyles({
-        hint: {
-            marginBottom: '16px',
+        description: {
+            margin: '16px 0 16px 0',
         },
     })
     const classes = useStyles()
@@ -519,12 +519,18 @@ export default function ImportClusterPage() {
                     </Section>
                 </Step>
                 <Step label={t('Automation')} id="automation" autohide={false}>
-                    <Section label="" autohide={false}>
-                        {!isOperatorInstalled && (
-                            <Hint className={classes.hint}>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
-                        )}
-                    </Section>
-                    <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
+                    <Section
+                        label={t('Automation')}
+                        description={
+                            !isOperatorInstalled && (
+                                <>
+                                    <div className={classes.description}>{t('template.clusterImport.info')}</div>
+                                    <Hint>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
+                                </>
+                            )
+                        }
+                        autohide={false}
+                    >
                         <AutomationTemplate state={state} dispatch={dispatch} />
                     </Section>
                 </Step>

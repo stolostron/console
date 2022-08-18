@@ -17,6 +17,7 @@ import jsYaml from 'js-yaml'
 import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 
 export const CREATE_CLOUD_CONNECTION = {
     prompt: 'creation.ocp.cloud.add.connection',
@@ -583,6 +584,11 @@ export const automationControlData = [
         id: 'chooseTemplate',
         type: 'title',
         info: 'template.clusterCreate.info',
+    },
+    {
+        type: 'custom',
+        id: 'automationProviderHint',
+        component: <AutomationProviderHint />,
     },
     {
         name: 'template.clusterCreate.name',
