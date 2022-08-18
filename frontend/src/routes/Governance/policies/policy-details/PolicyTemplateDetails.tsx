@@ -187,16 +187,12 @@ export function PolicyTemplateDetails(props: {
             {
                 header: '',
                 cell: (item: any) => {
-                    let {
-                        // eslint-disable-next-line prefer-const
+                    const {
                         cluster,
-                        // eslint-disable-next-line prefer-const
                         reason,
                         object: {
-                            // eslint-disable-next-line prefer-const
                             apiVersion,
                             kind,
-                            // eslint-disable-next-line prefer-const
                             metadata: { name, namespace = '' },
                         },
                     } = item
@@ -205,11 +201,6 @@ export function PolicyTemplateDetails(props: {
                         reason === 'Resource not found as expected'
                     ) {
                         return ''
-                    }
-                    if (kind.endsWith('ies')) {
-                        kind = kind.slice(0, -3)
-                    } else if (kind.endsWith('s')) {
-                        kind = kind.slice(0, -1)
                     }
                     if (cluster && kind && apiVersion && name) {
                         if (namespace !== '') {
