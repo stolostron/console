@@ -579,14 +579,14 @@ export const automationControlData = [
         title: 'template.clusterCreate.title',
     },
     {
-        type: 'custom',
-        id: 'automationProviderHint',
-        component: <AutomationProviderHint />,
-    },
-    {
         id: 'chooseTemplate',
         type: 'title',
         info: 'template.clusterCreate.info',
+    },
+    {
+        type: 'custom',
+        id: 'automationProviderHint',
+        component: <AutomationProviderHint />,
     },
     {
         name: 'template.clusterCreate.name',
