@@ -306,8 +306,6 @@ const mockPullSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -341,8 +339,6 @@ const mockProviderConnectionSecretCopiedAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     type: 'Opaque',
@@ -499,8 +495,6 @@ const mockPrivateSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
