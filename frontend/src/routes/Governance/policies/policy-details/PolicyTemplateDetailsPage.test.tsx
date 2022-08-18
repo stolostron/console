@@ -39,6 +39,6 @@ describe('Policy Template Details Page', () => {
         // wait for page load - looking for breadcrumb items
         await waitForText('Policies')
         await waitForText('policy-set-with-1-placement-policy')
-        await waitForText('policy-set-with-1-placement-policy-1', true) // policy-set-with-1-placement-policy-1 is in breadcurmb and also the page header - so set multipleAllowed prop to true
+        await waitForText('policy-set-with-1-placement-policy-1', true) // policy-set-with-1-placement-policy-1 is in breadcrumb and also the page header - so set multipleAllowed prop to true
     })
 })
