@@ -245,20 +245,18 @@ export function AutomationDetailsSidebar(props: {
                     </DescriptionListGroup>
                 </DescriptionList>
             </Stack>
-            {policyAutomationMatch.spec.mode.toLowerCase() != 'disabled' && (
-                <AcmTable<JobTableData>
-                    key="ansible-job-history"
-                    plural={'ansible jobs'}
-                    items={jobItems}
-                    columns={jobCols}
-                    keyFn={(item) => item.name}
-                    autoHidePagination={true}
-                    initialSort={{
-                        index: 1,
-                        direction: 'desc',
-                    }}
-                />
-            )}
+            <AcmTable<JobTableData>
+                key="ansible-job-history"
+                plural={'ansible jobs'}
+                items={jobItems}
+                columns={jobCols}
+                keyFn={(item) => item.name}
+                autoHidePagination={true}
+                initialSort={{
+                    index: 1,
+                    direction: 'desc',
+                }}
+            />
             <div style={{ display: 'flex', position: 'fixed', bottom: 0, padding: '1rem 0' }}>
                 <Button
                     variant="primary"
