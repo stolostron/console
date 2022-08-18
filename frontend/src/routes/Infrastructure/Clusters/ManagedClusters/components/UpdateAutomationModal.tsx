@@ -134,7 +134,7 @@ export function UpdateAutomationModal(props: {
         // Set up resources to patch and/or create
         const resources: {
             resource: IResource
-            data: object
+            data: any
         }[] = []
 
         const curatorPatch = {
@@ -209,7 +209,12 @@ export function UpdateAutomationModal(props: {
                                 })
                                 .catch((err: ResourceError) => {
                                     if (err.code === ResourceErrorCode.NotFound) {
-                                        const combinedResource = { ...resourceCopy, ...resource.data }
+                                        const combinedResource = {
+                                            ...resourceCopy,
+                                            ...resource.data,
+                                            // for Secrets, need to preserve metadata from both resources for name/namespace and labels
+                                            metadata: { ...(resource.data.metadata || {}), ...resourceCopy.metadata },
+                                        }
                                         createResult =
                                             resourceCopy.kind === ClusterCuratorKind
                                                 ? createClusterCurator(combinedResource as ClusterCurator)
