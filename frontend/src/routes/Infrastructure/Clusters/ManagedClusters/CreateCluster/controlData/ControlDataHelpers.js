@@ -193,7 +193,7 @@ export const setAvailableConnections = (control, secrets) => {
             ? !control.providerId.includes('hostinventory')
             : control.providerId !== 'hostinventory'
     ) {
-        control.active = control.available[0]
+        control.setActive(control.available[0])
     }
 }
 
