@@ -21,7 +21,8 @@ export function AutomationProviderHint() {
 
     const useStyles = makeStyles({
         hint: {
-            margin: '16px 0px 32px 0px',
+            margin: '16px 0px 24px 0px',
+            fontSize: 'smaller',
         },
     })
     const classes = useStyles()
