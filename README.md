@@ -20,6 +20,18 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 - [Node.js](https://nodejs.org) 14
 - NPM 6
 
+## Core Dependencies - Release Branch Mapping
+
+A number of the core NPM package dependencies are published from other repositories. To allow development of new features in these projects, branches are created each time a new release is started.
+
+| console branch | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
+|----------------|-----------------------------------|----------------------------|--------------------------|----------------------|
+| release-2.6    | v1.8.z                            | v1.0.z                     | N/A                      | N/A                  |
+| release-2.5    | v1.7.z                            | N/A                        | v1.69.z                  | 2.5                  |
+| release-2.4    | N/A                               | N/A                        | v1.25.z                  | 2.4                  |
+| release-2.3    | N/A                               | N/A                        | v0.180.z                 | 2.3                  |
+| release-2.2    | N/A                               | N/A                        | No branch; uses 0.1.214  | 2.2                  |
+
 ## Running
 
 1. Clone repository
