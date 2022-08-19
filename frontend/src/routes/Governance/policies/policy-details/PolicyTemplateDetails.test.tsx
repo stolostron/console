@@ -105,7 +105,7 @@ const getResourceResponse = {
                 relatedObjects: [
                     {
                         compliant: 'Compliant',
-                        object: { apiVersion: 'v1', kind: 'namespaces', metadata: { name: 'test' } },
+                        object: { apiVersion: 'v1', kind: 'namespace', metadata: { name: 'test' } },
                         reason: 'Resource found as expected',
                         cluster: 'test-cluster',
                     },
@@ -154,7 +154,7 @@ describe('Policy Template Details content', () => {
         // wait for related resources table to load correctly
         await waitForText('Related resources')
         await waitForText('test')
-        await waitForText('namespaces')
+        await waitForText('namespace')
         await waitForText('v1')
         await waitForText('No violations')
         await waitForText('Resource found as expected')
