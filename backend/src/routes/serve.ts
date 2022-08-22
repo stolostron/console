@@ -29,7 +29,22 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('Referrer-Policy', 'no-referrer')
             res.setHeader('X-DNS-Prefetch-Control', 'off')
             res.setHeader('Expect-CT', 'enforce, max-age=30')
-            // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
+            res.setHeader(
+                'Content-Security-Policy',
+                [
+                    "default-src 'self'",
+                    "base-uri 'self'",
+                    'block-all-mixed-content',
+                    "font-src 'self' https: data:",
+                    "frame-ancestors 'self'",
+                    "img-src 'self' data:",
+                    "object-src 'none'",
+                    "script-src 'self'",
+                    "script-src-attr 'none'",
+                    "style-src 'self' https: 'unsafe-inline'",
+                    'upgrade-insecure-requests',
+                ].join(';')
+            )
         } else {
             res.setHeader('Cache-Control', cacheControl)
         }
