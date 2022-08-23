@@ -266,10 +266,15 @@ export default function OverviewPage() {
     const nodeCount = useMemo(() => {
         let count = 0
         managedClusterInfos.forEach((managedClusterInfo: ManagedClusterInfo) => {
-            count = count + (managedClusterInfo.status?.nodeList?.length ?? 0)
+            if (
+                selectedClusterNames.length === 0 ||
+                (managedClusterInfo.metadata.name && selectedClusterNames.includes(managedClusterInfo.metadata.name))
+            ) {
+                count = count + (managedClusterInfo.status?.nodeList?.length ?? 0)
+            }
         })
         return count
-    }, [managedClusterInfos])
+    }, [selectedClusterNames, managedClusterInfos])
 
     const [fireSearchQuery, { data: searchData, loading: searchLoading, error: searchError }] =
         useSearchResultCountLazyQuery({
