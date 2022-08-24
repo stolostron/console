@@ -699,11 +699,7 @@ const controlDataAWS = [
         },
         available: [],
         providerId: 'aws',
-        footer: (
-            <Fragment>
-                <ModalWithWizard />
-            </Fragment>
-        ),
+        footer: <ModalWithWizard />,
         onSelect: onChangeConnection,
         // prompts: CREATE_CLOUD_CONNECTION,
     },
