@@ -34,6 +34,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                 'Content-Security-Policy',
                 [
                     "default-src 'self'",
+                    "connect-src 'self' https://api.github.com",
                     "base-uri 'self'",
                     'block-all-mixed-content',
                     "font-src 'self' https: data:",
