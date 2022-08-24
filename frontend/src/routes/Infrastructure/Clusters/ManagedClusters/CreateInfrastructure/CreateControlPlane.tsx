@@ -100,15 +100,11 @@ export function CreateControlPlane() {
                         items: [
                             {
                                 text: t('Multicluster Hub'),
-                                help: {
-                                    text: t(clusterTypeTooltips),
-                                },
+                                help: t(clusterTypeTooltips),
                             },
                             {
                                 text: t('Hosting service cluster'),
-                                help: {
-                                    text: t(clusterTypeTooltips),
-                                },
+                                help: t(clusterTypeTooltips),
                             },
                             { text: t('Dedicated control plane') },
                         ],
@@ -137,7 +133,7 @@ export function CreateControlPlane() {
         <Fragment>
             <PageHeader
                 title={t('Control plane type')}
-                description={t('Choose a control plane type for your on-premise machine.')}
+                description={t('Choose a control plane type for your cluster.')}
                 breadcrumbs={breadcrumbs}
             />
             <ItemView

@@ -47,7 +47,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { checkPermission, rbacCreate, rbacUpdate } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -119,11 +119,13 @@ export default function PoliciesPage() {
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+    const [canPatchPolicy, setCanPatchPolicy] = useState<boolean>(false)
     const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
     const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+        checkPermission(rbacPatch(PolicyDefinition), setCanPatchPolicy, namespaces)
         checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
         checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
     }, [namespaces])
@@ -373,6 +375,7 @@ export default function PoliciesPage() {
                     setModal(<AddToPolicySetModal policyTableItems={...item} onClose={() => setModal(undefined)} />)
                 },
                 tooltip: t('Add to policy set'),
+                isDisabled: !canPatchPolicy,
             },
             {
                 id: 'seperator-1',
@@ -420,6 +423,7 @@ export default function PoliciesPage() {
                                     }).length > 0,
                             })
                         },
+                        isDisabled: !canPatchPolicy,
                     },
                     {
                         variant: 'bulk-action',
@@ -458,6 +462,7 @@ export default function PoliciesPage() {
                                     }).length > 0,
                             })
                         },
+                        isDisabled: !canPatchPolicy,
                     },
                 ],
             },
@@ -507,6 +512,7 @@ export default function PoliciesPage() {
                                     }).length > 0,
                             })
                         },
+                        isDisabled: !canPatchPolicy,
                     },
                     {
                         variant: 'bulk-action',
@@ -545,11 +551,12 @@ export default function PoliciesPage() {
                                     }).length > 0,
                             })
                         },
+                        isDisabled: !canPatchPolicy,
                     },
                 ],
             },
         ],
-        [t, bulkModalStatusColumns, bulkModalRemediationColumns]
+        [t, bulkModalStatusColumns, bulkModalRemediationColumns, canPatchPolicy]
     )
 
     const getSourceOptions = useCallback(() => {
@@ -591,18 +598,34 @@ export default function PoliciesPage() {
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     if (selectedValues.includes('with-violations')) {
-                        if (item.policy.status?.compliant === 'NonCompliant') {
-                            return true
+                        if (item.policy.status?.status !== undefined) {
+                            for (let i = 0; i < item.policy.status?.status.length; i++) {
+                                const cl = item.policy.status?.status[i]
+                                if (cl.compliant !== undefined && cl.compliant == 'NonCompliant') {
+                                    return true
+                                }
+                            }
                         }
                     }
                     if (selectedValues.includes('without-violations')) {
-                        if (item.policy.status?.compliant === 'Compliant') {
-                            return true
+                        if (item.policy.status?.status !== undefined) {
+                            for (let i = 0; i < item.policy.status?.status.length; i++) {
+                                const cl = item.policy.status?.status[i]
+                                if (cl.compliant !== undefined && cl.compliant == 'Compliant') {
+                                    return true
+                                }
+                            }
                         }
                     }
                     if (selectedValues.includes('no-status')) {
-                        if (!item.policy.status?.compliant) {
+                        if (!item.policy.status?.status) {
                             return true
+                        }
+                        for (let i = 0; i < item.policy.status?.status.length; i++) {
+                            const cl = item.policy.status?.status[i]
+                            if (!cl.compliant) {
+                                return true
+                            }
                         }
                     }
                     return false

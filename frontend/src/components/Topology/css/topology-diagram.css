@@ -34,7 +34,7 @@
 }
 .topologyDiagramContainer .channel-controls-container {
     display: flex;
-    background-color: var(--pf-global--BackgroundColor--400);
+    background-color: var(--pf-global--BackgroundColor--100);
     box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
     width: 282px;
     margin-top: 40px;

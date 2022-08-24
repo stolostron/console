@@ -78,7 +78,11 @@ export function getAppSetTopology(application) {
     set(nodes[0], 'isPlacementFound', isPlacementFound)
 
     const clusterParentId = placement ? placementId : appId
-    const source = get(application, 'app.spec.template.spec.source.path', '')
+    const source =
+        get(application, 'app.spec.template.spec.source.path', '') !== '{{path}}'
+            ? get(application, 'app.spec.template.spec.source.path', '')
+            : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
+
     const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
     const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
 

@@ -21,7 +21,6 @@ import VMWareIcon from './VMWareIcon'
 import IBMLogoIcon from './IBMLogoIcon'
 import HybridIcon from './HybridIcon'
 import AlibabaIcon from './AlibabaIcon'
-import HypershiftIcon from './HypershiftIcon'
 
 export enum AcmIconVariant {
     template = 'template',
@@ -42,7 +41,6 @@ export enum AcmIconVariant {
     openNewTab = 'opennewtab',
     ansible = 'ansible',
     hybrid = 'hybrid',
-    hypershift = 'hypershift',
     alibaba = 'alibaba',
 }
 
@@ -86,8 +84,6 @@ export function AcmIcon(props: { icon: AcmIconVariant } & SVGIconProps) {
             return <IBMLogoIcon {...props} />
         case AcmIconVariant.hybrid:
             return <HybridIcon {...props} />
-        case AcmIconVariant.hypershift:
-            return <HypershiftIcon {...props} />
         case AcmIconVariant.alibaba:
             return <AlibabaIcon {...props} />
         /* istanbul ignore next */

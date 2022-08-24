@@ -95,6 +95,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'BareMetalAsset', apiVersion: 'inventory.open-cluster-management.io/v1alpha1' },
     { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
+    { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
     { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
@@ -105,17 +106,7 @@ const definitions: IWatchOptions[] = [
     {
         kind: 'ConfigMap',
         apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
-    },
-    {
-        kind: 'ConfigMap',
-        apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'rhacm', 'metadata.name': 'assisted-service' },
-    },
-    {
-        kind: 'ConfigMap',
-        apiVersion: 'v1',
-        fieldSelector: { 'metadata.namespace': 'open-cluster-management', 'metadata.name': 'assisted-service' },
+        fieldSelector: { 'metadata.name': 'assisted-service' },
     },
     {
         kind: 'ConfigMap',
@@ -248,8 +239,14 @@ async function listKubernetesObjects(options: IWatchOptions) {
     const removeUids: string[] = []
     for (const uid in cache) {
         const existing = cache[uid]
-        if (!matchesSelector(existing.resource, options.fieldSelector)) continue
-        if (!matchesSelector(existing.resource, options.labelSelector)) continue
+        if (options.fieldSelector && !matchesSelector(existing.resource, options.fieldSelector)) {
+            // skip as this object would not be in the items result for this list operation
+            continue
+        }
+        if (options.labelSelector && !matchesSelector(existing.resource.metadata?.labels, options.labelSelector)) {
+            // skip as this object would not be in the items result for this list operation
+            continue
+        }
         if (!items.find((resource) => resource.metadata.uid === uid)) {
             removeUids.push(uid)
         }
@@ -508,12 +505,12 @@ function deleteResource(resource: IResource) {
     delete cache[uid]
 }
 
-function matchesSelector(resource: IResource, selector?: Record<string, string>) {
-    if (selector === undefined) return true
+function matchesSelector(target: object | undefined, selector: Record<string, string>) {
+    if (target === undefined) return false
     for (const key in selector) {
         const value = selector[key]
-        const resourceValue = get(resource, key) as unknown
-        if (resourceValue !== value) return false
+        const targetValue = get(target, key) as unknown
+        if (targetValue !== value) return false
     }
     return true
 }

@@ -245,6 +245,7 @@ export default class TemplateEditor extends React.Component {
             editor: {
                 forceUpdate: (() => {
                     this.forceUpdate()
+                    this.forceGenerate()
                 }).bind(this),
                 currentData: (() => {
                     return this.state.controlData
@@ -325,7 +326,7 @@ export default class TemplateEditor extends React.Component {
             if (header) {
                 height = height - header.getBoundingClientRect().height
             } else {
-                height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+                height = height - (otherYAMLTabs.length > 0 ? 80 : 50)
             }
             this.setState({ showCondensed: width < 500 })
             this.editors.forEach((editor) => {
@@ -441,6 +442,23 @@ export default class TemplateEditor extends React.Component {
                 backButtonOverride={this.props.createControl.backButtonOverride}
             />
         )
+    }
+
+    forceGenerate() {
+        const { template, otherYAMLTabs, editStack, controlData } = this.state
+        const {
+            templateYAML: newYAML,
+            templateObject,
+            templateResources,
+            immutableRows,
+        } = generateSource(template, editStack, controlData, otherYAMLTabs)
+        highlightImmutables(this.editors, immutableRows)
+        this.setState({
+            templateYAML: newYAML,
+            templateObject,
+            templateResources,
+            immutableRows,
+        })
     }
 
     handleControlChange(control, controlData, creationView, isCustomName) {

@@ -29,7 +29,13 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
         argoNS && targetNS.push(argoNS)
     })
 
-    appData.targetNamespaces = _.uniq(targetNS)
+    const resources = _.get(appSetApps[0], 'status.resources')
+    let definedNamespace = ''
+    resources.forEach((resource) => {
+        definedNamespace = _.get(resource, 'namespace')
+    })
+
+    appData.targetNamespaces = definedNamespace ? definedNamespace : _.uniq(targetNS)
     appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
 
     let query //= getQueryStringForResource('Application', name, namespace)

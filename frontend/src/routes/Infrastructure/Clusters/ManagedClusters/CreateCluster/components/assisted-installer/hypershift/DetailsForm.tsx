@@ -203,6 +203,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         handleChange(control)
     }, [additionalLabels])
 
+    useEffect(() => {
+        control.active = {
+            ...control.active,
+            pullSecret: controlProps?.stringData?.pullSecret || '',
+            baseDnsDomain: controlProps?.stringData?.baseDomain || '',
+        }
+        handleChange(control)
+    }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
+
     return clusterImages ? (
         <HostedClusterDetailsStep
             formRef={formRef}
@@ -210,8 +219,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             clusterImages={clusterImages}
             usedClusterNames={usedClusterNames}
             extensionAfter={extensionAfter}
-            initPullSecret={controlProps?.stringData?.pullSecret}
-            initBaseDomain={controlProps?.stringData?.baseDomain}
             supportedVersionsCM={supportedVersionCM}
         />
     ) : (

@@ -3,6 +3,7 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    Hint,
     SelectOption,
     Split,
     SplitItem,
@@ -19,7 +20,7 @@ import {
     AcmToastContext,
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
-import { Dispatch, useCallback, useContext, useLayoutEffect, useMemo, useReducer, useState } from 'react'
+import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -33,6 +34,7 @@ import {
     createClusterCurator,
     createProject,
     createResource,
+    isAnsibleOperatorInstalled,
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
@@ -73,6 +75,9 @@ import {
 } from '../../../../../selectors'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { getOperatorError } from '../../../../../lib/error-output'
+import { configMapsState, subscriptionOperatorsState } from '../../../../../atoms'
+import { makeStyles } from '@material-ui/styles'
 
 const acmSchema = [...schema, ...kac]
 
@@ -212,8 +217,32 @@ export default function ImportClusterPage() {
     const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
     const initialServer = sessionStorage.getItem('DiscoveredClusterApiURL') ?? ''
     const [discovered] = useState<boolean>(!!initialClusterName)
-
+    const [submitButtonText, setSubmitButtonText] = useState<string>()
+    const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
+    const configMaps = useRecoilValue(configMapsState)
+    const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
+    const isOperatorInstalled = useMemo(
+        () => isAnsibleOperatorInstalled(subscriptionOperators),
+        [subscriptionOperators]
+    )
+
+    const useStyles = makeStyles({
+        description: {
+            margin: '16px 0 16px 0',
+        },
+    })
+    const classes = useStyles()
+
+    useEffect(() => {
+        if (state.importMode !== 'manual') {
+            setSubmitButtonText(t('Import'))
+            setSubmittingButtonText(t('Importing'))
+        } else {
+            setSubmitButtonText(t('Generate command'))
+            setSubmittingButtonText(t('Generating'))
+        }
+    }, [state.importMode, t])
 
     const defaultData = useMemo(() => {
         const clusterAnnotations: Record<string, string> = {}
@@ -416,6 +445,8 @@ export default function ImportClusterPage() {
                 onCancel={function (): void {
                     cancelNavigation(location, history, NavigationPath.clusters)
                 }}
+                submitButtonText={submitButtonText}
+                submittingButtonText={submittingButtonText}
             >
                 <Step label={t('Details')} id="details">
                     <Section label={t('Details')}>
@@ -488,7 +519,18 @@ export default function ImportClusterPage() {
                     </Section>
                 </Step>
                 <Step label={t('Automation')} id="automation" autohide={false}>
-                    <Section label={t('Automation')} description={t('template.clusterImport.info')} autohide={false}>
+                    <Section
+                        label={t('Automation')}
+                        description={
+                            !isOperatorInstalled && (
+                                <>
+                                    <div className={classes.description}>{t('template.clusterImport.info')}</div>
+                                    <Hint>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
+                                </>
+                            )
+                        }
+                        autohide={false}
+                    >
                         <AutomationTemplate state={state} dispatch={dispatch} />
                     </Section>
                 </Step>

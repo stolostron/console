@@ -62,7 +62,7 @@ describe('Infrastructure Environment Details page', () => {
         await clickByText('ai:Generate Discovery ISO')
 
         // Discovery ISO download state
-        await waitForText('ai:Discovery ISO is ready for download')
+        await waitForText('ai:Discovery ISO is ready to be downloaded')
         await waitForText('ai:Download Discovery ISO')
 
         // note: the input-element ID is auto-generated

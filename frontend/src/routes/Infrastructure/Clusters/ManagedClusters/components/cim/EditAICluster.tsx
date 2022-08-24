@@ -9,10 +9,9 @@ import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
 import { patchResource } from '../../../../../../resources'
-import { agentsState, clusterImageSetsState, configMapsState, nmStateConfigsState } from '../../../../../../atoms'
+import { agentsState, clusterImageSetsState, nmStateConfigsState } from '../../../../../../atoms'
 import {
     fetchSecret,
-    getAIConfigMap,
     getClusterDeploymentLink,
     getOnCreateBMH,
     getOnSaveISOParams,
@@ -29,6 +28,7 @@ import {
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
     useOnDeleteHost,
+    useAssistedServiceConfigMap,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -60,9 +60,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [clusterImageSets, agents, configMaps, nmStateConfigs] = useRecoilValue(
-        waitForAll([clusterImageSetsState, agentsState, configMapsState, nmStateConfigsState])
+    const [clusterImageSets, agents, nmStateConfigs] = useRecoilValue(
+        waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState])
     )
+    const aiConfigMap = useAssistedServiceConfigMap()
 
     const clusterDeployment = useClusterDeployment({ name, namespace })
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
@@ -71,8 +72,6 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
-
-    const aiConfigMap = getAIConfigMap(configMaps)
 
     const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
 
@@ -115,6 +114,15 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             ]).promise
         },
         onDeleteHost,
+        onSetInstallationDiskId: (agent: CIM.AgentK8sResource, diskId: string) => {
+            return patchResource(agent, [
+                {
+                    op: 'replace',
+                    path: '/spec/installation_disk_id',
+                    value: diskId,
+                },
+            ]).promise
+        },
     }
 
     useEffect(() => {

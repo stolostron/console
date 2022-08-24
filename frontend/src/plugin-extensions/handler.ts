@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-import { isApplicationAction } from './extensions'
-import { ApplicationActionProps } from './properties'
+import { isApplicationAction, isApplicationListColumn } from './extensions'
+import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 import { AcmExtension } from './types'
 
 // Type guards
@@ -12,6 +12,14 @@ export function IsAcmExtensions() {
     const [applicationAction, reslovedApplicationAction] = useResolvedExtensions(isApplicationAction)
     if (reslovedApplicationAction) {
         acmExtension.applicationAction = applicationAction.map((action) => action.properties as ApplicationActionProps)
+    }
+
+    // Resolving application list column to acm compatible type
+    const [applicationListColumn, resolvedApplicationListColumn] = useResolvedExtensions(isApplicationListColumn)
+    if (resolvedApplicationListColumn) {
+        acmExtension.applicationListColumn = applicationListColumn.map(
+            (column) => column.properties as ApplicationListColumnProps
+        )
     }
 
     // list of all acm supported extensions

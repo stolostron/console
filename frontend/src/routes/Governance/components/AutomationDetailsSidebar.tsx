@@ -228,6 +228,13 @@ export function AutomationDetailsSidebar(props: {
 
                     <DescriptionListGroup>
                         <DescriptionListTerm>
+                            <strong>{t('Policy automation mode')}</strong>
+                        </DescriptionListTerm>
+                        <DescriptionListDescription>{policyAutomationMatch.spec.mode}</DescriptionListDescription>
+                    </DescriptionListGroup>
+
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>
                             <strong>{t('Ansible tower URL')}</strong>
                         </DescriptionListTerm>
                         <DescriptionListDescription>

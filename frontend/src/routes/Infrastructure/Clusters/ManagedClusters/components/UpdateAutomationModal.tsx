@@ -90,11 +90,21 @@ export function UpdateAutomationModal(props: {
     }
 
     const isupdatable = (cluster: Cluster) => {
+        const isReady = cluster.status === ClusterStatus.ready
         const isManagedOpenshift = cluster.distribution?.isManagedOpenShift
         const isOpenshift = !!cluster.distribution?.ocp?.version
-        const isReady = cluster.status === ClusterStatus.ready
         const isUpgrading = cluster.distribution?.upgradeInfo?.isUpgrading
-        return !!cluster.name && !isManagedOpenshift && isOpenshift && isReady && !isUpgrading
+        const isRoks = cluster.provider === 'ibm' && isOpenshift
+        const isCloudLabelSet = cluster.labels?.cloud === 'auto-detect'
+        return (
+            !!cluster.name &&
+            !isManagedOpenshift &&
+            isOpenshift &&
+            isReady &&
+            !isUpgrading &&
+            !isRoks &&
+            !isCloudLabelSet
+        )
     }
 
     const updatableClusters = useMemo<Cluster[] | undefined>(
@@ -124,7 +134,7 @@ export function UpdateAutomationModal(props: {
         // Set up resources to patch and/or create
         const resources: {
             resource: IResource
-            data: object
+            data: any
         }[] = []
 
         const curatorPatch = {
@@ -199,7 +209,12 @@ export function UpdateAutomationModal(props: {
                                 })
                                 .catch((err: ResourceError) => {
                                     if (err.code === ResourceErrorCode.NotFound) {
-                                        const combinedResource = { ...resourceCopy, ...resource.data }
+                                        const combinedResource = {
+                                            ...resourceCopy,
+                                            ...resource.data,
+                                            // for Secrets, need to preserve metadata from both resources for name/namespace and labels
+                                            metadata: { ...(resource.data.metadata || {}), ...resourceCopy.metadata },
+                                        }
                                         createResult =
                                             resourceCopy.kind === ClusterCuratorKind
                                                 ? createClusterCurator(combinedResource as ClusterCurator)

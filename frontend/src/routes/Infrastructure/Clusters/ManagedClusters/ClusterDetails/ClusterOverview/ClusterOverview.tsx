@@ -248,7 +248,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         leftItems.splice(5, 0, clusterProperties.channel)
     }
 
-    if (cluster?.provider === Provider.hybrid && clusterDeployment && agentClusterInstall) {
+    if (
+        cluster?.provider === Provider.hostinventory &&
+        !cluster?.isHypershift &&
+        clusterDeployment &&
+        agentClusterInstall
+    ) {
         const aiClusterProperties = getClusterProperties(clusterDeployment, agentClusterInstall)
 
         leftItems = [
@@ -271,7 +276,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         ]
     }
 
-    if (cluster?.provider === Provider.hypershift) {
+    if (cluster?.isHypershift) {
         leftItems = [
             clusterProperties.clusterName,
             clusterProperties.clusterClaim,
@@ -289,10 +294,8 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     }
 
     let details = <ProgressStepBar />
-    if (cluster?.provider === Provider.hybrid) {
-        details = <AIClusterDetails />
-    } else if (cluster?.hypershift?.agent) {
-        details = <AIHypershiftClusterDetails />
+    if (cluster?.provider === Provider.hostinventory) {
+        details = cluster.isHypershift ? <AIHypershiftClusterDetails /> : <AIClusterDetails />
     }
 
     return (

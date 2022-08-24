@@ -37,12 +37,12 @@ describe('AcmTile', () => {
     test('renders related resource tile component', () => {
         const { getByText } = render(<RelatedResourceTile />)
         expect(getByText('10')).toBeInTheDocument()
-        expect(getByText('Related pod')).toBeInTheDocument()
+        expect(getByText('pod')).toBeInTheDocument()
     })
     test('renders related resource tile component - large count', () => {
         const { getByText } = render(<RelatedResourceTileLargeCount />)
         expect(getByText('9.9k')).toBeInTheDocument()
-        expect(getByText('Related pod')).toBeInTheDocument()
+        expect(getByText('pod')).toBeInTheDocument()
     })
     test('renders default tile component', () => {
         const { getByText } = render(<DefaultTile />)

@@ -17,7 +17,9 @@ export interface ManagedClusterAddOn extends IResource {
     apiVersion: ManagedClusterAddOnApiVersionType
     kind: ManagedClusterAddOnKindType
     metadata: Metadata
-    spec: {}
+    spec: {
+        installNamespace?: string
+    }
     status?: {
         conditions: {
             lastTransitionTime?: Date

@@ -55,7 +55,7 @@ export function HiveNotification() {
         ClusterStatus.deprovisionfailed,
     ]
 
-    if (cluster?.provider === Provider.hypershift) {
+    if (cluster?.isHypershift) {
         return null
     }
 

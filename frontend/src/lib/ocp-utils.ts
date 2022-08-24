@@ -8,7 +8,7 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string, newTab: boolean) {
+export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
     api<{ data: { consoleURL: string } }>(
         '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
     )
@@ -20,6 +20,7 @@ export function launchToOCP(urlSuffix: string, newTab: boolean) {
             }
         })
         .catch((error) => {
+            onError?.()
             // eslint-disable-next-line no-console
             console.error(error)
         })

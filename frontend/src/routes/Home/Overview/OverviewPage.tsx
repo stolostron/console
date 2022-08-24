@@ -385,14 +385,14 @@ export default function OverviewPage() {
                 href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
             },
             {
-                isloading: !kubernetesTypes?.size,
+                isLoading: kubernetesTypes?.size === null,
                 isPrimary: false,
                 description: 'Kubernetes type',
                 count: kubernetesTypes?.size,
             },
-            { isLoading: !regions?.size, isPrimary: false, description: 'Region', count: regions?.size },
+            { isLoading: regions?.size === null, isPrimary: false, description: 'Region', count: regions?.size },
             {
-                isLoading: !nodeCount,
+                isLoading: nodeCount === null,
                 isPrimary: false,
                 description: 'Nodes',
                 count: nodeCount || 0,
@@ -555,7 +555,7 @@ export default function OverviewPage() {
                 )}
                 <PageSection>
                     <Stack hasGutter>
-                        {providers.length === 0 ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
+                        {!clusters ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
 
                         <AcmSummaryList title={t('Summary')} list={summary} />
 

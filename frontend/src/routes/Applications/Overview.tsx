@@ -345,13 +345,19 @@ export default function ApplicationsOverview() {
         () =>
             argoApplications
                 .filter((argoApp) => {
+                    const resources = argoApp.status.resources
+                    let definedNamespace = ''
+                    resources &&
+                        resources.forEach((resource: any) => {
+                            definedNamespace = resource.namespace
+                        })
                     // cache Argo app signature for filtering OCP apps later
                     setArgoApplicationsHashSet(
                         (prev) =>
                             new Set(
                                 prev.add(
                                     `${argoApp.metadata.name}-${
-                                        argoApp.spec.destination.namespace
+                                        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
                                     }-${getArgoDestinationCluster(
                                         argoApp.spec.destination,
                                         managedClusters,
@@ -523,6 +529,25 @@ export default function ApplicationsOverview() {
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
     )
+    const extensionColumns: IAcmTableColumn<IApplicationResource>[] = useMemo(
+        () =>
+            acmExtensions?.applicationListColumn?.length
+                ? acmExtensions.applicationListColumn.map((appListColumn) => {
+                      const CellComp = appListColumn.cell
+                      return {
+                          header: appListColumn.header,
+                          transforms: appListColumn?.transforms,
+                          cellTransforms: appListColumn?.cellTransforms,
+                          tooltip: appListColumn?.tooltip,
+                          cell: (application) => {
+                              return <CellComp resource={application} />
+                          },
+                      }
+                  })
+                : [],
+        [acmExtensions]
+    )
+
     const columns = useMemo<IAcmTableColumn<IApplicationResource>[]>(
         () => [
             {
@@ -664,6 +689,7 @@ export default function ApplicationsOverview() {
                 sort: 'transformed.timeWindow',
                 search: 'transformed.timeWindow',
             },
+            ...extensionColumns,
             {
                 header: t('Created'),
                 cell: (resource) => {
@@ -673,7 +699,17 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t, managedClusters]
+        [
+            argoApplications,
+            channels,
+            getTimeWindow,
+            localCluster,
+            placementRules,
+            subscriptions,
+            t,
+            managedClusters,
+            extensionColumns,
+        ]
     )
 
     const filters = useMemo(

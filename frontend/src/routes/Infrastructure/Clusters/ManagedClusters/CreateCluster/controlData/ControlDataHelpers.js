@@ -17,6 +17,7 @@ import jsYaml from 'js-yaml'
 import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 
 export const CREATE_CLOUD_CONNECTION = {
     prompt: 'creation.ocp.cloud.add.connection',
@@ -150,9 +151,12 @@ export const setAvailableOCPMap = (control) => {
 }
 
 export const setAvailableConnections = (control, secrets) => {
-    const connections = secrets.filter(
-        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === control.providerId
-    )
+    const connections = secrets.filter((secret) => {
+        const cedentalsType = secret.metadata.labels?.['cluster.open-cluster-management.io/type']
+        return Array.isArray(control.providerId)
+            ? control.providerId.includes(cedentalsType)
+            : control.providerId === cedentalsType
+    })
     control.availableMap = {}
     connections?.forEach?.((c) => {
         const unpackedSecret = unpackProviderConnection(c)
@@ -185,7 +189,15 @@ export const setAvailableConnections = (control, secrets) => {
         control.isLoaded = true
     })
     control.available = connections.map((secret) => secret.metadata.name)
-    control.active = control.available[0]
+    if (
+        Array.isArray(control.providerId)
+            ? !control.providerId.includes('hostinventory')
+            : control.providerId !== 'hostinventory'
+    ) {
+        if (control.setActive) {
+            control.setActive(control.available[0])
+        }
+    }
 }
 
 export const setAvailableTemplates = (control, templates) => {
@@ -572,6 +584,11 @@ export const automationControlData = [
         id: 'chooseTemplate',
         type: 'title',
         info: 'template.clusterCreate.info',
+    },
+    {
+        type: 'custom',
+        id: 'automationProviderHint',
+        component: <AutomationProviderHint />,
     },
     {
         name: 'template.clusterCreate.name',

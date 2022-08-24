@@ -338,7 +338,7 @@ export function ClustersTable(props: {
                         title: t('bulk.title.detach'),
                         action: t('detach'),
                         processing: t('detaching'),
-                        resources: clusters,
+                        resources: clusters.filter((cluster) => !cluster.isHostedCluster),
                         description: t('bulk.message.detach'),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
@@ -361,7 +361,7 @@ export function ClustersTable(props: {
                         title: t('bulk.title.destroy'),
                         action: t('destroy'),
                         processing: t('destroying'),
-                        resources: clusters,
+                        resources: clusters.filter((cluster) => !cluster.isHostedCluster),
                         description: t('bulk.message.destroy'),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
@@ -506,7 +506,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
             if (cluster.name === 'local-cluster') {
                 return t('Hub')
             }
-            if (cluster.isHostedCluster) {
+            if (cluster.isHostedCluster || cluster.isHypershift) {
                 return t('Hosted')
             } else {
                 return t('Standalone')
