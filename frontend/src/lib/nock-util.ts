@@ -18,6 +18,12 @@ import {
 } from '../resources'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
+export type ISearchRelatedResult = {
+    data: {
+        searchResult: any
+    }
+}
+
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
@@ -343,6 +349,43 @@ export function nockDelete(resource: IResource, response?: IResource) {
 }
 
 export function nockSearch(query: SearchQuery, response?: ISearchResult, statusCode = 201, polling = true) {
+    nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+        .options(apiSearchUrl)
+        .optionally()
+        .reply(204, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+
+    const networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).post(
+        apiSearchUrl,
+        JSON.stringify(query)
+    )
+
+    const finalNetworkMock = networkMock.reply(statusCode, response, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
+
+    if (polling) {
+        networkMock.optionally().times(20).reply(201, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+    }
+
+    return finalNetworkMock
+}
+
+export function nockSearchRelated(
+    query: SearchQuery,
+    response?: ISearchRelatedResult,
+    statusCode = 201,
+    polling = true
+) {
     nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
