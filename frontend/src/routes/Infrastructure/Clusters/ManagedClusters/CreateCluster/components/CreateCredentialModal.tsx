@@ -1,35 +1,66 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { WizTextInput } from '@patternfly-labs/react-form-wizard'
 import { Modal, ModalVariant, Button, Wizard } from '@patternfly/react-core'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { useRecoilCallback } from 'recoil'
+import { namespacesState } from '../../../../../../atoms'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../../../lib/rbac-util'
+import { getSecret, ProviderConnection, SecretDefinition, unpackProviderConnection } from '../../../../../../resources'
+import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 
 export const ModalWithWizard: React.FunctionComponent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const params = useParams<{ namespace: string; name: string }>()
+    const { name, namespace } = params
+
+    let isEditing = false
+    let isViewing = false
+    if (name !== undefined) {
+        isEditing = location.pathname.startsWith('/multicloud/credentials/edit')
+        isViewing = !isEditing
+    }
+
+    const [error, setError] = useState<Error>()
+
+    // any recoil resources that constantly update because of a time stamp
+    const getNamespaces = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot.getPromise(namespacesState),
+        []
+    )
+    const [projects, setProjects] = useState<string[]>()
+    useEffect(() => {
+        if (!isEditing && !isViewing) {
+            getNamespaces()
+                .then((namespaces) => {
+                    getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                        .then((namespaces: string[]) => setProjects(namespaces.sort()))
+                        .catch(setError)
+                })
+                .catch(setError)
+        }
+        return undefined
+    }, [getNamespaces, isEditing, isViewing])
     const { t } = useTranslation()
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
+    useEffect(() => {
+        if (isEditing || isViewing) {
+            const result = getSecret({ name, namespace })
+            result.promise
+                .then((secret) => setProviderConnection(unpackProviderConnection(secret as ProviderConnection)))
+                .catch(setError)
+            return result.abort
+        }
+        return undefined
+    }, [isEditing, isViewing, name, namespace])
 
     const handleModalToggle = () => {
         setIsModalOpen(!isModalOpen)
     }
-
-    const steps = [
-        {
-            name: 'Step 1',
-            component: (
-                <WizTextInput
-                    id="clusterName"
-                    path="metadata.name"
-                    label={t('import.form.clusterName.label')}
-                    placeholder={t('import.form.clusterName.placeholder')}
-                    required
-                />
-            ),
-        },
-        { name: 'Step 2', component: <p>Step 2</p> },
-        { name: 'Step 3', component: <p>Step 3</p> },
-        { name: 'Step 4', component: <p>Step 4</p> },
-        { name: 'Review', component: <p>Review Step</p>, nextButtonText: 'Finish' },
-    ]
 
     return (
         <Fragment>
@@ -45,17 +76,7 @@ export const ModalWithWizard: React.FunctionComponent = () => {
                 onClose={handleModalToggle}
                 hasNoBodyWrapper
             >
-                <Wizard
-                    titleId="modal-wizard-label"
-                    descriptionId="modal-wizard-description"
-                    title={t('Add credential')}
-                    description={t(
-                        'A credential stores the access credentials and configuration information for creating clusters.'
-                    )}
-                    steps={steps}
-                    onClose={handleModalToggle}
-                    height={400}
-                />
+                <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
             </Modal>
         </Fragment>
     )
