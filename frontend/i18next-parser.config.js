@@ -109,7 +109,7 @@ module.exports = {
     // for that key across locales are reset to the default value, and existing translations are moved to
     // the `_old` file.
 
-    i18nextOptions: { compatibilityJSON: 'v3' },
+    i18nextOptions: null,
     // If you wish to customize options in internally used i18next instance, you can define an object with any
     // configuration property supported by i18next (https://www.i18next.com/overview/configuration-options).
     // { compatibilityJSON: 'v3' } can be used to generate v3 compatible plurals.
