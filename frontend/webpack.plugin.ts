@@ -6,7 +6,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin';
+import MergeJsonWebpackPlugin from 'merge-json-webpack-plugin';
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -84,14 +84,16 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
             }),       
             ...locales.map((locale) => {
                 return new MergeJsonWebpackPlugin({
-                    files: [
-                        `../../public/locales/${locale}/translation.json`,
-                        `../../node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
-                      ],
-                    output: {
-                        "fileName": `locales/${locale}/plugin__${env.plugin}.json`
-                    },
-                    space: 4
+                    groups: [
+                        {
+                            files: [
+                                `../../public/locales/${locale}/translation.json`,
+                                `../../node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
+                            ],
+                            to: `locales/${locale}/plugin__${env.plugin}.json`
+                        }
+                    ],
+                    minify: false,
                 })
             }),            
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
