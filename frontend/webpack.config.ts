@@ -13,6 +13,7 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import MergeJsonWebpackPlugin from 'merge-json-webpack-plugin';
+import { transformPlurals } from './i18n-scripts/plurals'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -86,6 +87,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                                 `./public/locales/${locale}/translation.json`,
                                 `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`,
                             ],
+                            transform: transformPlurals,
                             to: `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`,
                         },
                     ],
