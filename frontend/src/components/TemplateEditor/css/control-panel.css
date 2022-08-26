@@ -80,6 +80,7 @@
 .temptifly .pf-c-form-control .pf-c-combo-control,
 .creation-view .pf-c-form-control .pf-c-combo-control {
     height: 100%;
+    width: 100%;
     border: none;
     text-overflow: ellipsis;
     padding-left: 6px;

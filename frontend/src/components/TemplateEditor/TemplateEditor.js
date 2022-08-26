@@ -1200,8 +1200,9 @@ export default class TemplateEditor extends React.Component {
                     const {
                         kind,
                         metadata: { name, namespace },
+                        data,
                     } = resource
-                    if (kind === 'Secret') {
+                    if (kind === 'Secret' && !data?.['install-config.yaml']) {
                         const secret = secretsMap[`${namespace}/${name}`]
                         if (secret) {
                             merge(resource, secret.$raw)
