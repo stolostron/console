@@ -34,7 +34,7 @@ export const DOC_LINKS = {
     CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/multicluster_engine/index#creating-a-cluster-on-premises`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/multicluster_engine/index#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets`,
-    GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets-intro`,
+    GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets_global`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/multicluster_engine/index#managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/multicluster_engine/index#claiming-clusters-from-cluster-pools`,
     SUBMARINER: `${DOC_BASE_PATH}/add-ons/index#submariner`,
