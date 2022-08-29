@@ -101,8 +101,6 @@ export default function CreateClusterPage() {
     const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
 
-    
-
     const settings = useRecoilValue(settingsState)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
     const managedClusters = useRecoilValue(managedClustersState)
