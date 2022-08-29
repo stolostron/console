@@ -4,6 +4,7 @@
 
 .PHONY: install
 install:
+	npm cache clean -f
 	npm ci --no-optional
 	npm run postinstall
 

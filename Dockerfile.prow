@@ -5,6 +5,7 @@ WORKDIR /app/frontend
 # Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./frontend/package.json ./frontend/package-lock.json ./
+RUN npm cache clean -f
 RUN npm ci --no-optional
 COPY ./frontend .
 

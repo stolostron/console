@@ -3,6 +3,7 @@
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
+RUN npm cache clean -f
 RUN npm ci --no-optional
 RUN npm run build:plugin:mce
 
