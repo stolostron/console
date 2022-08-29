@@ -12,7 +12,6 @@ export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_LINKS = {
     CLUSTERS: `${DOC_BASE_PATH}/multicluster_engine/cluster_lifecycle/cluster_overview`,
-    BARE_METAL_ASSETS: `${DOC_BASE_PATH}/multicluster_engine/cluster_lifecycle/cluster_overview#creating-and-modifying-bare-metal-assets`,
     CREATE_CONNECTION: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials`,
     CREATE_CONNECTION_AWS: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-amazon-web-services`,
     CREATE_CONNECTION_AZURE: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-microsoft-azure`,
@@ -20,14 +19,12 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_VMWARE: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-vmware-vsphere`,
     CREATE_CONNECTION_OPENSTACK: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-openstack`,
     CREATE_CONNECTION_VIRTUALIZATION: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-virtualization`,
-    CREATE_CONNECTION_BAREMETAL: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-bare-metal`,
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-ansible`,
     CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#creating-a-credential-for-openshift-cluster-manager`,
     CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy`,
     CREATE_CONNECTION_PROXY_VMWARE: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-vm`,
     CREATE_CONNECTION_PROXY_AWS: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-aws`,
     CREATE_CONNECTION_PROXY_AZURE: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-azure`,
-    CREATE_CONNECTION_PROXY_BAREMETAL: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-bare`,
     CREATE_CONNECTION_PROXY_GCP: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-google`,
     CREATE_CONNECTION_PROXY_OPENSTACK: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-openstack`,
     CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/multicluster_engine/credentials/credentials#proxy-virtualization`,

@@ -31,10 +31,8 @@ import {
     validateHttpProxy,
     validateHttpsProxy,
     validateImageContentSources,
-    validateImageMirror,
     validateJSON,
     validateKubernetesDnsName,
-    validateLibvirtURI,
     validateNoProxy,
     validatePrivateSshKey,
     validatePublicSshKey,
@@ -81,7 +79,6 @@ const providerGroup: Record<string, string> = {
     [Provider.ibm]: ProviderGroup.CloudProvider,
     [Provider.openstack]: ProviderGroup.Datacenter,
     [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
-    [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
     [Provider.hostinventory]: ProviderGroup.Datacenter,
 }
@@ -310,14 +307,6 @@ export function CredentialsForm(props: {
     const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
     const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
 
-    // BareMetal
-    const [libvirtURI, setLibvirtURI] = useState(() => providerConnection?.stringData?.libvirtURI ?? '')
-    const [sshKnownHosts, setSshKnownHosts] = useState(() => providerConnection?.stringData?.sshKnownHosts ?? '')
-    const [bootstrapOSImage, setBootstrapOSImage] = useState(
-        () => providerConnection?.stringData?.bootstrapOSImage ?? ''
-    )
-    const [imageMirror, setImageMirror] = useState(() => providerConnection?.stringData?.imageMirror ?? '')
-
     // Disconnected or Proxy
     const [clusterOSImage, setClusterOSImage] = useState(() => providerConnection?.stringData?.clusterOSImage ?? '')
     const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
@@ -436,21 +425,6 @@ export function CredentialsForm(props: {
                 secret.stringData!.noProxy = noProxy
                 secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
-            case Provider.baremetal:
-                secret.stringData!.libvirtURI = libvirtURI
-                secret.stringData!.sshKnownHosts = sshKnownHosts
-                secret.stringData!.imageMirror = imageMirror
-                secret.stringData!.bootstrapOSImage = bootstrapOSImage
-                secret.stringData!.clusterOSImage = clusterOSImage
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
-                break
             case Provider.redhatvirtualization:
                 secret.stringData!.ovirt_url = ovirtUrl
                 secret.stringData!.ovirt_fqdn = ovirtFqdn
@@ -522,10 +496,6 @@ export function CredentialsForm(props: {
             { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
             { path: 'Secret[0].stringData.ovirt_password', setState: setOvirtPassword },
             { path: 'Secret[0].stringData.ovirt_ca_bundle', setState: setOvirtCABundle },
-            { path: 'Secret[0].stringData.libvirtURI', setState: setLibvirtURI },
-            { path: 'Secret[0].stringData.sshKnownHosts', setState: setSshKnownHosts },
-            { path: 'Secret[0].stringData.bootstrapOSImage', setState: setBootstrapOSImage },
-            { path: 'Secret[0].stringData.imageMirror', setState: setImageMirror },
             { path: 'Secret[0].stringData.clusterOSImage', setState: setClusterOSImage },
             { path: 'Secret[0].stringData.additionalTrustBundle', setState: setAdditionalTrustBundle },
             { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
@@ -652,7 +622,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -663,7 +632,7 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Base DNS domain'),
                         placeholder: t('Enter the base DNS domain'),
-                        labelHelp: [Provider.baremetal, Provider.hybrid].includes(credentialsType as Provider)
+                        labelHelp: [Provider.hybrid].includes(credentialsType as Provider)
                             ? t(
                                   'Optional: The base domain of your network, which is used to create routes to your OpenShift Container Platform cluster components. It must contain the cluster name that you plan to create, and is configured in the DNS of your network as a Start Of Authority (SOA) record. You can also add this when you create the cluster.'
                               )
@@ -1063,45 +1032,6 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('Bare metal credentials'),
-                wizardTitle: t('Enter the bare metal credentials'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_BAREMETAL} target="_blank" rel="noreferrer">
-                        {t('How do I get bare metal credentials?')}
-                    </a>
-                ),
-                inputs: [
-                    {
-                        id: 'libvirtURI',
-                        isHidden: credentialsType !== Provider.baremetal,
-                        type: 'Text',
-                        label: t('libvirt URI'),
-                        placeholder: t('Enter your libvirt URI'),
-                        labelHelp: t(
-                            'The URI of the libvirt which is an open-source API, daemon and management tool for managing platform virtualization. It can be used to manage KVM, Xen, VMware ESXi, QEMU and other virtualization technologies. These APIs are widely used in the orchestration layer of hypervisors in the development of a cloud-based solution.'
-                        ),
-                        value: libvirtURI,
-                        onChange: setLibvirtURI,
-                        validation: (value) => validateLibvirtURI(value, t),
-                        isRequired: true,
-                    },
-                    {
-                        id: 'sshKnownHosts',
-                        isHidden: credentialsType !== Provider.baremetal,
-                        type: 'TextArea',
-                        label: t('List of SSH known hosts'),
-                        placeholder: t('Enter your list of SSH known hosts'),
-                        labelHelp: t(
-                            'SSH clients store host keys for hosts to which they have previously connected. These stored host keys are called known host keys, and the collection is often called known hosts.'
-                        ),
-                        value: sshKnownHosts,
-                        onChange: setSshKnownHosts,
-                        isRequired: true,
-                    },
-                ],
-            },
-            {
-                type: 'Section',
                 title: t('Configuration for disconnected installation'),
                 wizardTitle: t('Enter the configuration for disconnected installation'),
                 description: (
@@ -1111,36 +1041,8 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'imageMirror',
-                        isHidden: credentialsType !== Provider.baremetal,
-                        type: 'Text',
-                        label: t('Image registry mirror'),
-                        placeholder: t('Enter your image registry mirror'),
-                        labelHelp: t(
-                            'Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.'
-                        ),
-                        value: imageMirror,
-                        onChange: setImageMirror,
-                        validation: (value) => validateImageMirror(value, t),
-                    },
-                    {
-                        id: 'bootstrapOSImage',
-                        isHidden: credentialsType !== Provider.baremetal,
-                        type: 'Text',
-                        label: t('Bootstrap OS image'),
-                        placeholder: t(
-                            'Enter your bootstrap OS image.  The value must also contain the SHA-256 hash of the image.'
-                        ),
-                        labelHelp: t(
-                            'This value contains the URL to the image to use for the bootstrap machine. The value must also contain the SHA-256 hash of the image.'
-                        ),
-                        value: bootstrapOSImage,
-                        onChange: setBootstrapOSImage,
-                        validation: (value) => validateBareMetalOSImageURL(value, t),
-                    },
-                    {
                         id: 'clusterOSImage',
-                        isHidden: ![Provider.baremetal, Provider.openstack].includes(credentialsType as Provider),
+                        isHidden: ![Provider.openstack].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('Cluster OS image'),
                         placeholder: t(
@@ -1169,9 +1071,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'additionalTrustBundle',
-                        isHidden: ![Provider.baremetal, Provider.openstack, Provider.vmware].includes(
-                            credentialsType as Provider
-                        ),
+                        isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Additional trust bundle'),
                         placeholder: t('Enter your additional trust bundle'),
@@ -1198,7 +1098,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -1219,7 +1118,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -1240,7 +1138,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -1261,7 +1158,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -1356,7 +1252,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
@@ -1381,7 +1276,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.redhatvirtualization,
@@ -1402,7 +1296,6 @@ export function CredentialsForm(props: {
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
-                            Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
                             Provider.redhatvirtualization,
