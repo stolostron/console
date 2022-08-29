@@ -310,6 +310,8 @@ const mockPullSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -343,6 +345,8 @@ const mockProviderConnectionSecretCopiedAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     type: 'Opaque',
@@ -499,6 +503,8 @@ const mockPrivateSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -629,10 +635,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -709,10 +712,7 @@ describe('CreateCluster AWS', () => {
 
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -782,10 +782,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -858,10 +855,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
