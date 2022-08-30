@@ -30,7 +30,23 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('Referrer-Policy', 'no-referrer')
             res.setHeader('X-DNS-Prefetch-Control', 'off')
             res.setHeader('Expect-CT', 'enforce, max-age=30')
-            // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
+            res.setHeader(
+                'Content-Security-Policy',
+                [
+                    "default-src 'self'",
+                    "connect-src 'self' https://api.github.com",
+                    "base-uri 'self'",
+                    'block-all-mixed-content',
+                    "font-src 'self' https: data:",
+                    "frame-ancestors 'self'",
+                    "img-src 'self' data:",
+                    "object-src 'none'",
+                    "script-src 'self' 'unsafe-eval'",
+                    "script-src-attr 'none'",
+                    "style-src 'self' https: 'unsafe-inline'",
+                    'upgrade-insecure-requests',
+                ].join(';')
+            )
         } else if (url === '/plugin/plugin-entry.js' || url === '/plugin/plugin-manifest.json') {
             res.setHeader('Cache-Control', 'no-cache')
         } else if (url.includes('/locales/')) {

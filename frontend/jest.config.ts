@@ -15,10 +15,16 @@ const config: Config.InitialOptions = {
         '\\.(jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/src/file.mock.js',
         '\\.(css|less)$': 'identity-obj-proxy',
         'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
+        '^d3$': '<rootDir>/node_modules/d3/dist/d3.min.js',
     },
     watchAll: false,
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
+    globals: {
+        'ts-jest': {
+            isolatedModules: true,
+        },
+    },
     transform: {
         '^.+\\.jsx?$': 'babel-jest',
         '^.+\\.tsx?$': 'ts-jest',

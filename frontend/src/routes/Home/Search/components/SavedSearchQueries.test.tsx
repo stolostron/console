@@ -5,9 +5,15 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultCountDocument } from '../search-sdk/search-sdk'
 import SavedSearchQueries from './SavedSearchQueries'
+
+const mockSettings: Settings = {
+    SAVED_SEARCH_LIMIT: '5',
+}
 
 describe('SavedSearchQueries Page', () => {
     it('should render page with correct data', async () => {
@@ -98,21 +104,27 @@ describe('SavedSearchQueries Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SavedSearchQueries
-                        savedSearches={[
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                            },
-                        ]}
-                        setSelectedSearch={() => {}}
-                    />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SavedSearchQueries
+                            savedSearches={[
+                                {
+                                    description: 'testSavedQueryDesc1',
+                                    id: '1609811592984',
+                                    name: 'testSavedQuery1',
+                                    searchText: 'kind:pod',
+                                },
+                            ]}
+                            setSelectedSearch={() => {}}
+                        />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.queryByText('Suggested search templates')).not.toBeInTheDocument()

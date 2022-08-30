@@ -245,6 +245,7 @@ export default class TemplateEditor extends React.Component {
             editor: {
                 forceUpdate: (() => {
                     this.forceUpdate()
+                    this.forceGenerate()
                 }).bind(this),
                 currentData: (() => {
                     return this.state.controlData
@@ -441,6 +442,23 @@ export default class TemplateEditor extends React.Component {
                 backButtonOverride={this.props.createControl.backButtonOverride}
             />
         )
+    }
+
+    forceGenerate() {
+        const { template, otherYAMLTabs, editStack, controlData } = this.state
+        const {
+            templateYAML: newYAML,
+            templateObject,
+            templateResources,
+            immutableRows,
+        } = generateSource(template, editStack, controlData, otherYAMLTabs)
+        highlightImmutables(this.editors, immutableRows)
+        this.setState({
+            templateYAML: newYAML,
+            templateObject,
+            templateResources,
+            immutableRows,
+        })
     }
 
     handleControlChange(control, controlData, creationView, isCustomName) {
@@ -1182,8 +1200,9 @@ export default class TemplateEditor extends React.Component {
                     const {
                         kind,
                         metadata: { name, namespace },
+                        data,
                     } = resource
-                    if (kind === 'Secret') {
+                    if (kind === 'Secret' && !data?.['install-config.yaml']) {
                         const secret = secretsMap[`${namespace}/${name}`]
                         if (secret) {
                             merge(resource, secret.$raw)

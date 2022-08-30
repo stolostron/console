@@ -23,6 +23,9 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     Secret,
+    SubscriptionOperator,
+    SubscriptionOperatorApiVersion,
+    SubscriptionOperatorKind,
 } from '../../../../../resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -33,6 +36,7 @@ import {
     managedClustersState,
     secretsState,
     settingsState,
+    subscriptionOperatorsState,
 } from '../../../../../atoms'
 import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import {
@@ -306,6 +310,8 @@ const mockPullSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -339,6 +345,8 @@ const mockProviderConnectionSecretCopiedAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     type: 'Opaque',
@@ -495,6 +503,8 @@ const mockPrivateSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -535,10 +545,31 @@ const mockKlusterletAddonSecretAws = {
     },
 }
 
+const subscriptionOperator: SubscriptionOperator = {
+    apiVersion: SubscriptionOperatorApiVersion,
+    kind: SubscriptionOperatorKind,
+    metadata: {
+        name: 'ansible-automation-platform-operator',
+        namespace: 'ansible-automation-platform-operator',
+    },
+    status: {
+        conditions: [
+            {
+                reason: 'AllCatalogSourcesHealthy',
+                lastTransitionTime: '',
+                message: '',
+                type: '',
+                status: '',
+            },
+        ],
+    },
+    spec: {},
+}
+
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 describe('CreateCluster AWS', () => {
-    const Component = () => {
+    const Component = (props: { subscriptions?: SubscriptionOperator[] }) => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -555,6 +586,7 @@ describe('CreateCluster AWS', () => {
                         singleNodeOpenshift: 'enabled',
                         awsPrivateWizardStep: 'enabled',
                     })
+                    snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
                 }}
             >
                 <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
@@ -603,10 +635,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -627,6 +656,9 @@ describe('CreateCluster AWS', () => {
         await clickByText('Next')
 
         // choose ansible template
+        await waitForText(
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+        )
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
@@ -672,7 +704,7 @@ describe('CreateCluster AWS', () => {
         const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
-        const { container } = render(<Component />)
+        const { container } = render(<Component subscriptions={[subscriptionOperator]} />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -680,10 +712,7 @@ describe('CreateCluster AWS', () => {
 
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -704,6 +733,10 @@ describe('CreateCluster AWS', () => {
         await clickByText('Next')
 
         // ansible template
+        await waitForText('Ansible Automation Template')
+        await waitForNotText(
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+        )
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')
@@ -749,10 +782,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -825,10 +855,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)

@@ -237,8 +237,9 @@ export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
-interface Settings {
+export interface Settings {
     LOG_LEVEL?: string
+    SAVED_SEARCH_LIMIT?: string
     ansibleIntegration?: 'enabled' | 'disabled'
     singleNodeOpenshift?: 'enabled' | 'disabled'
     awsPrivateWizardStep?: 'enabled' | 'disabled'
@@ -589,6 +590,11 @@ export function usePolicies() {
         () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
         [policies]
     )
+}
+
+export function useSavedSearchLimit() {
+    const settings = useRecoilValue(settingsState)
+    return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }
 
 export async function tokenExpired() {

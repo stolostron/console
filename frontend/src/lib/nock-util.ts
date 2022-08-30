@@ -18,6 +18,12 @@ import {
 } from '../resources'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
+export type ISearchRelatedResult = {
+    data: {
+        searchResult: any
+    }
+}
+
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
@@ -342,7 +348,12 @@ export function nockDelete(resource: IResource, response?: IResource) {
         })
 }
 
-export function nockSearch(query: SearchQuery, response?: ISearchResult, statusCode = 201, polling = true) {
+export function nockSearch(
+    query: SearchQuery,
+    response?: ISearchResult | ISearchRelatedResult,
+    statusCode = 201,
+    polling = true
+) {
     nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
