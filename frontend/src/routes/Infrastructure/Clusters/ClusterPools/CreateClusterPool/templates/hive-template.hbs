@@ -116,12 +116,11 @@ type: Opaque
 data:
   # Base64 encoding of install-config yaml
   install-config.yaml: {{{install-config}}}
-{{#if_ne infrastructure 'BMC'}}
+
 ---
 apiVersion: v1
 kind: Secret
 type: Opaque
-{{/if_ne}}
 
 {{#switch infrastructure}}
 

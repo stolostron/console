@@ -68,31 +68,6 @@ import { PluginContext } from '../../../../../lib/PluginContext'
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
-const providerConnection: ProviderConnection = {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
-    metadata: {
-        name: 'connection',
-        namespace: clusterName,
-        labels: {
-            'cluster.open-cluster-management.io/type': 'bmc',
-        },
-    },
-    stringData: {
-        libvirtURI: 'qemu+ssh://libvirtURI',
-        sshKnownHosts: 'sshKnownHosts',
-        imageMirror: 'image.mirror:123/abc',
-        bootstrapOSImage: 'bootstrapOSImage',
-        clusterOSImage: 'clusterOSImage',
-        additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-        baseDomain,
-        pullSecret: '{"pullSecret":"secret"}',
-        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
-    },
-    type: 'Opaque',
-}
-
 const clusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -569,11 +544,7 @@ describe('CreateCluster AWS', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
-                    snapshot.set(secretsState, [
-                        providerConnection as Secret,
-                        providerConnectionAnsible as Secret,
-                        providerConnectionAws as Secret,
-                    ])
+                    snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',
@@ -917,11 +888,7 @@ describe('CreateCluster on premise', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
-                    snapshot.set(secretsState, [
-                        providerConnection as Secret,
-                        providerConnectionAnsible as Secret,
-                        providerConnectionAws as Secret,
-                    ])
+                    snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',
