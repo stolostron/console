@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { Alert, AlertActionLink, ButtonVariant, PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -51,25 +51,44 @@ const useStyles = makeStyles({
 // Adds AcmAlert to page if there's errors from the Apollo queries.
 function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
     const { t } = useTranslation()
+    const [showMore, setShowMore] = useState<boolean>(false)
     const notEnabled = 'not enabled'
-    if (schemaError || completeError) {
+    const unexpectedToken = 'Unexpected token'
+    if (schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)) {
         return (
             <div style={{ marginBottom: '1rem' }}>
                 <AcmAlert
                     noClose
-                    variant={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? 'info'
-                            : 'danger'
-                    }
+                    variant={'info'}
                     isInline
-                    title={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? t('search.filter.info.title')
-                            : t('search.filter.errors.title')
-                    }
+                    title={t('search.filter.info.title')}
                     subtitle={schemaError?.message || completeError?.message}
                 />
+            </div>
+        )
+    } else if (schemaError || completeError) {
+        return (
+            <div style={{ marginBottom: '1rem' }}>
+                <Alert
+                    variant={'danger'}
+                    isInline
+                    title={t('search.filter.errors.title')}
+                    actionLinks={
+                        !schemaError?.message.includes(unexpectedToken) &&
+                        !completeError?.message.includes(unexpectedToken) && (
+                            <Fragment>
+                                <AlertActionLink onClick={() => setShowMore(!showMore)}>
+                                    {showMore ? 'Show less' : 'Show more'}
+                                </AlertActionLink>
+                            </Fragment>
+                        )
+                    }
+                >
+                    <Stack>
+                        <StackItem>{t('An error occurred while contacting the search service.')}</StackItem>
+                        <StackItem>{showMore && (schemaError?.message || completeError?.message)}</StackItem>
+                    </Stack>
+                </Alert>
             </div>
         )
     }
@@ -124,7 +143,7 @@ function RenderSearchBar(props: {
     useEffect(() => {
         if (searchSchemaResults?.error || searchCompleteResults?.error) {
             setQueryErrors(true)
-        } else if (queryErrors) {
+        } else {
             setQueryErrors(false)
         }
     }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
