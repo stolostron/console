@@ -21,6 +21,7 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -122,7 +123,8 @@ export const getControlDataAWS = (
     includeAutomation = true,
     includeAwsPrivate = true,
     includeSno = false,
-    includeKlusterletAddonConfig = true
+    includeKlusterletAddonConfig = true,
+    handleModalToggle
 ) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
@@ -136,6 +138,7 @@ export const getControlDataAWS = (
     }
     if (includeAutomation) controlData.push(...automationControlData)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     return controlData
 }
 
