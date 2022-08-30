@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
@@ -62,6 +62,7 @@ import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataRHV from './controlData/ControlDataRHV'
 import { getControlDataHypershift } from './controlData/ControlDataHypershift'
 import { getControlDataAI, getControlDataCIM } from './controlData/ControlDataAI'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 
 const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
@@ -92,6 +93,8 @@ export default function CreateClusterPage() {
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [projects, setProjects] = useState<string[]>([])
 
     // setup translation
     const { t } = useTranslation()
@@ -385,13 +388,18 @@ export default function CreateClusterPage() {
         history.goBack()
     }
 
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
     switch (infrastructureType) {
         case 'AWS':
             controlData = getControlDataAWS(
                 true,
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                handleModalToggle
             )
             break
         case 'GCP':
@@ -459,6 +467,17 @@ export default function CreateClusterPage() {
                     <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <HypershiftAgentContext.Provider value={hypershiftValues}>
+                            <Modal
+                                variant={ModalVariant.large}
+                                showClose={false}
+                                isOpen={isModalOpen}
+                                aria-labelledby="modal-wizard-label"
+                                aria-describedby="modal-wizard-description"
+                                onClose={handleModalToggle}
+                                hasNoBodyWrapper
+                            >
+                                <CredentialsForm namespaces={projects!} isEditing={false} isViewing={false} />
+                            </Modal>
                                 <TemplateEditor
                                     wizardClassName={classes.wizardBody}
                                     type={'cluster'}

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Modal, ModalVariant, Button, Wizard } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useRecoilCallback } from 'recoil'
@@ -7,9 +7,11 @@ import { namespacesState } from '../../../../../../atoms'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../../../lib/rbac-util'
 import { getSecret, ProviderConnection, SecretDefinition, unpackProviderConnection } from '../../../../../../resources'
-import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
+export interface IModalWithWizardProps {
+    handleModalToggle: () => void
+}
 
-export const ModalWithWizard: React.FunctionComponent = () => {
+export function ModalWithWizard(props: IModalWithWizardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const params = useParams<{ namespace: string; name: string }>()
@@ -64,20 +66,9 @@ export const ModalWithWizard: React.FunctionComponent = () => {
 
     return (
         <Fragment>
-            <Button variant="secondary" onClick={handleModalToggle}>
+            <Button variant="secondary" onClick={props.handleModalToggle}>
                 {t('Add credential')}
             </Button>
-            <Modal
-                variant={ModalVariant.large}
-                showClose={false}
-                isOpen={isModalOpen}
-                aria-labelledby="modal-wizard-label"
-                aria-describedby="modal-wizard-description"
-                onClose={handleModalToggle}
-                hasNoBodyWrapper
-            >
-                <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
-            </Modal>
         </Fragment>
     )
 }
