@@ -1,7 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
-import { Grid, GridItem } from '@patternfly/react-core'
+import { Alert, Grid, GridItem, Stack, StackItem } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { AcmAlert, AcmTile } from '../../../../ui-components'
+import { AcmTile } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery } from '../search-sdk/search-sdk'
@@ -40,13 +40,12 @@ export default function RelatedResultsTiles(props: {
         )
     } else if (error || !data || !data.searchResult) {
         return (
-            <AcmAlert
-                noClose={true}
-                variant={'danger'}
-                isInline={true}
-                title={t('Query error related to the search results.')}
-                subtitle={error ? error.message : ''}
-            />
+            <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
+                <Stack>
+                    <StackItem>{t('An error occurred while contacting the search service.')}</StackItem>
+                    <StackItem>{error ? error.message : ''}</StackItem>
+                </Stack>
+            </Alert>
         )
     }
 
