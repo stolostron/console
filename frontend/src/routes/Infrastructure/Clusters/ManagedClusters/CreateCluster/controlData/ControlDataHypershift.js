@@ -72,7 +72,7 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
     {
         id: 'hyperhisftNetworkStep',
         type: 'step',
-        title: 'Network',
+        title: 'Networking',
         disabled: true,
     },
     {
