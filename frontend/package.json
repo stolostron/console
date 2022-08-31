@@ -2,6 +2,9 @@
     "name": "frontend",
     "version": "0.0.1",
     "private": true,
+    "engines": {
+        "node": ">=14.x"
+    },
     "scripts": {
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
         "storybook": "start-storybook -p 9000",
