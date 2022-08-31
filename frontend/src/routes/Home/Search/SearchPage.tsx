@@ -164,7 +164,6 @@ function RenderSearchBar(props: {
                     userPreference={userPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
-                {/* {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)} */}
                 <div style={{ display: 'flex' }}>
                     <AcmSearchbar
                         loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}

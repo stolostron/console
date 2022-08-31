@@ -121,7 +121,6 @@ export default function SearchResults(props: { currentQuery: string; preSelected
 
     const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-        // client: process.env.NODE_ENV === 'test' ? undefined : errorClient,
     })
 
     useEffect(() => {

@@ -48,7 +48,6 @@ export default function SavedSearchQueries(props: {
     const { data, error, loading } = useSearchResultCountQuery({
         variables: { input: input },
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-        // client: process.env.NODE_ENV === 'test' ? undefined : errorClient,
     })
 
     const handleKeyPress = useCallback(
