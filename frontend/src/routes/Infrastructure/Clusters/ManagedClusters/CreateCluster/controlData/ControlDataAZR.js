@@ -17,10 +17,12 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { ModalWithWizard } from '../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -441,10 +443,12 @@ const ApplicationCreationPage = [
 export const getControlDataAZR = (
     includeAutomation = true,
     includeSno = false,
-    includeKlusterletAddonConfig = true
+    includeKlusterletAddonConfig = true,
+    handleModalToggle
 ) => {
     if (includeSno) addSnoText(controlDataAZR)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)
+    insertToggleModalFunction(handleModalToggle, controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -494,7 +498,7 @@ const controlDataAZR = [
             required: true,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <ModalWithWizard />,
     },
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////

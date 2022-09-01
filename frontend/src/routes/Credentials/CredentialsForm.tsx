@@ -181,6 +181,8 @@ export function CredentialsForm(props: {
     providerConnection?: ProviderConnection
     isEditing: boolean
     isViewing: boolean
+    infrastructureType?: string
+    handleModalToggle?: () => void
 }) {
     const { t } = useTranslation()
     const { namespaces, providerConnection, isEditing, isViewing } = props
@@ -188,9 +190,23 @@ export function CredentialsForm(props: {
 
     const history = useHistory()
 
-    const [credentialsType, setCredentialsType] = useState(
-        () => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-    )
+    const InfrastructureType = props.infrastructureType?.toLowerCase()
+
+    let selectedInfrastructureType = ''
+    switch (InfrastructureType) {
+        case 'aws':
+            selectedInfrastructureType = Provider.aws
+            break
+        case 'azure':
+            selectedInfrastructureType = Provider.azure
+            break
+        case 'gcp':
+            selectedInfrastructureType = Provider.gcp
+    }
+
+    const [credentialsType, setCredentialsType] = props.infrastructureType
+        ? useState(selectedInfrastructureType)
+        : useState(() => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? '')
 
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -1459,7 +1475,12 @@ export function CredentialsForm(props: {
                         type: 'success',
                         autoClose: true,
                     })
-                    history.push(NavigationPath.credentials)
+                    if (!selectedInfrastructureType) {
+                        history.push(NavigationPath.credentials)
+                    } else {
+                        props.handleModalToggle && props.handleModalToggle()
+                        // set the active to the newly created secret
+                    }
                 })
             }
         },
@@ -1470,7 +1491,10 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
-        cancel: () => history.push(NavigationPath.credentials),
+        cancel: () =>
+            !selectedInfrastructureType
+                ? history.push(NavigationPath.credentials)
+                : props.handleModalToggle && props.handleModalToggle(),
         stateToSyncs,
         stateToData,
     }

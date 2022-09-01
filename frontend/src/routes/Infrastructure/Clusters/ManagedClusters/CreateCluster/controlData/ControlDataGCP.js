@@ -17,10 +17,12 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { ModalWithWizard } from '../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -255,10 +257,12 @@ const GCPworkerInstanceTypes = [
 export const getControlDataGCP = (
     includeAutomation = true,
     includeSno = false,
-    includeKlusterletAddonConfig = true
+    includeKlusterletAddonConfig = true,
+    handleModalToggle
 ) => {
     if (includeSno) addSnoText(controlDataGCP)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataGCP)
+    insertToggleModalFunction(handleModalToggle, controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
@@ -290,7 +294,7 @@ const controlDataGCP = [
         },
         available: [],
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <ModalWithWizard />,
     },
 
     ...clusterDetailsControlData,

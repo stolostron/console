@@ -11,12 +11,13 @@ import { useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import {
     agentClusterInstallsState,
     infraEnvironmentsState,
     managedClustersState,
+    namespacesState,
     secretsState,
     settingsState,
 } from '../../../../../atoms'
@@ -38,6 +39,7 @@ import {
     IResource,
     ProviderConnection,
     Secret,
+    SecretDefinition,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -63,6 +65,8 @@ import getControlDataRHV from './controlData/ControlDataRHV'
 import { getControlDataHypershift } from './controlData/ControlDataHypershift'
 import { getControlDataAI, getControlDataCIM } from './controlData/ControlDataAI'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
+import { ErrorPage } from '../../../../../components/ErrorPage'
 
 const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
@@ -94,7 +98,26 @@ export default function CreateClusterPage() {
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [error, setError] = useState<Error>()
     const [projects, setProjects] = useState<string[]>([])
+
+    const getNamespaces = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot.getPromise(namespacesState),
+        []
+    )
+    useEffect(() => {
+        getNamespaces()
+            .then((namespaces) => {
+                getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                    .then((namespaces: string[]) => setProjects(namespaces.sort()))
+                    .catch(setError)
+            })
+            .catch(setError)
+
+        return undefined
+    }, [getNamespaces])
 
     // setup translation
     const { t } = useTranslation()
@@ -403,10 +426,20 @@ export default function CreateClusterPage() {
             )
             break
         case 'GCP':
-            controlData = getControlDataGCP(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataGCP(
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable,
+                handleModalToggle
+            )
             break
         case 'Azure':
-            controlData = getControlDataAZR(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataAZR(
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable,
+                handleModalToggle
+            )
             break
         case 'vSphere':
             controlData = getControlDataVMW(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
@@ -438,6 +471,8 @@ export default function CreateClusterPage() {
 
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
 
+    if (error) return <ErrorPage error={error} />
+
     return (
         <AcmPage
             header={
@@ -467,17 +502,23 @@ export default function CreateClusterPage() {
                     <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <HypershiftAgentContext.Provider value={hypershiftValues}>
-                            <Modal
-                                variant={ModalVariant.large}
-                                showClose={false}
-                                isOpen={isModalOpen}
-                                aria-labelledby="modal-wizard-label"
-                                aria-describedby="modal-wizard-description"
-                                onClose={handleModalToggle}
-                                hasNoBodyWrapper
-                            >
-                                <CredentialsForm namespaces={projects!} isEditing={false} isViewing={false} />
-                            </Modal>
+                                <Modal
+                                    variant={ModalVariant.large}
+                                    showClose={false}
+                                    isOpen={isModalOpen}
+                                    aria-labelledby="modal-wizard-label"
+                                    aria-describedby="modal-wizard-description"
+                                    onClose={handleModalToggle}
+                                    hasNoBodyWrapper
+                                >
+                                    <CredentialsForm
+                                        namespaces={projects!}
+                                        isEditing={false}
+                                        isViewing={false}
+                                        infrastructureType={infrastructureType}
+                                        handleModalToggle={handleModalToggle}
+                                    />
+                                </Modal>
                                 <TemplateEditor
                                     wizardClassName={classes.wizardBody}
                                     type={'cluster'}

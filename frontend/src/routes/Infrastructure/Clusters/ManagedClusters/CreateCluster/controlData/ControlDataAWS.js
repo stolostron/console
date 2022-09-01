@@ -6,7 +6,6 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
 } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -704,7 +703,6 @@ const controlDataAWS = [
         providerId: 'aws',
         footer: <ModalWithWizard />,
         onSelect: onChangeConnection,
-        // prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
