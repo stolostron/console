@@ -522,9 +522,11 @@ describe('SearchResults Page', () => {
         expect(screen.getAllByText('Loading')).toBeTruthy()
         // This wait pauses till apollo query is returning data
         await wait()
-        // Test that the component has rendered correctly with data
-        // await waitFor(() => expect(screen.queryByText('Error getting related count data')).toBeTruthy())
-        // await waitFor(() => expect(screen.queryByText('Error getting related items data')).toBeTruthy())
+        // Test that the component has rendered errors correctly
+        await waitFor(() => expect(screen.queryByText('Error querying search results')).toBeTruthy())
+        await waitFor(() =>
+            expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy()
+        )
         await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
     })
 })

@@ -1,13 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { PageSection } from '@patternfly/react-core'
+import {
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    PageSection,
+    Stack,
+    StackItem,
+    Title,
+} from '@patternfly/react-core'
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSavedSearchLimit } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
-import { AcmAlert, AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
+import { AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultCountQuery } from '../search-sdk/search-sdk'
@@ -64,13 +73,18 @@ export default function SavedSearchQueries(props: {
     } else if (error) {
         return (
             <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={t('Query error related to saved search results.')}
-                    subtitle={error ? error.message : ''}
-                />
+                <EmptyState>
+                    <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+                    <Title size="lg" headingLevel="h4">
+                        {t('Query error related to saved search results.')}
+                    </Title>
+                    <EmptyStateBody>
+                        <Stack>
+                            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+                            <StackItem>{error ? error.message : ''}</StackItem>
+                        </Stack>
+                    </EmptyStateBody>
+                </EmptyState>
             </PageSection>
         )
     } else if (!loading && !error && (!data || !data.searchResult)) {
