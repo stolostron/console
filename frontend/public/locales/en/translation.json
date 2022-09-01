@@ -299,6 +299,7 @@
     "Cluster Selector": "Cluster Selector",
     "Cluster set bind": "Cluster set bind",
     "Cluster sets": "Cluster sets",
+    "Cluster templates": "Cluster templates",
     "Cluster violation": "Cluster violation",
     "Cluster violations": "Cluster violations",
     "Cluster where the selected Argo application resources are deployed.": "Cluster where the selected Argo application resources are deployed.",
