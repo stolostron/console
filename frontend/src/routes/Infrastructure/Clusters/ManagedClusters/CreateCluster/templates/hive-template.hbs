@@ -19,10 +19,6 @@ metadata:
 {{#if clusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
 {{/if}}
-{{#if_eq infrastructure 'BMC'}}
-  annotations:
-    hive.openshift.io/try-install-once: "true"
-{{/if_eq}}
 
 spec:
   baseDomain: {{{baseDomain}}}  ##baseDomain
@@ -35,27 +31,6 @@ spec:
 
 {{! ==================platform======================= }}
 {{#switch infrastructure}}
-
-  {{#case 'BMC'}}
-    baremetal:
-      libvirtSSHPrivateKeySecretRef:
-        name: {{{@root.name}}}-ssh-private-key
-      hosts:
-        {{#each @root.hosts}}
-        - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
-          namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
-          role: {{{role}}}  ##hosts.{{@index}}.role
-          bmc:
-            address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
-{{#if @root.disableCertificateVerification}}
-            disableCertificateVerification: true
-{{/if}}
-            username: {{{username}}}  ##hosts.{{@index}}.username
-            password: {{{password}}}  ##hosts.{{@index}}.password
-          bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
-          hardwareProfile: default
-        {{/each}}
-  {{/case}}
 
   {{#case 'AWS'}}
     aws:
@@ -135,16 +110,6 @@ spec:
       name: {{{clusterImageSetName}}}
 {{/if}}
 
-{{#if_eq infrastructure 'BMC'}}
-{{#if_gt networks.length 1}}
-    manifestsConfigMapRef:
-      name: ipv6dualstack-featuregate-manifests
-{{/if_gt}}
-    sshKnownHosts:
-{{#each sshKnownHosts}}
-    -  "{{{.}}}"
-{{/each}}
-{{/if_eq}}
   pullSecretRef:
     name: {{{name}}}-pull-secret
 
@@ -171,9 +136,6 @@ metadata:
   {{#case 'Azure'}}
     cloud: Azure
     region: {{{region}}}
-  {{/case}}
-  {{#case 'BMC'}}
-    cloud: BareMetal
   {{/case}}
   {{#case 'vSphere'}}
     cloud: vSphere
@@ -219,36 +181,10 @@ spec:
 
 {{! ========================================================== }}
 {{! ========================================================== }}
-{{! ==================ConfigMap=============================== }}
-{{! ========================================================== }}
-{{! ========================================================== }}
-{{#if_eq infrastructure 'BMC'}}
-{{#if_gt networks.length 1}}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: 'ipv6dualstack-featuregate-manifests'
-  namespace: '{{{name}}}'
-data:
-  ipv6-dual-stack-no-upgrade.yaml: |
-    apiVersion: config.openshift.io/v1
-    kind: FeatureGate
-    metadata:
-      name: cluster
-    spec:
-      featureSet: IPv6DualStackNoUpgrade
-{{/if_gt}}
-{{/if_eq}}
-
-
-{{! ========================================================== }}
-{{! ========================================================== }}
 {{! ==================MachinePool============================= }}
 {{! ========================================================== }}
 {{! ========================================================== }}
 
-{{! bare metal has no workerPools data so this part isn't added }}
 {{#each workerPools}}
 ---
 apiVersion: hive.openshift.io/v1
@@ -402,12 +338,10 @@ stringData:
 type: Opaque
 {{/if}}
 
-{{#if_ne infrastructure 'BMC'}}
 ---
 apiVersion: v1
 kind: Secret
 type: Opaque
-{{/if_ne}}
 
 {{#switch infrastructure}}
 

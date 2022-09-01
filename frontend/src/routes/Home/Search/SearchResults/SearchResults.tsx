@@ -1,6 +1,16 @@
 // Copyright Contributors to the Open Cluster Management project
-import { ExpandableSection, PageSection, Stack, Tooltip } from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import {
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    ExpandableSection,
+    PageSection,
+    Stack,
+    StackItem,
+    Title,
+    Tooltip,
+} from '@patternfly/react-core'
+import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -139,13 +149,18 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     if (error) {
         return (
             <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={t('Error querying search results')}
-                    subtitle={error ? error.message : ''}
-                />
+                <EmptyState>
+                    <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+                    <Title size="lg" headingLevel="h4">
+                        {t('Error querying search results')}
+                    </Title>
+                    <EmptyStateBody>
+                        <Stack>
+                            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+                            <StackItem>{error ? error.message : ''}</StackItem>
+                        </Stack>
+                    </EmptyStateBody>
+                </EmptyState>
             </PageSection>
         )
     }
@@ -153,12 +168,12 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     if (searchResultItems.length === 0) {
         return (
             <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'info'}
-                    isInline={true}
-                    title={t('No results found for the current search criteria.')}
-                />
+                <EmptyState>
+                    <EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />
+                    <Title size="lg" headingLevel="h4">
+                        {t('No results found for the current search criteria.')}
+                    </Title>
+                </EmptyState>
             </PageSection>
         )
     }
@@ -172,8 +187,8 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                 currentQuery={deleteResource.currentQuery}
                 relatedResource={deleteResource.relatedResource}
             />
-            <PageSection>
-                {!isKeywordSearch && (
+            {!isKeywordSearch && (
+                <PageSection>
                     <Stack hasGutter>
                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
                             <ExpandableSection
@@ -204,8 +219,8 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                             />
                         )}
                     </Stack>
-                )}
-            </PageSection>
+                </PageSection>
+            )}
             <SearchResultTables
                 data={searchResultItems}
                 currentQuery={currentQuery}

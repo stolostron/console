@@ -8,3 +8,7 @@
 .btn-disabled {
     cursor: not-allowed !important;
 }
+
+.clusterSelector-container .pf-c-accordion__expanded-content-body::after {
+    background-color: unset;
+}

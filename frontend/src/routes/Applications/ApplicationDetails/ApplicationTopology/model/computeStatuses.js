@@ -86,7 +86,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
             }
             break
         case 'applicationset':
-            if (isDeployable) {
+            if (isDeployable || !isDesign) {
                 pulse = getPulseStatusForGenericNode(node, t)
             } else {
                 pulse = getPulseStatusForArgoApp(node, true)
@@ -291,7 +291,7 @@ export const getPulseStatusForCluster = (node) => {
                 okCount++
             } else if (status === 'pendingimport') {
                 pendingCount++
-            } else if (status === 'offline') {
+            } else if (status === 'offline' || status === 'unknown') {
                 offlineCount++
             }
         }
@@ -459,7 +459,14 @@ const getStateNames = (t) => {
     const deployedStr = t('Deployed')
     const deployedNSStr = t('Created')
     const resNotDeployedStates = [notDeployedStr.toLowerCase(), notDeployedNSStr.toLowerCase()]
-    const resSuccessStates = ['run', 'bound', deployedStr.toLowerCase(), deployedNSStr.toLowerCase(), 'propagated']
+    const resSuccessStates = [
+        'run',
+        'bound',
+        deployedStr.toLowerCase(),
+        deployedNSStr.toLowerCase(),
+        'propagated',
+        'healthy',
+    ]
     return { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates }
 }
 
@@ -507,7 +514,7 @@ export const getPulseForData = (available, desired, podsUnavailable) => {
 ///////////////////////////////////////////////////////////
 export const setApplicationDeployStatus = (node, details, t) => {
     const isDesign = _.get(node, specIsDesign, false)
-    if ((node.type !== 'application' || !isDesign) && node.type !== 'applicationset') {
+    if ((node.type !== 'application' || !isDesign) && (node.type !== 'applicationset' || !isDesign)) {
         return details
     }
 

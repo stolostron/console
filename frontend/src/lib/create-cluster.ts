@@ -11,27 +11,10 @@ import {
     clusterPoolNamespaceLabels,
     AgentClusterInstallKind,
 } from '../resources'
-import { get, keyBy } from 'lodash'
-import { attachBMAs, syncBMAs } from './bare-metal-assets'
 import { deleteResources } from './delete-resources'
 
 export async function createCluster(resources: any[]) {
-    // if creating a bare metal cluster
-    // make sure all the bare metal assets exist
-
-    let assets
     let errors: any[] = []
-    const resourcesMap = keyBy(resources, 'kind')
-    const hosts = get(resourcesMap, 'ClusterDeployment.spec.platform.baremetal.hosts')
-    if (hosts) {
-        ;({ assets, errors } = await syncBMAs(hosts, resources))
-        if (errors.length) {
-            return {
-                status: 'ERROR',
-                messages: errors,
-            }
-        }
-    }
 
     // get namespace and filter out any namespace resource
     // get ClusterDeployment and filter it out to create at the very end
@@ -151,11 +134,6 @@ export async function createCluster(resources: any[]) {
                 messages: errors,
             }
         }
-    }
-    // if this was a bare metal cluster mark the bare metal assets that are used
-    else if (assets) {
-        const clusterName = get(resourcesMap, 'ClusterDeployment.metadata.name')
-        await attachBMAs(assets, hosts, clusterName, errors)
     }
 
     return {

@@ -349,7 +349,7 @@ class ClusterDetailsContainer extends Component {
             icon = 'pending'
         } else if (status.toLowerCase() === 'notaccepted') {
             icon = 'warning'
-        } else if (status.toLowerCase() === 'offline') {
+        } else if (status.toLowerCase() === 'offline' || status.toLowerCase() === 'unknown') {
             icon = 'failure'
         }
 

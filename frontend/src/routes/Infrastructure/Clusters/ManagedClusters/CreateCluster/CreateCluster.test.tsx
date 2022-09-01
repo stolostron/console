@@ -68,31 +68,6 @@ import { PluginContext } from '../../../../../lib/PluginContext'
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
-const providerConnection: ProviderConnection = {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
-    metadata: {
-        name: 'connection',
-        namespace: clusterName,
-        labels: {
-            'cluster.open-cluster-management.io/type': 'bmc',
-        },
-    },
-    stringData: {
-        libvirtURI: 'qemu+ssh://libvirtURI',
-        sshKnownHosts: 'sshKnownHosts',
-        imageMirror: 'image.mirror:123/abc',
-        bootstrapOSImage: 'bootstrapOSImage',
-        clusterOSImage: 'clusterOSImage',
-        additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-        baseDomain,
-        pullSecret: '{"pullSecret":"secret"}',
-        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
-    },
-    type: 'Opaque',
-}
-
 const clusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -310,6 +285,8 @@ const mockPullSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -343,6 +320,8 @@ const mockProviderConnectionSecretCopiedAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     type: 'Opaque',
@@ -499,6 +478,8 @@ const mockPrivateSecretAws = {
         namespace: 'test',
         labels: {
             'cluster.open-cluster-management.io/backup': 'cluster',
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
     },
     stringData: {
@@ -569,11 +550,7 @@ describe('CreateCluster AWS', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
-                    snapshot.set(secretsState, [
-                        providerConnection as Secret,
-                        providerConnectionAnsible as Secret,
-                        providerConnectionAws as Secret,
-                    ])
+                    snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',
@@ -629,10 +606,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -709,10 +683,7 @@ describe('CreateCluster AWS', () => {
 
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -782,10 +753,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -858,10 +826,7 @@ describe('CreateCluster AWS', () => {
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // connection
-        await clickByPlaceholderText('Select a credential')
-        //screen.debug(debug(), 2000000)
-        await clickByText(providerConnectionAws.metadata.name!)
+        // connection should be pre-selected
 
         // step 2 -- the name and imageset
         await typeByTestId('eman', clusterName!)
@@ -917,11 +882,7 @@ describe('CreateCluster on premise', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
-                    snapshot.set(secretsState, [
-                        providerConnection as Secret,
-                        providerConnectionAnsible as Secret,
-                        providerConnectionAws as Secret,
-                    ])
+                    snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',

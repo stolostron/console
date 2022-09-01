@@ -7,7 +7,7 @@ import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -127,23 +127,32 @@ export default function CreateClusterPage() {
     const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
 
-    // if a connection is added outside of wizard, add it to connection selection
-    const [connectionControl, setConnectionControl] = useState()
-    useEffect(() => {
-        if (connectionControl) {
-            setAvailableConnections(connectionControl, secrets)
-        }
-    }, [connectionControl, secrets])
-
     const settings = useRecoilValue(settingsState)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
     const managedClusters = useRecoilValue(managedClustersState)
     const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
+    const onControlChange = useCallback(
+        (control: any) => {
+            if (control.id === 'connection') {
+                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+            }
+        },
+        [providerConnections, setSelectedConnection]
+    )
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
     const [warning, setWarning] = useState<WarningContextType>()
     const hypershiftValues = useHypershiftContextValues()
+
+    // if a connection is added outside of wizard, add it to connection selection
+    const [connectionControl, setConnectionControl] = useState()
+    useEffect(() => {
+        if (connectionControl) {
+            setAvailableConnections(connectionControl, secrets)
+            onControlChange(connectionControl)
+        }
+    }, [connectionControl, onControlChange, secrets])
 
     // Is there a way how to get this without fetching all InfraEnvs?
     const isInfraEnvAvailable = !!infraEnvs?.length
@@ -393,12 +402,6 @@ export default function CreateClusterPage() {
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
         return null
-    }
-
-    function onControlChange(control: any) {
-        if (control.id === 'connection') {
-            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-        }
     }
 
     let controlData: any[]
