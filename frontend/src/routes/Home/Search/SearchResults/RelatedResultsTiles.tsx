@@ -42,7 +42,7 @@ export default function RelatedResultsTiles(props: {
         return (
             <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
                 <Stack>
-                    <StackItem>{t('An error occurred while contacting the search service.')}</StackItem>
+                    <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
                     <StackItem>{error ? error.message : ''}</StackItem>
                 </Stack>
             </Alert>

@@ -154,7 +154,7 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
         // Test that UI shows the error message received from API.
         await waitFor(() =>
-            expect(screen.queryByText('An error occurred while contacting the search service.')).toBeTruthy()
+            expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy()
         )
         await waitFor(() => expect(screen.queryByText('Error getting search schema data')).toBeTruthy())
         // Validate message when managed clusters are disabled.

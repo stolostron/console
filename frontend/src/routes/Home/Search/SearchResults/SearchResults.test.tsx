@@ -525,7 +525,7 @@ describe('SearchResults Page', () => {
         // Test that the component has rendered errors correctly
         await waitFor(() => expect(screen.queryByText('Error querying search results')).toBeTruthy())
         await waitFor(() =>
-            expect(screen.queryByText('An error occurred while contacting the search service.')).toBeTruthy()
+            expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy()
         )
         await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
     })

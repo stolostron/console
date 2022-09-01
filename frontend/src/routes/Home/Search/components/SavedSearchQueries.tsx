@@ -80,7 +80,7 @@ export default function SavedSearchQueries(props: {
                     </Title>
                     <EmptyStateBody>
                         <Stack>
-                            <StackItem>{t('An error occurred while contacting the search service.')}</StackItem>
+                            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
                             <StackItem>{error ? error.message : ''}</StackItem>
                         </Stack>
                     </EmptyStateBody>

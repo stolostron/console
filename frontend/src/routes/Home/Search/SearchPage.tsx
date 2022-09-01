@@ -77,7 +77,7 @@ function HandleErrors(schemaError: ApolloError | undefined, completeError: Apoll
                 </Title>
                 <EmptyStateBody>
                     <Stack>
-                        <StackItem>{t('An error occurred while contacting the search service.')}</StackItem>
+                        <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
                         <StackItem>{extraErrorInfo}</StackItem>
                     </Stack>
                 </EmptyStateBody>
