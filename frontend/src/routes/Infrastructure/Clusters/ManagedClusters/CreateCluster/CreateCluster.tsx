@@ -520,6 +520,8 @@ export default function CreateClusterPage() {
                                         isViewing={false}
                                         infrastructureType={infrastructureType}
                                         handleModalToggle={handleModalToggle}
+                                        // connectionControl={connectionControl}
+                                        // onControlChange={onControlChange}
                                     />
                                 </Modal>
                                 <TemplateEditor

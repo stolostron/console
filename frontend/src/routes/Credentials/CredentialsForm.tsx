@@ -178,19 +178,17 @@ export function CredentialsForm(props: {
     providerConnection?: ProviderConnection
     isEditing: boolean
     isViewing: boolean
-    infrastructureType?: string
-    handleModalToggle?: () => void
+    // infrastructureType?: string
+    // handleModalToggle?: () => void
 }) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing } = props
+    const { namespaces, providerConnection, isEditing, isViewing, infrastructureType, handleModalToggle } = props
     const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
 
-    const InfrastructureType = props.infrastructureType?.toLowerCase()
-
     let selectedInfrastructureType = ''
-    switch (InfrastructureType) {
+    switch (infrastructureType?.toLowerCase()) {
         case 'aws':
             selectedInfrastructureType = Provider.aws
             break
@@ -201,7 +199,7 @@ export function CredentialsForm(props: {
             selectedInfrastructureType = Provider.gcp
     }
 
-    const [credentialsType, setCredentialsType] = props.infrastructureType
+    const [credentialsType, setCredentialsType] = infrastructureType
         ? useState(selectedInfrastructureType)
         : useState(() => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? '')
 
@@ -1371,8 +1369,14 @@ export function CredentialsForm(props: {
                     if (!selectedInfrastructureType) {
                         history.push(NavigationPath.credentials)
                     } else {
-                        props.handleModalToggle && props.handleModalToggle()
+                        handleModalToggle && handleModalToggle()
                         // set the active to the newly created secret
+                        // if (connectionControl.setActive) {
+                        //     connectionControl.setActive(name)
+                        //     connectionControl && onControlChange(connectionControl)
+                        //     setName(name)
+                        //     debugger
+                        // }
                     }
                 })
             }
@@ -1387,7 +1391,7 @@ export function CredentialsForm(props: {
         cancel: () =>
             !selectedInfrastructureType
                 ? history.push(NavigationPath.credentials)
-                : props.handleModalToggle && props.handleModalToggle(),
+                : handleModalToggle && handleModalToggle(),
         stateToSyncs,
         stateToData,
     }

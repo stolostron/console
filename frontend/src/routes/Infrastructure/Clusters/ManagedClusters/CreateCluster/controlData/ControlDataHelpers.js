@@ -189,7 +189,7 @@ export const setAvailableConnections = (control, secrets) => {
         control.noHandlebarReplacements = true
         control.isLoaded = true
     })
-    control.available = connections.map((secret) => secret.metadata.name)
+    control.available = connections.map((secret) => secret.metadata.name).sort((a, b) => a.localeCompare(b))
     if (
         Array.isArray(control.providerId)
             ? !control.providerId.includes('hostinventory')
@@ -725,6 +725,6 @@ export const insertToggleModalFunction = (handleToggleModal, controlData) => {
     const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
 
     if (currentConnectionComponentIdx > -1) {
-        controlData[currentConnectionComponentIdx].footer = ( <ModalWithWizard handleModalToggle={handleToggleModal} />)
+        controlData[currentConnectionComponentIdx].footer = <ModalWithWizard handleModalToggle={handleToggleModal} />
     }
 }
