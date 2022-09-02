@@ -25,7 +25,7 @@ export function ScaleClusterAlert() {
     )?.length
 
     // Do not display alert if the deployment does not use MachinePools
-    if (machinePools.length === 0 || cluster?.provider === Provider.baremetal) {
+    if (machinePools.length === 0) {
         return <Fragment />
     }
 
