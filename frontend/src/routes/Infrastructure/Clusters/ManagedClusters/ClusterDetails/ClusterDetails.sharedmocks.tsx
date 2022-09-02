@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 import { Cluster, ClusterStatus, MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources'
 import { Provider } from '../../../../../ui-components'
 
