@@ -15,7 +15,10 @@ export async function getSubscriptionResourceStatuses(application, appData) {
     }
 
     // get resource statuses
-    const resourceStatuses = await getResourceStatuses(application, appData)
+    let resourceStatuses = await getResourceStatuses(application, appData)
+    const clusterResources = resourceStatuses.data.searchResult[0].related.filter(({ kind }) => kind === 'cluster')
+    const clusterItems = clusterResources[0].items
+    debugger
 
     return { resourceStatuses, relatedResources }
 }
@@ -144,6 +147,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
     if (cluster) {
         query.filters.push({ property: 'cluster', values: [cluster] })
     }
+    // debugger
     return searchClient.query({
         query: SearchResultRelatedItemsDocument,
         variables: {
@@ -158,6 +162,7 @@ const getQueryStringForResource = (resourcename, name, namespace) => {
     let resource = ''
     const nameForQuery = name ? `name:${name}` : ''
     const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
+    const clusterExcludeQuery = `cluster:!magchen-managed`
     if (resourcename) {
         switch (resourcename) {
             case 'Subscription':
