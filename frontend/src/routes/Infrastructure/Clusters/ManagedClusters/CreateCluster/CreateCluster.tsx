@@ -62,8 +62,9 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataRHV from './controlData/ControlDataRHV'
-import { getControlDataHypershift } from './controlData/ControlDataHypershift'
-import { getControlDataAI, getControlDataCIM } from './controlData/ControlDataAI'
+import getControlDataHypershift from './controlData/ControlDataHypershift'
+import getControlDataCIM from './controlData/ControlDataCIM'
+import getControlDataAI from './controlData/ControlDataAI'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
 import { ErrorPage } from '../../../../../components/ErrorPage'
@@ -445,27 +446,37 @@ export default function CreateClusterPage() {
             )
             break
         case 'vSphere':
-            controlData = getControlDataVMW(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataVMW(
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable,
+                handleModalToggle
+            )
             break
         case 'OpenStack':
-            controlData = getControlDataOST(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataOST(
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable,
+                handleModalToggle
+            )
             break
         case 'RHV':
-            controlData = getControlDataRHV(true, isACMAvailable)
+            controlData = getControlDataRHV(true, isACMAvailable, handleModalToggle)
             break
         case 'CIMHypershift':
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(isACMAvailable, <Warning />)
+            controlData = getControlDataHypershift(true, isACMAvailable, <Warning />, handleModalToggle)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'CIM':
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(isACMAvailable, <Warning />)
-            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            controlData = getControlDataCIM(isACMAvailable, <Warning />, handleModalToggle)
+            breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'AI':
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(isACMAvailable)
+            controlData = getControlDataAI(isACMAvailable, handleModalToggle)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
             break
         default:

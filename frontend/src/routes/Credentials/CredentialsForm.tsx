@@ -178,8 +178,8 @@ export function CredentialsForm(props: {
     providerConnection?: ProviderConnection
     isEditing: boolean
     isViewing: boolean
-    // infrastructureType?: string
-    // handleModalToggle?: () => void
+    infrastructureType?: string
+    handleModalToggle?: () => void
 }) {
     const { t } = useTranslation()
     const { namespaces, providerConnection, isEditing, isViewing, infrastructureType, handleModalToggle } = props
@@ -197,6 +197,21 @@ export function CredentialsForm(props: {
             break
         case 'gcp':
             selectedInfrastructureType = Provider.gcp
+            break
+        case 'openstack':
+            selectedInfrastructureType = Provider.openstack
+            break
+        case 'rhv':
+            selectedInfrastructureType = Provider.redhatvirtualization
+            break
+        case 'vsphere':
+            selectedInfrastructureType = Provider.vmware
+            break
+        case 'cimhypershift':
+        case 'cim':
+        case 'ai':
+            selectedInfrastructureType = Provider.hostinventory
+            break
     }
 
     const [credentialsType, setCredentialsType] = infrastructureType

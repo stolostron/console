@@ -721,6 +721,18 @@ export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, contro
     })
 }
 
+export const appendWarning = (warning, controlData) => {
+    const warningIdx = controlData.findIndex((control) => control.id === 'warning')
+    if (warningIdx > -1) {
+        controlData[warningIdx].active = warning
+    }
+    controlData.push({
+        id: 'warning',
+        type: 'custom',
+        component: warning,
+    })
+}
+
 export const insertToggleModalFunction = (handleToggleModal, controlData) => {
     const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
 

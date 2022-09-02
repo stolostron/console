@@ -2,7 +2,6 @@
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,

@@ -2,7 +2,6 @@
 
 import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
     clusterDetailsControlData,
@@ -15,15 +14,18 @@ import {
     onChangeSNO,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { ModalWithWizard } from '../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
-export const getControlDataRHV = (includeAutomation = true, includeKlusterletAddonConfig = true) => {
+export const getControlDataRHV = (includeAutomation = true, includeKlusterletAddonConfig = true, handleModalToggle) => {
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataRHV)
+    insertToggleModalFunction(handleModalToggle, controlDataRHV)
     if (includeAutomation) return [...controlDataRHV, ...automationControlData]
     return [...controlDataRHV]
 }
@@ -54,8 +56,8 @@ const controlDataRHV = [
             required: true,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
+        footer: <ModalWithWizard />,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
