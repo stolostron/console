@@ -69,11 +69,7 @@ import {
     MultiClusterEngineKind,
 } from '../../../../../resources/multi-cluster-engine'
 import ClusterDetails from './ClusterDetails'
-import {
-    clusterName,
-    mockMachinePoolAuto,
-    mockMachinePoolManual,
-} from './ClusterMachinePools/ClusterDetails.sharedmocks'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,

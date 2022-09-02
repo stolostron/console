@@ -9,40 +9,7 @@ import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/noc
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
-import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
-
-const mockCluster: Cluster = {
-    name: clusterName,
-    displayName: clusterName,
-    namespace: clusterName,
-    uid: clusterName,
-    status: ClusterStatus.ready,
-    distribution: {
-        k8sVersion: '1.19',
-        ocp: undefined,
-        displayVersion: '1.19',
-        isManagedOpenShift: false,
-    },
-    labels: undefined,
-    kubeApiServer: '',
-    consoleURL: '',
-    hive: {
-        isHibernatable: true,
-        clusterPool: undefined,
-        secrets: {
-            installConfig: '',
-        },
-    },
-    isHive: true,
-    isManaged: true,
-    isCurator: false,
-    isHostedCluster: false,
-    isSNOCluster: false,
-    owner: {},
-    kubeconfig: '',
-    kubeadmin: '',
-    isHypershift: false,
-}
+import { mockCluster, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.sharedmocks'
 
 describe('ClusterMachinePools', () => {
     beforeEach(() => {
