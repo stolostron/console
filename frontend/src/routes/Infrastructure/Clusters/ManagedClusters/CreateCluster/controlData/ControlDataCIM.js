@@ -7,7 +7,7 @@ import {
     appendWarning,
     insertToggleModalFunction,
 } from './ControlDataHelpers'
-import { ModalWithWizard } from '../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataCIM = (includeKlusterletAddonConfig = true, warning, handleModalToggle) => {
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataCIM)
@@ -51,7 +51,7 @@ const controlDataCIM = [
             required: false,
         },
         available: [],
-        footer: <ModalWithWizard />,
+        footer: <CreateCredentialModal />,
     },
     {
         id: 'ai',

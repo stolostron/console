@@ -9,7 +9,7 @@ import {
     appendWarning,
     insertToggleModalFunction,
 } from './ControlDataHelpers'
-import { ModalWithWizard } from '../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataHypershift = (
     includeAutomation = true,
@@ -59,7 +59,7 @@ const controlDataHypershift = [
             required: false,
         },
         available: [],
-        footer: <ModalWithWizard />,
+        footer: <CreateCredentialModal />,
     },
     {
         id: 'hypershift',

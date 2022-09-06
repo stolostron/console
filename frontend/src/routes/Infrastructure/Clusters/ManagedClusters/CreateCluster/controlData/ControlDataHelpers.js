@@ -18,7 +18,7 @@ import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
-import { ModalWithWizard } from '../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const CREATE_CLOUD_CONNECTION = {
     prompt: 'creation.ocp.cloud.add.connection',
@@ -737,6 +737,8 @@ export const insertToggleModalFunction = (handleToggleModal, controlData) => {
     const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
 
     if (currentConnectionComponentIdx > -1) {
-        controlData[currentConnectionComponentIdx].footer = <ModalWithWizard handleModalToggle={handleToggleModal} />
+        controlData[currentConnectionComponentIdx].footer = (
+            <CreateCredentialModal handleModalToggle={handleToggleModal} />
+        )
     }
 }

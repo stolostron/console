@@ -2,7 +2,7 @@
 
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFunction } from './ControlDataHelpers'
-import { ModalWithWizard } from '../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataAI = (includeKlusterletAddonConfig = true, handleModalToggle) => {
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAI)
@@ -43,7 +43,7 @@ export const controlDataAI = [
             required: false,
         },
         available: [],
-        footer: <ModalWithWizard />,
+        footer: <CreateCredentialModal />,
     },
     {
         id: 'ai',

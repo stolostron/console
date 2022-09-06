@@ -616,7 +616,7 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        isDisabled: isEditing,
+                        isDisabled: infrastructureType ? true : isEditing,
                     },
                     {
                         id: 'credentialsName',

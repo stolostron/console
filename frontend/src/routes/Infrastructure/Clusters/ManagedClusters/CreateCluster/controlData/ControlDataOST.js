@@ -28,7 +28,7 @@ import {
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
-import { ModalWithWizard } from '../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -72,7 +72,7 @@ const controlDataOST = [
         },
         available: [],
         onSelect: onChangeConnection,
-        footer: <ModalWithWizard />,
+        footer: <CreateCredentialModal />,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
