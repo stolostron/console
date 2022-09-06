@@ -23,6 +23,12 @@ export function ScaleClusterAlert() {
             node.labels?.['node-role.kubernetes.io/worker'] !== undefined &&
             node.labels?.['node-role.kubernetes.io/master'] === undefined
     )?.length
+
+    // Do not display alert if the deployment does not use MachinePools
+    if (machinePools.length === 0) {
+        return <Fragment />
+    }
+
     let totalDesiredReplicas = 0
     machinePools.forEach((mp) => {
         if (mp.status?.replicas) {
@@ -33,11 +39,6 @@ export function ScaleClusterAlert() {
     // SubmarinerConfig will only provision new nodes for AWS
     if (subConfig && cluster?.provider === Provider.aws) {
         totalDesiredReplicas += subConfig?.spec?.gatewayConfig?.gateways ?? 1 // gateway is 1 by default
-    }
-
-    switch (cluster?.provider) {
-        case Provider.baremetal:
-            return <Fragment />
     }
 
     if (
