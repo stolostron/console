@@ -512,14 +512,27 @@ class ControlPanelComboBox extends React.Component {
         const clickedWithinToggle = e && this.toggleRef && this.toggleRef.contains && this.toggleRef.contains(e.target)
         if (!(this.state.searchText || clickedWithinClear) || clickedWithinToggle) {
             const { control } = this.props
-            const { simplified } = control
+            const { simplified, availableMap, hasReplacements } = control
             this.setState((preState) => {
-                let { currentAvailable, currentSelection, sortToTop, searchText, isOpen } = preState
+                let { active, currentAvailable, currentSelection, sortToTop, searchText, isOpen } = preState
                 isOpen = !isOpen
                 if (!isOpen) {
                     currentAvailable = []
                     currentSelection = undefined
                     searchText = null
+
+                    // if user is editting a combo with a comment
+                    // remove the comment
+                    if (availableMap && !hasReplacements) {
+                        setTimeout(() => {
+                            const beg = this.inputRef.selectionStart
+                            const end = this.inputRef.selectionEnd
+                            if (beg !== 0 && beg === end) {
+                                this.inputRef.value = availableMap[active] || active
+                                this.inputRef.setSelectionRange(beg, beg)
+                            }
+                        })
+                    }
                 } else if (this.inputRef.value && !simplified) {
                     sortToTop = this.inputRef.value
                 }
