@@ -214,10 +214,11 @@ export function CredentialsForm(props: {
             break
     }
 
-    const [credentialsType, setCredentialsType] = infrastructureType
-        ? useState(selectedInfrastructureType)
-        : useState(() => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? '')
-
+    const [credentialsType, setCredentialsType] = useState(
+        infrastructureType
+            ? selectedInfrastructureType
+            : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+    )
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
     const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
