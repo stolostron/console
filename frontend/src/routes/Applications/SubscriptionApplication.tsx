@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '../../ui-components'
 import Handlebars from 'handlebars'
 import { Location } from 'history'
@@ -47,6 +47,7 @@ import ObjTemplate from './CreateApplication/Subscription/templates/templateObje
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import CredentialsForm from '../Credentials/CredentialsForm'
 
 interface CreationStatus {
     status: string
@@ -63,6 +64,7 @@ const Portals = Object.freeze({
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
     const [title, setTitle] = useState<string>(t('Create application'))
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     // create portals for buttons in header
     const switches = (
@@ -78,6 +80,10 @@ export default function CreateSubscriptionApplicationPage() {
         </div>
     )
 
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
     return (
         <AcmPage
             header={
@@ -92,7 +98,26 @@ export default function CreateSubscriptionApplicationPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
                     <PageSection variant="light" type="wizard">
-                        {CreateSubscriptionApplication(setTitle)}
+                        <Modal
+                            variant={ModalVariant.large}
+                            showClose={false}
+                            isOpen={isModalOpen}
+                            aria-labelledby="modal-wizard-label"
+                            aria-describedby="modal-wizard-description"
+                            onClose={handleModalToggle}
+                            hasNoBodyWrapper
+                        >
+                            <CredentialsForm
+                                // namespaces={projects!}
+                                isEditing={false}
+                                isViewing={false}
+                                infrastructureType={'ans'}
+                                handleModalToggle={handleModalToggle}
+                                // connectionControl={connectionControl}
+                                // onControlChange={onControlChange}
+                            />
+                        </Modal>
+                        {CreateSubscriptionApplication(setTitle, handleModalToggle)}
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -100,7 +125,7 @@ export default function CreateSubscriptionApplicationPage() {
     )
 }
 
-export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>) {
+export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>, handleModalToggle: any) {
     const history = useHistory()
     const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
@@ -355,7 +380,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                 type={'application'}
                 title={t('application.create.yaml')}
                 monacoEditor={<MonacoEditor />}
-                controlData={getControlData(isLocalCluster)}
+                controlData={getControlData(isLocalCluster, handleModalToggle)}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}

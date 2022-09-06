@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, Fragment } from 'react'
 import { useRecoilState } from 'recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -27,6 +27,7 @@ import TemplateEditor from '../../../../../components/TemplateEditor'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import CredentialsForm from '../../../../Credentials/CredentialsForm'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -103,6 +104,8 @@ export function CreateClusterPool() {
     const toastContext = useContext(AcmToastContext)
     const [settings] = useRecoilState(settingsState)
     const [clusterPools] = useRecoilState(clusterPoolsState)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [infrastructureType, setInfrastructureType] = useState('aws')
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
@@ -133,6 +136,10 @@ export function CreateClusterPool() {
                 history.push(NavigationPath.clusterPools)
             }
         }
+    }
+
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
     }
 
     // cancel button
@@ -228,27 +235,49 @@ export function CreateClusterPool() {
     }
 
     return (
-        <TemplateEditor
-            type={'ClusterPool'}
-            title={'ClusterPool YAML'}
-            monacoEditor={<MonacoEditor />}
-            controlData={getControlData(
-                settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled'
-            )}
-            template={template}
-            portals={Portals}
-            fetchControl={fetchControl}
-            createControl={{
-                createResource,
-                cancelCreate,
-                pauseCreate: () => {},
-                creationStatus: creationStatus?.status,
-                creationMsg: creationStatus?.messages,
-            }}
-            logging={process.env.NODE_ENV !== 'production'}
-            onControlInitialize={onControlInitialize}
-            i18n={i18n}
-        />
+        <Fragment>
+            <Modal
+                variant={ModalVariant.large}
+                showClose={false}
+                isOpen={isModalOpen}
+                aria-labelledby="modal-wizard-label"
+                aria-describedby="modal-wizard-description"
+                onClose={handleModalToggle}
+                hasNoBodyWrapper
+            >
+                <CredentialsForm
+                    // namespaces={projects!}
+                    isEditing={false}
+                    isViewing={false}
+                    infrastructureType={infrastructureType}
+                    handleModalToggle={handleModalToggle}
+                    // connectionControl={connectionControl}
+                    // onControlChange={onControlChange}
+                />
+            </Modal>
+            <TemplateEditor
+                type={'ClusterPool'}
+                title={'ClusterPool YAML'}
+                monacoEditor={<MonacoEditor />}
+                controlData={getControlData(
+                    settings.awsPrivateWizardStep === 'enabled',
+                    settings.singleNodeOpenshift === 'enabled',
+                    handleModalToggle
+                )}
+                template={template}
+                portals={Portals}
+                fetchControl={fetchControl}
+                createControl={{
+                    createResource,
+                    cancelCreate,
+                    pauseCreate: () => {},
+                    creationStatus: creationStatus?.status,
+                    creationMsg: creationStatus?.messages,
+                }}
+                logging={process.env.NODE_ENV !== 'production'}
+                onControlInitialize={onControlInitialize}
+                i18n={i18n}
+            />
+        </Fragment>
     )
 }

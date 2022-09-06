@@ -192,6 +192,9 @@ export function CredentialsForm(props: {
         case 'aws':
             selectedInfrastructureType = Provider.aws
             break
+        case 'ans':
+            selectedInfrastructureType = Provider.ansible
+            break
         case 'azure':
             selectedInfrastructureType = Provider.azure
             break

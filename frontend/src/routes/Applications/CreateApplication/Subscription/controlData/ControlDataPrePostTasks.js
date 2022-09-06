@@ -13,6 +13,13 @@
 
 import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
+import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+
+const getControlDataPrePostTasks = (handleModalToggle) => {
+    insertToggleModalFunction(handleModalToggle, prePostTasks)
+    return [...prePostTasks]
+}
 
 const prePostTasks = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +37,7 @@ const prePostTasks = [
     {
         name: 'creation.app.ansible.credential.name',
         tooltip: 'tooltip.creation.app.ansibleSecretName',
-        id: 'ansibleSecretName',
+        id: 'connection',
         type: 'singleselect',
         active: '',
         placeholder: 'app.enter.select.ansibleSecretName',
@@ -38,15 +45,8 @@ const prePostTasks = [
         fetchAvailable: loadExistingAnsibleProviders(),
         reverse: 'Subscription[0].spec.hooksecretref.name',
         validation: {},
-        prompts: {
-            prompt: 'creation.ocp.cloud.add.connection',
-            icon: <ExternalLinkAltIcon />,
-            type: 'link',
-            url: '/multicloud/credentials/add', // launch to credential page
-            positionBottomRight: true,
-            id: 'add-provider-connection',
-        },
+        footer: <CreateCredentialModal />,
     },
 ]
 
-export default prePostTasks
+export default getControlDataPrePostTasks
