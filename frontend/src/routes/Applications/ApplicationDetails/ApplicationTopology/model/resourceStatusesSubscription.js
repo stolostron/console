@@ -18,30 +18,39 @@ export async function getSubscriptionResourceStatuses(application, appData) {
     let resourceStatuses = await getResourceStatuses(application, appData)
     const clusterResources = resourceStatuses.data.searchResult[0].related.filter(({ kind }) => kind === 'cluster')
     const clusterItems = clusterResources[0].items
-    debugger
+    let excludeClusterList = []
+    clusterItems.forEach((cluster) => {
+        if (cluster.ManagedClusterConditionAvailable === 'Unknown') {
+            excludeClusterList.push(`!${cluster.name}`)
+        }
+    })
+
+    if (excludeClusterList.length > 0) {
+        resourceStatuses = await getResourceStatuses(application, appData, excludeClusterList)
+    }
 
     return { resourceStatuses, relatedResources }
 }
 
-async function getResourceStatuses(application, appData) {
+async function getResourceStatuses(application, appData, excludeClusterList) {
     let query
     const { name, namespace } = application
     if (appData) {
         //query asking for a subset of related kinds and possibly for one subscription only
         if (appData.subscription) {
             //get related resources only for the selected subscription
-            query = getQueryStringForResource('Subscription', appData.subscription, namespace)
+            query = getQueryStringForResource('Subscription', appData.subscription, namespace, excludeClusterList)
             //ask only for these type of resources
             query.relatedKinds = appData.relatedKinds
         } else {
             //get related resources only for the selected application
-            query = getQueryStringForResource('Application', name, namespace)
+            query = getQueryStringForResource('Application', name, namespace, excludeClusterList)
 
             //get related resources for the application, but only this subset
             query.relatedKinds = appData.relatedKinds
         }
     } else {
-        query = getQueryStringForResource('Application', name, namespace)
+        query = getQueryStringForResource('Application', name, namespace, excludeClusterList)
     }
     return searchClient.query({
         query: SearchResultRelatedItemsDocument,
@@ -158,11 +167,11 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
     })
 }
 
-const getQueryStringForResource = (resourcename, name, namespace) => {
+const getQueryStringForResource = (resourcename, name, namespace, excludeClusterList) => {
     let resource = ''
     const nameForQuery = name ? `name:${name}` : ''
     const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
-    const clusterExcludeQuery = `cluster:!magchen-managed`
+    const clusterExcludeQuery = excludeClusterList ? `cluster:${excludeClusterList}` : ''
     if (resourcename) {
         switch (resourcename) {
             case 'Subscription':
@@ -175,5 +184,5 @@ const getQueryStringForResource = (resourcename, name, namespace) => {
                 resource = `kind:${resourcename} `
         }
     }
-    return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery}`)
+    return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery} ${clusterExcludeQuery}`)
 }
