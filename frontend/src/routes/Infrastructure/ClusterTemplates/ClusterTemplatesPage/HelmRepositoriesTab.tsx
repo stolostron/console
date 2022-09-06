@@ -18,62 +18,39 @@ import {
   ModalVariant,
   PageSection,
   Skeleton,
+  Truncate,
+  Text,
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import { sortable } from '@patternfly/react-table';
-import { ExternalLink } from 'openshift-assisted-ui-lib/cim';
 import { helmRepoGVK } from '../constants';
 import { HelmChartRepository, HelmRepoIndex } from '../types';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import { useHelmRepositoryIndex, getRepoCharts } from '../hooks/useHelmRepositoryIndex';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
-
-const columns = [
-  {
-    title: 'Name',
-    sort: 'metadata.name',
-    transforms: [sortable],
-    id: 'name',
-  },
-  {
-    title: 'Repo URL',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
-    id: 'url',
-  },
-  {
-    title: 'Helm charts',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
-    id: 'charts',
-  },
-  {
-    title: 'Templates published',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
-    id: 'templates',
-  },
-  {
-    title: '',
-    id: 'kebab-menu',
-    props: { className: 'pf-c-table__action' },
-  },
-];
+import { useTranslation } from '../../../../lib/acm-i18next';
 
 const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColumnIDs }) => {
   const [isOpen, setOpen] = React.useState(false);
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(helmRepoGVK);
-  const { indexFile, loaded, error } = React.useContext(RowContext);
+  const {
+    indexFile,
+    loaded: repoIndexLoaded,
+    error: repoIndexError,
+  } = React.useContext(RowContext);
   const [templates, templatesLoaded, loadError] = useClusterTemplates();
+  const { t } = useTranslation();
 
   const templatesFromRepo = templates.filter(
     (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
   );
 
-  const chartsFromRepo = indexFile
-    ? getRepoCharts(indexFile, obj.metadata?.name || '').length
-    : '-';
+  const repositoryCharts = indexFile
+    ? getRepoCharts(indexFile, obj.metadata?.name || '')
+    : undefined;
+  const chartsCount = repositoryCharts?.length ?? '-';
+  const chartsUpdatedAt = indexFile ? new Date(indexFile.generated).toLocaleString() : '-';
 
   return (
     <>
@@ -85,12 +62,29 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
         />
       </TableData>
       <TableData id="url" activeColumnIDs={activeColumnIDs}>
-        <ExternalLink href={obj.spec.connectionConfig.url} />
+        <Text
+          component="a"
+          href={obj.spec.connectionConfig.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Truncate
+            content={obj.spec.connectionConfig.url}
+            position={'middle'}
+            trailingNumChars={10}
+          />
+        </Text>
+      </TableData>
+      <TableData id="credentials" activeColumnIDs={activeColumnIDs}>
+        {obj.spec.connectionConfig.tlsConfig ? t('Authenticated') : t('Not required')}
+      </TableData>
+      <TableData id="updated-at" activeColumnIDs={activeColumnIDs}>
+        {!repoIndexLoaded ? <Skeleton /> : repoIndexError ? <>-</> : <>{chartsUpdatedAt}</>}
       </TableData>
       <TableData id="charts" activeColumnIDs={activeColumnIDs}>
-        {!loaded ? <Skeleton /> : error ? <>-</> : <>{chartsFromRepo}</>}
+        {!repoIndexLoaded ? <Skeleton /> : repoIndexError ? <>-</> : <>{chartsCount}</>}
       </TableData>
-      <TableData id="url" activeColumnIDs={activeColumnIDs}>
+      <TableData id="templates" activeColumnIDs={activeColumnIDs}>
         {!templatesLoaded ? (
           <Skeleton />
         ) : loadError ? (
@@ -100,6 +94,9 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
             {templatesFromRepo.length}
           </Label>
         )}
+      </TableData>
+      <TableData id="group" activeColumnIDs={activeColumnIDs}>
+        -
       </TableData>
       <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
         <Dropdown
@@ -114,7 +111,7 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
               }}
               key="delete"
             >
-              Delete HelmChartRepository
+              {t('Delete HelmChartRepository')}
             </DropdownItem>,
           ]}
           position="right"
@@ -124,7 +121,7 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
         <Modal
           variant={ModalVariant.small}
           isOpen
-          title="Delete HelmChartRepository"
+          title={t('Delete HelmChartRepository')}
           titleIconVariant="warning"
           showClose
           onClose={() => setDeleteOpen(false)}
@@ -140,14 +137,14 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
                 setDeleteOpen(false);
               }}
             >
-              Delete
+              {t('Delete')}
             </Button>,
             <Button key="cancel" variant="link" onClick={() => setDeleteOpen(false)}>
-              Cancel
+              {t('Cancel')}
             </Button>,
           ]}
         >
-          Are you sure you want to delete ?
+          {t('Are you sure you want to delete?')}
         </Modal>
       )}
     </>
@@ -167,7 +164,60 @@ const RowContext = React.createContext<{
 const HelmRepositoriesTab = () => {
   const [repositories, loaded, loadError] = useHelmRepositories();
   const [repoIndex, repoLoaded, repoError] = useHelmRepositoryIndex();
+  const { t } = useTranslation();
 
+  const columns = React.useMemo(
+    () => [
+      {
+        title: t('Name'),
+        sort: 'metadata.name',
+        transforms: [sortable],
+        id: 'name',
+      },
+      {
+        title: t('URL'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'url',
+      },
+      {
+        title: t('Credentials'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'credentials',
+      },
+      {
+        title: t('Last updated'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'updated-at',
+      },
+      {
+        title: t('Helm charts'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'charts',
+      },
+      {
+        title: t('Templates published'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'templates',
+      },
+      {
+        title: t('Group'),
+        sort: 'spec.connectionConfig.url',
+        transforms: [sortable],
+        id: 'group',
+      },
+      {
+        title: '',
+        id: 'kebab-menu',
+        props: { className: 'pf-c-table__action' },
+      },
+    ],
+    [t],
+  );
   return (
     <PageSection>
       <RowContext.Provider

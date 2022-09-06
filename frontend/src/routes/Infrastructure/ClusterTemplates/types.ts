@@ -5,6 +5,8 @@ export type HelmChartRepository = K8sResourceCommon & {
   spec: {
     connectionConfig: {
       url: string;
+      tlsConfig?: { name: string };
+      ca?: { name: string };
     };
   };
 };
@@ -33,12 +35,15 @@ export type ClusterTemplateInstance = K8sResourceCommon & {
 };
 
 export type HelmRepoIndex = {
+  apiVersion: string;
   entries: {
     [key: string]: {
       name: string;
       version: string;
+      created: string;
     }[];
   };
+  generated: string;
 };
 
 export type ClusterTemplateQuota = K8sResourceCommon & {

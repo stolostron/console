@@ -35,4 +35,4 @@ export const getRepoCharts = (index: HelmRepoIndex, repoName: string) =>
     })
     .reduce((acc, k) => {
       return [...acc, ...(index?.entries?.[k] || [])];
-    }, [] as { name: string; version: string }[]);
+    }, [] as { name: string; version: string; created: string }[]);

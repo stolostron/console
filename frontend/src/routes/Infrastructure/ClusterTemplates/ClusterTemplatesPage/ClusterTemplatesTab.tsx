@@ -73,7 +73,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
         <ResourceLink groupVersionKind={helmRepoGVK} name={obj.spec.helmChartRef.repository} />
       </TableData>
       <TableData id="helm-chart" activeColumnIDs={activeColumnIDs}>
-        {obj.spec.helmChartRef.name}
+        {obj.spec.helmChartRef?.name}
       </TableData>
       <TableData id="pipeline" activeColumnIDs={activeColumnIDs}>
         {obj.spec.clusterSetup.pipeline?.name}
