@@ -47,6 +47,7 @@ const mockClusterNoAvailable: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
@@ -89,6 +90,7 @@ const mockClusterReady1: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
@@ -131,6 +133,7 @@ const mockClusterReady2: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
@@ -173,6 +176,7 @@ const mockClusterOffline: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 const mockClusterFailedUpgrade: Cluster = {
     name: 'cluster-4-failedupgrade',
@@ -215,6 +219,7 @@ const mockClusterFailedUpgrade: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 const allClusters: Array<Cluster> = [
     mockClusterNoAvailable,
