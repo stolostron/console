@@ -3,8 +3,17 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import {
+    ButtonVariant,
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    PageSection,
+    Stack,
+    StackItem,
+    Title,
+} from '@patternfly/react-core'
+import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -13,15 +22,7 @@ import { userPreferencesState, useSavedSearchLimit } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
-import {
-    AcmActionGroup,
-    AcmAlert,
-    AcmButton,
-    AcmDropdown,
-    AcmPage,
-    AcmScrollable,
-    AcmSearchbar,
-} from '../../../ui-components'
+import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable, AcmSearchbar } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
@@ -48,29 +49,39 @@ const useStyles = makeStyles({
     },
 })
 
-// Adds AcmAlert to page if there's errors from the Apollo queries.
 function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
     const { t } = useTranslation()
     const notEnabled = 'not enabled'
-    if (schemaError || completeError) {
+    if (schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)) {
         return (
-            <div style={{ marginBottom: '1rem' }}>
-                <AcmAlert
-                    noClose
-                    variant={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? 'info'
-                            : 'danger'
-                    }
-                    isInline
-                    title={
-                        schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)
-                            ? t('search.filter.info.title')
-                            : t('search.filter.errors.title')
-                    }
-                    subtitle={schemaError?.message || completeError?.message}
-                />
-            </div>
+            <EmptyState>
+                <EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />
+                <Title size="lg" headingLevel="h4">
+                    {t('search.filter.info.title')}
+                </Title>
+                <EmptyStateBody>{schemaError?.message || completeError?.message}</EmptyStateBody>
+            </EmptyState>
+        )
+    } else if (schemaError || completeError) {
+        const unexpectedToken = 'Unexpected token'
+        const extraErrorInfo =
+            (!schemaError?.message.includes(unexpectedToken) &&
+                !completeError?.message.includes(unexpectedToken) &&
+                schemaError?.message) ||
+            completeError?.message
+        return (
+            <EmptyState>
+                <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+                <Title size="lg" headingLevel="h4">
+                    {t('search.filter.errors.title')}
+                </Title>
+                <EmptyStateBody>
+                    <Stack>
+                        <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+                        <StackItem>{extraErrorInfo}</StackItem>
+                    </Stack>
+                </EmptyStateBody>
+            </EmptyState>
         )
     }
     return <Fragment />
@@ -124,7 +135,7 @@ function RenderSearchBar(props: {
     useEffect(() => {
         if (searchSchemaResults?.error || searchCompleteResults?.error) {
             setQueryErrors(true)
-        } else if (queryErrors) {
+        } else {
             setQueryErrors(false)
         }
     }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
@@ -153,7 +164,6 @@ function RenderSearchBar(props: {
                     userPreference={userPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
-                {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
                 <div style={{ display: 'flex' }}>
                     <AcmSearchbar
                         loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
@@ -209,6 +219,7 @@ function RenderSearchBar(props: {
                         {t('Save search')}
                     </AcmButton>
                 </div>
+                {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
             </PageSection>
         </Fragment>
     )

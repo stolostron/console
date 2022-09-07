@@ -291,7 +291,7 @@ export const getPulseStatusForCluster = (node) => {
                 okCount++
             } else if (status === 'pendingimport') {
                 pendingCount++
-            } else if (status === 'offline') {
+            } else if (status === 'offline' || status === 'unknown') {
                 offlineCount++
             }
         }

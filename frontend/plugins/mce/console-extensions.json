@@ -1,5 +1,16 @@
 [
     {
+        "type": "console.flag/model",
+        "properties": {
+            "flag": "CLUSTER_TEMPLATES",
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            }
+        }
+    },
+    {
         "type": "console.perspective",
         "properties": {
             "id": "acm",
@@ -32,6 +43,67 @@
         "properties": {
             "path": "/multicloud/infrastructure/clusters",
             "component": { "$codeRef": "clusters.default" }
+        }
+    },
+    {
+        "type": "console.page/resource/list",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~tabs",
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~newRepository",
+            "component": { "$codeRef": "helmRepositoryForm.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.navigation/resource-cluster",
+        "properties": {
+            "perspective": "acm",
+            "section": "mce-infrastructure",
+            "id": "mce-cluster-templates",
+            "name": "%plugin__mce~Cluster templates%",
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "mce-infrastructure",
+            "id": "mce-automations",
+            "name": "%plugin__mce~Automation%",
+            "href": "/multicloud/infrastructure/automations"
         }
     },
     {
@@ -82,6 +154,17 @@
         "properties": {
             "path": "/multicloud/credentials",
             "component": { "$codeRef": "credentials.default" }
+        }
+    },
+    {
+        "type": "console.resource/create",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": { "$codeRef": "createTemplate.default" }
         }
     }
 ]
