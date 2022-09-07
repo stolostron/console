@@ -80,11 +80,14 @@ const fixupControlsForClusterPool = (controlData) => {
 }
 
 export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false, handleModalToggle) => {
-    const fixedUpAWS = fixupControlsForClusterPool(
-        cloneDeep(getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle))
-    )
-    const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(getControlDataGCP(false, snoFeatureGate)))
-    const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(getControlDataAZR(false, snoFeatureGate)))
+    // const fixedUpAWS = fixupControlsForClusterPool(
+    //     cloneDeep(getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle))
+    // )
+    // const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(getControlDataGCP(false, snoFeatureGate)))
+    // const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(getControlDataAZR(false, snoFeatureGate)))
+    const fixedUpAWS = getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle)
+    const fixedUpGCP = getControlDataGCP(false, snoFeatureGate, handleModalToggle)
+    const fixedUpAZR = getControlDataAZR(false, snoFeatureGate, handleModalToggle)
 
     return [
         ///////////////////////  container platform  /////////////////////////////////////

@@ -47,7 +47,8 @@ import ObjTemplate from './CreateApplication/Subscription/templates/templateObje
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import CredentialsForm from '../Credentials/CredentialsForm'
+import { CredentialsForm } from '../Credentials/CredentialsForm'
+import { GetProjects } from '../../components/GetProjects'
 
 interface CreationStatus {
     status: string
@@ -65,6 +66,7 @@ export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const projects = GetProjects()
 
     // create portals for buttons in header
     const switches = (
@@ -108,13 +110,11 @@ export default function CreateSubscriptionApplicationPage() {
                             hasNoBodyWrapper
                         >
                             <CredentialsForm
-                                // namespaces={projects!}
+                                namespaces={projects!}
                                 isEditing={false}
                                 isViewing={false}
                                 infrastructureType={'ans'}
                                 handleModalToggle={handleModalToggle}
-                                // connectionControl={connectionControl}
-                                // onControlChange={onControlChange}
                             />
                         </Modal>
                         {CreateSubscriptionApplication(setTitle, handleModalToggle)}

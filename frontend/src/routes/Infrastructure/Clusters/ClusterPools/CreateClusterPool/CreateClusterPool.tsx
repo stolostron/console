@@ -28,6 +28,7 @@ import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../components/GetProjects'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -106,7 +107,7 @@ export function CreateClusterPool() {
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [infrastructureType, setInfrastructureType] = useState('aws')
-    const [projects, setProjects] = useState<string[]>([])
+    const projects = GetProjects()
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
@@ -247,13 +248,11 @@ export function CreateClusterPool() {
                 hasNoBodyWrapper
             >
                 <CredentialsForm
-                    namespaces={projects!}
+                    namespaces={projects! as string[]}
                     isEditing={false}
                     isViewing={false}
                     infrastructureType={infrastructureType}
                     handleModalToggle={handleModalToggle}
-                    // connectionControl={connectionControl}
-                    // onControlChange={onControlChange}
                 />
             </Modal>
             <TemplateEditor

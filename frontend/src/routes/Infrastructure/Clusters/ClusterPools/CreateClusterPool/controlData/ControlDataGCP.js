@@ -2,7 +2,6 @@
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterPoolDetailsControlData,
     networkingControlData,
@@ -16,8 +15,11 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    insertToggleModalFunction,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import { fixupControlsForClusterPool } from './ControlData'
 
 const GCPregions = [
     'asia-east1',
@@ -247,9 +249,10 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+export const getControlDataGCP = (includeAutomation = true, includeSno = false, handleModalToggle) => {
     if (includeSno) addSnoText(controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
+    if (handleModalToggle) insertToggleModalFunction(handleModalToggle, controlDataGCP)
     return [...controlDataGCP]
 }
 
@@ -269,7 +272,7 @@ const controlDataGCP = [
         },
         available: [],
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     ...clusterPoolDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////

@@ -11,13 +11,12 @@ import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import {
     agentClusterInstallsState,
     infraEnvironmentsState,
     managedClustersState,
-    namespacesState,
     secretsState,
     settingsState,
 } from '../../../../../atoms'
@@ -66,8 +65,7 @@ import getControlDataHypershift from './controlData/ControlDataHypershift'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataAI from './controlData/ControlDataAI'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
-import { ErrorPage } from '../../../../../components/ErrorPage'
+import { GetProjects } from '../../../../../components/GetProjects'
 
 const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
@@ -99,26 +97,8 @@ export default function CreateClusterPage() {
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [error, setError] = useState<Error>()
-    const [projects, setProjects] = useState<string[]>([])
 
-    const getNamespaces = useRecoilCallback(
-        ({ snapshot }) =>
-            () =>
-                snapshot.getPromise(namespacesState),
-        []
-    )
-    useEffect(() => {
-        getNamespaces()
-            .then((namespaces) => {
-                getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
-                    .then((namespaces: string[]) => setProjects(namespaces.sort()))
-                    .catch(setError)
-            })
-            .catch(setError)
-
-        return undefined
-    }, [getNamespaces])
+    const projects = GetProjects()
 
     // setup translation
     const { t } = useTranslation()
@@ -485,8 +465,6 @@ export default function CreateClusterPage() {
 
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
 
-    if (error) return <ErrorPage error={error} />
-
     return (
         <AcmPage
             header={
@@ -526,13 +504,11 @@ export default function CreateClusterPage() {
                                     hasNoBodyWrapper
                                 >
                                     <CredentialsForm
-                                        namespaces={projects!}
+                                        namespaces={projects! as string[]}
                                         isEditing={false}
                                         isViewing={false}
                                         infrastructureType={infrastructureType}
                                         handleModalToggle={handleModalToggle}
-                                        // connectionControl={connectionControl}
-                                        // onControlChange={onControlChange}
                                     />
                                 </Modal>
                                 <TemplateEditor

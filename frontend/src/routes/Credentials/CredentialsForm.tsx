@@ -1389,13 +1389,6 @@ export function CredentialsForm(props: {
                         history.push(NavigationPath.credentials)
                     } else {
                         handleModalToggle && handleModalToggle()
-                        // set the active to the newly created secret
-                        // if (connectionControl.setActive) {
-                        //     connectionControl.setActive(name)
-                        //     connectionControl && onControlChange(connectionControl)
-                        //     setName(name)
-                        //     debugger
-                        // }
                     }
                 })
             }
