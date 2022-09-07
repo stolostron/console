@@ -479,7 +479,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
         let socket: Socket | undefined
         if (!isMock) {
-            socket = io({ path: '/multicloud/socket.io' })
+            socket = io({ path: `${getBackendUrl()}/socket.io` })
             socket.on('connect', () => {
                 console.debug('websocket', 'connect')
                 socket?.on('ADDED', (resource: IResource) => {
