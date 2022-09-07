@@ -300,7 +300,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
-                                io.emit(watchEvent.type, watchEvent.object)
+                                //io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'MODIFIED':
                                 logger.debug({
@@ -311,7 +311,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
-                                io.emit(watchEvent.type, watchEvent.object)
+                                //io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'DELETED':
                                 logger.debug({
@@ -322,7 +322,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
-                                io.emit(watchEvent.type, watchEvent.object)
+                                //io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'BOOKMARK':
                                 logger.trace({
