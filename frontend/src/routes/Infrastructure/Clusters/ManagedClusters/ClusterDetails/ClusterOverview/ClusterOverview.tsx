@@ -34,6 +34,7 @@ import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
+import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
@@ -297,6 +298,9 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     if (cluster?.provider === Provider.hostinventory) {
         details = cluster.isHypershift ? <AIHypershiftClusterDetails /> : <AIClusterDetails />
     }
+    if (cluster?.isHostedCluster) {
+        details = <HypershiftClusterDetails />
+    }
 
     return (
         <AcmPageContent id="overview">
@@ -312,7 +316,11 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 )}
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
-                {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}
+                {cluster?.isHypershift && !cluster?.isHostedCluster ? (
+                    <HypershiftImportCommand />
+                ) : (
+                    <ImportCommandContainer />
+                )}
                 <EditLabels
                     resource={
                         showEditLabels
