@@ -1,11 +1,11 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as frontend-packages
+FROM registry.ci.openshift.org/stolostron/builder:nodejs16-linux as frontend-packages
 WORKDIR /app/frontend
 # Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --no-optional || npm ci --no-optional
+RUN npm ci --no-optional
 COPY ./frontend .
 
 FROM frontend-packages as frontend
@@ -14,7 +14,7 @@ RUN npm run build
 FROM frontend-packages as dynamic-plugin
 RUN npm run build:plugin:acm
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as backend
+FROM registry.ci.openshift.org/stolostron/builder:nodejs16-linux as backend
 WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
@@ -23,12 +23,12 @@ RUN npm ci --no-optional
 COPY ./backend .
 RUN npm run build
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as production
+FROM registry.ci.openshift.org/stolostron/builder:nodejs16-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
-FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-14
+FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-16
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules

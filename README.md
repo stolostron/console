@@ -17,8 +17,8 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) 14
-- NPM 6
+- [Node.js](https://nodejs.org) 16
+- NPM 8
 
 ## Core Dependencies - Release Branch Mapping
 
