@@ -1,8 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse, IncomingHttpHeaders } from 'http2'
 
 export function parseCookies(req: Http2ServerRequest): Record<string, string> {
-    const cookieHeader = req.headers.cookie
+    return parseCookiesFromHeaders(req.headers)
+}
+
+export function parseCookiesFromHeaders(headers: IncomingHttpHeaders): Record<string, string> {
+    const cookieHeader = headers.cookie
     if (cookieHeader !== undefined) {
         const cookies: { [key: string]: string } = {}
         const cookieArray = cookieHeader.split(';').map((cookie) => cookie.trim().split('='))

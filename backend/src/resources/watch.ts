@@ -4,26 +4,17 @@
 import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { unauthorized } from '../lib/respond'
-import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
-import { getToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from './liveness'
+import { IResource } from './resource'
+import { getServiceAccountToken } from '../routes/liveness'
+import { broadcast } from './clients'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
-
-export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = getToken(req)
-    if (!token) return unauthorized(req, res)
-    ServerSideEvents.handleRequest(token, req, res)
-}
 
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
@@ -39,11 +30,10 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 let requests: { cancel: () => void }[] = []
 
-const resourceCache: {
+export const resourceCache: {
     [apiVersionKind: string]: {
         [uid: string]: {
             resource: IResource
-            eventID: number
         }
     }
 } = {}
@@ -128,8 +118,6 @@ const definitions: IWatchOptions[] = [
 ]
 
 export function startWatching(): void {
-    ServerSideEvents.eventFilter = eventFilter
-
     for (const definition of definitions) {
         void listAndWatch(definition)
     }
@@ -287,47 +275,8 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                     map(function (data: string) {
                         const watchEvent = JSON.parse(data) as WatchEvent
                         pruneResource(watchEvent.object)
-                        switch (watchEvent.type) {
-                            case 'ADDED':
-                            case 'MODIFIED':
-                                cacheResource(watchEvent.object)
-                                break
-                            case 'DELETED':
-                                deleteResource(watchEvent.object)
-                                break
-                        }
 
                         switch (watchEvent.type) {
-                            case 'ADDED':
-                                logger.debug({
-                                    msg: 'added',
-                                    kind: watchEvent.object.kind,
-                                    name: watchEvent.object.metadata.name,
-                                    namespace: watchEvent.object.metadata.namespace,
-                                    apiVersion: watchEvent.object.apiVersion,
-                                })
-                                resourceVersion = watchEvent.object.metadata.resourceVersion
-                                break
-                            case 'MODIFIED':
-                                logger.debug({
-                                    msg: 'modify',
-                                    kind: watchEvent.object.kind,
-                                    name: watchEvent.object.metadata.name,
-                                    namespace: watchEvent.object.metadata.namespace,
-                                    apiVersion: watchEvent.object.apiVersion,
-                                })
-                                resourceVersion = watchEvent.object.metadata.resourceVersion
-                                break
-                            case 'DELETED':
-                                logger.debug({
-                                    msg: 'delete',
-                                    kind: watchEvent.object.kind,
-                                    name: watchEvent.object.metadata.name,
-                                    namespace: watchEvent.object.metadata.namespace,
-                                    apiVersion: watchEvent.object.apiVersion,
-                                })
-                                resourceVersion = watchEvent.object.metadata.resourceVersion
-                                break
                             case 'BOOKMARK':
                                 logger.trace({
                                     msg: watchEvent.type.toLowerCase(),
@@ -359,6 +308,25 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                         apiVersion: options.apiVersion,
                                         event: watchEvent,
                                     })
+                                }
+                                break
+                            default:
+                                logger.debug({
+                                    msg: watchEvent.type.toLowerCase(),
+                                    kind: watchEvent.object.kind,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                switch (watchEvent.type) {
+                                    case 'ADDED':
+                                    case 'MODIFIED':
+                                        cacheResource(watchEvent.object)
+                                        break
+                                    case 'DELETED':
+                                        deleteResource(watchEvent.object)
+                                        break
                                 }
                                 break
                         }
@@ -474,11 +442,10 @@ function cacheResource(resource: IResource) {
     if (existing) {
         if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
             return resource.metadata.resourceVersion
-        ServerSideEvents.removeEvent(existing.eventID)
     }
 
-    const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-    cache[uid] = { resource, eventID }
+    cache[uid] = { resource } 
+    void broadcast('MODIFIED', resource)
 }
 
 function deleteResource(resource: IResource) {
@@ -489,20 +456,11 @@ function deleteResource(resource: IResource) {
     const uid = resource.metadata.uid
 
     const existing = cache[uid]
-    if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-    ServerSideEvents.pushEvent({
-        data: {
-            type: 'DELETED',
-            object: {
-                kind: resource.kind,
-                apiVersion: resource.apiVersion,
-                metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
-            },
-        },
-    })
-
-    delete cache[uid]
+    if (existing) {
+        delete cache[uid]
+        void broadcast('DELETED', resource)
+    }
 }
 
 function matchesSelector(target: object | undefined, selector: Record<string, string>) {
@@ -515,41 +473,21 @@ function matchesSelector(target: object | undefined, selector: Record<string, st
     return true
 }
 
-function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideEventData>): Promise<boolean> {
-    switch (serverSideEvent.data?.type) {
-        case 'START':
-        case 'LOADED':
-        case 'SETTINGS':
-            return Promise.resolve(true)
-
-        case 'DELETED':
-            // TODO - Security issue: Only send delete events to clients who can access that item
-            // - Problem is if the namespace goes away, access check will fail
-            // - Need to track what is sent to client and only send if they previously accessed this event
-            return Promise.resolve(true)
-        case 'ADDED':
-        case 'MODIFIED': {
-            const watchEvent = serverSideEvent.data
-            const resource = watchEvent.object
-            return canListClusterScopedKind(resource, token).then((allowed) => {
-                if (allowed) return true
-                return canListNamespacedScopedKind(resource, token).then((allowed) => {
-                    if (allowed) return true
-                    return canGetResource(resource, token)
-                })
-            })
-        }
-        default:
-            logger.warn({ msg: 'unhandled server side event data type', serverSideEvent })
-            return Promise.resolve(false)
-    }
+export function canAccessResource(resource: IResource, token: string): Promise<boolean> {
+    return canListClusterScopedKind(resource, token).then((allowed) => {
+        if (allowed) return true
+        return canListNamespacedScopedKind(resource, token).then((allowed) => {
+            if (allowed) return true
+            return canGetResource(resource, token)
+        })
+    })
 }
 
-function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
+export function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
     return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
 }
 
-function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
+export function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
     if (!resource.metadata?.namespace) return Promise.resolve(false)
     return canAccess(
         {
@@ -562,7 +500,7 @@ function canListNamespacedScopedKind(resource: IResource, token: string): Promis
     )
 }
 
-function canGetResource(resource: IResource, token: string): Promise<boolean> {
+export function canGetResource(resource: IResource, token: string): Promise<boolean> {
     return canAccess(resource, 'get', token)
 }
 

@@ -3,11 +3,10 @@
 import { FSWatcher, watch } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import { join } from 'path'
-import { SettingsEvent } from '../routes/events'
+import { SettingsEvent } from '../resources/watch'
 import { logger } from './logger'
-import { ServerSideEvents } from './server-side-events'
+import { broadcast, broadcastSettings } from '../resources/clients'
 
-let settingsEventID = 0
 let watcher: FSWatcher
 let timeout: NodeJS.Timeout
 export function loadSettings(): void {
@@ -51,8 +50,7 @@ export async function loadConfigSettings(): Promise<void> {
             logger.level = settings.LOG_LEVEL
         }
         const data: SettingsEvent = { type: 'SETTINGS', settings }
-        if (settingsEventID) ServerSideEvents.removeEvent(settingsEventID)
-        settingsEventID = ServerSideEvents.pushEvent({ data })
+        broadcastSettings('SETTINGS', data)
         logger.info({ msg: 'loaded settings', settings })
     } catch (err) {
         // Do Nothing

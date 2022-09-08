@@ -10,12 +10,11 @@ import { logger, stopLogger } from './lib/logger'
 import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
-import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
 import { authenticated } from './routes/authenticated'
 import { configure } from './routes/configure'
 import { consoleLinks } from './routes/consoleLinks'
-import { events, startWatching, stopWatching } from './routes/events'
+import { startWatching, stopWatching } from './resources/watch'
 import { liveness } from './routes/liveness'
 import { mchVersion } from './routes/mchVersion'
 import { login, loginCallback, logout } from './routes/oauth'
@@ -41,7 +40,6 @@ router.get(`/login`, login)
 router.get(`/login/callback`, loginCallback)
 router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
-router.get(`/events`, events)
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
@@ -91,7 +89,6 @@ export async function stop(): Promise<void> {
         }, 0.5 * 1000).unref()
     }
     stopSettingsWatch()
-    await ServerSideEvents.dispose()
     stopWatching()
     await stopServer()
     stopLogger()

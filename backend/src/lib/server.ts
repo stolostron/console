@@ -9,11 +9,15 @@ import {
     Http2ServerRequest,
     Http2ServerResponse,
 } from 'http2'
+import { Server } from 'https'
 import { Socket } from 'net'
+import { Server as SocketIoServer } from 'socket.io'
 import { TLSSocket } from 'tls'
+import { clientConnected } from '../resources/clients'
 import { logger } from './logger'
 
 let server: Http2Server | undefined
+export let io: SocketIoServer
 
 interface ISocketRequests {
     socketID: number
@@ -51,6 +55,10 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             logger.debug({ msg: `server start`, secure: false })
             server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
         }
+
+        io = new SocketIoServer(server as Server, { path: '/multicloud/socket.io'})
+        io.on('connection', clientConnected)
+
         return new Promise((resolve, reject) => {
             server
                 ?.listen(process.env.PORT, () => {
