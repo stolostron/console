@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import { nockGet, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
 import { ClusterContext } from '../ClusterDetails'
 import { ClusterOverviewPageContent } from './ClusterOverview'
-import { mockAWSHypershiftCluster, mockAWSHostedCluster } from '../ClusterDetails.sharedmocks'
+import { mockAWSHypershiftCluster, mockAWSHostedCluster, mockBMHypershiftCluster } from '../ClusterDetails.sharedmocks'
 import { waitForText } from '../../../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import {
@@ -24,6 +24,7 @@ import {
     policyreportState,
 } from '../../../../../../atoms'
 import { MemoryRouter } from 'react-router-dom'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 
 const mockHistoryPush = jest.fn()
 
@@ -75,7 +76,27 @@ const mockSearchResponse = {
     },
 }
 
-describe('ClusterOverview', () => {
+const kubeConfigSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'feng-hypershift-test-admin-kubeconfig',
+        namespace: 'clusters',
+    },
+    stringData: {},
+}
+
+const kubeAdminPassSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'feng-hypershift-test-kubeadmin-password',
+        namespace: 'feng-hypershift-test',
+    },
+    stringData: {},
+}
+
+describe('ClusterOverview with AWS hypershift cluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
@@ -113,7 +134,52 @@ describe('ClusterOverview', () => {
         )
     })
 
-    it('should render overview with hypershift cluster', async () => {
+    it('should render overview with AWS hypershift cluster', async () => {
+        await waitForText(mockAWSHypershiftCluster.name)
+    })
+})
+
+describe('ClusterOverview with BM hypershift cluster', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockSearch(mockSearchQuery, mockSearchResponse)
+        nockGet(kubeConfigSecret)
+        nockGet(kubeAdminPassSecret)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policyreportState, [])
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(clusterClaimsState, [])
+                    snapshot.set(clusterCuratorsState, [])
+                    snapshot.set(agentClusterInstallsState, [])
+                    snapshot.set(agentsState, [])
+                    snapshot.set(infraEnvironmentsState, [])
+                    snapshot.set(hostedClustersState, [])
+                    snapshot.set(nodePoolsState, [])
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterContext.Provider
+                        value={{
+                            cluster: mockBMHypershiftCluster,
+                            addons: undefined,
+                            hostedCluster: mockAWSHostedCluster,
+                        }}
+                    >
+                        <ClusterOverviewPageContent />
+                    </ClusterContext.Provider>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    })
+
+    it('should render overview with BM hypershift cluster', async () => {
         await waitForText(mockAWSHypershiftCluster.name)
     })
 })
