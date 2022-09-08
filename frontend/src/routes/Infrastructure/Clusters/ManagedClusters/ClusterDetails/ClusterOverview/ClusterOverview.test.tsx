@@ -7,17 +7,32 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { mockAWSHypershiftCluster, mockAWSHostedCluster } from '../ClusterDetails.sharedmocks'
 import { waitForText } from '../../../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
-import { agentClusterInstallsState, agentsState, certificateSigningRequestsState, clusterClaimsState, clusterCuratorsState, clusterDeploymentsState, clusterManagementAddonsState, hostedClustersState, infraEnvironmentsState, managedClusterAddonsState, managedClusterInfosState, managedClustersState, nodePoolsState, policyreportState } from '../../../../../../atoms'
+import {
+    agentClusterInstallsState,
+    agentsState,
+    certificateSigningRequestsState,
+    clusterClaimsState,
+    clusterCuratorsState,
+    clusterDeploymentsState,
+    clusterManagementAddonsState,
+    hostedClustersState,
+    infraEnvironmentsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
+    nodePoolsState,
+    policyreportState,
+} from '../../../../../../atoms'
 import { MemoryRouter } from 'react-router-dom'
 
-const mockHistoryPush = jest.fn();
+const mockHistoryPush = jest.fn()
 
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useHistory: () => ({
-    push: mockHistoryPush,
-  }),
-}));
+    ...jest.requireActual('react-router-dom'),
+    useHistory: () => ({
+        push: mockHistoryPush,
+    }),
+}))
 
 const mockSearchQuery = {
     operationName: 'searchResult',
@@ -28,15 +43,15 @@ const mockSearchQuery = {
                     { property: 'kind', values: ['subscription'] },
                     { property: 'cluster', values: ['feng-hypershift-test'] },
                 ],
-                relatedKinds: ['application']
+                relatedKinds: ['application'],
             },
             {
                 filters: [
-                    {property: "compliant", values: ["!Compliant"]},
-                    {property: "kind", values: ["policy"]},
-                    {property: "namespace", values: ["feng-hypershift-test"]},
-                    {property: "cluster", values: "local-cluster"},
-                ]
+                    { property: 'compliant', values: ['!Compliant'] },
+                    { property: 'kind', values: ['policy'] },
+                    { property: 'namespace', values: ['feng-hypershift-test'] },
+                    { property: 'cluster', values: 'local-cluster' },
+                ],
             },
         ],
     },
@@ -44,20 +59,20 @@ const mockSearchQuery = {
 }
 
 const mockSearchResponse = {
-    "data": {
-        "searchResult": [
+    data: {
+        searchResult: [
             {
-                "count": 0,
-                "related": [],
-                "__typename": "SearchResult"
+                count: 0,
+                related: [],
+                __typename: 'SearchResult',
             },
             {
-                "count": 0,
-                "related": [],
-                "__typename": "SearchResult"
-            }
-        ]
-    }
+                count: 0,
+                related: [],
+                __typename: 'SearchResult',
+            },
+        ],
+    },
 }
 
 describe('ClusterOverview', () => {
@@ -84,7 +99,13 @@ describe('ClusterOverview', () => {
                 }}
             >
                 <MemoryRouter>
-                    <ClusterContext.Provider value={{ cluster: mockAWSHypershiftCluster, addons: undefined, hostedCluster: mockAWSHostedCluster }}>
+                    <ClusterContext.Provider
+                        value={{
+                            cluster: mockAWSHypershiftCluster,
+                            addons: undefined,
+                            hostedCluster: mockAWSHostedCluster,
+                        }}
+                    >
                         <ClusterOverviewPageContent />
                     </ClusterContext.Provider>
                 </MemoryRouter>
