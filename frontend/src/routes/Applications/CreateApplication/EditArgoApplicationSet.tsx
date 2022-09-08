@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'

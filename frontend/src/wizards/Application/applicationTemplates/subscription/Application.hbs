@@ -1,0 +1,41 @@
+{{#if newNamespace}}
+apiVersion: v1                      
+kind: Namespace
+metadata:
+  name: {{{namespace}}}
+---
+{{/if}}
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: {{name}}
+  namespace: {{namespace}}
+spec:
+  componentKinds:
+  - group: apps.open-cluster-management.io
+    kind: Subscription
+  descriptor: {}
+{{#if name}}
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: 
+          - {{name}}
+{{/if}}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#each repositories}}
+{{#if_eq repositoryType 'SubscriptionGit'}}
+{{>templateSubscriptionGit}}
+{{/if_eq}}
+{{#if_eq repositoryType 'SubscriptionHelm'}}
+{{>templateSubscriptionHelm}}
+{{/if_eq}}
+{{#if_eq repositoryType 'SubscriptionObjectstorage'}}
+{{>templateSubscriptionObj}}
+{{/if_eq}}
+{{/each}}
