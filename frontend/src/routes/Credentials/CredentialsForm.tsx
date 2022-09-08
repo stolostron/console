@@ -180,9 +180,11 @@ export function CredentialsForm(props: {
     isViewing: boolean
     infrastructureType?: string
     handleModalToggle?: () => void
+    hideYaml?: boolean
 }) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing, infrastructureType, handleModalToggle } = props
+    const { namespaces, providerConnection, isEditing, isViewing, infrastructureType, handleModalToggle, hideYaml } =
+        props
     const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
@@ -1413,6 +1415,7 @@ export function CredentialsForm(props: {
             editorTitle={t('Credentials YAML')}
             schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            hideYaml={hideYaml}
             secrets={[
                 '*.stringData.pullSecret',
                 '*.stringData.aws_secret_access_key',

@@ -6,6 +6,7 @@ import {
     ChipGroup,
     Flex,
     FlexItem,
+    Modal,
     ModalVariant,
     SelectOption,
     SelectVariant,
@@ -17,7 +18,7 @@ import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { configMapsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData, LinkType, Section } from '../../../components/AcmFormData'
+import { FormData, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -39,6 +40,9 @@ import {
 } from '../../../resources'
 import schema from './schema.json'
 import { ansibleCredentialsValue } from '../../../selectors'
+import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
+import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../components/GetProjects'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -152,6 +156,9 @@ export function AnsibleAutomationsForm(props: {
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const projects = GetProjects()
+
     useEffect(() => {
         if (ansibleSelection) {
             const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
@@ -248,6 +255,10 @@ export function AnsibleAutomationsForm(props: {
         ]
     }
 
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
     const formData: FormData = {
         title: isEditing ? t('template.edit.title') : t('template.create.title'),
         titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
@@ -289,12 +300,8 @@ export function AnsibleAutomationsForm(props: {
                             id: credential.metadata.name as string,
                             value: credential.metadata.name as string,
                         })),
+                        footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
                         isDisabled: isEditing,
-                        prompt: {
-                            text: t('creation.ocp.cloud.add.connection'),
-                            linkType: LinkType.internalNewTab,
-                            callback: () => history.push(NavigationPath.addCredentials),
-                        },
                         validation: () => {
                             if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
                         },
@@ -524,6 +531,24 @@ export function AnsibleAutomationsForm(props: {
 
     return (
         <Fragment>
+            <Modal
+                variant={ModalVariant.large}
+                showClose={false}
+                isOpen={isModalOpen}
+                aria-labelledby="modal-wizard-label"
+                aria-describedby="modal-wizard-description"
+                onClose={handleModalToggle}
+                hasNoBodyWrapper
+            >
+                <CredentialsForm
+                    namespaces={projects!}
+                    isEditing={false}
+                    isViewing={false}
+                    infrastructureType={'ans'}
+                    handleModalToggle={handleModalToggle}
+                    hideYaml={true}
+                />
+            </Modal>
             <AcmDataFormPage
                 editorTitle={t('Ansible YAML')}
                 formData={formData}

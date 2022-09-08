@@ -20,15 +20,6 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const CREATE_CLOUD_CONNECTION = {
-    prompt: 'creation.ocp.cloud.add.connection',
-    type: 'link',
-    url: NavigationPath.addCredentials,
-    positionBottomRight: true,
-    id: 'add-provider-connection',
-    icon: <ExternalLinkAltIcon />,
-}
-
 export const CREATE_AUTOMATION_TEMPLATE = {
     prompt: 'creation.ocp.cloud.add.template',
     type: 'link',

@@ -115,6 +115,7 @@ export default function CreateSubscriptionApplicationPage() {
                                 isViewing={false}
                                 infrastructureType={'ans'}
                                 handleModalToggle={handleModalToggle}
+                                hideYaml={true}
                             />
                         </Modal>
                         {CreateSubscriptionApplication(setTitle, handleModalToggle)}

@@ -509,6 +509,7 @@ export default function CreateClusterPage() {
                                         isViewing={false}
                                         infrastructureType={infrastructureType}
                                         handleModalToggle={handleModalToggle}
+                                        hideYaml={true}
                                     />
                                 </Modal>
                                 <TemplateEditor
