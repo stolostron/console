@@ -39,7 +39,7 @@ import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../common/resources/IPolicy'
 import { isValidKubernetesResourceName, validatePolicyName } from '../common/validation'
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
-import { PlacementSection } from '@patternfly-labs/react-form-wizard/lib/wizards/Placement/PlacementSection'
+import { PlacementSection } from '../Placement/PlacementSection'
 import { Specifications } from './specifications'
 
 export function PolicyWizard(props: {
