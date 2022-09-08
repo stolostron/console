@@ -3,6 +3,8 @@ import { Button, Flex, FlexItem, Split, Stack } from '@patternfly/react-core'
 import { GitAltIcon, PlusIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import {
+    useData,
+    useItem,
     WizHidden,
     WizKeyValue,
     WizMultiSelect,
@@ -21,9 +23,7 @@ import {
     WizArrayInput,
     WizCheckbox,
     WizTextInput,
-} from '../../src'
-import { useData } from '../../src/contexts/DataContext'
-import { useItem } from '../../src/contexts/ItemContext'
+} from '@patternfly-labs/react-form-wizard'
 import ArgoIcon from './logos/ArgoIcon.svg'
 import HelmIcon from './logos/HelmIcon.svg'
 import ObjectStore from './logos/ObjectStore.svg'
@@ -69,7 +69,10 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
         () => props.channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
         [props.channels]
     )
-    const helmChannels = useMemo(() => props.channels.filter((channel) => channel.spec.type === 'HelmRepo'), [props.channels])
+    const helmChannels = useMemo(
+        () => props.channels.filter((channel) => channel.spec.type === 'HelmRepo'),
+        [props.channels]
+    )
     const subscriptionGitChannels = gitChannels.map((gitChannel: Channel) => {
         const { name, namespace } = gitChannel.metadata
         const { pathname } = gitChannel.spec
@@ -88,7 +91,10 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
         >
             <Step id="type" label="Type">
                 <Section label="Type" prompt="Type">
-                    <WizTiles path="deployType" label="Select the application management type to deploy this application into clusters.">
+                    <WizTiles
+                        path="deployType"
+                        label="Select the application management type to deploy this application into clusters."
+                    >
                         <Tile
                             id="subscription"
                             value="Subscription"
@@ -118,22 +124,43 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
                             <Fragment>
                                 <WizHidden hidden={(data) => data.repositoryType !== 'SubscriptionGit'}>
                                     <GitAltIcon />
-                                    <WizTextDetail path="subscription.git.url" placeholder="Expand to enter the repository details" />
+                                    <WizTextDetail
+                                        path="subscription.git.url"
+                                        placeholder="Expand to enter the repository details"
+                                    />
                                 </WizHidden>
                                 <WizHidden hidden={(data) => data.repositoryType !== 'SubscriptionHelm'}>
                                     <HelmIcon />
-                                    <WizTextDetail path="subscription.helm.url" placeholder="Expand to enter the repository details" />
+                                    <WizTextDetail
+                                        path="subscription.helm.url"
+                                        placeholder="Expand to enter the repository details"
+                                    />
                                 </WizHidden>
                                 <WizHidden hidden={(data) => data.repositoryType !== 'SubscriptionObjectstorage'}>
                                     <ObjectStore />
-                                    <WizTextDetail path="subscription.obj.url" placeholder="Expand to enter the repository details" />
+                                    <WizTextDetail
+                                        path="subscription.obj.url"
+                                        placeholder="Expand to enter the repository details"
+                                    />
                                 </WizHidden>
                             </Fragment>
                         }
                     >
                         <WizTiles path="repositoryType" label="Repository type">
-                            <Tile id="git" value="SubscriptionGit" label="Git" icon={<GitAltIcon />} description="Use a Git repository" />
-                            <Tile id="helm" value="SubscriptionHelm" label="Helm" icon={<HelmIcon />} description="Use a Helm repository" />
+                            <Tile
+                                id="git"
+                                value="SubscriptionGit"
+                                label="Git"
+                                icon={<GitAltIcon />}
+                                description="Use a Git repository"
+                            />
+                            <Tile
+                                id="helm"
+                                value="SubscriptionHelm"
+                                label="Helm"
+                                icon={<HelmIcon />}
+                                description="Use a Helm repository"
+                            />
                             <Tile
                                 id="objectstorage"
                                 value="SubscriptionObjectstorage"
@@ -327,7 +354,12 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
             </Step>
             <Step id="general" label="General" hidden={(item) => item.deployType !== 'ArgoCD'}>
                 <Section label="General">
-                    <WizTextInput path="appSetName" label="ApplicationSet name" placeholder="Enter the application set name" required />
+                    <WizTextInput
+                        path="appSetName"
+                        label="ApplicationSet name"
+                        placeholder="Enter the application set name"
+                        required
+                    />
                     <Select
                         path="argoServer"
                         label="Argo server"
@@ -349,8 +381,20 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
             <Step id="template" label="Template" hidden={(item) => item.deployType !== 'ArgoCD'}>
                 <Section label="Source">
                     <WizTiles path="repositoryType" label="Repository type">
-                        <Tile id="git" value="Git" label="Git" icon={<GitAltIcon />} description="Use a Git repository" />
-                        <Tile id="helm" value="Helm" label="Helm" icon={<HelmIcon />} description="Use a Helm repository" />
+                        <Tile
+                            id="git"
+                            value="Git"
+                            label="Git"
+                            icon={<GitAltIcon />}
+                            description="Use a Git repository"
+                        />
+                        <Tile
+                            id="helm"
+                            value="Helm"
+                            label="Helm"
+                            icon={<HelmIcon />}
+                            description="Use a Helm repository"
+                        />
                     </WizTiles>
                     {/* Git repo */}
                     <WizHidden hidden={(data) => data.repositoryType !== 'Git'}>
@@ -407,7 +451,12 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
                     </WizHidden>
                 </Section>
                 <Section label="Destination">
-                    <WizTextInput path="remoteNamespace" label="Remote namespace" placeholder="Enter the destination namespace" required />
+                    <WizTextInput
+                        path="remoteNamespace"
+                        label="Remote namespace"
+                        placeholder="Enter the destination namespace"
+                        required
+                    />
                 </Section>
             </Step>
             <Step id="sync-policy" label="Sync policy" hidden={(item) => item.deployType !== 'ArgoCD'}>
@@ -417,17 +466,26 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
                 >
                     {/* Git only sync policies */}
                     <WizHidden hidden={(data) => data.repositoryType !== 'Git'}>
-                        <WizCheckbox path="syncPolicy.prune" label="Delete resources that are no longer defined in Git" />
+                        <WizCheckbox
+                            path="syncPolicy.prune"
+                            label="Delete resources that are no longer defined in Git"
+                        />
                         <WizCheckbox
                             path="syncPolicy.pruneLast"
                             label="Delete resources that are no longer defined in Git at the end of a sync operation"
                         />
-                        <WizCheckbox path="syncPolicy.replace" label="Replace resources instead of applying changes from Git" />
+                        <WizCheckbox
+                            path="syncPolicy.replace"
+                            label="Replace resources instead of applying changes from Git"
+                        />
                     </WizHidden>
                     <WizCheckbox path="syncPolicy.allowEmpty" label="Allow applications to have empty resources" />
                     <WizCheckbox path="syncPolicy.applyOutOfSyncOnly" label="Only synchronize out-of-sync resources" />
                     <WizCheckbox path="syncPolicy.selfHeal" label="Automatically sync when cluster state changes" />
-                    <WizCheckbox path="syncPolicy.createNamespace" label="Automatically create namespace if it does not exist" />
+                    <WizCheckbox
+                        path="syncPolicy.createNamespace"
+                        label="Automatically create namespace if it does not exist"
+                    />
                     <WizCheckbox path="syncPolicy.validate" label="Disable kubectl validation" />
                     <WizCheckbox path="syncPolicy.prunePropagationPolicy" label="Prune propagation policy">
                         <Select
@@ -533,7 +591,13 @@ export function TimeWindow(props: { timeZone: string[] }) {
                 required
                 options={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
             />
-            <Select path="timeWindow.timezone" label="Time zone" placeholder="Select the time zone" options={props.timeZone} required />
+            <Select
+                path="timeWindow.timezone"
+                label="Time zone"
+                placeholder="Select the time zone"
+                options={props.timeZone}
+                required
+            />
             <WizArrayInput
                 path="timeWindows"
                 placeholder="Add time range"
@@ -560,7 +624,15 @@ export function ExternalLinkButton(props: { id: string; href?: string; icon?: Re
     return (
         <Flex>
             <FlexItem spacer={{ default: 'spacerXl' }}>
-                <Button id={props.id} icon={props.icon} isSmall={true} variant="link" component="a" href={props.href} target="_blank">
+                <Button
+                    id={props.id}
+                    icon={props.icon}
+                    isSmall={true}
+                    variant="link"
+                    component="a"
+                    href={props.href}
+                    target="_blank"
+                >
                     Add cluster sets
                 </Button>
             </FlexItem>
