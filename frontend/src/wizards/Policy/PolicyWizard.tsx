@@ -9,7 +9,6 @@ import set from 'set-value'
 import {
     EditMode,
     useEditMode,
-    IResource,
     Radio,
     Section,
     Select,
@@ -33,6 +32,7 @@ import {
     ItemContext,
     useItem,
 } from '@patternfly-labs/react-form-wizard'
+import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
 import { PlacementRuleKind } from '../common/resources/IPlacementRule'
