@@ -504,7 +504,7 @@ export default function CreateClusterPage() {
                                     hasNoBodyWrapper
                                 >
                                     <CredentialsForm
-                                        namespaces={projects! as string[]}
+                                        namespaces={projects!}
                                         isEditing={false}
                                         isViewing={false}
                                         infrastructureType={infrastructureType}

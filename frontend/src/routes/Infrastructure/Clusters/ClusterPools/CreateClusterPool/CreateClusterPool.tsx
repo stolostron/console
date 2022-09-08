@@ -248,7 +248,7 @@ export function CreateClusterPool() {
                 hasNoBodyWrapper
             >
                 <CredentialsForm
-                    namespaces={projects! as string[]}
+                    namespaces={projects!}
                     isEditing={false}
                     isViewing={false}
                     infrastructureType={infrastructureType}
