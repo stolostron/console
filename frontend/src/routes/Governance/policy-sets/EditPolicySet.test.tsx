@@ -1,45 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { policySetsState } from '../../../atoms'
+import { namespacesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
-// import { waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicySet } from './EditPolicySet'
-// import { EditPolicy } from './EditPolicy'
-import { mockEmptyPolicySets } from './PolicySet.sharedMocks'
+import { mockPolicySets, mockPolicy, mockNamespaces } from '../governance.sharedMocks'
 
-// editPolicy = '/multicloud/governance/policies/edit/:namespace/:name
+function EditPolicySetTest() {
+    const actualPath = NavigationPath.editPolicySet
+        .replace(':namespace', mockPolicy[0].metadata.namespace as string)
+        .replace(':name', mockPolicy[0].metadata.name as string)
+    return (
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(policySetsState, [mockPolicySets[0]])
+                snapshot.set(namespacesState, mockNamespaces)
+            }}
+        >
+            <MemoryRouter initialEntries={[actualPath]}>
+                <Switch>
+                    <Route path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
+                </Switch>
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+}
 
 describe('Edit Policy Set Page', () => {
-    const Component = () => {
-        return (
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockEmptyPolicySets)
-                }}
-            >
-                <MemoryRouter initialEntries={[`${NavigationPath.editPolicySet}`]}>
-                    <Route path={NavigationPath.editPolicySet}>
-                        <EditPolicySet />
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
-
     beforeEach(async () => {
         nockIgnoreRBAC()
     })
 
     test('should render edit policy page', async () => {
-        render(<Component />)
+        render(<EditPolicySetTest />)
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // step 1 -- name and namespace
-        // await waitForText('policy0')
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        screen.logTestingPlaygroundURL()
     })
 })
