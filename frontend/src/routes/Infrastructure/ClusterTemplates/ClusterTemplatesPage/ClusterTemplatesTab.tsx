@@ -6,7 +6,6 @@ import {
   RowProps,
   TableData,
   useK8sModel,
-  useK8sWatchResource,
   VirtualizedTable,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -20,8 +19,10 @@ import {
   Skeleton,
 } from '@patternfly/react-core';
 import { sortable } from '@patternfly/react-table';
-import { clusterTemplateGVK, clusterTemplateInstanceGVK, helmRepoGVK } from '../constants';
-import { ClusterTemplate, ClusterTemplateInstance } from '../types';
+import { clusterTemplateGVK, helmRepoGVK } from '../constants';
+import { ClusterTemplate } from '../types';
+import { useClusterTemplates } from '../hooks/useClusterTemplates';
+import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
 
 const columns = [
   {
@@ -57,11 +58,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
   const [isOpen, setOpen] = React.useState(false);
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(clusterTemplateGVK);
-
-  const [instances, loaded, loadError] = useK8sWatchResource<ClusterTemplateInstance[]>({
-    groupVersionKind: clusterTemplateInstanceGVK,
-    isList: true,
-  });
+  const [instances, loaded, loadError] = useClusterTemplateInstances();
 
   return (
     <>
@@ -79,7 +76,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
         {obj.spec.helmChartRef.name}
       </TableData>
       <TableData id="pipeline" activeColumnIDs={activeColumnIDs}>
-        {obj.spec.clusterSetup[0].pipelineRef.name}
+        {obj.spec.clusterSetup[0].pipelineRef?.name}
       </TableData>
       <TableData id="usage" activeColumnIDs={activeColumnIDs}>
         {!loaded ? (
@@ -144,10 +141,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
 };
 
 const ClusterTemplatesTab = () => {
-  const [templates, loaded, loadError] = useK8sWatchResource<ClusterTemplate[]>({
-    groupVersionKind: clusterTemplateGVK,
-    isList: true,
-  });
+  const [templates, loaded, loadError] = useClusterTemplates();
 
   return (
     <PageSection>
