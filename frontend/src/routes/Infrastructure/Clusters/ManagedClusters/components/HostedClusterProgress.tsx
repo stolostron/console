@@ -19,7 +19,7 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
     const [isExpanded, setExpanded] = React.useState(true)
 
     const hostedClusterAvailable =
-        hostedCluster.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
+        hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
 
     return (
         <ProgressStep icon={hostedClusterAvailable ? <CheckCircleIcon color={okColor.value} /> : <Spinner size="md" />}>
@@ -36,7 +36,7 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
                 {isExpanded && (
                     <>
                         <StackItem className="nodepool-progress-item__body">
-                            <ConditionsTable conditions={hostedCluster.status?.conditions} />
+                            <ConditionsTable conditions={hostedCluster?.status?.conditions} />
                         </StackItem>
                         <StackItem className="nodepool-progress-item__body">
                             <AcmButton
@@ -44,8 +44,8 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
                                 isInline
                                 onClick={() =>
                                     launchToOCP(
-                                        `k8s/ns/${hostedCluster.metadata?.namespace || ''}-${
-                                            hostedCluster.metadata?.name || ''
+                                        `k8s/ns/${hostedCluster?.metadata?.namespace || ''}-${
+                                            hostedCluster?.metadata?.name || ''
                                         }/pods`,
                                         true
                                     )

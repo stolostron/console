@@ -36,7 +36,7 @@ const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: Hypershift
         <Button
             variant={ButtonVariant.secondary}
             onClick={handleKubeconfigDownload}
-            isDisabled={!hostedCluster.status?.kubeconfig?.name}
+            isDisabled={!hostedCluster?.status?.kubeconfig?.name}
         >
             {t('Download kubeconfig')}
         </Button>

@@ -24,7 +24,7 @@ const HypershiftClusterDetails: React.FC = () => {
     return (
         <>
             <div style={{ marginBottom: '24px' }}>
-                <AcmExpandableCard title="Cluster installation progress" id="aiprogress">
+                <AcmExpandableCard title="Cluster installation progress" id="hypershift-progress">
                     <HypershiftClusterInstallProgress
                         hostedCluster={hostedCluster}
                         fetchSecret={(name, namespace) =>

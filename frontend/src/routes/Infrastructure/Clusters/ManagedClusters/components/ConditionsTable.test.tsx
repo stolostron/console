@@ -34,3 +34,25 @@ describe('ConditionsTable', () => {
         await waitForText(conditions[0].message)
     })
 })
+
+describe('ConditionsTable no conditions', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        render(<ConditionsTable conditions={[]} />)
+    })
+
+    it('should render conditions table with no conditions', async () => {
+        await waitForText('Condition')
+    })
+})
+
+describe('ConditionsTable no conditions', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        render(<ConditionsTable conditions={undefined} />)
+    })
+
+    it('should render conditions table with no conditions', async () => {
+        await waitForText('Condition')
+    })
+})
