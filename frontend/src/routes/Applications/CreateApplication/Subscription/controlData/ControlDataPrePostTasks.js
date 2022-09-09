@@ -12,7 +12,6 @@
 'use strict'
 
 import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 

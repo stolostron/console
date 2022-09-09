@@ -5,7 +5,6 @@ import { useRecoilCallback } from 'recoil'
 import { namespacesState } from '../atoms'
 import { getAuthorizedNamespaces, rbacCreate } from '../lib/rbac-util'
 import { SecretDefinition } from '../resources'
-import { ErrorPage } from './ErrorPage'
 
 export function GetProjects() {
     const [error, setError] = useState<Error>()
@@ -29,5 +28,5 @@ export function GetProjects() {
         return undefined
     }, [getNamespaces])
 
-    return projects
+    return { projects, error }
 }

@@ -19,7 +19,6 @@ import {
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
-import { fixupControlsForClusterPool } from './ControlData'
 
 const GCPregions = [
     'asia-east1',

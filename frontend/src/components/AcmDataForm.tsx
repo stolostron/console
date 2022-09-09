@@ -137,7 +137,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     })
 
     return (
-        <div ref={pageRef} style={{ height: '100%' }}>
+        <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
             <Page
                 additionalGroupedContent={
                     <Fragment>

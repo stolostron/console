@@ -38,7 +38,6 @@ import {
     IResource,
     ProviderConnection,
     Secret,
-    SecretDefinition,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -98,7 +97,7 @@ export default function CreateClusterPage() {
     const templateEditorRef = useRef<null>()
     const [isModalOpen, setIsModalOpen] = useState(false)
 
-    const projects = GetProjects()
+    const { projects } = GetProjects()
 
     // setup translation
     const { t } = useTranslation()

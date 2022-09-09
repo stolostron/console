@@ -106,8 +106,8 @@ export function CreateClusterPool() {
     const [settings] = useRecoilState(settingsState)
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [infrastructureType, setInfrastructureType] = useState('aws')
-    const projects = GetProjects()
+    const [infrastructureType, setInfrastructureType] = useState('')
+    const { projects } = GetProjects()
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
@@ -116,7 +116,6 @@ export function CreateClusterPool() {
             setAvailableConnections(connectionControl, secrets)
         }
     }, [connectionControl, secrets])
-
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
@@ -197,6 +196,7 @@ export function CreateClusterPool() {
                         }
                     })
                 })
+                setInfrastructureType(control.active[0])
                 break
             case 'name':
                 control.validation.contextTester = (

@@ -66,7 +66,7 @@ export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const projects = GetProjects()
+    const { projects } = GetProjects()
 
     // create portals for buttons in header
     const switches = (

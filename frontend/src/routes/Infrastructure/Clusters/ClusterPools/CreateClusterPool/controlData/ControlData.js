@@ -2,7 +2,7 @@
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
-import { keyBy, cloneDeep } from 'lodash'
+import { keyBy } from 'lodash'
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
 import getControlDataAZR from './ControlDataAZR'
@@ -80,14 +80,11 @@ const fixupControlsForClusterPool = (controlData) => {
 }
 
 export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false, handleModalToggle) => {
-    // const fixedUpAWS = fixupControlsForClusterPool(
-    //     cloneDeep(getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle))
-    // )
-    // const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(getControlDataGCP(false, snoFeatureGate)))
-    // const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(getControlDataAZR(false, snoFeatureGate)))
-    const fixedUpAWS = getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle)
-    const fixedUpGCP = getControlDataGCP(false, snoFeatureGate, handleModalToggle)
-    const fixedUpAZR = getControlDataAZR(false, snoFeatureGate, handleModalToggle)
+    const fixedUpAWS = fixupControlsForClusterPool(
+        getControlDataAWS(false, includeAwsPrivate, snoFeatureGate, handleModalToggle)
+    )
+    const fixedUpGCP = fixupControlsForClusterPool(getControlDataGCP(false, snoFeatureGate, handleModalToggle))
+    const fixedUpAZR = fixupControlsForClusterPool(getControlDataAZR(false, snoFeatureGate, handleModalToggle))
 
     return [
         ///////////////////////  container platform  /////////////////////////////////////

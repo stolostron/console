@@ -157,7 +157,7 @@ export function AnsibleAutomationsForm(props: {
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const projects = GetProjects()
+    const { projects } = GetProjects()
 
     useEffect(() => {
         if (ansibleSelection) {
