@@ -79,7 +79,7 @@ export const getControlDataCIM = (includeKlusterletAddonConfig = true, warning) 
     {
         id: 'aiNetworkStep',
         type: 'step',
-        title: 'Cluster network',
+        title: 'Networking',
         disabled: true,
     },
 ]
@@ -155,7 +155,7 @@ export const getControlDataAI = (includeKlusterletAddonConfig = true) => [
     {
         id: 'aiNetworkStep',
         type: 'step',
-        title: 'Cluster network',
+        title: 'Networking',
         disabled: true,
     },
 ]
