@@ -167,19 +167,6 @@ class ControlPanelTreeSelect extends React.Component {
         }
         // create active map
         this.addAvailableMap(props)
-        this.onDocClick = ((event) => {
-            const clickedOnToggle = this.inputRef && this.inputRef.contains(event.target)
-            const clickedWithinMenu = this.menuRef && this.menuRef.contains && this.menuRef.contains(event.target)
-            const clickedWithinClear = this.clearRef && this.clearRef.contains && this.clearRef.contains(event.target)
-            const clickedWithinToggle =
-                this.toggleRef && this.toggleRef.contains && this.toggleRef.contains(event.target)
-            if (
-                this.state.isOpen &&
-                !(clickedOnToggle || clickedWithinMenu || clickedWithinClear || clickedWithinToggle)
-            ) {
-                this.setState({ isOpen: false })
-            }
-        }).bind(this)
     }
 
     componentDidMount() {
