@@ -440,10 +440,10 @@ const ApplicationCreationPage = [
 ]
 
 export const getControlDataAZR = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
-    includeKlusterletAddonConfig = true,
-    handleModalToggle
+    includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataAZR)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)

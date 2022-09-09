@@ -541,7 +541,7 @@ export function AnsibleAutomationsForm(props: {
                 hasNoBodyWrapper
             >
                 <CredentialsForm
-                    namespaces={projects!}
+                    namespaces={projects}
                     isEditing={false}
                     isViewing={false}
                     infrastructureType={'ans'}

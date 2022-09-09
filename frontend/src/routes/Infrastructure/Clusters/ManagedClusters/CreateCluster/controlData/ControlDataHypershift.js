@@ -12,10 +12,10 @@ import {
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataHypershift = (
-    includeAutomation = true,
-    includeKlusterletAddonConfig = true,
+    handleModalToggle,
     warning,
-    handleModalToggle
+    includeAutomation = true,
+    includeKlusterletAddonConfig = true
 ) => {
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
     insertToggleModalFunction(handleModalToggle, controlDataHypershift)

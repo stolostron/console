@@ -401,61 +401,61 @@ export default function CreateClusterPage() {
     switch (infrastructureType) {
         case 'AWS':
             controlData = getControlDataAWS(
+                handleModalToggle,
                 true,
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable,
-                handleModalToggle
+                isACMAvailable
             )
             break
         case 'GCP':
             controlData = getControlDataGCP(
+                handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable,
-                handleModalToggle
+                isACMAvailable
             )
             break
         case 'Azure':
             controlData = getControlDataAZR(
+                handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable,
-                handleModalToggle
+                isACMAvailable
             )
             break
         case 'vSphere':
             controlData = getControlDataVMW(
+                handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable,
-                handleModalToggle
+                isACMAvailable
             )
             break
         case 'OpenStack':
             controlData = getControlDataOST(
+                handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable,
-                handleModalToggle
+                isACMAvailable
             )
             break
         case 'RHV':
-            controlData = getControlDataRHV(true, isACMAvailable, handleModalToggle)
+            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
             break
         case 'CIMHypershift':
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(true, isACMAvailable, <Warning />, handleModalToggle)
+            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'CIM':
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(isACMAvailable, <Warning />, handleModalToggle)
+            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'AI':
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(isACMAvailable, handleModalToggle)
+            controlData = getControlDataAI(handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
             break
         default:
@@ -503,7 +503,7 @@ export default function CreateClusterPage() {
                                     hasNoBodyWrapper
                                 >
                                     <CredentialsForm
-                                        namespaces={projects!}
+                                        namespaces={projects}
                                         isEditing={false}
                                         isViewing={false}
                                         infrastructureType={infrastructureType}

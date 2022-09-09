@@ -9,7 +9,7 @@ import {
 } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataCIM = (includeKlusterletAddonConfig = true, warning, handleModalToggle) => {
+export const getControlDataCIM = (handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataCIM)
     insertToggleModalFunction(handleModalToggle, controlDataCIM)
     if (warning) {

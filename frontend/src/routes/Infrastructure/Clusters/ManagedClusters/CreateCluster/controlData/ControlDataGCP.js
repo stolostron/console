@@ -254,10 +254,10 @@ const GCPworkerInstanceTypes = [
 ]
 
 export const getControlDataGCP = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
-    includeKlusterletAddonConfig = true,
-    handleModalToggle
+    includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataGCP)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataGCP)

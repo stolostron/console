@@ -110,7 +110,7 @@ export default function CreateSubscriptionApplicationPage() {
                             hasNoBodyWrapper
                         >
                             <CredentialsForm
-                                namespaces={projects!}
+                                namespaces={projects}
                                 isEditing={false}
                                 isViewing={false}
                                 infrastructureType={'ans'}
@@ -126,7 +126,10 @@ export default function CreateSubscriptionApplicationPage() {
     )
 }
 
-export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>, handleModalToggle: any) {
+export function CreateSubscriptionApplication(
+    setTitle: Dispatch<SetStateAction<string>>,
+    handleModalToggle: () => void
+) {
     const history = useHistory()
     const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)

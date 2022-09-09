@@ -113,10 +113,10 @@ const updateWorkerZones = (control, controlData) => {
 }
 
 export const getControlDataAWS = (
+    handleModalToggle,
     includeAutomation = true,
     includeAwsPrivate = true,
-    includeSno = false,
-    handleModalToggle
+    includeSno = false
 ) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
