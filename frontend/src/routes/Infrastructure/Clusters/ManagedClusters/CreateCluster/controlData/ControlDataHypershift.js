@@ -22,7 +22,9 @@ export const getControlDataHypershift = (
     if (warning) {
         appendWarning(warning, controlDataHypershift)
     }
-    if (includeAutomation) return [...controlDataHypershift, ...automationControlData]
+    if (includeAutomation) {
+        return [...controlDataHypershift, ...automationControlData]
+    }
     return [...controlDataHypershift]
 }
 

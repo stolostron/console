@@ -79,7 +79,7 @@ const fixupControlsForClusterPool = (controlData) => {
     return controlData
 }
 
-export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false, handleModalToggle) => {
+export const getControlData = (handleModalToggle, includeAwsPrivate = false, snoFeatureGate = false) => {
     const fixedUpAWS = fixupControlsForClusterPool(
         getControlDataAWS(handleModalToggle, false, includeAwsPrivate, snoFeatureGate)
     )

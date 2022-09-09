@@ -128,8 +128,12 @@ export const getControlDataAWS = (
             regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
         }
     }
-    if (handleModalToggle) insertToggleModalFunction(handleModalToggle, controlData)
-    if (includeAutomation) controlData.push(...automationControlData)
+    if (handleModalToggle) {
+        insertToggleModalFunction(handleModalToggle, controlData)
+    }
+    if (includeAutomation) {
+        controlData.push(...automationControlData)
+    }
     return controlData
 }
 
