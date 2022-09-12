@@ -29,7 +29,7 @@ export const getNodePoolStatus = (nodePool: NodePoolK8sResource, t: TFunction): 
           }
 }
 
-const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): React.ReactNode => {
+export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): React.ReactNode => {
     const nodePoolMap = nodePools.reduce<{
         [key: string]: { status: NodePoolStatus }
     }>((acc, np) => {
@@ -47,16 +47,7 @@ const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): Rea
 
     for (const property in nodePoolMap) {
         const { status } = nodePoolMap[property]
-        if (status.type === 'error') {
-            nodePoolsStatus.type = 'error'
-            nodePoolsStatus.icon = status.icon
-            break
-        }
-        if (status.type === 'warning') {
-            nodePoolsStatus.type = 'warning'
-            nodePoolsStatus.icon = status.icon
-        }
-        if (status.type === 'pending' && nodePoolsStatus.type !== 'warning') {
+        if (status.type === 'pending') {
             nodePoolsStatus.type = 'pending'
             nodePoolsStatus.icon = <Spinner size="md" />
         }

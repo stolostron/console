@@ -172,6 +172,10 @@ export const mockAWSHypershiftCluster: Cluster = {
                     namespace: 'clusters',
                 },
                 spec: {
+                    autoScaling: {
+                        min: 1,
+                        max: 1,
+                    },
                     clusterName: 'feng-hypershift-test',
                     management: {
                         autoRepair: false,
@@ -395,6 +399,7 @@ export const mockBMHypershiftCluster: Cluster = {
                     namespace: 'clusters',
                 },
                 spec: {
+                    autoScaling: {},
                     clusterName: 'feng-hypershift-test',
                     management: {
                         autoRepair: false,
