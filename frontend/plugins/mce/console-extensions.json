@@ -107,16 +107,6 @@
         }
     },
     {
-        "type": "console.navigation/href",
-        "properties": {
-            "perspective": "acm",
-            "section": "mce-infrastructure",
-            "id": "mce-automations",
-            "name": "%plugin__mce~Automation%",
-            "href": "/multicloud/infrastructure/automations"
-        }
-    },
-    {
         "type": "console.page/route",
         "properties": {
             "path": "/multicloud/infrastructure/automations",
