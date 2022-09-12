@@ -940,7 +940,7 @@ describe('CreateCluster on premise', () => {
             await waitForText('Cluster details', true)
             await waitForText('Review and save')
             await waitForText('Cluster hosts')
-            await waitForText('Cluster network')
+            await waitForText('Networking')
             await waitForText('Review')
 
             // fill-in Cluster details
