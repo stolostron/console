@@ -181,10 +181,19 @@ export function CredentialsForm(props: {
     infrastructureType?: string
     handleModalToggle?: () => void
     hideYaml?: boolean
+    control?: any
 }) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing, infrastructureType, handleModalToggle, hideYaml } =
-        props
+    const {
+        namespaces,
+        providerConnection,
+        isEditing,
+        isViewing,
+        infrastructureType,
+        handleModalToggle,
+        hideYaml,
+        control,
+    } = props
     const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
@@ -1358,6 +1367,9 @@ export function CredentialsForm(props: {
         ],
         submit: () => {
             let credentialData = formData?.customData ?? stateToData()
+            if (control) {
+                control(credentialData)
+            }
             if (Array.isArray(credentialData)) {
                 credentialData = credentialData[0]
             }

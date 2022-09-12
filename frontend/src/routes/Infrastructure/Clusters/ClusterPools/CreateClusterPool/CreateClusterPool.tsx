@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useEffect, Fragment } from 'react'
+import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
 import { useRecoilState } from 'recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
@@ -29,6 +29,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
+import { Secret } from '../../../../../resources'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -107,15 +108,29 @@ export function CreateClusterPool() {
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [infrastructureType, setInfrastructureType] = useState('')
+    const [newSecret, setNewSecret] = useState<Secret>()
+
     const { projects } = GetProjects()
+
+    const onControlChange = useCallback(
+        (control: any) => {
+            if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
+            }
+        },
+        [newSecret]
+    )
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
             setAvailableConnections(connectionControl, secrets)
+            onControlChange(connectionControl)
         }
-    }, [connectionControl, secrets])
+    }, [connectionControl, onControlChange, secrets])
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
@@ -254,6 +269,7 @@ export function CreateClusterPool() {
                     infrastructureType={infrastructureType}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
+                    control={setNewSecret}
                 />
             </Modal>
             <TemplateEditor
@@ -276,6 +292,7 @@ export function CreateClusterPool() {
                     creationMsg: creationStatus?.messages,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
+                onControlChange={onControlChange}
                 onControlInitialize={onControlInitialize}
                 i18n={i18n}
             />

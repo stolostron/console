@@ -96,6 +96,7 @@ export default function CreateClusterPage() {
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
 
     const { projects } = GetProjects()
 
@@ -115,10 +116,13 @@ export default function CreateClusterPage() {
     const onControlChange = useCallback(
         (control: any) => {
             if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
             }
         },
-        [providerConnections, setSelectedConnection]
+        [providerConnections, setSelectedConnection, newSecret]
     )
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
@@ -509,6 +513,7 @@ export default function CreateClusterPage() {
                                         infrastructureType={infrastructureType}
                                         handleModalToggle={handleModalToggle}
                                         hideYaml={true}
+                                        control={setNewSecret}
                                     />
                                 </Modal>
                                 <TemplateEditor
