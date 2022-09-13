@@ -267,22 +267,20 @@ class ControlPanelComboBox extends React.Component {
                                                     }
                                                 }}
                                                 // if user is editing value, strip comment
-                                                onClick={
-                                                    /* istanbul ignore next */ (evt) => {
-                                                        if (commented && !searchText) {
-                                                            setTimeout(() => {
-                                                                const { target } = evt
-                                                                const { selectionStart: inx } = target
-                                                                if (inx !== 0 && inx === target.selectionEnd) {
-                                                                    this.setState({
-                                                                        searchText: availableMap[active] || active,
-                                                                    })
-                                                                    evt.target.setSelectionRange(inx, inx)
-                                                                }
-                                                            }, 0)
-                                                        }
+                                                onClick={(evt) => {
+                                                    if (commented && !searchText) {
+                                                        setTimeout(() => {
+                                                            const { target } = evt
+                                                            const { selectionStart: inx } = target
+                                                            if (inx !== 0 && inx === target.selectionEnd) {
+                                                                this.setState({
+                                                                    searchText: availableMap[active] || active,
+                                                                })
+                                                                evt.target.setSelectionRange(inx, inx)
+                                                            }
+                                                        }, 0)
                                                     }
-                                                }
+                                                }}
                                                 onChange={(evt) => {
                                                     this.setState({
                                                         searchText: evt.currentTarget.value,
