@@ -37,6 +37,7 @@ import {
     listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
+    Secret,
 } from '../../../resources'
 import schema from './schema.json'
 import { ansibleCredentialsValue } from '../../../selectors'
@@ -157,7 +158,14 @@ export function AnsibleAutomationsForm(props: {
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
     const { projects } = GetProjects()
+
+    useEffect(() => {
+        if (newSecret) {
+            setAnsibleSelection(newSecret.metadata.name as string)
+        }
+    }, [newSecret])
 
     useEffect(() => {
         if (ansibleSelection) {
@@ -547,6 +555,7 @@ export function AnsibleAutomationsForm(props: {
                     infrastructureType={'ans'}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
+                    control={setNewSecret}
                 />
             </Modal>
             <AcmDataFormPage
