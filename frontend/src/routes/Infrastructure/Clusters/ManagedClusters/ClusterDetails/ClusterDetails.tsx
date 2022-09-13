@@ -50,6 +50,7 @@ import {
     mapAddons,
     ResourceError,
     SecretDefinition,
+    getIsHostedCluster,
 } from '../../../../../resources'
 import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
@@ -134,9 +135,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === match.params.id && aci.metadata.namespace === match.params.id
     )
-    const hostedCluster = hostedClusters.find(
-        (hc) => hc.metadata.name === match.params.id && hc.metadata.namespace === match.params.id
-    )
+    const hostedCluster = hostedClusters.find((hc) => {
+        if (getIsHostedCluster(managedCluster)) {
+            // hypershift clusters with same name in different namespaces will not work with this
+            return hc.metadata.name === match.params.id
+        }
+        return hc.metadata.name === match.params.id && hc.metadata.namespace === match.params.id
+    })
     const infraEnvAIFlow = infraEnvs.find(
         (ie: InfraEnvK8sResource) =>
             ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
