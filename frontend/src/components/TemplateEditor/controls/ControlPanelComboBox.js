@@ -272,11 +272,10 @@ class ControlPanelComboBox extends React.Component {
                                                         if (commented && !searchText) {
                                                             setTimeout(() => {
                                                                 const { target } = evt
-                                                                let { selectionStart: inx } = target
+                                                                const { selectionStart: inx } = target
                                                                 if (inx !== 0 && inx === target.selectionEnd) {
-                                                                    const searchText = availableMap[active] || active
                                                                     this.setState({
-                                                                        searchText,
+                                                                        searchText: availableMap[active] || active,
                                                                     })
                                                                     evt.target.setSelectionRange(inx, inx)
                                                                 }

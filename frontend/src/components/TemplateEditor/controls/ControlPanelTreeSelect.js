@@ -39,7 +39,7 @@ class ControlPanelTreeSelect extends React.Component {
             } else if (value && description) {
                 active = `${value}  # ${description}`
                 handleTreeChange({ selectedItem: active })
-                currentSelection = undefined
+                currentSelection = null
                 currentAvailable = []
                 indexes = []
                 isOpen = false
@@ -276,7 +276,7 @@ class ControlPanelTreeSelect extends React.Component {
                                             if (!searchText) {
                                                 setTimeout(() => {
                                                     const { target } = evt
-                                                    let { selectionStart: inx } = target
+                                                    const { selectionStart: inx } = target
                                                     if (inx !== 0 && inx === target.selectionEnd) {
                                                         this.setState({
                                                             searchText: active,
