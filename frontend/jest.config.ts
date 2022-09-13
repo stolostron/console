@@ -41,7 +41,7 @@ const config: Config.InitialOptions = {
     coverageDirectory: './coverage',
     coverageReporters: ['text-summary', 'html', ['lcov', { projectRoot: '../' }]],
     collectCoverageFrom: [
-        '<rootDir>/src/components/TemplateEditor/controls/ControlPanelTreeSelect.js',
+        '<rootDir>/src/components/TemplateEditor/controls/ControlPanelComboBox.js',
         // '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         // '<rootDir>/src/*.{tsx,ts,jsx,js}',
         '!<rootDir>/src/**/*.stories.tsx',
