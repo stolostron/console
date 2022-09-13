@@ -23,7 +23,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
-    validateBareMetalOSImageURL,
     validateBaseDomain,
     validateCertificate,
     validateCloudsYaml,
@@ -1045,15 +1044,12 @@ export function CredentialsForm(props: {
                         isHidden: ![Provider.openstack].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('Cluster OS image'),
-                        placeholder: t(
-                            'Enter your cluster OS image.  The value must also contain the SHA-256 hash of the image.'
-                        ),
+                        placeholder: t('Enter your cluster OS image.'),
                         labelHelp: t(
-                            'This value contains the URL to the image to use for Red Hat OpenShift Container Platform cluster machines.  The value must also contain the SHA-256 hash of the image.'
+                            'This value contains an HTTP or HTTPS URL to the image to use for Red Hat OpenShift Container Platform cluster machines. Optionally the URL can include a SHA-256 checksum. The value can also be the name of an existing Glance image.'
                         ),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
-                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'imageContentSources',
