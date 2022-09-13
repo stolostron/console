@@ -4,6 +4,7 @@
     "displayName": "multicluster engine for Kubernetes",
     "description": "Integrates multicluster engine for Kubernetes functionality into the OpenShift Container Platform web console",
     "exposedModules": {
+        "context": "../../src/lib/PluginDataContext.tsx",
         "perspective": "../../src/perspective.tsx",
         "clusters": "../../src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
         "automations": "../../src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
