@@ -107,19 +107,19 @@ class ControlPanelTreeSelect extends React.Component {
                 }
             }
 
-            let opath = indexes.map((index) => `[${index}]`).join('.children')
-            currentAvailable = opath ? get(available, opath) : available
+            let path = indexes.map((index) => `[${index}]`).join('.children')
+            currentAvailable = path ? get(available, path) : available
             currentAvailable = currentAvailable.children || currentAvailable
             let indent = 0
             if (Array.isArray(currentAvailable)) {
-                opath = ''
+                path = ''
                 indexes.forEach((index) => {
-                    opath += `[${index}]`
-                    let label = get(available, `${opath}.label`)
+                    path += `[${index}]`
+                    let label = get(available, `${path}.label`)
                     if (label) {
                         label = `${label}`
                         branchLabels.push({ branch: label, indent })
-                        opath += '.children'
+                        path += '.children'
                         indent += 20
                     }
                 })
@@ -335,12 +335,16 @@ class ControlPanelTreeSelect extends React.Component {
                                         key={key}
                                         id={key}
                                         ref={this.setMenuRef}
-                                        onMouseDown={() => {
-                                            this.menuClick = true
-                                        }}
-                                        onMouseUp={() => {
-                                            this.menuClick = false
-                                        }}
+                                        onMouseDown={
+                                            /* istanbul ignore next */ () => {
+                                                this.menuClick = true
+                                            }
+                                        }
+                                        onMouseUp={
+                                            /* istanbul ignore next */ () => {
+                                                this.menuClick = false
+                                            }
+                                        }
                                     >
                                         {currentAvailable.map(({ branch, instance, indent = 0 }, inx) => {
                                             const itemClasses = classNames({
