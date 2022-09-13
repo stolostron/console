@@ -10,7 +10,7 @@ import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterInfosState, managedClustersState, policiesState, policyreportState } from '../../../atoms'
 import { nockCreate, nockGet } from '../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../lib/test-util'
+import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
     ManagedCluster,
     ManagedClusterApiVersion,
@@ -137,6 +137,7 @@ const managedClusterInfos: ManagedClusterInfo[] = [
             consoleURL: 'https://console-openshift-console.apps.sno-410-2xlarge-2zrhh.dev07.red-chesterfield.com',
             version: 'v1.23.3+e419edf',
             cloudVendor: 'Amazon',
+            nodeList: [{}, {}, {}, {}, {}, {}],
         },
     },
 ]
@@ -556,7 +557,7 @@ it('should render overview page with expected data', async () => {
         },
     ]
 
-    const { getAllByText, getByText } = render(
+    const { container, getAllByText, getByText } = render(
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(managedClustersState, managedClusters)
@@ -579,7 +580,7 @@ it('should render overview page with expected data', async () => {
     // This wait pauses till apollo query is returning data
     await wait()
 
-    // Test that the component has rendered correctly with an error
+    // Test that the component has rendered correctly
     await waitFor(() => expect(getAllByText('Amazon')).toHaveLength(1))
     await waitFor(() => expect(getAllByText('Microsoft')).toHaveLength(1))
 
@@ -593,4 +594,17 @@ it('should render overview page with expected data', async () => {
     await waitFor(() => expect(getByText('1 Important')).toBeTruthy())
     await waitFor(() => expect(getByText('0 Moderate')).toBeTruthy())
     await waitFor(() => expect(getByText('0 Low')).toBeTruthy())
+
+    // Check that Summary card totals are correct
+    await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('0Applications'))
+    await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
+    await waitFor(() =>
+        expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type')
+    )
+    await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
+    await waitFor(() => expect(container.querySelector('#nodes-summary')).toHaveTextContent('6Nodes'))
+    await clickByText('Microsoft')
+    await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('1Clusters'))
+    await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('1Region'))
+    await waitFor(() => expect(container.querySelector('#nodes-summary')).toHaveTextContent('0Nodes'))
 })

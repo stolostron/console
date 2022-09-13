@@ -16,3 +16,8 @@ export const useHelmRepositories = (): [HelmChartRepository[], boolean, unknown]
   );
   return [templateRepositories, loaded, loadError];
 };
+
+export const useHelmRepositoriesCount = () => {
+  const [templates, loaded, error] = useHelmRepositories();
+  return loaded && !error ? templates.length : undefined;
+};

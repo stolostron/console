@@ -6,7 +6,6 @@ import {
   RowProps,
   TableData,
   useK8sModel,
-  useK8sWatchResource,
   VirtualizedTable,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -23,10 +22,11 @@ import {
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import { sortable } from '@patternfly/react-table';
 import { ExternalLink } from 'openshift-assisted-ui-lib/cim';
-import { clusterTemplateGVK, helmRepoGVK } from '../constants';
-import { ClusterTemplate, HelmChartRepository, HelmRepoIndex } from '../types';
+import { helmRepoGVK } from '../constants';
+import { HelmChartRepository, HelmRepoIndex } from '../types';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import { useHelmRepositoryIndex, getRepoCharts } from '../hooks/useHelmRepositoryIndex';
+import { useClusterTemplates } from '../hooks/useClusterTemplates';
 
 const columns = [
   {
@@ -65,10 +65,7 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(helmRepoGVK);
   const { indexFile, loaded, error } = React.useContext(RowContext);
-  const [templates, templatesLoaded, loadError] = useK8sWatchResource<ClusterTemplate[]>({
-    groupVersionKind: clusterTemplateGVK,
-    isList: true,
-  });
+  const [templates, templatesLoaded, loadError] = useClusterTemplates();
 
   const templatesFromRepo = templates.filter(
     (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
@@ -167,7 +164,7 @@ const RowContext = React.createContext<{
   error: undefined,
 });
 
-const HelmRepositoriesPage = () => {
+const HelmRepositoriesTab = () => {
   const [repositories, loaded, loadError] = useHelmRepositories();
   const [repoIndex, repoLoaded, repoError] = useHelmRepositoryIndex();
 
@@ -193,4 +190,4 @@ const HelmRepositoriesPage = () => {
   );
 };
 
-export default HelmRepositoriesPage;
+export default HelmRepositoriesTab;

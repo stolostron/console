@@ -46,9 +46,33 @@
         }
     },
     {
+        "type": "console.page/resource/list",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
         "type": "console.page/route",
         "properties": {
-            "path": "/multicloud/infrastructure/templates/repositories/~new",
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~tabs",
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~newRepository",
             "component": { "$codeRef": "helmRepositoryForm.default" }
         },
         "flags": {
@@ -56,23 +80,17 @@
         }
     },
     {
-        "type": "console.navigation/href",
+        "type": "console.navigation/resource-cluster",
         "properties": {
             "perspective": "acm",
             "section": "mce-infrastructure",
-            "id": "mce-templates",
+            "id": "mce-cluster-templates",
             "name": "%plugin__mce~Cluster templates%",
-            "href": "/multicloud/infrastructure/templates"
-        },
-        "flags": {
-            "required": ["CLUSTER_TEMPLATES"]
-        }
-    },
-    {
-        "type": "console.page/route",
-        "properties": {
-            "path": "/multicloud/infrastructure/templates",
-            "component": { "$codeRef": "templates.default" }
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            }
         },
         "flags": {
             "required": ["CLUSTER_TEMPLATES"]

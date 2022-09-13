@@ -19,7 +19,7 @@ export type ClusterTemplate = K8sResourceCommon & {
     };
     clusterSetup: {
       name: string;
-      pipelineRef: {
+      pipelineRef?: {
         name: string;
       };
     }[];

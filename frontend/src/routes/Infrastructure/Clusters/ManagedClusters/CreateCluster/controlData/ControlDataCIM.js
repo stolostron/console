@@ -84,7 +84,7 @@ const controlDataCIM = [
     {
         id: 'aiNetworkStep',
         type: 'step',
-        title: 'Cluster network',
+        title: 'Networking',
         disabled: true,
     },
 ]
