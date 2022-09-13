@@ -1,5 +1,14 @@
 [
     {
+        "type": "console.context-provider",
+        "properties": {
+            "id": "mce-data-context",
+            "context": { "$codeRef": "context.PluginDataContext" },
+            "provider": { "$codeRef": "context.PluginDataContextProvider" },
+            "useValueHook": { "$codeRef": "context.usePluginDataContextValue" }
+        }
+    },
+    {
         "type": "console.flag/model",
         "properties": {
             "flag": "CLUSTER_TEMPLATES",

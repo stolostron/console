@@ -1,22 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Cluster, mapClusters } from '../../../../../resources'
-import { useMemo } from 'react'
-import { useRecoilValue, waitForAll } from 'recoil'
-import {
-    certificateSigningRequestsState,
-    clusterClaimsState,
-    clusterCuratorsState,
-    clusterDeploymentsState,
-    managedClusterAddonsState,
-    managedClusterInfosState,
-    managedClustersState,
-    agentClusterInstallsState,
-    hostedClustersState,
-    nodePoolsState,
-} from '../../../../../atoms'
+import { useContext, useMemo } from 'react'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 export function useAllClusters() {
+
+    const { dataContext } = useContext(PluginContext)
+    const { recoil, atoms } = useContext(dataContext)
+    const { useRecoilValue, waitForAll } = recoil
+    const {
+        managedClustersState,
+            clusterDeploymentsState,
+            managedClusterInfosState,
+            certificateSigningRequestsState,
+            managedClusterAddonsState,
+            clusterClaimsState,
+            clusterCuratorsState,
+            agentClusterInstallsState,
+            hostedClustersState,
+            nodePoolsState,
+    } = atoms
     const [
         managedClusters,
         clusterDeployments,

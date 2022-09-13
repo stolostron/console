@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
-import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useContext, useState } from 'react'
 import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
-import { useSetRecoilState } from 'recoil'
-import { discoveredApplicationsState, discoveredOCPAppResourcesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { queryRemoteArgoApps, queryOCPAppResources } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { LoadingPage } from '../../components/LoadingPage'
+import { PluginContext } from '../../lib/PluginContext'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
@@ -19,6 +18,14 @@ export default function ApplicationsPage() {
     const location = useLocation()
     const applicationsMatch = useRouteMatch()
     const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
+
+    const { dataContext } = useContext(PluginContext)
+    const { recoil, atoms } = useContext(dataContext)
+    const { useSetRecoilState } = recoil
+    const {
+        discoveredApplicationsState,
+        discoveredOCPAppResourcesState
+    } = atoms
 
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     const {
