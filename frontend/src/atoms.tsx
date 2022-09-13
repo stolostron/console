@@ -11,9 +11,10 @@ import {
     NMStateK8sResource,
     NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { atom, SetterOrUpdater, useGotoRecoilSnapshot, useRecoilSnapshot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
+import { PluginContext } from './lib/PluginContext'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -266,7 +267,27 @@ export interface SettingsEvent {
 type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function LoadData(props: { children?: ReactNode }) {
+    //debugger
+    // const { dataContext } = useContext(PluginContext)
+    // const { snapshot, setSnapshot } = useContext(dataContext)
+
     const [loading, setLoading] = useState(true)
+
+    // const currentSnapshot = useRecoilSnapshot()
+    // if (setSnapshot) {
+    //     console.log('SAVING CURRENT SNAPSHOT')
+    //     setSnapshot(currentSnapshot)
+    // }
+
+    // const gotoSnapshot = useGotoRecoilSnapshot()
+    // useEffect(() => {
+    //     if (snapshot) {
+    //         console.log('RESTORING SAVED SNAPSHOT')
+    //         gotoSnapshot(snapshot)
+    //     }
+    // // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [])
+
     const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
     const setAgents = useSetRecoilState(agentsState)
     const setAnsibleJobs = useSetRecoilState(ansibleJobState)

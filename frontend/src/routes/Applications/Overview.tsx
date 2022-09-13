@@ -8,19 +8,6 @@ import { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    applicationSetsState,
-    applicationsState,
-    argoApplicationsState,
-    channelsState,
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
-    helmReleaseState,
-    namespacesState,
-    placementRulesState,
-    subscriptionsState,
-} from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
@@ -216,6 +203,22 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 
 export default function ApplicationsOverview() {
     const { t } = useTranslation()
+
+    const { dataContext } = useContext(PluginContext)
+    const { recoil, atoms } = useContext(dataContext)
+    const { useRecoilState } = recoil
+    const {
+        applicationSetsState,
+        applicationsState,
+        argoApplicationsState,
+        channelsState,
+        discoveredApplicationsState,
+        discoveredOCPAppResourcesState,
+        helmReleaseState,
+        namespacesState,
+        placementRulesState,
+        subscriptionsState,
+    } = atoms
 
     const [applications] = useRecoilState(applicationsState)
     const [applicationSets] = useRecoilState(applicationSetsState)
