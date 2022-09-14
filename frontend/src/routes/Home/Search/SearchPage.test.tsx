@@ -162,6 +162,7 @@ describe('SearchPage', () => {
     })
 
     it('should render search page correctly and add a search', async () => {
+        const getUsernameNock = nockRequest('/username', getUsernameResponse)
         const mocks = [
             {
                 request: {
@@ -224,6 +225,9 @@ describe('SearchPage', () => {
                 </Router>
             </RecoilRoot>
         )
+
+        // Wait for username resource requests to finish
+        await waitForNocks([getUsernameNock])
 
         // Test the loading state while apollo query finishes - testing that saved searches card label is not present
         expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
