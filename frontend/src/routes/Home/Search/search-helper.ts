@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { DropdownSuggestionsProps } from '../../../ui-components'
+import { DropdownSuggestionsProps } from './components/Searchbar'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
@@ -60,7 +60,6 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-operator-label',
-                key: 'key-operator-label',
                 name: 'Operators',
                 kind: 'label',
                 disabled: true,
