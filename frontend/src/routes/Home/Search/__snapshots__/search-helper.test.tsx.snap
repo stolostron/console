@@ -116,7 +116,6 @@ Array [
   Object {
     "disabled": true,
     "id": "id-operator-label",
-    "key": "key-operator-label",
     "kind": "label",
     "name": "Operators",
   },
