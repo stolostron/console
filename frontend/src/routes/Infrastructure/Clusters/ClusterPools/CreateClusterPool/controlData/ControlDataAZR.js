@@ -452,7 +452,7 @@ const setRegions = (control, controlData) => {
 
     if (control.active) {
         const connection = control.availableMap[control.active]
-        if (connection.replacements.cloudName === 'AzureUSGovernmentCloud')
+        if (connection && connection.replacements.cloudName === 'AzureUSGovernmentCloud')
             alterRegionData(controlData, govRegions, govRegions[0])
         else alterRegionData(controlData, regions, 'centralus')
     } else {
