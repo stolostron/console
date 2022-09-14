@@ -162,7 +162,6 @@ describe('SearchPage', () => {
     })
 
     it('should render search page correctly and add a search', async () => {
-        const getUsernameNock = nockRequest('/username', getUsernameResponse)
         const mocks = [
             {
                 request: {
@@ -226,9 +225,6 @@ describe('SearchPage', () => {
             </RecoilRoot>
         )
 
-        // Wait for username resource requests to finish
-        await waitForNocks([getUsernameNock])
-
         // Test the loading state while apollo query finishes - testing that saved searches card label is not present
         expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
         // This wait pauses till apollo query is returning data
@@ -237,12 +233,12 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
-        const searchbar = screen.getByRole('combobox')
+        const searchbar = screen.getByLabelText('Search input')
         expect(searchbar).toBeTruthy()
         userEvent.click(searchbar)
         userEvent.type(searchbar, 'kind ')
         expect(screen.queryByText('kind:')).toBeTruthy()
-        expect(screen.queryByRole('listbox')).toBeTruthy()
+        expect(screen.getByLabelText('Search input')).toBeTruthy()
         userEvent.type(searchbar, 'deployment ')
 
         // check searchbar updated properly

@@ -32,7 +32,11 @@ export default function RelatedResultsTables(props: {
             <AcmTable
                 plural=""
                 items={items}
-                columns={_.get(searchDefinitions, `[${kind}].columns`, searchDefinitions['genericresource'].columns)}
+                columns={_.get(
+                    searchDefinitions,
+                    `[${kind.toLowerCase()}].columns`,
+                    searchDefinitions['genericresource'].columns
+                )}
                 keyFn={(item: any) => item._uid.toString()}
                 rowActions={GetRowActions(
                     kind,

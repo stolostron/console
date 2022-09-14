@@ -50,7 +50,7 @@ export function formatSearchbarSuggestions(
                     },
                 ]
             }
-            return operators.map((op) => {
+            suggestions = operators.map((op) => {
                 return {
                     id: `id-${op}`,
                     key: `key-${op}`,
@@ -58,6 +58,14 @@ export function formatSearchbarSuggestions(
                     kind: suggestionKind,
                 }
             })
+            suggestions.unshift({
+                id: 'id-operator-label',
+                key: 'key-operator-label',
+                name: 'Operators',
+                kind: 'label',
+                disabled: true,
+            })
+            return suggestions
         } else if (data[0] === 'isDate') {
             suggestions = dateValues.map((date) => {
                 return {
