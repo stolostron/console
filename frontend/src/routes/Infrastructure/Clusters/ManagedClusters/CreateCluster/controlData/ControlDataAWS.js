@@ -6,7 +6,6 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
 } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -21,11 +20,13 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -117,6 +118,7 @@ const updateWorkerZones = (control, controlData) => {
 }
 
 export const getControlDataAWS = (
+    handleModalToggle,
     includeAutomation = true,
     includeAwsPrivate = true,
     includeSno = false,
@@ -134,6 +136,7 @@ export const getControlDataAWS = (
     }
     if (includeAutomation) controlData.push(...automationControlData)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     return controlData
 }
 
@@ -697,8 +700,8 @@ const controlDataAWS = [
         },
         available: [],
         providerId: 'aws',
+        footer: <CreateCredentialModal />,
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////

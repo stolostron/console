@@ -2,7 +2,6 @@
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -17,10 +16,12 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -253,12 +254,14 @@ const GCPworkerInstanceTypes = [
 ]
 
 export const getControlDataGCP = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataGCP)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataGCP)
+    insertToggleModalFunction(handleModalToggle, controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
@@ -290,7 +293,7 @@ const controlDataGCP = [
         },
         available: [],
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
 
     ...clusterDetailsControlData,

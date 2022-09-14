@@ -59,7 +59,7 @@ export const updateNSControls = (nsControl, globalControl) => {
     return updateControlsForNS(nsControl, nsControl, globalControl)
 }
 
-export const controlData = (isLocalCluster) => [
+export const controlData = (isLocalCluster, handleModalToggle) => [
     {
         id: 'main',
         type: 'section',
@@ -168,7 +168,7 @@ export const controlData = (isLocalCluster) => [
                         title: 'channel.type.git',
                         tooltip: 'tooltip.creation.app.channel.git',
                         change: {
-                            insertControlData: gitChannelData(isLocalCluster),
+                            insertControlData: gitChannelData(isLocalCluster, handleModalToggle),
                         },
                     },
                     {

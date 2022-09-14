@@ -18,15 +18,7 @@ import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
-
-export const CREATE_CLOUD_CONNECTION = {
-    prompt: 'creation.ocp.cloud.add.connection',
-    type: 'link',
-    url: NavigationPath.addCredentials,
-    positionBottomRight: true,
-    id: 'add-provider-connection',
-    icon: <ExternalLinkAltIcon />,
-}
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const CREATE_AUTOMATION_TEMPLATE = {
     prompt: 'creation.ocp.cloud.add.template',
@@ -188,7 +180,7 @@ export const setAvailableConnections = (control, secrets) => {
         control.noHandlebarReplacements = true
         control.isLoaded = true
     })
-    control.available = connections.map((secret) => secret.metadata.name)
+    control.available = connections.map((secret) => secret.metadata.name).sort((a, b) => a.localeCompare(b))
     if (
         Array.isArray(control.providerId)
             ? !control.providerId.includes('hostinventory')
@@ -718,4 +710,26 @@ export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, contro
         type: 'hidden',
         active: includeKlusterletAddonConfig,
     })
+}
+
+export const appendWarning = (warning, controlData) => {
+    const warningIdx = controlData.findIndex((control) => control.id === 'warning')
+    if (warningIdx > -1) {
+        controlData[warningIdx].active = warning
+    }
+    controlData.push({
+        id: 'warning',
+        type: 'custom',
+        component: warning,
+    })
+}
+
+export const insertToggleModalFunction = (handleToggleModal, controlData) => {
+    const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
+
+    if (currentConnectionComponentIdx > -1) {
+        controlData[currentConnectionComponentIdx].footer = (
+            <CreateCredentialModal handleModalToggle={handleToggleModal} />
+        )
+    }
 }

@@ -33,7 +33,7 @@ function AddCredentialsTest() {
     )
 }
 
-function createProviderConnection(
+export function createProviderConnection(
     provider: string,
     stringData: ProviderConnectionStringData,
     common = false

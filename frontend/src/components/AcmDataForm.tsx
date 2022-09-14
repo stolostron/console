@@ -103,6 +103,7 @@ export interface AcmDataFormProps {
     isHorizontal?: boolean
     edit?: () => void
     operatorError?: ReactNode
+    hideYaml?: boolean
 }
 
 function generalValidationMessage() {
@@ -119,7 +120,7 @@ const defaultPanelSize = 600
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
-    const { editorTitle, schema, secrets, immutables, formData, operatorError } = props
+    const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
@@ -136,7 +137,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     })
 
     return (
-        <div ref={pageRef} style={{ height: '100%' }}>
+        <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
             <Page
                 additionalGroupedContent={
                     <Fragment>
@@ -155,18 +156,20 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                 </ActionList>
                             }
                             switches={
-                                <Fragment>
-                                    {(editorTitle || process.env.NODE_ENV === 'development') && (
-                                        <Switch
-                                            label="YAML"
-                                            isChecked={drawerExpanded}
-                                            onChange={() => {
-                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
-                                                setDrawerExpanded(!drawerExpanded)
-                                            }}
-                                        />
-                                    )}
-                                </Fragment>
+                                hideYaml ? undefined : (
+                                    <Fragment>
+                                        {(editorTitle || process.env.NODE_ENV === 'development') && (
+                                            <Switch
+                                                label="YAML"
+                                                isChecked={drawerExpanded}
+                                                onChange={() => {
+                                                    localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                    setDrawerExpanded(!drawerExpanded)
+                                                }}
+                                            />
+                                        )}
+                                    </Fragment>
+                                )
                             }
                         />
                         {showFormErrors && mode === 'form' && formHasErrors(formData) && (
@@ -187,73 +190,77 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <Drawer isExpanded={drawerExpanded} isInline={true}>
                     <DrawerContent
                         panelContent={
-                            <DrawerPanelContent
-                                isResizable={true}
-                                defaultSize="600px"
-                                maxSize={drawerMaxSize}
-                                minSize="400px"
-                                colorVariant={DrawerColorVariant.light200}
-                            >
-                                {editorTitle ? (
-                                    <SyncEditor
-                                        variant="toolbar"
-                                        id="code-content"
-                                        editorTitle={editorTitle}
-                                        readonly={mode === 'details'}
-                                        resources={formData.stateToData()}
-                                        schema={schema}
-                                        immutables={immutables}
-                                        secrets={secrets}
-                                        syncs={formData.stateToSyncs && formData.stateToSyncs()}
-                                        onClose={(): void => {
-                                            setDrawerExpanded(false)
-                                        }}
-                                        onStatusChange={(changes: { errors: any[]; changes: any[] }): void => {
-                                            setStateChanges(changes)
-                                        }}
-                                        onEditorChange={(changes: { resources: any[] }): void => {
-                                            formData.customData = changes?.resources
-                                        }}
-                                    />
-                                ) : (
-                                    <CodeBlock
-                                        actions={
-                                            <CodeBlockAction>
-                                                <ClipboardCopyButton
-                                                    id="copy-button"
-                                                    textId="code-content"
-                                                    aria-label="Copy to clipboard"
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(
-                                                            YAML.stringify(formData.stateToData())
-                                                        )
-                                                        setCopyHint(
-                                                            <span style={{ wordBreak: 'keep-all' }}>
-                                                                Successfully copied to clipboard!
-                                                            </span>
-                                                        )
-                                                        setTimeout(() => {
+                            hideYaml ? (
+                                ''
+                            ) : (
+                                <DrawerPanelContent
+                                    isResizable={true}
+                                    defaultSize="600px"
+                                    maxSize={drawerMaxSize}
+                                    minSize="400px"
+                                    colorVariant={DrawerColorVariant.light200}
+                                >
+                                    {editorTitle ? (
+                                        <SyncEditor
+                                            variant="toolbar"
+                                            id="code-content"
+                                            editorTitle={editorTitle}
+                                            readonly={mode === 'details'}
+                                            resources={formData.stateToData()}
+                                            schema={schema}
+                                            immutables={immutables}
+                                            secrets={secrets}
+                                            syncs={formData.stateToSyncs && formData.stateToSyncs()}
+                                            onClose={(): void => {
+                                                setDrawerExpanded(false)
+                                            }}
+                                            onStatusChange={(changes: { errors: any[]; changes: any[] }): void => {
+                                                setStateChanges(changes)
+                                            }}
+                                            onEditorChange={(changes: { resources: any[] }): void => {
+                                                formData.customData = changes?.resources
+                                            }}
+                                        />
+                                    ) : (
+                                        <CodeBlock
+                                            actions={
+                                                <CodeBlockAction>
+                                                    <ClipboardCopyButton
+                                                        id="copy-button"
+                                                        textId="code-content"
+                                                        aria-label="Copy to clipboard"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                YAML.stringify(formData.stateToData())
+                                                            )
                                                             setCopyHint(
                                                                 <span style={{ wordBreak: 'keep-all' }}>
-                                                                    Copy to clipboard
+                                                                    Successfully copied to clipboard!
                                                                 </span>
                                                             )
-                                                        }, 800)
-                                                    }}
-                                                    exitDelay={600}
-                                                    variant="plain"
-                                                >
-                                                    {copyHint}
-                                                </ClipboardCopyButton>
-                                            </CodeBlockAction>
-                                        }
-                                    >
-                                        <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
-                                            {YAML.stringify(formData.stateToData())}
-                                        </CodeBlockCode>
-                                    </CodeBlock>
-                                )}
-                            </DrawerPanelContent>
+                                                            setTimeout(() => {
+                                                                setCopyHint(
+                                                                    <span style={{ wordBreak: 'keep-all' }}>
+                                                                        Copy to clipboard
+                                                                    </span>
+                                                                )
+                                                            }, 800)
+                                                        }}
+                                                        exitDelay={600}
+                                                        variant="plain"
+                                                    >
+                                                        {copyHint}
+                                                    </ClipboardCopyButton>
+                                                </CodeBlockAction>
+                                            }
+                                        >
+                                            <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
+                                                {YAML.stringify(formData.stateToData())}
+                                            </CodeBlockCode>
+                                        </CodeBlock>
+                                    )}
+                                </DrawerPanelContent>
+                            )
                         }
                     >
                         <DrawerContentBody>

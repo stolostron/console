@@ -109,6 +109,7 @@ export interface SelectOptionsBase<T> extends InputBase<T> {
 export interface SelectInput extends SelectOptionsBase<string> {
     type: 'Select'
     variant?: 'single' | 'typeahead'
+    footer?: React.ReactNode
 }
 
 export interface MultiselectInput extends SelectOptionsBase<string[]> {

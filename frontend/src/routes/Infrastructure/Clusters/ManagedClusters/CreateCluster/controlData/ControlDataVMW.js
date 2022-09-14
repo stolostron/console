@@ -2,7 +2,6 @@
 
 import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
     clusterDetailsControlData,
@@ -17,20 +16,24 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
 export const getControlDataVMW = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataVMW)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataVMW)
+    insertToggleModalFunction(handleModalToggle, controlDataVMW)
     if (includeAutomation) return [...controlDataVMW, ...automationControlData]
     return [...controlDataVMW]
 }
@@ -61,9 +64,9 @@ const controlDataVMW = [
             required: true,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
         onSelect: onChangeConnection,
         encode: ['cacertificate'],
+        footer: <CreateCredentialModal />,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////

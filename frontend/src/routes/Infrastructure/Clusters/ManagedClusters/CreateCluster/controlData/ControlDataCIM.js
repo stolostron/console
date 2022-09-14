@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
-import DetailsForm from '../components/assisted-installer/hypershift/DetailsForm'
-import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
-import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
+
+import DetailsForm from '../components/assisted-installer/DetailsForm'
 import {
     automationControlData,
     appendKlusterletAddonConfig,
@@ -11,28 +9,20 @@ import {
 } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataHypershift = (
-    handleModalToggle,
-    warning,
-    includeAutomation = true,
-    includeKlusterletAddonConfig = true
-) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
-    insertToggleModalFunction(handleModalToggle, controlDataHypershift)
+export const getControlDataCIM = (handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataCIM)
+    insertToggleModalFunction(handleModalToggle, controlDataCIM)
     if (warning) {
-        appendWarning(warning, controlDataHypershift)
+        appendWarning(warning, controlDataCIM)
     }
-    if (includeAutomation) {
-        return [...controlDataHypershift, ...automationControlData]
-    }
-    return [...controlDataHypershift]
+    return [...controlDataCIM]
 }
 
-const controlDataHypershift = [
+const controlDataCIM = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
-        id: 'hypershiftDetailStep',
+        id: 'aiDetailStep',
         type: 'step',
         title: 'Cluster details',
     },
@@ -45,7 +35,7 @@ const controlDataHypershift = [
     {
         id: 'controlplane',
         name: 'Control plane type',
-        active: 'Hosted',
+        active: 'Standalone',
         type: 'reviewinfo',
     },
     /////////////////////// ACM Credentials  /////////////////////////////////////
@@ -55,7 +45,7 @@ const controlDataHypershift = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hostinventory',
+        providerId: ['hybrid', 'hostinventory'],
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: false,
@@ -64,42 +54,39 @@ const controlDataHypershift = [
         footer: <CreateCredentialModal />,
     },
     {
-        id: 'hypershift',
+        id: 'ai',
         type: 'custom',
         component: <DetailsForm />,
-        providerId: 'hypershift',
+        providerId: 'ai',
         mustValidate: true,
         encodeValues: ['pullSecret'],
         additionalProps: {
             promptSshPublicKey: false,
         },
     },
+    ...automationControlData,
     {
-        id: 'hypershiftHostsStep',
+        id: 'reviewSave',
+        type: 'review',
+        title: 'Review and save',
+        nextButtonLabel: 'Save',
+        comment:
+            'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.',
+        disableEditorOnSuccess: true,
+        disablePreviousControlsOnSuccess: true,
+    },
+    {
+        id: 'aiHostsStep',
         type: 'step',
-        title: 'Nodepools',
+        title: 'Cluster hosts',
         disabled: true,
     },
     {
-        id: 'hypershift-hosts',
-        type: 'custom',
-        component: <HostsForm />,
-        providerId: 'hypershift',
-        mustValidate: true,
-    },
-    {
-        id: 'hyperhisftNetworkStep',
+        id: 'aiNetworkStep',
         type: 'step',
         title: 'Networking',
         disabled: true,
     },
-    {
-        id: 'hypershift-network',
-        type: 'custom',
-        component: <NetworkForm />,
-        providerId: 'hypershift',
-        mustValidate: true,
-    },
 ]
 
-export default getControlDataHypershift
+export default getControlDataCIM

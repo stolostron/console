@@ -66,9 +66,9 @@ metadata:
   selfLink: {{{selfLinks.Subscription}}}
   {{/if}}
 spec:
-{{#if ansibleSecretName}} 
+{{#if connection}} 
   hooksecretref: 
-    name: {{{ansibleSecretName}}}
+    name: {{{connection}}}
 {{/if}}
 {{#if channelNamespace}}
   channel: {{{channelNamespace}}}/{{{channelName}}}

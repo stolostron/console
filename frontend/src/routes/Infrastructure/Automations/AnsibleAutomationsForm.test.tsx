@@ -26,6 +26,7 @@ import {
     typeByPlaceholderText,
     waitForNock,
     waitForNotText,
+    waitForTestId,
     waitForText,
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -150,6 +151,13 @@ describe('add ansible job template page', () => {
         // template information
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+        await clickByPlaceholderText('Select an existing Ansible credential')
+        // Should show the modal wizard
+        await clickByText('Add credential')
+        // Credentials type
+        await waitForTestId('credentialsType-input-toggle')
+        await clickByText('Cancel', 1)
+
         await clickByPlaceholderText('Select an existing Ansible credential')
         await clickByText(mockSecret.metadata.name!)
         await clickByText('Next')

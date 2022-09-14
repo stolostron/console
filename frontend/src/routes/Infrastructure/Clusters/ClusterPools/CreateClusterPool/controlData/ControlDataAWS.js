@@ -6,7 +6,6 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
 } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterPoolDetailsControlData,
     networkingControlData,
@@ -20,9 +19,11 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    insertToggleModalFunction,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -111,7 +112,12 @@ const updateWorkerZones = (control, controlData) => {
     typeZones.active = []
 }
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+export const getControlDataAWS = (
+    handleModalToggle,
+    includeAutomation = true,
+    includeAwsPrivate = true,
+    includeSno = false
+) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
     if (includeAwsPrivate) {
@@ -122,7 +128,12 @@ export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = 
             regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
         }
     }
-    if (includeAutomation) controlData.push(...automationControlData)
+    if (handleModalToggle) {
+        insertToggleModalFunction(handleModalToggle, controlData)
+    }
+    if (includeAutomation) {
+        controlData.push(...automationControlData)
+    }
     return controlData
 }
 
@@ -676,7 +687,7 @@ const controlDataAWS = [
         available: [],
         providerId: 'aws',
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     ...clusterPoolDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
