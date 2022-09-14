@@ -335,6 +335,27 @@ export const subscriptionGreenNotPlacedYellow = {
     type: 'subscription',
 }
 
+export const appSetDeployable = {
+    id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--applicationset--appSet1',
+    name: 'appSet1',
+    namespace: 'default',
+    specs: {
+        applicationsetModel: [],
+    },
+    type: 'applicationset',
+}
+
+export const appSetDesignFalse = {
+    id: 'member--applicationset--default--appSet1',
+    name: 'appSet2',
+    namespace: 'default',
+    specs: {
+        design: false,
+        applicationsetModel: [],
+    },
+    type: 'applicationset',
+}
+
 export const subscriptionInputNotPlaced = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
