@@ -85,17 +85,20 @@ export const addPropertyToList = (list, data) => {
     return list
 }
 
-export const createEditLink = (node) => {
-    const kind = _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
+export const createEditLink = (node, overrideKind, overrideCluster, overrideApiVersion) => {
+    const kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
     const apigroup = _.get(node, 'apigroup')
     const apiversion = _.get(node, 'apiversion')
-    let cluster = _.get(node, 'cluster')
+    let cluster = overrideCluster || _.get(node, 'cluster')
     if (!cluster) {
         cluster = getURLSearchData().cluster
     }
     let apiVersion = _.get(node, apiVersionPath)
     if (!apiVersion) {
         apiVersion = apigroup && apiversion ? apigroup + '/' + apiversion : apiversion
+    }
+    if (overrideApiVersion) {
+        apiVersion = overrideApiVersion
     }
 
     return getEditLink({

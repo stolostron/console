@@ -51,12 +51,16 @@ const argoAppProgressingStatus = 'Progressing'
 const argoAppUnknownStatus = 'Unknown'
 const argoAppSuspendedStatus = 'Suspended'
 
+const redPulse = 'red'
+const greenPulse = 'green'
+const yellowPulse = 'yellow'
+const orangePulse = 'orange'
 ///////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// COMPUTE EACH DIAGRAM NODE STATUS ////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
 export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
-    let pulse = 'green'
+    let pulse = greenPulse
     let shapeType = node.type
     let apiVersion
 
@@ -81,7 +85,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
                 if (isDeployable || !isDesign) {
                     pulse = getPulseStatusForGenericNode(node, t)
                 } else if (!_.get(node, 'specs.channels')) {
-                    pulse = 'red'
+                    pulse = redPulse
                 }
             }
             break
@@ -96,14 +100,14 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
             if (isDeployable) {
                 pulse = getPulseStatusForGenericNode(node, t)
             } else if (!_.get(node, 'specs.raw.status.decisions')) {
-                pulse = 'red'
+                pulse = redPulse
             }
             break
         case 'placement':
             if (isDeployable) {
                 pulse = getPulseStatusForGenericNode(node, t)
             } else if (_.get(node, 'specs.raw.status.numberOfSelectedClusters') === 0) {
-                pulse = 'red'
+                pulse = redPulse
             }
             break
         case 'subscription':
@@ -130,11 +134,11 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
 ///////////////// SUBSCRIPTION //////////////////////////////////
 /////////////////////////////////////////////////////////////////
 export const getPulseStatusForSubscription = (node) => {
-    let pulse = 'green'
+    let pulse = greenPulse
 
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     if (!resourceMap) {
-        pulse = 'orange' //resource not available
+        pulse = orangePulse //resource not available
         return pulse
     }
     let isPlaced = false
@@ -143,7 +147,7 @@ export const getPulseStatusForSubscription = (node) => {
         const clsName = _.get(subscriptionItem, 'cluster', '')
         if (subscriptionItem.status) {
             if (R.includes('Failed', subscriptionItem.status)) {
-                pulse = 'red'
+                pulse = redPulse
             }
             if (subscriptionItem.status === 'Subscribed' || subscriptionItem.status === 'Propagated') {
                 isPlaced = true // at least one cluster placed
@@ -151,22 +155,29 @@ export const getPulseStatusForSubscription = (node) => {
             if (
                 (!_.includes(onlineClusters, clsName) ||
                     (subscriptionItem.status !== 'Subscribed' && subscriptionItem.status !== 'Propagated')) &&
-                pulse !== 'red'
+                pulse !== redPulse
             ) {
-                pulse = 'yellow' // anything but failed or subscribed
+                pulse = yellowPulse // anything but failed or subscribed
             }
         }
     })
-    if (pulse === 'green' && !isPlaced) {
-        pulse = 'yellow' // set to yellow if not placed
+    if (pulse === greenPulse && !isPlaced) {
+        pulse = yellowPulse // set to yellow if not placed
     }
+
+    const subscriptionReportResults = _.get(node, 'report.results', [])
+    subscriptionReportResults.forEach((clusterResult) => {
+        if (clusterResult.result === 'failed') {
+            pulse = redPulse
+        }
+    })
 
     const statuses = _.get(node, 'specs.raw.status.statuses', {})
     Object.values(statuses).forEach((cluster) => {
         const packageItems = _.get(cluster, 'packages', {})
         const failedPackage = Object.values(packageItems).find((item) => _.get(item, 'phase', '') === 'Failed')
-        if (failedPackage && pulse === 'green') {
-            pulse = 'yellow'
+        if (failedPackage && pulse === greenPulse) {
+            pulse = yellowPulse
         }
     })
 
@@ -297,15 +308,15 @@ export const getPulseStatusForCluster = (node) => {
         }
     })
     if (offlineCount > 0 || (pendingCount === clusters.length && pendingCount === 0)) {
-        return 'red'
+        return redPulse
     }
     if (pendingCount === clusters.length) {
-        return 'orange'
+        return orangePulse
     }
     if (okCount < clusters.length) {
-        return 'yellow'
+        return yellowPulse
     }
-    return 'green'
+    return greenPulse
 }
 
 // This calculation is not accurate as search is not returning all the needed
@@ -368,7 +379,7 @@ const getPulseStatusForGenericNode = (node, t) => {
         return getPulseStatusForAnsibleNode(node)
     }
 
-    let pulse = 'green'
+    let pulse = greenPulse
     const namespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
@@ -376,9 +387,9 @@ const getPulseStatusForGenericNode = (node, t) => {
 
     // if no resourceMap from search query, show '?'
     if (!resourceMap || onlineClusters.length === 0) {
-        pulse = 'orange'
+        pulse = orangePulse
         if (nodeType === 'placement') {
-            pulse = 'green'
+            pulse = greenPulse
         }
         return pulse
     }
@@ -416,14 +427,14 @@ const getPulseStatusForGenericNode = (node, t) => {
                         const resStatus = _.get(resourceItem, 'status', deployedStr).toLowerCase()
                         resourceItem.resStatus = resStatus
                         if (_.includes(resGreenStates, resStatus)) {
-                            pulse = 'green'
+                            pulse = greenPulse
                         }
                         if (_.includes(resErrorStates, resStatus)) {
-                            pulse = 'red'
+                            pulse = redPulse
                         }
                         if (_.includes(_.union(resWarningStates, resNotDeployedStates), resStatus)) {
                             // resource not created on this cluster for the required target namespace
-                            pulse = 'yellow'
+                            pulse = yellowPulse
                         }
                     }
                     resourceItem.pulse = pulse
@@ -445,7 +456,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     })
 
     if (pendingPulseCount > 0 && pendingPulseCount < clusterNames.length) {
-        const index = pulseValueArr.indexOf('yellow')
+        const index = pulseValueArr.indexOf(yellowPulse)
         if (index < highestPulse) {
             highestPulse = index
         }
@@ -487,22 +498,22 @@ export const getPodState = (podItem, clusterName, types) => {
 
 export const getPulseForData = (available, desired, podsUnavailable) => {
     if (podsUnavailable > 0 || available === 0) {
-        return 'red'
+        return redPulse
     }
 
     if (available < desired) {
-        return 'yellow'
+        return yellowPulse
     }
 
     if (desired <= 0) {
-        return 'yellow'
+        return yellowPulse
     }
 
     if (!desired && available === 0) {
-        return 'orange'
+        return orangePulse
     }
 
-    return 'green'
+    return greenPulse
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -789,6 +800,8 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     if (resourceStatuses.size > 0) {
         resourceMap = filteredResourceMap
     }
+
+    const subscriptionReportResults = _.get(node, 'report.results', [])
     const onlineClusters = getOnlineClusters(node)
     Object.values(resourceMap).forEach((subscriptions) => {
         subscriptions.forEach((subscription) => {
@@ -868,6 +881,32 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                                 'Some resources failed to deploy. Use View resource YAML link to view the details.'
                             ),
                             status: warningStatus,
+                        })
+                    }
+
+                    const clusterResult = subscriptionReportResults.find((res) => res.source === subsCluster)
+                    if (clusterResult && clusterResult.result === 'failed') {
+                        details.push({
+                            labelValue: t('Error'),
+                            value: t('Some resources failed to deploy. Use View status YAML link to view the details.'),
+                            status: failureStatus,
+                        })
+                        const subscriptionStatusLink = createEditLink(
+                            node,
+                            'subscriptionstatus',
+                            subsCluster,
+                            'apps.open-cluster-management.io/v1alpha1'
+                        )
+                        details.push({
+                            type: 'link',
+                            value: {
+                                label: t('View status YAML'),
+                                data: {
+                                    action: 'show_resource_yaml',
+                                    cluster: subsCluster,
+                                    editLink: subscriptionStatusLink,
+                                },
+                            },
                         })
                     }
                 }
