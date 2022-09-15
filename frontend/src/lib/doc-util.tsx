@@ -30,6 +30,7 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/multicluster_engine/index#proxy-virtualization`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/multicluster_engine/index#creating-a-cluster`,
     CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/multicluster_engine/index#creating-a-cluster-on-premises`,
+    CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/multicluster_engine/multicluster_engine_overview#create-a-cluster-prereq`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/multicluster_engine/index#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets-intro`,
     GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets_global`,
