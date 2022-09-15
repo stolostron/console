@@ -431,6 +431,7 @@ export function Searchbar(props: SearchbarProps) {
                     onClick={() => {
                         if (currentQuery !== '' && !currentQuery.endsWith(':')) {
                             updateBrowserUrl(history, currentQuery)
+                            setMenuIsOpen(false)
                         }
                     }}
                     isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
