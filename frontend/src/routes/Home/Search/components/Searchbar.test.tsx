@@ -142,7 +142,7 @@ const PrefilledSearchbar = () => (
             <MockedProvider mocks={[]}>
                 <Searchbar
                     loadingSuggestions={false}
-                    queryString={'kind:Pod'}
+                    queryString={'kind:Pod name:name1'}
                     saveSearchTooltip={''}
                     setSaveSearch={() => {}}
                     suggestions={[
@@ -227,6 +227,29 @@ describe('Searchbar tests', () => {
         expect(screen.queryByText('name:name1')).toBeInTheDocument()
     })
 
+    it('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
+        render(<BlankSearchbar />)
+
+        const searchbar = screen.getByLabelText('Search input')
+        expect(searchbar).toBeTruthy()
+        userEvent.click(searchbar)
+
+        // Select the 'name' dropdown suggestion item
+        const nameSuggestion = screen.getByText('name')
+        expect(nameSuggestion).toBeTruthy()
+        userEvent.click(nameSuggestion)
+        // userEvent.type(searchbar, '{arrowdown}{arrowdown}{enter}')
+
+        await waitFor(() => expect(screen.queryByText('name:')).toBeInTheDocument())
+
+        // Select the 'name' dropdown suggestion item
+        const nameValueSuggestion = screen.getByText('name1')
+        expect(nameValueSuggestion).toBeTruthy()
+        userEvent.click(nameValueSuggestion)
+
+        await waitFor(() => expect(screen.queryByText('name:name1')).toBeInTheDocument())
+    })
+
     it('Searchbar should correctly delete existing tags', async () => {
         render(<PrefilledSearchbar />)
 
@@ -236,7 +259,8 @@ describe('Searchbar tests', () => {
 
         fireEvent.keyDown(searchbar, { key: 'Backspace', code: 'Backspace' })
 
-        expect(screen.queryByText('kind:Pod')).not.toBeInTheDocument()
+        expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
+        expect(screen.queryByText('kind:Pod')).toBeInTheDocument()
     })
 
     it('Searchbar should correctly delete existing tags when clean all button is clicked', async () => {
@@ -250,6 +274,27 @@ describe('Searchbar tests', () => {
         expect(clearAllBtn).toBeTruthy()
         userEvent.click(clearAllBtn)
 
+        expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
         expect(screen.queryByText('kind:Pod')).not.toBeInTheDocument()
+    })
+
+    it('Searchbar should correctly delete existing comma separated tags', async () => {
+        render(<PrefilledSearchbar />)
+
+        const searchbar = screen.getByLabelText('Search input')
+        expect(searchbar).toBeTruthy()
+        userEvent.click(searchbar)
+
+        userEvent.type(searchbar, 'name ')
+        userEvent.type(searchbar, 'name2')
+        fireEvent.keyDown(searchbar, { key: 'Enter', code: 'Enter' })
+        expect(screen.queryByText('name:name1,name2')).toBeInTheDocument()
+
+        const nameChipDeleteBtn = screen.queryAllByLabelText('delete-chip')
+        expect(nameChipDeleteBtn[1]).toBeTruthy()
+        userEvent.click(nameChipDeleteBtn[1])
+
+        expect(screen.queryByText('name:name1,name2')).not.toBeInTheDocument()
+        expect(screen.queryByText('name:name1')).toBeInTheDocument()
     })
 })

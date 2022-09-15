@@ -354,7 +354,7 @@ export function Searchbar(props: SearchbarProps) {
 
     /** add the text of the selected item as a new chip */
     const onSelect = (event?: React.MouseEvent<Element, MouseEvent> | undefined, itemId?: string | number) => {
-        const selectedText = (event?.target as HTMLElement).innerText
+        const selectedText = (event?.target as HTMLElement).lastChild?.textContent || ''
         addChip(selectedText, itemId?.toString())
         event?.stopPropagation()
         focusTextInput()
@@ -390,7 +390,12 @@ export function Searchbar(props: SearchbarProps) {
                 >
                     <ChipGroup>
                         {searchbarTags.map((searchbarTag, idx) => (
-                            <Chip key={searchbarTag.id} onClick={() => deleteChip(idx)} textMaxWidth={'100%'}>
+                            <Chip
+                                key={searchbarTag.id}
+                                onClick={() => deleteChip(idx)}
+                                closeBtnAriaLabel={'delete-chip'}
+                                textMaxWidth={'100%'}
+                            >
                                 {searchbarTag.name}
                             </Chip>
                         ))}
