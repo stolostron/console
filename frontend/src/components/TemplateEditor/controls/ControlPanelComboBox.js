@@ -278,7 +278,6 @@ class ControlPanelComboBox extends React.Component {
                                                                 })
                                                                 evt.target.setSelectionRange(inx, inx)
                                                             }
-                                                            target.classList.add('finished') // for test
                                                         }, 0)
                                                     }
                                                 }}
