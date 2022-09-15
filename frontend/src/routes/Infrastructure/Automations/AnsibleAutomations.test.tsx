@@ -224,7 +224,7 @@ describe('ansible job page', () => {
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator1.metadata!.name!)
         await waitForText(
-            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the Operator through the following link: '
         )
     })
 
@@ -238,7 +238,7 @@ describe('ansible job page', () => {
         )
         await waitForText(clusterCurator1.metadata!.name!)
         await waitForNotText(
-            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
+            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the Operator through the following link: '
         )
     })
 })
