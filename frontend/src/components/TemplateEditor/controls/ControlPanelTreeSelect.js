@@ -283,6 +283,7 @@ class ControlPanelTreeSelect extends React.Component {
                                                         })
                                                         evt.target.setSelectionRange(inx, inx)
                                                     }
+                                                    target.classList.add('finished') // for test
                                                 }, 0)
                                             }
                                         }}

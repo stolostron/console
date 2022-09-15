@@ -4,13 +4,14 @@
 import React from 'react'
 import ControlPanelComboBox from './ControlPanelComboBox'
 import { render, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 export const control = {
-    active: 'typed',
+    active: 'longVersion',
     name: 'creation.app.name',
     tooltip: 'tooltip.creation.app.name',
     controlData: [],
-    availableMap: {},
+    availableMap: { longVersion: 'shortVersion' },
     hasReplacements: false,
     id: 'checkbox',
     type: 'checkbox',
@@ -36,6 +37,7 @@ describe('ControlPanelComboBox component', () => {
 
         // click on input
         const input = getByTestId('controlId')
+
         fireEvent(
             input,
             new MouseEvent('click', {
@@ -45,6 +47,6 @@ describe('ControlPanelComboBox component', () => {
                 y: 0,
             })
         )
-        await waitFor(() => expect(input.value).toBe('typed'))
+        await waitFor(() => expect(input.value).toBe('shortVersion'))
     })
 })

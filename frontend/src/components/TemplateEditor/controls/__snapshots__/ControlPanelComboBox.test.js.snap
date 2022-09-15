@@ -69,7 +69,7 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
                   class="pf-c-form-control input"
                 >
                   <input
-                    aria-controls="controlId-creation.app.name-typed"
+                    aria-controls="controlId-creation.app.name-longVersion"
                     aria-expanded="true"
                     aria-label="ListBox input field"
                     autocomplete="off"
@@ -78,7 +78,7 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
                     id="controlId"
                     role="combobox"
                     spellcheck="false"
-                    value="typed"
+                    value="longVersion"
                   />
                 </div>
                 <div
