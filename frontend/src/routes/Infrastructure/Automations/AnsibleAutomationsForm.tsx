@@ -16,7 +16,7 @@ import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { configMapsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
+import { settingsState, subscriptionOperatorsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -147,7 +147,6 @@ export function AnsibleAutomationsForm(props: {
     const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
         clusterCurator?.spec?.destroy?.posthook ?? []
     )
-    const [configMaps] = useRecoilState(configMapsState)
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
 
     const isOperatorInstalled = useMemo(
@@ -564,7 +563,7 @@ export function AnsibleAutomationsForm(props: {
                 schema={schema}
                 immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
-                operatorError={getOperatorError(configMaps, isOperatorInstalled, t)}
+                operatorError={getOperatorError(isOperatorInstalled, t)}
             />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
