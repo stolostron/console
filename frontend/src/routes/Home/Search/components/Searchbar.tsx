@@ -48,7 +48,7 @@ type SearchbarProps = {
     savedSearchQueries: SavedSearch[]
 }
 
-const convertStringToTags = (searchText: string) => {
+export const convertStringToTags = (searchText: string) => {
     if (searchText !== null && searchText !== '') {
         const queryItems = searchText.split(' ')
         const tags = queryItems.map((item) => {
