@@ -640,7 +640,8 @@ export const automationControlData = [
 
 export const architectureData = [
     {
-        name: 'Architecture',
+        name: 'CPU architecture',
+        placeholder: 'Enter CPU architecture',
         tooltip: 'tooltip.architecture',
         id: 'architecture',
         type: 'combobox',
