@@ -353,8 +353,8 @@ export function Searchbar(props: SearchbarProps) {
     }
 
     /** add the text of the selected item as a new chip */
-    const onSelect = (event?: React.MouseEvent<Element, MouseEvent> | undefined, itemId?: string | number) => {
-        const selectedText = (event?.target as HTMLElement).lastChild?.textContent || ''
+    const onSelect = (event: React.MouseEvent<Element, MouseEvent> | undefined, itemId?: string | number) => {
+        const selectedText = (event?.target as HTMLElement).innerText
         addChip(selectedText, itemId?.toString())
         event?.stopPropagation()
         focusTextInput()

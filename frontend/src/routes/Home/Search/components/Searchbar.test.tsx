@@ -227,7 +227,7 @@ describe('Searchbar tests', () => {
         expect(screen.queryByText('name:name1')).toBeInTheDocument()
     })
 
-    it('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
+    it.skip('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
         render(<BlankSearchbar />)
 
         const searchbar = screen.getByLabelText('Search input')
@@ -235,12 +235,11 @@ describe('Searchbar tests', () => {
         userEvent.click(searchbar)
 
         // Select the 'name' dropdown suggestion item
-        const nameSuggestion = screen.getByText('name')
-        expect(nameSuggestion).toBeTruthy()
-        userEvent.click(nameSuggestion)
-        // userEvent.type(searchbar, '{arrowdown}{arrowdown}{enter}')
+        const nameFilterSuggestion = screen.getByText('name1')
+        expect(nameFilterSuggestion).toBeTruthy()
+        userEvent.click(nameFilterSuggestion)
 
-        await waitFor(() => expect(screen.queryByText('name:')).toBeInTheDocument())
+        await waitFor(() => expect(screen.queryByText('name values')).toBeInTheDocument())
 
         // Select the 'name' dropdown suggestion item
         const nameValueSuggestion = screen.getByText('name1')
