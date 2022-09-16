@@ -237,12 +237,12 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
-        const searchbar = screen.getByRole('combobox')
+        const searchbar = screen.getByLabelText('Search input')
         expect(searchbar).toBeTruthy()
         userEvent.click(searchbar)
         userEvent.type(searchbar, 'kind ')
         expect(screen.queryByText('kind:')).toBeTruthy()
-        expect(screen.queryByRole('listbox')).toBeTruthy()
+        expect(screen.getByLabelText('Search input')).toBeTruthy()
         userEvent.type(searchbar, 'deployment ')
 
         // check searchbar updated properly
