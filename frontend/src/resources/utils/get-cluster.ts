@@ -105,6 +105,7 @@ export type Cluster = {
         agent: boolean
         nodePools?: NodePoolK8sResource[]
         secretNames: string[]
+        hostingNamespace: string
     }
 }
 
@@ -306,6 +307,7 @@ export function getCluster(
                       hostedCluster.spec?.sshKey?.name || '',
                       hostedCluster.spec?.pullSecret?.name || '',
                   ].filter((name) => !!name),
+                  hostingNamespace: hostedCluster.metadata.namespace,
               }
             : undefined,
     }

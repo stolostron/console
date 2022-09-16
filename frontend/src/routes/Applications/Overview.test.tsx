@@ -50,6 +50,9 @@ import {
     SubscriptionKind,
 } from '../../resources'
 import ApplicationsOverview from './Overview'
+import { PluginContext } from '../../lib/PluginContext'
+import { AcmExtension } from '../../plugin-extensions/types'
+import { ApplicationActionProps } from '../../plugin-extensions/properties'
 
 const mockApplication0: Application = {
     apiVersion: ApplicationApiVersion,
@@ -313,6 +316,22 @@ const mockFluxApplication0: OCPAppResource = {
     },
 }
 
+const applicationActionProps: ApplicationActionProps = {
+    id: 'failover',
+    title: 'Failover application',
+    model: [
+        {
+            apiVersion: 'app.k8s.io/v1beta1',
+            kind: 'Application',
+        },
+    ],
+    component: (props) => <>{props?.close()}</>,
+}
+
+const acmExtension: AcmExtension = {
+    applicationAction: [applicationActionProps],
+}
+
 const mockApplications: Application[] = [mockApplication0]
 
 const mockSubscriptions: Subscription[] = [mockSubscription0]
@@ -402,7 +421,9 @@ describe('Applications Page', () => {
                 }}
             >
                 <MemoryRouter>
-                    <ApplicationsOverview />
+                    <PluginContext.Provider value={{ acmExtensions: acmExtension }}>
+                        <ApplicationsOverview />
+                    </PluginContext.Provider>
                 </MemoryRouter>
             </RecoilRoot>
         )

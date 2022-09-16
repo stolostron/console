@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
 import { useRecoilState } from 'recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -27,6 +27,9 @@ import TemplateEditor from '../../../../../components/TemplateEditor'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../components/GetProjects'
+import { Secret } from '../../../../../resources'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -103,15 +106,31 @@ export function CreateClusterPool() {
     const toastContext = useContext(AcmToastContext)
     const [settings] = useRecoilState(settingsState)
     const [clusterPools] = useRecoilState(clusterPoolsState)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [infrastructureType, setInfrastructureType] = useState('')
+    const [newSecret, setNewSecret] = useState<Secret>()
+
+    const { projects } = GetProjects()
+
+    const onControlChange = useCallback(
+        (control: any) => {
+            if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
+            }
+        },
+        [newSecret]
+    )
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
             setAvailableConnections(connectionControl, secrets)
+            onControlChange(connectionControl)
         }
-    }, [connectionControl, secrets])
-
+    }, [connectionControl, onControlChange, secrets])
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
@@ -133,6 +152,10 @@ export function CreateClusterPool() {
                 history.push(NavigationPath.clusterPools)
             }
         }
+    }
+
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
     }
 
     // cancel button
@@ -188,6 +211,7 @@ export function CreateClusterPool() {
                         }
                     })
                 })
+                setInfrastructureType(control.active[0])
                 break
             case 'name':
                 control.validation.contextTester = (
@@ -228,27 +252,50 @@ export function CreateClusterPool() {
     }
 
     return (
-        <TemplateEditor
-            type={'ClusterPool'}
-            title={'ClusterPool YAML'}
-            monacoEditor={<MonacoEditor />}
-            controlData={getControlData(
-                settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled'
-            )}
-            template={template}
-            portals={Portals}
-            fetchControl={fetchControl}
-            createControl={{
-                createResource,
-                cancelCreate,
-                pauseCreate: () => {},
-                creationStatus: creationStatus?.status,
-                creationMsg: creationStatus?.messages,
-            }}
-            logging={process.env.NODE_ENV !== 'production'}
-            onControlInitialize={onControlInitialize}
-            i18n={i18n}
-        />
+        <Fragment>
+            <Modal
+                variant={ModalVariant.large}
+                showClose={false}
+                isOpen={isModalOpen}
+                aria-labelledby="modal-wizard-label"
+                aria-describedby="modal-wizard-description"
+                onClose={handleModalToggle}
+                hasNoBodyWrapper
+            >
+                <CredentialsForm
+                    namespaces={projects}
+                    isEditing={false}
+                    isViewing={false}
+                    infrastructureType={infrastructureType}
+                    handleModalToggle={handleModalToggle}
+                    hideYaml={true}
+                    control={setNewSecret}
+                />
+            </Modal>
+            <TemplateEditor
+                type={'ClusterPool'}
+                title={'ClusterPool YAML'}
+                monacoEditor={<MonacoEditor />}
+                controlData={getControlData(
+                    handleModalToggle,
+                    settings.awsPrivateWizardStep === 'enabled',
+                    settings.singleNodeOpenshift === 'enabled'
+                )}
+                template={template}
+                portals={Portals}
+                fetchControl={fetchControl}
+                createControl={{
+                    createResource,
+                    cancelCreate,
+                    pauseCreate: () => {},
+                    creationStatus: creationStatus?.status,
+                    creationMsg: creationStatus?.messages,
+                }}
+                logging={process.env.NODE_ENV !== 'production'}
+                onControlChange={onControlChange}
+                onControlInitialize={onControlInitialize}
+                i18n={i18n}
+            />
+        </Fragment>
     )
 }

@@ -3,9 +3,32 @@ import React from 'react'
 import DetailsForm from '../components/assisted-installer/hypershift/DetailsForm'
 import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
-import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
+import {
+    automationControlData,
+    appendKlusterletAddonConfig,
+    appendWarning,
+    insertToggleModalFunction,
+} from './ControlDataHelpers'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataHypershift = (includeKlusterletAddonConfig = true, warning) => [
+export const getControlDataHypershift = (
+    handleModalToggle,
+    warning,
+    includeAutomation = true,
+    includeKlusterletAddonConfig = true
+) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
+    insertToggleModalFunction(handleModalToggle, controlDataHypershift)
+    if (warning) {
+        appendWarning(warning, controlDataHypershift)
+    }
+    if (includeAutomation) {
+        return [...controlDataHypershift, ...automationControlData]
+    }
+    return [...controlDataHypershift]
+}
+
+const controlDataHypershift = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
     {
@@ -25,11 +48,6 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
         active: 'Hosted',
         type: 'reviewinfo',
     },
-    {
-        id: 'warning',
-        type: 'custom',
-        component: warning,
-    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -43,7 +61,7 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
             required: false,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     {
         id: 'hypershift',
@@ -82,10 +100,6 @@ export const getControlDataHypershift = (includeKlusterletAddonConfig = true, wa
         providerId: 'hypershift',
         mustValidate: true,
     },
-    {
-        id: 'includeKlusterletAddonConfig',
-        type: 'hidden',
-        active: includeKlusterletAddonConfig,
-    },
-    ...automationControlData,
 ]
+
+export default getControlDataHypershift

@@ -23,7 +23,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
-    validateBareMetalOSImageURL,
     validateBaseDomain,
     validateCertificate,
     validateCloudsYaml,
@@ -178,17 +177,61 @@ export function CredentialsForm(props: {
     providerConnection?: ProviderConnection
     isEditing: boolean
     isViewing: boolean
+    infrastructureType?: string
+    handleModalToggle?: () => void
+    hideYaml?: boolean
+    control?: any
 }) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing } = props
+    const {
+        namespaces,
+        providerConnection,
+        isEditing,
+        isViewing,
+        infrastructureType,
+        handleModalToggle,
+        hideYaml,
+        control,
+    } = props
     const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
 
-    const [credentialsType, setCredentialsType] = useState(
-        () => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-    )
+    let selectedInfrastructureType = ''
+    switch (infrastructureType?.toLowerCase()) {
+        case 'aws':
+            selectedInfrastructureType = Provider.aws
+            break
+        case 'ans':
+            selectedInfrastructureType = Provider.ansible
+            break
+        case 'azure':
+            selectedInfrastructureType = Provider.azure
+            break
+        case 'gcp':
+            selectedInfrastructureType = Provider.gcp
+            break
+        case 'openstack':
+            selectedInfrastructureType = Provider.openstack
+            break
+        case 'rhv':
+            selectedInfrastructureType = Provider.redhatvirtualization
+            break
+        case 'vsphere':
+            selectedInfrastructureType = Provider.vmware
+            break
+        case 'cimhypershift':
+        case 'cim':
+        case 'ai':
+            selectedInfrastructureType = Provider.hostinventory
+            break
+    }
 
+    const [credentialsType, setCredentialsType] = useState(
+        infrastructureType
+            ? selectedInfrastructureType
+            : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+    )
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
     const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
@@ -586,7 +629,7 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        isDisabled: isEditing,
+                        isDisabled: infrastructureType ? true : isEditing,
                     },
                     {
                         id: 'credentialsName',
@@ -1045,15 +1088,12 @@ export function CredentialsForm(props: {
                         isHidden: ![Provider.openstack].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('Cluster OS image'),
-                        placeholder: t(
-                            'Enter your cluster OS image.  The value must also contain the SHA-256 hash of the image.'
-                        ),
+                        placeholder: t('Enter your cluster OS image.'),
                         labelHelp: t(
-                            'This value contains the URL to the image to use for Red Hat OpenShift Container Platform cluster machines.  The value must also contain the SHA-256 hash of the image.'
+                            'This value contains an HTTP or HTTPS URL to the image to use for Red Hat OpenShift Container Platform cluster machines. Optionally the URL can include a SHA-256 checksum. The value can also be the name of an existing Glance image.'
                         ),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
-                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'imageContentSources',
@@ -1323,6 +1363,9 @@ export function CredentialsForm(props: {
         ],
         submit: () => {
             let credentialData = formData?.customData ?? stateToData()
+            if (control) {
+                control(credentialData)
+            }
             if (Array.isArray(credentialData)) {
                 credentialData = credentialData[0]
             }
@@ -1352,7 +1395,11 @@ export function CredentialsForm(props: {
                         type: 'success',
                         autoClose: true,
                     })
-                    history.push(NavigationPath.credentials)
+                    if (!selectedInfrastructureType) {
+                        history.push(NavigationPath.credentials)
+                    } else {
+                        handleModalToggle && handleModalToggle()
+                    }
                 })
             }
         },
@@ -1363,7 +1410,10 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
-        cancel: () => history.push(NavigationPath.credentials),
+        cancel: () =>
+            !selectedInfrastructureType
+                ? history.push(NavigationPath.credentials)
+                : handleModalToggle && handleModalToggle(),
         stateToSyncs,
         stateToData,
     }
@@ -1373,6 +1423,7 @@ export function CredentialsForm(props: {
             editorTitle={t('Credentials YAML')}
             schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            hideYaml={hideYaml}
             secrets={[
                 '*.stringData.pullSecret',
                 '*.stringData.aws_secret_access_key',

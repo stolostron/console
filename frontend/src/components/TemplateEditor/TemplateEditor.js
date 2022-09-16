@@ -445,20 +445,22 @@ export default class TemplateEditor extends React.Component {
     }
 
     forceGenerate() {
-        const { template, otherYAMLTabs, editStack, controlData } = this.state
-        const {
-            templateYAML: newYAML,
-            templateObject,
-            templateResources,
-            immutableRows,
-        } = generateSource(template, editStack, controlData, otherYAMLTabs)
-        highlightImmutables(this.editors, immutableRows)
-        this.setState({
-            templateYAML: newYAML,
-            templateObject,
-            templateResources,
-            immutableRows,
-        })
+        const { template, otherYAMLTabs, editStack, controlData, showEditor } = this.state
+        if (showEditor) {
+            const {
+                templateYAML: newYAML,
+                templateObject,
+                templateResources,
+                immutableRows,
+            } = generateSource(template, editStack, controlData, otherYAMLTabs)
+            highlightImmutables(this.editors, immutableRows)
+            this.setState({
+                templateYAML: newYAML,
+                templateObject,
+                templateResources,
+                immutableRows,
+            })
+        }
     }
 
     handleControlChange(control, controlData, creationView, isCustomName) {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
@@ -60,8 +60,11 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataRHV from './controlData/ControlDataRHV'
-import { getControlDataHypershift } from './controlData/ControlDataHypershift'
-import { getControlDataAI, getControlDataCIM } from './controlData/ControlDataAI'
+import getControlDataHypershift from './controlData/ControlDataHypershift'
+import getControlDataCIM from './controlData/ControlDataCIM'
+import getControlDataAI from './controlData/ControlDataAI'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../components/GetProjects'
 
 const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
@@ -92,6 +95,10 @@ export default function CreateClusterPage() {
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
+
+    const { projects } = GetProjects()
 
     // setup translation
     const { t } = useTranslation()
@@ -109,10 +116,13 @@ export default function CreateClusterPage() {
     const onControlChange = useCallback(
         (control: any) => {
             if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
             }
         },
-        [providerConnections, setSelectedConnection]
+        [providerConnections, setSelectedConnection, newSecret]
     )
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
@@ -388,9 +398,14 @@ export default function CreateClusterPage() {
         history.goBack()
     }
 
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
     switch (infrastructureType) {
         case 'AWS':
             controlData = getControlDataAWS(
+                handleModalToggle,
                 true,
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled',
@@ -398,33 +413,53 @@ export default function CreateClusterPage() {
             )
             break
         case 'GCP':
-            controlData = getControlDataGCP(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataGCP(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
             break
         case 'Azure':
-            controlData = getControlDataAZR(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataAZR(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
             break
         case 'vSphere':
-            controlData = getControlDataVMW(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataVMW(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
             break
         case 'OpenStack':
-            controlData = getControlDataOST(true, settings.singleNodeOpenshift === 'enabled', isACMAvailable)
+            controlData = getControlDataOST(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
             break
         case 'RHV':
-            controlData = getControlDataRHV(true, isACMAvailable)
+            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
             break
         case 'CIMHypershift':
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(isACMAvailable, <Warning />)
+            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'CIM':
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(isACMAvailable, <Warning />)
-            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb)
             break
         case 'AI':
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(isACMAvailable)
+            controlData = getControlDataAI(handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
             break
         default:
@@ -462,6 +497,25 @@ export default function CreateClusterPage() {
                     <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <HypershiftAgentContext.Provider value={hypershiftValues}>
+                                <Modal
+                                    variant={ModalVariant.large}
+                                    showClose={false}
+                                    isOpen={isModalOpen}
+                                    aria-labelledby="modal-wizard-label"
+                                    aria-describedby="modal-wizard-description"
+                                    onClose={handleModalToggle}
+                                    hasNoBodyWrapper
+                                >
+                                    <CredentialsForm
+                                        namespaces={projects}
+                                        isEditing={false}
+                                        isViewing={false}
+                                        infrastructureType={infrastructureType}
+                                        handleModalToggle={handleModalToggle}
+                                        hideYaml={true}
+                                        control={setNewSecret}
+                                    />
+                                </Modal>
                                 <TemplateEditor
                                     wizardClassName={classes.wizardBody}
                                     type={'cluster'}

@@ -68,7 +68,9 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
 
     const onClick = async () => {
         /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
+        const namespace = cluster?.isHostedCluster
+            ? cluster.hypershift?.hostingNamespace || ''
+            : cluster?.namespace ?? ''
         /* istanbul ignore next */
         const name = cluster?.kubeadmin ?? ''
         if (!credentials && !isVisible && cluster?.kubeadmin) {

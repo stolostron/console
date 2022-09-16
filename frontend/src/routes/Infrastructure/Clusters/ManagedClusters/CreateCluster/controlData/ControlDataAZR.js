@@ -2,7 +2,6 @@
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -17,10 +16,12 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -439,12 +440,14 @@ const ApplicationCreationPage = [
 ]
 
 export const getControlDataAZR = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataAZR)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)
+    insertToggleModalFunction(handleModalToggle, controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -458,7 +461,7 @@ const setRegions = (control, controlData) => {
 
     if (control.active) {
         const connection = control.availableMap[control.active]
-        if (connection.replacements.cloudName === 'AzureUSGovernmentCloud')
+        if (connection && connection.replacements.cloudName === 'AzureUSGovernmentCloud')
             alterRegionData(controlData, govRegions, govRegions[0])
         else alterRegionData(controlData, regions, 'centralus')
     } else {
@@ -494,7 +497,7 @@ const controlDataAZR = [
             required: true,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////

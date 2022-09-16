@@ -114,6 +114,12 @@ Array [
 exports[`Correctly returns formatSearchbarSuggestions of operators 1`] = `
 Array [
   Object {
+    "disabled": true,
+    "id": "id-operator-label",
+    "kind": "label",
+    "name": "Operators",
+  },
+  Object {
     "id": "id-=",
     "key": "key-=",
     "kind": "value",

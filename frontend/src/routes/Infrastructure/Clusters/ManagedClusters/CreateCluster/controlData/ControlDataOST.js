@@ -7,7 +7,6 @@ import {
     VALIDATE_URL,
 } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     proxyControlData,
@@ -24,20 +23,24 @@ import {
     addSnoText,
     architectureData,
     appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
 export const getControlDataOST = (
+    handleModalToggle,
     includeAutomation = true,
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
     if (includeSno) addSnoText(controlDataOST)
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataOST)
+    insertToggleModalFunction(handleModalToggle, controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
 }
@@ -69,7 +72,7 @@ const controlDataOST = [
         },
         available: [],
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////

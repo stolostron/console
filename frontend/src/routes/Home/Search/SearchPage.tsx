@@ -22,11 +22,12 @@ import { userPreferencesState, useSavedSearchLimit } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
-import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable, AcmSearchbar } from '../../../ui-components'
+import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
+import { Searchbar } from './components/Searchbar'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } from './search-sdk/search-sdk'
@@ -164,61 +165,39 @@ function RenderSearchBar(props: {
                     userPreference={userPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
-                <div style={{ display: 'flex' }}>
-                    <AcmSearchbar
-                        loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
-                        queryString={currentSearch}
-                        suggestions={
-                            currentSearch === '' ||
-                            (!currentSearch.endsWith(':') &&
-                                !operators.some((operator: string) => currentSearch.endsWith(operator)))
-                                ? formatSearchbarSuggestions(
-                                      _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
-                                      'filter',
-                                      '' // Dont need to de-dupe filters
-                                  )
-                                : formatSearchbarSuggestions(
-                                      _.get(searchCompleteResults, 'data.searchComplete', []),
-                                      'value',
-                                      currentSearch // pass current search query in order to de-dupe already selected values
-                                  )
+                <Searchbar
+                    loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
+                    queryString={currentSearch}
+                    saveSearchTooltip={saveSearchTooltip}
+                    setSaveSearch={setSaveSearch}
+                    suggestions={
+                        currentSearch === '' ||
+                        (!currentSearch.endsWith(':') &&
+                            !operators.some((operator: string) => currentSearch.endsWith(operator)))
+                            ? formatSearchbarSuggestions(
+                                  _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
+                                  'filter',
+                                  '' // Dont need to de-dupe filters
+                              )
+                            : formatSearchbarSuggestions(
+                                  _.get(searchCompleteResults, 'data.searchComplete', []),
+                                  'value',
+                                  currentSearch // pass current search query in order to de-dupe already selected values
+                              )
+                    }
+                    currentQueryCallback={(newQuery) => {
+                        setCurrentSearch(newQuery)
+                        if (newQuery === '') {
+                            updateBrowserUrl(history, newQuery)
                         }
-                        currentQueryCallback={(newQuery) => {
-                            setCurrentSearch(newQuery)
-                            if (newQuery === '') {
-                                updateBrowserUrl(history, newQuery)
-                            }
-                            if (newQuery !== currentSearch) {
-                                setSelectedSearch(savedSearches)
-                            }
-                        }}
-                        toggleInfoModal={toggle}
-                        updateBrowserUrl={updateBrowserUrl}
-                    />
-                    <AcmButton
-                        style={{ marginLeft: '16px', width: '138px', padding: '6px, 16px' }}
-                        onClick={() =>
-                            setSaveSearch({
-                                id: '',
-                                name: '',
-                                description: '',
-                                searchText: currentSearch,
-                            })
+                        if (newQuery !== currentSearch) {
+                            setSelectedSearch(savedSearches)
                         }
-                        isDisabled={
-                            currentSearch === '' ||
-                            currentSearch.endsWith(':') ||
-                            savedSearchQueries.find(
-                                (savedQuery: SavedSearch) => savedQuery.searchText === currentSearch
-                            ) !== undefined ||
-                            savedSearchQueries.length >= savedSearchLimit
-                        }
-                        tooltip={saveSearchTooltip}
-                        variant={'link'}
-                    >
-                        {t('Save search')}
-                    </AcmButton>
-                </div>
+                    }}
+                    toggleInfoModal={toggle}
+                    updateBrowserUrl={updateBrowserUrl}
+                    savedSearchQueries={savedSearchQueries}
+                />
                 {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
             </PageSection>
         </Fragment>

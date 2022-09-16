@@ -13,7 +13,7 @@
 
 import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from '../../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
-import prePostTasks from './ControlDataPrePostTasks'
+import getControlDataPrePostTasks from './ControlDataPrePostTasks'
 import {
     getGitBranches,
     loadExistingChannels,
@@ -120,7 +120,7 @@ export const reverseSubReconcileRate = (control, templateObject) => {
     return control
 }
 
-const githubChannelData = (isLocalCluster) => [
+const githubChannelData = (isLocalCluster, handleModalToggle) => [
     ///////////////////////  github  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -268,7 +268,7 @@ const githubChannelData = (isLocalCluster) => [
         editing: { hidden: true }, // if editing existing app, hide this field initially
     },
 
-    ...prePostTasks,
+    ...getControlDataPrePostTasks(handleModalToggle),
 
     ...placementData(isLocalCluster),
 ]

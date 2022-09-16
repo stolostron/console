@@ -34,6 +34,7 @@ import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
+import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
@@ -47,6 +48,17 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
     const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
+
+    const renderControlPlaneType = () => {
+        if (cluster?.name === 'local-cluster') {
+            return t('Hub')
+        }
+        if (cluster?.isHostedCluster || cluster?.isHypershift) {
+            return t('Hosted')
+        } else {
+            return t('Standalone')
+        }
+    }
 
     const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } =
         {
@@ -66,6 +78,10 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         </Popover>
                     </span>
                 ),
+            },
+            clusterControlPlaneType: {
+                key: t('table.clusterControlPlaneType'),
+                value: renderControlPlaneType(),
             },
             clusterClaim: {
                 key: t('table.clusterClaim'),
@@ -226,6 +242,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
 
     let leftItems = [
         clusterProperties.clusterName,
+        clusterProperties.clusterControlPlaneType,
         clusterProperties.clusterClaim,
         clusterProperties.status,
         clusterProperties.provider,
@@ -279,6 +296,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     if (cluster?.isHypershift) {
         leftItems = [
             clusterProperties.clusterName,
+            clusterProperties.clusterControlPlaneType,
             clusterProperties.clusterClaim,
             clusterProperties.status,
             clusterProperties.provider,
@@ -297,6 +315,9 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     if (cluster?.provider === Provider.hostinventory) {
         details = cluster.isHypershift ? <AIHypershiftClusterDetails /> : <AIClusterDetails />
     }
+    if (cluster?.isHostedCluster) {
+        details = <HypershiftClusterDetails />
+    }
 
     return (
         <AcmPageContent id="overview">
@@ -312,7 +333,11 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 )}
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
-                {cluster?.isHypershift ? <HypershiftImportCommand /> : <ImportCommandContainer />}
+                {cluster?.isHypershift && !cluster?.isHostedCluster ? (
+                    <HypershiftImportCommand />
+                ) : (
+                    <ImportCommandContainer />
+                )}
                 <EditLabels
                     resource={
                         showEditLabels

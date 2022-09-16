@@ -3,15 +3,18 @@ import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader }
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { secretsState } from '../../../../../atoms'
+import { clusterImageSetsState, secretsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
     const history = useHistory()
     const [secrets] = useRecoilState(secretsState)
+    const [clusterImageSets] = useRecoilState(clusterImageSetsState)
     const credentials = useMemo(
         () =>
             secrets.filter(
@@ -96,7 +99,21 @@ export function CreateInfrastructure() {
                         ),
                     },
                 ],
-                onClick: () => history.push(NavigationPath.createControlPlane),
+                onClick: clusterImageSets.length ? () => history.push(NavigationPath.createControlPlane) : undefined,
+                alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
+                alertVariant: 'info',
+                alertContent: (
+                    <>
+                        {t(
+                            'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
+                        )}
+                        <br />
+                        <br />
+                        <a href={DOC_LINKS.CREATE_CLUSTER_PREREQ} target="_blank" rel="noopener noreferrer">
+                            {t('View documentation')} <ExternalLinkAltIcon />
+                        </a>
+                    </>
+                ),
             },
             {
                 id: 'azure',
@@ -174,7 +191,7 @@ export function CreateInfrastructure() {
             },
         ]
         return newCards
-    }, [getCredentialLabels, history, t])
+    }, [getCredentialLabels, clusterImageSets.length, history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
