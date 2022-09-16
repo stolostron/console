@@ -291,20 +291,6 @@ export function validateNoProxy(value: string, t: TFunction) {
     return undefined
 }
 
-// export function validateKubernetesDnsName(value: string, t: TFunction) {
-//     if (value) {
-//         if (value.length > 63) return `${t('validate.kubernetesDnsName.length')}`
-//         for (const char of value) {
-//             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-//                 return `${t('validate.kubernetesDnsName.char')}`
-//         }
-//         if (!lowercaseAlphaNumericCharacters.includes(value[0])) return `${t('validate.kubernetesDnsName.startchar')}`
-//         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-//             return `${t('validate.kubernetesDnsName.endchar')}`
-//     }
-//     return undefined
-// }
-
 export function validateKubernetesResourceName(value: string, _item: unknown, t?: TFunction) {
     t = t ? t : (value) => value
     if (!value) return undefined
