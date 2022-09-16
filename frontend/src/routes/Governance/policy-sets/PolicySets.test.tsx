@@ -6,62 +6,8 @@ import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../resources'
 import PolicySetsPage from './PolicySets'
-
-const policySet0: PolicySet = {
-    apiVersion: PolicySetApiVersion,
-    kind: PolicySetKind,
-    metadata: {
-        name: 'policy-set-0',
-        namespace: 'policy-set-0-ns',
-    },
-    spec: {
-        description: 'Policies for PCI-2 compliance',
-        policies: [
-            'policy-testing',
-            'policy-role',
-            'policy-securitycontextconstraints',
-            'policy-testing-1',
-            'policy-role-1',
-            'policy-securitycontextconstraints-1',
-        ],
-    },
-    status: {
-        compliant: 'NonCompliant',
-        placement: [
-            {
-                placement: 'placement1',
-                placementBinding: 'binding1',
-                placementDecisions: ['placementdecision1'],
-            },
-        ],
-    },
-}
-const policySet1: PolicySet = {
-    apiVersion: PolicySetApiVersion,
-    kind: PolicySetKind,
-    metadata: {
-        name: 'policy-set-1',
-        namespace: 'policy-set-1-ns',
-    },
-    spec: {
-        description: 'Policies for compliance',
-        policies: ['policy-1'],
-    },
-    status: {
-        compliant: 'Compliant',
-        placement: [
-            {
-                placement: 'placement1',
-                placementBinding: 'binding1',
-                placementDecisions: ['placementdecision1'],
-            },
-        ],
-    },
-}
-export const mockEmptyPolicySets: PolicySet[] = []
-export const mockPolicySets: PolicySet[] = [policySet0, policySet1]
+import { mockEmptyPolicySets, mockPolicySets } from './PolicySet.sharedMocks'
 
 describe('PolicySets Page', () => {
     beforeEach(async () => {
@@ -96,7 +42,7 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText(policySet0.metadata.name!)
-        await waitForText(policySet1.metadata.name!)
+        await waitForText(mockPolicySets[0].metadata.name!)
+        await waitForText(mockPolicySets[1].metadata.name!)
     })
 })

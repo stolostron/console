@@ -24,7 +24,7 @@ import { PlacementBindingKind, PlacementBindingType } from '../common/resources/
 import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { PolicyApiVersion, PolicyKind } from '../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../common/resources/IPolicySet'
-import { isValidKubernetesResourceName } from '../common/validation'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { PlacementSection } from '../Placement/PlacementSection'
 
 export interface PolicySetWizardProps {
@@ -129,7 +129,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                                         path="metadata.name"
                                         id="name"
                                         required
-                                        validation={isValidKubernetesResourceName}
+                                        validation={validateKubernetesResourceName}
                                         readonly={item.metadata?.uid !== undefined}
                                     />
                                     <WizTextArea label="Description" path="spec.description" />

@@ -29,6 +29,7 @@ const config: Config.InitialOptions = {
     transform: {
         '^.+\\.jsx?$': 'babel-jest',
         '^.+\\.tsx?$': 'ts-jest',
+        '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
         // '^.+\\.hbs$': 'jest-raw-loader',
         '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
         // '\\.(css|less)$': 'jest-raw-loader',

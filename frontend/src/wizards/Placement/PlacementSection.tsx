@@ -70,7 +70,6 @@ export function PlacementSection(props: {
         const placementBindingCount = resources?.filter((resource) => resource.kind === PlacementBindingKind).length
 
         if (placementCount + placementRuleCount > 1) isAdvanced = true
-        // if (placementCount + placementRuleCount === 0) isAdvanced = true
         if (placementBindingCount > 1) isAdvanced = true
 
         for (const placement of placements) {
@@ -174,17 +173,17 @@ export function PlacementSection(props: {
     if (isAdvanced) {
         return (
             <Fragment>
-                {(placementCount || (props.defaultPlacementKind === 'Placement' && placementRuleCount === 0)) && (
+                {placementCount || (props.defaultPlacementKind === 'Placement' && placementRuleCount === 0) ? (
                     <Placements
                         clusterSets={props.existingClusterSets}
                         clusterSetBindings={props.existingClusterSetBindings}
                         bindingKind={props.bindingSubjectKind}
                         clusters={props.clusters}
                     />
-                )}
-                {(placementRuleCount || (props.defaultPlacementKind === 'PlacementRule' && placementCount === 0)) && (
+                ) : null}
+                {placementRuleCount || (props.defaultPlacementKind === 'PlacementRule' && placementCount === 0) ? (
                     <PlacementRules clusters={props.clusters} />
-                )}
+                ) : null}
                 <PlacementBindings
                     placementCount={placementCount}
                     placementRuleCount={placementRuleCount}

@@ -12,7 +12,7 @@ import {
 import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup } from '../common/resources/IPolicy'
 import { PolicySetApiGroup } from '../common/resources/IPolicySet'
-import { isValidKubernetesResourceName } from '../common/validation'
+import { validateKubernetesResourceName } from '../../lib/validation'
 
 export function PlacementBindings(props: {
     placementCount: number
@@ -61,7 +61,7 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
                 readonly={placementBinding.metadata?.uid !== undefined}
                 required
                 helperText="The placement binding name must be unique to the namespace."
-                validation={isValidKubernetesResourceName}
+                validation={validateKubernetesResourceName}
             />
             <Select
                 path="placementRef.kind"
@@ -76,7 +76,7 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
                 required
                 hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
                 helperText="The placement name should match the name of a placement in this namespace.."
-                validation={isValidKubernetesResourceName}
+                validation={validateKubernetesResourceName}
             />
             <WizTextInput
                 path="placementRef.name"
@@ -84,24 +84,8 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
                 required
                 hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
                 helperText="The placement rule name should match the name of a placement rule in this namespace."
-                validation={isValidKubernetesResourceName}
+                validation={validateKubernetesResourceName}
             />
-            {/* <Select
-        path="placementRef.name"
-        label="Placement"
-        helperText="The placement used to select clusters."
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
-        options={props.existingPlacements.map((placement) => placement.metadata?.name ?? '')}
-    />
-    <Select
-        path="placementRef.name"
-        label="Placement rule"
-        helperText="The placement rule used to select clusters for placement."
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-        options={props.existingPlacementRules.map((placement) => placement.metadata?.name ?? '')}
-    /> */}
             <WizArrayInput
                 path="subjects"
                 label="Subjects"
@@ -142,7 +126,7 @@ function Subject() {
                 label="Subject name"
                 required
                 helperText="The subject name should match the name of a policy or policy set in this namespace."
-                validation={isValidKubernetesResourceName}
+                validation={validateKubernetesResourceName}
             />
         </Fragment>
     )

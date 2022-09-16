@@ -11,7 +11,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { IPlacementRule, PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
-import { isValidKubernetesResourceName } from '../common/validation'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed } from './MatchExpression'
 
 export function PlacementRules(props: { clusters: IResource[] }) {
@@ -56,7 +56,7 @@ export function PlacementRule(props: { clusters: IResource[]; hideName?: boolean
                     required
                     readonly={placementRule.metadata?.uid !== undefined}
                     helperText="The name of the placement rule should match the placement rule name in a placement binding so that it is bound to a policy or policy set. The placement rule name must be unique to the namespace."
-                    validation={isValidKubernetesResourceName}
+                    validation={validateKubernetesResourceName}
                 />
             )}
             <WizKeyValue

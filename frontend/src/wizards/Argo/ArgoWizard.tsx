@@ -32,7 +32,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
-import { isValidKubernetesResourceName, validateWebURL } from '../common/validation'
+import { validateKubernetesResourceName, validateWebURL } from '../../lib/validation'
 import { Placement } from '../Placement/Placement'
 import HelmIcon from './logos/HelmIcon.svg'
 
@@ -105,8 +105,8 @@ interface ArgoWizardProps {
         channelPath: string,
         secretArgs?:
             | {
-                  secretRef?: string | undefined
-                  namespace?: string | undefined
+                  secretRef?: string
+                  namespace?: string
               }
             | undefined
     ) => Promise<unknown>
@@ -115,8 +115,8 @@ interface ArgoWizardProps {
         branch: string,
         secretArgs?:
             | {
-                  secretRef?: string | undefined
-                  namespace?: string | undefined
+                  secretRef?: string
+                  namespace?: string
               }
             | undefined
     ) => Promise<unknown>
@@ -296,7 +296,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             placeholder="Enter the application set name"
                             required
                             id="name"
-                            validation={isValidKubernetesResourceName}
+                            validation={validateKubernetesResourceName}
                         />
                         <Select
                             id="namespace"

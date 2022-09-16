@@ -37,7 +37,8 @@ import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
 import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../common/resources/IPolicy'
-import { isValidKubernetesResourceName, validatePolicyName } from '../common/validation'
+import { validateKubernetesResourceName } from '../../lib/validation'
+import { validatePolicyName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { Specifications } from './specifications'
@@ -328,7 +329,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                         path="objectDefinition.metadata.name"
                         label="Name"
                         required
-                        validation={isValidKubernetesResourceName}
+                        validation={validateKubernetesResourceName}
                         helperText="Name needs to be unique to the namespace on each of the managed clusters."
                     />
                     <WizTextInput path="objectDefinition.spec.minimumDuration" label="Minimum duration" required />
@@ -345,7 +346,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                         label="Name"
                         required
                         helperText="Name needs to be unique to the namespace on each of the managed clusters."
-                        validation={isValidKubernetesResourceName}
+                        validation={validateKubernetesResourceName}
                     />
                     <WizNumberInput
                         path="objectDefinition.spec.maxClusterRoleBindingUsers"
@@ -368,7 +369,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                         label="Name"
                         required
                         helperText="Name needs to be unique to the namespace on each of the managed clusters."
-                        validation={isValidKubernetesResourceName}
+                        validation={validateKubernetesResourceName}
                     />
 
                     <WizRadioGroup

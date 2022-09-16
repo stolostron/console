@@ -18,7 +18,7 @@ import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementKind, PlacementType, Predicate } from '../common/resources/IPlacement'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
-import { isValidKubernetesResourceName } from '../common/validation'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
 
 export function Placements(props: {
@@ -90,7 +90,7 @@ export function Placement(props: {
                     required
                     readonly={placement.metadata?.uid !== undefined}
                     helperText="The name of the placement should match the placement name in a placement binding so that it is bound to a policy or policy set. The placement name must be unique to the namespace."
-                    validation={isValidKubernetesResourceName}
+                    validation={validateKubernetesResourceName}
                 />
             )}
 
