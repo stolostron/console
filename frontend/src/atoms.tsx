@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Resource } from 'i18next'
 import { noop } from 'lodash'
 import {
     AgentClusterInstallK8sResource,
@@ -13,7 +14,9 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { io, Socket } from 'socket.io-client'
 import { LoadingPage } from './components/LoadingPage'
+import { eventQueue, resetEventQueue, ResourceEvent } from './data/event-queue'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -245,25 +248,25 @@ export interface Settings {
     awsPrivateWizardStep?: 'enabled' | 'disabled'
 }
 
-interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
-    object: {
-        kind: string
-        apiVersion: string
-        metadata: {
-            name: string
-            namespace: string
-            resourceVersion: string
-        }
-    }
-}
+// interface WatchEvent {
+//     type: 'ADDED' | 'DELETED' | 'MODIFIED'
+//     object: {
+//         kind: string
+//         apiVersion: string
+//         metadata: {
+//             name: string
+//             namespace: string
+//             resourceVersion: string
+//         }
+//     }
+// }
 
-export interface SettingsEvent {
-    type: 'SETTINGS'
-    settings: Record<string, string>
-}
+// export interface SettingsEvent {
+//     type: 'SETTINGS'
+//     settings: Record<string, string>
+// }
 
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+// type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
@@ -448,20 +451,29 @@ export function LoadData(props: { children?: ReactNode }) {
     ])
 
     useEffect(() => {
-        const eventQueue: WatchEvent[] = []
+        resetEventQueue()
 
         function processEventQueue() {
             if (eventQueue.length === 0) return
 
             const resourceTypeMap = eventQueue?.reduce((resourceTypeMap, eventData) => {
-                const apiVersion = eventData.object.apiVersion
+                if (eventData.type === 'RESET') {
+                    setLoading(true)
+                    // TODO CLEAR DATA
+                    return resourceTypeMap
+                }
+                if (eventData.type === 'LOADED') {
+                    setLoading(false)
+                    return resourceTypeMap
+                }
+                const apiVersion = eventData.resource.apiVersion
                 const groupVersion = apiVersion.split('/')[0]
-                const kind = eventData.object.kind
+                const kind = eventData.resource.kind
                 if (!resourceTypeMap[groupVersion]) resourceTypeMap[groupVersion] = {}
                 if (!resourceTypeMap[groupVersion][kind]) resourceTypeMap[groupVersion][kind] = []
                 resourceTypeMap[groupVersion][kind].push(eventData)
                 return resourceTypeMap
-            }, {} as Record<string, Record<string, WatchEvent[]>>)
+            }, {} as Record<string, Record<string, ResourceEvent[]>>)
             eventQueue.length = 0
 
             for (const groupVersion in resourceTypeMap) {
@@ -473,16 +485,17 @@ export function LoadData(props: { children?: ReactNode }) {
                             const watchEvents = resourceTypeMap[groupVersion]?.[kind]
                             if (watchEvents) {
                                 for (const watchEvent of watchEvents) {
+                                    // TODO: eliminate non-null assertions
                                     const index = newResources.findIndex(
                                         (resource) =>
-                                            resource.metadata?.name === watchEvent.object.metadata.name &&
-                                            resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                                            resource.metadata?.name === watchEvent.resource.metadata!.name &&
+                                            resource.metadata?.namespace === watchEvent.resource.metadata!.namespace
                                     )
                                     switch (watchEvent.type) {
                                         case 'ADDED':
                                         case 'MODIFIED':
-                                            if (index !== -1) newResources[index] = watchEvent.object
-                                            else newResources.push(watchEvent.object)
+                                            if (index !== -1) newResources[index] = watchEvent.resource
+                                            else newResources.push(watchEvent.resource)
                                             break
                                         case 'DELETED':
                                             if (index !== -1) newResources.splice(index, 1)
@@ -497,58 +510,46 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        function processMessage(event: MessageEvent) {
-            if (event.data) {
-                try {
-                    const data = JSON.parse(event.data) as ServerSideEventData
-                    switch (data.type) {
-                        case 'ADDED':
-                        case 'MODIFIED':
-                        case 'DELETED':
-                            eventQueue.push(data)
-                            break
-                        case 'START':
-                            eventQueue.length = 0
-                            break
-                        case 'LOADED':
-                            setLoading((loading) => {
-                                if (loading) {
-                                    processEventQueue()
-                                }
-                                return false
-                            })
-                            break
-                        case 'SETTINGS':
-                            setSettings(data.settings)
-                            break
-                    }
-                } catch (err) {
-                    console.error(err)
+        const socket = io({ path: `${getBackendUrl()}/socket.io` })
+        socket.on('connect', () => {
+            console.debug('websocket', 'connect')
+            socket?.on('ADDED', (resource: IResource) => {
+                eventQueue.push({ type: 'ADDED', resource: resource as any })
+            })
+            socket?.on('MODIFIED', (resource: IResource) => {
+                eventQueue.push({ type: 'MODIFIED', resource: resource as any })
+                if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
+                    setSettings((resource as ConfigMap).data as Settings)
+                }
+            })
+            socket?.on('DELETED', (resource: IResource) => {
+                eventQueue.push({ type: 'DELETED', resource: resource as any })
+            })
+            socket?.on('LOADED', () => {
+                setLoading(false)
+            })
+            // TODO: HANDLE settings, reset
+        })
+        socket.on('error', () => {
+            console.debug('websocket', 'error')
+        })
+        socket.on('reconnect', () => {
+            console.debug('websocket', 'reconnect')
+        })
+        socket.on('disconnect', () => {
+            console.debug('websocket', 'disconnect')
+            setLoading(true)
+            for (const setter of Object.values(setters)) {
+                for (const set of Object.values(setter)) {
+                    set([])
                 }
             }
-        }
-
-        let evtSource: EventSource | undefined
-        function startWatch() {
-            evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
-            evtSource.onmessage = processMessage
-            evtSource.onerror = function () {
-                console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
-                switch (evtSource?.readyState) {
-                    case EventSource.CLOSED:
-                        setTimeout(() => {
-                            startWatch()
-                        }, 1000)
-                        break
-                }
-            }
-        }
-        startWatch()
+        })
 
         const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
-            if (evtSource) evtSource.close()
+            socket.disconnect()
         }
     }, [setSettings, setters])
 
