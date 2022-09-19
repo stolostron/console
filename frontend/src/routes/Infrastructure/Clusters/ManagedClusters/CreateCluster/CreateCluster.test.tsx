@@ -627,9 +627,7 @@ describe('CreateCluster AWS', () => {
         await clickByText('Next')
 
         // choose ansible template
-        await waitForText(
-            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
-        )
+        await waitForText('Install the Operator through the following link:')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
@@ -705,9 +703,7 @@ describe('CreateCluster AWS', () => {
 
         // ansible template
         await waitForText('Ansible Automation Template')
-        await waitForNotText(
-            'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through OperatorHub.'
-        )
+        await waitForNotText('Install the Operator through the following link:')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')

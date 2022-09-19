@@ -15,7 +15,7 @@ import {
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { configMapsState, subscriptionOperatorsState } from '../../../atoms'
+import { subscriptionOperatorsState } from '../../../atoms'
 import { ansibleCredentialsValue, clusterCuratorTemplatesValue } from '../../../selectors'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
@@ -34,7 +34,6 @@ import {
 } from '../../../resources'
 
 export default function AnsibleAutomationsPage() {
-    const [configMaps] = useRecoilState(configMapsState)
     const alertContext = useContext(AcmAlertContext)
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
 
@@ -71,7 +70,7 @@ export default function AnsibleAutomationsPage() {
             <AcmPageContent id="clusters">
                 <PageSection>
                     {!isOperatorInstalled && (
-                        <Hint className={classes.hint}>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
+                        <Hint className={classes.hint}>{getOperatorError(isOperatorInstalled, t)}</Hint>
                     )}
                     <AnsibleJobTemplateTable />
                 </PageSection>
