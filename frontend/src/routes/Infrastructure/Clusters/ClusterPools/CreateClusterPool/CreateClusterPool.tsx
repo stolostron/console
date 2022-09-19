@@ -15,7 +15,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { getControlData } from './controlData/ControlData'
+import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import {
     setAvailableConnections,
     arrayItemHasKey,
@@ -30,6 +30,9 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
 import { Secret } from '../../../../../resources'
+import getControlDataAWS from './controlData/ControlDataAWS'
+import getControlDataGCP from './controlData/ControlDataGCP'
+import getControlDataAZR from './controlData/ControlDataAZR'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -107,7 +110,7 @@ export function CreateClusterPool() {
     const [settings] = useRecoilState(settingsState)
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [infrastructureType, setInfrastructureType] = useState('')
+    // const [infrastructureType, setInfrastructureType] = useState('')
     const [newSecret, setNewSecret] = useState<Secret>()
 
     const { projects } = GetProjects()
@@ -158,6 +161,10 @@ export function CreateClusterPool() {
         setIsModalOpen(!isModalOpen)
     }
 
+    function backButtonOverrideFunc() {
+        history.goBack()
+    }
+
     // cancel button
     const cancelCreate = () => {
         cancelNavigation(location, history, NavigationPath.clusterPools)
@@ -183,11 +190,33 @@ export function CreateClusterPool() {
           }
         : null
 
+    const infrastructureType = urlParams.get('infrastructureType') || ''
+    let controlData: any[]
+    switch (infrastructureType) {
+        case 'AWS':
+            controlData = getControlDataAWS(
+                handleModalToggle,
+                false,
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )
+            break
+        case 'GCP':
+            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            break
+        case 'Azure':
+            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            break
+
+        default:
+            controlData = []
+    }
+
     // Check for pre-selected cluster set
     const selectedClusterSet = urlParams.get('clusterSet')
-
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
+
     function onControlInitialize(control: any) {
         switch (control.id) {
             case 'connection':
@@ -211,7 +240,7 @@ export function CreateClusterPool() {
                         }
                     })
                 })
-                setInfrastructureType(control.active[0])
+                // setInfrastructureType(control.active[0])
                 break
             case 'name':
                 control.validation.contextTester = (
@@ -276,11 +305,7 @@ export function CreateClusterPool() {
                 type={'ClusterPool'}
                 title={'ClusterPool YAML'}
                 monacoEditor={<MonacoEditor />}
-                controlData={getControlData(
-                    handleModalToggle,
-                    settings.awsPrivateWizardStep === 'enabled',
-                    settings.singleNodeOpenshift === 'enabled'
-                )}
+                controlData={fixupControlsForClusterPool(controlData)}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}
@@ -290,6 +315,7 @@ export function CreateClusterPool() {
                     pauseCreate: () => {},
                     creationStatus: creationStatus?.status,
                     creationMsg: creationStatus?.messages,
+                    backButtonOverride: backButtonOverrideFunc,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}
