@@ -625,7 +625,7 @@ describe('CreateCluster AWS', () => {
 
         // skipping proxy
         await clickByText('Next')
-        console.log('checking page html: ', container.innerHTML)
+
         // choose ansible template
         await waitForText('Install the Operator through the following link:')
         await clickByPlaceholderText('Select an Ansible job template')
