@@ -625,9 +625,9 @@ describe('CreateCluster AWS', () => {
 
         // skipping proxy
         await clickByText('Next')
-
+        console.log('checking page html: ', container.innerHTML)
         // choose ansible template
-        await waitForText('Install the Operator through the following link: ')
+        await waitForText('Install the Operator through the following link:')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
@@ -703,7 +703,7 @@ describe('CreateCluster AWS', () => {
 
         // ansible template
         await waitForText('Ansible Automation Template')
-        await waitForNotText('Install the Operator through the following link: ')
+        await waitForNotText('Install the Operator through the following link:')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')
