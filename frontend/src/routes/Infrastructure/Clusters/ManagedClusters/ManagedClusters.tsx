@@ -4,7 +4,6 @@ import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVa
 import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlertContext,
-    AcmButton,
     AcmEmptyState,
     AcmInlineProvider,
     AcmInlineStatusGroup,
@@ -46,24 +45,12 @@ import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
-import { OnPremiseBanner } from './components/cim/OnPremiseBanner'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 
-function InfraEnvLinkButton() {
-    const { t } = useTranslation()
-
-    return (
-        <Link to={NavigationPath.infraEnvironments} style={{ marginRight: '16px' }}>
-            <AcmButton key="enableDiscovery" variant={ButtonVariant.primary}>
-                {t('cim.onpremise.banner.infraenv.link')}
-            </AcmButton>
-        </Link>
-    )
-}
 export default function ManagedClusters() {
     const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
@@ -96,12 +83,6 @@ export default function ManagedClusters() {
         <AcmPageContent id="clusters">
             <PageSection>
                 <Stack hasGutter={true}>
-                    <OnPremiseBanner
-                        id="banner.managedclusters"
-                        extraButton={<InfraEnvLinkButton />}
-                        titleKey="cim.onpremise.banner.header"
-                        textKey="cim.onpremise.banner.body"
-                    />
                     <StackItem>
                         <ClustersTable
                             clusters={clusters}
