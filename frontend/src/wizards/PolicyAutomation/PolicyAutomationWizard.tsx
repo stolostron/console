@@ -16,9 +16,8 @@ import {
     WizNumberInput,
 } from '@patternfly-labs/react-form-wizard'
 import { IResource } from '../common/resources/IResource'
-import { ConfigMap } from '../common/resources/IConfigMap'
-import { ICredential } from '../common/resources/ICredential'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
+import { ConfigMap } from '../../resources'
 
 export function PolicyAutomationWizard(props: {
     title: string
@@ -32,7 +31,7 @@ export function PolicyAutomationWizard(props: {
     resource: IPolicyAutomation
     onSubmit: WizardSubmit
     onCancel: WizardCancel
-    getAnsibleJobsCallback: (credential: ICredential) => Promise<string[]>
+    getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
     isAnsibleOperatorInstalled: boolean
 }) {
     const ansibleCredentials = useMemo(
