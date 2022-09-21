@@ -470,6 +470,12 @@ const controlDataAZR = [
         title: 'Cluster details',
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Azure',
+        type: 'reviewinfo',
+    },
+    {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',

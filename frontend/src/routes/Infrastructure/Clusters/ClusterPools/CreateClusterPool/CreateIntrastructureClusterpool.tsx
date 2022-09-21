@@ -93,7 +93,7 @@ export function CreateInfrastructureClusterpool() {
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
     const breadcrumbs = useMemo(
-        () => [{ label: t('Clusters'), to: NavigationPath.clusters }, { label: t('Infrastructure') }],
+        () => [{ label: t('Cluster pools'), to: NavigationPath.clusterPools }, { label: t('Infrastructure') }],
         [t]
     )
 

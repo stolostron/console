@@ -266,6 +266,12 @@ const controlDataGCP = [
         title: 'Cluster details',
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'GCP',
+        type: 'reviewinfo',
+    },
+    {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',
