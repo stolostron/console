@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
-import { PlusIcon } from '@patternfly/react-icons'
+import { PageSection, Stack } from '@patternfly/react-core'
 import _ from 'lodash'
-import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import {
     applicationsState,
@@ -24,14 +22,9 @@ import {
     PolicyReport,
     PolicyReportResults,
 } from '../../../resources'
-import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
-import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import {
-    AcmActionGroup,
     AcmAlert,
-    AcmButton,
     AcmDonutChart,
-    AcmLaunchLink,
     AcmLoadingPage,
     AcmOverviewProviders,
     AcmPage,
