@@ -8,7 +8,6 @@ const lessThanEqualSize = (active, templateObjectMap, i18n) => {
     if (runningCount > size) {
         return i18n('clusterPool.creation.validation.runningCount.lessThanOrEqualSize')
     }
-    return
 }
 
 export const fixupControlsForClusterPool = (controlData) => {
