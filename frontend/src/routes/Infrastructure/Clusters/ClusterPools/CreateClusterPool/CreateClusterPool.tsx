@@ -110,7 +110,6 @@ export function CreateClusterPool() {
     const [settings] = useRecoilState(settingsState)
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    // const [infrastructureType, setInfrastructureType] = useState('')
     const [newSecret, setNewSecret] = useState<Secret>()
 
     const { projects } = GetProjects()

@@ -34,7 +34,7 @@ import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath } from '../../../../NavigationPath'
 import {
     Cluster,
     ClusterClaim,

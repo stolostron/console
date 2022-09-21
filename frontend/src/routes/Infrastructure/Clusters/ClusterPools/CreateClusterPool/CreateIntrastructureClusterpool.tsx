@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { clusterImageSetsState, secretsState } from '../../../../../atoms'
+import { secretsState } from '../../../../../atoms'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 
@@ -12,7 +12,6 @@ export function CreateInfrastructureClusterpool() {
     const [t] = useTranslation()
     const history = useHistory()
     const [secrets] = useRecoilState(secretsState)
-    const [clusterImageSets] = useRecoilState(clusterImageSetsState)
     const credentials = useMemo(
         () =>
             secrets.filter(
@@ -89,7 +88,7 @@ export function CreateInfrastructureClusterpool() {
             },
         ]
         return newCards
-    }, [getCredentialLabels, clusterImageSets.length, history, t])
+    }, [getCredentialLabels, history, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
