@@ -19,6 +19,10 @@ import {
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
+import Handlebars from 'handlebars'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
@@ -528,6 +532,19 @@ const controlDataAZR = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['Azure'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            Azure: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

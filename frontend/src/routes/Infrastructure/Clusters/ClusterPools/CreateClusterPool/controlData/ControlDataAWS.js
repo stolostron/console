@@ -24,6 +24,10 @@ import {
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
+import Handlebars from 'handlebars'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -739,6 +743,19 @@ const controlDataAWS = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['AWS'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            AWS: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

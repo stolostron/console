@@ -199,15 +199,12 @@ export function CreateClusterPool() {
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled'
             )
-            debugger
             break
         case 'GCP':
             controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
-            debugger
             break
         case 'Azure':
             controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
-            debugger
             break
 
         default:

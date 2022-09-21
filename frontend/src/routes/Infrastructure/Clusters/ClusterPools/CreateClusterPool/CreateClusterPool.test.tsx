@@ -27,7 +27,6 @@ import { managedClusterSetsState, namespacesState, secretsState } from '../../..
 import { nockCreate, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
-    clickByTestId,
     clickByText,
     selectByText,
     typeByTestId,
