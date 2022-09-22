@@ -17,7 +17,6 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  Skeleton,
   Truncate,
   Text,
 } from '@patternfly/react-core';
@@ -29,6 +28,7 @@ import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import { useHelmRepositoryIndex, getRepoCharts } from '../hooks/useHelmRepositoryIndex';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useTranslation } from '../../../../lib/acm-i18next';
+import { LoadingHelper } from '../utils';
 
 const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColumnIDs }) => {
   const [isOpen, setOpen] = React.useState(false);
@@ -39,18 +39,16 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
     loaded: repoIndexLoaded,
     error: repoIndexError,
   } = React.useContext(RowContext);
-  const [templates, templatesLoaded, loadError] = useClusterTemplates();
+  const [templates, templatesLoaded, templatesLoadError] = useClusterTemplates();
   const { t } = useTranslation();
 
   const templatesFromRepo = templates.filter(
     (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
   );
-
-  const repositoryCharts = indexFile
-    ? getRepoCharts(indexFile, obj.metadata?.name || '')
-    : undefined;
-  const chartsCount = repositoryCharts?.length ?? '-';
-  const chartsUpdatedAt = indexFile ? new Date(indexFile.generated).toLocaleString() : '-';
+  const repoChartsCount = indexFile
+    ? getRepoCharts(indexFile, obj.metadata?.name ?? '').length ?? '-'
+    : '-';
+  const repoChartsUpdatedAt = indexFile ? new Date(indexFile.generated).toLocaleString() : '-';
 
   return (
     <>
@@ -79,21 +77,21 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
         {obj.spec.connectionConfig.tlsConfig ? t('Authenticated') : t('Not required')}
       </TableData>
       <TableData id="updated-at" activeColumnIDs={activeColumnIDs}>
-        {!repoIndexLoaded ? <Skeleton /> : repoIndexError ? <>-</> : <>{chartsUpdatedAt}</>}
+        <LoadingHelper isLoaded={repoIndexLoaded} error={repoIndexError}>
+          {repoChartsUpdatedAt}
+        </LoadingHelper>
       </TableData>
       <TableData id="charts" activeColumnIDs={activeColumnIDs}>
-        {!repoIndexLoaded ? <Skeleton /> : repoIndexError ? <>-</> : <>{chartsCount}</>}
+        <LoadingHelper isLoaded={repoIndexLoaded} error={repoIndexError}>
+          {repoChartsCount}
+        </LoadingHelper>
       </TableData>
       <TableData id="templates" activeColumnIDs={activeColumnIDs}>
-        {!templatesLoaded ? (
-          <Skeleton />
-        ) : loadError ? (
-          <>-</>
-        ) : (
+        <LoadingHelper isLoaded={templatesLoaded} error={templatesLoadError}>
           <Label color="green" icon={<CheckCircleIcon />}>
             {templatesFromRepo.length}
           </Label>
-        )}
+        </LoadingHelper>
       </TableData>
       <TableData id="group" activeColumnIDs={activeColumnIDs}>
         -

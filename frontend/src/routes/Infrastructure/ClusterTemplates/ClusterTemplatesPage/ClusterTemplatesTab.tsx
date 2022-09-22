@@ -16,13 +16,13 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  Skeleton,
 } from '@patternfly/react-core';
 import { sortable } from '@patternfly/react-table';
 import { clusterTemplateGVK, helmRepoGVK } from '../constants';
 import { ClusterTemplate } from '../types';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
+import { LoadingHelper } from '../utils';
 
 const columns = [
   {
@@ -79,13 +79,9 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
         {obj.spec.clusterSetup.pipeline?.name}
       </TableData>
       <TableData id="usage" activeColumnIDs={activeColumnIDs}>
-        {!loaded ? (
-          <Skeleton />
-        ) : loadError ? (
-          <>--</>
-        ) : (
-          <>{instances.filter((i) => i.spec.template === obj.metadata?.name).length}</>
-        )}
+        <LoadingHelper isLoaded={loaded} error={loadError}>
+          {instances.filter((i) => i.spec.template === obj.metadata?.name).length}
+        </LoadingHelper>
       </TableData>
       <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
         <Dropdown
