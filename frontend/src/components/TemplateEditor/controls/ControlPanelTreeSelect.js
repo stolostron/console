@@ -169,14 +169,6 @@ class ControlPanelTreeSelect extends React.Component {
         this.addAvailableMap(props)
     }
 
-    componentDidMount() {
-        document.addEventListener('mousedown', this.onDocClick)
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('mousedown', this.onDocClick)
-    }
-
     setInputRef = (ref) => {
         this.inputRef = ref
     }
@@ -283,7 +275,6 @@ class ControlPanelTreeSelect extends React.Component {
                                                         })
                                                         evt.target.setSelectionRange(inx, inx)
                                                     }
-                                                    target.classList.add('finished') // for test
                                                 }, 0)
                                             }
                                         }}
@@ -301,7 +292,6 @@ class ControlPanelTreeSelect extends React.Component {
                                             title="Clear selected item"
                                             ref={this.setClearRef}
                                             onClick={this.clickClear.bind(this)}
-                                            onKeyPress={this.pressClear.bind(this)}
                                         >
                                             <TimesCircleIcon aria-hidden />
                                         </div>
@@ -367,7 +357,6 @@ class ControlPanelTreeSelect extends React.Component {
                                                         whiteSpace: 'pre',
                                                     }}
                                                     onClick={this.clickSelect.bind(this, inx)}
-                                                    onKeyPress={this.pressSelect.bind(this, inx)}
                                                 >
                                                     {this.renderLabel(label, searchText)}
                                                 </div>
@@ -454,20 +443,8 @@ class ControlPanelTreeSelect extends React.Component {
         }
     }
 
-    pressSelect(inx, e) {
-        if (e.key === 'Enter') {
-            this.clickSelect(inx)
-        }
-    }
-
     clickSelect(inx) {
         this.setState({ currentSelection: inx })
-    }
-
-    pressClear(inx, e) {
-        if (e && e.key === 'Enter') {
-            this.clickClear()
-        }
     }
 
     clickClear() {
