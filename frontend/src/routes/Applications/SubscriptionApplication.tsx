@@ -361,6 +361,13 @@ export function CreateSubscriptionApplication(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    function onControlInitialize(control: any) {
+        switch (control.id) {
+            case 'connection':
+                break
+        }
+    }
+
     useEffect(() => {
         if (editApplication) {
             const { selectedAppName } = editApplication
@@ -389,6 +396,7 @@ export function CreateSubscriptionApplication(
                 portals={Portals}
                 fetchControl={fetchControl}
                 createControl={createControl}
+                onControlInitialize={onControlInitialize}
                 logging={process.env.NODE_ENV !== 'production'}
                 i18n={t}
             />
