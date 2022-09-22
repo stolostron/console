@@ -1795,6 +1795,8 @@
     "Ready": "Ready",
     "Reason": "Reason",
     "Recommendations with remediation": "Recommendations with remediation",
+    "Red Hat Ansible Automation Platform": "Red Hat Ansible Automation Platform",
+    "Red Hat Openshift Cluster Manager": "Red Hat Openshift Cluster Manager",
     "Red Hat OpenStack Platform": "Red Hat OpenStack Platform",
     "Red Hat Virtualization": "Red Hat Virtualization",
     "Related applications ({{0}})": "Related applications ({{0}})",
