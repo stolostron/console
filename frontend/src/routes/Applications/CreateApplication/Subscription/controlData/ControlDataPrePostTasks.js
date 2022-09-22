@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
+import { getSharedSubscriptionWarning } from './utils'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
@@ -34,14 +34,20 @@ const prePostTasks = [
         editing: { collapsed: true, editMode: true }, // if editing existing app, collapse this field initially
     },
     {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'ANS',
+        type: 'reviewinfo',
+    },
+    {
         name: 'creation.app.ansible.credential.name',
         tooltip: 'tooltip.creation.app.ansibleSecretName',
         id: 'connection',
         type: 'singleselect',
+        providerId: 'ans',
         active: '',
         placeholder: 'app.enter.select.ansibleSecretName',
         available: [],
-        fetchAvailable: loadExistingAnsibleProviders(),
         reverse: 'Subscription[0].spec.hooksecretref.name',
         validation: {},
         footer: <CreateCredentialModal />,
