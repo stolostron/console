@@ -123,7 +123,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                 id="aws-instance-type"
                                 label={t('submariner.install.form.instancetype')}
                                 placeholder={t('submariner.install.form.instancetype.placeholder')}
-                                labelHelp={t('submariner.install.form.instancetype.labelHelp')}
+                                labelHelp={t('submariner.install.form.instancetype.labelHelp.aws')}
                                 value={awsInstanceType}
                                 onChange={(instanceType) => setAwsInstanceType(instanceType)}
                             />
