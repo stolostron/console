@@ -48,12 +48,6 @@ class ControlPanelComboBox extends React.Component {
                         control.active = searchText
                         userData.push(searchText)
                         set(control, 'userData', userData)
-
-                        // if this combobox is fetched from server, make sure whatever user types in has an availableMap entry
-                        const setAvailableMap = get(control, 'fetchAvailable.setAvailableMap')
-                        if (setAvailableMap) {
-                            setAvailableMap(control)
-                        }
                     }
                     handleComboChange(searchText)
                     searchText = null
@@ -95,17 +89,6 @@ class ControlPanelComboBox extends React.Component {
             searchText: null,
             sortToTop: null,
         }
-        this.onDocClick = this.onDocClick.bind(this)
-    }
-
-    componentDidMount() {
-        document.addEventListener('click', this.onDocClick)
-        document.addEventListener('touchstart', this.onDocClick)
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('click', this.onDocClick)
-        document.removeEventListener('touchstart', this.onDocClick)
     }
 
     setControlRef = (ref) => {
@@ -137,8 +120,6 @@ class ControlPanelComboBox extends React.Component {
             availableMap,
             exception,
             hasReplacements,
-            isFailed,
-            fetchAvailable,
             isRefetching,
             disabled,
             simplified,
@@ -146,18 +127,6 @@ class ControlPanelComboBox extends React.Component {
         } = control
         let { isLoading } = control
         let { active, available = [], placeholder = '' } = control
-        let loadingMsg
-        if (fetchAvailable) {
-            if (isLoading) {
-                loadingMsg = i18n(get(control, 'fetchAvailable.loadingDesc', 'resource.loading'))
-            } else if (isFailed) {
-                placeholder = i18n('resource.error')
-            } else if (available.length === 0) {
-                placeholder = placeholder || i18n(get(control, 'fetchAvailable.emptyDesc', 'resource.empty'))
-            }
-        } else if (isLoading) {
-            loadingMsg = i18n('creation.loading.values', [name.toLowerCase()])
-        }
         if (!placeholder) {
             placeholder = i18n('creation.enter.value', [name.toLowerCase()])
         }
@@ -169,18 +138,6 @@ class ControlPanelComboBox extends React.Component {
         if (commented) {
             const map = invert(availableMap)
             active = map[active] || active
-        }
-
-        // if active was preset by loading an existing resource
-        // initialize combobox to that value
-        if (active && available.length === 0) {
-            available.push(active)
-            if (isLoading) {
-                available.push(loadingMsg)
-            } else if (isFailed) {
-                available.push(placeholder)
-            }
-            isLoading = false
         }
 
         let currentAvailable = available
@@ -299,7 +256,6 @@ class ControlPanelComboBox extends React.Component {
                                                 title="Clear selected item"
                                                 ref={this.setClearRef}
                                                 onClick={this.clickClear.bind(this)}
-                                                onKeyPress={this.pressClear.bind(this)}
                                             >
                                                 <TimesCircleIcon aria-hidden />
                                             </div>
@@ -324,32 +280,6 @@ class ControlPanelComboBox extends React.Component {
                                                 >
                                                     <title>Close menu</title>
                                                     <path d="M0 0l5 4.998L10 0z" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                        {fetchAvailable && !(searchText || active) && (
-                                            <div
-                                                role="button"
-                                                tabIndex="0"
-                                                className="tf--list-box__refresh-icon"
-                                                type="button"
-                                                onClick={this.clickRefresh.bind(this)}
-                                                onKeyPress={this.clickRefresh.bind(this)}
-                                            >
-                                                <svg
-                                                    fillRule="evenodd"
-                                                    height="12"
-                                                    role="img"
-                                                    viewBox="0 0 12 12"
-                                                    width="12"
-                                                    alt={aria}
-                                                    aria-label={aria}
-                                                >
-                                                    <title>Refresh</title>
-                                                    <path
-                                                        d="M8.33703191,2.28461538 L6.50516317,0.553494162 L7.02821674,3.11581538e-14 L9.9,2.71384343 L7.02748392,5.41285697 L6.50601674,4.85786795 L8.43419451,3.04615385 L4.95,3.04615385 C2.63677657,3.04615385 0.761538462,4.92139195 0.761538462,7.23461538 C0.761538462,9.54783882 2.63677657,11.4230769 4.95,11.4230769 C7.26322343,11.4230769 9.13846154,9.54783882 9.13846154,7.23461538 L9.9,7.23461538 C9.9,9.9684249 7.68380951,12.1846154 4.95,12.1846154 C2.21619049,12.1846154 0,9.9684249 0,7.23461538 C-1.77635684e-15,4.50080587 2.21619049,2.28461538 4.95,2.28461538 L8.33703191,2.28461538 Z"
-                                                        id="restart"
-                                                    ></path>
                                                 </svg>
                                             </div>
                                         )}
@@ -407,22 +337,7 @@ class ControlPanelComboBox extends React.Component {
         )
     }
 
-    renderLabel(label, searchText, active, control, simplified, describe) {
-        if (describe) {
-            // eslint-disable-next-line jest/valid-title, jest/valid-describe-callback
-            const desc = describe(label, control)
-            return (
-                <div className="tf--list-box__menu-item-container">
-                    <div style={{ lineHeight: '14px', fontSize: '16px' }}>{label}</div>
-                    <div style={{ fontSize: '12px' }}>{desc}</div>
-                    {label === active && (
-                        <span className="tf-select__menu-item-icon">
-                            <CheckIcon aria-hidden />
-                        </span>
-                    )}
-                </div>
-            )
-        }
+    renderLabel(label, searchText, active, control, simplified) {
         const isCustom = control.userData && control.userData.includes(label)
         if (isCustom || searchText) {
             if (!searchText) {
@@ -474,15 +389,6 @@ class ControlPanelComboBox extends React.Component {
         }
     }
 
-    onDocClick(event) {
-        const { isOpen } = this.state
-        const clickedOnToggle = this.controlRef && this.controlRef.contains(event.target)
-        const clickedWithinMenu = this.menuRef && this.menuRef.contains && this.menuRef.contains(event.target)
-        if (isOpen && !(clickedOnToggle || clickedWithinMenu)) {
-            this.setState({ isBlurred: true })
-        }
-    }
-
     pressUp(e) {
         if (e.key === 'Enter' && this.state.searchText) {
             this.inputRef.blur()
@@ -494,21 +400,6 @@ class ControlPanelComboBox extends React.Component {
             this.clickClear()
         } else if (e.key === 'Tab') {
             this.setState({ isBlurred: true })
-        }
-    }
-
-    clickRefresh(e) {
-        e.preventDefault()
-        e.stopPropagation()
-        const { control } = this.props
-        const { fetchAvailable } = control
-        if (fetchAvailable) {
-            const { refetch } = fetchAvailable
-            if (typeof refetch === 'function') {
-                delete control.available
-                refetch()
-            }
-            this.clickClear()
         }
     }
 
@@ -558,12 +449,6 @@ class ControlPanelComboBox extends React.Component {
 
     clickSelect(label) {
         this.setState({ currentSelection: label, isOpen: false })
-    }
-
-    pressClear(e) {
-        if (e && e.key === 'Enter') {
-            this.clickClear()
-        }
     }
 
     clickClear() {
