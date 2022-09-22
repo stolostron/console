@@ -76,7 +76,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
         {obj.spec.helmChartRef.name}
       </TableData>
       <TableData id="pipeline" activeColumnIDs={activeColumnIDs}>
-        {obj.spec.clusterSetup[0].pipelineRef?.name}
+        {obj.spec.clusterSetup.pipeline?.name}
       </TableData>
       <TableData id="usage" activeColumnIDs={activeColumnIDs}>
         {!loaded ? (
