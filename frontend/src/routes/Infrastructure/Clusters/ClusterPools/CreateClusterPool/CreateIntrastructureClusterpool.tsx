@@ -40,7 +40,7 @@ export function CreateInfrastructureClusterpool() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster that is running in your AWS subscription.'),
+                        description: t('A Red Hat OpenShift clusterpool that is running in your AWS subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
@@ -58,7 +58,7 @@ export function CreateInfrastructureClusterpool() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A Red Hat OpenShift cluster that is running in your Google Cloud subscription.'
+                            'A Red Hat OpenShift clusterpool that is running in your Google Cloud subscription.'
                         ),
                     },
                 ],
@@ -76,7 +76,7 @@ export function CreateInfrastructureClusterpool() {
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
+                        description: t('A Red Hat OpenShift clusterpool that is running in your Azure subscription.'),
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
