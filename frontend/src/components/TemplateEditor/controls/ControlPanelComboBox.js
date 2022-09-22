@@ -9,7 +9,6 @@ import ControlPanelFormGroup from './ControlPanelFormGroup'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 import set from 'lodash/set'
-import get from 'lodash/get'
 import uniq from 'lodash/uniq'
 import invert from 'lodash/invert'
 
