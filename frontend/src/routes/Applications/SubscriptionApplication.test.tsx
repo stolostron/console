@@ -204,17 +204,17 @@ describe('Create Subscription Application page', () => {
         localClusterCheckbox?.click()
 
         // nocks for application creation
-        // const createNocks = [
-        //     // create applicatiom namespace (project)
-        //     nockCreate(mockNamespace),
+        const createNocks = [
+            // create applicatiom namespace (project)
+            nockCreate(mockNamespace),
 
-        //     // create the related resources
-        //     nockCreate(mockApplication),
-        //     nockCreate(mockChannelNamespace),
-        //     nockCreate(mockChannel),
-        //     nockCreate(mockSubscription),
-        //     nockCreate(mockPlacementRule),
-        // ]
+            // create the related resources
+            nockCreate(mockApplication),
+            nockCreate(mockChannelNamespace),
+            nockCreate(mockChannel),
+            nockCreate(mockSubscription),
+            nockCreate(mockPlacementRule),
+        ]
 
         // click create button
         createButton?.click()
@@ -223,8 +223,7 @@ describe('Create Subscription Application page', () => {
         screen.queryAllByText('Application created')
 
         // make sure creating
-        // uncomment the await, the error will show up
-        // await waitForNocks(createNocks)
+        await waitForNocks(createNocks)
     })
 
     test('can render Edit Subscription Application Page', async () => {
