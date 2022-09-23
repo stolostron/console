@@ -177,7 +177,7 @@ export const mapSingleApplication = (application) => {
 
     const result =
         items.length > 0
-            ? items[0]
+            ? _.cloneDeep(items[0])
             : {
                   name: '',
                   namespace: '',
@@ -202,8 +202,10 @@ export const mapSingleApplication = (application) => {
         //this code moves all these items under the related section
         const kind = _.get(item, 'kind')
         const cluster = _.get(item, 'cluster')
+        const label = _.get(item, 'label')
 
-        if (kind === 'application') {
+        // We still need app objects for Argo app of apps
+        if (kind === 'application' && label.indexOf('app.kubernetes.io/instance=') === -1) {
             //this is a legit app object , just leave it
             return
         }

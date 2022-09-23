@@ -34,7 +34,7 @@ import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath } from '../../../../NavigationPath'
 import {
     Cluster,
     ClusterClaim,
@@ -115,7 +115,7 @@ export default function ClusterPoolsPage() {
                                 {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
-                                    click: () => history.push(locationWithCancelBack(NavigationPath.createClusterPool)),
+                                    click: () => history.push(NavigationPath.createClusterPoolInfrastructure),
                                     variant: ButtonVariant.primary,
                                 },
                             ]}
@@ -134,9 +134,7 @@ export default function ClusterPoolsPage() {
                                             <AcmButton
                                                 role="link"
                                                 onClick={() =>
-                                                    history.push(
-                                                        locationWithCancelBack(NavigationPath.createClusterPool)
-                                                    )
+                                                    history.push(NavigationPath.createClusterPoolInfrastructure)
                                                 }
                                             >
                                                 {t('managed.createClusterPool')}

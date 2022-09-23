@@ -412,19 +412,11 @@ export function Searchbar(props: SearchbarProps) {
                         </Button>
                     </TextInputGroupUtilities>
                 )}
-                <Divider
-                    orientation={{
-                        default: 'vertical',
-                    }}
-                />
+                <Divider isVertical />
                 <Button isInline variant="plain" onClick={toggleInfoModal} aria-label="Search help modal toggle">
                     <HelpIcon color={'var(--pf-global--active-color--100)'} />
                 </Button>
-                <Divider
-                    orientation={{
-                        default: 'vertical',
-                    }}
-                />
+                <Divider isVertical />
                 <AcmButton
                     id="inputDropdownButton1"
                     variant="plain"
@@ -438,11 +430,7 @@ export function Searchbar(props: SearchbarProps) {
                 >
                     {'Run search'}
                 </AcmButton>
-                <Divider
-                    orientation={{
-                        default: 'vertical',
-                    }}
-                />
+                <Divider isVertical />
                 <AcmButton
                     onClick={() =>
                         setSaveSearch({
