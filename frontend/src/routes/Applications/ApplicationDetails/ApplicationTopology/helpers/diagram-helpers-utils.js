@@ -21,7 +21,14 @@ import {
     metadataName,
 } from '../model/computeStatuses'
 
-export const nodesWithNoNS = ['namespace', 'clusterrole', 'clusterrolebinding', 'customresourcedefinition', 'node']
+export const nodesWithNoNS = [
+    'namespace',
+    'clusterrole',
+    'clusterrolebinding',
+    'customresourcedefinition',
+    'node',
+    'project',
+]
 
 export const isDeployableResource = (node) => {
     //check if this node has been created using a deployable object
