@@ -22,7 +22,6 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         // Security headers
         if (url === '/index.html') {
             res.setHeader('Cache-Control', 'no-cache')
-            res.setHeader('Strict-Transport-Security', 'max-age=31536000')
             res.setHeader('X-Frame-Options', 'deny')
             res.setHeader('X-XSS-Protection', '1; mode=block')
             res.setHeader('X-Content-Type-Options', 'nosniff')
