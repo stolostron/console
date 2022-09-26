@@ -18,11 +18,11 @@ export type ClusterTemplate = K8sResourceCommon & {
       repository: string;
     };
     clusterSetup: {
-      name: string;
-      pipelineRef?: {
+      pipeline: {
         name: string;
+        namespace: string;
       };
-    }[];
+    };
   };
 };
 

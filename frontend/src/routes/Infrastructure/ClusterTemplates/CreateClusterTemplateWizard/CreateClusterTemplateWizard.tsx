@@ -78,14 +78,12 @@ const CreateClusterTemplateWizard = () => {
                 repository: values.helmRepo,
                 version: '0.1.0',
               },
-              clusterSetup: [
-                {
-                  name: 'foo',
-                  pipelineRef: {
-                    name: values.pipelines[0],
-                  },
+              clusterSetup: {
+                pipeline: {
+                  name: values.pipelines[0],
+                  namespace: values.pipelines[0],
                 },
-              ],
+              },
             },
           },
         });

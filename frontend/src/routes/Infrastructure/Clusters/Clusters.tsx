@@ -3,6 +3,7 @@
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import CreateClusterPoolPage from './ClusterPools/CreateClusterPool/CreateClusterPool'
+import { CreateInfrastructureClusterpool } from './ClusterPools/CreateClusterPool/CreateIntrastructureClusterpool'
 import ClusterSetDetailsPage from './ClusterSets/ClusterSetDetails/ClusterSetDetails'
 import { ClustersPage } from './ClustersPage'
 import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'
@@ -24,6 +25,11 @@ export default function Clusters() {
             <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
             <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
             <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+            <Route
+                exact
+                path={NavigationPath.createClusterPoolInfrastructure}
+                component={CreateInfrastructureClusterpool}
+            />
             <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
             <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
             <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfigPage} />

@@ -429,11 +429,15 @@ export const getNameWithoutPodHash = (relatedKind) => {
 
 //add deployed object to the matching resource in the map
 export const addResourceToModel = (resourceMapObject, kind, relatedKind, nameWithoutChartRelease) => {
-    const kindModel = _.get(resourceMapObject, `specs.${kind}Model`, {})
+    const resourceType = _.get(resourceMapObject, 'type', '')
+    const kindModel =
+        resourceType === 'project'
+            ? _.get(resourceMapObject, `specs.projectModel`, {})
+            : _.get(resourceMapObject, `specs.${kind}Model`, {})
     const kindList = kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] || []
     kindList.push(relatedKind)
     kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] = kindList
-    _.set(resourceMapObject, `specs.${kind}Model`, kindModel)
+    _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind}Model`, kindModel)
 }
 
 // reduce complexity for code smell
