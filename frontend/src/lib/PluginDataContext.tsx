@@ -2,15 +2,19 @@
 import { createContext, ProviderProps } from 'react'
 import * as recoil from 'recoil'
 import * as atoms from '../atoms'
+// import { LoadDataUpdateContext } from './load-context-data'
 
 const { RecoilRoot } = recoil
 
 export type PluginData = {
-    recoil: typeof recoil,
-    atoms: typeof atoms,
+    recoil: typeof recoil
+    atoms: typeof atoms
+    loaded: boolean
 }
 
-const defaultContext = {  recoil, atoms }
+let loaded = false
+
+const defaultContext = { recoil, atoms, loaded }
 
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
@@ -32,8 +36,10 @@ export const usePluginDataContextValue = () => {
     return defaultContext
 }
 
-export const PluginDataContextProvider = (props: ProviderProps<PluginData>) => (
-    <PluginDataContext.Provider value={props.value}>
-        <RecoilRoot>{props.children}</RecoilRoot>
-    </PluginDataContext.Provider>
-)
+export const PluginDataContextProvider = (props: ProviderProps<PluginData>) => {
+    return (
+        <PluginDataContext.Provider value={props.value}>
+            <RecoilRoot>{props.children}</RecoilRoot>
+        </PluginDataContext.Provider>
+    )
+}

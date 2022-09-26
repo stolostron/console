@@ -11,10 +11,9 @@ import {
     NMStateK8sResource,
     NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
-import { atom, SetterOrUpdater, useGotoRecoilSnapshot, useRecoilSnapshot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import { atom, SetterOrUpdater, useRecoilState, useSetRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
-import { PluginContext } from './lib/PluginContext'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -168,6 +167,7 @@ import {
     UserPreferenceApiVersion,
     UserPreferenceKind,
 } from './resources'
+import { useRecoilValue } from './shared-recoil'
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
