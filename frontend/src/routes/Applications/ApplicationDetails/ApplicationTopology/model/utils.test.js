@@ -99,3 +99,93 @@ describe('getApplicationData', () => {
         expect(getApplicationData(nodes)).toEqual(result)
     })
 })
+
+describe('getApplicationData', () => {
+    it('returns subscription app data from given nodes', () => {
+        const nodes = [
+            {
+                type: 'application',
+                specs: {
+                    raw: {
+                        apiVersion: 'app.k8s.io/v1beta1',
+                    },
+                },
+            },
+            {
+                type: 'subscription',
+                name: 'my-subscription',
+            },
+            {
+                type: 'cluster',
+            },
+            {
+                type: 'replicaset',
+            },
+        ]
+        const result = {
+            isArgoApp: false,
+            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset'],
+            subscription: 'my-subscription',
+        }
+        expect(getApplicationData(nodes)).toEqual(result)
+    })
+
+    it('returns subscription app data with project', () => {
+        const nodes = [
+            {
+                type: 'application',
+                specs: {
+                    raw: {
+                        apiVersion: 'app.k8s.io/v1beta1',
+                    },
+                },
+            },
+            {
+                type: 'subscription',
+                name: 'my-subscription',
+            },
+            {
+                type: 'cluster',
+            },
+            {
+                type: 'replicaset',
+            },
+            {
+                type: 'project',
+            },
+        ]
+        const result = {
+            isArgoApp: false,
+            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset', 'namespace'],
+            subscription: 'my-subscription',
+        }
+        expect(getApplicationData(nodes)).toEqual(result)
+    })
+
+    it('returns argo app data from given nodes', () => {
+        const nodes = [
+            {
+                type: 'application',
+                specs: {
+                    raw: {
+                        apiVersion: 'argoproj.io/v1alpha1',
+                    },
+                },
+            },
+            {
+                type: 'cluster',
+            },
+            {
+                type: 'replicaset',
+            },
+        ]
+        const result = {
+            cluster: 'local-cluster',
+            isArgoApp: true,
+            relatedKinds: ['replicaset'],
+            source: {},
+            subscription: null,
+        }
+        expect(getApplicationData(nodes)).toEqual(result)
+    })
+})
