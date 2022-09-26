@@ -41,6 +41,8 @@ import {
     podCrash,
     persVolumePendingStateGreenRes,
     persVolumePendingStatePendingRes,
+    appSetDeployable,
+    appSetDesignFalse,
 } from './computeStatuses.data.js'
 
 import { ansibleSuccess, ansibleError, ansibleError2, ansibleErrorAllClusters } from './TestingData'
@@ -685,6 +687,14 @@ describe('computeNodeStatus', () => {
 
     it('return computeNodeStatus subscriptionGreenNotPlacedYellow', () => {
         expect(computeNodeStatus(subscriptionGreenNotPlacedYellow, true, t)).toEqual('yellow')
+    })
+
+    it('return computeNodeStatus appSet is deployable', () => {
+        expect(computeNodeStatus(appSetDeployable, true, t)).toEqual('green')
+    })
+
+    it('return computeNodeStatus appSet not design', () => {
+        expect(computeNodeStatus(appSetDesignFalse, true, t)).toEqual('green')
     })
 })
 
