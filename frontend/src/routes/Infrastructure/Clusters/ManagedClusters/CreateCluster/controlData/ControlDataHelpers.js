@@ -349,11 +349,6 @@ export const clusterDetailsControlData = [
 
 export const clusterPoolDetailsControlData = [
     {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
         placeholder: 'creation.ocp.name.placeholder',

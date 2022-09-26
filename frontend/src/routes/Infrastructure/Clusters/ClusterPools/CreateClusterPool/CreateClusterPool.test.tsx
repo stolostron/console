@@ -27,7 +27,6 @@ import { managedClusterSetsState, namespacesState, secretsState } from '../../..
 import { nockCreate, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
-    clickByTestId,
     clickByText,
     selectByText,
     typeByTestId,
@@ -185,7 +184,7 @@ const mockClusterPool: ClusterPool = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-describe('CreateClusterPool', () => {
+describe('CreateClusterPool AWS', () => {
     const Component = () => {
         return (
             <RecoilRoot
@@ -195,7 +194,7 @@ describe('CreateClusterPool', () => {
                     snapshot.set(secretsState, [providerConnection as Secret])
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createClusterPool]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createClusterPool}?infrastructureType=AWS`]}>
                     <Route path={NavigationPath.createClusterPool}>
                         <CreateClusterPoolPage />
                     </Route>
@@ -242,9 +241,6 @@ describe('CreateClusterPool', () => {
         // create the form
         const { container } = render(<Component />)
 
-        // step 1 -- the infrastructure
-        await clickByTestId('amazon-web-services')
-
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
@@ -257,13 +253,10 @@ describe('CreateClusterPool', () => {
         await waitForTestId('credentialsType-input-toggle')
         await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
-        await typeByTestId('baseDomain', newProviderConnection.stringData?.baseDomain!)
         await clickByText('Cancel', 1)
 
         await clickByPlaceholderText('Select a credential')
         await clickByText(providerConnection.metadata.name!)
-
-        await clickByText('Next')
 
         // step 2 -- the name, namespace and imageset
         await typeByTestId('eman', clusterName!)
@@ -279,9 +272,11 @@ describe('CreateClusterPool', () => {
 
         // nocks for cluster creation
         const createNocks = [
-            // create the managed cluster
+            // create aws namespace (project)
             nockCreate(mockCreateProject),
             nockReplace(mockNamespaceUpdate),
+
+            // create the managed cluster
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
             nockCreate(mockCredentialSecret),

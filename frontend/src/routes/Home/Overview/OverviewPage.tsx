@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
-import { PlusIcon } from '@patternfly/react-icons'
+import { PageSection, Stack } from '@patternfly/react-core'
 import _ from 'lodash'
-import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import {
     applicationsState,
@@ -24,14 +22,9 @@ import {
     PolicyReport,
     PolicyReportResults,
 } from '../../../resources'
-import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
-import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import {
-    AcmActionGroup,
     AcmAlert,
-    AcmButton,
     AcmDonutChart,
-    AcmLaunchLink,
     AcmLoadingPage,
     AcmOverviewProviders,
     AcmPage,
@@ -156,63 +149,6 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
         })
     }
     return baseSearchQueries
-}
-
-function PageActions() {
-    const { t } = useTranslation()
-    const [addons, setAddons] = useState()
-    useEffect(() => {
-        fireManagedClusterView(
-            'local-cluster',
-            'clustermanagementaddon',
-            'addon.open-cluster-management.io/v1alpha1',
-            'observability-controller'
-        )
-            .then((viewResponse) => {
-                if (viewResponse.message) {
-                    console.error('Error getting addons: ', viewResponse.message)
-                } else {
-                    setAddons(viewResponse.result)
-                }
-            })
-            .catch((err) => {
-                console.error('Error getting addons: ', err)
-            })
-    }, [])
-
-    function getLaunchLink(addon: ClusterManagementAddOn) {
-        const pathKey = 'console.open-cluster-management.io/launch-link'
-        const textKey = 'console.open-cluster-management.io/launch-link-text'
-        if (addon && addon.metadata.name === 'observability-controller') {
-            return [
-                {
-                    id: addon.metadata.annotations?.[textKey] || '',
-                    text: addon.metadata.annotations?.[textKey] || '',
-                    href: addon.metadata.annotations?.[pathKey] || '',
-                },
-            ]
-        } else {
-            return []
-        }
-    }
-
-    return (
-        <Fragment>
-            <AcmActionGroup>
-                {addons && <AcmLaunchLink links={getLaunchLink(addons)} />}
-                <AcmButton
-                    component={Link}
-                    variant={ButtonVariant.link}
-                    to={NavigationPath.addCredentials}
-                    id="add-credential"
-                    icon={<PlusIcon />}
-                    iconPosition="left"
-                >
-                    {t('Add credential')}
-                </AcmButton>
-            </AcmActionGroup>
-        </Fragment>
-    )
 }
 
 export default function OverviewPage() {
@@ -534,7 +470,7 @@ export default function OverviewPage() {
     }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount])
 
     return (
-        <AcmPage header={<AcmPageHeader title={t('Overview')} actions={<PageActions />} />}>
+        <AcmPage header={<AcmPageHeader title={t('Overview')} />}>
             <AcmScrollable>
                 {searchError && (
                     <PageSection>
