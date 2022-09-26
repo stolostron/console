@@ -421,9 +421,9 @@ export const getNameWithoutPodHash = (relatedKind) => {
 export const addResourceToModel = (resourceMapObject, kind, relatedKind, nameWithoutChartRelease) => {
     const resourceType = _.get(resourceMapObject, 'type', '')
     const kindModel =
-    resourceType === 'project'
-        ? _.get(resourceMapObject, `specs.projectModel`, {})
-        : _.get(resourceMapObject, `specs.${kind}Model`, {})
+        resourceType === 'project'
+            ? _.get(resourceMapObject, `specs.projectModel`, {})
+            : _.get(resourceMapObject, `specs.${kind}Model`, {})
     const kindList = kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] || []
     kindList.push(relatedKind)
     kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] = kindList
