@@ -34,14 +34,23 @@ export type ClusterTemplateInstance = K8sResourceCommon & {
   };
 };
 
+export type HelmRepoIndexChartEntry = {
+  annotations?: { [key in string]: string };
+  name: string;
+  created: string;
+  apiVersion: string;
+  appVersion: string;
+  description?: string;
+  digest: string;
+  type: string;
+  urls: string[];
+  version: string;
+};
+
 export type HelmRepoIndex = {
   apiVersion: string;
   entries: {
-    [key: string]: {
-      name: string;
-      version: string;
-      created: string;
-    }[];
+    [key: string]: HelmRepoIndexChartEntry[];
   };
   generated: string;
 };

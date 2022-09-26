@@ -226,6 +226,7 @@ const HelmRepositoriesTab = () => {
         }}
       >
         <VirtualizedTable
+          data-testid="helm-repositories-table"
           data={repositories}
           unfilteredData={repositories}
           columns={columns}

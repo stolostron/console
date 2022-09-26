@@ -6,7 +6,7 @@ import {
   ListPageHeader,
   NavPage,
 } from '@openshift-console/dynamic-plugin-sdk';
-import { Redirect, Switch, useHistory } from 'react-router-dom';
+import { Redirect, Switch, useHistory, useLocation } from 'react-router-dom';
 import ClusterTemplatesTab from './ClusterTemplatesTab';
 import HelmRepositoriesTab from './HelmRepositoriesTab';
 import { useClusterTemplatesCount } from '../hooks/useClusterTemplates';
@@ -21,6 +21,7 @@ const clusterTemplateReference = getReference(clusterTemplateGVK);
 const ClusterTemplatesPage = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const location = useLocation();
   const templatesCount = useClusterTemplatesCount();
   const helmRepositoriesCount = useHelmRepositoriesCount();
 
@@ -58,6 +59,7 @@ const ClusterTemplatesPage = () => {
     }
   };
 
+  console.log('location', location.pathname);
   return (
     <Switch>
       <Redirect
