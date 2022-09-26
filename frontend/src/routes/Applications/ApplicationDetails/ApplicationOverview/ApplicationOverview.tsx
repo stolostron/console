@@ -8,6 +8,13 @@ import {
     AcmPageContent,
     ListItems,
 } from '../../../../ui-components'
+import {
+    argoApplicationsState,
+    channelsState,
+    namespacesState,
+    placementRulesState,
+    subscriptionsState,
+} from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -77,13 +84,13 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const { dataContext } = useContext(PluginContext)
     const { recoil, atoms } = useContext(dataContext)
     const { useRecoilState } = recoil
-    const {
-        argoApplicationsState,
-        channelsState,
-        namespacesState,
-        placementRulesState,
-        subscriptionsState,
-    } = atoms
+    // const {
+    //     argoApplicationsState,
+    //     channelsState,
+    //     namespacesState,
+    //     placementRulesState,
+    //     subscriptionsState,
+    // } = atoms
 
     const [argoApplications] = useRecoilState(argoApplicationsState)
     const [channels] = useRecoilState(channelsState)

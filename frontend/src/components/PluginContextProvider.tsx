@@ -5,6 +5,7 @@ import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { PluginDataContext } from '../lib/PluginDataContext'
+import { LoadingPage } from './LoadingPage'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -30,9 +31,10 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     const isSubmarinerAvailable = isOverviewAvailable
 
     // ACM Custom extensions
+
     const acmExtensions = useAcmExtension()
 
-    return (
+    return contextProvider?.properties?.context ? (
         <PluginContext.Provider
             value={{
                 isACMAvailable,
@@ -56,5 +58,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 </div>
             </div>
         </PluginContext.Provider>
+    ) : (
+        <LoadingPage />
     )
 }
