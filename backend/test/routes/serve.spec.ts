@@ -10,11 +10,14 @@ describe(`serve Route`, function () {
         expect(res.statusCode).toEqual(200)
         const expectedHeaders = ['cache-control', 'content-security-policy', 'last-modified']
         expectedHeaders.every((header) => expect(res.hasHeader(header)).toBeTruthy())
-        const bodyString = await rawBody(getDecodeStream(res.stream, res.getHeader(constants.HTTP2_HEADER_CONTENT_ENCODING)), {
-            length: res.getHeader('content-length'),
-            limit: 1 * 1024 * 1024,
-            encoding: true,
-        })
-        expect(bodyString).toContain("<!DOCTYPE html>")
+        const bodyString = await rawBody(
+            getDecodeStream(res.stream, res.getHeader(constants.HTTP2_HEADER_CONTENT_ENCODING)),
+            {
+                length: res.getHeader('content-length'),
+                limit: 1 * 1024 * 1024,
+                encoding: true,
+            }
+        )
+        expect(bodyString).toContain('<!DOCTYPE html>')
     })
 })
