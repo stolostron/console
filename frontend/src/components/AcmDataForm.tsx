@@ -108,10 +108,12 @@ export interface AcmDataFormProps {
 }
 
 function generalValidationMessage() {
+    /* istanbul ignore next */
     return <Fragment>You must fix the issues with fields before you can proceed.</Fragment>
 }
 
 function requiredValidationMessage() {
+    /* istanbul ignore next */
     return <Fragment>You must fill out all required fields before you can proceed.</Fragment>
 }
 
