@@ -140,7 +140,10 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                             .replace(':name', match.params.name)}
                                     >
                                         {t('tab.hosts')}
-                                        <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} />
+                                        <InfraEnvHostsTabAgentsWarning
+                                            infraAgents={infraAgents}
+                                            infraBMHs={infraBMHs}
+                                        />
                                     </Link>
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>

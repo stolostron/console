@@ -114,9 +114,10 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             }
 
             const resourceMapForObject = Object.values(resourceMap).find(({ name, namespace, type, specs = {} }) => {
+                const replacedType = type === 'project' ? 'namespace' : type
                 if (specs.resources) {
                     if (
-                        type === relatedKindList[i].kind &&
+                        replacedType === relatedKindList[i].kind &&
                         (specs.clustersNames || []).includes(relatedKindList[i].cluster)
                     ) {
                         return (
@@ -131,7 +132,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                     return (
                         (kind === 'subscription' ? name === resourceName : name === nameNoHash) &&
                         namespace === relatedKindList[i].namespace &&
-                        type === relatedKindList[i].kind &&
+                        replacedType === relatedKindList[i].kind &&
                         ((specs.clustersNames || []).includes(relatedKindList[i].cluster) ||
                             (specs.searchClusters || []).find((cls) => cls.name === relatedKindList[i].cluster) ||
                             relatedKindList[i].cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
@@ -176,7 +177,7 @@ export const mapSingleApplication = (application) => {
 
     const result =
         items.length > 0
-            ? items[0]
+            ? _.cloneDeep(items[0])
             : {
                   name: '',
                   namespace: '',
@@ -201,8 +202,10 @@ export const mapSingleApplication = (application) => {
         //this code moves all these items under the related section
         const kind = _.get(item, 'kind')
         const cluster = _.get(item, 'cluster')
+        const label = _.get(item, 'label')
 
-        if (kind === 'application') {
+        // We still need app objects for Argo app of apps
+        if (kind === 'application' && label.indexOf('app.kubernetes.io/instance=') === -1) {
             //this is a legit app object , just leave it
             return
         }

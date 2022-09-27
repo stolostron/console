@@ -76,7 +76,7 @@ import {
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { getOperatorError } from '../../../../../lib/error-output'
-import { configMapsState, subscriptionOperatorsState } from '../../../../../atoms'
+import { subscriptionOperatorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 
 const acmSchema = [...schema, ...kac]
@@ -220,7 +220,6 @@ export default function ImportClusterPage() {
     const [submitButtonText, setSubmitButtonText] = useState<string>()
     const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
-    const configMaps = useRecoilValue(configMapsState)
     const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
     const isOperatorInstalled = useMemo(
         () => isAnsibleOperatorInstalled(subscriptionOperators),
@@ -525,7 +524,7 @@ export default function ImportClusterPage() {
                             !isOperatorInstalled && (
                                 <>
                                     <div className={classes.description}>{t('template.clusterImport.info')}</div>
-                                    <Hint>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
+                                    <Hint>{getOperatorError(isOperatorInstalled, t)}</Hint>
                                 </>
                             )
                         }
