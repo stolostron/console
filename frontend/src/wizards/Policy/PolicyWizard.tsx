@@ -467,7 +467,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
     )
 }
 
-function isExistingTemplateName(name: string, policies: IResource[]) {
+export function isExistingTemplateName(name: string, policies: IResource[]) {
     for (const policy of policies) {
         const existingTemplates = get(policy, 'spec.policy-templates')
         if (Array.isArray(existingTemplates)) {
@@ -616,7 +616,7 @@ function ObjectTemplate() {
     )
 }
 
-function pascalCaseToSentenceCase(text: string) {
+export function pascalCaseToSentenceCase(text: string) {
     const result = text?.replace(/([A-Z])/g, ' $1') ?? ''
     const finalResult = result.charAt(0).toUpperCase() + result.slice(1)
     return finalResult

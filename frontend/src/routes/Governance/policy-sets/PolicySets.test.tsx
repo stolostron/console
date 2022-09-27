@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import PolicySetsPage from './PolicySets'
-import { mockEmptyPolicySets, mockPolicySets } from './PolicySet.sharedMocks'
+import { mockEmptyPolicySet, mockPolicySet } from '../governance.sharedMocks'
 
 describe('PolicySets Page', () => {
     beforeEach(async () => {
@@ -17,7 +17,7 @@ describe('PolicySets Page', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockEmptyPolicySets)
+                    snapshot.set(policySetsState, mockEmptyPolicySet)
                 }}
             >
                 <MemoryRouter>
@@ -33,7 +33,7 @@ describe('PolicySets Page', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockPolicySets)
+                    snapshot.set(policySetsState, mockPolicySet)
                 }}
             >
                 <MemoryRouter>
@@ -42,7 +42,6 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockPolicySets[0].metadata.name!)
-        await waitForText(mockPolicySets[1].metadata.name!)
+        await waitForText(mockPolicySet[0].metadata.name!)
     })
 })

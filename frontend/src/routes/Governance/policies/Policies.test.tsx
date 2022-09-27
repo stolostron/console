@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { render, waitFor, screen } from '@testing-library/react'
+import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
 import PoliciesPage from './Policies'
-import { mockPolicy, mockEmptyPolicy, mockPolicySet } from './Policy.sharedMocks'
+import { mockPolicy, mockEmptyPolicy, mockPolicySet } from '../governance.sharedMocks'
+import { EditPolicy } from './EditPolicy'
 
 describe('Policies Page', () => {
     beforeEach(async () => {
@@ -60,7 +62,6 @@ describe('Policies Page', () => {
 
         // Wait for page load
         await waitForText(mockPolicy[0].metadata.name!)
-
         // Verify the PolicySet column has loaded correctly and has the correct link to PolicySets page
         await waitForText(mockPolicySet[0].metadata.name!)
         await waitFor(() =>
@@ -78,6 +79,26 @@ describe('Policies Page', () => {
                 'href',
                 '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results?sort=-1'
             )
+        )
+    })
+
+    test('can render Edit Policy Page', async () => {
+        window.scrollBy = () => {}
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, [mockPolicy[0]])
+                }}
+            >
+                <MemoryRouter>
+                    <Route
+                        path={NavigationPath.editPolicy
+                            .replace(':namespace', mockPolicy[0].metadata?.namespace as string)
+                            .replace(':name', mockPolicy[0].metadata?.name as string)}
+                        render={() => <EditPolicy />}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
         )
     })
 })

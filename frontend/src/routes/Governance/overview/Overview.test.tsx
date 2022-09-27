@@ -3,24 +3,8 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
-import { Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
 import GovernanceOverview from './Overview'
-
-const policyWithoutStatus: Policy = {
-    apiVersion: PolicyApiVersion,
-    kind: PolicyKind,
-    metadata: {
-        name: 'policy-0',
-        namespace: 'policy-0-ns',
-    },
-    spec: {
-        disabled: false,
-        remediationAction: '',
-    },
-}
-
-export const mockEmptyPolicy: Policy[] = []
-export const mockPoliciesNoStatus: Policy[] = [policyWithoutStatus]
+import { mockEmptyPolicy, mockPolicyNoStatus } from '../governance.sharedMocks'
 
 describe('Overview Page', () => {
     test('Should render empty Overview page with create policy button correctly', async () => {
@@ -43,7 +27,7 @@ describe('Overview Page', () => {
         const { queryAllByText } = await render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policiesState, mockPoliciesNoStatus)
+                    snapshot.set(policiesState, mockPolicyNoStatus)
                 }}
             >
                 <MemoryRouter>
