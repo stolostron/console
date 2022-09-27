@@ -1450,6 +1450,7 @@ export function CredentialsForm(props: {
                     )
                 }
             }}
+            isModalWizard={selectedInfrastructureType.length > 0}
         />
     )
 }
