@@ -92,6 +92,7 @@ import {
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
 import { useTranslation } from '../lib/acm-i18next'
+import { TFunction } from 'i18next'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -107,14 +108,12 @@ export interface AcmDataFormProps {
     isModalWizard?: boolean
 }
 
-function generalValidationMessage() {
-    /* istanbul ignore next */
-    return <Fragment>You must fix the issues with fields before you can proceed.</Fragment>
+export function generalValidationMessage(t: TFunction) {
+    return t('You must fix the issues with fields before you can proceed.')
 }
 
-function requiredValidationMessage() {
-    /* istanbul ignore next */
-    return <Fragment>You must fill out all required fields before you can proceed.</Fragment>
+export function requiredValidationMessage(t: TFunction) {
+    return t('You must fill out all required fields before you can proceed.')
 }
 
 const minWizardSize = 1000
@@ -122,6 +121,7 @@ const defaultPanelSize = 600
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
+    const { t } = useTranslation()
 
     const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml, isModalWizard } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
@@ -292,9 +292,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                 <PageSection variant="light" style={{ paddingTop: 0 }}>
                                     <AlertGroup>
                                         {formHasRequiredErrors(formData) ? (
-                                            <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                            <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
                                         ) : (
-                                            <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                            <Alert isInline variant="danger" title={generalValidationMessage(t)} />
                                         )}
                                     </AlertGroup>
                                 </PageSection>
@@ -506,9 +506,9 @@ export function AcmDataFormWizard(props: {
                     {(showFormErrors || showSectionErrors[section.title]) && hasError && (
                         <AlertGroup>
                             {sectionHasRequiredErrors(section) ? (
-                                <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
                             ) : (
-                                <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                <Alert isInline variant="danger" title={generalValidationMessage(t)} />
                             )}
                         </AlertGroup>
                     )}
@@ -544,9 +544,9 @@ export function AcmDataFormWizard(props: {
                 {showFormErrors && formHasErrors(formData) && (
                     <AlertGroup>
                         {formHasRequiredErrors(formData) ? (
-                            <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                            <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
                         ) : (
-                            <Alert isInline variant="danger" title={generalValidationMessage()} />
+                            <Alert isInline variant="danger" title={generalValidationMessage(t)} />
                         )}
                     </AlertGroup>
                 )}
