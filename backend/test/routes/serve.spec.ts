@@ -6,10 +6,14 @@ import { request } from '../mock-request'
 
 describe(`serve Route`, function () {
     it(`serves index.html with correct headers`, async function () {
-        const res = await request('GET', '/')
+        const res = await request('GET', '/', null, {
+            [constants.HTTP2_HEADER_ACCEPT_ENCODING]: ['br', 'gzip'],
+        })
         expect(res.statusCode).toEqual(200)
         const expectedHeaders = ['cache-control', 'content-security-policy', 'last-modified']
-        expectedHeaders.every((header) => expect(res.hasHeader(header)).toBeTruthy())
+        expectedHeaders.every((header) => expect(res.hasHeader(header)))
+        // br and gzip encodings added later by webpack
+        expect(res.hasHeader(constants.HTTP2_HEADER_CONTENT_ENCODING)).toBeFalsy()
         const bodyString = await rawBody(
             getDecodeStream(res.stream, res.getHeader(constants.HTTP2_HEADER_CONTENT_ENCODING)),
             {

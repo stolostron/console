@@ -56,7 +56,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('Cache-Control', cacheControl)
         }
 
-        const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
+        const acceptEncoding = (req.headers[constants.HTTP2_HEADER_ACCEPT_ENCODING] as string) ?? ''
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
             logger.debug('unknown content type', `ext=${ext}`)
