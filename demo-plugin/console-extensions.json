@@ -1,0 +1,27 @@
+[
+  {
+    "type": "acm.application/action",
+    "properties": {
+      "id": "action1",
+      "title": "Test action",
+      "model": [
+        {
+          "apiVersion": "app.k8s.io/v1beta1",
+          "kind": "Application"
+        }
+      ],
+      "component": {
+        "$codeRef": "modalPage.TestModal"
+      }
+    }
+  },
+  {
+    "type": "acm.application/list/column",
+    "properties": {
+      "header": "Test column",
+      "cell": {
+        "$codeRef": "modalColumn.TestColumn"
+      }
+    }
+  }
+]
