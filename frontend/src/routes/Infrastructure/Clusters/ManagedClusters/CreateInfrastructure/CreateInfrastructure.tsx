@@ -173,7 +173,7 @@ export function CreateInfrastructure() {
             {
                 id: 'vsphere',
                 icon: <AcmIcon icon={AcmIconVariant.vmware} />,
-                title: t('VMWare VSphere'),
+                title: t('VMware vSphere'),
                 items: [
                     {
                         type: CatalogCardItemType.Description,
