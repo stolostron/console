@@ -151,6 +151,7 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
             raw: subscription,
             clustersNames,
         },
+        report: subscription.report,
     })
 
     links.push({
