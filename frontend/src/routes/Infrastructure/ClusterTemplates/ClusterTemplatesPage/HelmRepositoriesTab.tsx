@@ -30,7 +30,7 @@ import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { LoadingHelper } from '../utils';
 
-const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColumnIDs }) => {
+export const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColumnIDs }) => {
   const [isOpen, setOpen] = React.useState(false);
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(helmRepoGVK);
@@ -98,11 +98,12 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
       </TableData>
       <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
         <Dropdown
-          toggle={<KebabToggle onToggle={setOpen} id="toggle-id-6" />}
+          toggle={<KebabToggle onToggle={setOpen} id="repo-kebab-toggle" />}
           isOpen={isOpen}
           isPlain
           dropdownItems={[
             <DropdownItem
+              id="delete-action-item"
               onClick={() => {
                 setDeleteOpen(true);
                 setOpen(false);

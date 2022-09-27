@@ -7,7 +7,7 @@ import { waitForTestId } from '../../../../lib/test-util';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import { useHelmRepositoryIndex } from '../hooks/useHelmRepositoryIndex';
 import { HelmChartRepository, HelmRepoIndex, HelmRepoIndexChartEntry } from '../types';
-import HelmRepositoriesTab from './HelmRepositoriesTab';
+import HelmRepositoriesTab, { HelmRepoRow } from './HelmRepositoriesTab';
 
 const helmRepositoryMock1 = {
   kind: 'HelmChartRepository',
@@ -74,6 +74,7 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   const MockComponent = require('../mocks/MockComponent').default;
   return {
     VirtualizedTable: MockComponent,
+    HelmRepoRow: MockComponent,
   };
 });
 
@@ -96,5 +97,11 @@ describe('HelmRepositoritesTab', () => {
       </RecoilRoot>,
     );
     await waitForTestId('helm-repositories-table');
+  });
+});
+
+describe('HelmRepoRow', () => {
+  test('Repo deletion modal', async () => {
+    render(<HelmRepoRow obj={helmRepositoryMock1} activeColumnIDs={new Set()} />);
   });
 });
