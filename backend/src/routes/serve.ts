@@ -8,6 +8,7 @@ import { logger } from '../lib/logger'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 const localesCacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-store'
+const publicFolder = process.env.PUBLIC_FOLDER || './public'
 
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
@@ -63,7 +64,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             return
         }
 
-        const filePath = './public' + url
+        const filePath = `${publicFolder}${url}`
         let stats: Stats
         try {
             stats = await stat(filePath)
@@ -82,7 +83,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         if (/\bbr\b/.test(acceptEncoding)) {
             try {
                 const brStats = await stat(filePath + '.br')
-                const readStream = createReadStream('./public' + url + '.br', { autoClose: true })
+                const readStream = createReadStream(`${publicFolder}${url}.br`, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
@@ -107,7 +108,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         if (/\bgzip\b/.test(acceptEncoding)) {
             try {
                 const gzStats = await stat(filePath + '.gz')
-                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
+                const readStream = createReadStream(`${publicFolder}${url}.gz`, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
@@ -129,7 +130,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             }
         }
 
-        const readStream = createReadStream('./public' + url, { autoClose: true })
+        const readStream = createReadStream(`${publicFolder}${url}`, { autoClose: true })
         readStream
             .on('open', () => {
                 res.writeHead(200, {
