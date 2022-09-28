@@ -320,8 +320,6 @@ export function Searchbar(props: SearchbarProps) {
                     handleAddition()
                 }
                 break
-            // delimiters to add a chip: [' ', ':', ',']
-            case ':':
             case ',':
             case ' ':
                 handleAddition()
