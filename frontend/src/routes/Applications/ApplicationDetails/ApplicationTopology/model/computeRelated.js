@@ -114,7 +114,6 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             }
 
             const resourceMapForObject = Object.values(resourceMap).find(({ name, namespace, type, specs = {} }) => {
-
                 const replacedType = type === 'project' ? 'namespace' : type
                 if (specs.resources) {
                     if (
