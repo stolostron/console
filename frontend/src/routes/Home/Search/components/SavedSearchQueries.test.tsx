@@ -61,6 +61,7 @@ describe('SavedSearchQueries Page', () => {
                                             'CrashLoopBackOff',
                                             'RunContainerError',
                                             'ContainerCreating',
+                                            'CreateContainerConfigError',
                                         ],
                                     },
                                 ],

@@ -18,7 +18,7 @@ export default {
             description: 'Show pods with unhealthy status',
             resultHeader: 'table.header.status.unhealthy',
             searchText:
-                'kind:pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating',
+                'kind:pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating,CreateContainerConfigError',
         },
         {
             id: 'search.suggested.createdLastHour.name',
