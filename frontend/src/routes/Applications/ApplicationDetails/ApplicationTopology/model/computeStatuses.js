@@ -477,6 +477,7 @@ const getStateNames = (t) => {
         deployedNSStr.toLowerCase(),
         'propagated',
         'healthy',
+        'active',
     ]
     return { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates }
 }
