@@ -15,10 +15,12 @@ import { requestHandler, stop } from '../src/app'
 export async function request(
     method: 'GET' | 'PUT' | 'POST' | 'DELETE',
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
+    extraHeaders?: IncomingHttpHeaders
 ): Promise<Http2ServerResponse> {
     const stream = createReadWriteStream()
     const headers: IncomingHttpHeaders = {
+        ...extraHeaders,
         [constants.HTTP2_HEADER_METHOD]: method,
         [constants.HTTP2_HEADER_PATH]: path,
         [constants.HTTP2_HEADER_AUTHORIZATION]: 'Bearer <token>',
