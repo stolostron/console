@@ -917,7 +917,7 @@ export default function ApplicationsOverview() {
                 acmExtensions.applicationAction.forEach((appAction) => {
                     if (appAction?.model ? isResourceTypeOf(resource, appAction?.model) : isOCPAppResource(resource)) {
                         const ModalComp = appAction.component
-                        const close = () => setPluginModal(<ModalComp isOpen={false} />)
+                        const close = () => setPluginModal(<></>)
                         actions.push({
                             id: appAction.id,
                             tooltip: appAction?.tooltip,
