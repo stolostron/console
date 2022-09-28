@@ -1,10 +1,11 @@
+import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
 /* Copyright Contributors to the Open Cluster Management project */
-import { createReadStream, Stats } from 'fs'
-import { stat } from 'fs/promises'
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Stats, createReadStream } from 'fs'
+
 import { extname } from 'path'
-import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
+import { pipeline } from 'stream'
+import { stat } from 'fs/promises'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 const localesCacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-store'
@@ -82,8 +83,9 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
 
         if (/\bbr\b/.test(acceptEncoding)) {
             try {
-                const brStats = await stat(filePath + '.br')
-                const readStream = createReadStream(`${publicFolder}${url}.br`, { autoClose: true })
+                const brFilePath = `${filePath}.br`
+                const brStats = await stat(brFilePath)
+                const readStream = createReadStream(brFilePath, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
@@ -107,8 +109,9 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
 
         if (/\bgzip\b/.test(acceptEncoding)) {
             try {
-                const gzStats = await stat(filePath + '.gz')
-                const readStream = createReadStream(`${publicFolder}${url}.gz`, { autoClose: true })
+                const gzFilePath = `${filePath}.gz`
+                const gzStats = await stat(gzFilePath)
+                const readStream = createReadStream(gzFilePath, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
