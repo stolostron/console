@@ -50,6 +50,7 @@ const config: Config.InitialOptions = {
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',
+        '!<rootDir>/src/lib/test-logging.ts',
     ],
     reporters: ['default'],
     verbose: true,
