@@ -3,11 +3,19 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import moment from 'moment'
-import { nockIgnoreRBAC } from '../../lib/nock-util'
 import { NavigationPath } from '../../NavigationPath'
-import { Application, ApplicationApiVersion, ApplicationKind } from '../../resources'
+import {
+    Application,
+    ApplicationApiVersion,
+    ApplicationKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+} from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import { applicationsState } from '../../atoms'
+import { clickByTestId, typeByTestId, waitForNocks, waitForTestId } from '../../lib/test-util'
+import { nockIgnoreRBAC, nockList } from '../../lib/nock-util'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 
@@ -39,6 +47,14 @@ const mockApplication0: Application = {
                 },
             ],
         },
+    },
+}
+
+const mockProject: Project = {
+    kind: ProjectKind,
+    apiVersion: ProjectApiVersion,
+    metadata: {
+        name: mockApplication0.metadata.namespace,
     },
 }
 
@@ -92,14 +108,27 @@ describe('Create Subscription Application page', () => {
         console.group = originalConsoleGroup
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
-    test('can render Create Subscription Application Page', async () => {
+    test('Fail to create git subscription app', async () => {
+        const initialNocks = [nockList(mockProject, [mockProject])]
         window.scrollBy = () => {}
         render(<Component />)
+        await waitForNocks(initialNocks)
+
         expect(screen.getAllByText('Create application')).toBeTruthy()
-        const createButton = screen.queryByTestId('create-button-portal-id')
-        const cancelButton = screen.queryByTestId('cancel-button-portal-id')
-        expect(createButton).toBeTruthy()
-        expect(cancelButton).toBeTruthy()
+        // fill the form
+        await typeByTestId('eman', mockApplication0.metadata.name!)
+        await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+
+        // click git card
+        const gitCard = screen.queryByTestId('git')
+        gitCard?.click()
+
+        const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
+        localClusterCheckbox?.click()
+
+        await clickByTestId('create-button-portal-id')
+        // notification to alert failure
+        await waitForTestId('notifications')
     })
 
     test('can render Edit Subscription Application Page', async () => {
