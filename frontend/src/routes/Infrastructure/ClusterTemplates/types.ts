@@ -25,6 +25,18 @@ export type ClusterTemplate = K8sResourceCommon & {
         namespace: string;
       };
     };
+    properties?: {
+      clusterSetup?: boolean;
+      defaultValue?: unknown;
+      description: string;
+      name: string;
+      overwritable: boolean;
+      secretRef?: {
+        name: string;
+        namespace: string;
+      };
+      type: string;
+    }[];
   };
 };
 

@@ -54,7 +54,10 @@ const columns = [
   },
 ];
 
-const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs }) => {
+export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({
+  obj,
+  activeColumnIDs,
+}) => {
   const [isOpen, setOpen] = React.useState(false);
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(clusterTemplateGVK);
@@ -85,7 +88,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
       </TableData>
       <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
         <Dropdown
-          toggle={<KebabToggle onToggle={setOpen} id="toggle-id-6" />}
+          toggle={<KebabToggle onToggle={setOpen} id="cluster-template-actions-toggle" />}
           isOpen={isOpen}
           isPlain
           dropdownItems={[
@@ -96,7 +99,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
               }}
               key="delete"
             >
-              Delete ClusterTemplate
+              Delete cluster template
             </DropdownItem>,
           ]}
           position="right"
@@ -106,7 +109,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
         <Modal
           variant={ModalVariant.small}
           isOpen
-          title="Delete ClusterTemplate"
+          title="Delete cluster template"
           titleIconVariant="warning"
           showClose
           onClose={() => setDeleteOpen(false)}
@@ -129,7 +132,7 @@ const TemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj, activeColumnIDs
             </Button>,
           ]}
         >
-          Are you sure you want to delete ?
+          Are you sure you want to delete?
         </Modal>
       )}
     </>
@@ -142,10 +145,11 @@ const ClusterTemplatesTab = () => {
   return (
     <PageSection>
       <VirtualizedTable<ClusterTemplate>
+        data-testid="cluster-templates-table"
         data={templates}
         unfilteredData={templates}
         columns={columns}
-        Row={TemplateRow}
+        Row={ClusterTemplateRow}
         loaded={loaded}
         loadError={loadError}
       />

@@ -4,7 +4,9 @@ import * as React from 'react';
 import { consoleFetch } from '@openshift-console/dynamic-plugin-sdk';
 import { HelmRepoIndex } from '../types';
 
-export const useHelmRepositoryIndex = (): [HelmRepoIndex | undefined, boolean, unknown] => {
+export type HelmRepositoryIndexResult = [HelmRepoIndex | undefined, boolean, unknown];
+
+export const useHelmRepositoryIndex = (): HelmRepositoryIndexResult => {
   const [repoIndex, setRepoIndex] = React.useState<HelmRepoIndex>();
   const [repoLoaded, setRepoLoaded] = React.useState(false);
   const [repoError, setRepoError] = React.useState<unknown>();
@@ -27,7 +29,7 @@ export const useHelmRepositoryIndex = (): [HelmRepoIndex | undefined, boolean, u
   return [repoIndex, repoLoaded, repoError];
 };
 
-export const getRepoCharts = (index: HelmRepoIndex, repoName: string) =>
+export const getRepoCharts = (index: HelmRepoIndex | undefined, repoName: string) =>
   Object.keys(index?.entries || {})
     .filter((k) => {
       const keyParts = k.split('--');

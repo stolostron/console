@@ -1,19 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react';
-import { Router } from 'react-router-dom';
-import { createMemoryHistory } from 'history';
+import { MemoryRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import ClusterTemplatesPage from './ClusterTemplatesPage';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useHelmRepositoriesCount } from '../hooks/useHelmRepositories';
+import { waitForText } from '../../../../lib/test-util';
 
 jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s', () => ({
   k8sBasePath: 'https://k8s-base-path/',
 }));
-// jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s-ref', () => ({
-//   getReference: jest.fn(() => 'test-cluster-reference'),
-// }));
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -32,16 +29,14 @@ jest.mock('../hooks/useHelmRepositories');
 (useHelmRepositoriesCount as jest.Mock).mockReturnValue(0);
 
 describe('ClusterTemplatesPage', () => {
-  test.skip('redirects to templates tab by default', async () => {
-    const history = createMemoryHistory();
-    history.push('/k8s/cluster/test-cluster-reference');
+  test('redirects to templates tab by default', async () => {
     render(
       <RecoilRoot>
-        <Router history={history}>
+        <MemoryRouter>
           <ClusterTemplatesPage />
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>,
     );
-    expect(history.location.pathname).toEqual('/k8s/cluster/test-cluster-reference/~tabs');
+    waitForText('Cluster templates');
   });
 });
