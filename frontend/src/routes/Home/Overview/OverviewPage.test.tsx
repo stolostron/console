@@ -477,15 +477,6 @@ it('should render overview page with expected data', async () => {
                                     property: 'kind',
                                     values: ['pod'],
                                 },
-                            ],
-                        },
-                        {
-                            keywords: [],
-                            filters: [
-                                {
-                                    property: 'kind',
-                                    values: ['pod'],
-                                },
                                 {
                                     property: 'status',
                                     values: ['Running', 'Completed'],
@@ -533,10 +524,6 @@ it('should render overview page with expected data', async () => {
                     searchResult: [
                         {
                             count: 6,
-                            __typename: 'SearchResult',
-                        },
-                        {
-                            count: 335,
                             __typename: 'SearchResult',
                         },
                         {

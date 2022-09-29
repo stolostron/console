@@ -8,15 +8,12 @@ import {
     Divider,
     Flex,
     FlexItem,
-    Grid,
-    GridItem,
     Skeleton,
     Split,
     SplitItem,
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles({
@@ -27,8 +24,6 @@ const useStyles = makeStyles({
 
 type AcmSummaryListProps = {
     title: string
-    actions?: React.ReactNode[]
-    rightAction?: React.ReactNode
     list: SummarySectionProps[]
     loading?: boolean
 }
@@ -41,32 +36,27 @@ export const SkeletonWrapper = (title: string) => {
                 <FlexItem>
                     <CardTitle>{title}</CardTitle>
                 </FlexItem>
-                <Divider isVertical inset={{ default: 'inset2xl' }} />
-                <FlexItem>
-                    <Skeleton width="150px" />
-                </FlexItem>
             </Flex>
             <Divider />
-            <Grid sm={6} md={4} lg={2}>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <GridItem key={i}>
+
+            <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <FlexItem key={i}>
                         <Card>
                             <CardBody>
                                 <Skeleton width="50px" fontSize="3xl" className={classes.divider} />
                                 <Skeleton width="100px" fontSize="sm" />
                             </CardBody>
                         </Card>
-                    </GridItem>
+                    </FlexItem>
                 ))}
-            </Grid>
+            </Flex>
         </Card>
     )
 }
 
 export function AcmSummaryList(props: AcmSummaryListProps) {
     const classes = useStyles()
-    const primary = props.list.find((item) => item.isPrimary)
-    const secondary = props.list.filter((item) => !item.isPrimary)
 
     if (props.loading) return SkeletonWrapper(props.title)
     return (
@@ -77,31 +67,17 @@ export function AcmSummaryList(props: AcmSummaryListProps) {
                         <FlexItem>
                             <CardTitle>{props.title}</CardTitle>
                         </FlexItem>
-                        {props.actions?.map((action, i) => (
-                            <Fragment key={`summary-action-${i}`}>
-                                <Divider isVertical inset={{ default: 'inset2xl' }} />
-                                <FlexItem>{action}</FlexItem>
-                            </Fragment>
-                        ))}
                     </Flex>
                 </SplitItem>
-                <SplitItem isFilled></SplitItem>
-                <SplitItem className={classes.rightSplit}>{props.rightAction}</SplitItem>
             </Split>
             <div className={classes.cardBody}>
-                <Grid sm={6} md={4} lg={2}>
-                    {primary && (
-                        <GridItem key={primary.description}>
-                            <SummarySection {...primary} />
-                        </GridItem>
-                    )}
-                    {secondary &&
-                        secondary.map((item) => (
-                            <GridItem key={item.description}>
-                                <SummarySection {...item} />
-                            </GridItem>
-                        ))}
-                </Grid>
+                <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                    {props.list.map((item) => (
+                        <FlexItem key={item.description} span={3}>
+                            <SummarySection {...item} />
+                        </FlexItem>
+                    ))}
+                </Flex>
             </div>
         </Card>
     )
@@ -121,10 +97,7 @@ const useSectionStyles = makeStyles({
         height: '100%',
     },
     count: {
-        lineHeight: ({ isPrimary }) => (isPrimary ? '2.55rem' : undefined),
-        fontSize: (props: SummarySectionProps) => (props.isPrimary ? '36px' : '28px'),
-        fontColor: (props: SummarySectionProps) =>
-            props.isPrimary ? 'var(--pf-global--primary-color--100)' : undefined,
+        fontSize: '28px',
         '& a': {
             textDecoration: 'none !important',
             fontColor: 'var(--pf-global--Color--100) !important',
@@ -141,7 +114,6 @@ type SummarySectionProps = {
     count: number
     description: string
     href?: string
-    isPrimary?: boolean
     isLoading?: boolean
 }
 

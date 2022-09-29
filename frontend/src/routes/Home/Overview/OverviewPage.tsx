@@ -111,7 +111,6 @@ function getClusterSummary(
 
 const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     const baseSearchQueries = [
-        { keywords: [], filters: [{ property: 'kind', values: ['pod'] }] },
         {
             keywords: [],
             filters: [
@@ -377,38 +376,27 @@ export default function OverviewPage() {
         let overviewSummary = [
             {
                 isLoading: !apps || !argoApps,
-                isPrimary: false,
                 description: 'Applications',
                 count: [...apps, ...argoApps].length || 0,
                 href: buildSummaryLinks('application', true),
             },
             {
                 isLoading: !clusters,
-                isPrimary: false,
                 description: 'Clusters',
                 count: selectedClusterNames.length > 0 ? selectedClusterNames.length : clusters.length || 0,
                 href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
             },
             {
                 isLoading: kubernetesTypes?.size === null,
-                isPrimary: false,
                 description: 'Kubernetes type',
                 count: kubernetesTypes?.size,
             },
-            { isLoading: regions?.size === null, isPrimary: false, description: 'Region', count: regions?.size },
+            { isLoading: regions?.size === null, description: 'Region', count: regions?.size },
             {
                 isLoading: nodeCount === null,
-                isPrimary: false,
                 description: 'Nodes',
                 count: nodeCount || 0,
                 href: buildSummaryLinks('node'),
-            },
-            {
-                isLoading: searchLoading,
-                isPrimary: false,
-                description: 'Pods',
-                count: searchResult[0]?.count || 0,
-                href: buildSummaryLinks('pod'),
             },
         ]
         if (searchError) {
@@ -426,8 +414,6 @@ export default function OverviewPage() {
         nodeCount,
         regions?.size,
         searchError,
-        searchLoading,
-        searchResult,
         selectedClusterNames.length,
     ])
 
@@ -439,17 +425,17 @@ export default function OverviewPage() {
         return [
             {
                 key: 'Failed',
-                value: searchResult[3]?.count || 0,
+                value: searchResult[2]?.count || 0,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CError%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled%2CCreateContainerError${urlClusterFilter}"}`,
             },
             {
                 key: 'Pending',
-                value: searchResult[2]?.count || 0,
+                value: searchResult[1]?.count || 0,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting%2CContainerStatusUnknown${urlClusterFilter}"}`,
             },
             {
                 key: 'Running',
-                value: searchResult[1]?.count || 0,
+                value: searchResult[0]?.count || 0,
                 isPrimary: true,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
             },
