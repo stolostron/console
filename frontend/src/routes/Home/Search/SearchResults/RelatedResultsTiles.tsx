@@ -21,6 +21,7 @@ export default function RelatedResultsTiles(props: {
             input: [queryFilters],
         },
     })
+
     if (loading) {
         return (
             <Grid hasGutter>
@@ -53,17 +54,18 @@ export default function RelatedResultsTiles(props: {
     return (
         <Grid hasGutter>
             {relatedCounts.map((count) => {
+                const currentKind = count!.kind.toLowerCase()
                 return (
                     <GridItem span={3}>
                         <AcmTile
-                            key={`related-tile-${count!.kind}`}
-                            isSelected={selectedKinds.indexOf(count!.kind) > -1}
+                            key={`related-tile-${currentKind}`}
+                            isSelected={selectedKinds.indexOf(currentKind) > -1}
                             title={''}
                             onClick={() => {
                                 const updatedKinds =
-                                    selectedKinds.indexOf(count!.kind) > -1
-                                        ? selectedKinds.filter((kind) => kind !== count!.kind)
-                                        : [count!.kind, ...selectedKinds]
+                                    selectedKinds.indexOf(currentKind) > -1
+                                        ? selectedKinds.filter((kind) => kind !== currentKind)
+                                        : [currentKind, ...selectedKinds]
                                 setSelectedKinds(updatedKinds)
                             }}
                             relatedResourceData={{ count: count!.count || 0, kind: count!.kind }}
