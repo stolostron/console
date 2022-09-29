@@ -125,9 +125,11 @@ export default function SearchResults(props: { currentQuery: string; preSelected
 
     useEffect(() => {
         // If the current search query changes -> hide related resources
-        setShowRelatedResources(false)
-        setSelectedKinds([])
-    }, [currentQuery])
+        if (preSelectedRelatedResources.length === 0) {
+            setShowRelatedResources(false)
+            setSelectedKinds([])
+        }
+    }, [preSelectedRelatedResources])
 
     useEffect(() => {
         if (!called) {
