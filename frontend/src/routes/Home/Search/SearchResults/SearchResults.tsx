@@ -114,6 +114,12 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     })
 
     useEffect(() => {
+        // If the current search query changes -> hide related resources
+        setShowRelatedResources(false)
+        setSelectedKinds([])
+    }, [currentQuery])
+
+    useEffect(() => {
         if (!called) {
             fireSearchQuery({
                 variables: { input: [convertStringToQuery(currentQuery)] },
