@@ -25,16 +25,16 @@ export default function RelatedResultsTiles(props: {
     if (loading) {
         return (
             <Grid hasGutter>
-                <GridItem span={3}>
+                <GridItem key={'loading-tile-0'} span={3}>
                     <AcmTile loading={true} title={'loading'} />
                 </GridItem>
-                <GridItem span={3}>
+                <GridItem key={'loading-tile-1'} span={3}>
                     <AcmTile loading={true} title={'loading'} />
                 </GridItem>
-                <GridItem span={3}>
+                <GridItem key={'loading-tile-2'} span={3}>
                     <AcmTile loading={true} title={'loading'} />
                 </GridItem>
-                <GridItem span={3}>
+                <GridItem key={'loading-tile-3'} span={3}>
                     <AcmTile loading={true} title={'loading'} />
                 </GridItem>
             </Grid>
@@ -57,7 +57,7 @@ export default function RelatedResultsTiles(props: {
             {relatedCounts.map((count) => {
                 const currentKind = count!.kind.toLowerCase()
                 return (
-                    <GridItem span={3}>
+                    <GridItem key={`grid-item-${currentKind}`} span={3}>
                         <AcmTile
                             key={`related-tile-${currentKind}`}
                             isSelected={selectedKinds.indexOf(currentKind) > -1}
