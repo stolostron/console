@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-/* istanbul ignore file */
-
 import type { Config } from '@jest/types'
 
 const config: Config.InitialOptions = {
@@ -50,7 +48,6 @@ const config: Config.InitialOptions = {
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',
-        '!<rootDir>/src/lib/test-logging.ts',
     ],
     reporters: ['default'],
     verbose: true,
