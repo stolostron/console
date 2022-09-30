@@ -5,7 +5,7 @@ export interface Metadata {
     resourceVersion?: string
     creationTimestamp?: string
     uid?: string
-    annotations?: Record<string, string | null>
+    annotations?: Record<string, string>
     labels?: Record<string, string>
     generateName?: string
     deletionTimestamp?: string

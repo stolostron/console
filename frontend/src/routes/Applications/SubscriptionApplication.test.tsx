@@ -28,22 +28,10 @@ import {
     SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState, namespacesState, secretsState } from '../../atoms'
-import {
-    clickByPlaceholderText,
-    clickByTestId,
-    clickByText,
-    clickByTitle,
-    typeByPlaceholderText,
-    typeByTestId,
-    waitForNock,
-    waitForNocks,
-    waitForTestId,
-    waitForText,
-} from '../../lib/test-util'
-import { nockCreate, nockGet, nockIgnoreRBAC, nockList } from '../../lib/nock-util'
+import { namespacesState, secretsState } from '../../atoms'
+import { clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../lib/test-util'
+import { nockCreate, nockIgnoreRBAC, nockList } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
-import { Name } from 'ajv'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 
@@ -96,25 +84,25 @@ const mockSubscription: Subscription = {
     kind: SubscriptionKind,
     metadata: {
         annotations: {
-            'apps.open-cluster-management.io/git-branch': null,
-            'apps.open-cluster-management.io/git-path':null,
-            'apps.open-cluster-management.io/reconcile-option':'merge'
+            'apps.open-cluster-management.io/git-branch': 'test-branch',
+            'apps.open-cluster-management.io/git-path': 'test-path',
+            'apps.open-cluster-management.io/reconcile-option': 'merge',
         },
         labels: {
-            app: 'application-0'
+            app: 'application-0',
         },
         name: 'application-0-subscription-1',
-        namespace: 'namespace-0'
+        namespace: 'namespace-0',
     },
     spec: {
         channel: 'ginvalidcom-ns/ginvalidcom',
         placement: {
             placementRef: {
                 kind: 'PlacementRule',
-                name: 'application-0-placement-1'
-            }
-        }
-    }
+                name: 'application-0-placement-1',
+            },
+        },
+    },
 }
 
 const mockProject: Project = {
@@ -178,16 +166,6 @@ const mockChannel1: Channel = {
     },
 }
 
-const mockApplications: Application[] = [mockApplication0]
-
-const mockChannelNamespace: Namespace = {
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
-    metadata: {
-        name: 'ginvalidcom-ns',
-    },
-}
-
 const mockChannelProject: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
@@ -224,43 +202,10 @@ const mockNamespace0: Namespace = {
     },
 }
 
-const mockApplication1: Application = {
-    apiVersion: ApplicationApiVersion,
-    kind: ApplicationKind,
-    metadata: {
-        name: 'application-1',
-        namespace: 'namespace-1',
-        creationTimestamp: `${moment().format()}`,
-        annotations: {
-            'apps.open-cluster-management.io/subscriptions':
-                'namespace-1/subscription-1,namespace-1/subscription-1-local',
-        },
-    },
-    spec: {
-        componentKinds: [
-            {
-                group: 'apps.open-cluster-management.io',
-                kind: 'Subscription',
-            },
-        ],
-        selector: {
-            matchExpressions: [
-                {
-                    key: 'app',
-                    operator: 'In',
-                    values: ['application-1-app'],
-                },
-            ],
-        },
-    },
-}
-
 const mockProjects = [mockProject, mockProject2, mockChannelProject]
-const mockChannels = [mockChannel]
 
 const mockPlacementRules = [mockPlacementRule]
 const mockNamespaces = [mockNamespace0]
-const mockHubApplications = [mockApplication1]
 const mockHubChannels = [mockChannel1]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
@@ -278,12 +223,12 @@ jest.mock('react-i18next', () => ({
 describe('Create Subscription Application page', () => {
     const Component = () => {
         return (
-            <RecoilRoot initializeState={(snapshot) => 
-                {
+            <RecoilRoot
+                initializeState={(snapshot) => {
                     snapshot.set(secretsState, [mockAnsibleSecret])
                     snapshot.set(namespacesState, mockNamespaces)
-                }
-            }>
+                }}
+            >
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
                     <Route
                         path={NavigationPath.createApplicationSubscription}
@@ -318,9 +263,7 @@ describe('Create Subscription Application page', () => {
     })
 
     test('create a git subscription app', async () => {
-        const initialNocks = [
-            nockList(mockProject, mockProjects),
-        ]
+        const initialNocks = [nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
         render(<Component />)
         await waitForNocks(initialNocks)
@@ -330,8 +273,8 @@ describe('Create Subscription Application page', () => {
         await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
-        await waitForNocks([nockList(mockChannel1, mockHubChannels),nockList(mockPlacementRule, mockPlacementRules)])
-        // screen.logTestingPlaygroundURL()
+        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        //
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
 
@@ -341,139 +284,21 @@ describe('Create Subscription Application page', () => {
             })
         )
 
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
         await clickByTestId('create-button-portal-id-btn')
         await waitForNocks([
-            nockCreate(nockApplication, undefined, 201, {dryRun: 'All'}),
-            nockCreate(mockChannel, undefined, 201, {dryRun: 'All'}),
-            nockCreate(mockSubscription, undefined, 201, {dryRun: 'All'}),
-            nockCreate(mockPlacementRule, undefined, 201, {dryRun: 'All'}),
+            nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockChannel, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockSubscription, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockPlacementRule, undefined, 201, { dryRun: 'All' }),
             nockCreate(nockApplication, undefined, 201),
             nockCreate(mockChannel, undefined, 201),
             nockCreate(mockSubscription, undefined, 201),
             nockCreate(mockPlacementRule, undefined, 201),
         ])
 
-        // expect(consoleInfos).hasNoConsoleLogs()
-        // await waitForText('Application created')
+        expect(consoleInfos).hasNoConsoleLogs()
     })
-
-    // test('create a git subscription app with ansible secret', async () => {
-    //     const initialNocks = [nockList(mockProject, [mockProject, mockProject2])]
-    //     window.scrollBy = () => {}
-    //     render(<Component />)
-    //     await waitForNocks(initialNocks)
-
-    //     expect(screen.getAllByText('Create application')).toBeTruthy()
-    //     // fill the form
-    //     await typeByTestId('eman', mockApplication0.metadata.name!)
-    //     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
-
-    //     // click git card
-    //     const gitCard = screen.queryByTestId('git')
-    //     gitCard?.click()
-
-    //     const githubURL = screen.getByRole('combobox', {
-    //         name: /listbox input field/i,
-    //     })
-    //     userEvent.type(githubURL, gitLink)
-
-    //     // select ansible secret
-
-    //     const preAndPostHooks = screen.queryByTestId('perpostsection-configure-automation-for-prehook-and-posthook')
-    //     preAndPostHooks?.click()
-
-    //     const connection = screen.queryByPlaceholderText('Select an existing secret from the list.')
-    //     connection?.click()
-
-    //     // await waitForText(mockAnsibleSecret.metadata.name!)
-
-    //     // screen.queryByText(mockAnsibleSecret.metadata.name!)
-
-    //     // const expectedOption = screen.getByRole('listbox', {
-    //     //     name: /connection-label/i,
-    //     // })
-    //     // userEvent.click(expectedOption)
-
-    //     // check deploy to local cluster
-    //     const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
-    //     localClusterCheckbox?.click()
-
-    //     // await clickByTestId('create-button-portal-id')
-
-    //     // expect(consoleInfos).hasNoConsoleLogs()
-    //     // screen.queryAllByText('Application created')
-    // })
-
-    // test('fail to create a git subscription app', async () => {
-    //     const initialNocks = [nockList(mockProject, [mockProject])]
-    //     window.scrollBy = () => {}
-    //     render(<Component />)
-    //     await waitForNocks(initialNocks)
-
-    //     expect(screen.getAllByText('Create application')).toBeTruthy()
-    //     // fill the form
-    //     await typeByTestId('eman', mockApplication0.metadata.name!)
-    //     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
-
-    //     // click git card
-    //     const gitCard = screen.queryByTestId('git')
-    //     gitCard?.click()
-
-    //     const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
-    //     localClusterCheckbox?.click()
-
-    //     await clickByTestId('create-button-portal-id')
-    //     // notification to alert failure
-    //     await waitForTestId('notifications')
-    //     // await waitForText('Syntax error: Value must be a valid URL format.', true)
-    //     expect(screen.getByText('Syntax error: Value must be a valid URL format.')).toBeDefined()
-    // })
-
-    // test('can create and set an ansible secret', async () => {
-    //     const initialNocks = [nockList(mockProject, [mockProject])]
-    //     window.scrollBy = () => {}
-    //     render(<Component />)
-    //     await waitForNocks(initialNocks)
-
-    //     // click git card
-    //     const gitCard = screen.queryByTestId('git')
-    //     gitCard?.click()
-
-    //     expect(screen.getAllByText('Create application')).toBeTruthy()
-
-    //     const preAndPostHooks = screen.queryByTestId('perpostsection-configure-automation-for-prehook-and-posthook')
-    //     preAndPostHooks?.click()
-
-    //     const connection = screen.queryByPlaceholderText('Select an existing secret from the list.')
-    //     connection?.click()
-
-    //     // Should show the modal wizard
-    //     const addCredentialButton = screen.queryByText('Add credential')
-    //     addCredentialButton?.click()
-
-    //     await new Promise((resolve) => setTimeout(resolve, 1500))
-    //     // await typeByPlaceholderText('Enter the name for the credential', mockAnsibleSecret.metadata.name)
-    //     const name = screen.getByLabelText('Credential name')
-    //     userEvent.type(name, 'hello{enter}')
-    // })
-
-    // test('can render Edit Subscription Application Page', async () => {
-    //     window.scrollBy = () => {}
-    //     render(
-    //         <RecoilRoot
-    //             initializeState={(snapshot) => {
-    //                 snapshot.set(applicationsState, mockApplications)
-    //             }}
-    //         >
-    //             <MemoryRouter>
-    //                 <Route
-    //                     path={NavigationPath.editApplicationSubscription
-    //                         .replace(':namespace', mockApplication0.metadata?.namespace as string)
-    //                         .replace(':name', mockApplication0.metadata?.name as string)}
-    //                     render={() => <CreateSubscriptionApplicationPage />}
-    //                 />
-    //             </MemoryRouter>
-    //         </RecoilRoot>
-    //     )
-    // })
 })
