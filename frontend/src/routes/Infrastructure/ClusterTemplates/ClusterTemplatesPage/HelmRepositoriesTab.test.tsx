@@ -7,7 +7,7 @@ import { waitForTestId, waitForText } from '../../../../lib/test-util';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import { HelmChartRepository, HelmRepoIndex, HelmRepoIndexChartEntry } from '../types';
-import HelmRepositoriesTab, { HelmRepoRow, RowContext } from './HelmRepositoriesTab';
+import HelmRepositoriesTab, { HelmRepoRow } from './HelmRepositoriesTab';
 import * as useHelmRepositoryIndex from '../hooks/useHelmRepositoryIndex';
 import userEvent from '@testing-library/user-event';
 import { K8sModel } from '@openshift-console/dynamic-plugin-sdk';
@@ -124,56 +124,47 @@ describe('HelmRepositoritesTab', () => {
 describe('HelmRepoRow', () => {
   test('Repo deletion action and modal button', async () => {
     render(
-      <RowContext.Provider
-        value={{
-          helmRepoIndexResult: [helmRepositoryIndexMock, true, undefined],
-          clusterTemplatesResult: [[], true, undefined],
-        }}
-      >
-        <HelmRepoRow obj={helmRepositoryMock1} />
-      </RowContext.Provider>,
+      <HelmRepoRow
+        obj={helmRepositoryMock1}
+        helmRepoIndexResult={[helmRepositoryIndexMock, true, undefined]}
+        clusterTemplatesResult={[[], true, undefined]}
+      />,
     );
     await userEvent.click(screen.getByTestId('repo-actions-toggle'));
-    await waitForText('Delete HelmChartRepository');
-    await userEvent.click(screen.getByText('Delete HelmChartRepository'));
+    await waitForText('Delete repository');
+    await userEvent.click(screen.getByText('Delete repository'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByText('Delete'));
-    expect(screen.queryByText('Delete HelmChartRepository')).toBeNull();
+    expect(screen.queryByText('Delete Helm chart repository')).toBeNull();
   });
   test('Repo deletion modal close button closes the dialog', async () => {
     render(
-      <RowContext.Provider
-        value={{
-          helmRepoIndexResult: [helmRepositoryIndexMock, true, undefined],
-          clusterTemplatesResult: [[], true, undefined],
-        }}
-      >
-        <HelmRepoRow obj={helmRepositoryMock1} />
-      </RowContext.Provider>,
+      <HelmRepoRow
+        obj={helmRepositoryMock1}
+        helmRepoIndexResult={[helmRepositoryIndexMock, true, undefined]}
+        clusterTemplatesResult={[[], true, undefined]}
+      />,
     );
     await userEvent.click(screen.getByTestId('repo-actions-toggle'));
-    await waitForText('Delete HelmChartRepository');
-    await userEvent.click(screen.getByText('Delete HelmChartRepository'));
+    await waitForText('Delete repository');
+    await userEvent.click(screen.getByText('Delete repository'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByText('Delete HelmChartRepository')).toBeNull();
+    expect(screen.queryByText('Delete Helm chart repository')).toBeNull();
   });
   test('Repo deletion modal x button closes the dialog', async () => {
     render(
-      <RowContext.Provider
-        value={{
-          helmRepoIndexResult: [helmRepositoryIndexMock, true, undefined],
-          clusterTemplatesResult: [[], true, undefined],
-        }}
-      >
-        <HelmRepoRow obj={helmRepositoryMock1} />
-      </RowContext.Provider>,
+      <HelmRepoRow
+        obj={helmRepositoryMock1}
+        helmRepoIndexResult={[helmRepositoryIndexMock, true, undefined]}
+        clusterTemplatesResult={[[], true, undefined]}
+      />,
     );
     await userEvent.click(screen.getByTestId('repo-actions-toggle'));
-    await waitForText('Delete HelmChartRepository');
-    await userEvent.click(screen.getByText('Delete HelmChartRepository'));
+    await waitForText('Delete repository');
+    await userEvent.click(screen.getByText('Delete repository'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByText('Delete HelmChartRepository')).toBeNull();
+    expect(screen.queryByText('Delete Helm chart repository')).toBeNull();
   });
 });
