@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, OptionsMenu, OptionsMenuItem, OptionsMenuToggleWithText } from '@patternfly/react-core'
+import { OptionsMenu, OptionsMenuItem, OptionsMenuToggleWithText } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
@@ -10,7 +10,7 @@ import { AcmSummaryList } from './AcmSummaryList'
 
 describe('AcmSummaryList', () => {
     const list = [
-        { isPrimary: true, description: 'Applications', count: 3, href: '/search?query=apps' },
+        { description: 'Applications', count: 3, href: '/search?query=apps' },
         { description: 'Clusters', count: 2, href: '/search?query=clusters' },
         { description: 'Kubernetes type', count: 1 },
         { description: 'Region', count: 1 },
@@ -33,7 +33,7 @@ describe('AcmSummaryList', () => {
 
     test('renders individual list item skeleton component', () => {
         const list = [
-            { isPrimary: true, description: 'Applications', count: 3, href: '/search?query=apps' },
+            { description: 'Applications', count: 3, href: '/search?query=apps' },
             { description: 'Clusters', count: 2, href: '/search?query=clusters' },
             { description: 'Kubernetes type', count: 1 },
             { description: 'Region', count: 1 },
@@ -52,12 +52,7 @@ describe('AcmSummaryList', () => {
     test('has zero accessibility defects', async () => {
         const { container } = render(
             <MemoryRouter>
-                <AcmSummaryList
-                    title="Summary"
-                    list={list}
-                    actions={[<Menu key="menu" />]}
-                    rightAction={<Button variant="plain">Expand details</Button>}
-                />
+                <AcmSummaryList title="Summary" list={list} />
             </MemoryRouter>
         )
         expect(await axe(container)).toHaveNoViolations()

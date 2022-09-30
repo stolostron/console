@@ -13,7 +13,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
-import { clickByTestId, clickByText, selectByText, typeByTestId, waitForNock } from '../../lib/test-util'
+import { clickByTestId, clickByText, selectByText, typeByTestId, waitForNock, waitForText } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import AddCredentialPage2 from './CredentialsForm'
 
@@ -387,5 +387,14 @@ describe('add credentials page', () => {
         const createNock = nockCreate({ ...providerConnection })
         await clickByText('Add')
         await waitForNock(createNock)
+    })
+
+    it('should throw error for requiredValidationMessage', async () => {
+        render(<AddCredentialsTest />)
+
+        // Credentials type
+        await clickByTestId('rhocm')
+        await clickByText('Next')
+        await waitForText('This is a required field.', true)
     })
 })

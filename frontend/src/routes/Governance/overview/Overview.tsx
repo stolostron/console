@@ -43,7 +43,7 @@ export default function GovernanceOverview() {
         )
     }
     return (
-        <PageSection isWidthLimited>
+        <PageSection>
             <Stack hasGutter>
                 <AcmMasonry minSize={415} maxColumns={3}>
                     <PolicySetViolationsCard />

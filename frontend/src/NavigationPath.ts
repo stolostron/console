@@ -50,6 +50,7 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Cluster Pools
     clusterPools = '/multicloud/infrastructure/clusters/pools',
     createClusterPool = '/multicloud/infrastructure/clusters/pools/create',
+    createClusterPoolInfrastructure = '/multicloud/infrastructure/clusters/pools/create/infrastructure',
 
     // Infrastructure - Clusters - Discovery
     discoveredClusters = '/multicloud/infrastructure/clusters/discovered',

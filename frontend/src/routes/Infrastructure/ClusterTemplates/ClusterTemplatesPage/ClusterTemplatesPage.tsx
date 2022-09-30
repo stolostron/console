@@ -6,7 +6,7 @@ import {
   ListPageHeader,
   NavPage,
 } from '@openshift-console/dynamic-plugin-sdk';
-import { Redirect, useHistory } from 'react-router-dom';
+import { Redirect, Switch, useHistory } from 'react-router-dom';
 import ClusterTemplatesTab from './ClusterTemplatesTab';
 import HelmRepositoriesTab from './HelmRepositoriesTab';
 import { useClusterTemplatesCount } from '../hooks/useClusterTemplates';
@@ -59,23 +59,26 @@ const ClusterTemplatesPage = () => {
   };
 
   return (
-    <>
+    <Switch>
       <Redirect
         from={`/k8s/cluster/${clusterTemplateReference}`}
         to={`/k8s/cluster/${clusterTemplateReference}/~tabs`}
+        exact
       />
-      <ListPageHeader title="Cluster templates">
-        <ListPageCreateDropdown
-          createAccessReview={{ groupVersionKind: clusterTemplateReference }}
-          items={actionItems}
-          onClick={handleCreateDropdownActionClick}
-        >
-          {t('Create')}
-        </ListPageCreateDropdown>
-      </ListPageHeader>
+      <>
+        <ListPageHeader title="Cluster templates">
+          <ListPageCreateDropdown
+            createAccessReview={{ groupVersionKind: clusterTemplateReference }}
+            items={actionItems}
+            onClick={handleCreateDropdownActionClick}
+          >
+            {t('Create')}
+          </ListPageCreateDropdown>
+        </ListPageHeader>
 
-      <HorizontalNav pages={pages} />
-    </>
+        <HorizontalNav pages={pages} />
+      </>
+    </Switch>
   );
 };
 
