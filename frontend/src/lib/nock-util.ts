@@ -180,9 +180,23 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
+/*
+    params - map with key/value pairs i.e.
+    { param1: 'val1', param2: 'val2' } = ?param1=val1&param2=val2
+*/
+export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201, params?: any) {
+    let paramString = ''
+    if (params) {
+        for (const [key, value] of Object.entries(params)) {
+            if (paramString === '') {
+                paramString = `?${key}=${value}`
+            } else {
+                paramString = `${paramString}&${key}=${value}`
+            }
+        }
+    }
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), (body) => {
+        .post(`${getResourceApiPath(resource)}${paramString}`, (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
             //     console.log(resource)

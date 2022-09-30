@@ -23,9 +23,12 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState, secretsState } from '../../atoms'
+import { applicationsState, namespacesState, secretsState } from '../../atoms'
 import {
     clickByPlaceholderText,
     clickByTestId,
@@ -88,6 +91,32 @@ const mockApplication0: Application = {
     },
 }
 
+const mockSubscription: Subscription = {
+    apiVersion: SubscriptionApiVersion,
+    kind: SubscriptionKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/git-branch': null,
+            'apps.open-cluster-management.io/git-path':null,
+            'apps.open-cluster-management.io/reconcile-option':'merge'
+        },
+        labels: {
+            app: 'application-0'
+        },
+        name: 'application-0-subscription-1',
+        namespace: 'namespace-0'
+    },
+    spec: {
+        channel: 'ginvalidcom-ns/ginvalidcom',
+        placement: {
+            placementRef: {
+                kind: 'PlacementRule',
+                name: 'application-0-placement-1'
+            }
+        }
+    }
+}
+
 const mockProject: Project = {
     kind: ProjectKind,
     apiVersion: ProjectApiVersion,
@@ -134,6 +163,21 @@ const mockChannel: Channel = {
     },
 }
 
+const mockChannel1: Channel = {
+    apiVersion: ChannelApiVersion,
+    kind: ChannelKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+        },
+        name: 'ggithubcom-fxiang1-app-samples',
+    },
+    spec: {
+        type: 'Git',
+        pathname: 'https://github.com/fxiang1/app-samples',
+    },
+}
+
 const mockApplications: Application[] = [mockApplication0]
 
 const mockChannelNamespace: Namespace = {
@@ -172,10 +216,52 @@ const mockPlacementRule: PlacementRule = {
     },
 }
 
+const mockNamespace0: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'local-cluster',
+    },
+}
+
+const mockApplication1: Application = {
+    apiVersion: ApplicationApiVersion,
+    kind: ApplicationKind,
+    metadata: {
+        name: 'application-1',
+        namespace: 'namespace-1',
+        creationTimestamp: `${moment().format()}`,
+        annotations: {
+            'apps.open-cluster-management.io/subscriptions':
+                'namespace-1/subscription-1,namespace-1/subscription-1-local',
+        },
+    },
+    spec: {
+        componentKinds: [
+            {
+                group: 'apps.open-cluster-management.io',
+                kind: 'Subscription',
+            },
+        ],
+        selector: {
+            matchExpressions: [
+                {
+                    key: 'app',
+                    operator: 'In',
+                    values: ['application-1-app'],
+                },
+            ],
+        },
+    },
+}
+
 const mockProjects = [mockProject, mockProject2, mockChannelProject]
 const mockChannels = [mockChannel]
 
 const mockPlacementRules = [mockPlacementRule]
+const mockNamespaces = [mockNamespace0]
+const mockHubApplications = [mockApplication1]
+const mockHubChannels = [mockChannel1]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
@@ -192,7 +278,12 @@ jest.mock('react-i18next', () => ({
 describe('Create Subscription Application page', () => {
     const Component = () => {
         return (
-            <RecoilRoot initializeState={(snapshot) => snapshot.set(secretsState, [mockAnsibleSecret])}>
+            <RecoilRoot initializeState={(snapshot) => 
+                {
+                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(namespacesState, mockNamespaces)
+                }
+            }>
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
                     <Route
                         path={NavigationPath.createApplicationSubscription}
@@ -229,24 +320,18 @@ describe('Create Subscription Application page', () => {
     test('create a git subscription app', async () => {
         const initialNocks = [
             nockList(mockProject, mockProjects),
-            // nockList(mockPlacementRule, mockPlacementRules),
-            // nockList(mockChannel, mockChannels),
         ]
         window.scrollBy = () => {}
         render(<Component />)
         await waitForNocks(initialNocks)
-
         await waitForText('Create application')
-
         // fill the form
         await typeByTestId('eman', mockApplication0.metadata.name!)
         await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
-
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
-
+        await waitForNocks([nockList(mockChannel1, mockHubChannels),nockList(mockPlacementRule, mockPlacementRules)])
         // screen.logTestingPlaygroundURL()
-
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
 
@@ -256,10 +341,17 @@ describe('Create Subscription Application page', () => {
             })
         )
 
-        const createNock = nockCreate(nockApplication)
-
         await clickByTestId('create-button-portal-id-btn')
-        await waitForNock(createNock)
+        await waitForNocks([
+            nockCreate(nockApplication, undefined, 201, {dryRun: 'All'}),
+            nockCreate(mockChannel, undefined, 201, {dryRun: 'All'}),
+            nockCreate(mockSubscription, undefined, 201, {dryRun: 'All'}),
+            nockCreate(mockPlacementRule, undefined, 201, {dryRun: 'All'}),
+            nockCreate(nockApplication, undefined, 201),
+            nockCreate(mockChannel, undefined, 201),
+            nockCreate(mockSubscription, undefined, 201),
+            nockCreate(mockPlacementRule, undefined, 201),
+        ])
 
         // expect(consoleInfos).hasNoConsoleLogs()
         // await waitForText('Application created')
@@ -365,23 +457,23 @@ describe('Create Subscription Application page', () => {
     //     userEvent.type(name, 'hello{enter}')
     // })
 
-    test('can render Edit Subscription Application Page', async () => {
-        window.scrollBy = () => {}
-        render(
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(applicationsState, mockApplications)
-                }}
-            >
-                <MemoryRouter>
-                    <Route
-                        path={NavigationPath.editApplicationSubscription
-                            .replace(':namespace', mockApplication0.metadata?.namespace as string)
-                            .replace(':name', mockApplication0.metadata?.name as string)}
-                        render={() => <CreateSubscriptionApplicationPage />}
-                    />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    })
+    // test('can render Edit Subscription Application Page', async () => {
+    //     window.scrollBy = () => {}
+    //     render(
+    //         <RecoilRoot
+    //             initializeState={(snapshot) => {
+    //                 snapshot.set(applicationsState, mockApplications)
+    //             }}
+    //         >
+    //             <MemoryRouter>
+    //                 <Route
+    //                     path={NavigationPath.editApplicationSubscription
+    //                         .replace(':namespace', mockApplication0.metadata?.namespace as string)
+    //                         .replace(':name', mockApplication0.metadata?.name as string)}
+    //                     render={() => <CreateSubscriptionApplicationPage />}
+    //                 />
+    //             </MemoryRouter>
+    //         </RecoilRoot>
+    //     )
+    // })
 })
