@@ -226,9 +226,43 @@ export function CredentialsForm(props: {
             selectedInfrastructureType = Provider.hostinventory
             break
     }
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
+    let urlPassedCredentialType = ''
+    switch (urlParamInfrastructureType) {
+        case 'AWS':
+            urlPassedCredentialType = Provider.aws
+            break
+        case 'Azure':
+            urlPassedCredentialType = Provider.azure
+            break
+        case 'GCP':
+            urlPassedCredentialType = Provider.gcp
+            break
+        case 'OpenStack':
+            urlPassedCredentialType = Provider.openstack
+            break
+        case 'RHV':
+            urlPassedCredentialType = Provider.redhatvirtualization
+            break
+        case 'vSphere':
+            urlPassedCredentialType = Provider.vmware
+            break
+        case 'hostInventory':
+            urlPassedCredentialType = Provider.hostinventory
+            break
+        case 'Ansible':
+            urlPassedCredentialType = Provider.ansible
+            break
+        case 'RedHatCloud':
+            urlPassedCredentialType = Provider.redhatcloud
+            break
+    }
 
     const [credentialsType, setCredentialsType] = useState(
-        infrastructureType
+        urlParamInfrastructureType
+            ? urlPassedCredentialType
+            : infrastructureType
             ? selectedInfrastructureType
             : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
     )
@@ -629,7 +663,8 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        isDisabled: infrastructureType ? true : isEditing,
+                        // isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
+                        isDisabled: true,
                     },
                     {
                         id: 'credentialsName',

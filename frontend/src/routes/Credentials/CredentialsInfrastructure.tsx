@@ -47,8 +47,25 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.aws),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createClusterPool,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=AWS',
+                    }),
+            },
+            {
+                id: 'azure',
+                icon: <AcmIcon icon={AcmIconVariant.azure} />,
+                title: t('Microsoft Azure'),
+                items: [
+                    {
+                        type: CatalogCardItemType.Description,
+                        description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
+                    },
+                ],
+                labels: getCredentialLabels(Provider.azure),
+                onClick: () =>
+                    history.push({
+                        pathname: NavigationPath.addCredentials,
+                        search: '?infrastructureType=Azure',
                     }),
             },
             {
@@ -66,25 +83,8 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.gcp),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createClusterPool,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=GCP',
-                    }),
-            },
-            {
-                id: 'azure',
-                icon: <AcmIcon icon={AcmIconVariant.azure} />,
-                title: t('Microsoft Azure'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.azure),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=Azure',
                     }),
             },
             {
@@ -102,7 +102,7 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.openstack),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=OpenStack',
                     }),
             },
@@ -121,14 +121,14 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.redhatvirtualization),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=RHV',
                     }),
             },
             {
                 id: 'vsphere',
                 icon: <AcmIcon icon={AcmIconVariant.vmware} />,
-                title: t('VMWare VSphere'),
+                title: t('VMware vSphere'),
                 items: [
                     {
                         type: CatalogCardItemType.Description,
@@ -140,7 +140,7 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.vmware),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=vSphere',
                     }),
             },
@@ -159,7 +159,7 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.hostinventory),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=hostInventory',
                     }),
             },
@@ -178,7 +178,7 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.hostinventory),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
+                        pathname: NavigationPath.addCredentials,
                         search: '?infrastructureType=Ansible',
                     }),
             },
@@ -197,8 +197,8 @@ export function CreateInfrastructureCredentials() {
                 labels: getCredentialLabels(Provider.redhatvirtualization),
                 onClick: () =>
                     history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=RHV',
+                        pathname: NavigationPath.addCredentials,
+                        search: '?infrastructureType=RedHatCloud',
                     }),
             },
         ]

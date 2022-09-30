@@ -8,12 +8,12 @@ import CredentialsPage from './CredentialsPage'
 export default function Credentials() {
     return (
         <Switch>
-            <Route exact path={NavigationPath.addCredentials} component={CredentialsFormPage} />
             <Route
                 exact
                 path={NavigationPath.addCredentialsInfrastructure}
                 component={CreateInfrastructureCredentials}
             />
+            <Route exact path={NavigationPath.addCredentials} component={CredentialsFormPage} />
             <Route exact path={NavigationPath.editCredentials} component={CredentialsFormPage} />
             <Route exact path={NavigationPath.viewCredentials} component={CredentialsFormPage} />
             <Route exact path={NavigationPath.credentials} component={CredentialsPage} />

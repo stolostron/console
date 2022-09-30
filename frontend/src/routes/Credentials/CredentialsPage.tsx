@@ -61,7 +61,7 @@ const AddConnectionBtn = () => {
     const { t } = useTranslation()
     return (
         <div>
-            <AcmButton component={Link} to={NavigationPath.addCredentials}>
+            <AcmButton component={Link} to={NavigationPath.addCredentialsInfrastructure}>
                 {t('Add credential')}
             </AcmButton>
             <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
@@ -286,7 +286,7 @@ export function CredentialsTable(props: {
                         id: 'add',
                         title: t('Add credential'),
                         click: () => {
-                            history.push(NavigationPath.addCredentials)
+                            history.push(NavigationPath.addCredentialsInfrastructure)
                         },
                         variant: ButtonVariant.primary,
                     },
