@@ -14,7 +14,7 @@ const TemplateDetailsStep = () => {
   const [repoIndex, indexLoaded] = useHelmRepositoryIndex();
 
   React.useEffect(() => {
-    if (loaded && repositories[0].metadata?.name && !values.helmRepo) {
+    if (loaded && repositories[0]?.metadata?.name && !values.helmRepo) {
       setFieldValue('helmRepo', repositories[0].metadata?.name);
     }
   }, [loaded, repositories, values.helmRepo, setFieldValue]);
