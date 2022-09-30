@@ -8,16 +8,54 @@ import {
     Application,
     ApplicationApiVersion,
     ApplicationKind,
+    Channel,
+    ChannelApiVersion,
+    ChannelKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    PlacementRule,
+    PlacementRuleApiVersion,
+    PlacementRuleKind,
     Project,
     ProjectApiVersion,
     ProjectKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState } from '../../atoms'
-import { clickByTestId, typeByTestId, waitForNocks, waitForTestId } from '../../lib/test-util'
-import { nockIgnoreRBAC, nockList } from '../../lib/nock-util'
+import { applicationsState, secretsState } from '../../atoms'
+import {
+    clickByPlaceholderText,
+    clickByTestId,
+    clickByText,
+    clickByTitle,
+    typeByPlaceholderText,
+    typeByTestId,
+    waitForNock,
+    waitForNocks,
+    waitForTestId,
+    waitForText,
+} from '../../lib/test-util'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockList } from '../../lib/nock-util'
+import userEvent from '@testing-library/user-event'
+import { Name } from 'ajv'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
+
+const gitLink = 'https://invalid.com'
+
+const nockApplication = {
+    apiVersion: 'app.k8s.io/v1beta1',
+    kind: 'Application',
+    metadata: { name: 'application-0', namespace: 'namespace-0' },
+    spec: {
+        componentKinds: [{ group: 'apps.open-cluster-management.io', kind: 'Subscription' }],
+        descriptor: {},
+        selector: { matchExpressions: [{ key: 'app', operator: 'In', values: ['application-0'] }] },
+    },
+}
 
 const mockApplication0: Application = {
     apiVersion: ApplicationApiVersion,
@@ -58,7 +96,86 @@ const mockProject: Project = {
     },
 }
 
+const mockProject2: Project = {
+    kind: ProjectKind,
+    apiVersion: ProjectApiVersion,
+    metadata: {
+        name: 'test-ns',
+    },
+}
+
+const mockAnsibleSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-1',
+        namespace: mockProject2.metadata.name,
+    },
+    stringData: {
+        host: 'host',
+        token: 'token',
+    },
+}
+
+const mockChannel: Channel = {
+    apiVersion: ChannelApiVersion,
+    kind: ChannelKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+        },
+        name: 'ginvalidcom',
+        namespace: 'ginvalidcom-ns',
+    },
+    spec: {
+        type: 'Git',
+        pathname: 'https://invalid.com',
+    },
+}
+
 const mockApplications: Application[] = [mockApplication0]
+
+const mockChannelNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'ginvalidcom-ns',
+    },
+}
+
+const mockChannelProject: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+        name: 'ginvalidcom-ns',
+    },
+}
+
+const mockPlacementRule: PlacementRule = {
+    apiVersion: PlacementRuleApiVersion,
+    kind: PlacementRuleKind,
+    metadata: {
+        labels: {
+            app: 'application-0',
+        },
+        name: 'application-0-placement-1',
+        namespace: 'namespace-0',
+    },
+    spec: {
+        clusterConditions: [
+            {
+                status: 'True',
+                type: 'ManagedClusterConditionAvailable',
+            },
+        ],
+    },
+}
+
+const mockProjects = [mockProject, mockProject2, mockChannelProject]
+const mockChannels = [mockChannel]
+
+const mockPlacementRules = [mockPlacementRule]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
@@ -75,7 +192,7 @@ jest.mock('react-i18next', () => ({
 describe('Create Subscription Application page', () => {
     const Component = () => {
         return (
-            <RecoilRoot>
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(secretsState, [mockAnsibleSecret])}>
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
                     <Route
                         path={NavigationPath.createApplicationSubscription}
@@ -108,28 +225,145 @@ describe('Create Subscription Application page', () => {
         console.group = originalConsoleGroup
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
-    test('Fail to create git subscription app', async () => {
-        const initialNocks = [nockList(mockProject, [mockProject])]
+
+    test('create a git subscription app', async () => {
+        const initialNocks = [
+            nockList(mockProject, mockProjects),
+            // nockList(mockPlacementRule, mockPlacementRules),
+            // nockList(mockChannel, mockChannels),
+        ]
         window.scrollBy = () => {}
         render(<Component />)
         await waitForNocks(initialNocks)
 
-        expect(screen.getAllByText('Create application')).toBeTruthy()
+        await waitForText('Create application')
+
         // fill the form
         await typeByTestId('eman', mockApplication0.metadata.name!)
         await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
 
         // click git card
-        const gitCard = screen.queryByTestId('git')
-        gitCard?.click()
+        userEvent.click(screen.getByText(/channel\.type\.git/i))
 
-        const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
-        localClusterCheckbox?.click()
+        // screen.logTestingPlaygroundURL()
 
-        await clickByTestId('create-button-portal-id')
-        // notification to alert failure
-        await waitForTestId('notifications')
+        const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+        userEvent.type(githubURL, gitLink)
+
+        userEvent.click(
+            screen.getByRole('radio', {
+                name: /creation\.app\.settings\.onlineclustersonly/i,
+            })
+        )
+
+        const createNock = nockCreate(nockApplication)
+
+        await clickByTestId('create-button-portal-id-btn')
+        await waitForNock(createNock)
+
+        // expect(consoleInfos).hasNoConsoleLogs()
+        // await waitForText('Application created')
     })
+
+    // test('create a git subscription app with ansible secret', async () => {
+    //     const initialNocks = [nockList(mockProject, [mockProject, mockProject2])]
+    //     window.scrollBy = () => {}
+    //     render(<Component />)
+    //     await waitForNocks(initialNocks)
+
+    //     expect(screen.getAllByText('Create application')).toBeTruthy()
+    //     // fill the form
+    //     await typeByTestId('eman', mockApplication0.metadata.name!)
+    //     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+
+    //     // click git card
+    //     const gitCard = screen.queryByTestId('git')
+    //     gitCard?.click()
+
+    //     const githubURL = screen.getByRole('combobox', {
+    //         name: /listbox input field/i,
+    //     })
+    //     userEvent.type(githubURL, gitLink)
+
+    //     // select ansible secret
+
+    //     const preAndPostHooks = screen.queryByTestId('perpostsection-configure-automation-for-prehook-and-posthook')
+    //     preAndPostHooks?.click()
+
+    //     const connection = screen.queryByPlaceholderText('Select an existing secret from the list.')
+    //     connection?.click()
+
+    //     // await waitForText(mockAnsibleSecret.metadata.name!)
+
+    //     // screen.queryByText(mockAnsibleSecret.metadata.name!)
+
+    //     // const expectedOption = screen.getByRole('listbox', {
+    //     //     name: /connection-label/i,
+    //     // })
+    //     // userEvent.click(expectedOption)
+
+    //     // check deploy to local cluster
+    //     const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
+    //     localClusterCheckbox?.click()
+
+    //     // await clickByTestId('create-button-portal-id')
+
+    //     // expect(consoleInfos).hasNoConsoleLogs()
+    //     // screen.queryAllByText('Application created')
+    // })
+
+    // test('fail to create a git subscription app', async () => {
+    //     const initialNocks = [nockList(mockProject, [mockProject])]
+    //     window.scrollBy = () => {}
+    //     render(<Component />)
+    //     await waitForNocks(initialNocks)
+
+    //     expect(screen.getAllByText('Create application')).toBeTruthy()
+    //     // fill the form
+    //     await typeByTestId('eman', mockApplication0.metadata.name!)
+    //     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+
+    //     // click git card
+    //     const gitCard = screen.queryByTestId('git')
+    //     gitCard?.click()
+
+    //     const localClusterCheckbox = screen.queryByTestId('local-cluster-checkbox-label')
+    //     localClusterCheckbox?.click()
+
+    //     await clickByTestId('create-button-portal-id')
+    //     // notification to alert failure
+    //     await waitForTestId('notifications')
+    //     // await waitForText('Syntax error: Value must be a valid URL format.', true)
+    //     expect(screen.getByText('Syntax error: Value must be a valid URL format.')).toBeDefined()
+    // })
+
+    // test('can create and set an ansible secret', async () => {
+    //     const initialNocks = [nockList(mockProject, [mockProject])]
+    //     window.scrollBy = () => {}
+    //     render(<Component />)
+    //     await waitForNocks(initialNocks)
+
+    //     // click git card
+    //     const gitCard = screen.queryByTestId('git')
+    //     gitCard?.click()
+
+    //     expect(screen.getAllByText('Create application')).toBeTruthy()
+
+    //     const preAndPostHooks = screen.queryByTestId('perpostsection-configure-automation-for-prehook-and-posthook')
+    //     preAndPostHooks?.click()
+
+    //     const connection = screen.queryByPlaceholderText('Select an existing secret from the list.')
+    //     connection?.click()
+
+    //     // Should show the modal wizard
+    //     const addCredentialButton = screen.queryByText('Add credential')
+    //     addCredentialButton?.click()
+
+    //     await new Promise((resolve) => setTimeout(resolve, 1500))
+    //     // await typeByPlaceholderText('Enter the name for the credential', mockAnsibleSecret.metadata.name)
+    //     const name = screen.getByLabelText('Credential name')
+    //     userEvent.type(name, 'hello{enter}')
+    // })
 
     test('can render Edit Subscription Application Page', async () => {
         window.scrollBy = () => {}
