@@ -27,7 +27,7 @@ describe('Overview Page', () => {
         const { queryAllByText } = await render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policiesState, mockPolicyNoStatus)
+                    snapshot.set(policiesState, [mockPolicyNoStatus])
                 }}
             >
                 <MemoryRouter>

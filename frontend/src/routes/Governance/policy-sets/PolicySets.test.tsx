@@ -7,7 +7,7 @@ import { policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import PolicySetsPage from './PolicySets'
-import { mockEmptyPolicySet, mockPolicySet } from '../governance.sharedMocks'
+import { mockEmptyPolicySet, mockPolicySets } from '../governance.sharedMocks'
 
 describe('PolicySets Page', () => {
     beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('PolicySets Page', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockPolicySet)
+                    snapshot.set(policySetsState, mockPolicySets)
                 }}
             >
                 <MemoryRouter>
@@ -42,6 +42,6 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockPolicySet[0].metadata.name!)
+        await waitForText(mockPolicySets[0].metadata.name!)
     })
 })

@@ -1,14 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { render, waitFor, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import { NavigationPath } from '../../../NavigationPath'
-import PoliciesPage from './Policies'
-import { mockPolicy, mockEmptyPolicy, mockPolicySet } from '../governance.sharedMocks'
-import { EditPolicy } from './EditPolicy'
+import PoliciesPage, { AddToPolicySetModal, PolicyTableItem } from './Policies'
+import { mockPolicy, mockEmptyPolicy, mockPolicySets } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
     beforeEach(async () => {
@@ -44,14 +42,21 @@ describe('Policies Page', () => {
         )
 
         await waitForText(mockPolicy[0].metadata.name!)
+
+        // Sorting
+        screen.getByRole('button', { name: 'Status' }).click()
+        screen.getByRole('button', { name: 'Remediation' }).click()
+        screen.getByRole('button', { name: 'Source' }).click()
+        screen.getByRole('button', { name: 'Automation' }).click()
+        screen.getByRole('button', { name: 'Name' }).click()
     })
 
     test('Should have correct links to PolicySet & Policy detail results pages', async () => {
         const { container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policiesState, mockPolicy)
-                    snapshot.set(policySetsState, mockPolicySet)
+                    snapshot.set(policiesState, mockPolicy.slice(0, 2))
+                    snapshot.set(policySetsState, mockPolicySets)
                 }}
             >
                 <MemoryRouter>
@@ -63,7 +68,7 @@ describe('Policies Page', () => {
         // Wait for page load
         await waitForText(mockPolicy[0].metadata.name!)
         // Verify the PolicySet column has loaded correctly and has the correct link to PolicySets page
-        await waitForText(mockPolicySet[0].metadata.name!)
+        await waitForText(mockPolicySets[0].metadata.name!)
         await waitFor(() =>
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[1]).toHaveAttribute(
@@ -71,34 +76,58 @@ describe('Policies Page', () => {
                 '/multicloud/governance/policy-sets?search%3D%7B%22name%22%3A%5B%22policy-set-with-1-placement%22%5D%2C%22namespace%22%3A%5B%22test%22%5D%7D'
             )
         )
-
         // Verify the Cluster violation column has the correct link to policy details page
         await waitFor(() =>
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[2]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results?sort=-1'
+                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy/results?sort=-1'
             )
         )
     })
+})
 
-    test('can render Edit Policy Page', async () => {
-        window.scrollBy = () => {}
+describe('Add Policy to policy set', () => {
+    test('should render AddToPolicySetModal', async () => {
+        let isClosed = false
+        const tableItem: PolicyTableItem = {
+            policy: mockPolicy[2],
+            source: 'Local',
+        }
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policiesState, [mockPolicy[0]])
+                    snapshot.set(policiesState, [mockPolicy[2]])
+                    snapshot.set(policySetsState, [mockPolicySets[1]])
                 }}
             >
                 <MemoryRouter>
-                    <Route
-                        path={NavigationPath.editPolicy
-                            .replace(':namespace', mockPolicy[0].metadata?.namespace as string)
-                            .replace(':name', mockPolicy[0].metadata?.name as string)}
-                        render={() => <EditPolicy />}
+                    <AddToPolicySetModal
+                        policyTableItems={[tableItem]}
+                        onClose={() => {
+                            isClosed = true
+                        }}
                     />
                 </MemoryRouter>
             </RecoilRoot>
         )
+        screen
+            .getByRole('button', {
+                name: /select a policy set options menu/i,
+            })
+            .click()
+        screen
+            .getByRole('option', {
+                name: 'policy-set-with-1-placement',
+            })
+            .click()
+        screen
+            .getByRole('button', {
+                name: 'Add',
+            })
+            .click()
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        screen.logTestingPlaygroundURL()
+        expect(isClosed).toBe(true)
     })
 })

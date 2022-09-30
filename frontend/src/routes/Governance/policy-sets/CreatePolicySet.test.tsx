@@ -7,14 +7,14 @@ import { nockIgnoreRBAC, nockGet } from '../../../lib/nock-util'
 import { clickByText, typeByTestId, waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicySet } from './CreatePolicySet'
-import { mockPolicySet, mockPolicy } from '../governance.sharedMocks'
+import { mockPolicySets, mockPolicy } from '../governance.sharedMocks'
 
 describe('Create Policy Page', () => {
     const Component = () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockPolicySet)
+                    snapshot.set(policySetsState, mockPolicySets)
                     snapshot.set(policiesState, mockPolicy)
                 }}
             >
@@ -34,7 +34,7 @@ describe('Create Policy Page', () => {
     test('can create policy set', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [nockGet(mockPolicySet[0])]
+        const initialNocks = [nockGet(mockPolicySets[0])]
 
         // create form
         const { container } = render(<Component />)
@@ -45,8 +45,8 @@ describe('Create Policy Page', () => {
         await waitForNocks(initialNocks)
 
         // step 1 -- name and namespace
-        await typeByTestId('name', mockPolicySet[0].metadata.name)
-        await typeByTestId('namespace', mockPolicySet[0].metadata.namespace)
+        await typeByTestId('name', mockPolicySets[0].metadata.name)
+        await typeByTestId('namespace', mockPolicySets[0].metadata.namespace)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item:first-of-type')?.click()
         await clickByText('Next')
 
