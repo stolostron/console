@@ -301,4 +301,43 @@ describe('Create Subscription Application page', () => {
 
         expect(consoleInfos).hasNoConsoleLogs()
     })
+
+    test('fail to create a git subscription app should throw errors', async () => {
+        const initialNocks = [nockList(mockProject, mockProjects)]
+        window.scrollBy = () => {}
+        render(<Component />)
+        await waitForNocks(initialNocks)
+        await waitForText('Create application')
+
+        // fill the form
+        await typeByTestId('eman', mockApplication0.metadata.name!)
+        await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+
+        // click git card
+        userEvent.click(screen.getByText(/channel\.type\.git/i))
+        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+
+        userEvent.click(
+            screen.getByRole('radio', {
+                name: /creation\.app\.settings\.onlineclustersonly/i,
+            })
+        )
+        await clickByTestId('create-button-portal-id-btn')
+
+        // will need to figure the expect
+        // expect(consoleInfos).toContain()
+    })
+
+    test('cancel create should redirect to the correct link', async () => {
+        const initialNocks = [nockList(mockProject, mockProjects)]
+        window.scrollBy = () => {}
+        render(<Component />)
+        await waitForNocks(initialNocks)
+        await waitForText('Create application')
+        const cancelButton = screen.getByRole('button', {
+            name: /button\.cancel/i,
+        })
+        userEvent.click(cancelButton)
+        expect(window.location.pathname).toEqual('/')
+    })
 })
