@@ -140,6 +140,7 @@ export default class TemplateEditor extends React.Component {
         // is a resource loaded in editor?
         const { fetchControl } = props
         const { isLoaded, isFailed } = fetchControl || { isLoaded: true }
+        /* istanbul ignore next */
         const showEditor =
             (monacoEditor || initialOpen) && isLoaded && !!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE)
         let newState = { isLoaded, isFailed, showEditor }
@@ -155,6 +156,7 @@ export default class TemplateEditor extends React.Component {
             newState = { ...newState, controlData }
 
             const showControl = controlData.find(({ id: idCtrl }) => idCtrl === 'showSecrets')
+            /* istanbul ignore else */
             if (showControl) {
                 showControl.active = showSecrets || !showEditor
             }
@@ -252,6 +254,7 @@ export default class TemplateEditor extends React.Component {
     }
 
     componentDidMount() {
+        /* istanbul ignore else */
         if (!this.renderedPortals) {
             setTimeout(() => {
                 this.forceUpdate()
@@ -260,11 +263,6 @@ export default class TemplateEditor extends React.Component {
     }
 
     componentWillUnmount() {
-        const { createControl = {} } = this.props
-        if (createControl.pauseCreate) {
-            const { controlData } = this.state
-            createControl.pauseCreate(controlData)
-        }
         window.removeEventListener('beforeunload', this.beforeUnloadFunc)
     }
 
@@ -292,6 +290,7 @@ export default class TemplateEditor extends React.Component {
             const width = rect.width - 10
             let height = window.innerHeight - rect.top
             const header = document.getElementsByClassName('creation-view-yaml-header')[0]
+            /* istanbul ignore next */
             if (header) {
                 height = height - header.getBoundingClientRect().height
             } else {

@@ -165,6 +165,7 @@ describe('TemplateEditor component', () => {
                 name: /creation\.app\.add\.channel/i,
             })
         )
+        window.dispatchEvent(new Event('beforeunload'))
 
         // cancel/create
         userEvent.click(
@@ -177,17 +178,22 @@ describe('TemplateEditor component', () => {
                 name: /button\.create/i,
             })
         )
+        window.dispatchEvent(new Event('beforeunload'))
 
         props.createControl.creationStatus = 'IN_PROGRESS'
         rerender(<Component {...props} />)
         props.createControl.creationStatus = 'DONE'
         rerender(<Component {...props} />)
-        props.createControl.creationStatus = 'ERROR'
+        props.createControl.creationStatus = 'IN_PROGRESS'
         props.createControl.creationMsg = ['message']
         rerender(<Component {...props} />)
-        props.editorReadOnly = true
+        props.createControl.creationStatus = 'DONE'
+        rerender(<Component {...props} />)
+        props.createControl.creationStatus = 'ERROR'
         rerender(<Component {...props} />)
         props.createControl = {}
+        props.editorReadOnly = true
+        rerender(<Component {...props} />)
         props.editorReadOnly = false
     })
 
@@ -286,16 +292,25 @@ describe('TemplateEditor component', () => {
         expect(btn).not.toBeInTheDocument()
     })
 
-    // await new Promise((resolve) => setTimeout(resolve, 1500))
+    it('other branches', async () => {
+        props.initialOpen = true
+        render(<Component {...props} />)
+        await waitFor(() =>
+            screen.getByRole('textbox', {
+                name: /monaco/i,
+            })
+        )
 
-    // screen.logTestingPlaygroundURL()
+        // edit existing
+        // multi tabs
+    })
 })
 
 const props = {
     type: 'application',
     title: 'Application YAML',
     monacoEditor: <MonacoEditor />,
-    //initialOpen: true,
+    initialOpen: false,
     controlData: [
         {
             id: 'main',
@@ -567,6 +582,6 @@ const props = {
     },
     onControlInitialize: () => {} /*onControlInitialize*/,
     onControlChange: () => {} /**/,
-    logging: true,
+    logging: false,
     i18n: (k) => k /*fixedT*/,
 }
