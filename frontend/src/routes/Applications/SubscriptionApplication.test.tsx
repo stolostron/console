@@ -286,6 +286,17 @@ describe('Create Subscription Application page', () => {
             })
         )
 
+        // open and close the credential modal
+        const dropdownButton = screen.getByRole('button', {
+            name: /creation\.app\.ansible\.credential\.name options menu/i,
+        })
+        userEvent.click(dropdownButton)
+        userEvent.click(screen.getByText(/add credential/i))
+        const modalCancelButton = screen.getByRole('button', {
+            name: /cancel/i,
+        })
+        userEvent.click(modalCancelButton)
+
         await clickByTestId('create-button-portal-id-btn')
         await waitForNocks([
             nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
