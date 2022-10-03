@@ -1,0 +1,78 @@
+{
+  "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+  "kind": "ClusterTemplate",
+  "metadata": {
+    "name": "cluster-template-example",
+    "resourceVersion": "111",
+    "uid": "b2beddd",
+    "labels": {
+      "clustertemplates.openshift.io/location": "location-value",
+      "clustertemplates.openshift.io/infra": "infra-value",
+      "clustertemplates.openshift.io/vendor": "vendor-value"
+    },
+    "annotations": {
+      "clustertemplates.openshift.io/description": "an interesting description"
+    }
+  },
+  "spec": {
+    "clusterSetup": {
+      "pipeline": {
+        "name": "argocd-pipeline",
+        "namespace": "cluster-pipelines"
+      }
+    },
+    "cost": 10,
+    "helmChartRef": {
+      "name": "hypershift-template",
+      "repository": "cluster-templates-repo",
+      "version": "0.1.0"
+    },
+    "properties": [
+      {
+        "description": "base64 encoded pull secret",
+        "name": "pullSecret",
+        "overwritable": true,
+        "secretRef": {
+          "name": "myps",
+          "namespace": "myns"
+        },
+        "type": "string"
+      },
+      {
+        "defaultValue": "rw.com",
+        "description": "base dns domain",
+        "name": "baseDnsDomain",
+        "overwritable": true,
+        "type": "string"
+      },
+      {
+        "defaultValue": "ssh-rsa vvv",
+        "description": "ssh public key",
+        "name": "sshPublicKey",
+        "overwritable": true,
+        "type": "string"
+      },
+      {
+        "clusterSetup": true,
+        "description": "app do deploy",
+        "name": "argocdapp",
+        "overwritable": true,
+        "type": "string"
+      },
+      {
+        "clusterSetup": true,
+        "description": "dev user email for notifications",
+        "name": "email",
+        "overwritable": true,
+        "type": "string"
+      },
+      {
+        "defaultValue": 0,
+        "description": "number of woker nodes",
+        "name": "replicas",
+        "overwritable": true,
+        "type": "float"
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+apiVersion: clustertemplate.openshift.io/v1alpha1
+kind: ClusterTemplateInstance
+metadata:
+  namespace: <value>
+  name: <value>
+spec:
+  clusterTemplateRef: cluster-template-example
+  values:
+    # type: string
+    # description: base64 encoded pull secret
+    # A default value is defined in a secret
+    pullSecret: <value>
+    # type: string
+    # description: base dns domain
+    baseDnsDomain: rw.com
+    # type: string
+    # description: ssh public key
+    sshPublicKey: ssh-rsa vvv
+    # type: string
+    # description: app do deploy
+    argocdapp: <value>
+    # type: string
+    # description: dev user email for notifications
+    email: <value>
+    # type: float
+    # description: number of woker nodes
+    replicas: 0

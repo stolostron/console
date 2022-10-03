@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
+import { K8sGroupVersionKind, K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
+
+export enum ClusterTemplateVendor {
+  CUSTOM = 'Custom',
+  REDHAT = 'RedHat',
+}
 
 export type HelmChartRepository = K8sResourceCommon & {
   spec: {
@@ -8,6 +13,18 @@ export type HelmChartRepository = K8sResourceCommon & {
       tlsConfig?: { name: string };
       ca?: { name: string };
     };
+  };
+};
+
+export type ClusterTemplateProperty = {
+  description: string;
+  name: string;
+  overwritable: boolean;
+  type: string;
+  defaultValue?: unknown;
+  secretRef?: {
+    name: string;
+    namespace: string;
   };
 };
 
@@ -25,24 +42,45 @@ export type ClusterTemplate = K8sResourceCommon & {
         namespace: string;
       };
     };
-    properties?: {
-      clusterSetup?: boolean;
-      defaultValue?: unknown;
-      description: string;
-      name: string;
-      overwritable: boolean;
-      secretRef?: {
-        name: string;
-        namespace: string;
-      };
-      type: string;
-    }[];
+    properties: ClusterTemplateProperty[];
   };
 };
 
+export enum ConditionType {
+  InstallSucceeded = 'InstallSucceeded',
+  SetupSucceeded = 'SetupSucceeded',
+  Ready = 'Ready',
+}
+
+export enum ConditionStatus {
+  True = 'True',
+  False = 'False',
+}
+
+export enum ClusterTemplateInstanceStatusPhase {
+  Pending = 'Pending',
+  HelmChartInstallFailed = 'HelmChartInstallFailed',
+  ClusterInstalling = 'ClusterInstalling',
+  ClusterInstallFailed = 'ClusterInstallFailed',
+  SetupPipelineCreating = 'SetupPipelineCreating',
+  SetupPipelineCreateFailed = 'SetupPipelineCreateFailed',
+  SetupPipelineRunning = 'SetupPipelineRunning',
+  SetupPipelineFailed = 'SetupPipelineFailed',
+  Ready = 'Ready',
+  CredentialsFailed = 'CredentialsFailed',
+  Failed = 'Failed',
+}
+
 export type ClusterTemplateInstance = K8sResourceCommon & {
   spec: {
-    template: string;
+    clusterTemplateRef: string;
+    values: {
+      [key: string]: any;
+    };
+  };
+  status?: {
+    phase?: ClusterTemplateInstanceStatusPhase;
+    message?: string;
   };
 };
 
@@ -68,9 +106,16 @@ export type HelmRepoIndex = {
 };
 
 export type ClusterTemplateQuota = K8sResourceCommon & {
-  spec: {
-    cost: number;
-    allowedTemplates: {
+  spec?: {
+    budget?: number;
+    allowedTemplates?: {
+      name: string;
+      count: number;
+    }[];
+  };
+  status?: {
+    budgetSpent: number;
+    templateInstances: {
       name: string;
       count: number;
     }[];
@@ -83,4 +128,22 @@ export type TableColumn = {
 };
 export type RowProps<D> = {
   obj: D;
+};
+
+export type ClusterTemplateQuotaAccess = {
+  users: string[];
+  groups: string[];
+};
+
+export type ClusterRoleBinding = K8sResourceCommon & {
+  subjects: {
+    kind: 'User' | 'Group';
+    apiGroup: 'rbac.authorization.k8s.io';
+    name: string;
+  }[];
+  roleRef: {
+    apiGroup: 'rbac.authorization.k8s.io';
+    kind: 'ClusterRole';
+    name: string;
+  };
 };

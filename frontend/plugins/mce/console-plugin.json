@@ -11,7 +11,8 @@
         "credentials": "../../src/routes/Credentials/CredentialsPlugin.tsx",
         "templates": "../../src/routes/Infrastructure/ClusterTemplates/ClusterTemplatesPage/ClusterTemplatesPage.tsx",
         "helmRepositoryForm": "../../src/routes/Infrastructure/ClusterTemplates/HelmRepositoryForm/HelmRepositoryForm.tsx",
-        "createTemplate": "../../src/routes/Infrastructure/ClusterTemplates/CreateClusterTemplateWizard/CreateClusterTemplateWizard.tsx"
+        "createTemplate": "../../src/routes/Infrastructure/ClusterTemplates/CreateClusterTemplateWizard/CreateClusterTemplateWizard.tsx",
+        "templateDetails": "../../src/routes/Infrastructure/ClusterTemplates/ClusterTemplateDetails/ClusterTemplateDetailsPage.tsx"
     },
     "dependencies": {
         "@console/pluginAPI": "*"
