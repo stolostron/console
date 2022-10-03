@@ -12,6 +12,7 @@ import {
     NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
