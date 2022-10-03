@@ -15,6 +15,7 @@ import {
   Truncate,
   Text,
   KebabToggle,
+  Page,
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import {
@@ -118,6 +119,7 @@ export const HelmRepoRow = ({
           groupVersionKind={helmRepoGVK}
           name={obj.metadata?.name}
           namespace={obj.metadata?.namespace}
+          hideIcon
         />
       </Td>
       <Td dataLabel={columns[1].title}>
@@ -204,38 +206,40 @@ const HelmRepositoriesTab = () => {
   const { t } = useTranslation();
 
   return (
-    <PageSection>
-      <TableLoader
-        loaded={repositoriesLoaded}
-        error={repositoriesError}
-        errorId="helm-repositories-load-error"
-        errorMessage={t('The Helm repositories could not be loaded.')}
-      >
-        <TableComposable
-          aria-label="Helm repositories table"
-          id="helm-repositories-table"
-          variant="compact"
+    <Page>
+      <PageSection>
+        <TableLoader
+          loaded={repositoriesLoaded}
+          error={repositoriesError}
+          errorId="helm-repositories-load-error"
+          errorMessage={t('The Helm repositories could not be loaded.')}
         >
-          <Thead>
-            <Tr>
-              {getTableColumns(t).map((column) => (
-                <Th key={column.id}>{column.title}</Th>
+          <TableComposable
+            aria-label="Helm repositories table"
+            id="helm-repositories-table"
+            variant="compact"
+          >
+            <Thead>
+              <Tr>
+                {getTableColumns(t).map((column) => (
+                  <Th key={column.id}>{column.title}</Th>
+                ))}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {repositories.map((repository) => (
+                <HelmRepoRow
+                  key={repository.metadata?.name}
+                  obj={repository}
+                  clusterTemplatesResult={clusterTemplatesResult}
+                  helmRepoIndexResult={helmRepoIndexResult}
+                />
               ))}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {repositories.map((repository) => (
-              <HelmRepoRow
-                key={repository.metadata?.name}
-                obj={repository}
-                clusterTemplatesResult={clusterTemplatesResult}
-                helmRepoIndexResult={helmRepoIndexResult}
-              />
-            ))}
-          </Tbody>
-        </TableComposable>
-      </TableLoader>
-    </PageSection>
+            </Tbody>
+          </TableComposable>
+        </TableLoader>
+      </PageSection>
+    </Page>
   );
 };
 

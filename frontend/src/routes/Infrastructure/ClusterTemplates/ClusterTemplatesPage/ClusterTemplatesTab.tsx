@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react';
 import { k8sDelete, ResourceLink, useK8sModel } from '@openshift-console/dynamic-plugin-sdk';
-import { Button, KebabToggle, Modal, ModalVariant, PageSection } from '@patternfly/react-core';
+import {
+  Button,
+  KebabToggle,
+  Modal,
+  ModalVariant,
+  Page,
+  PageSection,
+} from '@patternfly/react-core';
 import {
   ActionsColumn,
   CustomActionsToggleProps,
@@ -13,7 +20,7 @@ import {
   Thead,
   Tr,
 } from '@patternfly/react-table';
-import { clusterTemplateGVK, helmRepoGVK } from '../constants';
+import { clusterTemplateGVK, helmRepoGVK, pipelineGVK } from '../constants';
 import { ClusterTemplate, RowProps, TableColumn } from '../types';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
@@ -74,16 +81,30 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj })
           groupVersionKind={clusterTemplateGVK}
           name={obj.metadata?.name}
           namespace={obj.metadata?.namespace}
+          hideIcon
         />
       </Td>
       <Td id={columns[1].id} dataLabel={columns[1].title}>
-        <ResourceLink groupVersionKind={helmRepoGVK} name={obj.spec.helmChartRef.repository} />
+        <ResourceLink
+          groupVersionKind={helmRepoGVK}
+          name={obj.spec.helmChartRef.repository}
+          hideIcon
+        />
       </Td>
       <Td id={columns[2].id} dataLabel={columns[2].title}>
         {obj.spec.helmChartRef?.name}
       </Td>
       <Td id={columns[3].id} dataLabel={columns[3].title}>
-        {obj.spec.clusterSetup.pipeline?.name}
+        {obj.spec.clusterSetup?.pipeline ? (
+          <ResourceLink
+            groupVersionKind={pipelineGVK}
+            name={obj.spec.clusterSetup.pipeline.name}
+            namespace={obj.spec.clusterSetup.pipeline.namespace}
+            hideIcon
+          />
+        ) : (
+          <>-</>
+        )}
       </Td>
       <Td id={columns[4].id} dataLabel={columns[4].title}>
         <LoadingHelper isLoaded={loaded} error={loadError}>
@@ -137,33 +158,35 @@ const ClusterTemplatesTab = () => {
   const [templates, loaded, loadError] = useClusterTemplates();
 
   return (
-    <PageSection>
-      <TableLoader
-        loaded={loaded}
-        error={loadError}
-        errorId="templates-load-error"
-        errorMessage={t('The cluster templates could not be loaded.')}
-      >
-        <TableComposable
-          aria-label="Cluster templates table"
-          id="cluster-templates-table"
-          variant="compact"
+    <Page>
+      <PageSection>
+        <TableLoader
+          loaded={loaded}
+          error={loadError}
+          errorId="templates-load-error"
+          errorMessage={t('The cluster templates could not be loaded.')}
         >
-          <Thead>
-            <Tr>
-              {getTableColumns(t).map((column) => (
-                <Th key={column.id}>{column.title}</Th>
+          <TableComposable
+            aria-label="Cluster templates table"
+            id="cluster-templates-table"
+            variant="compact"
+          >
+            <Thead>
+              <Tr>
+                {getTableColumns(t).map((column) => (
+                  <Th key={column.id}>{column.title}</Th>
+                ))}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {templates.map((template) => (
+                <ClusterTemplateRow key={template.metadata?.name} obj={template} />
               ))}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {templates.map((template) => (
-              <ClusterTemplateRow key={template.metadata?.name} obj={template} />
-            ))}
-          </Tbody>
-        </TableComposable>
-      </TableLoader>
-    </PageSection>
+            </Tbody>
+          </TableComposable>
+        </TableLoader>
+      </PageSection>
+    </Page>
   );
 };
 
