@@ -5,21 +5,20 @@ import { useContext, useMemo } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
 
 export function useAllClusters() {
-
     const { dataContext } = useContext(PluginContext)
     const { recoil, atoms } = useContext(dataContext)
     const { useRecoilValue, waitForAll } = recoil
     const {
         managedClustersState,
-            clusterDeploymentsState,
-            managedClusterInfosState,
-            certificateSigningRequestsState,
-            managedClusterAddonsState,
-            clusterClaimsState,
-            clusterCuratorsState,
-            agentClusterInstallsState,
-            hostedClustersState,
-            nodePoolsState,
+        clusterDeploymentsState,
+        managedClusterInfosState,
+        certificateSigningRequestsState,
+        managedClusterAddonsState,
+        clusterClaimsState,
+        clusterCuratorsState,
+        agentClusterInstallsState,
+        hostedClustersState,
+        nodePoolsState,
     } = atoms
     const [
         managedClusters,

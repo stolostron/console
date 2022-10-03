@@ -15,9 +15,9 @@ import {
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from '../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -40,12 +40,9 @@ import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
 import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
-import { PluginContext } from '../../lib/PluginContext'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
-    const { dataContext } = useContext(PluginContext)
-    const { atoms } = useContext(dataContext)
     const {
         applicationsState,
         channelsState,
@@ -53,7 +50,7 @@ export default function AdvancedConfiguration() {
         placementsState,
         placementRulesState,
         subscriptionsState,
-    } = atoms
+    } = useSharedAtoms()
 
     const [applications] = useRecoilState(applicationsState)
     const [channels] = useRecoilState(channelsState)
