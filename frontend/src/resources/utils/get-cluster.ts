@@ -584,8 +584,40 @@ export function getDistributionInfo(
             break
     }
 
+    const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+    function versionGreater(versionA: string, versionB: string) {
+        const matchesA = versionA.match(versionRegex)
+        const matchesB = versionB.match(versionRegex)
+        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+            if (parseInt(matchesA[1], 10) > parseInt(matchesB[1], 10)) {
+                return true
+            } else if (parseInt(matchesA[1], 10) === parseInt(matchesB[1], 10)) {
+                if (parseInt(matchesA[2], 10) > parseInt(matchesB[2], 10)) {
+                    return true
+                } else if (parseInt(matchesA[2], 10) === parseInt(matchesB[2], 10)) {
+                    if (parseInt(matchesA[3], 10) > parseInt(matchesB[3], 10)) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+    }
+
+    function isCuratorUpgradeVersionValid() {
+        const currentVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.version
+        const desiredVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion
+        const desiredVersionCC = clusterCurator?.spec?.upgrade?.desiredUpdate
+
+        if (currentVersionMCI && desiredVersionMCI && desiredVersionCC)
+            return (
+                versionGreater(desiredVersionCC, currentVersionMCI) &&
+                versionGreater(desiredVersionCC, desiredVersionMCI)
+            )
+    }
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
+        const curatorUpgradeVersionValid = isCuratorUpgradeVersionValid()
         const isUpgradeCuration =
             clusterCurator?.spec?.desiredCuration === 'upgrade' ||
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
@@ -606,6 +638,7 @@ export function getDistributionInfo(
             checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
             checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
         const curatorIsUpgrading =
+            curatorUpgradeVersionValid &&
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
             clusterCurator?.spec?.upgrade?.desiredUpdate !==
