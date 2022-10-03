@@ -76,3 +76,11 @@ export type ClusterTemplateQuota = K8sResourceCommon & {
     }[];
   };
 };
+
+export type TableColumn = {
+  title: string;
+  id: string;
+};
+export type RowProps<D> = {
+  obj: D;
+};
