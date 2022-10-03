@@ -34,7 +34,7 @@ function SearchResultTables(props: {
                     items={items}
                     columns={_.get(
                         searchDefinitions,
-                        `[${kind}].columns`,
+                        `[${kind.toLowerCase()}].columns`,
                         searchDefinitions['genericresource'].columns
                     )}
                     keyFn={(item: any) => item._uid.toString()}

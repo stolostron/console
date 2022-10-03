@@ -1,9 +1,9 @@
 // Copyright Contributors to the Open Cluster Management project
 import { Stack } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import _ from 'lodash'
 import { useCallback } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
@@ -32,7 +32,11 @@ export default function RelatedResultsTables(props: {
             <AcmTable
                 plural=""
                 items={items}
-                columns={_.get(searchDefinitions, `[${kind}].columns`, searchDefinitions['genericresource'].columns)}
+                columns={_.get(
+                    searchDefinitions,
+                    `[${kind.toLowerCase()}].columns`,
+                    searchDefinitions['genericresource'].columns
+                )}
                 keyFn={(item: any) => item._uid.toString()}
                 rowActions={GetRowActions(
                     kind,
