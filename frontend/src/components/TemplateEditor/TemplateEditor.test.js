@@ -107,7 +107,7 @@ describe('TemplateEditor component', () => {
         )
     }
 
-    it('happy creation path', async () => {
+    it('creation path with form', async () => {
         let updatedControl
         props.template = (templateData) => {
             if (templateData.name === 'test' && templateData.namespace === 'testing') {
@@ -190,8 +190,6 @@ describe('TemplateEditor component', () => {
         props.createControl = {}
         props.editorReadOnly = false
     })
-
-    it('other creation path', async () => {})
 
     it('yaml editing/toolbar', async () => {
         window.ResizeObserver = ResizeObserver
@@ -292,6 +290,7 @@ describe('TemplateEditor component', () => {
 
     // screen.logTestingPlaygroundURL()
 })
+
 const props = {
     type: 'application',
     title: 'Application YAML',

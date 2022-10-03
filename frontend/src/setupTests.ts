@@ -11,12 +11,16 @@ import nock from 'nock'
 import 'regenerator-runtime/runtime'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { initReactI18next } from 'react-i18next'
+import './lib/test-snapshot'
 
 require('react')
 
 process.env.NODE_ENV = 'test'
 process.env.JEST_DEFAULT_HOST = 'http://localhost'
 process.env.REACT_APP_BACKEND_PATH = ''
+if (!process.env.DEBUG_PRINT_LIMIT) {
+    process.env.DEBUG_PRINT_LIMIT = '0'
+}
 
 JestFetchMock.enableMocks()
 fetchMock.dontMock()
