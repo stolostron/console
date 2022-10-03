@@ -6,69 +6,8 @@ import TemplateEditor from './TemplateEditor'
 import { render, fireEvent, act, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter as Router } from 'react-router-dom'
-
-// mock monaco
+// loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
-
-let mockEditor
-let mockMonaco
-let mockChangeModelCallback
-
-// mock monaco editor
-jest.mock('@monaco-editor/react', () => {
-    const Editor = jest.fn((props) => {
-        if (!mockEditor) {
-            const model = {
-                forceTokenization: () => {},
-                getLineCount: () => {},
-                getFullModelRange: () => {},
-                canUndo: () => true,
-                canRedo: () => true,
-                findMatches: (find) => {
-                    return find === 'that'
-                        ? [
-                              { range: { startColumn: 0, startLineNumber: 0, endColumn: 0, endLineNumber: 1 } },
-                              { range: { startColumn: 0, startLineNumber: 1, endColumn: 0, endLineNumber: 2 } },
-                          ]
-                        : []
-                },
-            }
-            mockEditor = {
-                layout: () => {},
-                focus: () => {},
-                trigger: () => {},
-                onKeyDown: () => {},
-                changeViewZones: () => {},
-                getSelection: () => {},
-                setSelection: () => {},
-                setSelections: () => {},
-                revealLineInCenter: () => {},
-                onDidChangeModelContent: (cb) => {
-                    mockChangeModelCallback = cb
-                },
-                deltaDecorations: () => {},
-                getModel: () => model,
-            }
-            mockMonaco = {
-                editor: { setModelLanguage: () => {} },
-                Range: () => {},
-            }
-            props.editorDidMount(mockEditor, mockMonaco)
-        }
-        return (
-            <textarea
-                aria-label="monaco"
-                data-auto={props.wrapperClassName}
-                onChange={(e) => {
-                    props.onChange(e.target.value)
-                    mockChangeModelCallback()
-                }}
-                value={props.value}
-            ></textarea>
-        )
-    })
-    return Editor
-})
 
 class ResizeObserver {
     observe() {
@@ -90,9 +29,6 @@ const Portals = Object.freeze({
 
 describe('TemplateEditor component', () => {
     beforeEach(() => {
-        mockEditor = undefined
-        mockMonaco = undefined
-        mockChangeModelCallback = undefined
         jest.clearAllMocks()
     })
 
