@@ -3,6 +3,7 @@ import * as React from 'react';
 import { k8sDelete, ResourceLink, useK8sModel } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Button,
+  Card,
   KebabToggle,
   Modal,
   ModalVariant,
@@ -166,24 +167,26 @@ const ClusterTemplatesTab = () => {
           errorId="templates-load-error"
           errorMessage={t('The cluster templates could not be loaded.')}
         >
-          <TableComposable
-            aria-label="Cluster templates table"
-            id="cluster-templates-table"
-            variant="compact"
-          >
-            <Thead>
-              <Tr>
-                {getTableColumns(t).map((column) => (
-                  <Th key={column.id}>{column.title}</Th>
+          <Card>
+            <TableComposable
+              aria-label="Cluster templates table"
+              id="cluster-templates-table"
+              variant="compact"
+            >
+              <Thead>
+                <Tr>
+                  {getTableColumns(t).map((column) => (
+                    <Th key={column.id}>{column.title}</Th>
+                  ))}
+                </Tr>
+              </Thead>
+              <Tbody>
+                {templates.map((template) => (
+                  <ClusterTemplateRow key={template.metadata?.name} obj={template} />
                 ))}
-              </Tr>
-            </Thead>
-            <Tbody>
-              {templates.map((template) => (
-                <ClusterTemplateRow key={template.metadata?.name} obj={template} />
-              ))}
-            </Tbody>
-          </TableComposable>
+              </Tbody>
+            </TableComposable>
+          </Card>
         </TableLoader>
       </PageSection>
     </Page>
