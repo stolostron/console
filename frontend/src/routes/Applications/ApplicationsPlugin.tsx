@@ -6,7 +6,7 @@ export default function ApplicationsPlugin() {
     return (
         <PluginContextProvider>
             {/* <LoadData> */}
-                <Applications />
+            <Applications />
             {/* </LoadData> */}
         </PluginContextProvider>
     )

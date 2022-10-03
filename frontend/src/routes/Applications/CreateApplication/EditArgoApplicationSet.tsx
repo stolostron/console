@@ -5,15 +5,13 @@ import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
-import { PluginContext } from '../../../lib/PluginContext'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
-import { mixed, RecoilState, RecoilValueReadOnly } from 'recoil'
 import {
     ApplicationSet,
     ApplicationSetKind,
@@ -24,7 +22,6 @@ import {
     PlacementKind,
     reconcileResources,
 } from '../../../resources'
-import { ansibleCredentialsValue } from '../../../selectors'
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
@@ -49,15 +46,8 @@ function getWizardSyncEditor() {
     return <WizardSyncEditor />
 }
 
-function isRecoilValueCheck(x: mixed) {
-    console.log('checking object: ', x)
-    return x instanceof RecoilState || x instanceof RecoilValueReadOnly
-}
-
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
-    const { dataContext } = useContext(PluginContext)
-    const { atoms } = useContext(dataContext)
     const {
         channelsState,
         namespacesState,
@@ -67,9 +57,9 @@ export function EditArgoApplicationSet() {
         managedClustersState,
         managedClusterSetsState,
         managedClusterSetBindingsState,
-    } = atoms
+    } = useSharedAtoms()
+    const { ansibleCredentialsValue } = useSharedSelectors()
 
-    console.log('checking isRecoilValue bool: ', isRecoilValueCheck(ansibleCredentialsValue))
     const history = useHistory()
     const searchParams = useSearchParams()
     const toast = useContext(AcmToastContext)
