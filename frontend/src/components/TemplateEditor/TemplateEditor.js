@@ -10,7 +10,6 @@ import isEmpty from 'lodash/isEmpty'
 import {
     Button,
     Switch,
-    Alert,
     Drawer,
     DrawerColorVariant,
     DrawerContent,
