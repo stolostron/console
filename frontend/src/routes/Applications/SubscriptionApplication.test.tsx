@@ -262,19 +262,6 @@ describe('Create Subscription Application page', () => {
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
-    test('cancel create should redirect to the correct link', async () => {
-        const initialNocks = [nockList(mockProject, mockProjects)]
-        window.scrollBy = () => {}
-        render(<Component />)
-        await waitForNocks(initialNocks)
-        await waitForText('Create application')
-        const cancelButton = screen.getByRole('button', {
-            name: /button\.cancel/i,
-        })
-        userEvent.click(cancelButton)
-        expect(window.location.pathname).toEqual('/')
-    })
-
     test('create a git subscription app', async () => {
         const initialNocks = [nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
@@ -290,14 +277,8 @@ describe('Create Subscription Application page', () => {
         //
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
-
         userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
         userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
-
-        userEvent.type(
-            screen.getByPlaceholderText(/app\.enter\.select\.ansiblesecretname/i),
-            mockAnsibleSecret.metadata.name!
-        )
 
         userEvent.click(
             screen.getByRole('radio', {
