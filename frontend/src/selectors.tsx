@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { selector } from 'recoil'
-import { clusterCuratorsState, managedClustersState, secretsState, settingsState } from './atoms'
+import { useSharedAtoms } from './shared-recoil'
+import { selector as readOnlySelector } from 'recoil'
 import { Curation } from './resources/cluster-curator'
 import { unpackProviderConnection } from './resources/provider-connection'
 
-export const ansibleCredentialsValue = selector({
+export const ansibleCredentialsValue = readOnlySelector({
     key: 'ansibleCredentials',
     get: ({ get }) => {
         const providerConnections = get(providerConnectionsValue)
@@ -16,9 +16,11 @@ export const ansibleCredentialsValue = selector({
     },
 })
 
-export const clusterCuratorTemplatesValue = selector({
+export const clusterCuratorTemplatesValue = readOnlySelector({
     key: 'clusterCuratorTemplates',
     get: ({ get }) => {
+        const atoms = useSharedAtoms()
+        const { clusterCuratorsState, managedClustersState } = atoms
         const clusterCurators = get(clusterCuratorsState)
         const managedClusterNamespaces = get(managedClustersState).map((mc) => mc.metadata.name)
         return clusterCurators.filter(
@@ -32,23 +34,27 @@ export const clusterCuratorTemplatesValue = selector({
 
 const basicCurations: Curation[] = ['install', 'upgrade']
 const allCurations: Curation[] = [...basicCurations, 'scale', 'destroy']
-export const clusterCuratorSupportedCurationsValue = selector({
+export const clusterCuratorSupportedCurationsValue = readOnlySelector({
     key: 'clusterCuratorSupportedCurations',
     get: ({ get }) => {
+        const atoms = useSharedAtoms()
+        const { settingsState } = atoms
         const settings = get(settingsState)
         return settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
     },
 })
 
-export const providerConnectionsValue = selector({
+export const providerConnectionsValue = readOnlySelector({
     key: 'providerConnections',
     get: ({ get }) => {
+        const atoms = useSharedAtoms()
+        const { secretsState } = atoms
         const secrets = get(secretsState)
         return secrets.map(unpackProviderConnection)
     },
 })
 
-export const validClusterCuratorTemplatesValue = selector({
+export const validClusterCuratorTemplatesValue = readOnlySelector({
     key: 'validClusterCuratorTemplates',
     get: ({ get }) => {
         const curatorTemplates = get(clusterCuratorTemplatesValue)

@@ -6,17 +6,8 @@ import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import {
-    applicationSetsState,
-    channelsState,
-    gitOpsClustersState,
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementsState,
-} from '../../../atoms'
+// import {  RecoilState, RecoilValueReadOnly } from 'recoil'
+import { useRecoilState, useRecoilValue } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
@@ -31,6 +22,7 @@ import {
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { ansibleCredentialsValue } from '../../../selectors'
+import { PluginContext } from '../../../lib/PluginContext'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
@@ -55,9 +47,27 @@ export function WizardSyncEditor() {
 function getWizardSyncEditor() {
     return <WizardSyncEditor />
 }
+// function isRecoilValueCheck(x: mixed) {
+//     console.log('checking object: ', x)
+//     return x instanceof RecoilState || x instanceof RecoilValueReadOnly
+// }
 
 export function CreateApplicationArgo() {
     const { t } = useTranslation()
+    const { dataContext } = useContext(PluginContext)
+    const { atoms } = useContext(dataContext)
+    const {
+        channelsState,
+        namespacesState,
+        applicationSetsState,
+        placementsState,
+        gitOpsClustersState,
+        managedClustersState,
+        managedClusterSetsState,
+        managedClusterSetBindingsState,
+    } = atoms
+    // if (ansibleCredentialsValue)
+    //     console.log('checking recoil bool value: ', isRecoilValueCheck(ansibleCredentialsValue))
     const history = useHistory()
     const [applicationSets] = useRecoilState(applicationSetsState)
     const toast = useContext(AcmToastContext)
