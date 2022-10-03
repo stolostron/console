@@ -8,13 +8,6 @@ import {
     AcmPageContent,
     ListItems,
 } from '../../../../ui-components'
-import {
-    argoApplicationsState,
-    channelsState,
-    namespacesState,
-    placementRulesState,
-    subscriptionsState,
-} from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -69,6 +62,7 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
+import { useRecoilState } from '../../../../shared-recoil'
 import { PluginContext } from '../../../../lib/PluginContext'
 
 const clusterResourceStatusText = 'Cluster resource status'
@@ -82,15 +76,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const localClusterStr = 'local-cluster'
 
     const { dataContext } = useContext(PluginContext)
-    const { recoil, atoms } = useContext(dataContext)
-    const { useRecoilState } = recoil
-    // const {
-    //     argoApplicationsState,
-    //     channelsState,
-    //     namespacesState,
-    //     placementRulesState,
-    //     subscriptionsState,
-    // } = atoms
+    const { atoms } = useContext(dataContext)
+    const { argoApplicationsState, channelsState, namespacesState, placementRulesState, subscriptionsState } = atoms
 
     const [argoApplications] = useRecoilState(argoApplicationsState)
     const [channels] = useRecoilState(channelsState)

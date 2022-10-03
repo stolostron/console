@@ -15,17 +15,9 @@ import {
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    applicationsState,
-    channelsState,
-    namespacesState,
-    placementRulesState,
-    placementsState,
-    subscriptionsState,
-} from '../../atoms'
+import { useRecoilState } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -48,9 +40,21 @@ import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
 import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import { PluginContext } from '../../lib/PluginContext'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
+    const { dataContext } = useContext(PluginContext)
+    const { atoms } = useContext(dataContext)
+    const {
+        applicationsState,
+        channelsState,
+        namespacesState,
+        placementsState,
+        placementRulesState,
+        subscriptionsState,
+    } = atoms
+
     const [applications] = useRecoilState(applicationsState)
     const [channels] = useRecoilState(channelsState)
     const [placementrules] = useRecoilState(placementRulesState)
