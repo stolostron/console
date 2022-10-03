@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as recoil from 'recoil'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as selectors from '../selectors'
 
 import { ProviderProps, createContext } from 'react'
