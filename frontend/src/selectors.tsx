@@ -1,7 +1,8 @@
-import { clusterCuratorsState, managedClustersState, secretsState, settingsState } from './atoms'
-
-import { Curation } from './resources/cluster-curator'
 /* Copyright Contributors to the Open Cluster Management project */
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { clusterCuratorsState, managedClustersState, secretsState, settingsState } from './atoms'
+import { Curation } from './resources/cluster-curator'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'
 

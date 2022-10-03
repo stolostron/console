@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { RecoilState, RecoilValue, SetterOrUpdater } from 'recoil'
 
 import { PluginContext } from './lib/PluginContext'

@@ -51,6 +51,7 @@ import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useL
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
 import logo from './assets/RHACM-Logo.svg?url'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { LoadData, logout } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'

@@ -267,8 +267,25 @@
             "@typescript-eslint/no-restricted-imports": [
                 "error",
                 {
-                    "name": "react-i18next",
-                    "message": "Please use Trans and useTranslation from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+                    "paths": [
+                        {
+                            "name": "react-i18next",
+                            "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+                        },
+                        {
+                            "name": "recoil",
+                            "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
+                        }
+                    ],
+                    "patterns": [
+                        {
+                            "group": [
+                                "**/atoms",
+                                "**/selectors"
+                            ],
+                            "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot"
+                        }
+                    ]
                 }
             ]
         },
