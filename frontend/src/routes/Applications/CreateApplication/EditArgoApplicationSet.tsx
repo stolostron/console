@@ -5,23 +5,15 @@ import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import {
-    applicationSetsState,
-    channelsState,
-    gitOpsClustersState,
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementsState,
-} from '../../../atoms'
+import { useRecoilState, useRecoilValue } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
+import { PluginContext } from '../../../lib/PluginContext'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
+import { mixed, RecoilState, RecoilValueReadOnly } from 'recoil'
 import {
     ApplicationSet,
     ApplicationSetKind,
@@ -57,8 +49,27 @@ function getWizardSyncEditor() {
     return <WizardSyncEditor />
 }
 
+function isRecoilValueCheck(x: mixed) {
+    console.log('checking object: ', x)
+    return x instanceof RecoilState || x instanceof RecoilValueReadOnly
+}
+
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
+    const { dataContext } = useContext(PluginContext)
+    const { atoms } = useContext(dataContext)
+    const {
+        channelsState,
+        namespacesState,
+        applicationSetsState,
+        placementsState,
+        gitOpsClustersState,
+        managedClustersState,
+        managedClusterSetsState,
+        managedClusterSetBindingsState,
+    } = atoms
+
+    console.log('checking isRecoilValue bool: ', isRecoilValueCheck(ansibleCredentialsValue))
     const history = useHistory()
     const searchParams = useSearchParams()
     const toast = useContext(AcmToastContext)

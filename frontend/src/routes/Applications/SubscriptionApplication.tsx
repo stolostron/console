@@ -10,16 +10,8 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
-import {
-    ansibleJobState,
-    applicationsState,
-    channelsState,
-    placementRulesState,
-    secretsState,
-    subscriptionsState,
-} from '../../atoms'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useSearchParams } from '../../lib/search'
@@ -51,6 +43,7 @@ import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/compo
 import { CredentialsForm } from '../Credentials/CredentialsForm'
 import { GetProjects } from '../../components/GetProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+import { PluginContext } from '../../lib/PluginContext'
 
 interface CreationStatus {
     status: string
@@ -171,6 +164,11 @@ export function CreateSubscriptionApplication(
 ) {
     const history = useHistory()
     const { t } = useTranslation()
+    const { dataContext } = useContext(PluginContext)
+    const { atoms } = useContext(dataContext)
+    const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
+        atoms
+
     const toastContext = useContext(AcmToastContext)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
