@@ -10,7 +10,7 @@ export const PluginContext = createContext<{
     isApplicationsAvailable?: boolean
     isGovernanceAvailable?: boolean
     isSearchAvailable?: boolean
-    dataContext: Context<PluginData>,
+    dataContext: Context<PluginData>
     acmExtensions?: AcmExtension
 }>({
     isACMAvailable: true,
