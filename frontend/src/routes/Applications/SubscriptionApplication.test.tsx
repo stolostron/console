@@ -28,7 +28,7 @@ import {
     SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { namespacesState, secretsState } from '../../atoms'
+import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
 import { clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../lib/test-util'
 import { nockCreate, nockIgnoreRBAC, nockList } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
@@ -278,14 +278,19 @@ describe('Create Subscription Application page', () => {
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
 
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
+        userEvent.type(
+            screen.getByPlaceholderText(/app\.enter\.select\.ansiblesecretname/i),
+            mockAnsibleSecret.metadata.name!
+        )
+
         userEvent.click(
             screen.getByRole('radio', {
                 name: /creation\.app\.settings\.onlineclustersonly/i,
             })
         )
-
-        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
-        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
 
         await clickByTestId('create-button-portal-id-btn')
         await waitForNocks([
@@ -302,42 +307,54 @@ describe('Create Subscription Application page', () => {
         expect(consoleInfos).hasNoConsoleLogs()
     })
 
-    test('fail to create a git subscription app should throw errors', async () => {
+    test('edit a git subscription application', async () => {
         const initialNocks = [nockList(mockProject, mockProjects)]
-        window.scrollBy = () => {}
-        render(<Component />)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(namespacesState, mockNamespaces)
+                    snapshot.set(applicationsState, [mockApplication0])
+                    snapshot.set(channelsState, mockHubChannels)
+                }}
+            >
+                <MemoryRouter
+                    initialEntries={[
+                        NavigationPath.editApplicationSubscription
+                            .replace(':namespace', nockApplication.metadata?.namespace as string)
+                            .replace(':name', nockApplication.metadata?.name as string),
+                    ]}
+                >
+                    <Route
+                        path={NavigationPath.editApplicationSubscription}
+                        render={() => <CreateSubscriptionApplicationPage />}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
         await waitForNocks(initialNocks)
-        await waitForText('Create application')
 
-        // fill the form
-        await typeByTestId('eman', mockApplication0.metadata.name!)
-        await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+        expect(
+            screen.getByRole('heading', {
+                name: /application-0/i,
+            })
+        ).toBeTruthy()
 
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
         await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+        userEvent.type(githubURL, gitLink)
 
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
+        //update the resources
         userEvent.click(
-            screen.getByRole('radio', {
-                name: /creation\.app\.settings\.onlineclustersonly/i,
+            screen.getByRole('button', {
+                name: /button\.update/i,
             })
         )
-        await clickByTestId('create-button-portal-id-btn')
-
-        // will need to figure the expect
-        // expect(consoleInfos).toContain()
-    })
-
-    test('cancel create should redirect to the correct link', async () => {
-        const initialNocks = [nockList(mockProject, mockProjects)]
-        window.scrollBy = () => {}
-        render(<Component />)
-        await waitForNocks(initialNocks)
-        await waitForText('Create application')
-        const cancelButton = screen.getByRole('button', {
-            name: /button\.cancel/i,
-        })
-        userEvent.click(cancelButton)
-        expect(window.location.pathname).toEqual('/')
+        expect(consoleInfos).hasNoConsoleLogs()
     })
 })
