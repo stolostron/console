@@ -180,9 +180,14 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
+export function nockCreate(
+    resource: IResource | ClusterRoleBinding,
+    response?: IResource,
+    statusCode = 201,
+    dryRun?: boolean
+) {
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), (body) => {
+        .post(`${getResourceApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`, (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
             //     console.log(resource)

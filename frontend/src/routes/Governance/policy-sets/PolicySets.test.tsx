@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -42,6 +42,13 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockPolicySets[0].metadata.name!)
+        screen
+            .getByRole('button', {
+                name: /options menu/i,
+            })
+            .click()
+        screen.getByText('With violation').click()
+        screen.getByText('Without violation').click()
+        screen.getByText('No status').click()
     })
 })

@@ -1,64 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-    policiesState,
-    namespacesState,
-    placementsState,
-    placementRulesState,
-    managedClustersState,
-    policySetsState,
-} from '../../../atoms'
+import { policiesState, namespacesState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByText, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { mockPlacements, mockPolicy, mockPolicySets } from '../governance.sharedMocks'
-import { ManagedCluster, Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources'
+import { mockNamespaces, mockPolicy } from '../governance.sharedMocks'
 import { EditPolicy } from './EditPolicy'
 
-const namespace: Namespace = {
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
-    metadata: {
-        name: 'test',
-    },
-}
-
-const mockLocalCluster: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
-    metadata: {
-        labels: {
-            cloud: 'Amazon',
-            name: 'local-cluster',
-            openshiftVersion: '4.9.7',
-            vendor: 'OpenShift',
-        },
-        name: 'local-cluster',
-    },
-}
-
-const mockManagedClusters: ManagedCluster[] = [mockLocalCluster]
-
 function TestEditPolicyPage() {
+    const actualPath = NavigationPath.editPolicy
+        .replace(':namespace', mockPolicy[0].metadata.namespace as string)
+        .replace(':name', mockPolicy[0].metadata.name as string)
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(policiesState, [mockPolicy[0]])
-                snapshot.set(namespacesState, [namespace])
-                snapshot.set(managedClustersState, mockManagedClusters)
-                snapshot.set(placementsState, mockPlacements)
-                snapshot.set(policySetsState, mockPolicySets)
+                snapshot.set(namespacesState, mockNamespaces)
             }}
         >
-            <MemoryRouter>
-                <Route
-                    path={NavigationPath.editPolicy
-                        .replace(':namespace', mockPolicy[0].metadata.namespace as string)
-                        .replace(':name', mockPolicy[0].metadata.name as string)}
-                    render={() => <EditPolicy />}
-                />
+            <MemoryRouter initialEntries={[actualPath]}>
+                <Switch>
+                    <Route path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
+                </Switch>
             </MemoryRouter>
         </RecoilRoot>
     )
@@ -72,12 +37,40 @@ describe('Edit Policy Page', () => {
     test('can render Edit Policy Page', async () => {
         window.scrollBy = () => {}
         render(<TestEditPolicyPage />)
+        await waitForText('Edit policy')
+
+        // step 1 -- name and namespace
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 2 -- policy templates
+        screen
+            .getByRole('button', {
+                name: /remove item/i,
+            })
+            .click()
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 3 -- placement
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 4 -- Policy annotations
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 5 -- Review and Submit
+
+        // const mockPolicyUpdate = [
+        //     nockPatch(mockPolicy[0], { op: 'remove', path: '/spec/policy-templates/0' }, undefined, 204, true),
+        //     nockPatch(mockPolicy[0], { op: 'remove', path: '/spec/policy-templates/0' }),
+        // ]
+        // // const mockPolicyUpdate = nockPatch(mockPolicy[0], policyPatch)
+        // screen.getByRole('button', { name: 'Submit' }).click()
+        // await waitForNocks(mockPolicyUpdate)
     })
 
-    // test('can cancel edit policy', async () => {
-    //     render(<TestEditPolicyPage />)
-    //     await waitForText('Edit policy')
-    //     await clickByText('Cancel')
-    //     await waitForNotText('Cancel')
-    // })
+    test('can cancel edit policy', async () => {
+        render(<TestEditPolicyPage />)
+        await waitForText('Edit policy')
+        await clickByText('Cancel')
+        await waitForNotText('Cancel')
+    })
 })

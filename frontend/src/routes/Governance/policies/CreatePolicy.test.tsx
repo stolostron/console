@@ -2,53 +2,26 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-    policiesState,
-    namespacesState,
-    placementsState,
-    placementRulesState,
-    managedClustersState,
-} from '../../../atoms'
+import { policiesState, namespacesState, managedClustersState } from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicy } from './CreatePolicy'
-import { mockPolicy } from '../governance.sharedMocks'
-import { ManagedCluster, Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources'
+import {
+    mockManagedClusters,
+    mockNamespaces,
+    mockPlacementBindings,
+    mockPlacementRules,
+    mockPolicy,
+} from '../governance.sharedMocks'
 import userEvent from '@testing-library/user-event'
-
-const namespace: Namespace = {
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
-    metadata: {
-        name: 'test',
-    },
-}
-
-const mockLocalCluster: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
-    metadata: {
-        labels: {
-            cloud: 'Amazon',
-            name: 'local-cluster',
-            openshiftVersion: '4.9.7',
-            vendor: 'OpenShift',
-        },
-        name: 'local-cluster',
-    },
-}
-
-const mockManagedClusters: ManagedCluster[] = [mockLocalCluster]
 
 function TestCreatePolicyPage() {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(placementsState, [])
-                snapshot.set(placementRulesState, [])
                 snapshot.set(policiesState, mockPolicy)
-                snapshot.set(namespacesState, [namespace])
+                snapshot.set(namespacesState, mockNamespaces)
                 snapshot.set(managedClustersState, mockManagedClusters)
             }}
         >
@@ -90,7 +63,7 @@ describe('Create Policy Page', () => {
         userEvent.type(container.querySelector('#objectdefinition-spec-object-templates input')!, 'test')
         screen.getByRole('button', { name: 'Next' }).click()
 
-        // // step 3 -- placement
+        // step 3 -- placement
 
         await waitForText('How do you want to select clusters?')
         screen.getByRole('button', { name: 'New placement' }).click()
@@ -101,17 +74,33 @@ describe('Create Policy Page', () => {
         screen.getByRole('checkbox', { name: /amazon/i }).click()
         screen.getByRole('button', { name: 'Next' }).click()
 
-        // // // step 4 -- Policy annotations
+        // step 4 -- Policy annotations
 
         screen.getByRole('button', { name: 'Next' }).click()
 
-        // // // step 5 -- Review and Submit
+        // step 5 -- Review and Submit
 
         expect(screen.getByRole('heading', { name: /details/i })).toBeInTheDocument()
 
-        // const createNock = [nockCreate(mockPolicy[2])]
-        // screen.getByRole('button', { name: 'Submit' }).click()
-        // await waitForNocks(createNock)
+        const policyNock = [
+            nockCreate(mockPolicy[2], undefined, 201, true), // DRY RUN
+            nockCreate(mockPolicy[2]),
+        ]
+
+        const placementRuleNock = [
+            nockCreate(mockPlacementRules[0], undefined, 201, true), // DRY RUN
+            nockCreate(mockPlacementRules[0]),
+        ]
+
+        const placementBindingNock = [
+            nockCreate(mockPlacementBindings[0], undefined, 201, true), // DRY RUN
+            nockCreate(mockPlacementBindings[0]),
+        ]
+
+        screen.getByRole('button', { name: 'Submit' }).click()
+        await waitForNocks(policyNock)
+        await waitForNocks(placementRuleNock)
+        await waitForNocks(placementBindingNock)
     })
 
     test('can cancel create policy', async () => {

@@ -56,7 +56,7 @@ describe('Policies Page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(policiesState, mockPolicy.slice(0, 2))
-                    snapshot.set(policySetsState, mockPolicySets)
+                    snapshot.set(policySetsState, [mockPolicySets[0]])
                 }}
             >
                 <MemoryRouter>
@@ -111,23 +111,10 @@ describe('Add Policy to policy set', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        screen
-            .getByRole('button', {
-                name: /select a policy set options menu/i,
-            })
-            .click()
-        screen
-            .getByRole('option', {
-                name: 'policy-set-with-1-placement',
-            })
-            .click()
-        screen
-            .getByRole('button', {
-                name: 'Add',
-            })
-            .click()
+        screen.getByRole('button', { name: /select a policy set options menu/i }).click()
+        screen.getByRole('option', { name: 'policy-set-with-1-placement' }).click()
+        screen.getByRole('button', { name: 'Add' }).click()
         await new Promise((resolve) => setTimeout(resolve, 500))
-        screen.logTestingPlaygroundURL()
         expect(isClosed).toBe(true)
     })
 })

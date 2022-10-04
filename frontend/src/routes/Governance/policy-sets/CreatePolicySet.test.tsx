@@ -1,55 +1,91 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { policiesState, policySetsState } from '../../../atoms'
-import { nockIgnoreRBAC, nockGet } from '../../../lib/nock-util'
-import { clickByText, typeByTestId, waitForNocks } from '../../../lib/test-util'
+import { managedClustersState, namespacesState, policiesState, policySetsState } from '../../../atoms'
+import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicySet } from './CreatePolicySet'
-import { mockPolicySets, mockPolicy } from '../governance.sharedMocks'
+import {
+    mockPolicySets,
+    mockPolicy,
+    mockNamespaces,
+    mockPlacementRules,
+    mockManagedClusters,
+    mockPlacementBindings,
+} from '../governance.sharedMocks'
+import userEvent from '@testing-library/user-event'
+
+function TestCreatePolicySet() {
+    return (
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(policySetsState, mockPolicySets)
+                snapshot.set(namespacesState, [mockNamespaces[0]])
+                snapshot.set(managedClustersState, mockManagedClusters)
+                snapshot.set(policiesState, mockPolicy)
+            }}
+        >
+            <MemoryRouter initialEntries={[`${NavigationPath.createPolicySet}`]}>
+                <Route path={NavigationPath.createPolicySet}>
+                    <CreatePolicySet />
+                </Route>
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+}
 
 describe('Create Policy Page', () => {
-    const Component = () => {
-        return (
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(policySetsState, mockPolicySets)
-                    snapshot.set(policiesState, mockPolicy)
-                }}
-            >
-                <MemoryRouter initialEntries={[`${NavigationPath.createPolicySet}`]}>
-                    <Route path={NavigationPath.createPolicySet}>
-                        <CreatePolicySet />
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
-
     beforeEach(async () => {
         nockIgnoreRBAC()
     })
 
     test('can create policy set', async () => {
-        window.scrollBy = () => {}
-
-        const initialNocks = [nockGet(mockPolicySets[0])]
-
         // create form
-        const { container } = render(<Component />)
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // wait for nocks
-        await waitForNocks(initialNocks)
+        render(<TestCreatePolicySet />)
 
         // step 1 -- name and namespace
-        await typeByTestId('name', mockPolicySets[0].metadata.name)
-        await typeByTestId('namespace', mockPolicySets[0].metadata.namespace)
-        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item:first-of-type')?.click()
-        await clickByText('Next')
+        userEvent.type(screen.getByRole('textbox', { name: 'Name' }), mockPolicySets[1].metadata.name)
+        screen.getByText('Select the namespace').click()
+        userEvent.type(screen.getByRole('searchbox'), 'test')
+        screen.getByRole('option', { name: 'test' }).click()
+        screen.getByRole('button', { name: 'Next' }).click()
 
         // step 2 -- select policies
+        screen.getByRole('checkbox', { name: /select row 0/i }).click()
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 3 -- placement
+
+        await waitForText('How do you want to select clusters?')
+        screen.getByRole('button', { name: 'New placement' }).click()
+        screen.getByRole('button', { name: /action/i }).click()
+        screen.getByText(/select the label/i).click()
+        screen.getByRole('option', { name: /cloud/i }).click()
+        screen.getByText(/select the values/i).click()
+        screen.getByRole('checkbox', { name: /amazon/i }).click()
+        screen.getByRole('button', { name: 'Next' }).click()
+
+        // step 4 -- Review
+        const policySetNock = [
+            nockCreate(mockPolicySets[2], undefined, 201, true), // DRY RUN
+            nockCreate(mockPolicySets[2]), // DRY RUN
+        ]
+
+        const placementRuleNock = [
+            nockCreate(mockPlacementRules[1], undefined, 201, true),
+            nockCreate(mockPlacementRules[1]),
+        ]
+
+        const placementBindingNock = [
+            nockCreate(mockPlacementBindings[2], undefined, 201, true),
+            nockCreate(mockPlacementBindings[2]),
+        ]
+
+        screen.getByRole('button', { name: 'Submit' }).click()
+        await waitForNocks(policySetNock)
+        await waitForNocks(placementRuleNock)
+        await waitForNocks(placementBindingNock)
     })
 })

@@ -19,13 +19,38 @@ import {
     AnsibleJobKind,
     AnsibleJob,
     PolicyAutomation,
-    PolicyAutomationApiVersion,
     Placement,
     PlacementBinding,
     PlacementDecision,
+    PlacementRule,
+    NamespaceApiVersion,
+    NamespaceKind,
+    Namespace,
+    ManagedCluster,
 } from '../../resources'
 import { Provider } from '../../ui-components/AcmProvider'
-import { PolicyAutomationKind } from '../../wizards/common/resources/IPolicyAutomation'
+
+export const mockNamespaces: Namespace[] = [
+    {
+        apiVersion: NamespaceApiVersion,
+        kind: NamespaceKind,
+        metadata: { name: 'test' },
+    },
+]
+
+export const mockLocalCluster: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+        labels: {
+            cloud: 'Amazon',
+            name: 'local-cluster',
+            openshiftVersion: '4.9.7',
+            vendor: 'OpenShift',
+        },
+        name: 'local-cluster',
+    },
+}
 
 // ******
 // POLICY
@@ -147,7 +172,7 @@ const policy1: Policy = {
                             exclude: ['kube-*'],
                             include: ['default'],
                         },
-                        objecttemplates: [
+                        'object-templates': [
                             {
                                 complianceType: 'musthave',
                                 objectDefinition: {
@@ -164,7 +189,6 @@ const policy1: Policy = {
                 },
             },
         ],
-        remediationAction: 'inform',
     },
 }
 
@@ -224,10 +248,17 @@ const policySet1: PolicySet = {
     },
 }
 
+const policySet2: PolicySet = {
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
+    kind: 'PolicySet',
+    metadata: { name: 'policy-set-with-1-placement', namespace: 'test' },
+    spec: { description: '', policies: ['policy-set-with-1-placement-policy'] },
+}
+
 // ******
 // PLACEMENT
 // ******
-const placement: Placement = {
+const placement1: Placement = {
     apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
     kind: 'Placement',
     metadata: {
@@ -261,9 +292,39 @@ const placement: Placement = {
 }
 
 // ******
+// PLACEMENTRULE
+// ******
+
+const placementRule1: PlacementRule = {
+    apiVersion: 'apps.open-cluster-management.io/v1',
+    kind: 'PlacementRule',
+    metadata: { name: 'policy1-placement', namespace: 'test' },
+    spec: {
+        clusterSelector: { matchExpressions: [{ key: 'cloud', operator: 'In', values: ['Amazon'] }] },
+        clusterConditions: [],
+    },
+}
+const placementRule2: PlacementRule = {
+    apiVersion: 'apps.open-cluster-management.io/v1',
+    kind: 'PlacementRule',
+    metadata: { name: 'policy-set-with-1-placement-placement', namespace: 'test' },
+    spec: {
+        clusterSelector: { matchExpressions: [{ key: 'cloud', operator: 'In', values: ['Amazon'] }] },
+        clusterConditions: [],
+    },
+}
+// ******
 // PLACEMENTBINDING
 // ******
-const placementBinding: PlacementBinding = {
+const placementBinding1: PlacementBinding = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'PlacementBinding',
+    metadata: { name: 'policy1-placement', namespace: 'test' },
+    placementRef: { apiGroup: 'apps.open-cluster-management.io', kind: 'PlacementRule', name: 'policy1-placement' },
+    subjects: [{ apiGroup: 'policy.open-cluster-management.io', kind: 'Policy', name: 'policy1' }],
+}
+
+const placementBinding2: PlacementBinding = {
     apiVersion: 'policy.open-cluster-management.io/v1',
     kind: 'PlacementBinding',
     metadata: {
@@ -287,8 +348,22 @@ const placementBinding: PlacementBinding = {
     ],
 }
 
+const placementBinding3: PlacementBinding = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'PlacementBinding',
+    metadata: { name: 'policy-set-with-1-placement-placement', namespace: 'test' },
+    placementRef: {
+        apiGroup: 'apps.open-cluster-management.io',
+        kind: 'PlacementRule',
+        name: 'policy-set-with-1-placement-placement',
+    },
+    subjects: [
+        { apiGroup: 'policy.open-cluster-management.io', kind: 'PolicySet', name: 'policy-set-with-1-placement' },
+    ],
+}
+
 // ******
-// PLACEMENTBINDING
+// PLACEMENTDECISION
 // ******
 const placementDecision: PlacementDecision = {
     apiVersion: 'cluster.open-cluster-management.io/v1beta1',
@@ -329,8 +404,8 @@ const secret: Secret = {
         },
     },
     data: {
-        host: 'https://ansible-tower-web-svc-tower.com',
-        token: 'abcd',
+        host: 'aHR0cHM6Ly9hbnNpYmxlLXRvd2VyLXdlYi1zdmMtdG93ZXIuY29t',
+        token: 'YWJjZA==',
     },
 }
 
@@ -422,28 +497,29 @@ export const mockSubscriptionOperator: SubscriptionOperator = {
 }
 
 export const mockPolicyAutomation: PolicyAutomation = {
-    apiVersion: PolicyAutomationApiVersion,
-    kind: PolicyAutomationKind,
+    kind: 'PolicyAutomation',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
+    metadata: { name: 'policy-set-with-1-placement-policy-policy-automation', namespace: 'test' },
+    spec: {
+        policyRef: 'policy-set-with-1-placement-policy',
+        mode: 'once',
+        automationDef: { name: 'test-job-pre-install', secret: 'ansible-test-secret', type: 'AnsibleJob' },
+    },
+}
+export const mockEditedPolicyAutomation: PolicyAutomation = {
+    kind: 'PolicyAutomation',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
     metadata: {
-        name: 'policy-set-with-1-placement-policy-1-policy-automation',
+        name: 'policy-set-with-1-placement-policy-policy-automation',
         namespace: 'test',
-        creationTimestamp: '2022-09-29-T16:04:47Z',
-        ownerReferences: [
-            {
-                apiVersion: PolicyApiVersion,
-                kind: PolicyKind,
-                name: 'policy-set-with-1-placement-policy-1',
-            },
-        ],
+        annotations: {
+            'policy.open-cluster-management.io/rerun': 'true',
+        },
     },
     spec: {
-        automationDef: {
-            name: 'test-job-pre-install',
-            secret: 'ansible-test-secret',
-            type: 'AnsibleJob',
-        },
-        mode: 'once',
-        policyRef: 'policy-set-with-1-placement-policy-1',
+        policyRef: 'policy-set-with-1-placement-policy',
+        mode: 'disabled',
+        automationDef: { name: 'test-job-post-install', secret: 'ansible-test-secret', type: 'AnsibleJob' },
     },
 }
 
@@ -452,9 +528,11 @@ export const mockPolicy: Policy[] = [rootPolicy, policy0, policy1]
 export const mockPolicyNoStatus: Policy = policyWithoutStatus
 
 export const mockEmptyPolicySet: PolicySet[] = []
-export const mockPolicySets: PolicySet[] = [policySet0, policySet1]
-export const mockPlacements: Placement[] = [placement]
-export const mockPlacementBindings: PlacementBinding[] = [placementBinding]
+export const mockPolicySets: PolicySet[] = [policySet0, policySet1, policySet2]
+export const mockPlacements: Placement[] = [placement1]
+export const mockPlacementRules: PlacementRule[] = [placementRule1, placementRule2]
+export const mockPlacementBindings: PlacementBinding[] = [placementBinding1, placementBinding2, placementBinding3]
 export const mockPlacementDecision: PlacementDecision[] = [placementDecision]
 
 export const mockSecret: Secret = secret
+export const mockManagedClusters: ManagedCluster[] = [mockLocalCluster]
