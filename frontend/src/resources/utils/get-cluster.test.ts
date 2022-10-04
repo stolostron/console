@@ -601,7 +601,6 @@ describe('getDistributionInfo', () => {
             mockClusterDeployment,
             mockClusterCuratorMonitoring
         )
-
         expect(d1?.upgradeInfo.isReadySelectChannels).toBeFalsy()
         expect(d1?.upgradeInfo.isReadyUpdates).toBeFalsy()
         expect(d1?.upgradeInfo.upgradePercentage).toEqual('11%')
