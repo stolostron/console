@@ -12,8 +12,6 @@ import {
     validateBaseDnsName,
     validateImageMirror,
     validateCloudsYaml,
-    validateKubernetesResourceName,
-    validatePolicyName,
 } from './validation'
 
 const t = (key: string) => key
