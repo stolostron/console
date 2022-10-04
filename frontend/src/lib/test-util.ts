@@ -22,10 +22,6 @@ export async function waitForNotText(text: string) {
     await waitFor(() => expect(screen.queryAllByText(text)).toHaveLength(0), options)
 }
 
-export async function waitForNotTextTest(text: string) {
-    await waitFor(() => expect(screen.queryAllByText(text)).toHaveLength(0), options)
-}
-
 export async function waitForInputByText(text: string, index?: number) {
     if (index !== undefined) {
         await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(index), options)
