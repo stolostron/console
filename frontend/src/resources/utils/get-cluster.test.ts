@@ -14,6 +14,11 @@ const mockClusterCurator: ClusterCurator = {
         name: clusterName,
         namespace: clusterName,
     },
+    spec: {
+        upgrade: {
+            desiredUpdate: '1.2.5',
+        },
+    },
 }
 const conditionCuratorJobRunning = {
     reason: 'Job_has_finished',
@@ -36,7 +41,7 @@ const mockClusterCuratorUpdating: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
@@ -48,7 +53,7 @@ const mockClusterCuratorMonitoring: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
@@ -87,7 +92,7 @@ const mockManagedClusterInfoHasAvailableUpdates: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '', //deprecated
+                desiredVersion: '1.2.3', //deprecated
                 upgradeFailed: false,
                 channel: 'stable-1.2',
                 desired: {
@@ -110,7 +115,7 @@ const mockManagedClusterInfoFailedInstall: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '', //deprecated
+                desiredVersion: '1.2.3', //deprecated
                 upgradeFailed: true,
                 channel: 'stable-1.2',
                 desired: {
@@ -133,7 +138,7 @@ const mockManagedClusterInfoUpdating: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '', //deprecated
+                desiredVersion: '1.2.4', //deprecated
                 upgradeFailed: false,
                 channel: 'stable-1.2',
                 desired: {
@@ -156,7 +161,7 @@ const mockManagedClusterInfoFailedUpdating: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '', //deprecated
+                desiredVersion: '1.2.3', //deprecated
                 upgradeFailed: true,
                 channel: 'stable-1.2',
                 desired: {
@@ -596,6 +601,7 @@ describe('getDistributionInfo', () => {
             mockClusterDeployment,
             mockClusterCuratorMonitoring
         )
+
         expect(d1?.upgradeInfo.isReadySelectChannels).toBeFalsy()
         expect(d1?.upgradeInfo.isReadyUpdates).toBeFalsy()
         expect(d1?.upgradeInfo.upgradePercentage).toEqual('11%')
