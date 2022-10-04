@@ -287,11 +287,15 @@ describe('Create Subscription Application page', () => {
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
         await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
-        //
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
         userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
         userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
+        const ansibleSecretName = screen.getByPlaceholderText(/app\.enter\.select\.ansiblesecretname/i)
+
+        userEvent.click(ansibleSecretName)
+        userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
 
         userEvent.click(
             screen.getByRole('radio', {
