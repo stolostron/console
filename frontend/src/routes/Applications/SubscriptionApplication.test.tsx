@@ -28,10 +28,11 @@ import {
     SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { namespacesState, secretsState } from '../../atoms'
+import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
 import { clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../lib/test-util'
-import { nockCreate, nockIgnoreRBAC, nockList } from '../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 
@@ -72,7 +73,7 @@ const mockApplication0: Application = {
                 {
                     key: 'app',
                     operator: 'In',
-                    values: ['application-0-app'],
+                    values: ['application-0'],
                 },
             ],
         },
@@ -163,6 +164,14 @@ const mockChannel1: Channel = {
     spec: {
         type: 'Git',
         pathname: 'https://github.com/fxiang1/app-samples',
+    },
+}
+
+const mockChannelNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'ginvalidcom-ns',
     },
 }
 
@@ -326,6 +335,75 @@ describe('Create Subscription Application page', () => {
             nockCreate(mockPlacementRule, undefined, 201),
         ])
 
+        expect(consoleInfos).hasNoConsoleLogs()
+    })
+
+    test('edit a git subscription application', async () => {
+        const initialNocks = [
+            nockList(mockProject, mockProjects),
+            nockGet(mockApplication0),
+            nockGet(mockChannel),
+            nockGet(mockSubscription),
+            nockGet(mockChannelNamespace),
+        ]
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(namespacesState, mockNamespaces)
+                    snapshot.set(applicationsState, [mockApplication0])
+                    snapshot.set(channelsState, mockHubChannels)
+                }}
+            >
+                <MemoryRouter
+                    initialEntries={[
+                        NavigationPath.editApplicationSubscription
+                            .replace(':namespace', nockApplication.metadata?.namespace as string)
+                            .replace(':name', nockApplication.metadata?.name as string),
+                    ]}
+                >
+                    <Route
+                        path={NavigationPath.editApplicationSubscription}
+                        render={() => <CreateSubscriptionApplicationPage />}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForNocks(initialNocks)
+
+        expect(
+            screen.getByRole('heading', {
+                name: /application-0/i,
+            })
+        ).toBeTruthy()
+
+        // click git card
+        userEvent.click(screen.getByText(/channel\.type\.git/i))
+        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+        userEvent.type(githubURL, gitLink)
+
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path2')
+
+        const patchNocks: Scope[] = [
+            nockPatch(mockSubscription, [
+                { op: 'replace', path: '/spec/placement/placementRef/name', value: null },
+                {
+                    op: 'replace',
+                    path: '/metadata/annotations/apps.open-cluster-management.io~1git-path',
+                    value: 'test-path2',
+                },
+            ]),
+            nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
+        ]
+        //update the resources
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /button\.update/i,
+            })
+        )
+        await waitForNocks(patchNocks)
         expect(consoleInfos).hasNoConsoleLogs()
     })
 })
