@@ -6,7 +6,7 @@ import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { IRequestResult } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
@@ -80,7 +80,8 @@ export function StatusSummaryCount() {
                     {
                         id: 'nodes',
                         count: /* istanbul ignore next */ (cluster?.nodes?.nodeList ?? []).length,
-                        countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
+                        countClick: () =>
+                            cluster ? push(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined,
                         title: t('summary.nodes'),
                         description: (
                             <Trans

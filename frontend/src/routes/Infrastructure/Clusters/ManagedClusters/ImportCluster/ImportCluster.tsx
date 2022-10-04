@@ -419,7 +419,12 @@ export default function ImportClusterPage() {
                                 autoClose: true,
                             })
                             setTimeout(() => {
-                                history.push(generatePath(NavigationPath.clusterDetails, { id: state.clusterName }))
+                                history.push(
+                                    generatePath(NavigationPath.clusterDetails, {
+                                        name: state.clusterName,
+                                        namespace: '~managed-cluster',
+                                    })
+                                )
                             }, 2000)
                         } catch (err) {
                             if (err instanceof Error) {

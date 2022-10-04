@@ -426,7 +426,7 @@ describe('Clusters Page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText(mockManagedCluster0.metadata.name!)
+        await waitForText(mockManagedCluster0.metadata.name!, true)
     })
 
     test('should be able to delete cluster using row action', async () => {
@@ -539,7 +539,7 @@ describe('Clusters Page RBAC', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText(mockManagedCluster0.metadata.name!)
+        await waitForText(mockManagedCluster0.metadata.name!, true)
         await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
     })
@@ -569,7 +569,7 @@ describe('Clusters Page hypershift', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText(mockManagedCluster6.metadata.name!)
+        await waitForText(mockManagedCluster6.metadata.name!, true)
     })
 })
 
@@ -593,7 +593,7 @@ describe('Clusters Page regional hub cluster', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText(mockManagedCluster8.metadata.name!)
+        await waitForText(mockManagedCluster8.metadata.name!, true)
         await waitForText('Hub')
     })
 })

@@ -253,9 +253,15 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 if (status === 'DONE') {
                     const finishMessage = completedMsg ? [completedMsg] : []
                     setCreationStatus({ status, messages: finishMessage })
-                    if (!noRedirect) {
+                    const namespace = cluster?.metadata?.namespace
+                    if (!noRedirect && clusterName && namespace) {
                         setTimeout(() => {
-                            history.push(generatePath(NavigationPath.clusterDetails, { id: clusterName as string }))
+                            history.push(
+                                generatePath(NavigationPath.clusterDetails, {
+                                    name: clusterName,
+                                    namespace,
+                                })
+                            )
                         }, 2000)
                     }
                 }

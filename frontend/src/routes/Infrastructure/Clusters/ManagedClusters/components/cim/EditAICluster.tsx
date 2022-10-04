@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
-import { RouteComponentProps, StaticContext, useHistory } from 'react-router'
+import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
@@ -163,7 +163,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             },
         ]).promise
 
-        history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
+        history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
     }
 
     return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
@@ -177,7 +177,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                         { text: t('Clusters'), to: NavigationPath.clusters },
                         {
                             text: clusterDeployment?.metadata?.name,
-                            to: NavigationPath.clusterDetails.replace(':id', name as string),
+                            to: generatePath(NavigationPath.clusterDetails, { name, namespace }),
                         },
                         {
                             text: t('managed.ai.editCluster.configurationBreadcrumb'),

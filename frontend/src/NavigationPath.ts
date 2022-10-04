@@ -3,6 +3,19 @@
 import { LocationDescriptor } from 'history'
 import { useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
+import { generatePath } from 'react-router'
+import { Cluster } from './resources'
+
+export const getClusterNavPath = (
+    navPath:
+        | NavigationPath.editCluster
+        | NavigationPath.clusterDetails
+        | NavigationPath.clusterOverview
+        | NavigationPath.clusterSettings
+        | NavigationPath.clusterMachinePools
+        | NavigationPath.clusterNodes,
+    cluster: Cluster
+) => generatePath(navPath, { name: cluster.name, namespace: cluster.namespace || '~managed-cluster' })
 
 export enum NavigationPath {
     // Console
@@ -29,11 +42,11 @@ export enum NavigationPath {
     createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
-    clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
-    clusterOverview = '/multicloud/infrastructure/clusters/details/:id/overview',
-    clusterSettings = '/multicloud/infrastructure/clusters/details/:id/settings',
-    clusterMachinePools = '/multicloud/infrastructure/clusters/details/:id/machinepools',
-    clusterNodes = '/multicloud/infrastructure/clusters/details/:id/nodes',
+    clusterDetails = '/multicloud/infrastructure/clusters/details/:namespace/:name',
+    clusterOverview = '/multicloud/infrastructure/clusters/details/:namespace/:name/overview',
+    clusterSettings = '/multicloud/infrastructure/clusters/details/:namespace/:name/settings',
+    clusterMachinePools = '/multicloud/infrastructure/clusters/details/:namespace/:name/machinepools',
+    clusterNodes = '/multicloud/infrastructure/clusters/details/:namespace/:name/nodes',
     importCluster = '/multicloud/infrastructure/clusters/import',
     importCommand = '/multicloud/infrastructure/clusters/import/:clusterName',
 

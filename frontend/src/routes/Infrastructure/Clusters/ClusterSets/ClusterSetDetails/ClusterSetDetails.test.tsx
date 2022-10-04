@@ -971,7 +971,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText('Details')
 
         await clickByText('Cluster list')
-        await waitForText(clusterSetCluster.metadata.name!)
+        await waitForText(clusterSetCluster.metadata.name!, true)
 
         await clickByText('Cluster pools')
     })
