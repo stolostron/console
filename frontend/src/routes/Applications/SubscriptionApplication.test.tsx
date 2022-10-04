@@ -20,6 +20,9 @@ import {
     Project,
     ProjectApiVersion,
     ProjectKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
     Secret,
     SecretApiVersion,
     SecretKind,
@@ -29,7 +32,7 @@ import {
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
-import { clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../lib/test-util'
+import { clickByTestId, typeByTestId, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
@@ -131,7 +134,25 @@ const mockAnsibleSecret: Secret = {
         namespace: mockProject2.metadata.name,
     },
     stringData: {
-        host: 'host',
+        host: 'https://invalid.com',
+        token: 'token',
+    },
+}
+
+const nockAnsibleSecret: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-2',
+        namespace: mockApplication0.metadata.namespace,
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+            'cluster.open-cluster-management.io/credentials': '',
+        },
+    },
+    stringData: {
+        host: 'https://invalid.com',
         token: 'token',
     },
 }
@@ -211,10 +232,18 @@ const mockNamespace0: Namespace = {
     },
 }
 
+const mockNamespace1: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: mockApplication0.metadata.namespace,
+    },
+}
+
 const mockProjects = [mockProject, mockProject2, mockChannelProject]
 
 const mockPlacementRules = [mockPlacementRule]
-const mockNamespaces = [mockNamespace0]
+const mockNamespaces = [mockNamespace0, mockNamespace1]
 const mockHubChannels = [mockChannel1]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
@@ -318,10 +347,51 @@ describe('Create Subscription Application page', () => {
         })
         userEvent.click(dropdownButton)
         userEvent.click(screen.getByText(/add credential/i))
-        const modalCancelButton = screen.getByRole('button', {
-            name: /cancel/i,
-        })
-        userEvent.click(modalCancelButton)
+
+        // fill modal form
+        userEvent.type(
+            screen.getByRole('textbox', {
+                name: /credential name/i,
+            }),
+            nockAnsibleSecret.metadata.name!
+        )
+
+        userEvent.click(screen.getByPlaceholderText(/select a namespace for the credential/i))
+        userEvent.click(
+            screen.getByRole('option', {
+                name: /namespace-0/i,
+            })
+        )
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /next/i,
+            })
+        )
+
+        userEvent.type(
+            screen.getByRole('textbox', {
+                name: /ansible tower host/i,
+            }),
+            'https://invalid.com'
+        )
+
+        userEvent.type(screen.getByPlaceholderText(/enter the ansible tower token/i), 'token')
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /next/i,
+            })
+        )
+
+        // click add
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /add/i,
+            })
+        )
+        await waitForNock(nockCreate(nockAnsibleSecret))
 
         await clickByTestId('create-button-portal-id-btn')
         await waitForNocks([
