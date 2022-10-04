@@ -202,6 +202,29 @@ export function nockCreate(
     return scope
 }
 
+export function nockPatch(
+    resource: IResource,
+    data: unknown[] | unknown,
+    response?: IResource,
+    statusCode = 204,
+    dryRun?: boolean
+) {
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+        .options(`${getResourceNameApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`)
+        .optionally()
+        .reply(200, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .patch(`${getResourceNameApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`, (body) => isEqual(body, data))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
 export function nockIgnoreRBAC() {
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .persist()
@@ -300,23 +323,6 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
     return nock('https://api.github.com')
         .get('/repos' + url.pathname + '/git/trees/01?recursive=true')
         .reply(statusCode, response)
-}
-
-export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
-        .optionally()
-        .reply(200, undefined, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
-        .patch(getResourceNameApiPath(resource), (body) => isEqual(body, data))
-        .reply(statusCode, response ?? resource, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {

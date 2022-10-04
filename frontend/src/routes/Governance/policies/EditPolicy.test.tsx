@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, namespacesState } from '../../../atoms'
-import { nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByText, waitForNotText, waitForText } from '../../../lib/test-util'
+import { nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
+import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { mockNamespaces, mockPolicy } from '../governance.sharedMocks'
 import { EditPolicy } from './EditPolicy'
@@ -58,13 +58,13 @@ describe('Edit Policy Page', () => {
 
         // step 5 -- Review and Submit
 
-        // const mockPolicyUpdate = [
-        //     nockPatch(mockPolicy[0], { op: 'remove', path: '/spec/policy-templates/0' }, undefined, 204, true),
-        //     nockPatch(mockPolicy[0], { op: 'remove', path: '/spec/policy-templates/0' }),
-        // ]
-        // // const mockPolicyUpdate = nockPatch(mockPolicy[0], policyPatch)
-        // screen.getByRole('button', { name: 'Submit' }).click()
-        // await waitForNocks(mockPolicyUpdate)
+        const mockPolicyUpdate = [
+            nockPatch(mockPolicy[0], [{ op: 'remove', path: '/spec/policy-templates/0' }], undefined, 204, true),
+            nockPatch(mockPolicy[0], [{ op: 'remove', path: '/spec/policy-templates/0' }]),
+        ]
+        // const mockPolicyUpdate = nockPatch(mockPolicy[0], policyPatch)
+        screen.getByRole('button', { name: 'Submit' }).click()
+        await waitForNocks(mockPolicyUpdate)
     })
 
     test('can cancel edit policy', async () => {

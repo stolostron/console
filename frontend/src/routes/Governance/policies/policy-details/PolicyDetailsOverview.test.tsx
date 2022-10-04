@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementDecisionsState, placementsState, policySetsState } from '../../../../atoms'
@@ -34,7 +34,7 @@ describe('Policy Details Results', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        screen.logTestingPlaygroundURL()
+
         // wait page load
         await waitForText('policy-set-with-1-placement-policy')
 

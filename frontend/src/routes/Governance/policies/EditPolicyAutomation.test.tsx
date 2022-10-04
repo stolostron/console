@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policyAutomationState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockAnsibleTower, nockIgnoreRBAC /*nockPatch*/ } from '../../../lib/nock-util'
+import { nockAnsibleTower, nockIgnoreRBAC /*nockPatch*/, nockPatch } from '../../../lib/nock-util'
 // import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicyAutomation } from './EditPolicyAutomation'
@@ -16,6 +16,7 @@ import {
     mockTemplateList,
 } from '../governance.sharedMocks'
 import { SubscriptionOperator } from '../../../resources'
+import { waitForNocks } from '../../../lib/test-util'
 
 function EditPolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[] }) {
     const actualPath = NavigationPath.editPolicyAutomation
@@ -38,15 +39,6 @@ function EditPolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[
         </RecoilRoot>
     )
 }
-
-// const policyAutomationPatch = {
-//     spec: {
-//         automationDef: {
-//             name: 'test-job-post-install',
-//         },
-//         mode: 'disabled',
-//     },
-// }
 
 describe('Edit Policy Automation', () => {
     beforeEach(async () => {
@@ -71,9 +63,24 @@ describe('Edit Policy Automation', () => {
 
         //  review
 
-        // const mockPolicyAutomationUpdate = nockPatch(mockPolicyAutomation, policyAutomationPatch)
-        // screen.getByRole('button', { name: 'Submit' }).click()
-        // await waitForNocks([mockPolicyAutomationUpdate])
+        const mockPolicyAutomationUpdate = [
+            nockPatch(
+                mockPolicyAutomation,
+                [
+                    { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
+                    { op: 'replace', path: '/spec/mode', value: 'disabled' },
+                ],
+                undefined,
+                204,
+                true
+            ), //dry run
+            nockPatch(mockPolicyAutomation, [
+                { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
+                { op: 'replace', path: '/spec/mode', value: 'disabled' },
+            ]),
+        ]
+        screen.getByRole('button', { name: 'Submit' }).click()
+        await waitForNocks(mockPolicyAutomationUpdate)
     })
 
     test('can cancel editing policy automation', async () => {

@@ -2,7 +2,13 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { policiesState, namespacesState, managedClustersState } from '../../../atoms'
+import {
+    policiesState,
+    namespacesState,
+    managedClustersState,
+    placementsState,
+    placementRulesState,
+} from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -12,6 +18,7 @@ import {
     mockNamespaces,
     mockPlacementBindings,
     mockPlacementRules,
+    mockPlacements,
     mockPolicy,
 } from '../governance.sharedMocks'
 import userEvent from '@testing-library/user-event'
@@ -23,6 +30,8 @@ function TestCreatePolicyPage() {
                 snapshot.set(policiesState, mockPolicy)
                 snapshot.set(namespacesState, mockNamespaces)
                 snapshot.set(managedClustersState, mockManagedClusters)
+                snapshot.set(placementsState, mockPlacements)
+                snapshot.set(placementRulesState, mockPlacementRules)
             }}
         >
             <MemoryRouter initialEntries={[`${NavigationPath.createPolicy}`]}>
@@ -66,6 +75,11 @@ describe('Create Policy Page', () => {
         // step 3 -- placement
 
         await waitForText('How do you want to select clusters?')
+        // check existing placements
+        screen.getByRole('button', { name: 'Existing placement' }).click()
+        screen.getByRole('button', { name: /options menu/i }).click()
+
+        // new placement
         screen.getByRole('button', { name: 'New placement' }).click()
         screen.getByRole('button', { name: /action/i }).click()
         screen.getByText(/select the label/i).click()
