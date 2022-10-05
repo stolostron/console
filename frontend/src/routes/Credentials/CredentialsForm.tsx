@@ -36,7 +36,6 @@ import {
     validateNoProxy,
     validatePrivateSshKey,
     validatePublicSshKey,
-    validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 import {
