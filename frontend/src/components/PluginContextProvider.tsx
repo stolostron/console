@@ -3,7 +3,7 @@ import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
-import { IsAcmExtensions } from '../plugin-extensions/handler'
+import { useAcmExtension } from '../plugin-extensions/handler'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -23,7 +23,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     const isSubmarinerAvailable = isOverviewAvailable
 
     // ACM Custom extensions
-    const acmExtensions = IsAcmExtensions()
+    const acmExtensions = useAcmExtension()
 
     return (
         <PluginContext.Provider
