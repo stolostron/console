@@ -69,17 +69,17 @@ describe('Create Policy Page', () => {
 
         // step 4 -- Review
         const policySetNock = [
-            nockCreate(mockPolicySets[2], undefined, 201, true), // DRY RUN
-            nockCreate(mockPolicySets[2]), // DRY RUN
+            nockCreate(mockPolicySets[2], undefined, 201, { dryRun: 'All' }), // DRY RUN
+            nockCreate(mockPolicySets[2]),
         ]
 
         const placementRuleNock = [
-            nockCreate(mockPlacementRules[1], undefined, 201, true),
+            nockCreate(mockPlacementRules[1], undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPlacementRules[1]),
         ]
 
         const placementBindingNock = [
-            nockCreate(mockPlacementBindings[2], undefined, 201, true),
+            nockCreate(mockPlacementBindings[2], undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPlacementBindings[2]),
         ]
 

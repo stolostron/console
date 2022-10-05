@@ -63,7 +63,7 @@ describe('Create Policy Automation Wizard', () => {
 
         // review
         const policyAutomationNocks = [
-            nockCreate(mockPolicyAutomation, undefined, 201, true), //dry run
+            nockCreate(mockPolicyAutomation, undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPolicyAutomation),
         ]
         screen.getByRole('button', { name: 'Submit' }).click()

@@ -72,7 +72,7 @@ describe('Edit Policy Automation', () => {
                 ],
                 undefined,
                 204,
-                true
+                { dryRun: 'All' }
             ), //dry run
             nockPatch(mockPolicyAutomation, [
                 { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },

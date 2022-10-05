@@ -7,7 +7,6 @@ import validator from 'validator'
 import { IResource } from '../resources'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
-// const lowercaseAlphabeticCharacters = 'abcdefghijklmnopqrstuvwxyz'
 
 export function validateKubernetesDnsName(value: string, t: TFunction) {
     if (value) {
@@ -203,13 +202,13 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
     return undefined
 }
 
-export function validateWebURL(url: string, _item: unknown, t?: TFunction) {
-    t = t ? t : (value) => value
+export function validateWebURL(url: string, t: TFunction, supportedProtocols?: string[]) {
+    const protocols = supportedProtocols ? supportedProtocols : ['http', 'https']
     if (
         validator.isURL(url, {
             require_protocol: true,
             require_valid_protocol: true,
-            protocols: ['http', 'https'],
+            protocols: protocols,
             require_host: true,
         })
     )
@@ -291,20 +290,6 @@ export function validateNoProxy(value: string, t: TFunction) {
     return undefined
 }
 
-// export function validateKubernetesDnsName(value: string, t: TFunction) {
-//     if (value) {
-//         if (value.length > 63) return `${t('validate.kubernetesDnsName.length')}`
-//         for (const char of value) {
-//             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-//                 return `${t('validate.kubernetesDnsName.char')}`
-//         }
-//         if (!lowercaseAlphaNumericCharacters.includes(value[0])) return `${t('validate.kubernetesDnsName.startchar')}`
-//         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-//             return `${t('validate.kubernetesDnsName.endchar')}`
-//     }
-//     return undefined
-// }
-
 export function validateKubernetesResourceName(value: string, _item: unknown, t?: TFunction) {
     t = t ? t : (value) => value
     if (!value) return undefined
@@ -319,36 +304,6 @@ export function validateKubernetesResourceName(value: string, _item: unknown, t?
         return `${t('This value must end with an alphanumeric character')}`
     return undefined
 }
-
-// export function validateKubernetesResourceNameRFC1123(value: string, _item: unknown, t?: TFunction) {
-//     t = t ? t : (value) => value
-//     if (!value) return undefined
-//     if (value.length > 63) return `${t('This value can contain at most 63 characters')}`
-//     for (const char of value) {
-//         if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-//             return `${t("This value can only contain lowercase alphanumeric characters or '-'")}`
-//     }
-//     if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-//         return `${t('This value must start with an alphanumeric character')}`
-//     if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-//         return `${t('This value must end with an alphanumeric character')}`
-//     return undefined
-// }
-
-// export function validateKubernetesResourceNameRFC1135(value: string, _item: unknown, t?: TFunction) {
-//     t = t ? t : (value) => value
-//     if (!value) return undefined
-//     if (value.length > 63) return `${t('This value can contain at most 63 characters')}`
-//     for (const char of value) {
-//         if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-//             return `${t("This value can only contain lowercase alphanumeric characters or '-'")}`
-//     }
-//     if (!lowercaseAlphabeticCharacters.includes(value[0]))
-//         return `${t('This value must start with an alphanumeric character')}`
-//     if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-//         return `${t('This value must end with an alphanumeric character')}`
-//     return undefined
-// }
 
 export function validatePolicyName(value: string, resource: unknown, t?: TFunction) {
     t = t ? t : (value) => value

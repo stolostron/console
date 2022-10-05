@@ -8,12 +8,16 @@ import {
     managedClustersState,
     placementsState,
     placementRulesState,
+    managedClusterSetBindingsState,
+    managedClusterSetsState,
 } from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicy } from './CreatePolicy'
 import {
+    mockClusterSet,
+    mockClusterSetBinding,
     mockManagedClusters,
     mockNamespaces,
     mockPlacementBindings,
@@ -32,6 +36,8 @@ function TestCreatePolicyPage() {
                 snapshot.set(managedClustersState, mockManagedClusters)
                 snapshot.set(placementsState, mockPlacements)
                 snapshot.set(placementRulesState, mockPlacementRules)
+                snapshot.set(managedClusterSetsState, [mockClusterSet])
+                snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
             }}
         >
             <MemoryRouter initialEntries={[`${NavigationPath.createPolicy}`]}>
@@ -97,17 +103,17 @@ describe('Create Policy Page', () => {
         expect(screen.getByRole('heading', { name: /details/i })).toBeInTheDocument()
 
         const policyNock = [
-            nockCreate(mockPolicy[2], undefined, 201, true), // DRY RUN
+            nockCreate(mockPolicy[2], undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPolicy[2]),
         ]
 
         const placementRuleNock = [
-            nockCreate(mockPlacementRules[0], undefined, 201, true), // DRY RUN
+            nockCreate(mockPlacementRules[0], undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPlacementRules[0]),
         ]
 
         const placementBindingNock = [
-            nockCreate(mockPlacementBindings[0], undefined, 201, true), // DRY RUN
+            nockCreate(mockPlacementBindings[0], undefined, 201, { dryRun: 'All' }), // DRY RUN
             nockCreate(mockPlacementBindings[0]),
         ]
 

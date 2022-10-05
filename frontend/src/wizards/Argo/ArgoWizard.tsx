@@ -35,6 +35,7 @@ import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '.
 import { validateKubernetesResourceName, validateWebURL } from '../../lib/validation'
 import { Placement } from '../Placement/Placement'
 import HelmIcon from './logos/HelmIcon.svg'
+import { useTranslation } from '../../lib/acm-i18next'
 
 interface Channel {
     metadata?: {
@@ -129,6 +130,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         return self.indexOf(value) === index
     }
     const { resources } = props
+    const { t } = useTranslation()
 
     const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
 
@@ -376,7 +378,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                             )
                                     )
                                 }}
-                                validation={validateWebURL}
+                                validation={(value: string) => validateWebURL(value, t)}
                                 required
                                 isCreatable
                                 onCreate={(value: string) =>
@@ -397,7 +399,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                         return [...channels]
                                     })
                                 }
-                                // TODO valid URL
                             />
                             <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
                                 <WizAsyncSelect
@@ -433,6 +434,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                                 )
                                         )
                                     }}
+                                    validation={(value: string) => validateWebURL(value, t)}
                                 />
                                 <WizAsyncSelect
                                     path="spec.template.spec.source.path"
@@ -472,7 +474,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                         return [...channels]
                                     })
                                 }
-                                // TODO valid URL
+                                validation={(value: string) => validateWebURL(value, t)}
                             />
                             <WizTextInput
                                 path="spec.template.spec.source.chart"
@@ -888,8 +890,7 @@ function ArgoWizardPlacementSection(props: {
                                 text="Existing placement"
                                 isSelected={!hasPlacement}
                                 onClick={() => {
-                                    let newResources = [...resources]
-                                    newResources = resources.filter((resource) => resource.kind !== PlacementKind)
+                                    const newResources = resources.filter((resource) => resource.kind !== PlacementKind)
                                     update(newResources)
                                 }}
                             />

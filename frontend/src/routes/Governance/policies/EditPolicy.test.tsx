@@ -59,7 +59,9 @@ describe('Edit Policy Page', () => {
         // step 5 -- Review and Submit
 
         const mockPolicyUpdate = [
-            nockPatch(mockPolicy[0], [{ op: 'remove', path: '/spec/policy-templates/0' }], undefined, 204, true),
+            nockPatch(mockPolicy[0], [{ op: 'remove', path: '/spec/policy-templates/0' }], undefined, 204, {
+                dryRun: 'All',
+            }),
             nockPatch(mockPolicy[0], [{ op: 'remove', path: '/spec/policy-templates/0' }]),
         ]
         // const mockPolicyUpdate = nockPatch(mockPolicy[0], policyPatch)

@@ -301,8 +301,7 @@ export function PlacementSelector(props: {
                         isSelected={placementCount + placementRuleCount === 1}
                         onClick={() => {
                             const bindingSubject = resources.find((resource) => resource.kind === bindingSubjectKind)
-                            let newResources = [...resources]
-                            newResources = resources
+                            const newResources = resources
                                 .filter((resource) => resource.kind !== PlacementKind)
                                 .filter((resource) => resource.kind !== PlacementRuleKind)
                                 .filter((resource) => resource.kind !== PlacementBindingKind)
@@ -367,8 +366,7 @@ export function PlacementSelector(props: {
                         isSelected={placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 1}
                         onClick={() => {
                             const bindingSubject = resources.find((resource) => resource.kind === bindingSubjectKind)
-                            let newResources = [...resources]
-                            newResources = resources
+                            const newResources = resources
                                 .filter((resource) => resource.kind !== PlacementKind)
                                 .filter((resource) => resource.kind !== PlacementRuleKind)
                                 .filter((resource) => resource.kind !== PlacementBindingKind)
@@ -409,8 +407,7 @@ export function PlacementSelector(props: {
                             text="No placement"
                             isSelected={placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 0}
                             onClick={() => {
-                                let newResources = [...resources]
-                                newResources = resources
+                                const newResources = resources
                                     .filter((resource) => resource.kind !== PlacementKind)
                                     .filter((resource) => resource.kind !== PlacementRuleKind)
                                     .filter((resource) => resource.kind !== PlacementBindingKind)

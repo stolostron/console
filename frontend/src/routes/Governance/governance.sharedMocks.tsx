@@ -27,6 +27,12 @@ import {
     NamespaceKind,
     Namespace,
     ManagedCluster,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetKind,
+    ManagedClusterSetBindingApiVersion,
+    ManagedClusterSetBinding,
+    ManagedClusterSetBindingKind,
 } from '../../resources'
 import { Provider } from '../../ui-components/AcmProvider'
 
@@ -52,6 +58,30 @@ export const mockLocalCluster: ManagedCluster = {
     },
 }
 
+export const mockClusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'cluster-set-01',
+        namespace: 'argo-server-1',
+    },
+    spec: {
+        clusterSet: 'cluster-set-01',
+    },
+}
+
+export const mockClusterSetBinding: ManagedClusterSetBinding = {
+    apiVersion: ManagedClusterSetBindingApiVersion,
+    kind: ManagedClusterSetBindingKind,
+    metadata: {
+        name: 'cluster-set-binding-01',
+        namespace: 'argo-server-1',
+    },
+    spec: {
+        clusterSet: 'cluster-set-01',
+    },
+}
+
 // ******
 // POLICY
 // ******
@@ -62,6 +92,7 @@ const rootPolicy: Policy = {
     metadata: {
         name: 'policy-set-with-1-placement-policy',
         namespace: 'test',
+        uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
     },
     spec: {
         disabled: false,

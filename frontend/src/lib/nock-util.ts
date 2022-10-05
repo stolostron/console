@@ -180,14 +180,33 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
+/*
+    params - map with key/value pairs i.e.
+    { param1: 'val1', param2: 'val2' } = ?param1=val1&param2=val2
+*/
+
+function getNockParams(params: any) {
+    let paramString = ''
+    if (params) {
+        for (const [key, value] of Object.entries(params)) {
+            if (paramString === '') {
+                paramString = `?${key}=${value}`
+            } else {
+                paramString = `${paramString}&${key}=${value}`
+            }
+        }
+    }
+    return paramString
+}
+
 export function nockCreate(
     resource: IResource | ClusterRoleBinding,
     response?: IResource,
     statusCode = 201,
-    dryRun?: boolean
+    params?: any
 ) {
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(`${getResourceApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`, (body) => {
+        .post(`${getResourceApiPath(resource)}${getNockParams(params)}`, (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
             //     console.log(resource)
@@ -207,17 +226,17 @@ export function nockPatch(
     data: unknown[] | unknown,
     response?: IResource,
     statusCode = 204,
-    dryRun?: boolean
+    params?: any
 ) {
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(`${getResourceNameApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`)
+        .options(`${getResourceNameApiPath(resource)}${getNockParams(params)}`)
         .optionally()
         .reply(200, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(`${getResourceNameApiPath(resource)}${dryRun ? '?dryRun=All' : ''}`, (body) => isEqual(body, data))
+        .patch(`${getResourceNameApiPath(resource)}${getNockParams(params)}`, (body) => isEqual(body, data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
