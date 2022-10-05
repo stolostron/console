@@ -398,16 +398,6 @@ export function CreateSubscriptionApplication(
             case 'connection':
                 setConnectionControl(control)
                 break
-            case 'infrastructure':
-                control?.available?.forEach((provider: any) => {
-                    const providerData: any = control?.availableMap[provider]
-                    providerData?.change?.insertControlData?.forEach((ctrl: any) => {
-                        if (ctrl.id === 'connection') {
-                            setAvailableConnections(ctrl, secrets)
-                        }
-                    })
-                })
-                break
         }
     }
 

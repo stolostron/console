@@ -34,12 +34,6 @@ const prePostTasks = [
         editing: { collapsed: true, editMode: true }, // if editing existing app, collapse this field initially
     },
     {
-        id: 'infrastructure',
-        name: 'Infrastructure',
-        active: 'ANS',
-        type: 'reviewinfo',
-    },
-    {
         name: 'creation.app.ansible.credential.name',
         tooltip: 'tooltip.creation.app.ansibleSecretName',
         id: 'connection',
