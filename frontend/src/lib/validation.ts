@@ -202,7 +202,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
     return undefined
 }
 
-export function validateWebURL(url: string, t: TFunction, supportedProtocols?: string[]) {
+export function validateAnsibleHost(url: string, t: TFunction, supportedProtocols?: string[]) {
     const protocols = supportedProtocols ? supportedProtocols : ['http', 'https']
     if (
         validator.isURL(url, {
@@ -213,8 +213,21 @@ export function validateWebURL(url: string, t: TFunction, supportedProtocols?: s
         })
     )
         return undefined
-
     return t('validate.ansible.url.not.valid')
+}
+
+export function validateWebURL(url: string, _item: unknown, t?: TFunction) {
+    t = t ? t : (value) => value
+    if (
+        validator.isURL(url, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['http', 'https'],
+            require_host: true,
+        })
+    )
+        return undefined
+    return `${t('The URL is not valid.')}`
 }
 
 export function validateImageContentSources(value: string, t: TFunction) {
