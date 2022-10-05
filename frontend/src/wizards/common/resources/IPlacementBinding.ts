@@ -13,9 +13,10 @@ No ManagedCluster will be selected if no ManagedClusterSet is bound to the place
 A slice of PlacementDecisions with label cluster.open-cluster-management.io/placement={placement name} will be created to represent the ManagedClusters selected by this placement. 
 If a ManagedCluster is selected and added into the PlacementDecisions, other components may apply workload on it; once it is removed from the PlacementDecisions, the workload applied on this ManagedCluster should be evicted accordingly.
 */
-export type IPlacementBinding = IResource & {
-    spec?: {}
-}
+export type IPlacementBinding = IResource
+// & {
+//     spec?: {}
+// }
 
 export interface IPlacementSubject {
     name?: string
