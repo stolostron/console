@@ -286,7 +286,6 @@ describe('CreateClusterPool AWS', () => {
         // click create button
         await clickByText('Create')
 
-        expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating ClusterPool ...')
 
         // make sure creating

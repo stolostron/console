@@ -4,6 +4,17 @@ export declare global {
     interface Window {
         acmConsolePluginProxyPath: string
         getEditorValue: any
-        objectSnapshot: any
+        propsSnapshot: any
+        recoilSnapshot: any
+        missingNock:
+            | {
+                  [index: string]: {
+                      method?: string
+                      nockedBody?: any
+                      requestedBody?: any
+                      options?: any
+                  }
+              }
+            | undefined
     }
 }

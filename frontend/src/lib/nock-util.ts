@@ -180,14 +180,22 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
+function areBodiesEqual(uri: string, body: any, resource: IResource | ClusterRoleBinding | unknown) {
+    if (!isEqual(body, resource)) {
+        if (!window.missingNock) {
+            window.missingNock = {}
+        }
+        window.missingNock[uri] = { requestedBody: body, nockedBody: resource }
+        return false
+    }
+    return true
+}
+
 export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
+    const uri = getResourceApiPath(resource)
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), (body) => {
-            // if (!isEqual(body, resource)) {
-            //     console.log(body)
-            //     console.log(resource)
-            // }
-            return isEqual(body, resource)
+        .post(uri, (body) => {
+            return areBodiesEqual(uri, body, resource)
         })
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
@@ -263,7 +271,7 @@ export function nockAnsibleTower(
     statusCode = 200
 ) {
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post('/ansibletower', (body) => isEqual(body, data))
+        .post('/ansibletower', (body) => areBodiesEqual('/ansibletower', body, data))
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -298,15 +306,16 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
+    const uri = getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(uri)
         .optionally()
         .reply(200, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(getResourceNameApiPath(resource), (body) => isEqual(body, data))
+        .patch(getResourceNameApiPath(resource), (body) => areBodiesEqual(uri, body, data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
@@ -315,15 +324,16 @@ export function nockPatch(resource: IResource, data: unknown[] | unknown, respon
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
+    const uri = getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(uri)
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
+        .put(getResourceNameApiPath(resource), (body) => areBodiesEqual(uri, body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',

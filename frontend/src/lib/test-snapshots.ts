@@ -2,15 +2,16 @@
 import React from 'react'
 
 if (process.env.NODE_ENV !== 'production') {
-    window.objectSnapshot = (props: any) => {
+    const capitalize = (name: string) => {
+        return name.charAt(0).toUpperCase() + name.slice(1)
+    }
+
+    const getSnapshot = (props: any, max: number) => {
         interface IProto {
             name?: string
             displayName?: string
         }
         const funcSet = new Set<string>()
-        const capitalize = (name: string) => {
-            return name.charAt(0).toUpperCase() + name.slice(1)
-        }
         const getReplacements = () => {
             const seen = new WeakSet()
             return (key: any, value: {} | null | undefined) => {
@@ -20,8 +21,8 @@ if (process.env.NODE_ENV !== 'production') {
                         case Array.isArray(value):
                             {
                                 const array = value as Array<any>
-                                if (array.length > 10) {
-                                    return array.slice(0, 10)
+                                if (array.length > max) {
+                                    return array.slice(0, max)
                                 }
                             }
                             break
@@ -56,12 +57,38 @@ if (process.env.NODE_ENV !== 'production') {
             .replace(/"__COMPONENT__(.*)"/g, '</*$1*/></>')
 
         const mockFunctions: string[] = []
+        const actualCallTimes: string[] = []
         const expectCallTimes: string[] = []
+
         Array.from(funcSet).forEach((name) => {
             mockFunctions.push(`const mock${name} = jest.fn()`)
-            expectCallTimes.push(`    expect(mock${name}).toHaveBeenCalledTimes(0)`)
+            actualCallTimes.push(`    console.log(mockmock${name}.mock.calls.length)`)
+            expectCallTimes.push(`//    expect(mock${name}).toHaveBeenCalledTimes(0)`)
         })
+        return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
+    }
 
-        console.log(`${mockFunctions.join('\n')}\n\n${expectCallTimes.join('\n')}\n\n  const props = ${snapshot}`)
+    window.propsSnapshot = (props: any, className?: string, max?: number) => {
+        const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, max || 10)
+        const snippet = `${mockFunctions.join('\n')}\n\n${actualCallTimes.join('\n')}\n\n${expectCallTimes.join(
+            '\n'
+        )}\n\n  const props = ${snapshot}`
+
+        const snip: { [index: string]: string } = {}
+        const key = className ? `${className}Props` : 'props'
+        snip[key] = snippet
+        console.log(snip)
+    }
+
+    window.recoilSnapshot = (recoil: any, stateName?: string, max?: number) => {
+        const { snapshot } = getSnapshot(recoil, max || 10)
+        const snippet = `\n\n    snapshot.set(${stateName}, mockRecoil${capitalize(
+            stateName || ''
+        )})\n\n    const mockRecoil${capitalize(stateName || '')} = ${snapshot}`
+
+        const snip: { [index: string]: string } = {}
+        const key = stateName ? `${stateName}State` : 'state'
+        snip[key] = snippet
+        console.log(snip)
     }
 }

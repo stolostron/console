@@ -660,7 +660,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -729,7 +728,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -863,7 +861,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
