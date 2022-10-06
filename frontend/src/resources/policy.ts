@@ -22,7 +22,7 @@ export interface Policy {
     spec: {
         disabled: boolean
         'policy-templates'?: PolicyTemplate[]
-        remediationAction: string
+        remediationAction?: string
     }
     status?: {
         compliant?: 'Compliant' | 'NonCompliant'
@@ -44,7 +44,7 @@ export interface PolicyTemplate {
                 matchLabels?: Record<string, string>
                 matchExpressions?: MatchExpressions[]
             }
-            objecttemplates?: {
+            'object-templates'?: {
                 complianceType: string
                 objectDefinition: {
                     apiVersion: string

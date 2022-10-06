@@ -65,8 +65,8 @@ import {
     WizSingleSelect,
     WizTextArea,
     WizTextInput,
+    useSetHasValue,
 } from '@patternfly-labs/react-form-wizard'
-import { useSetHasValue } from '@patternfly-labs/react-form-wizard/lib/src/contexts/HasValueProvider'
 import { useRecoilValue } from 'recoil'
 import {
     ansibleCredentialsValue,

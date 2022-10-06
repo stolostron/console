@@ -4,8 +4,10 @@ import YAML from 'yaml'
 
 import { TFunction } from 'i18next'
 import validator from 'validator'
+import { IResource } from '../resources'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
+
 export function validateKubernetesDnsName(value: string, t: TFunction) {
     if (value) {
         if (value.length > 63) return `${t('validate.kubernetesDnsName.length')}`
@@ -200,7 +202,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
     return undefined
 }
 
-export function validateWebURL(url: string, t: TFunction, supportedProtocols?: string[]) {
+export function validateAnsibleHost(url: string, t: TFunction, supportedProtocols?: string[]) {
     const protocols = supportedProtocols ? supportedProtocols : ['http', 'https']
     if (
         validator.isURL(url, {
@@ -211,8 +213,21 @@ export function validateWebURL(url: string, t: TFunction, supportedProtocols?: s
         })
     )
         return undefined
-
     return t('validate.ansible.url.not.valid')
+}
+
+export function validateWebURL(url: string, _item: unknown, t?: TFunction) {
+    t = t ? t : (value) => value
+    if (
+        validator.isURL(url, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['http', 'https'],
+            require_host: true,
+        })
+    )
+        return undefined
+    return `${t('The URL is not valid.')}`
 }
 
 export function validateImageContentSources(value: string, t: TFunction) {
@@ -285,5 +300,35 @@ export function validateNoProxy(value: string, t: TFunction) {
 
         return t('validate.ansible.url.not.valid')
     }
+    return undefined
+}
+
+export function validateKubernetesResourceName(value: string, _item: unknown, t?: TFunction) {
+    t = t ? t : (value) => value
+    if (!value) return undefined
+    if (value.length > 253) return `${t('This value can contain at most 253 characters')}`
+    for (const char of value) {
+        if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-' && char !== '.')
+            return `${t("This value can only contain lowercase alphanumeric characters or '-' or '.'")}`
+    }
+    if (!lowercaseAlphaNumericCharacters.includes(value[0]))
+        return `${t('This value must start with an alphanumeric character')}`
+    if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
+        return `${t('This value must end with an alphanumeric character')}`
+    return undefined
+}
+
+export function validatePolicyName(value: string, resource: unknown, t?: TFunction) {
+    t = t ? t : (value) => value
+    const error = validateKubernetesResourceName(value, t)
+    if (error) return error
+    const policy = resource as IResource
+    const namespace = policy.metadata?.namespace ?? ''
+    const combinedNameLength = value.length + namespace.length + 1
+
+    if (combinedNameLength > 63)
+        return t(
+            'The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters'
+        )
     return undefined
 }
