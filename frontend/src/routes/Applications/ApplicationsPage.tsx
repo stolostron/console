@@ -21,19 +21,23 @@ export default function ApplicationsPage() {
     const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
 
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
-    const { data: dataOCPResources, loading: loadingOCPResources, startPolling: startPollingOCPResources } = useQuery(queryOCPAppResources)
+    const {
+        data: dataOCPResources,
+        loading: loadingOCPResources,
+        startPolling: startPollingOCPResources,
+    } = useQuery(queryOCPAppResources)
     const [timedOut, setTimedOut] = useState<boolean>()
     const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)
     const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
 
     useEffect(() => {
-        if (applicationsMatch.isExact) { // No need to poll for Advanced configuration page
+        if (applicationsMatch.isExact) {
+            // No need to poll for Advanced configuration page
             startPolling()
             startPollingOCPResources()
         }
     }, [applicationsMatch, startPolling, startPollingOCPResources])
 
-    
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredApplications(remoteArgoApps)
@@ -41,17 +45,17 @@ export default function ApplicationsPage() {
         setDiscoveredOCPAppResources(ocpAppResources)
     }, [data, dataOCPResources, setDiscoveredApplications, setDiscoveredOCPAppResources])
 
-        // failsafe in case search api is sleeping
-        useEffect(() => {
-            const handle = setTimeout(() => {
-                setTimedOut(true)
-            }, 5000)
-    
-            return () => {
-                clearInterval(handle)
-            }
-        }, [])
-   
+    // failsafe in case search api is sleeping
+    useEffect(() => {
+        const handle = setTimeout(() => {
+            setTimedOut(true)
+        }, 5000)
+
+        return () => {
+            clearInterval(handle)
+        }
+    }, [])
+
     if ((loading || loadingOCPResources) && !timedOut) {
         return <LoadingPage />
     }
@@ -67,9 +71,7 @@ export default function ApplicationsPage() {
                             <AcmSecondaryNavItem isActive={applicationsMatch.isExact}>
                                 <Link to={NavigationPath.applications}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={!!advancedMatch?.isExact}
-                            >
+                            <AcmSecondaryNavItem isActive={!!advancedMatch?.isExact}>
                                 <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
