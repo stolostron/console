@@ -19,8 +19,8 @@ export type ClusterTemplate = K8sResourceCommon & {
       version: string;
       repository: string;
     };
-    clusterSetup: {
-      pipeline: {
+    clusterSetup?: {
+      pipeline?: {
         name: string;
         namespace: string;
       };
