@@ -42,3 +42,13 @@ export const namespaceGVK: K8sGroupVersionKind = {
   kind: 'Namespace',
   version: 'v1',
 };
+
+export const secretGVK: K8sGroupVersionKind = {
+  version: 'v1',
+  kind: 'Secret',
+};
+
+export const configMapGVK: K8sGroupVersionKind = {
+  version: 'v1',
+  kind: 'ConfigMap',
+};
