@@ -15,6 +15,8 @@ import {
   Truncate,
   Text,
   KebabToggle,
+  Page,
+  Card,
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import {
@@ -31,7 +33,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next';
 import { helmRepoGVK } from '../constants';
-import { ClusterTemplate, HelmChartRepository } from '../types';
+import { ClusterTemplate, HelmChartRepository, RowProps, TableColumn } from '../types';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
 import {
   useHelmRepositoryIndex,
@@ -41,14 +43,7 @@ import {
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { LoadingHelper } from '../utils';
-
-type TableColumn = {
-  title: string;
-  id: string;
-};
-type RowProps<D> = {
-  obj: D;
-};
+import TableLoader from '../helpers/TableLoader';
 
 const getTableColumns = (t: TFunction): TableColumn[] => [
   {
@@ -85,11 +80,19 @@ const getTableColumns = (t: TFunction): TableColumn[] => [
   },
 ];
 
-export const HelmRepoRow = ({ obj }: RowProps<HelmChartRepository>) => {
+type HelmRepoRowProps = RowProps<HelmChartRepository> & {
+  helmRepoIndexResult: HelmRepositoryIndexResult;
+  clusterTemplatesResult: WatchK8sResult<ClusterTemplate[]>;
+};
+
+export const HelmRepoRow = ({
+  obj,
+  helmRepoIndexResult,
+  clusterTemplatesResult,
+}: HelmRepoRowProps) => {
   const { t } = useTranslation();
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(helmRepoGVK);
-  const { helmRepoIndexResult, clusterTemplatesResult } = React.useContext(RowContext);
   const [repoIndex, repoIndexLoaded, repoIndexError] = helmRepoIndexResult;
   const [templates, templatesLoaded, templatesLoadError] = clusterTemplatesResult;
 
@@ -103,7 +106,7 @@ export const HelmRepoRow = ({ obj }: RowProps<HelmChartRepository>) => {
 
   const getRowActions = (): IAction[] => [
     {
-      title: t('Delete HelmChartRepository'),
+      title: t('Delete repository'),
       onClick: () => setDeleteOpen(true),
     },
   ];
@@ -117,6 +120,7 @@ export const HelmRepoRow = ({ obj }: RowProps<HelmChartRepository>) => {
           groupVersionKind={helmRepoGVK}
           name={obj.metadata?.name}
           namespace={obj.metadata?.namespace}
+          hideIcon
         />
       </Td>
       <Td dataLabel={columns[1].title}>
@@ -166,7 +170,7 @@ export const HelmRepoRow = ({ obj }: RowProps<HelmChartRepository>) => {
         <Modal
           variant={ModalVariant.small}
           isOpen
-          title={t('Delete HelmChartRepository')}
+          title={t('Delete Helm chart repository')}
           titleIconVariant="warning"
           showClose
           onClose={() => setDeleteOpen(false)}
@@ -196,44 +200,49 @@ export const HelmRepoRow = ({ obj }: RowProps<HelmChartRepository>) => {
   );
 };
 
-export const RowContext = React.createContext<{
-  helmRepoIndexResult: HelmRepositoryIndexResult;
-  clusterTemplatesResult: WatchK8sResult<ClusterTemplate[]>;
-}>(undefined!);
-
 const HelmRepositoriesTab = () => {
-  const [repositories] = useHelmRepositories();
-  const [repoIndex, repoIndexLoaded, repoIndexError] = useHelmRepositoryIndex();
+  const [repositories, repositoriesLoaded, repositoriesError] = useHelmRepositories();
+  const helmRepoIndexResult = useHelmRepositoryIndex();
+  const clusterTemplatesResult = useClusterTemplates();
   const { t } = useTranslation();
 
   return (
-    <PageSection>
-      <RowContext.Provider
-        value={{
-          helmRepoIndexResult: [repoIndex, repoIndexLoaded, repoIndexError],
-          clusterTemplatesResult: useClusterTemplates(),
-        }}
-      >
-        <TableComposable
-          aria-label="Helm repositories table"
-          id="helm-repositories-table"
-          variant="compact"
+    <Page>
+      <PageSection>
+        <TableLoader
+          loaded={repositoriesLoaded}
+          error={repositoriesError}
+          errorId="helm-repositories-load-error"
+          errorMessage={t('The Helm repositories could not be loaded.')}
         >
-          <Thead>
-            <Tr>
-              {getTableColumns(t).map((column) => (
-                <Th key={column.id}>{column.title}</Th>
-              ))}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {repositories.map((repository) => (
-              <HelmRepoRow key={repository.metadata?.name} obj={repository} />
-            ))}
-          </Tbody>
-        </TableComposable>
-      </RowContext.Provider>
-    </PageSection>
+          <Card>
+            <TableComposable
+              aria-label="Helm repositories table"
+              id="helm-repositories-table"
+              variant="compact"
+            >
+              <Thead>
+                <Tr>
+                  {getTableColumns(t).map((column) => (
+                    <Th key={column.id}>{column.title}</Th>
+                  ))}
+                </Tr>
+              </Thead>
+              <Tbody>
+                {repositories.map((repository) => (
+                  <HelmRepoRow
+                    key={repository.metadata?.name}
+                    obj={repository}
+                    clusterTemplatesResult={clusterTemplatesResult}
+                    helmRepoIndexResult={helmRepoIndexResult}
+                  />
+                ))}
+              </Tbody>
+            </TableComposable>
+          </Card>
+        </TableLoader>
+      </PageSection>
+    </Page>
   );
 };
 

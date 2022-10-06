@@ -1,110 +1,125 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react';
-import {
-  k8sDelete,
-  ResourceLink,
-  RowProps,
-  TableData,
-  useK8sModel,
-  VirtualizedTable,
-} from '@openshift-console/dynamic-plugin-sdk';
+import { k8sDelete, ResourceLink, useK8sModel } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Button,
-  Dropdown,
-  DropdownItem,
+  Card,
   KebabToggle,
   Modal,
   ModalVariant,
+  Page,
   PageSection,
 } from '@patternfly/react-core';
-import { sortable } from '@patternfly/react-table';
-import { clusterTemplateGVK, helmRepoGVK } from '../constants';
-import { ClusterTemplate } from '../types';
+import {
+  ActionsColumn,
+  CustomActionsToggleProps,
+  IAction,
+  TableComposable,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@patternfly/react-table';
+import { clusterTemplateGVK, helmRepoGVK, pipelineGVK } from '../constants';
+import { ClusterTemplate, RowProps, TableColumn } from '../types';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
 import { LoadingHelper } from '../utils';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { TFunction } from 'react-i18next';
+import { useTranslation } from '../../../../lib/acm-i18next';
+import TableLoader from '../helpers/TableLoader';
 
-const columns = [
-  {
-    title: 'Name',
-    sort: 'metadata.name',
-    transforms: [sortable],
-    id: 'name',
-  },
-  {
-    title: 'HELM repository',
-    id: 'helm-repo',
-  },
-  {
-    title: 'HELM chart',
-    id: 'helm-chart',
-  },
-  {
-    title: 'Setup pipeline',
-    id: 'pipeline',
-  },
-  {
-    title: 'Template uses',
-    id: 'usage',
-  },
-  {
-    title: '',
-    id: 'kebab-menu',
-    props: { className: 'pf-c-table__action' },
-  },
-];
+function getTableColumns(t: TFunction): TableColumn[] {
+  return [
+    {
+      title: t('Name'),
+      id: 'name',
+    },
+    {
+      title: t('HELM repository'),
+      id: 'helm-repo',
+    },
+    {
+      title: t('HELM chart'),
+      id: 'helm-chart',
+    },
+    {
+      title: t('Setup pipeline'),
+      id: 'pipeline',
+    },
+    {
+      title: t('Template uses'),
+      id: 'usage',
+    },
+    {
+      title: '',
+      id: 'kebab-menu',
+    },
+  ];
+}
 
-export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({
-  obj,
-  activeColumnIDs,
-}) => {
-  const [isOpen, setOpen] = React.useState(false);
+export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj }) => {
+  const { t } = useTranslation();
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(clusterTemplateGVK);
   const [instances, loaded, loadError] = useClusterTemplateInstances();
 
+  const getRowActions = (): IAction[] => [
+    {
+      title: t('Delete template'),
+      onClick: () => setDeleteOpen(true),
+    },
+  ];
+
+  const columns = React.useMemo(() => getTableColumns(t), [t]);
+
   return (
-    <>
-      <TableData id="name" activeColumnIDs={activeColumnIDs}>
+    <Tr>
+      <Td id={columns[0].id} dataLabel={columns[0].title}>
         <ResourceLink
           groupVersionKind={clusterTemplateGVK}
           name={obj.metadata?.name}
           namespace={obj.metadata?.namespace}
+          hideIcon
         />
-      </TableData>
-      <TableData id="helm-repo" activeColumnIDs={activeColumnIDs}>
-        <ResourceLink groupVersionKind={helmRepoGVK} name={obj.spec.helmChartRef.repository} />
-      </TableData>
-      <TableData id="helm-chart" activeColumnIDs={activeColumnIDs}>
+      </Td>
+      <Td id={columns[1].id} dataLabel={columns[1].title}>
+        <ResourceLink
+          groupVersionKind={helmRepoGVK}
+          name={obj.spec.helmChartRef.repository}
+          hideIcon
+        />
+      </Td>
+      <Td id={columns[2].id} dataLabel={columns[2].title}>
         {obj.spec.helmChartRef?.name}
-      </TableData>
-      <TableData id="pipeline" activeColumnIDs={activeColumnIDs}>
-        {obj.spec.clusterSetup.pipeline?.name}
-      </TableData>
-      <TableData id="usage" activeColumnIDs={activeColumnIDs}>
+      </Td>
+      <Td id={columns[3].id} dataLabel={columns[3].title}>
+        {obj.spec.clusterSetup?.pipeline ? (
+          <ResourceLink
+            groupVersionKind={pipelineGVK}
+            name={obj.spec.clusterSetup.pipeline.name}
+            namespace={obj.spec.clusterSetup.pipeline.namespace}
+            hideIcon
+          />
+        ) : (
+          <>-</>
+        )}
+      </Td>
+      <Td id={columns[4].id} dataLabel={columns[4].title}>
         <LoadingHelper isLoaded={loaded} error={loadError}>
           {instances.filter((i) => i.spec.template === obj.metadata?.name).length}
         </LoadingHelper>
-      </TableData>
-      <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
-        <Dropdown
-          toggle={<KebabToggle onToggle={setOpen} id="cluster-template-actions-toggle" />}
-          isOpen={isOpen}
-          isPlain
-          dropdownItems={[
-            <DropdownItem
-              onClick={() => {
-                setDeleteOpen(true);
-                setOpen(false);
-              }}
-              key="delete"
-            >
-              Delete cluster template
-            </DropdownItem>,
-          ]}
-          position="right"
+      </Td>
+      <Td id={columns[4].id} isActionCell>
+        <ActionsColumn
+          items={getRowActions()}
+          actionsToggle={(props: CustomActionsToggleProps) => (
+            <KebabToggle id="cluster-template-actions-toggle" {...props} />
+          )}
         />
-      </TableData>
+      </Td>
       {isDeleteOpen && (
         <Modal
           variant={ModalVariant.small}
@@ -125,35 +140,56 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({
                 setDeleteOpen(false);
               }}
             >
-              Delete
+              {t('Delete')}
             </Button>,
             <Button key="cancel" variant="link" onClick={() => setDeleteOpen(false)}>
-              Cancel
+              {t('Cancel')}
             </Button>,
           ]}
         >
-          Are you sure you want to delete?
+          {t('Are you sure you want to delete?')}
         </Modal>
       )}
-    </>
+    </Tr>
   );
 };
 
 const ClusterTemplatesTab = () => {
+  const { t } = useTranslation();
   const [templates, loaded, loadError] = useClusterTemplates();
 
   return (
-    <PageSection>
-      <VirtualizedTable<ClusterTemplate>
-        data-testid="cluster-templates-table"
-        data={templates}
-        unfilteredData={templates}
-        columns={columns}
-        Row={ClusterTemplateRow}
-        loaded={loaded}
-        loadError={loadError}
-      />
-    </PageSection>
+    <Page>
+      <PageSection>
+        <TableLoader
+          loaded={loaded}
+          error={loadError}
+          errorId="templates-load-error"
+          errorMessage={t('The cluster templates could not be loaded.')}
+        >
+          <Card>
+            <TableComposable
+              aria-label="Cluster templates table"
+              id="cluster-templates-table"
+              variant="compact"
+            >
+              <Thead>
+                <Tr>
+                  {getTableColumns(t).map((column) => (
+                    <Th key={column.id}>{column.title}</Th>
+                  ))}
+                </Tr>
+              </Thead>
+              <Tbody>
+                {templates.map((template) => (
+                  <ClusterTemplateRow key={template.metadata?.name} obj={template} />
+                ))}
+              </Tbody>
+            </TableComposable>
+          </Card>
+        </TableLoader>
+      </PageSection>
+    </Page>
   );
 };
 

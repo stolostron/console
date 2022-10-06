@@ -61,8 +61,6 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   const MockComponent = require('../mocks/MockComponent').default;
   return {
     ResourceLink: MockComponent,
-    VirtualizedTable: MockComponent,
-    TableData: MockComponent,
     useK8sModel: jest.fn().mockReturnValue([clusterTemplateModelMock]),
     k8sDelete: jest.fn(),
   };
@@ -91,34 +89,28 @@ describe('ClusterTemplatesTab', () => {
 
 describe('ClusterTemplateRow', () => {
   test('Cluster template deletion action and modal button', async () => {
-    render(
-      <ClusterTemplateRow obj={clusterTemplateMock1} activeColumnIDs={new Set()} rowData={{}} />,
-    );
+    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
-    await waitForText('Delete cluster template');
-    await userEvent.click(screen.getByText('Delete cluster template'));
+    await waitForText('Delete template');
+    await userEvent.click(screen.getByText('Delete template'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByText('Delete'));
     expect(screen.queryByText('Delete cluster template')).toBeNull();
   });
   test('Cluster template deletion modal close button closes the dialog', async () => {
-    render(
-      <ClusterTemplateRow obj={clusterTemplateMock1} activeColumnIDs={new Set()} rowData={{}} />,
-    );
+    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
-    await waitForText('Delete cluster template');
-    await userEvent.click(screen.getByText('Delete cluster template'));
+    await waitForText('Delete template');
+    await userEvent.click(screen.getByText('Delete template'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByText('Cancel'));
     expect(screen.queryByText('Delete cluster template')).toBeNull();
   });
   test('Repo deletion modal x button closes the dialog', async () => {
-    render(
-      <ClusterTemplateRow obj={clusterTemplateMock1} activeColumnIDs={new Set()} rowData={{}} />,
-    );
+    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
-    await waitForText('Delete cluster template');
-    await userEvent.click(screen.getByText('Delete cluster template'));
+    await waitForText('Delete template');
+    await userEvent.click(screen.getByText('Delete template'));
     await waitForText('Are you sure you want to delete?');
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByText('Delete cluster template')).toBeNull();

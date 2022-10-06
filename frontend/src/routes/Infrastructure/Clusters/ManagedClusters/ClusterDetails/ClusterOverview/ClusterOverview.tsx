@@ -11,8 +11,9 @@ import {
     AcmPageContent,
     StatusType,
     Provider,
+    AcmAlert,
 } from '../../../../../../ui-components'
-import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -313,7 +314,23 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
 
     let details = <ProgressStepBar />
     if (cluster?.provider === Provider.hostinventory) {
-        details = cluster.isHypershift ? <AIHypershiftClusterDetails /> : <AIClusterDetails />
+        if (cluster.isHypershift) {
+            details = <AIHypershiftClusterDetails />
+        } else if (!agentClusterInstall) {
+            details = (
+                <div style={{ marginBottom: '1rem' }} id={`missing-agentclusterinstall-alert`}>
+                    <AcmAlert
+                        isInline
+                        variant={AlertVariant.danger}
+                        title={<>{t('Cluster installation info unavailable')}</>}
+                        message={t('Could not find the AgentClusterInstall resource.')}
+                        noClose
+                    />
+                </div>
+            )
+        } else {
+            details = <AIClusterDetails />
+        }
     }
     if (cluster?.isHostedCluster) {
         details = <HypershiftClusterDetails />

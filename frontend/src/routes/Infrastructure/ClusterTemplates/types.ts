@@ -19,8 +19,8 @@ export type ClusterTemplate = K8sResourceCommon & {
       version: string;
       repository: string;
     };
-    clusterSetup: {
-      pipeline: {
+    clusterSetup?: {
+      pipeline?: {
         name: string;
         namespace: string;
       };
@@ -75,4 +75,12 @@ export type ClusterTemplateQuota = K8sResourceCommon & {
       count: number;
     }[];
   };
+};
+
+export type TableColumn = {
+  title: string;
+  id: string;
+};
+export type RowProps<D> = {
+  obj: D;
 };

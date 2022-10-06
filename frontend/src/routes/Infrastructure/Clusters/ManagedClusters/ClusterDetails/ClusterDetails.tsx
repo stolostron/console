@@ -133,8 +133,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === match.params.id)
 
     const agentClusterInstall = agentClusterInstalls.find(
-        (aci) => aci.metadata.name === match.params.id && aci.metadata.namespace === match.params.id
+        (aci) =>
+            aci.metadata.name === clusterDeployment?.spec?.clusterInstallRef?.name &&
+            clusterDeployment?.spec?.clusterInstallRef?.kind === 'AgentClusterInstall' &&
+            clusterDeployment?.metadata.namespace === aci.metadata.namespace
     )
+
     const hostedCluster = hostedClusters.find((hc) => {
         if (getIsHostedCluster(managedCluster)) {
             // hypershift clusters with same name in different namespaces will not work with this
