@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockIgnoreRBAC, nockAnsibleTower, nockCreate } from '../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
+import { clickByText, waitForCalled, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicyAutomation } from './CreatePolicyAutomation'
 import {
@@ -15,9 +15,10 @@ import {
     mockSubscriptionOperator,
     mockPolicyAutomation,
 } from '../governance.sharedMocks'
-import { SubscriptionOperator } from '../../../resources'
+import { ConfigMap, SubscriptionOperator } from '../../../resources'
+import { mockOpenShiftConsoleConfigMap } from '../../../lib/test-metadata'
 
-function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[] }) {
+function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[]; configMaps?: ConfigMap[] }) {
     const actualPath = NavigationPath.createPolicyAutomation
         .replace(':namespace', mockPolicy[0].metadata.namespace as string)
         .replace(':name', mockPolicy[0].metadata.name as string)
@@ -25,6 +26,7 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(secretsState, [mockSecret])
+                snapshot.set(configMapsState, props.configMaps || [])
                 snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
             }}
         >
@@ -59,6 +61,15 @@ describe('Create Policy Automation Wizard', () => {
         // select ansible job
         screen.getByText('Select the ansible job').click()
         screen.getByRole('option', { name: 'test-job-pre-install' }).click()
+        screen.getByText('Once').click()
+        screen.getByRole('option', { name: 'Disabled' }).click()
+        screen
+            .getByRole('checkbox', {
+                name: /manual run: set this automation to run once\. after the automation runs, it is set to disabled\./i,
+            })
+            .click()
+        screen.getByText('Disabled').click()
+        screen.getByRole('option', { name: 'Once' }).click()
         screen.getByRole('button', { name: 'Next' }).click()
 
         // review
@@ -71,8 +82,15 @@ describe('Create Policy Automation Wizard', () => {
     })
 
     test('render warning when Ansible operator is not installed', async () => {
-        render(<CreatePolicyAutomationTest />)
+        render(<CreatePolicyAutomationTest configMaps={[mockOpenShiftConsoleConfigMap]} />)
+        window.open = jest.fn()
         waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        screen
+            .getByRole('button', {
+                name: /operatorhub/i,
+            })
+            .click()
+        await waitForCalled(window.open as jest.Mock)
     })
 
     test('can cancel policy automation creation', () => {

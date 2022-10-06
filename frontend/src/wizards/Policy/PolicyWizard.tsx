@@ -484,19 +484,23 @@ export function isExistingTemplateName(name: string, policies: IResource[]) {
 
 function ObjectTemplate() {
     const template: any = useItem()
+    function getComplianceType(template: any) {
+        switch (template?.complianceType) {
+            case 'musthave':
+                return 'Must have'
+            case 'mustonlyhave':
+                return 'Must only have'
+            case 'mustnothave':
+                return 'Must not have'
+            default:
+                return template?.complianceType
+        }
+    }
     return (
         <Fragment>
             <WizHidden hidden={(template: any) => template?.complianceType === undefined}>
                 <Stack>
-                    <Text component="small">
-                        {template?.complianceType === 'musthave'
-                            ? 'Must have'
-                            : template?.complianceType === 'mustonlyhave'
-                            ? 'Must only have'
-                            : template?.complianceType === 'mustnothave'
-                            ? 'Must not have'
-                            : template?.complianceType}
-                    </Text>
+                    <Text component="small">{getComplianceType(template)}</Text>
                     <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
                         <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>
                     </WizHidden>

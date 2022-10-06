@@ -69,5 +69,8 @@ export const Specifications: {
     getPolicySpecification('Restricted Security Context Constraints', policyscc),
     getPolicySpecification('Detect image vulnerabilities', policyimagemanifestvuln),
 ].sort((a, b) => {
-    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+    if (a.name < b.name) {
+        return -1
+    }
+    return a.name > b.name ? 1 : 0
 })

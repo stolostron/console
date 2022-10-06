@@ -397,7 +397,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                         return [...channels]
                                     })
                                 }
-                                // TODO valid URL
                             />
                             <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
                                 <WizAsyncSelect
@@ -454,6 +453,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                 options={helmChannels}
                                 required
                                 isCreatable
+                                validation={validateWebURL}
                                 onCreate={(value: string) =>
                                     setCreatedChannels((channels) => {
                                         if (!channels.includes(value)) {
@@ -472,7 +472,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                         return [...channels]
                                     })
                                 }
-                                // TODO valid URL
                             />
                             <WizTextInput
                                 path="spec.template.spec.source.chart"
@@ -873,8 +872,7 @@ function ArgoWizardPlacementSection(props: {
                                 text="New placement"
                                 isSelected={hasPlacement}
                                 onClick={() => {
-                                    let newResources = [...resources]
-                                    newResources = resources.filter((resource) => resource.kind !== PlacementKind)
+                                    const newResources = resources.filter((resource) => resource.kind !== PlacementKind)
                                     newResources.push({
                                         apiVersion: PlacementApiVersion,
                                         kind: PlacementKind,
@@ -888,8 +886,7 @@ function ArgoWizardPlacementSection(props: {
                                 text="Existing placement"
                                 isSelected={!hasPlacement}
                                 onClick={() => {
-                                    let newResources = [...resources]
-                                    newResources = resources.filter((resource) => resource.kind !== PlacementKind)
+                                    const newResources = resources.filter((resource) => resource.kind !== PlacementKind)
                                     update(newResources)
                                 }}
                             />

@@ -530,13 +530,18 @@ export const mockSubscriptionOperator: SubscriptionOperator = {
 export const mockPolicyAutomation: PolicyAutomation = {
     kind: 'PolicyAutomation',
     apiVersion: 'policy.open-cluster-management.io/v1beta1',
-    metadata: { name: 'policy-set-with-1-placement-policy-policy-automation', namespace: 'test' },
+    metadata: {
+        name: 'policy-set-with-1-placement-policy-policy-automation',
+        namespace: 'test',
+        annotations: { 'policy.open-cluster-management.io/rerun': 'false' },
+    },
     spec: {
         policyRef: 'policy-set-with-1-placement-policy',
         mode: 'once',
         automationDef: { name: 'test-job-pre-install', secret: 'ansible-test-secret', type: 'AnsibleJob' },
     },
 }
+
 export const mockEditedPolicyAutomation: PolicyAutomation = {
     kind: 'PolicyAutomation',
     apiVersion: 'policy.open-cluster-management.io/v1beta1',

@@ -38,7 +38,6 @@ export function PlacementBindings(props: {
             newValue={{
                 ...PlacementBindingType,
                 metadata: {},
-                // TODO default? - Placement vs PlacementRule
                 placementRef: { apiGroup: PlacementApiGroup, kind: PlacementKind, name: '' },
                 subjects: [{ apiGroup: props.bindingSubjectApiGroup, kind: props.bindingSubjectKind, name: '' }],
             }}
