@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
+import CompressionPlugin from 'compression-webpack-plugin'
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
+import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
-import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -94,6 +95,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
                     space: 4,
                 })
             }),
+            isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
+            isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
             assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',

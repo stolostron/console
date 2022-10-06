@@ -618,7 +618,10 @@ export default class TemplateEditor extends React.Component {
             // insert control data into main control data
             if (insertControlData) {
                 // splice control data with data from this card
-                parentControlData.splice(insertInx + 1, 0, ...cloneControlData(insertControlData))
+                const cloned = cloneControlData(insertControlData)
+                // give wizard chance to init
+                cloned.forEach((ctrl) => onControlInitialize(ctrl))
+                parentControlData.splice(insertInx + 1, 0, ...cloned)
 
                 // if this card control is in a group, tell each control
                 // what group control it belongs to

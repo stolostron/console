@@ -248,7 +248,7 @@ export default function PolicySetsPage() {
                 {filteredPolicySets.length === 0 ? (
                     <AcmEmptyState title={t('No resources match the current filter')} showIcon={true} />
                 ) : (
-                    <PageSection isFilled isWidthLimited>
+                    <PageSection isFilled>
                         <AcmMasonry minSize={400}>
                             {/* Need to compute all cards here then slice. The PolicySet card render uses react hooks.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}

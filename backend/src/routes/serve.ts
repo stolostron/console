@@ -1,13 +1,15 @@
+import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
 /* Copyright Contributors to the Open Cluster Management project */
-import { createReadStream, Stats } from 'fs'
-import { stat } from 'fs/promises'
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Stats, createReadStream } from 'fs'
+
 import { extname } from 'path'
-import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
+import { pipeline } from 'stream'
+import { stat } from 'fs/promises'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 const localesCacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-store'
+const publicFolder = process.env.PUBLIC_FOLDER || './public'
 
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
@@ -22,7 +24,6 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         // Security headers
         if (url === '/index.html') {
             res.setHeader('Cache-Control', 'no-cache')
-            res.setHeader('Strict-Transport-Security', 'max-age=31536000')
             res.setHeader('X-Frame-Options', 'deny')
             res.setHeader('X-XSS-Protection', '1; mode=block')
             res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -55,7 +56,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('Cache-Control', cacheControl)
         }
 
-        const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
+        const acceptEncoding = (req.headers[constants.HTTP2_HEADER_ACCEPT_ENCODING] as string) ?? ''
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
             logger.debug('unknown content type', `ext=${ext}`)
@@ -63,7 +64,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             return
         }
 
-        const filePath = './public' + url
+        const filePath = `${publicFolder}${url}`
         let stats: Stats
         try {
             stats = await stat(filePath)
@@ -81,8 +82,9 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
 
         if (/\bbr\b/.test(acceptEncoding)) {
             try {
-                const brStats = await stat(filePath + '.br')
-                const readStream = createReadStream('./public' + url + '.br', { autoClose: true })
+                const brFilePath = `${filePath}.br`
+                const brStats = await stat(brFilePath)
+                const readStream = createReadStream(brFilePath, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
@@ -106,8 +108,9 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
 
         if (/\bgzip\b/.test(acceptEncoding)) {
             try {
-                const gzStats = await stat(filePath + '.gz')
-                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
+                const gzFilePath = `${filePath}.gz`
+                const gzStats = await stat(gzFilePath)
+                const readStream = createReadStream(gzFilePath, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
@@ -129,7 +132,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             }
         }
 
-        const readStream = createReadStream('./public' + url, { autoClose: true })
+        const readStream = createReadStream(`${publicFolder}${url}`, { autoClose: true })
         readStream
             .on('open', () => {
                 res.writeHead(200, {

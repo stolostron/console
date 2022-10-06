@@ -181,12 +181,14 @@ export const setAvailableConnections = (control, secrets) => {
         control.isLoaded = true
     })
     control.available = connections.map((secret) => secret.metadata.name).sort((a, b) => a.localeCompare(b))
+    const perPostSection = control.groupControlData?.find(({ id }) => id === 'perPostSection')
     if (
         Array.isArray(control.providerId)
             ? !control.providerId.includes('hostinventory')
             : control.providerId !== 'hostinventory'
     ) {
-        if (control.setActive && !control.active) {
+        // unset default ansible secret for subscription wizard as it's not required
+        if (control.setActive && !control.active && !perPostSection) {
             control.setActive(control.available[0])
         }
     }

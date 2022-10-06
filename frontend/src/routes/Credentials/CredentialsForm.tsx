@@ -23,6 +23,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
+    validateAnsibleHost,
     validateBaseDomain,
     validateCertificate,
     validateCloudsYaml,
@@ -35,7 +36,6 @@ import {
     validateNoProxy,
     validatePrivateSshKey,
     validatePublicSshKey,
-    validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 import {
@@ -1234,7 +1234,7 @@ export function CredentialsForm(props: {
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
-                        validation: (host) => validateWebURL(host, t, ['https']),
+                        validation: (host) => validateAnsibleHost(host, t, ['https']),
                     },
                     {
                         id: 'ansibleToken',
