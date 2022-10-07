@@ -47,6 +47,7 @@ import {
     IResource,
     patchResource,
     ProviderConnection,
+    ProviderConnectionStringData,
     Secret,
     SecretDefinition,
     unpackProviderConnection,
@@ -341,6 +342,7 @@ export function CredentialsForm(props: {
     const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function stateToData() {
+        const stringData: ProviderConnectionStringData = {}
         const secret: ProviderConnection = {
             apiVersion: 'v1',
             kind: 'Secret',
@@ -356,7 +358,7 @@ export function CredentialsForm(props: {
                     },
                 },
             },
-            stringData: {},
+            stringData,
         }
         let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
         if (annotations) {
@@ -369,139 +371,138 @@ export function CredentialsForm(props: {
 
         switch (credentialsType) {
             case Provider.aws:
-                secret.stringData!.aws_access_key_id = aws_access_key_id
-                secret.stringData!.aws_secret_access_key = aws_secret_access_key
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.aws_access_key_id = aws_access_key_id
+                stringData.aws_secret_access_key = aws_secret_access_key
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.azure:
-                secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                secret.stringData!.cloudName = cloudName
-                secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
+                stringData.baseDomainResourceGroupName = baseDomainResourceGroupName
+                stringData.cloudName = cloudName
+                stringData['osServicePrincipal.json'] = JSON.stringify({
                     clientId,
                     clientSecret,
                     tenantId,
                     subscriptionId,
                 })
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.gcp:
-                secret.stringData!.projectID = projectID
-                secret.stringData!['osServiceAccount.json'] = osServiceAccountJson
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.projectID = projectID
+                stringData['osServiceAccount.json'] = osServiceAccountJson
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.vmware:
-                secret.stringData!.vCenter = vCenter
-                secret.stringData!.username = username
-                secret.stringData!.password = password
-                secret.stringData!.cacertificate = cacertificate
-                secret.stringData!.cluster = cluster
-                secret.stringData!.datacenter = datacenter
-                secret.stringData!.defaultDatastore = defaultDatastore
-                secret.stringData!.vsphereFolder = vsphereFolder
-                secret.stringData!.vsphereResourcePool = vsphereResourcePool
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.imageContentSources = imageContentSources
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.vCenter = vCenter
+                stringData.username = username
+                stringData.password = password
+                stringData.cacertificate = cacertificate
+                stringData.cluster = cluster
+                stringData.datacenter = datacenter
+                stringData.defaultDatastore = defaultDatastore
+                stringData.vsphereFolder = vsphereFolder
+                stringData.vsphereResourcePool = vsphereResourcePool
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.imageContentSources = imageContentSources
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.openstack:
-                secret.stringData!['clouds.yaml'] = cloudsYaml
-                secret.stringData!.cloud = cloud
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.clusterOSImage = clusterOSImage
-                secret.stringData!.imageContentSources = imageContentSources
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData['clouds.yaml'] = cloudsYaml
+                stringData.cloud = cloud
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.clusterOSImage = clusterOSImage
+                stringData.imageContentSources = imageContentSources
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.baremetal:
-                secret.stringData!.libvirtURI = libvirtURI
-                secret.stringData!.sshKnownHosts = sshKnownHosts
-                secret.stringData!.imageMirror = imageMirror
-                secret.stringData!.bootstrapOSImage = bootstrapOSImage
-                secret.stringData!.clusterOSImage = clusterOSImage
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.libvirtURI = libvirtURI
+                stringData.sshKnownHosts = sshKnownHosts
+                stringData.imageMirror = imageMirror
+                stringData.bootstrapOSImage = bootstrapOSImage
+                stringData.clusterOSImage = clusterOSImage
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.redhatvirtualization:
-                secret.stringData!.ovirt_url = ovirtUrl
-                secret.stringData!.ovirt_fqdn = ovirtFqdn
-                secret.stringData!.ovirt_username = ovirtUsername
-                secret.stringData!.ovirt_password = ovirtPassword
-                secret.stringData!.ovirt_ca_bundle = ovirtCABundle
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.ovirt_url = ovirtUrl
+                stringData.ovirt_fqdn = ovirtFqdn
+                stringData.ovirt_username = ovirtUsername
+                stringData.ovirt_password = ovirtPassword
+                stringData.ovirt_ca_bundle = ovirtCABundle
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.ansible:
-                secret.stringData!.host = _.trimEnd(ansibleHost, '/')
-                secret.stringData!.token = ansibleToken
+                stringData.host = _.trimEnd(ansibleHost, '/')
+                stringData.token = ansibleToken
                 break
             case Provider.redhatcloud:
-                secret.stringData!.ocmAPIToken = ocmAPIToken
+                stringData.ocmAPIToken = ocmAPIToken
                 break
             case Provider.hybrid:
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
                 break
             case Provider.hypershift:
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-publickey'] = sshPublickey
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-publickey'] = sshPublickey
                 break
         }
-        if (secret.stringData?.pullSecret && !secret.stringData.pullSecret.endsWith('\n')) {
-            secret.stringData.pullSecret += '\n'
+        if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
+            stringData.pullSecret += '\n'
         }
-        if (secret.stringData?.['ssh-privatekey'] && !secret.stringData['ssh-privatekey'].endsWith('\n')) {
-            secret.stringData['ssh-privatekey'] += '\n'
+        if (stringData?.['ssh-privatekey'] && !stringData['ssh-privatekey'].endsWith('\n')) {
+            stringData['ssh-privatekey'] += '\n'
         }
-        if (secret.stringData?.['ssh-publickey'] && !secret.stringData['ssh-publickey'].endsWith('\n')) {
-            secret.stringData['ssh-publickey'] += '\n'
+        if (stringData?.['ssh-publickey'] && !stringData['ssh-publickey'].endsWith('\n')) {
+            stringData['ssh-publickey'] += '\n'
         }
         return secret
-        // return packProviderConnection(secret)
     }
     function stateToSyncs() {
         const syncs = [
