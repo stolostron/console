@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter, Route } from 'react-router-dom'
-import { render, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { namespacesState, subscriptionsState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
@@ -12,11 +12,15 @@ import {
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../resources'
-import { nockIgnoreRBAC } from '../../lib/nock-util'
+import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
-import AdvancedConfiguration from './AdvancedConfiguration'
-
-let testLocation: Location
+import ApplicationsPage from './ApplicationsPage'
+import {
+    mockSearchQuery,
+    mockSearchQueryOCPApplications,
+    mockSearchResponse,
+    mockSearchResponseOCPApplications,
+} from './Application.sharedmocks'
 
 const mockSubscription1: Subscription = {
     kind: SubscriptionKind,
@@ -72,42 +76,36 @@ function TestAdvancedConfigurationPage() {
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
-                <Route
-                    path={NavigationPath.advancedConfiguration}
-                    render={(props: any) => {
-                        testLocation = props.location
-                        return <AdvancedConfiguration {...props} />
-                    }}
-                />
+                <ApplicationsPage />
             </MemoryRouter>
         </RecoilRoot>
     )
 }
 
 describe('advanced configuration page', () => {
-    beforeEach(nockIgnoreRBAC)
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockSearch(mockSearchQuery, mockSearchResponse)
+        nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+    })
 
     test('should render the table with subscriptions', async () => {
         render(<TestAdvancedConfigurationPage />)
         await waitForText(mockSubscription1.metadata!.name!)
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click channel option', async () => {
         render(<TestAdvancedConfigurationPage />)
         await clickByTestId('channels')
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click placement option', async () => {
         render(<TestAdvancedConfigurationPage />)
         await clickByTestId('placements')
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click placement rule option', async () => {
         render(<TestAdvancedConfigurationPage />)
         await clickByTestId('placementrules')
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 })
