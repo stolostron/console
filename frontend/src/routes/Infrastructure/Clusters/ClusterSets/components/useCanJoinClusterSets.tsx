@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../resources'
 import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClusterSetsState } from '../../../../../atoms'
@@ -21,7 +21,9 @@ export function useCanJoinClusterSets() {
             const adminAccessCheck = checkAdminAccess()
             adminAccessCheck.then((adminAccess) => {
                 if (adminAccess.status!.allowed) {
-                    return setCanJoinClusterSets(managedClusterSets)
+                    return setCanJoinClusterSets(
+                        managedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
+                    )
                 } else {
                     const requests = Promise.allSettled(
                         managedClusterSets.map((mcs) => {
@@ -38,7 +40,9 @@ export function useCanJoinClusterSets() {
                         const authorizedClusterSets = managedClusterSets.filter((mcs) =>
                             authorizedClusterSetNames.includes(mcs.metadata.name!)
                         )
-                        return setCanJoinClusterSets(authorizedClusterSets)
+                        return setCanJoinClusterSets(
+                            authorizedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
+                        )
                     })
                 }
             })

@@ -7,7 +7,6 @@ import { useRecoilValue, waitForAll } from 'recoil'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
-    ConfigMap,
     patchResource,
     createResource,
     getResource,
@@ -18,6 +17,8 @@ import {
     ManagedClusterKind,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
+    createResources,
+    IResource,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -26,6 +27,7 @@ import {
     clusterDeploymentsState,
     configMapsState,
     infraEnvironmentsState,
+    multiClusterEnginesState,
 } from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
@@ -288,19 +290,18 @@ export const onSaveNetworking = async (
     }
 }
 
-export const getAIConfigMap = (configMaps: ConfigMap[]) =>
-    configMaps.find(
-        (cm) => cm.metadata.name === 'assisted-service-config' && cm.metadata.namespace === 'assisted-installer'
-    ) ||
-    configMaps.find(
-        (cm) =>
-            cm.metadata.name === 'assisted-service' &&
-            (cm.metadata.namespace === 'rhacm' || cm.metadata.namespace === 'open-cluster-management')
-    )
+export const useAssistedServiceNamespace = () => {
+    const [[multiClusterEngine]] = useRecoilValue(waitForAll([multiClusterEnginesState]))
+    return useMemo(() => multiClusterEngine?.spec?.targetNamespace ?? 'multicluster-engine', [multiClusterEngine])
+}
 
-export const useAIConfigMap = () => {
+export const useAssistedServiceConfigMap = () => {
+    const namespace = useAssistedServiceNamespace()
     const [configMaps] = useRecoilValue(waitForAll([configMapsState]))
-    return useMemo(() => getAIConfigMap(configMaps), [configMaps])
+    return useMemo(
+        () => configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === namespace),
+        [configMaps]
+    )
 }
 
 export const useClusterDeployment = ({
@@ -731,3 +732,7 @@ export const onMassDeleteHost = (
 export const fetchInfraEnv = (name: string, namespace: string) =>
     getResource({ apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'InfraEnv', metadata: { namespace, name } })
         .promise
+
+export const importYaml = (yamlContent: unknown) => {
+    return createResources(yamlContent as IResource[])
+}

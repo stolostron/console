@@ -1,5 +1,16 @@
 [
     {
+        "type": "console.flag/model",
+        "properties": {
+            "flag": "CLUSTER_TEMPLATES",
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            }
+        }
+    },
+    {
         "type": "console.perspective",
         "properties": {
             "id": "acm",
@@ -35,20 +46,54 @@
         }
     },
     {
-        "type": "console.navigation/href",
+        "type": "console.page/resource/list",
         "properties": {
-            "perspective": "acm",
-            "section": "mce-infrastructure",
-            "id": "mce-bare-metal-assets",
-            "name": "%plugin__mce~Bare metal assets%",
-            "href": "/multicloud/infrastructure/bare-metal-assets"
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
         }
     },
     {
         "type": "console.page/route",
         "properties": {
-            "path": "/multicloud/infrastructure/bare-metal-assets",
-            "component": { "$codeRef": "baremetalassets.default" }
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~tabs",
+            "component": { "$codeRef": "templates.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/k8s/cluster/clustertemplate.openshift.io~v1alpha1~ClusterTemplate/~newRepository",
+            "component": { "$codeRef": "helmRepositoryForm.default" }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
+        }
+    },
+    {
+        "type": "console.navigation/resource-cluster",
+        "properties": {
+            "perspective": "acm",
+            "section": "mce-infrastructure",
+            "id": "mce-cluster-templates",
+            "name": "%plugin__mce~Cluster templates%",
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            }
+        },
+        "flags": {
+            "required": ["CLUSTER_TEMPLATES"]
         }
     },
     {
@@ -73,8 +118,8 @@
         "properties": {
             "perspective": "acm",
             "section": "mce-infrastructure",
-            "id": "mce-infrastructure-environments",
-            "name": "%plugin__mce~Infrastructure environments%",
+            "id": "mce-host-inventory",
+            "name": "%plugin__mce~Host inventory%",
             "href": "/multicloud/infrastructure/environments"
         }
     },
@@ -99,6 +144,17 @@
         "properties": {
             "path": "/multicloud/credentials",
             "component": { "$codeRef": "credentials.default" }
+        }
+    },
+    {
+        "type": "console.resource/create",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": { "$codeRef": "createTemplate.default" }
         }
     }
 ]

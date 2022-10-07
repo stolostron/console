@@ -15,6 +15,7 @@ const mockCluster: Cluster = {
     name: 'test-cluster',
     displayName: 'test-cluster',
     namespace: 'test-cluster',
+    uid: 'test-cluster-uid',
     status: ClusterStatus.ready,
     distribution: {
         k8sVersion: '1.19',
@@ -36,15 +37,17 @@ const mockCluster: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: 'test-cluster-install-config',
-            kubeadmin: 'test-cluster-0-fk6c9-admin-password',
-            kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
         },
     },
     isHive: true,
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: 'test-cluster-0-fk6c9-admin-password',
+    kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
+    isHypershift: false,
 }
 
 const mockInstallConfig = {

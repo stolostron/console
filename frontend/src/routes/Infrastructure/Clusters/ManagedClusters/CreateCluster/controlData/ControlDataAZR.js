@@ -1,10 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line no-use-before-define
-import React from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -18,8 +15,15 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
@@ -435,8 +439,15 @@ const ApplicationCreationPage = [
     },
 ]
 
-export const getControlDataAZR = (includeAutomation = true, includeSno = false) => {
+export const getControlDataAZR = (
+    handleModalToggle,
+    includeAutomation = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataAZR)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)
+    insertToggleModalFunction(handleModalToggle, controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -450,7 +461,7 @@ const setRegions = (control, controlData) => {
 
     if (control.active) {
         const connection = control.availableMap[control.active]
-        if (connection.replacements.cloudName === 'AzureUSGovernmentCloud')
+        if (connection && connection.replacements.cloudName === 'AzureUSGovernmentCloud')
             alterRegionData(controlData, govRegions, govRegions[0])
         else alterRegionData(controlData, regions, 'centralus')
     } else {
@@ -462,6 +473,17 @@ const setRegions = (control, controlData) => {
 
 const controlDataAZR = [
     ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Azure',
+        type: 'reviewinfo',
+    },
     {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
@@ -475,7 +497,7 @@ const controlDataAZR = [
             required: true,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////
@@ -515,6 +537,19 @@ const controlDataAZR = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['Azure'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            Azure: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

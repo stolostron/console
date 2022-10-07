@@ -17,9 +17,11 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useMemo, useState } from 'react'
+import { useRecoilState } from 'recoil'
+import { managedClusterAddonsState } from '../../../../atoms'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -38,11 +40,35 @@ export function PolicyTemplateDetails(props: {
     const [relatedObjects, setRelatedObjects] = useState<any>()
     const [templateError, setTemplateError] = useState<string>()
     const [isExpanded, setIsExpanded] = useState<boolean>(true)
+    const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
 
-    function getRelatedObjects(resource: any) {
+    let templateClusterName = clusterName
+    let templateNamespace = clusterName
+
+    // Determine if the policy framework is deployed in hosted mode. If so, the policy template needs to be retrieved
+    // from the hosting cluster instead of the managed cluster.
+    for (const addon of managedClusterAddOns) {
+        if (addon.metadata.namespace !== clusterName) {
+            continue
+        }
+
+        if (addon.metadata.name !== 'governance-policy-framework') {
+            continue
+        }
+
+        if (addon.metadata.annotations?.['addon.open-cluster-management.io/hosting-cluster-name']) {
+            templateClusterName = addon.metadata.annotations['addon.open-cluster-management.io/hosting-cluster-name']
+            // open-cluster-management-agent-addon is the default namespace but it shouldn't be used for hosted mode.
+            templateNamespace = addon.spec.installNamespace || 'open-cluster-management-agent-addon'
+        }
+
+        break
+    }
+
+    function getRelatedObjects(resource: any, clusterName: string) {
         return (
             resource?.status?.relatedObjects?.map((obj: any) => {
-                obj.cluster = resource.metadata.namespace
+                obj.cluster = clusterName
                 return obj
             }) ?? []
         )
@@ -50,20 +76,20 @@ export function PolicyTemplateDetails(props: {
 
     useEffect(() => {
         const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-        fireManagedClusterView(clusterName, kind, version, templateName, clusterName)
+        fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
             .then((viewResponse) => {
                 if (viewResponse?.message) {
                     setTemplateError(viewResponse.message)
                 } else {
                     setTemplate(viewResponse.result)
-                    setRelatedObjects(getRelatedObjects(viewResponse.result))
+                    setRelatedObjects(getRelatedObjects(viewResponse.result, clusterName))
                 }
             })
             .catch((err) => {
                 console.error('Error getting resource: ', err)
                 setTemplateError(err)
             })
-    }, [clusterName, kind, apiGroup, apiVersion, templateName])
+    }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
 
     const descriptionItems = [
         {
@@ -72,7 +98,7 @@ export function PolicyTemplateDetails(props: {
         },
         {
             key: t('Cluster'),
-            value: template?.metadata?.namespace ?? '-',
+            value: template ? clusterName : '-',
         },
         {
             key: t('Kind'),
@@ -161,16 +187,12 @@ export function PolicyTemplateDetails(props: {
             {
                 header: '',
                 cell: (item: any) => {
-                    let {
-                        // eslint-disable-next-line prefer-const
+                    const {
                         cluster,
-                        // eslint-disable-next-line prefer-const
                         reason,
                         object: {
-                            // eslint-disable-next-line prefer-const
                             apiVersion,
                             kind,
-                            // eslint-disable-next-line prefer-const
                             metadata: { name, namespace = '' },
                         },
                     } = item
@@ -179,11 +201,6 @@ export function PolicyTemplateDetails(props: {
                         reason === 'Resource not found as expected'
                     ) {
                         return ''
-                    }
-                    if (kind.endsWith('ies')) {
-                        kind = kind.slice(0, -3)
-                    } else if (kind.endsWith('s')) {
-                        kind = kind.slice(0, -1)
                     }
                     if (cluster && kind && apiVersion && name) {
                         if (namespace !== '') {

@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { convertStringToQuery } from '../helpers/search-helper'
+import { get, uniqBy } from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { getClusterName, addClusters } from './utils'
-import { uniqBy, get } from 'lodash'
+import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
+import { addClusters, getClusterName } from './utils'
 
 const excludedKindList = ['cluster', 'pod', 'replicaset', 'replicationcontroller']
 
@@ -32,7 +32,7 @@ async function getResourcesWithAppLabel(application) {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })

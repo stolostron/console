@@ -2,6 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { managedClusterAddonsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 
@@ -24,7 +25,11 @@ jest.mock('react-router-dom', () => ({
 describe('Policy Template Details Page', () => {
     test('Should render Policy Template Details Page', async () => {
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClusterAddonsState, [])
+                }}
+            >
                 <MemoryRouter>
                     <PolicyTemplateDetailsPage />
                 </MemoryRouter>
@@ -34,6 +39,6 @@ describe('Policy Template Details Page', () => {
         // wait for page load - looking for breadcrumb items
         await waitForText('Policies')
         await waitForText('policy-set-with-1-placement-policy')
-        await waitForText('policy-set-with-1-placement-policy-1', true) // policy-set-with-1-placement-policy-1 is in breadcurmb and also the page header - so set multipleAllowed prop to true
+        await waitForText('policy-set-with-1-placement-policy-1', true) // policy-set-with-1-placement-policy-1 is in breadcrumb and also the page header - so set multipleAllowed prop to true
     })
 })

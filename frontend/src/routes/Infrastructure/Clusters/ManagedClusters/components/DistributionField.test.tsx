@@ -335,6 +335,7 @@ describe('DistributionField', () => {
             name: 'clusterName',
             displayName: 'clusterName',
             namespace: 'clusterName',
+            uid: 'clusterName-uid',
             provider: undefined,
             status: ClusterStatus.ready,
             distribution: data,
@@ -347,15 +348,17 @@ describe('DistributionField', () => {
                 clusterPool: undefined,
                 secrets: {
                     installConfig: '',
-                    kubeadmin: '',
-                    kubeconfig: '',
                 },
             },
             isHive: false,
             isManaged: true,
             isCurator: true,
+            isHostedCluster: false,
             isSNOCluster: false,
             owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isHypershift: false,
         }
 
         const retResource = render(

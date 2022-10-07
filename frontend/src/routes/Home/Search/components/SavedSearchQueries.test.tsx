@@ -1,35 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Router } from 'react-router-dom'
-import { createBrowserHistory } from 'history'
-import { render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
+import { render, screen, waitFor } from '@testing-library/react'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
+import { SearchResultCountDocument } from '../search-sdk/search-sdk'
 import SavedSearchQueries from './SavedSearchQueries'
-import { SavedSearchesDocument, SearchResultCountDocument } from '../search-sdk/search-sdk'
+
+const mockSettings: Settings = {
+    SAVED_SEARCH_LIMIT: '5',
+}
 
 describe('SavedSearchQueries Page', () => {
     it('should render page with correct data', async () => {
         const mocks = [
-            {
-                request: {
-                    query: SavedSearchesDocument,
-                },
-                result: {
-                    data: {
-                        items: [
-                            {
-                                description: 'testSavedQueryDesc1',
-                                id: '1609811592984',
-                                name: 'testSavedQuery1',
-                                searchText: 'kind:pod',
-                                __typename: 'userSearch',
-                            },
-                        ],
-                    },
-                },
-            },
             {
                 request: {
                     query: SearchResultCountDocument,
@@ -43,7 +31,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                             {
                                 keywords: [],
@@ -53,7 +41,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['daemonset', 'deployment', 'job', 'statefulset', 'replicaset'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                             {
                                 keywords: [],
@@ -76,7 +64,7 @@ describe('SavedSearchQueries Page', () => {
                                         ],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                             {
                                 keywords: [],
@@ -86,7 +74,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['hour'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -116,11 +104,27 @@ describe('SavedSearchQueries Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SavedSearchQueries setSelectedSearch={() => {}} setCurrentQuery={() => {}} />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SavedSearchQueries
+                            savedSearches={[
+                                {
+                                    description: 'testSavedQueryDesc1',
+                                    id: '1609811592984',
+                                    name: 'testSavedQuery1',
+                                    searchText: 'kind:pod',
+                                },
+                            ]}
+                            setSelectedSearch={() => {}}
+                        />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.queryByText('Suggested search templates')).not.toBeInTheDocument()

@@ -141,7 +141,8 @@ export const getApplicationData = (nodes) => {
         }
     }
     nodes?.forEach((node) => {
-        const nodeType = _.get(node, 'type', '')
+        const type = _.get(node, 'type', '')
+        const nodeType = type === 'project' ? 'namespace' : type
         if (!(isArgoApp && _.includes(['application', 'cluster'], nodeType))) {
             nodeTypes.push(nodeType) //ask for this related object type
         }

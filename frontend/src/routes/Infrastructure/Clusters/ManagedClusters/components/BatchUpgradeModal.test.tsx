@@ -10,6 +10,7 @@ const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
     displayName: 'cluster-0-no-available',
     namespace: 'cluster-0-no-available',
+    uid: 'cluster-0-no-available-uid',
     status: ClusterStatus.ready,
     isHive: false,
     distribution: {
@@ -36,19 +37,22 @@ const mockClusterNoAvailable: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
         },
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
     displayName: 'cluster-1-ready1',
     namespace: 'cluster-1-ready1',
+    uid: 'cluster-1-ready1-uid',
     status: ClusterStatus.ready,
     isHive: false,
     distribution: {
@@ -75,19 +79,22 @@ const mockClusterReady1: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
         },
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
     displayName: 'cluster-2-ready2',
     namespace: 'cluster-2-ready2',
+    uid: 'cluster-2-ready2-uid',
     status: ClusterStatus.ready,
     isHive: false,
     distribution: {
@@ -114,19 +121,22 @@ const mockClusterReady2: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
         },
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
     displayName: 'cluster-3-offline',
     namespace: 'cluster-3-offline',
+    uid: 'cluster-3-offline-uid',
     status: ClusterStatus.offline,
     isHive: false,
     distribution: {
@@ -153,19 +163,22 @@ const mockClusterOffline: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
         },
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
 }
 const mockClusterFailedUpgrade: Cluster = {
     name: 'cluster-4-failedupgrade',
     displayName: 'cluster-4-failedupgrade',
     namespace: 'cluster-4-failedupgrade',
+    uid: 'cluster-4-failedupgrade-uid',
     status: ClusterStatus.ready,
     isHive: false,
     distribution: {
@@ -192,14 +205,16 @@ const mockClusterFailedUpgrade: Cluster = {
         clusterPool: undefined,
         secrets: {
             installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
         },
     },
     isManaged: true,
     isCurator: false,
+    isHostedCluster: false,
     isSNOCluster: false,
     owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
 }
 const allClusters: Array<Cluster> = [
     mockClusterNoAvailable,

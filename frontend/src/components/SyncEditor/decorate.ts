@@ -138,7 +138,7 @@ const addChangeDecorations = (
                     description: 'resource-editor',
                 },
             })
-            if ($f !== undefined && $f.toString().length < 32 && !obj.$s) {
+            if ($f != null && $f.toString().length < 32 && !obj.$s) {
                 decorations.push({
                     range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
                     options: {

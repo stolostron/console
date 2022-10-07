@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { configure } from '@testing-library/dom'
 import '@testing-library/jest-dom'
+import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
+import 'jest-axe/extend-expect'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
-import i18n from 'i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { initReactI18next } from 'react-i18next'
 
@@ -19,9 +21,13 @@ process.env.REACT_APP_BACKEND_PATH = ''
 JestFetchMock.enableMocks()
 fetchMock.dontMock()
 // browser fetch works with relative URL; cross-fetch does not
-global.fetch = jest.fn((input, reqInit) =>
-    fetchMock(typeof input === 'string' ? new URL(input, process.env.JEST_DEFAULT_HOST).toString() : input, reqInit)
-)
+global.fetch = jest.fn((input, reqInit) => {
+    const newInput =
+        typeof input === 'string' || input instanceof URL
+            ? new URL(input.toString(), process.env.JEST_DEFAULT_HOST).toString()
+            : input
+    return fetchMock(newInput, reqInit)
+})
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
@@ -165,3 +171,13 @@ jest.doMock('moment', () => {
     moment.tz.setDefault('UTC')
     return moment
 })
+
+window.matchMedia =
+    window.matchMedia ||
+    function () {
+        return {
+            matches: false,
+            addListener: function () {},
+            removeListener: function () {},
+        }
+    }

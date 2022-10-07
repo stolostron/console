@@ -11,7 +11,12 @@ import {
     ResourceErrorCode,
 } from '../resources'
 
-export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' | 'replace', value?: string) {
+export function patchClusterSetLabel(
+    clusterName: string,
+    op: 'remove' | 'add' | 'replace',
+    value: string,
+    isManaged: boolean
+) {
     const patch: { op: 'remove' | 'add' | 'replace'; path: string; value?: string } = {
         op,
         path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
@@ -20,16 +25,20 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
         patch.value = value
     }
     const requests = [
-        patchResource(
-            {
-                apiVersion: ManagedClusterDefinition.apiVersion,
-                kind: ManagedClusterDefinition.kind,
-                metadata: {
-                    name: clusterName,
-                },
-            } as ManagedCluster,
-            [patch]
-        ),
+        ...(isManaged
+            ? [
+                  patchResource(
+                      {
+                          apiVersion: ManagedClusterDefinition.apiVersion,
+                          kind: ManagedClusterDefinition.kind,
+                          metadata: {
+                              name: clusterName,
+                          },
+                      } as ManagedCluster,
+                      [patch]
+                  ),
+              ]
+            : []),
         patchResource(
             {
                 apiVersion: ClusterDeploymentDefinition.apiVersion,
@@ -43,30 +52,20 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
         ),
     ]
 
-    const patchClustersResult = {
-        promise: Promise.allSettled(requests.map((request) => request.promise)),
-        abort: () => requests.forEach((request) => request.abort()),
-    }
-
     return {
         promise: new Promise((resolve, reject) => {
-            patchClustersResult.promise.then((result) => {
-                if (result[0].status === 'rejected') {
-                    const error = result[0].reason
-                    if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
-                        return reject(result[0])
+            return Promise.allSettled(requests.map((request) => request.promise)).then((results) => {
+                for (const result of results) {
+                    if (result.status === 'rejected') {
+                        const error = result.reason
+                        if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
+                            return reject(result)
+                        }
                     }
                 }
-                if (result[1].status === 'rejected') {
-                    const error = result[1].reason
-                    if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
-                        return reject(result[1])
-                    }
-                }
-
-                return resolve(result)
+                return resolve(results)
             })
         }),
-        abort: patchClustersResult.abort,
+        abort: () => requests.forEach((request) => request.abort()),
     }
 }

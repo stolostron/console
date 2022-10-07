@@ -5,13 +5,13 @@ import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
-import { AcmAlert, AcmLoadingPage } from '@stolostron/ui-components'
+import { AcmAlert, AcmLoadingPage } from '../../../../../ui-components'
 import { getResource } from '../../../../../resources'
 
 const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
 
 export interface IYAMLContainerProps {
-    node: any[]
+    node: any
     containerRef: HTMLDivElement
     t: TFunction
 }
@@ -33,6 +33,9 @@ export function YAMLContainer(props: IYAMLContainerProps) {
     const [resourceError, setResourceError] = useState({ message: '', stack: '' })
     const t = props.t
 
+    if (type === 'project') {
+        apiVersion = 'project.openshift.io/v1'
+    }
     if (typesWithoutDefaultName.includes(type)) {
         const typeModel = _.get(props.node, `specs.${kind}Model`)
         if (typeModel && Object.keys(typeModel).length > 0) {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader } from '@stolostron/ui-components'
+import { AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense } from 'react'
 import { Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'

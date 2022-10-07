@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '@stolostron/ui-components'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -167,21 +167,25 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                             .replace(':apiVersion', version)
                             .replace(':kind', kind)
                             .replace(':templateName', templateName)
+                        const templateLink = canCreatePolicy ? (
+                            templateDetailURL && (
+                                <span>
+                                    -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
+                                </span>
+                            )
+                        ) : (
+                            <Tooltip content={t('rbac.unauthorized')}>
+                                <span className="link-disabled">{`- ${t('View details')}`}</span>
+                            </Tooltip>
+                        )
+                        const templateExists = !(
+                            prunedMessage.includes('Failed to create policy template') ||
+                            prunedMessage.includes('check if you have CRD deployed')
+                        )
                         return (
                             <div>
                                 {/* message may need to be limited to 300 chars? */}
-                                {prunedMessage}{' '}
-                                {canCreatePolicy ? (
-                                    templateDetailURL && (
-                                        <span>
-                                            -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
-                                        </span>
-                                    )
-                                ) : (
-                                    <Tooltip content={t('rbac.unauthorized')}>
-                                        <span className="link-disabled">{`- ${t('View details')}`}</span>
-                                    </Tooltip>
-                                )}
+                                {prunedMessage} {templateExists && templateLink}
                             </div>
                         )
                     }

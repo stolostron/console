@@ -1,10 +1,35 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
-import _ from 'lodash'
-import DetailsForm from '../components/assisted-installer/DetailsForm'
-import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
-export const controlDataCIM = [
+import DetailsForm from '../components/assisted-installer/DetailsForm'
+import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFunction } from './ControlDataHelpers'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+
+export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig = true) => {
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAI)
+    insertToggleModalFunction(handleModalToggle, controlDataAI)
+    return [...controlDataAI]
+}
+
+export const controlDataAI = [
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  AI form  /////////////////////////////////////
+    {
+        id: 'aiDetailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'Host inventory',
+        type: 'reviewinfo',
+    },
+    {
+        id: 'controlplane',
+        name: 'Control plane type',
+        active: 'Standalone',
+        type: 'reviewinfo',
+    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -12,20 +37,13 @@ export const controlDataCIM = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'hybrid',
+        providerId: ['hybrid', 'hostinventory'],
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: false,
         },
         available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
-    {
-        id: 'aiDetailStep',
-        type: 'step',
-        title: 'Cluster details',
+        footer: <CreateCredentialModal />,
     },
     {
         id: 'ai',
@@ -58,12 +76,12 @@ export const controlDataCIM = [
     {
         id: 'aiNetworkStep',
         type: 'step',
-        title: 'Cluster network',
+        title: 'Networking',
         disabled: true,
     },
 ]
 
-export const controlDataAI = _.cloneDeep(controlDataCIM)
-
-const aiStep = controlDataAI.find((data) => data.id === 'ai')
+const aiStep = getControlDataAI().find((data) => data.id === 'ai')
 aiStep.additionalProps.promptSshPublicKey = true
+
+export default getControlDataAI

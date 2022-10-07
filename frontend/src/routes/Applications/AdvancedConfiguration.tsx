@@ -13,7 +13,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
@@ -664,7 +664,7 @@ export default function AdvancedConfiguration() {
             >
                 <Split hasGutter>
                     <TerminologyCard
-                        title={t('Subsciptions')}
+                        title={t('Subscriptions')}
                         description={t(
                             'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
                         )}

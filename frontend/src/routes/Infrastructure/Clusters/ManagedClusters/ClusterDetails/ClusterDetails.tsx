@@ -10,8 +10,13 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     Provider,
-} from '@stolostron/ui-components'
-import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
+} from '../../../../../ui-components'
+import {
+    AgentClusterInstallK8sResource,
+    AgentK8sResource,
+    HostedClusterK8sResource,
+    InfraEnvK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -23,10 +28,12 @@ import {
     clusterCuratorsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
+    hostedClustersState,
     infraEnvironmentsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    nodePoolsState,
 } from '../../../../../atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
@@ -43,6 +50,7 @@ import {
     mapAddons,
     ResourceError,
     SecretDefinition,
+    getIsHostedCluster,
 } from '../../../../../resources'
 import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
@@ -61,6 +69,7 @@ export const ClusterContext = createContext<{
     readonly agentClusterInstall?: AgentClusterInstallK8sResource
     // readonly infraEnv?: InfraEnvK8sResource
     readonly infraEnvAIFlow?: InfraEnvK8sResource
+    readonly hostedCluster?: HostedClusterK8sResource
 }>({
     cluster: undefined,
     addons: undefined,
@@ -69,6 +78,7 @@ export const ClusterContext = createContext<{
     agentClusterInstall: undefined,
     // infraEnv: undefined,
     infraEnvAIFlow: undefined,
+    hostedCluster: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -88,6 +98,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         agentClusterInstalls,
         agents,
         infraEnvs,
+        hostedClusters,
+        nodePools,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -101,6 +113,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             agentClusterInstallsState,
             agentsState,
             infraEnvironmentsState,
+            hostedClustersState,
+            nodePoolsState,
         ])
     )
 
@@ -119,22 +133,26 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === match.params.id)
 
     const agentClusterInstall = agentClusterInstalls.find(
-        (aci) => aci.metadata.name === match.params.id && aci.metadata.namespace === match.params.id
+        (aci) =>
+            aci.metadata.name === clusterDeployment?.spec?.clusterInstallRef?.name &&
+            clusterDeployment?.spec?.clusterInstallRef?.kind === 'AgentClusterInstall' &&
+            clusterDeployment?.metadata.namespace === aci.metadata.namespace
     )
-    /* I do not see this used anywhere. Moreover, the mapping infraEnvs:clusters is M:N
-    const infraEnv = infraEnvs.find(
-        (ie) =>
-            ie.metadata.name === clusterDeployment?.metadata.name &&
-            ie.metadata.namespace === clusterDeployment?.metadata.namespace
-    )
-    */
+
+    const hostedCluster = hostedClusters.find((hc) => {
+        if (getIsHostedCluster(managedCluster)) {
+            // hypershift clusters with same name in different namespaces will not work with this
+            return hc.metadata.name === match.params.id
+        }
+        return hc.metadata.name === match.params.id && hc.metadata.namespace === match.params.id
+    })
     const infraEnvAIFlow = infraEnvs.find(
         (ie: InfraEnvK8sResource) =>
             ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
             ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata.namespace
     )
 
-    const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
+    const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
     const cluster = getCluster(
         managedClusterInfo,
@@ -144,7 +162,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterAddons,
         clusterClaim,
         clusterCurator,
-        agentClusterInstall
+        agentClusterInstall,
+        hostedCluster,
+        nodePools
     )
     const prevCluster = usePrevious(cluster)
     const showMachinePoolTab = cluster.isHive && cluster.isManaged && cluster.provider !== Provider.baremetal
@@ -193,7 +213,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             />
         )
     }
-    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
+    if (cluster?.hive.secrets?.installConfig || (cluster?.kubeconfig && !cluster.isHypershift)) {
         clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
     }
     if (getClusterActions(cluster).length > 0) {
@@ -210,6 +230,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 clusterDeployment,
                 // infraEnv,
                 infraEnvAIFlow,
+                hostedCluster,
             }}
         >
             <AcmPage

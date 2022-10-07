@@ -18,6 +18,12 @@ import {
 } from '../resources'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
+export type ISearchRelatedResult = {
+    data: {
+        searchResult: any
+    }
+}
+
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
@@ -174,9 +180,33 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
+/*
+    params - map with key/value pairs i.e.
+    { param1: 'val1', param2: 'val2' } = ?param1=val1&param2=val2
+*/
+
+function getNockParams(params: any) {
+    let paramString = ''
+    if (params) {
+        for (const [key, value] of Object.entries(params)) {
+            if (paramString === '') {
+                paramString = `?${key}=${value}`
+            } else {
+                paramString = `${paramString}&${key}=${value}`
+            }
+        }
+    }
+    return paramString
+}
+
+export function nockCreate(
+    resource: IResource | ClusterRoleBinding,
+    response?: IResource,
+    statusCode = 201,
+    params?: any
+) {
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), (body) => {
+        .post(`${getResourceApiPath(resource)}${getNockParams(params)}`, (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
             //     console.log(resource)
@@ -189,6 +219,29 @@ export function nockCreate(resource: IResource | ClusterRoleBinding, response?: 
             'Access-Control-Allow-Credentials': 'true',
         })
     return scope
+}
+
+export function nockPatch(
+    resource: IResource,
+    data: unknown[] | unknown,
+    response?: IResource,
+    statusCode = 204,
+    params?: any
+) {
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+        .options(`${getResourceNameApiPath(resource)}${getNockParams(params)}`)
+        .optionally()
+        .reply(200, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .patch(`${getResourceNameApiPath(resource)}${getNockParams(params)}`, (body) => isEqual(body, data))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
 }
 
 export function nockIgnoreRBAC() {
@@ -291,23 +344,6 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
         .reply(statusCode, response)
 }
 
-export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
-        .optionally()
-        .reply(200, undefined, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
-        .patch(getResourceNameApiPath(resource), (body) => isEqual(body, data))
-        .reply(statusCode, response ?? resource, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
-}
-
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
@@ -342,7 +378,12 @@ export function nockDelete(resource: IResource, response?: IResource) {
         })
 }
 
-export function nockSearch(query: SearchQuery, response?: ISearchResult, statusCode = 201, polling = true) {
+export function nockSearch(
+    query: SearchQuery,
+    response?: ISearchResult | ISearchRelatedResult,
+    statusCode = 201,
+    polling = true
+) {
     nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
@@ -372,6 +413,12 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
     }
 
     return finalNetworkMock
+}
+
+export function nockRequest(pathname: string, response: object, statusCode = 200) {
+    return nock(process.env.JEST_DEFAULT_HOST as string)
+        .get(pathname)
+        .reply(statusCode, response)
 }
 
 export const mockBadRequestStatus = {

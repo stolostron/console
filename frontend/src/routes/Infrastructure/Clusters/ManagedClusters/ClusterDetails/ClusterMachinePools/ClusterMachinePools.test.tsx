@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus } from '../../../../../../resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
@@ -9,37 +8,7 @@ import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/noc
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
-import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
-
-const mockCluster: Cluster = {
-    name: clusterName,
-    displayName: clusterName,
-    namespace: clusterName,
-    status: ClusterStatus.ready,
-    distribution: {
-        k8sVersion: '1.19',
-        ocp: undefined,
-        displayVersion: '1.19',
-        isManagedOpenShift: false,
-    },
-    labels: undefined,
-    kubeApiServer: '',
-    consoleURL: '',
-    hive: {
-        isHibernatable: true,
-        clusterPool: undefined,
-        secrets: {
-            kubeconfig: '',
-            kubeadmin: '',
-            installConfig: '',
-        },
-    },
-    isHive: true,
-    isManaged: true,
-    isCurator: false,
-    isSNOCluster: false,
-    owner: {},
-}
+import { mockCluster, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.sharedmocks'
 
 describe('ClusterMachinePools', () => {
     beforeEach(() => {

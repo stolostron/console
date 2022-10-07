@@ -1,11 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterPool, ClusterStatus, ManagedClusterSet } from '../../../../../resources'
-import { AcmInlineStatusGroup } from '@stolostron/ui-components'
+import { AcmInlineStatusGroup } from '../../../../../ui-components'
 import { useClusters } from './useClusters'
 
-export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; clusterPool?: ClusterPool }) {
-    const clusters = useClusters(props.managedClusterSet, props.clusterPool)
+export function ClusterStatuses(props: {
+    managedClusterSet?: ManagedClusterSet
+    clusterPool?: ClusterPool
+    isGlobalClusterSet?: boolean
+}) {
+    const clusters = useClusters(props.managedClusterSet, props.clusterPool, props.isGlobalClusterSet)
     let healthy = 0
     let running = 0
     let warning = 0

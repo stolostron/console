@@ -2,19 +2,20 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+import { Fragment, Component } from 'react'
 import PropTypes from 'prop-types'
-import { AcmTextInput } from '@stolostron/ui-components'
-import { Checkbox, Accordion, AccordionItem, AccordionToggle, AccordionContent } from '@patternfly/react-core'
+import { AcmTextInput } from '../../../../../../ui-components'
+import { Radio, FormGroup, Accordion, AccordionItem, AccordionContent, Popover, Button } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
-import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
+import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
+import { Tooltip } from '../../../../../../components/TemplateEditor'
 import _ from 'lodash'
 import './style.css'
 
 const activeModeStr = 'active.mode'
 
-export class ClusterSelector extends React.Component {
+export class ClusterSelector extends Component {
     static propTypes = {
         control: PropTypes.object,
         controlId: PropTypes.string,
@@ -28,14 +29,14 @@ export class ClusterSelector extends React.Component {
         if (_.isEmpty(this.props.control.active)) {
             if (!this.props.control.showData || this.props.control.showData.length === 0) {
                 this.props.control.active = {
-                    mode: true,
+                    mode: false,
                     clusterLabelsList: [{ id: 0, labelName: '', labelValue: '', validValue: false }],
                     clusterLabelsListID: 1,
                 }
             } else {
                 //display existing placement rule
                 this.props.control.active = {
-                    mode: true,
+                    mode: false,
                     clusterLabelsList: this.props.control.showData,
                     clusterLabelsListID: this.props.control.showData.length,
                 }
@@ -45,19 +46,15 @@ export class ClusterSelector extends React.Component {
     }
 
     render() {
-        const { isExpanded } = this.state
-        const onToggle = (toggleStatus) => {
-            this.setState({ isExpanded: !toggleStatus })
-        }
         const { controlId, locale, control, i18n } = this.props
         const { name, active, validation = {} } = control
         const modeSelected = active && active.mode === true
         const isExistingRule = _.get(this.props, 'control.showData', []).length > 0
         const isReadOnly = isExistingRule || !modeSelected
-        const showLabels = modeSelected && isExpanded
+        const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
 
         return (
-            <React.Fragment>
+            <Fragment>
                 <div className="creation-view-controls-labels">
                     <div>
                         {name}
@@ -66,105 +63,99 @@ export class ClusterSelector extends React.Component {
                     </div>
 
                     <div className="clusterSelector-container" style={{ fontSize: '14px', position: 'relative' }}>
-                        <Checkbox
-                            className="clusterSelector-checkbox"
-                            style={{ fontWeight: '700', color: '#152935', fontSize: '14px' }}
-                            isChecked={modeSelected}
-                            isDisabled={isExistingRule}
-                            id={`clusterSelector-checkbox-${controlId}`}
-                            label={i18n('tooltip.creation.app.settings.clusterSelector')}
-                            onChange={this.handleMode}
-                        />
+                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={this.handleMode}>
+                            <Radio
+                                className="clusterSelector-checkbox"
+                                isChecked={modeSelected}
+                                isDisabled={isExistingRule}
+                                id={`clusterSelector-checkbox-${controlId}`}
+                                onChange={this.handleMode}
+                            />
+                            <FormGroup
+                                id="clusterSelector-container"
+                                label={i18n('creation.app.settings.clusterSelector')}
+                                labelIcon={
+                                    /* istanbul ignore next */
 
-                        <Accordion style={{ display: 'block' }}>
-                            <AccordionItem>
-                                <AccordionToggle
-                                    onClick={() => {
-                                        onToggle(showLabels)
-                                    }}
-                                    isExpanded={showLabels}
-                                    id="labels-header"
-                                >
-                                    {i18n('edit.app.labelClusters.summary')}
-                                </AccordionToggle>
-                                <AccordionContent isHidden={!showLabels}>
-                                    <div className="clusterSelector-labels-section">
-                                        <div
-                                            className="labels-descr"
-                                            style={{ fontSize: '14px', marginBottom: '30px' }}
+                                    <Popover
+                                        id={`${controlId}-label-help-popover`}
+                                        bodyContent={i18n('creation.app.settings.selectorClusters.config')}
+                                    >
+                                        <Button
+                                            variant="plain"
+                                            id={`${controlId}-label-help-button`}
+                                            aria-label="More info"
+                                            onClick={(e) => e.preventDefault()}
+                                            className="pf-c-form__group-label-help"
                                         >
-                                            {i18n('creation.app.settings.selectorClusters.config')}
-                                        </div>
-
-                                        <div
-                                            className="labels-section"
-                                            style={{ display: 'block' }}
-                                            id={`clusterSelector-labels-section-${controlId}`}
-                                        >
-                                            {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
+                                            <HelpIcon noVerticalAlign />
+                                        </Button>
+                                    </Popover>
+                                }
+                            />
+                        </div>
+                        <div style={!modeSelected ? { pointerEvents: 'none', opacity: 0.3 } : {}}>
+                            <Accordion style={{ display: 'block' }}>
+                                <AccordionItem>
+                                    <AccordionContent>
+                                        <div className="clusterSelector-labels-section">
                                             <div
-                                                className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                                                tabIndex="0"
-                                                role={'button'}
-                                                onClick={() => this.addLabelToList(control, !isReadOnly)}
-                                                onKeyPress={this.addLabelKeyPress.bind(this)}
+                                                className="labels-section"
+                                                style={{ display: 'block' }}
+                                                id={`clusterSelector-labels-section-${controlId}`}
                                             >
-                                                <PlusCircleIcon
-                                                    color="#06c"
-                                                    key="add-icon"
-                                                    className="add-label-btn-icon"
-                                                    style={{ float: 'left', marginLeft: '7px' }}
-                                                />
-                                                <div
-                                                    className="add-label-btn-text"
-                                                    style={{ fontWeight: '700', fontSize: '14px', color: '#06c' }}
-                                                >
-                                                    {i18n('creation.app.settings.selectorClusters.prop.add')}
-                                                </div>
+                                                {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
+                                                {hasLabels && (
+                                                    <div
+                                                        className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
+                                                        tabIndex="0"
+                                                        role={'button'}
+                                                        onClick={() => this.addLabelToList(control, !isReadOnly)}
+                                                        onKeyPress={this.addLabelKeyPress.bind(this)}
+                                                    >
+                                                        <PlusCircleIcon
+                                                            color="#06c"
+                                                            key="add-icon"
+                                                            className="add-label-btn-icon"
+                                                            style={{ float: 'left', marginLeft: '7px' }}
+                                                        />
+                                                        <div
+                                                            className="add-label-btn-text"
+                                                            style={{
+                                                                fontWeight: '700',
+                                                                fontSize: '14px',
+                                                                color: '#06c',
+                                                            }}
+                                                        >
+                                                            {i18n('creation.app.settings.selectorClusters.prop.add')}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </div>
                     </div>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 
     validation(exceptions) {
-        const { control, controlId, i18n } = this.props
+        const { control, i18n } = this.props
         if (_.get(control, activeModeStr, false)) {
-            if (Object.keys(control.active.clusterLabelsList).length === 0) {
-                //no cluster labels set
-                exceptions.push({
-                    row: 1,
-                    text: i18n('creation.missing.clusterSelector.value'),
-                    type: 'error',
-                    controlId: `clusterSelector-labels-section-${controlId}`,
-                })
-            }
-
             const labelNameSet = new Set()
             control.active.clusterLabelsList.map((item) => {
-                const { id, labelName, labelValue, validValue } = item
+                const { id, labelName, validValue } = item
                 const invalidLabel = (validValue || id === 0) && (!labelName || labelName.length === 0)
-                const invalidValue = (validValue || id === 0) && (!labelValue || labelValue.length === 0)
 
                 // Add exception if no input for labels or values
                 if (invalidLabel) {
                     exceptions.push({
                         row: 1,
                         text: i18n('creation.missing.clusterSelector.label'),
-                        type: 'error',
-                        controlId: `labelName-${id}`,
-                    })
-                }
-                if (invalidValue) {
-                    exceptions.push({
-                        row: 1,
-                        text: i18n('creation.missing.clusterSelector.value'),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
@@ -193,7 +184,7 @@ export class ClusterSelector extends React.Component {
 
                 if (validValue || id === 0) {
                     return (
-                        <React.Fragment key={id}>
+                        <Fragment key={id}>
                             <div
                                 className="matching-labels-container"
                                 style={{ display: 'flex', marginBottom: '20px' }}
@@ -222,7 +213,6 @@ export class ClusterSelector extends React.Component {
                                         placeholder={i18n('clusterSelector.value.placeholder.field')}
                                         isDisabled={isReadOnly}
                                         onChange={(value) => this.handleChange(value, 'labelValue', id)}
-                                        isRequired
                                     />
                                 </div>
 
@@ -242,7 +232,7 @@ export class ClusterSelector extends React.Component {
                                     ''
                                 )}
                             </div>
-                        </React.Fragment>
+                        </Fragment>
                     )
                 }
                 return ''
@@ -289,11 +279,11 @@ export class ClusterSelector extends React.Component {
         }
     }
 
-    handleMode = (checked) => {
+    handleMode = () => {
         const { control, handleChange } = this.props
         const { active } = control
         if (active) {
-            active.mode = checked
+            active.mode = true
         }
 
         handleChange(control)
@@ -346,56 +336,5 @@ export const summary = (control) => {
                 desc: labels.join(', '),
             },
         ]
-    }
-}
-
-export const reverse = (control, templateObject) => {
-    if (!control.active) {
-        let matchLabels
-        const placement = _.get(templateObject, 'Placement')
-        if (placement) {
-            const sourcePath = 'Placement[0].spec.clusterSelector.matchLabels'
-            matchLabels = _.get(templateObject, getSourcePath(sourcePath), {})
-        } else {
-            const local = _.get(
-                templateObject,
-                getSourcePath('PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster')
-            )
-            if (!local) {
-                matchLabels = _.get(templateObject, getSourcePath('PlacementRule[0].spec.clusterSelector.matchLabels'))
-                if (!matchLabels) {
-                    matchLabels = _.get(
-                        templateObject,
-                        getSourcePath('PlacementRule[0].spec.clusterLabels.matchLabels')
-                    )
-                }
-            }
-        }
-
-        if (matchLabels) {
-            matchLabels = removeVs(matchLabels)
-            if (matchLabels) {
-                const clusterLabelsList = Object.entries(matchLabels).map(([labelName, labelValue], id) => {
-                    return {
-                        id,
-                        labelName,
-                        labelValue,
-                        validValue: true,
-                    }
-                })
-                control.active = {
-                    mode: true,
-                    clusterLabelsList,
-                    clusterLabelsListID: clusterLabelsList.length,
-                }
-            }
-        } else {
-            const clusterLabelsList = [{ id: 0, labelName: '', labelValue: '', validValue: false }]
-            control.active = {
-                mode: false,
-                clusterLabelsList,
-                clusterLabelsListID: 1,
-            }
-        }
     }
 }

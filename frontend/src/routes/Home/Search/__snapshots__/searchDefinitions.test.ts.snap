@@ -26,6 +26,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
       "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
       "state": Object {
         "from": "/multicloud/home/search",
+        "fromSearch": "",
       },
     }
   }
@@ -50,6 +51,7 @@ exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
       "search": "?cluster%3DtestCluster%26kind%3Dpolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
       "state": Object {
         "from": "/multicloud/home/search",
+        "fromSearch": "",
       },
     }
   }
@@ -66,6 +68,7 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
       "search": "?cluster%3DtestCluster%26kind%3Dapplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
       "state": Object {
         "from": "/multicloud/home/search",
+        "fromSearch": "",
       },
     }
   }
@@ -104,6 +107,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -153,6 +157,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -213,6 +218,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -273,6 +279,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -348,6 +355,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -398,6 +406,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -468,6 +477,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -543,6 +553,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -598,6 +609,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -668,6 +680,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -678,7 +691,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -718,6 +731,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -788,6 +802,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -853,6 +868,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -903,6 +919,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -968,6 +985,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1048,6 +1066,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1118,6 +1137,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1173,6 +1193,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1228,6 +1249,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1283,6 +1305,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1353,6 +1376,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1418,6 +1442,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1475,6 +1500,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1527,6 +1553,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1587,6 +1614,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1642,6 +1670,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1707,6 +1736,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }
@@ -1767,6 +1797,7 @@ Array [
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
+            "fromSearch": "",
           },
         }
       }

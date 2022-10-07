@@ -224,6 +224,7 @@ export const subscriptionInputRed1 = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         clustersNames: ['braveman', 'braveman2'],
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
@@ -279,6 +280,7 @@ export const subscriptionInputYellow = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
         },
@@ -323,6 +325,7 @@ export const subscriptionGreenNotPlacedYellow = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedc',
     specs: {
+        isDesign: true,
         raw: {
             spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
         },
@@ -330,6 +333,27 @@ export const subscriptionGreenNotPlacedYellow = {
         row: 12,
     },
     type: 'subscription',
+}
+
+export const appSetDeployable = {
+    id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--applicationset--appSet1',
+    name: 'appSet1',
+    namespace: 'default',
+    specs: {
+        applicationsetModel: [],
+    },
+    type: 'applicationset',
+}
+
+export const appSetDesignFalse = {
+    id: 'member--applicationset--default--appSet1',
+    name: 'appSet2',
+    namespace: 'default',
+    specs: {
+        design: false,
+        applicationsetModel: [],
+    },
+    type: 'applicationset',
 }
 
 export const subscriptionInputNotPlaced = {
@@ -1299,7 +1323,9 @@ export const appNoChannelRed = {
     cluster: null,
     clusterName: null,
     type: 'application',
-    specs: {},
+    specs: {
+        isDesign: true,
+    },
 }
 
 export const appNoChannelGreen = {
@@ -1308,6 +1334,7 @@ export const appNoChannelGreen = {
     clusterName: null,
     type: 'application',
     specs: {
+        isDesign: true,
         channels: ['aaa'],
     },
 }

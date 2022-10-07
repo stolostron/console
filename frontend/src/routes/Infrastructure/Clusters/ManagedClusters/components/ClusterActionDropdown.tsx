@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
+import { AcmInlineProvider, Provider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
+import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -18,15 +19,18 @@ import {
     ClusterDeployment,
     ClusterDeploymentDefinition,
     ClusterStatus,
+    HostedClusterDefinition,
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
+    SecretDefinition,
 } from '../../../../../resources'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
+import { UpdateAutomationModal } from './UpdateAutomationModal'
 
 /**
  * Function to return cluster actions available to a cluster
@@ -45,6 +49,8 @@ export function getClusterActions(cluster: Cluster) {
         'destroy-cluster',
         'ai-edit',
         'ai-scale-up',
+        'destroy-hypershift-cluster',
+        'update-automation-template',
     ]
 
     // ClusterCurator
@@ -117,16 +123,20 @@ export function getClusterActions(cluster: Cluster) {
         actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
     }
 
-    if (cluster.provider !== Provider.hybrid) {
+    if (!cluster.isHypershift || cluster.status === ClusterStatus.destroying) {
+        actionIds = actionIds.filter((id) => id !== 'destroy-hypershift-cluster')
+    }
+
+    if (cluster.provider !== Provider.hostinventory || cluster.isHypershift) {
         actionIds = actionIds.filter((id) => id !== 'ai-edit')
     }
 
     if (
         !(
-            cluster.provider === Provider.hybrid &&
+            cluster.provider === Provider.hostinventory &&
+            !cluster.isHypershift &&
             [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
-        ) ||
-        cluster.isSNOCluster
+        )
     ) {
         actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
     }
@@ -140,6 +150,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
     const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
@@ -184,8 +195,14 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     )
 
     const destroyRbac = useMemo(
-        () => [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-        [cluster.name, cluster.namespace]
+        () => [
+            rbacDelete(
+                cluster.isHypershift ? HostedClusterDefinition : ClusterDeploymentDefinition,
+                cluster.namespace,
+                cluster.name
+            ),
+        ],
+        [cluster.name, cluster.namespace, cluster.isHypershift]
     )
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
@@ -193,6 +210,18 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     let actions = useMemo(
         () => [
+            {
+                id: 'update-automation-template',
+                text: t('Update automation template'),
+                click: () => setShowUpdateAutomationModal(true),
+                isAriaDisabled: true,
+                rbac: [
+                    rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                    rbacPatch(SecretDefinition, cluster.namespace),
+                    rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+                    rbacCreate(SecretDefinition, cluster.namespace),
+                ],
+            },
             {
                 id: 'edit-labels',
                 text: t('managed.editLabels'),
@@ -203,8 +232,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'upgrade-cluster',
                 text: t('managed.upgrade'),
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                click: (_cluster: Cluster) => setShowUpgradeModal(true),
+                click: () => setShowUpgradeModal(true),
                 isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -214,8 +242,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'select-channel',
                 text: t('managed.selectChannel'),
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                click: (_cluster: Cluster) => setShowChannelSelectModal(true),
+                click: () => setShowChannelSelectModal(true),
                 isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -370,7 +397,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
+                rbac: cluster.isHostedCluster ? [] : [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
                 id: 'destroy-cluster',
@@ -396,7 +423,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: destroyRbac,
+                rbac: cluster.isHostedCluster ? [] : destroyRbac,
             },
             {
                 id: 'ai-edit',
@@ -414,6 +441,32 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text: t('managed.ai.scaleUp'),
                 click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
             },
+            {
+                id: 'destroy-hypershift-cluster',
+                text: t('managed.destroy'),
+                click: (cluster: Cluster) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.destroy'),
+                        action: t('destroy'),
+                        processing: t('destroying'),
+                        resources: [cluster],
+                        description: t('bulk.message.destroy'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => deleteHypershiftCluster(cluster),
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: cluster.displayName,
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+                isAriaDisabled: true,
+                rbac: cluster.isHostedCluster ? [] : destroyRbac,
+            },
         ],
         [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
     )
@@ -421,6 +474,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)
     return (
         <>
+            <UpdateAutomationModal
+                clusters={[cluster]}
+                open={showUpdateAutomationModal}
+                close={() => setShowUpdateAutomationModal(false)}
+            />
             <EditLabels
                 resource={
                     showEditLabels

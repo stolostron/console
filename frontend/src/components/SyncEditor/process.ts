@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, set, get, cloneDeep, has } from 'lodash'
+import { isEmpty, set, unset, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
 import { getMatchingValues, getUidSiblings, crossReference } from './synchronize'
 import { reconcile } from './reconcile'
@@ -279,13 +279,33 @@ function getMappings(documents: any[]) {
                 let arr = mappings[key] || []
                 const rangeObj: { [name: string]: MappingType } = {}
                 const contents: any = document?.contents
-                getMappingItems(contents?.items, rangeObj, `${key}.${arr.length}`, [key, arr.length], false, paths)
+                const omitted: any[] = []
+                getMappingItems(
+                    contents?.items,
+                    rangeObj,
+                    `${key}.${arr.length}`,
+                    [key, arr.length],
+                    false,
+                    paths,
+                    omitted
+                )
                 arr.push(rangeObj)
                 mappings[key] = arr
                 arr = parsed[key] || []
                 arr.push(json)
                 parsed[key] = arr
                 resources.push(json)
+
+                // if user is typing, make sure not to include
+                // half finished expression in json
+                omitted.forEach((path) => {
+                    const arr = get(parsed, path.slice(0, -1))
+                    if (Array.isArray(arr)) {
+                        arr.splice(path.pop(), 1)
+                    } else {
+                        unset(parsed, path)
+                    }
+                })
             }
         }
     })
@@ -298,62 +318,67 @@ function getMappingItems(
     parentKey: string,
     parentPath: string[],
     parentIsArray: boolean,
-    paths: { [name: string]: any } = {}
+    paths: { [name: string]: any } = {},
+    omitted: any[]
 ) {
     items?.forEach((item: any, inx: number) => {
-        const key = parentIsArray ? inx : item?.key?.value
-        let value
-        if (item.items || item.value) {
-            if (item.items ?? item.value.items) {
-                const isArray = item?.value?.type === 'SEQ'
-                value = isArray ? [] : {}
-                const pk = `${parentKey}.${key}`
-                const pa = [...parentPath, key]
-                getMappingItems(item.items ?? item.value.items, value, pk, pa, isArray, paths)
-            } else {
-                value = item?.value?.value ?? item?.value
+        if (item) {
+            const key = parentIsArray ? inx : item?.key?.value
+            let value
+            if (item.items || item.value) {
+                if (item.items ?? item.value.items) {
+                    const isArray = item?.value?.type === 'SEQ'
+                    value = isArray ? [] : {}
+                    const pk = `${parentKey}.${key}`
+                    const pa = [...parentPath, key]
+                    getMappingItems(item.items ?? item.value.items, value, pk, pa, isArray, paths, omitted)
+                } else {
+                    value = item?.value?.value ?? item?.value
+                }
             }
-        }
-        if (Array.isArray(rangeObj)) {
-            const valuePos = item?.cstNode.rangeAsLinePos
-            const firstRow = valuePos?.start.line ?? 1
-            const lastRow = valuePos?.end.line ?? firstRow
-            const length = Math.max(1, lastRow - firstRow)
-            rangeObj.push({
-                $k: `${rangeObj.length}`,
-                $r: firstRow,
-                $l: length,
-                $v: value,
-                $gv: valuePos,
-            })
-            paths[`${parentKey}.${rangeObj.length - 1}`] = {
-                $p: [...parentPath, rangeObj.length - 1],
-                $r: firstRow,
-                $l: length,
-                $v: value,
-                $d: [...parentPath],
+            if (Array.isArray(rangeObj)) {
+                const valuePos = item?.cstNode.rangeAsLinePos
+                const firstRow = valuePos?.start.line ?? 1
+                const lastRow = valuePos?.end.line ?? firstRow
+                const length = Math.max(1, lastRow - firstRow)
+                rangeObj.push({
+                    $k: `${rangeObj.length}`,
+                    $r: firstRow,
+                    $l: length,
+                    $v: value,
+                    $gv: valuePos,
+                })
+                paths[`${parentKey}.${rangeObj.length - 1}`] = {
+                    $p: [...parentPath, rangeObj.length - 1],
+                    $r: firstRow,
+                    $l: length,
+                    $v: value,
+                    $d: [...parentPath],
+                }
+            } else if (item.key) {
+                const keyPos = item.key.cstNode.rangeAsLinePos
+                const valuePos = item?.value?.cstNode.rangeAsLinePos
+                const firstRow = keyPos?.start.line ?? 1
+                const lastRow = valuePos?.end.line ?? firstRow
+                const length = Math.max(1, lastRow - firstRow)
+                rangeObj[key] = {
+                    $k: key,
+                    $r: firstRow,
+                    $l: length,
+                    $v: value,
+                    $gk: keyPos,
+                    $gv: valuePos,
+                }
+                paths[`${parentKey}.${key}`] = {
+                    $p: [...parentPath, key],
+                    $r: firstRow,
+                    $l: length,
+                    $v: value,
+                    $d: [...parentPath],
+                }
             }
-        } else if (item.key) {
-            const keyPos = item.key.cstNode.rangeAsLinePos
-            const valuePos = item?.value?.cstNode.rangeAsLinePos
-            const firstRow = keyPos?.start.line ?? 1
-            const lastRow = valuePos?.end.line ?? firstRow
-            const length = Math.max(1, lastRow - firstRow)
-            rangeObj[key] = {
-                $k: key,
-                $r: firstRow,
-                $l: length,
-                $v: value,
-                $gk: keyPos,
-                $gv: valuePos,
-            }
-            paths[`${parentKey}.${key}`] = {
-                $p: [...parentPath, key],
-                $r: firstRow,
-                $l: length,
-                $v: value,
-                $d: [...parentPath],
-            }
+        } else {
+            omitted.push([...parentPath, inx])
         }
     })
 }

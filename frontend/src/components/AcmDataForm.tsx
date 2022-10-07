@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '@stolostron/ui-components'
+import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -92,6 +92,7 @@ import {
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
 import { useTranslation } from '../lib/acm-i18next'
+import { TFunction } from 'i18next'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -103,25 +104,26 @@ export interface AcmDataFormProps {
     isHorizontal?: boolean
     edit?: () => void
     operatorError?: ReactNode
+    hideYaml?: boolean
+    isModalWizard?: boolean
 }
 
-function generalValidationMessage() {
-    return <Fragment>You must fix the issues with fields before you can proceed.</Fragment>
+export function generalValidationMessage(t: TFunction) {
+    return t('You must fix the issues with fields before you can proceed.')
 }
 
-function requiredValidationMessage() {
-    return <Fragment>You must fill out all required fields before you can proceed.</Fragment>
+export function requiredValidationMessage(t: TFunction) {
+    return t('You must fill out all required fields before you can proceed.')
 }
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-const EDITOR_CHANGES = 'Other YAML changes'
-
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
+    const { t } = useTranslation()
 
-    const { editorTitle, schema, secrets, immutables, formData, operatorError } = props
+    const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml, isModalWizard } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
@@ -137,58 +139,14 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
-    return (
-        <div ref={pageRef} style={{ height: '100%' }}>
-            <Page
-                additionalGroupedContent={
-                    <Fragment>
-                        <AcmPageHeader
-                            title={formData.title}
-                            titleTooltip={formData.titleTooltip}
-                            description={formData.description}
-                            breadcrumb={formData.breadcrumb}
-                            actions={
-                                <ActionList>
-                                    {mode === 'details' && props.edit !== undefined && (
-                                        <ActionListItem>
-                                            <Button onClick={props.edit}>Edit</Button>
-                                        </ActionListItem>
-                                    )}
-                                </ActionList>
-                            }
-                            switches={
-                                <Fragment>
-                                    {(editorTitle || process.env.NODE_ENV === 'development') && (
-                                        <Switch
-                                            label="YAML"
-                                            isChecked={drawerExpanded}
-                                            onChange={() => {
-                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
-                                                setDrawerExpanded(!drawerExpanded)
-                                            }}
-                                        />
-                                    )}
-                                </Fragment>
-                            }
-                        />
-                        {showFormErrors && mode === 'form' && formHasErrors(formData) && (
-                            <PageSection variant="light" style={{ paddingTop: 0 }}>
-                                <AlertGroup>
-                                    {formHasRequiredErrors(formData) ? (
-                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
-                                    ) : (
-                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
-                                    )}
-                                </AlertGroup>
-                            </PageSection>
-                        )}
-                    </Fragment>
-                }
-                groupProps={{ sticky: 'top' }}
-            >
-                <Drawer isExpanded={drawerExpanded} isInline={true}>
-                    <DrawerContent
-                        panelContent={
+    const drawerContent = () => {
+        return (
+            <Drawer isExpanded={drawerExpanded} isInline={true}>
+                <DrawerContent
+                    panelContent={
+                        hideYaml ? (
+                            ''
+                        ) : (
                             <DrawerPanelContent
                                 isResizable={true}
                                 defaultSize="600px"
@@ -256,37 +214,98 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                     </CodeBlock>
                                 )}
                             </DrawerPanelContent>
-                        }
-                    >
-                        <DrawerContentBody>
-                            {mode === 'wizard' ? (
-                                <PageSection isFilled type="wizard" style={{ height: '100%' }}>
-                                    <AcmDataForm
-                                        {...props}
-                                        stateChanges={stateChanges}
-                                        mode={mode}
-                                        showFormErrors={showFormErrors}
-                                        setShowFormErrors={setShowFormErrors}
-                                        isHorizontal={isHorizontal}
-                                        operatorError={operatorError}
-                                    />
-                                </PageSection>
-                            ) : (
-                                <PageSection variant="light" isFilled>
-                                    <AcmDataForm
-                                        {...props}
-                                        stateChanges={stateChanges}
-                                        mode={mode}
-                                        showFormErrors={showFormErrors}
-                                        setShowFormErrors={setShowFormErrors}
-                                        isHorizontal={isHorizontal}
-                                    />
+                        )
+                    }
+                >
+                    <DrawerContentBody>
+                        {mode === 'wizard' ? (
+                            <PageSection isFilled type="wizard" style={{ height: '100%' }}>
+                                <AcmDataForm
+                                    {...props}
+                                    stateChanges={stateChanges}
+                                    mode={mode}
+                                    showFormErrors={showFormErrors}
+                                    setShowFormErrors={setShowFormErrors}
+                                    isHorizontal={isHorizontal}
+                                    operatorError={operatorError}
+                                    isModalWizard={isModalWizard}
+                                />
+                            </PageSection>
+                        ) : (
+                            <PageSection variant="light" isFilled>
+                                <AcmDataForm
+                                    {...props}
+                                    stateChanges={stateChanges}
+                                    mode={mode}
+                                    showFormErrors={showFormErrors}
+                                    setShowFormErrors={setShowFormErrors}
+                                    isHorizontal={isHorizontal}
+                                />
+                            </PageSection>
+                        )}
+                    </DrawerContentBody>
+                </DrawerContent>
+            </Drawer>
+        )
+    }
+
+    return (
+        <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
+            {isModalWizard ? (
+                drawerContent()
+            ) : (
+                <Page
+                    additionalGroupedContent={
+                        <Fragment>
+                            <AcmPageHeader
+                                title={formData.title}
+                                titleTooltip={formData.titleTooltip}
+                                description={formData.description}
+                                breadcrumb={formData.breadcrumb}
+                                actions={
+                                    <ActionList>
+                                        {mode === 'details' && props.edit !== undefined && (
+                                            <ActionListItem>
+                                                <Button onClick={props.edit}>Edit</Button>
+                                            </ActionListItem>
+                                        )}
+                                    </ActionList>
+                                }
+                                switches={
+                                    hideYaml ? undefined : (
+                                        <Fragment>
+                                            {(editorTitle || process.env.NODE_ENV === 'development') && (
+                                                <Switch
+                                                    label="YAML"
+                                                    isChecked={drawerExpanded}
+                                                    onChange={() => {
+                                                        localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                        setDrawerExpanded(!drawerExpanded)
+                                                    }}
+                                                />
+                                            )}
+                                        </Fragment>
+                                    )
+                                }
+                            />
+                            {showFormErrors && mode === 'form' && formHasErrors(formData) && (
+                                <PageSection variant="light" style={{ paddingTop: 0 }}>
+                                    <AlertGroup>
+                                        {formHasRequiredErrors(formData) ? (
+                                            <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
+                                        ) : (
+                                            <Alert isInline variant="danger" title={generalValidationMessage(t)} />
+                                        )}
+                                    </AlertGroup>
                                 </PageSection>
                             )}
-                        </DrawerContentBody>
-                    </DrawerContent>
-                </Drawer>
-            </Page>
+                        </Fragment>
+                    }
+                    groupProps={{ sticky: 'top' }}
+                >
+                    {drawerContent()}
+                </Page>
+            )}
         </div>
     )
 }
@@ -297,9 +316,11 @@ export function AcmDataForm(
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
         operatorError?: ReactNode
+        isModalWizard?: boolean
     }
 ): JSX.Element {
-    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors } = props
+    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors, isModalWizard } =
+        props
     switch (props.mode) {
         case 'wizard':
             return (
@@ -310,6 +331,7 @@ export function AcmDataForm(
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
                     operatorError={operatorError}
+                    isModalWizard={isModalWizard}
                 />
             )
 
@@ -389,8 +411,8 @@ export function AcmDataFormDefault(props: {
             })}
 
             {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-                <FormSection key={EDITOR_CHANGES}>
-                    <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
+                <FormSection key="editor-changes">
+                    <Title headingLevel="h2">{t('Other YAML changes')}</Title>
                     <FormGroup fieldId="diffs">
                         <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
@@ -447,10 +469,12 @@ export function AcmDataFormWizard(props: {
     isHorizontal: boolean
     operatorError?: ReactNode
     showFormErrors: boolean
+    isModalWizard?: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
     const { t } = useTranslation()
-    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors } = props
+    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors, isModalWizard } =
+        props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
@@ -482,9 +506,9 @@ export function AcmDataFormWizard(props: {
                     {(showFormErrors || showSectionErrors[section.title]) && hasError && (
                         <AlertGroup>
                             {sectionHasRequiredErrors(section) ? (
-                                <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
                             ) : (
-                                <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                <Alert isInline variant="danger" title={generalValidationMessage(t)} />
                             )}
                         </AlertGroup>
                     )}
@@ -520,16 +544,16 @@ export function AcmDataFormWizard(props: {
                 {showFormErrors && formHasErrors(formData) && (
                     <AlertGroup>
                         {formHasRequiredErrors(formData) ? (
-                            <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                            <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
                         ) : (
-                            <Alert isInline variant="danger" title={generalValidationMessage()} />
+                            <Alert isInline variant="danger" title={generalValidationMessage(t)} />
                         )}
                     </AlertGroup>
                 )}
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
                 {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-                    <FormSection key={EDITOR_CHANGES}>
-                        <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
+                    <FormSection key="editor-changes">
+                        <Title headingLevel="h2">{t('Other YAML changes')}</Title>
                         <FormGroup fieldId="diffs">
                             <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
                         </FormGroup>
@@ -659,7 +683,25 @@ export function AcmDataFormWizard(props: {
         </WizardFooter>
     )
 
-    return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
+    return (
+        <Fragment>
+            {isModalWizard ? (
+                <Wizard
+                    titleId="create-credential-title"
+                    descriptionId="create-credential-description"
+                    title={t('Create credential')}
+                    description={t(
+                        'A credential stores the access credentials and configuration information for creating clusters.'
+                    )}
+                    steps={steps}
+                    footer={Footer}
+                    onClose={formData.cancel}
+                />
+            ) : (
+                <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
+            )}
+        </Fragment>
+    )
 }
 
 export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: boolean }): JSX.Element {
@@ -916,13 +958,11 @@ export function AcmDataFormInputs(props: {
                                                     onClick={input.prompt.callback}
                                                 >
                                                     {input.prompt.text}
-                                                    {input.prompt.linkType === LinkType.external ? (
-                                                        <ExternalLinkAltIcon />
-                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
-                                                        <AcmIcon
+                                                    {input.prompt.linkType === LinkType.external ||
+                                                    input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <ExternalLinkAltIcon
                                                             style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                                            icon={AcmIconVariant.openNewTab}
-                                                        ></AcmIcon>
+                                                        />
                                                     ) : null}
                                                 </AcmButton>
                                             </SplitItem>
@@ -943,13 +983,11 @@ export function AcmDataFormInputs(props: {
                                                     onClick={input.prompt.callback}
                                                 >
                                                     {input.prompt.text}
-                                                    {input.prompt.linkType === LinkType.external ? (
-                                                        <ExternalLinkAltIcon />
-                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
-                                                        <AcmIcon
+                                                    {input.prompt.linkType === LinkType.external ||
+                                                    input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <ExternalLinkAltIcon
                                                             style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
-                                                            icon={AcmIconVariant.openNewTab}
-                                                        ></AcmIcon>
+                                                        />
                                                     ) : null}
                                                 </AcmButton>
                                             </SplitItem>

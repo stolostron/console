@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
 
 export type HumanizedSortable = {
     title: string | React.ReactNode

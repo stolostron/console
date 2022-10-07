@@ -22,6 +22,9 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Managed Clusters
     clusters = '/multicloud/infrastructure/clusters',
     managedClusters = '/multicloud/infrastructure/clusters/managed',
+    createInfrastructure = '/multicloud/infrastructure/clusters/create/infrastructure',
+    createControlPlane = '/multicloud/infrastructure/clusters/create/control-plane',
+    createDicoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
@@ -47,6 +50,7 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Cluster Pools
     clusterPools = '/multicloud/infrastructure/clusters/pools',
     createClusterPool = '/multicloud/infrastructure/clusters/pools/create',
+    createClusterPoolInfrastructure = '/multicloud/infrastructure/clusters/pools/create/infrastructure',
 
     // Infrastructure - Clusters - Discovery
     discoveredClusters = '/multicloud/infrastructure/clusters/discovered',
@@ -59,11 +63,6 @@ export enum NavigationPath {
     infraEnvironmentDetails = '/multicloud/infrastructure/environments/details/:namespace/:name',
     infraEnvironmentHosts = '/multicloud/infrastructure/environments/details/:namespace/:name/hosts',
     infraEnvironmentOverview = '/multicloud/infrastructure/environments/details/:namespace/:name/overview',
-
-    // Infrastructure - Bare Metal Assets
-    bareMetalAssets = '/multicloud/infrastructure/bare-metal-assets',
-    createBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/create',
-    editBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/edit/:namespace/:name',
 
     // Infrastructure - Automations
     ansibleAutomations = '/multicloud/infrastructure/automations',
@@ -102,6 +101,8 @@ export enum NavigationPath {
     addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+
+    emptyPath = '',
 }
 
 export type CancelBackState = { cancelBack?: boolean }

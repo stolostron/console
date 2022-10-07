@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import _ from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { getQueryStringForResource, getArgoSecret } from './resourceStatusesArgo'
-import _ from 'lodash'
+import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
 
 export async function getAppSetResourceStatuses(application, appData) {
     const { name, namespace, appSetApps } = application
@@ -29,7 +29,13 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
         argoNS && targetNS.push(argoNS)
     })
 
-    appData.targetNamespaces = _.uniq(targetNS)
+    const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources') : []
+    let definedNamespace = ''
+    resources.forEach((resource) => {
+        definedNamespace = _.get(resource, 'namespace')
+    })
+
+    appData.targetNamespaces = definedNamespace ? definedNamespace : _.uniq(targetNS)
     appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
 
     let query //= getQueryStringForResource('Application', name, namespace)
@@ -49,7 +55,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
         query: SearchResultRelatedItemsDocument,
         variables: {
             input: [{ ...query }],
-            limit: 10000,
+            limit: 1000,
         },
         fetchPolicy: 'network-only',
     })

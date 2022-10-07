@@ -3,9 +3,9 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { TFunction } from 'i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -16,6 +16,7 @@ import {
     channelsState,
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
+    helmReleaseState,
     namespacesState,
     placementRulesState,
     subscriptionsState,
@@ -62,6 +63,8 @@ import {
     isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { PluginContext } from '../../lib/PluginContext'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -87,6 +90,17 @@ function isOCPAppResource(resource: IApplicationResource): resource is OCPAppRes
     return 'label' in resource
 }
 
+function isFluxApplication(label: string) {
+    let isFlux = false
+    Object.entries(fluxAnnotations).forEach(([, values]) => {
+        const [nameAnnotation, namespaceAnnotation] = values
+        if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
+            isFlux = true
+        }
+    })
+    return isFlux
+}
+
 // Map resource kind to type column
 function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
@@ -100,14 +114,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
             return t('ApplicationSet')
         }
     } else if (isOCPAppResource(resource)) {
-        const label = resource.label
-        let isFlux = false
-        Object.entries(fluxAnnotations).forEach(([, values]) => {
-            const [nameAnnotation, namespaceAnnotation] = values
-            if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
-                isFlux = true
-            }
-        })
+        const isFlux = isFluxApplication(resource.label)
         if (isFlux) {
             return t('Flux')
         }
@@ -217,6 +224,8 @@ export default function ApplicationsOverview() {
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
+    const [helmReleases] = useRecoilState(helmReleaseState)
+    const { acmExtensions } = useContext(PluginContext)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
@@ -237,7 +246,11 @@ export default function ApplicationsOverview() {
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
+    const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+
     const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+
+    const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
     const getTimeWindow = useCallback(
         (app: IResource) => {
@@ -332,6 +345,27 @@ export default function ApplicationsOverview() {
         () =>
             argoApplications
                 .filter((argoApp) => {
+                    const resources = argoApp.status.resources
+                    let definedNamespace = ''
+                    resources &&
+                        resources.forEach((resource: any) => {
+                            definedNamespace = resource.namespace
+                        })
+                    // cache Argo app signature for filtering OCP apps later
+                    setArgoApplicationsHashSet(
+                        (prev) =>
+                            new Set(
+                                prev.add(
+                                    `${argoApp.metadata.name}-${
+                                        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+                                    }-${getArgoDestinationCluster(
+                                        argoApp.spec.destination,
+                                        managedClusters,
+                                        'local-cluster'
+                                    )}`
+                                )
+                            )
+                    )
                     const isChildOfAppset =
                         argoApp.metadata.ownerReferences &&
                         argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
@@ -341,12 +375,18 @@ export default function ApplicationsOverview() {
                     return false
                 })
                 .map(generateTransformData),
-        [argoApplications, generateTransformData]
+        [argoApplications, generateTransformData, managedClusters]
     )
 
     const discoveredApplicationsTableItems = useMemo(() => {
-        return discoveredApplications.map((remoteArgoApp: any) =>
-            generateTransformData({
+        return discoveredApplications.map((remoteArgoApp: any) => {
+            setArgoApplicationsHashSet(
+                (prev) =>
+                    new Set(
+                        prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`)
+                    )
+            )
+            return generateTransformData({
                 apiVersion: ArgoApplicationApiVersion,
                 kind: ArgoApplicationKind,
                 metadata: {
@@ -358,7 +398,7 @@ export default function ApplicationsOverview() {
                     destination: {
                         namespace: remoteArgoApp.destinationNamespace,
                         name: remoteArgoApp.destinationName,
-                        server: remoteArgoApp.destinationCluster,
+                        server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
                     },
                     source: {
                         path: remoteArgoApp.path,
@@ -371,18 +411,21 @@ export default function ApplicationsOverview() {
                     cluster: remoteArgoApp.cluster,
                 },
             } as ArgoApplication)
-        )
+        })
     }, [discoveredApplications, generateTransformData])
 
     const ocpAppResourceTableItems = useMemo(() => {
         const openShiftAppResourceMaps: Record<string, any> = {}
         const transformedData: any[] = []
         for (let i = 0; i < discoveredOCPAppResources.length; i++) {
+            let argoInstanceLabelValue
             if ((discoveredOCPAppResources[i] as any)._hostingSubscription) {
                 // don't list subscription apps as ocp
                 continue
             }
+
             let itemLabel = ''
+            let isManagedByHelm = false
             const labels: [] =
                 (discoveredOCPAppResources[i] as any).label &&
                 (discoveredOCPAppResources[i] as any).label
@@ -401,12 +444,34 @@ export default function ApplicationsOverview() {
                             itemLabel = value
                         }
                     }
+                    if (annotation === 'app.kubernetes.io/instance') {
+                        argoInstanceLabelValue = value
+                    }
+                    if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+                        isManagedByHelm = true
+                    }
                 })
+            if (itemLabel && isManagedByHelm) {
+                const helmRelease = helmReleases.find(
+                    (hr) =>
+                        hr.metadata.name === itemLabel &&
+                        hr.metadata.namespace === discoveredOCPAppResources[i].namespace
+                )
+                if (helmRelease && helmRelease.metadata.annotations?.[hostingSubAnnotationStr]) {
+                    // don't list helm subscription apps as ocp
+                    continue
+                }
+            }
             if (itemLabel) {
                 const key = `${itemLabel}-${(discoveredOCPAppResources[i] as any).namespace}-${
                     (discoveredOCPAppResources[i] as any).cluster
                 }`
-                openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
+                const argoKey = `${argoInstanceLabelValue}-${(discoveredOCPAppResources[i] as any).namespace}-${
+                    (discoveredOCPAppResources[i] as any).cluster
+                }`
+                if (!argoApplicationsHashSet.has(argoKey)) {
+                    openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
+                }
             }
         }
 
@@ -423,6 +488,7 @@ export default function ApplicationsOverview() {
 
             const semicolon = value.label?.indexOf(';', labelIdx)
             const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+            const resourceName = value.name
             transformedData.push(
                 generateTransformData({
                     apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
@@ -435,12 +501,13 @@ export default function ApplicationsOverview() {
                     },
                     status: {
                         cluster: value.cluster,
+                        resourceName,
                     },
                 } as OCPAppResource)
             )
         })
         return transformedData
-    }, [discoveredOCPAppResources, generateTransformData])
+    }, [discoveredOCPAppResources, helmReleases, generateTransformData, argoApplicationsHashSet])
 
     const tableItems: IResource[] = useMemo(
         () => [
@@ -462,6 +529,25 @@ export default function ApplicationsOverview() {
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
     )
+    const extensionColumns: IAcmTableColumn<IApplicationResource>[] = useMemo(
+        () =>
+            acmExtensions?.applicationListColumn?.length
+                ? acmExtensions.applicationListColumn.map((appListColumn) => {
+                      const CellComp = appListColumn.cell
+                      return {
+                          header: appListColumn.header,
+                          transforms: appListColumn?.transforms,
+                          cellTransforms: appListColumn?.cellTransforms,
+                          tooltip: appListColumn?.tooltip,
+                          cell: (application) => {
+                              return <CellComp resource={application} />
+                          },
+                      }
+                  })
+                : [],
+        [acmExtensions]
+    )
+
     const columns = useMemo<IAcmTableColumn<IApplicationResource>[]>(
         () => [
             {
@@ -603,6 +689,7 @@ export default function ApplicationsOverview() {
                 sort: 'transformed.timeWindow',
                 search: 'transformed.timeWindow',
             },
+            ...extensionColumns,
             {
                 header: t('Created'),
                 cell: (resource) => {
@@ -612,7 +699,17 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t, managedClusters]
+        [
+            argoApplications,
+            channels,
+            getTimeWindow,
+            localCluster,
+            placementRules,
+            subscriptions,
+            t,
+            managedClusters,
+            extensionColumns,
+        ]
     )
 
     const filters = useMemo(
@@ -646,13 +743,7 @@ export default function ApplicationsOverview() {
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
                     return selectedValues.some((value) => {
                         if (isOCPAppResource(item)) {
-                            let isFlux = false
-                            Object.entries(fluxAnnotations).forEach(([, values]) => {
-                                const [nameAnnotation, namespaceAnnotation] = values
-                                if (item.label.includes(nameAnnotation) && item.label.includes(namespaceAnnotation)) {
-                                    isFlux = true
-                                }
-                            })
+                            const isFlux = isFluxApplication(item.label)
                             switch (value) {
                                 case 'openshiftapps':
                                     return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
@@ -756,17 +847,30 @@ export default function ApplicationsOverview() {
                 title: t('Search application'),
                 click: () => {
                     const [apigroup, apiversion] = resource.apiVersion.split('/')
-                    const { cluster } = resource.status
-                    const searchLink = getSearchLink({
-                        properties: {
-                            name: resource.metadata?.name,
-                            namespace: resource.metadata?.namespace,
-                            kind: resource.kind.toLowerCase(),
-                            apigroup,
-                            apiversion,
-                            cluster: cluster ? cluster : 'local-cluster',
-                        },
-                    })
+                    const isOCPorFluxApp = isOCPAppResource(resource)
+                    const label = isOCPorFluxApp ? resource.label : ''
+                    const isFlux = isFluxApplication(label)
+                    const resourceName = resource.status?.resourceName
+                    const searchLink = isOCPorFluxApp
+                        ? getSearchLink({
+                              properties: {
+                                  namespace: resource.metadata?.namespace,
+                                  label: !isFlux
+                                      ? `app=${resource.metadata?.name},app.kubernetes.io/part-of=${resource.metadata?.name}`
+                                      : `kustomize.toolkit.fluxcd.io/name=${resource.metadata?.name},helm.toolkit.fluxcd.io/name=${resource.metadata?.name}`,
+                                  cluster: resource.status.cluster,
+                              },
+                          })
+                        : getSearchLink({
+                              properties: {
+                                  name: resourceName ? resourceName : resource.metadata?.name,
+                                  namespace: resource.metadata?.namespace,
+                                  kind: resource.kind.toLowerCase(),
+                                  apigroup,
+                                  apiversion,
+                                  cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
+                              },
+                          })
                     history.push(searchLink)
                 },
             })
@@ -776,12 +880,15 @@ export default function ApplicationsOverview() {
                     id: 'viewApplication',
                     title: t('View application'),
                     click: () => {
+                        const isFlux = isFluxApplication(resource.label)
+                        const resourceType = isFlux ? 'flux' : 'ocp'
                         history.push(
                             `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string)}?apiVersion=ocp&cluster=${
-                                resource.status.cluster
-                            }`
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=${resourceType}&cluster=${resource.status.cluster}`
                         )
                     },
                 })
@@ -836,6 +943,29 @@ export default function ApplicationsOverview() {
                 })
             }
 
+            if (acmExtensions?.applicationAction?.length) {
+                acmExtensions.applicationAction.forEach((appAction) => {
+                    if (appAction?.model ? isResourceTypeOf(resource, appAction?.model) : isOCPAppResource(resource)) {
+                        const ModalComp = appAction.component
+                        const close = () => setPluginModal(<></>)
+                        actions.push({
+                            id: appAction.id,
+                            tooltip: appAction?.tooltip,
+                            tooltipProps: appAction?.tooltipProps,
+                            addSeparator: appAction?.addSeparator,
+                            isAriaDisabled: appAction?.isAriaDisabled,
+                            isDisabled:
+                                !canCreateApplication ||
+                                (appAction?.isDisabled ? appAction?.isDisabled(resource) : false),
+                            title: appAction.title,
+                            click: (item) => {
+                                setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+                            },
+                        })
+                    }
+                })
+            }
+
             return actions
         },
         [
@@ -844,10 +974,12 @@ export default function ApplicationsOverview() {
             argoApplications,
             canDeleteApplication,
             canDeleteApplicationSet,
+            canCreateApplication,
             channels,
             history,
             placementRules,
             subscriptions,
+            acmExtensions,
             t,
         ]
     )
@@ -906,6 +1038,7 @@ export default function ApplicationsOverview() {
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
+            {pluginModal}
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}

@@ -30,7 +30,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -93,7 +93,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -138,7 +138,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -183,7 +183,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -233,9 +233,6 @@ describe('SearchResults Page', () => {
 
         // Test the related resources section is hidden behind expandable section and click
         screen.queryByText('Show related resources')?.click()
-
-        // Test that the related resource tiles display corrctly after expandable is opened
-        await waitFor(() => expect(screen.queryByText('Show all (3)')).toBeTruthy())
     })
 
     it('should render page with correct data from search WITHOUT keyword & preselected related resources', async () => {
@@ -253,52 +250,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
-                            },
-                        ],
-                    },
-                },
-                result: {
-                    data: {
-                        searchResult: [
-                            {
-                                related: [
-                                    {
-                                        kind: 'cluster',
-                                        count: 1,
-                                        __typename: 'SearchRelatedResult',
-                                    },
-                                    {
-                                        kind: 'node',
-                                        count: 6,
-                                        __typename: 'SearchRelatedResult',
-                                    },
-                                    {
-                                        kind: 'secret',
-                                        count: 203,
-                                        __typename: 'SearchRelatedResult',
-                                    },
-                                ],
-                                __typename: 'SearchResult',
-                            },
-                        ],
-                    },
-                },
-            },
-            {
-                request: {
-                    query: SearchResultRelatedCountDocument,
-                    variables: {
-                        input: [
-                            {
-                                keywords: [],
-                                filters: [
-                                    {
-                                        property: 'kind',
-                                        values: ['pod'],
-                                    },
-                                ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -344,7 +296,7 @@ describe('SearchResults Page', () => {
                                     },
                                 ],
                                 relatedKinds: ['node'],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -392,7 +344,52 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
+                            },
+                        ],
+                    },
+                },
+                result: {
+                    data: {
+                        searchResult: [
+                            {
+                                items: [
+                                    {
+                                        apiversion: 'v1',
+                                        cluster: 'testCluster',
+                                        container: 'installer',
+                                        created: '2021-01-04T14:53:52Z',
+                                        hostIP: '10.0.128.203',
+                                        kind: 'pod',
+                                        name: 'testPod',
+                                        namespace: 'testNamespace',
+                                        podIP: '10.129.0.40',
+                                        restarts: 0,
+                                        startedAt: '2021-01-04T14:53:52Z',
+                                        status: 'Completed',
+                                        _uid: 'testing-search-results-pod',
+                                    },
+                                ],
+                                __typename: 'SearchResult',
+                            },
+                        ],
+                    },
+                },
+            },
+            {
+                request: {
+                    query: SearchResultItemsDocument,
+                    variables: {
+                        input: [
+                            {
+                                keywords: [],
+                                filters: [
+                                    {
+                                        property: 'kind',
+                                        values: ['pod'],
+                                    },
+                                ],
+                                limit: 1000,
                             },
                         ],
                     },
@@ -438,7 +435,6 @@ describe('SearchResults Page', () => {
         await wait()
         // Test that the component has rendered correctly with data
         await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
-        await waitFor(() => expect(screen.queryByText('Show all (3)')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Related Node (1)')).toBeTruthy())
     })
 
@@ -457,7 +453,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -481,7 +477,7 @@ describe('SearchResults Page', () => {
                                     },
                                 ],
                                 relatedKinds: ['node'],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -504,7 +500,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -526,9 +522,11 @@ describe('SearchResults Page', () => {
         expect(screen.getAllByText('Loading')).toBeTruthy()
         // This wait pauses till apollo query is returning data
         await wait()
-        // Test that the component has rendered correctly with data
-        await waitFor(() => expect(screen.queryByText('Error getting related count data')).toBeTruthy())
-        await waitFor(() => expect(screen.queryByText('Error getting related items data')).toBeTruthy())
+        // Test that the component has rendered errors correctly
+        await waitFor(() => expect(screen.queryByText('Error querying search results')).toBeTruthy())
+        await waitFor(() =>
+            expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy()
+        )
         await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
     })
 })

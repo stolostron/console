@@ -6,18 +6,19 @@ import {
     ChipGroup,
     Flex,
     FlexItem,
+    Modal,
     ModalVariant,
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { configMapsState, secretsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { settingsState, subscriptionOperatorsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData, LinkType, Section } from '../../../components/AcmFormData'
+import { FormData, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -36,9 +37,13 @@ import {
     listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
-    unpackProviderConnection,
+    Secret,
 } from '../../../resources'
 import schema from './schema.json'
+import { ansibleCredentialsValue } from '../../../selectors'
+import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
+import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../components/GetProjects'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -53,15 +58,9 @@ export default function AnsibleAutomationsFormPage({
     }
 
     const [error, setError] = useState<Error>()
-    const [secrets] = useRecoilState(secretsState)
-    const providerConnections = secrets.map(unpackProviderConnection)
     const [clusterCuratorTemplate, setClusterCuratorTemplate] = useState<ClusterCurator | undefined>()
 
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
     useEffect(() => {
         if (isEditing || isViewing) {
@@ -148,7 +147,6 @@ export function AnsibleAutomationsForm(props: {
     const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
         clusterCurator?.spec?.destroy?.posthook ?? []
     )
-    const [configMaps] = useRecoilState(configMapsState)
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
 
     const isOperatorInstalled = useMemo(
@@ -157,6 +155,16 @@ export function AnsibleAutomationsForm(props: {
     )
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
+    const { projects } = GetProjects()
+
+    useEffect(() => {
+        if (newSecret) {
+            setAnsibleSelection(newSecret.metadata.name as string)
+        }
+    }, [newSecret])
 
     useEffect(() => {
         if (ansibleSelection) {
@@ -254,6 +262,10 @@ export function AnsibleAutomationsForm(props: {
         ]
     }
 
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
     const formData: FormData = {
         title: isEditing ? t('template.edit.title') : t('template.create.title'),
         titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
@@ -271,7 +283,6 @@ export function AnsibleAutomationsForm(props: {
                 type: 'Section',
                 title: t('template.information.title'),
                 wizardTitle: t('template.create.config.wizard.title'),
-                description: t('template.information.description'),
                 inputs: [
                     {
                         id: 'Template',
@@ -296,12 +307,8 @@ export function AnsibleAutomationsForm(props: {
                             id: credential.metadata.name as string,
                             value: credential.metadata.name as string,
                         })),
+                        footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
                         isDisabled: isEditing,
-                        prompt: {
-                            text: t('creation.ocp.cloud.add.connection'),
-                            linkType: LinkType.internalNewTab,
-                            callback: () => history.push(NavigationPath.addCredentials),
-                        },
                         validation: () => {
                             if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
                         },
@@ -316,6 +323,7 @@ export function AnsibleAutomationsForm(props: {
                         type: 'Section',
                         title: t('template.create.install'),
                         wizardTitle: t('template.create.install.wizard.title'),
+                        description: t('template.information.description'),
                         inputs: [
                             {
                                 id: 'installPreJob',
@@ -359,6 +367,7 @@ export function AnsibleAutomationsForm(props: {
                         type: 'Section',
                         title: t('template.create.upgrade'),
                         wizardTitle: t('template.create.upgrade.wizard.title'),
+                        description: t('template.information.description'),
                         inputs: [
                             {
                                 id: 'upgradePreJob',
@@ -404,6 +413,7 @@ export function AnsibleAutomationsForm(props: {
                                   type: 'Section',
                                   title: t('template.create.scale'),
                                   wizardTitle: t('template.create.scale.wizard.title'),
+                                  description: t('template.information.description'),
                                   inputs: [
                                       {
                                           id: 'scalePreJob',
@@ -447,6 +457,7 @@ export function AnsibleAutomationsForm(props: {
                                   type: 'Section',
                                   title: t('template.create.destroy'),
                                   wizardTitle: t('template.create.destroy.wizard.title'),
+                                  description: t('template.information.description'),
                                   inputs: [
                                       {
                                           id: 'destroyPreJob',
@@ -527,13 +538,32 @@ export function AnsibleAutomationsForm(props: {
 
     return (
         <Fragment>
+            <Modal
+                variant={ModalVariant.large}
+                showClose={false}
+                isOpen={isModalOpen}
+                aria-labelledby="modal-wizard-label"
+                aria-describedby="modal-wizard-description"
+                onClose={handleModalToggle}
+                hasNoBodyWrapper
+            >
+                <CredentialsForm
+                    namespaces={projects}
+                    isEditing={false}
+                    isViewing={false}
+                    infrastructureType={'ans'}
+                    handleModalToggle={handleModalToggle}
+                    hideYaml={true}
+                    control={setNewSecret}
+                />
+            </Modal>
             <AcmDataFormPage
                 editorTitle={t('Ansible YAML')}
                 formData={formData}
                 schema={schema}
                 immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
-                operatorError={getOperatorError(configMaps, isOperatorInstalled, t)}
+                operatorError={getOperatorError(isOperatorInstalled, t)}
             />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
@@ -572,7 +602,6 @@ function EditAnsibleJobModal(props: {
                     label={t('template.modal.name.label')}
                     id="job-name"
                     value={ansibleJob?.name}
-                    helperText={t('template.modal.name.helper.text')}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }

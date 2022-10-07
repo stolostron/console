@@ -54,10 +54,16 @@
                     "type": "object",
                     "properties": {
                         "autoImportRetry": { "type": "string" },
-                        "server": { "type": "string" }
+                        "host": { "type": "string" },
+                        "kubeconfig": { "type": "string" },
+                        "server": { "type": "string" },
+                        "token": { "type": "string" }
                     },
-                    "required": ["autoImportRetry"],
-                    "oneOf": [{ "required": ["token", "server"] }, { "required": ["kubeconfig"] }]
+                    "oneOf": [
+                        { "required": ["host", "token"] },
+                        { "required": ["autoImportRetry", "token", "server"] },
+                        { "required": ["autoImportRetry", "kubeconfig"] }
+                    ]
                 }
             },
             "required": ["apiVersion", "type", "kind", "metadata", "stringData"]

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext } from 'react'
 import { Cluster, ClusterStatus } from '../../../../../resources'
-import { AcmButton, AcmPageProcess, Provider } from '@stolostron/ui-components'
+import { AcmButton, AcmPageProcess, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
@@ -20,7 +20,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
     const { t } = useTranslation()
     const history = useHistory()
     const [configMaps] = useRecoilState(configMapsState)
-    const isHybrid = props.cluster?.provider === Provider.hybrid
+    const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     const { agentClusterInstall } = useContext(ClusterContext)
 
     return (

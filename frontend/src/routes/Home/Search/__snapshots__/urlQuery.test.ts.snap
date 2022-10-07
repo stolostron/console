@@ -5,6 +5,6 @@ Object {
   "preSelectedRelatedResources": Array [
     "pod",
   ],
-  "prefillSearchQuery": "kind:deployment name:search-prod-df8fa-search-api",
+  "presetSearchQuery": "kind:deployment name:search-prod-df8fa-search-api",
 }
 `;

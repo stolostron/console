@@ -4,12 +4,12 @@
 
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmLabels } from '@stolostron/ui-components'
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
+import { AcmLabels } from '../../../ui-components'
 
 const searchDefinitions: any = {
     application: {
@@ -457,7 +457,9 @@ const searchDefinitions: any = {
             {
                 header: 'Namespace',
                 sort: 'namespace',
-                cell: 'namespace',
+                cell: (item: any) => {
+                    return item?.namespace ?? '-'
+                },
             },
             {
                 header: 'Cluster',
@@ -1425,6 +1427,7 @@ export function CreateDetailsLink(item: any) {
                         search: GetUrlSearchParam(item),
                         state: {
                             from: NavigationPath.search,
+                            fromSearch: window.location.search,
                         },
                     }}
                 >
@@ -1453,6 +1456,7 @@ export function CreateDetailsLink(item: any) {
                         search: GetUrlSearchParam(item),
                         state: {
                             from: NavigationPath.search,
+                            fromSearch: window.location.search,
                         },
                     }}
                 >
@@ -1477,6 +1481,7 @@ export function CreateDetailsLink(item: any) {
                         search: GetUrlSearchParam(item),
                         state: {
                             from: NavigationPath.search,
+                            fromSearch: window.location.search,
                         },
                     }}
                 >

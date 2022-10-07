@@ -22,9 +22,9 @@ interface MultiClusterHubList {
 }
 
 let multiclusterhub: Promise<MultiClusterHub | undefined>
-export async function getMultiClusterHub(): Promise<MultiClusterHub | undefined> {
+export async function getMultiClusterHub(noCache?: boolean): Promise<MultiClusterHub | undefined> {
     const serviceAccountToken = getServiceAccountToken()
-    if (multiclusterhub === undefined) {
+    if (multiclusterhub === undefined || noCache) {
         multiclusterhub = jsonRequest<MultiClusterHubList>(
             process.env.CLUSTER_API_URL + '/apis/operator.open-cluster-management.io/v1/multiclusterhubs',
             serviceAccountToken
@@ -47,7 +47,7 @@ export async function mchVersion(req: Http2ServerRequest, res: Http2ServerRespon
     try {
         const authResponse = await isAuthenticated(token)
         if (authResponse.status === constants.HTTP_STATUS_OK) {
-            const mch = await getMultiClusterHub()
+            const mch = await getMultiClusterHub(true)
             const responsePayload = {
                 mchVersion: mch?.status.currentVersion,
             }

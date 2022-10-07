@@ -1,10 +1,20 @@
 // Copyright Contributors to the Open Cluster Management project
-import { ExpandableSection, PageSection, Stack, Tooltip } from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '@stolostron/ui-components'
+import {
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    ExpandableSection,
+    PageSection,
+    Stack,
+    StackItem,
+    Title,
+    Tooltip,
+} from '@patternfly/react-core'
+import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import {
     ClosedDeleteModalProps,
     DeleteResourceModal,
@@ -19,27 +29,12 @@ import RelatedResultsTiles from './RelatedResultsTiles'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
 
 function SearchResultTables(props: {
+    data: ISearchResult[]
     currentQuery: string
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
 }) {
-    const { currentQuery, setDeleteResource } = props
+    const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
-    const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    })
-
-    useEffect(() => {
-        if (!called) {
-            fireSearchQuery({
-                variables: { input: [convertStringToQuery(currentQuery)] },
-            })
-        } else {
-            refetch &&
-                refetch({
-                    input: [convertStringToQuery(currentQuery)],
-                })
-        }
-    }, [fireSearchQuery, currentQuery, called, refetch])
 
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
@@ -49,7 +44,7 @@ function SearchResultTables(props: {
                     items={items}
                     columns={_.get(
                         searchDefinitions,
-                        `[${kind}].columns`,
+                        `[${kind.toLowerCase()}].columns`,
                         searchDefinitions['genericresource'].columns
                     )}
                     keyFn={(item: any) => item._uid.toString()}
@@ -66,44 +61,8 @@ function SearchResultTables(props: {
         [currentQuery, setDeleteResource, t]
     )
 
-    if (loading) {
-        return (
-            <PageSection>
-                <AcmLoadingPage />
-            </PageSection>
-        )
-    }
-
-    if (error || !data || !data.searchResult) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={t('Error querying search results')}
-                    subtitle={error ? error.message : ''}
-                />
-            </PageSection>
-        )
-    }
-
-    const searchResultItems: ISearchResult[] = data.searchResult[0]?.items || []
-    if (searchResultItems.length === 0) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'info'}
-                    isInline={true}
-                    title={t('No results found for the current search criteria.')}
-                />
-            </PageSection>
-        )
-    }
-
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
-    for (const searchResultItem of searchResultItems) {
+    for (const searchResultItem of data) {
         const existing = kindSearchResultItems[searchResultItem.kind]
         if (!existing) {
             kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
@@ -115,7 +74,7 @@ function SearchResultTables(props: {
 
     return (
         <Fragment>
-            {searchResultItems.length >= 10000 ? (
+            {data.length >= 1000 ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}
@@ -160,6 +119,73 @@ export default function SearchResults(props: { currentQuery: string; preSelected
         return queryFilters.keywords.length > 0
     }, [currentQuery])
 
+    const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    })
+
+    useEffect(() => {
+        // If the current search query changes -> hide related resources
+        if (preSelectedRelatedResources.length === 0) {
+            setShowRelatedResources(false)
+            setSelectedKinds([])
+        }
+    }, [preSelectedRelatedResources])
+
+    useEffect(() => {
+        if (!called) {
+            fireSearchQuery({
+                variables: { input: [convertStringToQuery(currentQuery)] },
+            })
+        } else {
+            refetch &&
+                refetch({
+                    input: [convertStringToQuery(currentQuery)],
+                })
+        }
+    }, [fireSearchQuery, currentQuery, called, refetch])
+
+    const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
+
+    if (loading) {
+        return (
+            <PageSection>
+                <AcmLoadingPage />
+            </PageSection>
+        )
+    }
+
+    if (error) {
+        return (
+            <PageSection>
+                <EmptyState>
+                    <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+                    <Title size="lg" headingLevel="h4">
+                        {t('Error querying search results')}
+                    </Title>
+                    <EmptyStateBody>
+                        <Stack>
+                            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+                            <StackItem>{error ? error.message : ''}</StackItem>
+                        </Stack>
+                    </EmptyStateBody>
+                </EmptyState>
+            </PageSection>
+        )
+    }
+
+    if (searchResultItems.length === 0) {
+        return (
+            <PageSection>
+                <EmptyState>
+                    <EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />
+                    <Title size="lg" headingLevel="h4">
+                        {t('No results found for the current search criteria.')}
+                    </Title>
+                </EmptyState>
+            </PageSection>
+        )
+    }
+
     return (
         <Fragment>
             <DeleteResourceModal
@@ -169,26 +195,23 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                 currentQuery={deleteResource.currentQuery}
                 relatedResource={deleteResource.relatedResource}
             />
-            <PageSection>
-                {!isKeywordSearch && (
-                    <ExpandableSection
-                        onToggle={() => setShowRelatedResources(!showRelatedResources)}
-                        isExpanded={showRelatedResources}
-                        toggleContent={
-                            <div>
-                                <span>
-                                    {!showRelatedResources ? 'Show related resources' : 'Hide related resources'}{' '}
-                                </span>
-                                <Tooltip
-                                    content={t(
-                                        'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
-                                    )}
-                                >
-                                    <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
-                                </Tooltip>
-                            </div>
-                        }
-                    >
+            {!isKeywordSearch && (
+                <PageSection>
+                    <Stack hasGutter>
+                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                            <ExpandableSection
+                                onToggle={() => setShowRelatedResources(!showRelatedResources)}
+                                isExpanded={showRelatedResources}
+                                toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
+                            />
+                            <Tooltip
+                                content={t(
+                                    'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
+                                )}
+                            >
+                                <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
+                            </Tooltip>
+                        </div>
                         {showRelatedResources && (
                             <RelatedResultsTiles
                                 currentQuery={currentQuery}
@@ -196,17 +219,21 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                                 setSelectedKinds={setSelectedKinds}
                             />
                         )}
-                        {showRelatedResources && (
+                        {showRelatedResources && selectedKinds.length > 0 && (
                             <RelatedResultsTables
                                 currentQuery={currentQuery}
                                 selectedKinds={selectedKinds}
                                 setDeleteResource={setDeleteResource}
                             />
                         )}
-                    </ExpandableSection>
-                )}
-            </PageSection>
-            <SearchResultTables currentQuery={currentQuery} setDeleteResource={setDeleteResource} />
+                    </Stack>
+                </PageSection>
+            )}
+            <SearchResultTables
+                data={searchResultItems}
+                currentQuery={currentQuery}
+                setDeleteResource={setDeleteResource}
+            />
         </Fragment>
     )
 }

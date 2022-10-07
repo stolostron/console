@@ -2,9 +2,9 @@
 
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmAlert, AcmModal } from '@stolostron/ui-components'
+import { AcmAlert, AcmModal } from '../../../ui-components'
 import { TFunction } from 'i18next'
-import React, { ReactNode, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
@@ -81,7 +81,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             : props.t('Remove ApplicationSet related resources')
 
         return (
-            <React.Fragment>
+            <Fragment>
                 <div className="remove-app-modal-content-text">
                     <p>
                         <Trans
@@ -99,7 +99,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                         label={appTypeMsg}
                     />
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 
@@ -171,10 +171,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             </div>
         ) : (
             props.appSetPlacement && (
-                <React.Fragment>
+                <Fragment>
                     {renderConfirmCheckbox()}
                     <div className="remove-app-modal-content-data">{props.appSetPlacement} [Placement]</div>
-                </React.Fragment>
+                </Fragment>
             )
         )
     }

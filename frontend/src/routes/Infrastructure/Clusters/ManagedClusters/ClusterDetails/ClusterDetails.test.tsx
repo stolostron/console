@@ -69,11 +69,7 @@ import {
     MultiClusterEngineKind,
 } from '../../../../../resources/multi-cluster-engine'
 import ClusterDetails from './ClusterDetails'
-import {
-    clusterName,
-    mockMachinePoolAuto,
-    mockMachinePoolManual,
-} from './ClusterMachinePools/ClusterDetails.sharedmocks'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -949,6 +945,12 @@ const mockClusterCurator: ClusterCurator = {
         install: {
             towerAuthSecret: 'ansible-credential-i',
             prehook: [],
+            posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
+        },
+        upgrade: {
+            towerAuthSecret: 'ansible-credential-i',
+            prehook: [],
+            posthook: [],
         },
     },
 }
@@ -1009,7 +1011,7 @@ describe('ClusterDetails', () => {
     test('overview page opens logs', async () => {
         const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
-        await clickByText('View logs')
+        await clickByText('View logs', 1)
         await waitForNocks(nocks)
         await waitForCalled(window.open as jest.Mock)
     })
@@ -1146,11 +1148,35 @@ describe('ClusterDetails for On Premise', () => {
         await waitForTestId('col-header-memory')
         await waitForTestId('col-header-disk')
 
-        await waitForText('Waiting for hosts...')
+        await waitForText('ai:Waiting for hosts...')
 
         // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
-        await waitForText('Assisted installation')
+        await waitForText('Host inventory')
 
         // screen.debug(undefined, -1)
+    })
+})
+
+describe('Automation Details', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        render(<Component />)
+    })
+
+    test('summary link is visible', async () => {
+        await waitForText(clusterName, true)
+        await waitForText('Automation template', true)
+        await waitForText('View template', true)
+    })
+
+    test('modal displays correct values', async () => {
+        await clickByText('View template')
+        await waitForText('Automation template for test-cluster')
+
+        await waitForText('Install')
+        await waitForText('posthook-1')
+
+        await waitForText('Upgrade')
+        await waitForText('None selected', true)
     })
 })

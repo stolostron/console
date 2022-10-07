@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterStatus, getSecret, ResourceError, Secret } from '../../../../../resources'
-import { AcmAlert, AcmButton, AcmInlineCopy } from '@stolostron/ui-components'
-import { onCopy } from '@stolostron/ui-components/lib/utils'
+import { AcmAlert, AcmButton, AcmInlineCopy } from '../../../../../ui-components'
+import { onCopy } from '../../../../../ui-components/utils'
 import {
     Alert,
     AlertVariant,
+    ButtonProps,
     Card,
     CardBody,
     CardFooter,
@@ -26,37 +27,9 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation()
-    const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
-    const [error, setError] = useState<string | undefined>()
-    const [loading, setLoading] = useState<boolean>(false)
-    const [importSecret, setImportSecret] = useState<Secret | undefined>(undefined)
 
-    // do not show command if it's configured to auto-import
-    const autoImportSecret = secrets.find(
-        (s) => s.metadata.namespace === cluster?.namespace && s.metadata.name === 'auto-import-secret'
-    )
-
-    useEffect(() => {
-        if (
-            cluster?.name &&
-            !cluster?.isHive &&
-            !error &&
-            !loading &&
-            !importSecret &&
-            !autoImportSecret &&
-            cluster?.status === ClusterStatus.pendingimport
-        ) {
-            setLoading(true)
-            pollImportYamlSecret(cluster?.name)
-                .then((secret: Secret) => setImportSecret(secret))
-                .catch((err) => {
-                    const resourceError = err as ResourceError
-                    setError(resourceError.message)
-                })
-                .finally(() => setLoading(false))
-        }
-    }, [cluster, error, loading, importSecret, autoImportSecret])
+    const { loading, error, autoImportSecret, v1ImportCommand, v1Beta1ImportCommand } = useImportCommand()
 
     if (loading) {
         return (
@@ -76,9 +49,14 @@ export function ImportCommandContainer() {
         return (
             <>
                 <div style={{ marginBottom: '12px' }}>
-                    <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                    <AcmAlert
+                        isInline
+                        variant={AlertVariant.info}
+                        title={t('import.command.pendingimport')}
+                        message={t('import.command.pendingimport.message')}
+                    />
                 </div>
-                <ImportCommand importSecret={importSecret} />
+                <ImportCommand v1ImportCommand={v1ImportCommand} v1Beta1ImportCommand={v1Beta1ImportCommand} />
             </>
         )
     }
@@ -90,7 +68,8 @@ type ImportCommandProps = {
     loading?: boolean
     error?: string
     children?: React.ReactNode
-    importSecret?: Secret
+    v1ImportCommand?: string
+    v1Beta1ImportCommand?: string
 }
 
 export function ImportCommand(props: ImportCommandProps) {
@@ -104,12 +83,9 @@ export function ImportCommand(props: ImportCommandProps) {
         }
     }, [copied])
 
-    if (props.loading || props.error || !props.importSecret) {
+    if (props.loading || props.error || !props.v1ImportCommand || !props.v1Beta1ImportCommand) {
         return null
     }
-
-    const v1ImportCommand = getImportCommand(props.importSecret, 'v1', t)
-    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1', t)
 
     return (
         <Fragment>
@@ -129,7 +105,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                         icon={<CopyIcon />}
                                         iconPosition="right"
                                         onClick={(e: any) => {
-                                            onCopy(e, v1ImportCommand)
+                                            onCopy(e, props.v1ImportCommand!)
                                             setCopied(true)
                                         }}
                                     >
@@ -144,7 +120,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                 >
                                     <div>{t('import.command.311.description')}</div>
                                     <AcmInlineCopy
-                                        text={v1beta1ImportCommand}
+                                        text={props.v1Beta1ImportCommand!}
                                         displayText={t('import.command.311.copyText')}
                                         id="3.11-copy"
                                     />
@@ -194,7 +170,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
     return new Promise(poll)
 }
 
-function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction) {
+function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction, oc?: boolean) {
     let klusterletCRD = importSecret.data?.['crdsv1.yaml']
     if (version === 'v1beta1') {
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
@@ -202,5 +178,88 @@ function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TF
     const importYaml = importSecret.data?.['import.yaml']
     const alreadyImported = t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
-    return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
+    const cliLib = oc ? 'oc' : 'kubectl'
+    return `echo "${klusterletCRD}" | base64 -d | ${cliLib} create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | ${cliLib} apply -f - || echo "${alreadyImported64}" | base64 -d`
+}
+
+export const useImportCommand = (oc?: boolean) => {
+    const { t } = useTranslation()
+    const [secrets] = useRecoilState(secretsState)
+    const { cluster } = useContext(ClusterContext)
+    const [error, setError] = useState<string | undefined>()
+    const [loading, setLoading] = useState<boolean>(false)
+    const [importSecret, setImportSecret] = useState<Secret | undefined>(undefined)
+
+    // do not show command if it's configured to auto-import
+    const autoImportSecret = secrets.find(
+        (s) => s.metadata.namespace === cluster?.namespace && s.metadata.name === 'auto-import-secret'
+    )
+
+    useEffect(() => {
+        if (
+            cluster?.name &&
+            !cluster?.isHive &&
+            !error &&
+            !loading &&
+            !importSecret &&
+            !autoImportSecret &&
+            cluster?.status === ClusterStatus.pendingimport
+        ) {
+            setLoading(true)
+            pollImportYamlSecret(cluster?.name)
+                .then((secret: Secret) => setImportSecret(secret))
+                .catch((err) => {
+                    const resourceError = err as ResourceError
+                    setError(resourceError.message)
+                })
+                .finally(() => setLoading(false))
+        }
+    }, [cluster, error, loading, importSecret, autoImportSecret])
+
+    const v1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1', t, oc) : undefined
+    const v1Beta1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1beta1', t, oc) : undefined
+    return { v1ImportCommand, v1Beta1ImportCommand, loading, error, autoImportSecret }
+}
+
+type CopyCommandButtonProps = {
+    loading?: boolean
+    error?: string
+    children?: React.ReactNode
+    variant?: ButtonProps['variant']
+    isInline?: boolean
+    command: string
+}
+
+export const CopyCommandButton = ({ loading, error, children, variant, isInline, command }: CopyCommandButtonProps) => {
+    const { t } = useTranslation()
+
+    const [copied, setCopied] = useState<boolean>(false)
+    useEffect(() => {
+        /* istanbul ignore if */
+        if (copied) {
+            setTimeout(() => setCopied(false), 2000)
+        }
+    }, [copied])
+
+    if (loading || error || !command) {
+        return null
+    }
+
+    return (
+        <Tooltip isVisible={copied} content={t('copied')} trigger="click">
+            <AcmButton
+                id="import-command"
+                variant={variant || 'secondary'}
+                icon={<CopyIcon />}
+                iconPosition="right"
+                onClick={(e: any) => {
+                    onCopy(e, command)
+                    setCopied(true)
+                }}
+                isInline={isInline}
+            >
+                {children || t('import.command.copy')}
+            </AcmButton>
+        </Tooltip>
+    )
 }

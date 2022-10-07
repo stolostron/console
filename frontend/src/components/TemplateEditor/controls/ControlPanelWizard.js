@@ -20,8 +20,15 @@ class ControlPanelWizard extends React.Component {
     }
 
     render() {
-        const { controlClasses, setWizardRef, renderControlSections, renderNotifications, isEditing, creationStatus } =
-            this.props
+        const {
+            controlClasses,
+            setWizardRef,
+            renderControlSections,
+            renderNotifications,
+            isEditing,
+            creationStatus,
+            backButtonOverride,
+        } = this.props
         let { steps } = this.props
         steps.forEach((step) => {
             step.controls = []
@@ -255,7 +262,11 @@ class ControlPanelWizard extends React.Component {
                                 >
                                     {processingLabel || activeStep.control.nextButtonLabel || 'Next'}
                                 </Button>
-                                <Button variant="secondary" onClick={onBack} isAriaDisabled={activeStep.index === 0}>
+                                <Button
+                                    variant="secondary"
+                                    onClick={activeStep.index === 0 && backButtonOverride ? backButtonOverride : onBack}
+                                    isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
+                                >
                                     Back
                                 </Button>
                                 <Button variant="link" onClick={onClose}>

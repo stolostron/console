@@ -9,7 +9,7 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import {
     ButtonVariant,
     Flex,
@@ -31,12 +31,13 @@ import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
-    clusterPoolsState,
+    hostedClustersState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
+    nodePoolsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
@@ -47,15 +48,15 @@ import {
     deleteResource,
     ManagedClusterSet,
     ManagedClusterSetDefinition,
-    managedClusterSetLabel,
     mapAddons,
     mapClusters,
     ResourceErrorCode,
+    isGlobalClusterSet,
 } from '../../../../resources'
 import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
-import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
+import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
 
@@ -75,6 +76,8 @@ export default function ClusterSetsPage() {
         certificateSigningRequests,
         managedClusterAddons,
         agentClusterInstalls,
+        hostedClusters,
+        nodePools,
     ] = useRecoilValue(
         waitForAll([
             managedClusterSetsState,
@@ -83,8 +86,9 @@ export default function ClusterSetsPage() {
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
-            clusterPoolsState,
             agentClusterInstallsState,
+            hostedClustersState,
+            nodePoolsState,
         ])
     )
 
@@ -96,7 +100,9 @@ export default function ClusterSetsPage() {
         managedClusterAddons,
         undefined,
         undefined,
-        agentClusterInstalls
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools
     )
     clusters = clusters.filter((cluster) => cluster?.clusterSet)
 
@@ -177,7 +183,6 @@ const PageActions = () => {
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation()
-    const { isSubmarinerAvailable } = useContext(PluginContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
@@ -191,9 +196,16 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
         return () => canCreateManagedClusterSet.abort()
     }, [])
 
-    const [clusterPools, managedClusterSetBindings] = useRecoilValue(
-        waitForAll([clusterPoolsState, managedClusterSetBindingsState])
-    )
+    const [managedClusterSetBindings] = useRecoilValue(waitForAll([managedClusterSetBindingsState]))
+
+    function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
+        if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {
+            return -1
+        } else if (!isGlobalClusterSet(a) && isGlobalClusterSet(b)) {
+            return 1
+        }
+        return a.metadata?.name && b.metadata?.name ? a.metadata?.name.localeCompare(b.metadata?.name) : 0
+    }
 
     const modalColumns = useMemo(
         () => [
@@ -202,45 +214,22 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <span style={{ whiteSpace: 'nowrap' }}>{managedClusterSet.metadata.name}</span>
                 ),
-                sort: 'name',
             },
-            ...(isSubmarinerAvailable
-                ? [
-                      {
-                          header: t('table.networkStatus'),
-                          cell: (managedClusterSet: ManagedClusterSet) => {
-                              return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                          },
-                      },
-                  ]
-                : []),
             {
-                header: t('table.clusters'),
-                sort: 'status',
+                header: t('table.cluster.statuses'),
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
                 ),
             },
-            {
-                header: t('table.clusterPools'),
-                cell: (managedClusterSet: ManagedClusterSet) => {
-                    const pools = clusterPools.filter(
-                        (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                    )
-                    if (pools.length === 0) {
-                        return '-'
-                    } else {
-                        return pools.length
-                    }
-                },
-            },
         ],
-        [t, clusterPools, isSubmarinerAvailable]
+        [t]
     )
 
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
         return managedClusterSet.metadata.name!
     }
+
+    const disabledResources = props.managedClusterSets?.filter((resource) => isGlobalClusterSet(resource))
 
     return (
         <Fragment>
@@ -248,57 +237,40 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 isOpen={createClusterSetModalOpen}
                 onClose={() => setCreateClusterSetModalOpen(false)}
             />
-            <BulkActionModel<ManagedClusterSet> {...modalProps} />
+            <BulkActionModel {...modalProps} />
             <AcmTable<ManagedClusterSet>
                 plural="clusterSets"
                 items={props.managedClusterSets}
+                disabledItems={disabledResources}
                 columns={[
                     {
                         header: t('table.name'),
-                        sort: 'metadata.name',
+                        sort: clusterSetSortFn,
                         search: 'metadata.name',
                         cell: (managedClusterSet: ManagedClusterSet) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                <Link
-                                    to={NavigationPath.clusterSetOverview.replace(
-                                        ':id',
-                                        managedClusterSet.metadata.name as string
-                                    )}
-                                >
-                                    {managedClusterSet.metadata.name}
-                                </Link>
-                            </span>
+                            <>
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    <Link
+                                        to={NavigationPath.clusterSetOverview.replace(
+                                            ':id',
+                                            managedClusterSet.metadata.name as string
+                                        )}
+                                    >
+                                        {managedClusterSet.metadata.name}
+                                    </Link>
+                                </span>
+                                {isGlobalClusterSet(managedClusterSet) && <GlobalClusterSetPopover />}
+                            </>
                         ),
                     },
-                    ...(isSubmarinerAvailable
-                        ? [
-                              {
-                                  header: t('table.networkStatus'),
-                                  cell: (managedClusterSet: ManagedClusterSet) => {
-                                      return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                                  },
-                              },
-                          ]
-                        : []),
                     {
-                        header: t('table.clusters'),
+                        header: t('table.cluster.statuses'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
-                            return <ClusterStatuses managedClusterSet={managedClusterSet} />
-                        },
-                    },
-                    {
-                        header: t('table.clusterPools'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const pools = clusterPools.filter(
-                                (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
+                            return isGlobalClusterSet(managedClusterSet) ? (
+                                <ClusterStatuses isGlobalClusterSet={true} />
+                            ) : (
+                                <ClusterStatuses managedClusterSet={managedClusterSet} />
                             )
-                            if (pools.length === 0) {
-                                return '-'
-                            } else {
-                                return pools.length === 1
-                                    ? t('clusterPools.one')
-                                    : t('clusterPools.multiple', { number: pools.length })
-                            }
                         },
                     },
                     {

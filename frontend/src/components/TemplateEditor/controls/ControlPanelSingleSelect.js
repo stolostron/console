@@ -36,6 +36,7 @@ class ControlPanelSingleSelect extends React.Component {
             exception,
             disabled,
             fetchAvailable,
+            footer,
             isRefetching,
             isLoading,
             isFailed,
@@ -94,6 +95,7 @@ class ControlPanelSingleSelect extends React.Component {
                                     placeholderText={placeholder}
                                     isDisabled={disabled}
                                     data-testid={`select-${controlId}`}
+                                    footer={footer}
                                 >
                                     {available.map((item, inx) => {
                                         /* eslint-disable-next-line react/no-array-index-key */

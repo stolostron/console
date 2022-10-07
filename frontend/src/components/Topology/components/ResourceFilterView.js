@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Checkbox } from '@patternfly/react-core'
 import '../css/resource-filter-view.css'
@@ -83,7 +83,7 @@ FilterSection.propTypes = {
     t: PropTypes.func,
 }
 
-export class ResourceFilterView extends React.Component {
+export class ResourceFilterView extends Component {
     constructor(props) {
         super(props)
         this.state = {

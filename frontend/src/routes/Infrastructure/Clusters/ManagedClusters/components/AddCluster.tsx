@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
+import { AcmButton, AcmDropdown } from '../../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye, TextContent } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { locationWithCancelBack, NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 import { DOC_LINKS, viewDocumentation } from '../../../../../lib/doc-util'
 
@@ -33,7 +33,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={NavigationPath.createCluster}
+                                to={NavigationPath.createInfrastructure}
                             >
                                 {t('managed.createCluster')}
                             </AcmButton>
@@ -44,7 +44,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={NavigationPath.importCluster}
+                                to={locationWithCancelBack(NavigationPath.importCluster)}
                             >
                                 {t('managed.importCluster')}
                             </AcmButton>
@@ -61,7 +61,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                     history.push(NavigationPath.createCluster)
                     break
                 case 'import-cluster':
-                    history.push(NavigationPath.importCluster)
+                    history.push(locationWithCancelBack(NavigationPath.importCluster))
                     break
             }
         }

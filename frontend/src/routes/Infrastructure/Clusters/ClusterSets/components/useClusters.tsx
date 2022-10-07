@@ -19,10 +19,16 @@ import {
     managedClustersState,
     agentClusterInstallsState,
     clusterCuratorsState,
+    hostedClustersState,
+    nodePoolsState,
 } from '../../../../../atoms'
 
 // returns the clusters assigned to a ManagedClusterSet
-export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool?: ClusterPool | undefined) {
+export function useClusters(
+    managedClusterSet: ManagedClusterSet | undefined,
+    clusterPool?: ClusterPool | undefined,
+    isGlobalClusterSet?: boolean
+) {
     const [
         managedClusters,
         clusterDeployments,
@@ -32,6 +38,8 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
+        hostedClusters,
+        nodePools,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -42,16 +50,21 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
             clusterClaimsState,
             clusterCuratorsState,
             agentClusterInstallsState,
+            hostedClustersState,
+            nodePoolsState,
         ])
     )
 
     let groupManagedClusters: ManagedCluster[] = []
     let groupClusterDeployments: ClusterDeployment[] = []
 
-    if (managedClusterSet) {
-        groupManagedClusters = managedClusters.filter(
-            (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
-        )
+    if (managedClusterSet || isGlobalClusterSet === true) {
+        groupManagedClusters =
+            isGlobalClusterSet === true
+                ? managedClusters
+                : managedClusters.filter(
+                      (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+                  )
         groupClusterDeployments = clusterDeployments.filter(
             (cd) =>
                 cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
@@ -91,6 +104,8 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         clusterNames.includes(mca.metadata.namespace)
     )
 
+    const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata.name))
+
     const clusters: Cluster[] = mapClusters(
         groupClusterDeployments,
         groupManagedClusterInfos,
@@ -99,7 +114,9 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         groupManagedClusterAddons,
         clusterClaims,
         clusterCurators,
-        agentClusterInstalls
+        agentClusterInstalls,
+        groupHostedClusters,
+        nodePools
     )
 
     return clusters

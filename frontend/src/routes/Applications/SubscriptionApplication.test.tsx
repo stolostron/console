@@ -1,16 +1,56 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import moment from 'moment'
-import { nockIgnoreRBAC } from '../../lib/nock-util'
-import { waitForTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { Application, ApplicationApiVersion, ApplicationKind } from '../../resources'
+import {
+    Application,
+    ApplicationApiVersion,
+    ApplicationKind,
+    Channel,
+    ChannelApiVersion,
+    ChannelKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    PlacementRule,
+    PlacementRuleApiVersion,
+    PlacementRuleKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
+} from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState } from '../../atoms'
+import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
+import { clickByTestId, typeByTestId, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
+import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
+
+const gitLink = 'https://invalid.com'
+
+const nockApplication = {
+    apiVersion: 'app.k8s.io/v1beta1',
+    kind: 'Application',
+    metadata: { name: 'application-0', namespace: 'namespace-0' },
+    spec: {
+        componentKinds: [{ group: 'apps.open-cluster-management.io', kind: 'Subscription' }],
+        descriptor: {},
+        selector: { matchExpressions: [{ key: 'app', operator: 'In', values: ['application-0'] }] },
+    },
+}
 
 const mockApplication0: Application = {
     apiVersion: ApplicationApiVersion,
@@ -36,14 +76,175 @@ const mockApplication0: Application = {
                 {
                     key: 'app',
                     operator: 'In',
-                    values: ['application-0-app'],
+                    values: ['application-0'],
                 },
             ],
         },
     },
 }
 
-const mockApplications: Application[] = [mockApplication0]
+const mockSubscription: Subscription = {
+    apiVersion: SubscriptionApiVersion,
+    kind: SubscriptionKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/git-branch': 'test-branch',
+            'apps.open-cluster-management.io/git-path': 'test-path',
+            'apps.open-cluster-management.io/reconcile-option': 'merge',
+        },
+        labels: {
+            app: 'application-0',
+        },
+        name: 'application-0-subscription-1',
+        namespace: 'namespace-0',
+    },
+    spec: {
+        channel: 'ginvalidcom-ns/ginvalidcom',
+        placement: {
+            placementRef: {
+                kind: 'PlacementRule',
+                name: 'application-0-placement-1',
+            },
+        },
+    },
+}
+
+const mockProject: Project = {
+    kind: ProjectKind,
+    apiVersion: ProjectApiVersion,
+    metadata: {
+        name: mockApplication0.metadata.namespace,
+    },
+}
+
+const mockProject2: Project = {
+    kind: ProjectKind,
+    apiVersion: ProjectApiVersion,
+    metadata: {
+        name: 'test-ns',
+    },
+}
+
+const mockAnsibleSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-1',
+        namespace: mockProject2.metadata.name,
+    },
+    stringData: {
+        host: 'https://invalid.com',
+        token: 'token',
+    },
+}
+
+const nockAnsibleSecret: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-2',
+        namespace: mockApplication0.metadata.namespace,
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+            'cluster.open-cluster-management.io/credentials': '',
+        },
+    },
+    stringData: {
+        host: 'https://invalid.com',
+        token: 'token',
+    },
+}
+
+const mockChannel: Channel = {
+    apiVersion: ChannelApiVersion,
+    kind: ChannelKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+        },
+        name: 'ginvalidcom',
+        namespace: 'ginvalidcom-ns',
+    },
+    spec: {
+        type: 'Git',
+        pathname: 'https://invalid.com',
+    },
+}
+
+const mockChannel1: Channel = {
+    apiVersion: ChannelApiVersion,
+    kind: ChannelKind,
+    metadata: {
+        annotations: {
+            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+        },
+        name: 'ggithubcom-fxiang1-app-samples',
+    },
+    spec: {
+        type: 'Git',
+        pathname: 'https://github.com/fxiang1/app-samples',
+    },
+}
+
+const mockChannelNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'ginvalidcom-ns',
+    },
+}
+
+const mockChannelProject: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+        name: 'ginvalidcom-ns',
+    },
+}
+
+const mockPlacementRule: PlacementRule = {
+    apiVersion: PlacementRuleApiVersion,
+    kind: PlacementRuleKind,
+    metadata: {
+        labels: {
+            app: 'application-0',
+        },
+        name: 'application-0-placement-1',
+        namespace: 'namespace-0',
+    },
+    spec: {
+        clusterConditions: [
+            {
+                status: 'True',
+                type: 'ManagedClusterConditionAvailable',
+            },
+        ],
+    },
+}
+
+const mockNamespace0: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'local-cluster',
+    },
+}
+
+const mockNamespace1: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: mockApplication0.metadata.namespace,
+    },
+}
+
+const mockProjects = [mockProject, mockProject2, mockChannelProject]
+
+const mockPlacementRules = [mockPlacementRule]
+const mockNamespaces = [mockNamespace0, mockNamespace1]
+const mockHubChannels = [mockChannel1]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
@@ -60,7 +261,12 @@ jest.mock('react-i18next', () => ({
 describe('Create Subscription Application page', () => {
     const Component = () => {
         return (
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(namespacesState, mockNamespaces)
+                }}
+            >
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
                     <Route
                         path={NavigationPath.createApplicationSubscription}
@@ -93,30 +299,181 @@ describe('Create Subscription Application page', () => {
         console.group = originalConsoleGroup
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
-    test('can render Create Subscription Application Page', async () => {
+
+    test('cancel create should redirect to the correct link', async () => {
+        const initialNocks = [nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
         render(<Component />)
-        await waitForTestId('cancel-button-portal-id')
-        await waitForTestId('create-button-portal-id')
+        await waitForNocks(initialNocks)
+        await waitForText('Create application')
+        const cancelButton = screen.getByRole('button', {
+            name: /button\.cancel/i,
+        })
+        userEvent.click(cancelButton)
+        expect(window.location.pathname).toEqual('/')
     })
 
-    test('can render Edit Subscription Application Page', async () => {
+    test('create a git subscription app', async () => {
+        const initialNocks = [nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
+        render(<Component />)
+        await waitForNocks(initialNocks)
+        await waitForText('Create application')
+        // fill the form
+        await typeByTestId('eman', mockApplication0.metadata.name!)
+        await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+        // click git card
+        userEvent.click(screen.getByText(/channel\.type\.git/i))
+        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+        userEvent.type(githubURL, gitLink)
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
+        const ansibleSecretName = screen.getByPlaceholderText(/app\.enter\.select\.ansiblesecretname/i)
+
+        userEvent.click(ansibleSecretName)
+        userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
+
+        userEvent.click(
+            screen.getByRole('radio', {
+                name: /creation\.app\.settings\.onlineclustersonly/i,
+            })
+        )
+
+        // open and close the credential modal
+        const dropdownButton = screen.getByRole('button', {
+            name: /creation\.app\.ansible\.credential\.name options menu/i,
+        })
+        userEvent.click(dropdownButton)
+        userEvent.click(screen.getByText(/add credential/i))
+
+        // fill modal form
+        userEvent.type(
+            screen.getByRole('textbox', {
+                name: /credential name/i,
+            }),
+            nockAnsibleSecret.metadata.name!
+        )
+
+        userEvent.click(screen.getByPlaceholderText(/select a namespace for the credential/i))
+        userEvent.click(
+            screen.getByRole('option', {
+                name: /namespace-0/i,
+            })
+        )
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /next/i,
+            })
+        )
+
+        userEvent.type(
+            screen.getByRole('textbox', {
+                name: /ansible tower host/i,
+            }),
+            'https://invalid.com'
+        )
+
+        userEvent.type(screen.getByPlaceholderText(/enter the ansible tower token/i), 'token')
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /next/i,
+            })
+        )
+
+        // click add
+
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /add/i,
+            })
+        )
+        await waitForNock(nockCreate(nockAnsibleSecret))
+
+        await clickByTestId('create-button-portal-id-btn')
+        await waitForNocks([
+            nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockChannel, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockSubscription, undefined, 201, { dryRun: 'All' }),
+            nockCreate(mockPlacementRule, undefined, 201, { dryRun: 'All' }),
+            nockCreate(nockApplication, undefined, 201),
+            nockCreate(mockChannel, undefined, 201),
+            nockCreate(mockSubscription, undefined, 201),
+            nockCreate(mockPlacementRule, undefined, 201),
+        ])
+
+        expect(consoleInfos).hasNoConsoleLogs()
+    })
+
+    test('edit a git subscription application', async () => {
+        const initialNocks = [
+            nockList(mockProject, mockProjects),
+            nockGet(mockApplication0),
+            nockGet(mockChannel),
+            nockGet(mockSubscription),
+            nockGet(mockChannelNamespace),
+        ]
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(applicationsState, mockApplications)
+                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(namespacesState, mockNamespaces)
+                    snapshot.set(applicationsState, [mockApplication0])
+                    snapshot.set(channelsState, mockHubChannels)
                 }}
             >
-                <MemoryRouter>
+                <MemoryRouter
+                    initialEntries={[
+                        NavigationPath.editApplicationSubscription
+                            .replace(':namespace', nockApplication.metadata?.namespace as string)
+                            .replace(':name', nockApplication.metadata?.name as string),
+                    ]}
+                >
                     <Route
-                        path={NavigationPath.editApplicationSubscription
-                            .replace(':namespace', mockApplication0.metadata?.namespace as string)
-                            .replace(':name', mockApplication0.metadata?.name as string)}
+                        path={NavigationPath.editApplicationSubscription}
                         render={() => <CreateSubscriptionApplicationPage />}
                     />
                 </MemoryRouter>
             </RecoilRoot>
         )
+        await waitForNocks(initialNocks)
+
+        expect(
+            screen.getByRole('heading', {
+                name: /application-0/i,
+            })
+        ).toBeTruthy()
+
+        // click git card
+        userEvent.click(screen.getByText(/channel\.type\.git/i))
+        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+        userEvent.type(githubURL, gitLink)
+
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+        userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path2')
+
+        const patchNocks: Scope[] = [
+            nockPatch(mockSubscription, [
+                { op: 'replace', path: '/spec/placement/placementRef/name', value: null },
+                {
+                    op: 'replace',
+                    path: '/metadata/annotations/apps.open-cluster-management.io~1git-path',
+                    value: 'test-path2',
+                },
+            ]),
+            nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
+        ]
+        //update the resources
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /button\.update/i,
+            })
+        )
+        await waitForNocks(patchNocks)
+        expect(consoleInfos).hasNoConsoleLogs()
     })
 })

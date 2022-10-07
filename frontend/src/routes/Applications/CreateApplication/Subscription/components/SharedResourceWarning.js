@@ -5,7 +5,7 @@
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
@@ -106,7 +106,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                     query: SearchResultRelatedItemsDocument,
                     variables: {
                         input: [{ ...query }],
-                        limit: 10000,
+                        limit: 1000,
                     },
                     fetchPolicy: 'cache-first',
                 })
@@ -187,7 +187,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
             </div>
             <div>
                 {!!deployingSubscription && (
-                    <React.Fragment>
+                    <Fragment>
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
@@ -199,10 +199,10 @@ const SharedResourceWarning = ({ resourceType, control }) => {
               `,
                             }}
                         />
-                    </React.Fragment>
+                    </Fragment>
                 )}
                 {!!siblingApplications.length && (
-                    <React.Fragment>
+                    <Fragment>
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
@@ -215,10 +215,10 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                             }}
                         />
                         <p>{siblingApplications.join(', ')}</p>
-                    </React.Fragment>
+                    </Fragment>
                 )}
                 {!!childResources.length && (
-                    <React.Fragment>
+                    <Fragment>
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
@@ -230,7 +230,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                             }}
                         />
                         <p>{childResources.join(', ')}</p>
-                    </React.Fragment>
+                    </Fragment>
                 )}
             </div>
         </div>

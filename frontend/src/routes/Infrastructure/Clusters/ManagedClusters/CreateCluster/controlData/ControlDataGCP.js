@@ -1,10 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line no-use-before-define
-import React from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -18,8 +15,15 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 const GCPregions = [
     'asia-east1',
@@ -249,8 +253,15 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+export const getControlDataGCP = (
+    handleModalToggle,
+    includeAutomation = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataGCP)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataGCP)
+    insertToggleModalFunction(handleModalToggle, controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
@@ -258,6 +269,17 @@ export const getControlDataGCP = (includeAutomation = true, includeSno = false) 
 const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
+    {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'GCP',
+        type: 'reviewinfo',
+    },
     {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
@@ -271,8 +293,9 @@ const controlDataGCP = [
         },
         available: [],
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
+        footer: <CreateCredentialModal />,
     },
+
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
@@ -312,6 +335,19 @@ const controlDataGCP = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['GCP'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            GCP: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

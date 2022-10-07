@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { uniqBy, get, set } from 'lodash'
-import { getClusterName, addClusters } from './utils'
-import { createReplicaChild } from './topologySubscription'
-import { fireManagedClusterView, listNamespacedResources } from '../../../../../resources'
-import { convertStringToQuery } from '../helpers/search-helper'
+import { get, set, uniqBy } from 'lodash'
+import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { convertStringToQuery } from '../helpers/search-helper'
+import { createReplicaChild } from './topologySubscription'
+import { addClusters, getClusterName } from './utils'
 
 export function getAppSetTopology(application) {
     const links = []
@@ -78,7 +78,11 @@ export function getAppSetTopology(application) {
     set(nodes[0], 'isPlacementFound', isPlacementFound)
 
     const clusterParentId = placement ? placementId : appId
-    const source = get(application, 'app.spec.template.spec.source.path', '')
+    const source =
+        get(application, 'app.spec.template.spec.source.path', '') !== '{{path}}'
+            ? get(application, 'app.spec.template.spec.source.path', '')
+            : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
+
     const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
     const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
 
@@ -209,19 +213,32 @@ export const openRouteURL = (routeObject, toggleLoading) => {
     const apiVersion = `${apigroup}/${apiversion}`
 
     toggleLoading()
-    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-        .then((viewResponse) => {
-            toggleLoading()
-            if (viewResponse.message) {
-                // should handle error in the future
-            } else {
-                openRouteURLWindow(viewResponse.result)
-            }
-        })
-        .catch((err) => {
-            toggleLoading()
-            console.error('Error getting resource: ', err)
-        })
+    if (cluster === 'local-cluster') {
+        const route = getResource({ apiVersion, kind, metadata: { namespace, name } }).promise
+        route
+            .then((result) => {
+                toggleLoading()
+                openRouteURLWindow(result)
+            })
+            .catch((err) => {
+                toggleLoading()
+                console.error('Error getting resource: ', err)
+            })
+    } else {
+        fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+            .then((viewResponse) => {
+                toggleLoading()
+                if (viewResponse.message) {
+                    // should handle error in the future
+                } else {
+                    openRouteURLWindow(viewResponse.result)
+                }
+            })
+            .catch((err) => {
+                toggleLoading()
+                console.error('Error getting resource: ', err)
+            })
+    }
 }
 
 const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
@@ -234,7 +251,7 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
             query: SearchResultRelatedItemsDocument,
             variables: {
                 input: [{ ...query }],
-                limit: 10000,
+                limit: 1000,
             },
             fetchPolicy: 'network-only',
         })

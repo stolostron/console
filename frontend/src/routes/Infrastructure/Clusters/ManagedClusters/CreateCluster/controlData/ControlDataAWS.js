@@ -1,14 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line no-use-before-define
-import React from 'react'
 import {
     VALIDATE_ALPHANUMERIC,
     VALIDATE_NUMERIC,
     VALIDATE_ALPHANUMERIC_PERIOD,
 } from '../../../../../../components/TemplateEditor'
 import {
-    CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
@@ -22,9 +19,16 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    appendKlusterletAddonConfig,
+    insertToggleModalFunction,
 } from './ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+import installConfigHbs from '../templates/install-config.hbs'
+import Handlebars from 'handlebars'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+
+const installConfig = Handlebars.compile(installConfigHbs)
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -113,7 +117,13 @@ const updateWorkerZones = (control, controlData) => {
     typeZones.active = []
 }
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+export const getControlDataAWS = (
+    handleModalToggle,
+    includeAutomation = true,
+    includeAwsPrivate = true,
+    includeSno = false,
+    includeKlusterletAddonConfig = true
+) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
     if (includeAwsPrivate) {
@@ -125,6 +135,8 @@ export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = 
         }
     }
     if (includeAutomation) controlData.push(...automationControlData)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     return controlData
 }
 
@@ -666,6 +678,17 @@ const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
+        id: 'detailStep',
+        type: 'step',
+        title: 'Cluster details',
+    },
+    {
+        id: 'infrastructure',
+        name: 'Infrastructure',
+        active: 'AWS',
+        type: 'reviewinfo',
+    },
+    {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',
@@ -677,8 +700,8 @@ const controlDataAWS = [
         },
         available: [],
         providerId: 'aws',
+        footer: <CreateCredentialModal />,
         onSelect: onChangeConnection,
-        prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
@@ -719,6 +742,19 @@ const controlDataAWS = [
         type: 'labels',
         active: [],
         tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
+    },
+    {
+        id: 'infrastructure',
+        active: ['AWS'],
+        type: 'hidden',
+        hasReplacements: true,
+        availableMap: {
+            AWS: {
+                replacements: {
+                    'install-config': { template: installConfig, encode: true, newTab: true },
+                },
+            },
+        },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

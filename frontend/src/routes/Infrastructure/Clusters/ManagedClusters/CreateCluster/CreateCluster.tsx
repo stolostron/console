@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
-import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
+import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
-import { get, keyBy, set } from 'lodash'
+import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -19,9 +19,13 @@ import {
     managedClustersState,
     secretsState,
     settingsState,
-    agentsState,
 } from '../../../../../atoms'
-import { clusterCuratorTemplatesValue } from '../../../../../selectors'
+import {
+    ansibleCredentialsValue,
+    clusterCuratorSupportedCurationsValue,
+    providerConnectionsValue,
+    validClusterCuratorTemplatesValue,
+} from '../../../../../selectors'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -34,15 +38,15 @@ import {
     IResource,
     ProviderConnection,
     Secret,
-    unpackProviderConnection,
-    patchResource,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { getControlData } from './controlData/ControlData'
 import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
+import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
+import cimTemplate from './templates/assisted-installer/cim-template.hbs'
+import aiTemplate from './templates/assisted-installer/ai-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
 import {
     HypershiftAgentContext,
@@ -50,9 +54,19 @@ import {
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
 
 import './style.css'
+import getControlDataAWS from './controlData/ControlDataAWS'
+import getControlDataGCP from './controlData/ControlDataGCP'
+import getControlDataAZR from './controlData/ControlDataAZR'
+import getControlDataVMW from './controlData/ControlDataVMW'
+import getControlDataOST from './controlData/ControlDataOST'
+import getControlDataRHV from './controlData/ControlDataRHV'
+import getControlDataHypershift from './controlData/ControlDataHypershift'
+import getControlDataCIM from './controlData/ControlDataCIM'
+import getControlDataAI from './controlData/ControlDataAI'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../components/GetProjects'
 
 const { isAIFlowInfraEnv } = CIM
-
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -76,46 +90,53 @@ const useStyles = makeStyles({
 export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
-    const [secrets] = useRecoilState(secretsState)
+    const secrets = useRecoilValue(secretsState)
+    const providerConnections = useRecoilValue(providerConnectionsValue)
+    const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
+
+    const { projects } = GetProjects()
 
     // setup translation
     const { t } = useTranslation()
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
+    const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
+    const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
+
+    const settings = useRecoilValue(settingsState)
+    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+    const managedClusters = useRecoilValue(managedClustersState)
+    const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
+    const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
+    const onControlChange = useCallback(
+        (control: any) => {
+            if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
+                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+            }
+        },
+        [providerConnections, setSelectedConnection, newSecret]
+    )
+    const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    const [infraEnvs] = useRecoilState(infraEnvironmentsState)
+    const [warning, setWarning] = useState<WarningContextType>()
+    const hypershiftValues = useHypershiftContextValues()
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
             setAvailableConnections(connectionControl, secrets)
+            onControlChange(connectionControl)
         }
-    }, [connectionControl, secrets])
-
-    const providerConnections = secrets.map(unpackProviderConnection)
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-    )
-
-    const [settings] = useRecoilState(settingsState)
-    type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
-    const basicCurations: Curation[] = ['install', 'upgrade']
-    const allCurations: Curation[] = [...basicCurations, 'scale', 'destroy']
-    const supportedCurations = settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
-
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const curatorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
-    const [, setSelectedTemplate] = useState('')
-    const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
-    const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
-    const [infraEnvs] = useRecoilState(infraEnvironmentsState)
-    const [warning, setWarning] = useState<WarningContextType>()
-    const [agents] = useRecoilState(agentsState)
-    const hypershiftValues = useHypershiftContextValues()
+    }, [connectionControl, onControlChange, secrets])
 
     // Is there a way how to get this without fetching all InfraEnvs?
     const isInfraEnvAvailable = !!infraEnvs?.length
@@ -146,8 +167,8 @@ export default function CreateClusterPage() {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
-            const clusterDeployment = get(map, 'ClusterDeployment')
-            const clusterName = clusterDeployment?.metadata?.name
+            const cluster = map?.ClusterDeployment || map?.HostedCluster
+            const clusterName = cluster?.metadata?.name
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -160,32 +181,6 @@ export default function CreateClusterPage() {
                 })
                 return 'ERROR'
             } else {
-                // patch hypershift agents
-                const hypershiftAgentNs = get(map, 'HostedCluster.spec.platform.agent.agentNamespace')
-                if (hypershiftAgentNs) {
-                    setCreationStatus({ status: 'IN_PROGRESS', messages: ['Patching hosts...'] })
-                    const nodePoolPatches = hypershiftValues.nodePools?.map(
-                        ({ autoSelectHosts, autoSelectedAgentIDs, selectedAgentIDs, agentLabels }) => {
-                            const requestedAgentIDs = autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs
-                            const agentsToPatch = agents.filter((a) => requestedAgentIDs.includes(a.metadata.uid))
-                            return agentsToPatch.map(
-                                (a) =>
-                                    patchResource(a, [
-                                        {
-                                            op: a.metadata.labels ? 'replace' : 'add',
-                                            path: '/metadata/labels',
-                                            value: {
-                                                ...(a.metadata.labels || {}),
-                                                ...agentLabels,
-                                            },
-                                        },
-                                    ]).promise
-                            )
-                        }
-                    )
-                    nodePoolPatches && (await Promise.allSettled(nodePoolPatches))
-                }
-
                 const isClusterCurator = (resource: any) => {
                     return resource.kind === 'ClusterCurator'
                 }
@@ -275,7 +270,7 @@ export default function CreateClusterPage() {
     }
 
     //compile templates
-    const template = Handlebars.compile(hiveTemplate)
+    let template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
     Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
     Handlebars.registerHelper('append', append)
@@ -304,33 +299,8 @@ export default function CreateClusterPage() {
                     control.validation.required = mustJoinClusterSet ?? false
                 }
                 break
-            case 'infrastructure':
-                control?.available?.forEach((provider: any) => {
-                    const providerData: any = control?.availableMap[provider]
-                    providerData?.change?.insertControlData?.forEach((ctrl: any) => {
-                        if (ctrl.id === 'connection') {
-                            setAvailableConnections(ctrl, secrets)
-                        }
-                    })
-                })
-                break
             case 'templateName': {
-                const availableData = curatorTemplates.filter((curatorTemplate) =>
-                    supportedCurations.every(
-                        // each curation with any hooks must have a secret reference and the secret must exist
-                        (curation) =>
-                            !(
-                                curatorTemplate?.spec?.[curation]?.prehook?.length ||
-                                curatorTemplate?.spec?.[curation]?.posthook?.length
-                            ) ||
-                            (curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                ansibleCredentials.find(
-                                    (secret) =>
-                                        secret.metadata.name === curatorTemplate?.spec?.[curation]?.towerAuthSecret &&
-                                        secret.metadata.namespace === curatorTemplate.metadata.namespace
-                                ))
-                    )
-                )
+                const availableData = validCuratorTemplates
                 // TODO: Need to keep namespace information
                 control.available = availableData.map((curatorTemplate) => curatorTemplate.metadata.name)
                 control.availableData = availableData
@@ -338,7 +308,7 @@ export default function CreateClusterPage() {
                 break
             }
             case 'supportedCurations':
-                control.active = supportedCurations
+                control.active = cloneDeep(supportedCurations)
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {
@@ -389,55 +359,104 @@ export default function CreateClusterPage() {
         }
     }
 
+    const infrastructureType = urlParams.get('infrastructureType') || ''
+    useEffect(() => {
+        if ((infrastructureType === 'CIM' || infrastructureType === 'CIMHypershift') && !isInfraEnvAvailable) {
+            setWarning({
+                title: t('cim.infra.missing.warning.title'),
+                text: t('cim.infra.missing.warning.text'),
+                linkText: t('cim.infra.manage.link'),
+                linkTo: NavigationPath.infraEnvironments,
+            })
+        } else {
+            setWarning(undefined)
+        }
+    }, [infrastructureType, isInfraEnvAvailable, t])
+
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
         return null
     }
 
-    function onControlChange(control: any) {
-        switch (control.id) {
-            case 'templateName':
-                setSelectedTemplate(control.active)
-                break
-            case 'connection':
-                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-                break
-        }
+    let controlData: any[]
+    const breadcrumbs = [
+        { text: t('Clusters'), to: NavigationPath.clusters },
+        { text: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+    ]
+
+    function backButtonOverrideFunc() {
+        history.goBack()
     }
 
-    const onControlSelect = (control: any) => {
-        if (control.controlId === 'infrastructure') {
-            if (
-                (control.active?.includes('CIM') || control.active?.includes('CIM-Hypershift')) &&
-                !isInfraEnvAvailable
-            ) {
-                setWarning({
-                    title: t('cim.infra.missing.warning.title'),
-                    text: t('cim.infra.missing.warning.text'),
-                    linkText: t('cim.infra.manage.link'),
-                    linkTo: NavigationPath.infraEnvironments,
-                })
-            } else if (control.active?.includes('BMC')) {
-                setWarning({
-                    title: t('bareMetalAsset.warning.title'),
-                    text: t('bareMetalAsset.warning.text'),
-                    linkText: t('Learn more'),
-                    linkTo: DOC_LINKS.CREATE_CLUSTER_ON_PREMISE,
-                    isExternalLink: true,
-                })
-            } else {
-                setWarning(undefined)
-            }
-        }
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
     }
 
-    const controlData = getControlData(
-        <Warning />,
-        onControlSelect,
-        settings.awsPrivateWizardStep === 'enabled',
-        settings.singleNodeOpenshift === 'enabled',
-        isACMAvailable /* includeKlusterletAddonConfig */
-    )
+    switch (infrastructureType) {
+        case 'AWS':
+            controlData = getControlDataAWS(
+                handleModalToggle,
+                true,
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'GCP':
+            controlData = getControlDataGCP(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'Azure':
+            controlData = getControlDataAZR(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'vSphere':
+            controlData = getControlDataVMW(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'OpenStack':
+            controlData = getControlDataOST(
+                handleModalToggle,
+                true,
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
+            )
+            break
+        case 'RHV':
+            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
+            break
+        case 'CIMHypershift':
+            template = Handlebars.compile(hypershiftTemplate)
+            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb)
+            break
+        case 'CIM':
+            template = Handlebars.compile(cimTemplate)
+            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb)
+            break
+        case 'AI':
+            template = Handlebars.compile(aiTemplate)
+            controlData = getControlDataAI(handleModalToggle, isACMAvailable)
+            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            break
+        default:
+            controlData = []
+    }
+
+    breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
 
     return (
         <AcmPage
@@ -457,10 +476,7 @@ export default function CreateClusterPage() {
                             </a>
                         </>
                     }
-                    breadcrumb={[
-                        { text: t('Clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.create-cluster'), to: '' },
-                    ]}
+                    breadcrumb={breadcrumbs}
                     switches={switches}
                     actions={portals}
                 />
@@ -471,6 +487,25 @@ export default function CreateClusterPage() {
                     <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <HypershiftAgentContext.Provider value={hypershiftValues}>
+                                <Modal
+                                    variant={ModalVariant.large}
+                                    showClose={false}
+                                    isOpen={isModalOpen}
+                                    aria-labelledby="modal-wizard-label"
+                                    aria-describedby="modal-wizard-description"
+                                    onClose={handleModalToggle}
+                                    hasNoBodyWrapper
+                                >
+                                    <CredentialsForm
+                                        namespaces={projects}
+                                        isEditing={false}
+                                        isViewing={false}
+                                        infrastructureType={infrastructureType}
+                                        handleModalToggle={handleModalToggle}
+                                        hideYaml={true}
+                                        control={setNewSecret}
+                                    />
+                                </Modal>
                                 <TemplateEditor
                                     wizardClassName={classes.wizardBody}
                                     type={'cluster'}
@@ -489,6 +524,7 @@ export default function CreateClusterPage() {
                                         resetStatus: () => {
                                             setCreationStatus(undefined)
                                         },
+                                        backButtonOverride: backButtonOverrideFunc,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
                                     i18n={i18n}

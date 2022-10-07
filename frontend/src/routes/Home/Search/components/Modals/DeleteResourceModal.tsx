@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmModal } from '@stolostron/ui-components'
+import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'

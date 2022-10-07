@@ -22,7 +22,7 @@ import {
     AcmPageContent,
     AcmTable,
     StatusType,
-} from '@stolostron/ui-components'
+} from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

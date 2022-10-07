@@ -41,6 +41,8 @@ import {
     podCrash,
     persVolumePendingStateGreenRes,
     persVolumePendingStatePendingRes,
+    appSetDeployable,
+    appSetDesignFalse,
 } from './computeStatuses.data.js'
 
 import { ansibleSuccess, ansibleError, ansibleError2, ansibleErrorAllClusters } from './TestingData'
@@ -110,6 +112,7 @@ describe('setSubscriptionDeployStatus with time window', () => {
         namespace: 'ns',
         apiversion: 'apps.open-cluster-management.io/v1',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -182,6 +185,7 @@ describe('setSubscriptionDeployStatus with local hub subscription error', () => 
         namespace: 'ns',
         apiversion: 'test',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -217,7 +221,7 @@ describe('setSubscriptionDeployStatus with local hub subscription error', () => 
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -233,6 +237,7 @@ describe('setSubscriptionDeployStatus with hub error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -258,7 +263,7 @@ describe('setSubscriptionDeployStatus with hub error', () => {
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -276,6 +281,7 @@ describe('setSubscriptionDeployStatus with Failed phase subscription statuses', 
         namespace: 'ns',
         apiversion: 'test',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local-cluster',
@@ -322,7 +328,7 @@ describe('setSubscriptionDeployStatus with Failed phase subscription statuses', 
         {
             labelValue: 'Warning',
             status: 'warning',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -338,6 +344,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             subscriptionModel: [],
         },
     }
@@ -374,6 +381,7 @@ describe('setSubscriptionDeployStatus with error', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -405,7 +413,7 @@ describe('setSubscriptionDeployStatus with error', () => {
         {
             labelValue: 'Error',
             status: 'failure',
-            value: 'Some resources failed to deploy. Use View resource YAML link below to view the details.',
+            value: 'Some resources failed to deploy. Use View resource YAML link to view the details.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -422,6 +430,7 @@ describe('setSubscriptionDeployStatus with hub no status', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -461,6 +470,7 @@ describe('setSubscriptionDeployStatus with remote no status', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -511,6 +521,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
         name: 'name',
         namespace: 'ns',
         specs: {
+            isDesign: true,
             searchClusters: [
                 {
                     name: 'local',
@@ -676,6 +687,14 @@ describe('computeNodeStatus', () => {
 
     it('return computeNodeStatus subscriptionGreenNotPlacedYellow', () => {
         expect(computeNodeStatus(subscriptionGreenNotPlacedYellow, true, t)).toEqual('yellow')
+    })
+
+    it('return computeNodeStatus appSet is deployable', () => {
+        expect(computeNodeStatus(appSetDeployable, true, t)).toEqual('green')
+    })
+
+    it('return computeNodeStatus appSet not design', () => {
+        expect(computeNodeStatus(appSetDesignFalse, true, t)).toEqual('green')
     })
 })
 
@@ -1436,6 +1455,7 @@ describe('setApplicationDeployStatus for ARGO', () => {
         cluster: 'local-cluster',
         namespace: 'default',
         specs: {
+            isDesign: true,
             relatedApps: [
                 {
                     name: 'app1',
@@ -1543,6 +1563,7 @@ describe('setApplicationDeployStatus 2', () => {
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             raw: {
                 metadata: {
@@ -1574,6 +1595,7 @@ describe('setApplicationDeployStatus application', () => {
         namespace: 'default',
         id: 'member--application',
         specs: {
+            isDesign: true.valueOf,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             raw: {
                 metadata: {
@@ -1622,6 +1644,7 @@ describe('setApplicationDeployStatus no selector', () => {
         namespace: 'default',
         id: 'member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
         },
     }
@@ -1662,6 +1685,7 @@ describe('setApplicationDeployStatus channels', () => {
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra',
         specs: {
+            isDesign: true,
             clustersNames: ['possiblereptile', 'braveman', 'sharingpenguin'],
             channels: ['subsdata'],
         },

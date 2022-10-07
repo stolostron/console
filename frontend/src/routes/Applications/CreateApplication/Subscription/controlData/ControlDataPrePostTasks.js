@@ -11,9 +11,14 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
-import React from 'react'
-import { AcmIcon, AcmIconVariant } from '@stolostron/ui-components'
+import { getSharedSubscriptionWarning } from './utils'
+import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
+import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+
+const getControlDataPrePostTasks = (handleModalToggle) => {
+    insertToggleModalFunction(handleModalToggle, prePostTasks)
+    return [...prePostTasks]
+}
 
 const prePostTasks = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +27,7 @@ const prePostTasks = [
         id: 'perPostSection',
         type: 'section',
         title: 'creation.app.section.prePost',
-        overline: true,
+        subgroup: true,
         collapsable: true,
         collapsed: true,
         info: getSharedSubscriptionWarning,
@@ -31,23 +36,16 @@ const prePostTasks = [
     {
         name: 'creation.app.ansible.credential.name',
         tooltip: 'tooltip.creation.app.ansibleSecretName',
-        id: 'ansibleSecretName',
+        id: 'connection',
         type: 'singleselect',
+        providerId: 'ans',
         active: '',
         placeholder: 'app.enter.select.ansibleSecretName',
         available: [],
-        fetchAvailable: loadExistingAnsibleProviders(),
         reverse: 'Subscription[0].spec.hooksecretref.name',
         validation: {},
-        prompts: {
-            prompt: 'creation.ocp.cloud.add.connection',
-            icon: <AcmIcon icon={AcmIconVariant.openNewTab} />,
-            type: 'link',
-            url: '/multicloud/credentials/add', // launch to credential page
-            positionBottomRight: true,
-            id: 'add-provider-connection',
-        },
+        footer: <CreateCredentialModal />,
     },
 ]
 
-export default prePostTasks
+export default getControlDataPrePostTasks

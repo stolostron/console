@@ -1,21 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
 import { useRecoilState } from 'recoil'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
+import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { namespacesState, settingsState } from '../../../../../atoms'
+import { namespacesState, settingsState, clusterPoolsState } from '../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { getControlData } from './controlData/ControlData'
+import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import {
     setAvailableConnections,
     arrayItemHasKey,
@@ -27,6 +27,12 @@ import TemplateEditor from '../../../../../components/TemplateEditor'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../components/GetProjects'
+import { Secret } from '../../../../../resources'
+import getControlDataAWS from './controlData/ControlDataAWS'
+import getControlDataGCP from './controlData/ControlDataGCP'
+import getControlDataAZR from './controlData/ControlDataAZR'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -102,15 +108,31 @@ export function CreateClusterPool() {
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
     const [settings] = useRecoilState(settingsState)
+    const [clusterPools] = useRecoilState(clusterPoolsState)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [newSecret, setNewSecret] = useState<Secret>()
+
+    const { projects } = GetProjects()
+
+    const onControlChange = useCallback(
+        (control: any) => {
+            if (control.id === 'connection') {
+                if (newSecret && control.setActive) {
+                    control.setActive(newSecret.metadata.name)
+                }
+            }
+        },
+        [newSecret]
+    )
 
     // if a connection is added outside of wizard, add it to connection selection
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
             setAvailableConnections(connectionControl, secrets)
+            onControlChange(connectionControl)
         }
-    }, [connectionControl, secrets])
-
+    }, [connectionControl, onControlChange, secrets])
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
@@ -132,6 +154,14 @@ export function CreateClusterPool() {
                 history.push(NavigationPath.clusterPools)
             }
         }
+    }
+
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+
+    function backButtonOverrideFunc() {
+        history.goBack()
     }
 
     // cancel button
@@ -159,11 +189,33 @@ export function CreateClusterPool() {
           }
         : null
 
+    const infrastructureType = urlParams.get('infrastructureType') || ''
+    let controlData: any[]
+    switch (infrastructureType) {
+        case 'AWS':
+            controlData = getControlDataAWS(
+                handleModalToggle,
+                false,
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )
+            break
+        case 'GCP':
+            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            break
+        case 'Azure':
+            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            break
+
+        default:
+            controlData = []
+    }
+
     // Check for pre-selected cluster set
     const selectedClusterSet = urlParams.get('clusterSet')
-
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
+
     function onControlInitialize(control: any) {
         switch (control.id) {
             case 'connection':
@@ -178,15 +230,27 @@ export function CreateClusterPool() {
                     control.validation.required = mustJoinClusterSet ?? false
                 }
                 break
-            case 'infrastructure':
-                control?.available?.forEach((provider: any) => {
-                    const providerData: any = control?.availableMap[provider]
-                    providerData?.change?.insertControlData?.forEach((ctrl: any) => {
-                        if (ctrl.id === 'connection') {
-                            setAvailableConnections(ctrl, secrets)
+            case 'name':
+                control.validation.contextTester = (
+                    active: string | undefined,
+                    templateObjectMap: { [x: string]: { ClusterPool: { $raw: { metadata: { namespace: any } } }[] } }
+                ) => {
+                    if (clusterPools.length) {
+                        const namespace = templateObjectMap['<<main>>'].ClusterPool[0].$raw.metadata.namespace
+                        if (namespace) {
+                            if (
+                                clusterPools.findIndex((pool) => {
+                                    return pool?.metadata?.name === active && pool?.metadata?.namespace === namespace
+                                }) !== -1
+                            ) {
+                                return t('clusterPool.creation.validation.unique.name', [namespace])
+                            }
                         }
-                    })
-                })
+                    }
+                    if (!control?.validation?.tester.test(active)) {
+                        return t(control?.validation?.notification, [active])
+                    }
+                }
                 break
             case 'namespace':
                 control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
@@ -205,27 +269,47 @@ export function CreateClusterPool() {
     }
 
     return (
-        <TemplateEditor
-            type={'ClusterPool'}
-            title={'ClusterPool YAML'}
-            monacoEditor={<MonacoEditor />}
-            controlData={getControlData(
-                settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled'
-            )}
-            template={template}
-            portals={Portals}
-            fetchControl={fetchControl}
-            createControl={{
-                createResource,
-                cancelCreate,
-                pauseCreate: () => {},
-                creationStatus: creationStatus?.status,
-                creationMsg: creationStatus?.messages,
-            }}
-            logging={process.env.NODE_ENV !== 'production'}
-            onControlInitialize={onControlInitialize}
-            i18n={i18n}
-        />
+        <Fragment>
+            <Modal
+                variant={ModalVariant.large}
+                showClose={false}
+                isOpen={isModalOpen}
+                aria-labelledby="modal-wizard-label"
+                aria-describedby="modal-wizard-description"
+                onClose={handleModalToggle}
+                hasNoBodyWrapper
+            >
+                <CredentialsForm
+                    namespaces={projects}
+                    isEditing={false}
+                    isViewing={false}
+                    infrastructureType={infrastructureType}
+                    handleModalToggle={handleModalToggle}
+                    hideYaml={true}
+                    control={setNewSecret}
+                />
+            </Modal>
+            <TemplateEditor
+                type={'ClusterPool'}
+                title={'ClusterPool YAML'}
+                monacoEditor={<MonacoEditor />}
+                controlData={fixupControlsForClusterPool(controlData)}
+                template={template}
+                portals={Portals}
+                fetchControl={fetchControl}
+                createControl={{
+                    createResource,
+                    cancelCreate,
+                    pauseCreate: () => {},
+                    creationStatus: creationStatus?.status,
+                    creationMsg: creationStatus?.messages,
+                    backButtonOverride: backButtonOverrideFunc,
+                }}
+                logging={process.env.NODE_ENV !== 'production'}
+                onControlChange={onControlChange}
+                onControlInitialize={onControlInitialize}
+                i18n={i18n}
+            />
+        </Fragment>
     )
 }

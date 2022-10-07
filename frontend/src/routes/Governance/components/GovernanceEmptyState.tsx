@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { TextContent } from '@patternfly/react-core'
-import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
+import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'

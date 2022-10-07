@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// eslint-disable-next-line no-use-before-define
-import React from 'react'
+
 import {
     getValue,
     VALIDATE_CIDR,
@@ -16,24 +15,10 @@ import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
-
-const OpenNewTab = () => (
-    <svg width="24px" height="24px" x="0px" y="0px" viewBox="0 0 1024 1024" xmlSpace="preserve" role="presentation">
-        <g stroke="none" strokeWidth="1" fillRule="evenodd">
-            <path d="M576,320 L896,320 L896,192 L576,192 L576,320 Z M128,320 L448,320 L448,192 L128,192 L128,320 Z M930,64 L896,64 L128,64 L94,64 C42.085,64 0,106.085 0,158 L0,192 L0,832 L0,866 C0,917.915 42.085,960 94,960 L128,960 L488,960 C501.255,960 512,949.255 512,936 L512,856 C512,842.745 501.255,832 488,832 L140,832 C133.373,832 128,826.627 128,820 L128,448 L896,448 L896,552 C896,565.255 906.745,576 920,576 L1000,576 C1013.255,576 1024,565.255 1024,552 L1024,158 C1024,106.085 981.915,64 930,64 L930,64 Z" />
-            <path d="M968,784 L848,784 L848,664 C848,650.7 837.3,640 824,640 L776,640 C762.7,640 752,650.7 752,664 L752,784 L632,784 C618.7,784 608,794.7 608,808 L608,856 C608,869.3 618.7,880 632,880 L752,880 L752,1000 C752,1013.3 762.7,1024 776,1024 L824,1024 C837.3,1024 848,1013.3 848,1000 L848,880 L968,880 C981.3,880 992,869.3 992,856 L992,808 C992,794.7 981.3,784 968,784" />
-        </g>
-    </svg>
-)
-
-export const CREATE_CLOUD_CONNECTION = {
-    prompt: 'creation.ocp.cloud.add.connection',
-    type: 'link',
-    url: NavigationPath.addCredentials,
-    positionBottomRight: true,
-    id: 'add-provider-connection',
-    icon: <OpenNewTab />,
-}
+import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
+import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const CREATE_AUTOMATION_TEMPLATE = {
     prompt: 'creation.ocp.cloud.add.template',
@@ -41,7 +26,7 @@ export const CREATE_AUTOMATION_TEMPLATE = {
     url: NavigationPath.addAnsibleAutomation,
     positionBottomRight: true,
     id: 'add-automation-template',
-    icon: <OpenNewTab />,
+    icon: <ExternalLinkAltIcon />,
 }
 export const LOAD_OCP_IMAGES = (provider) => {
     return {
@@ -158,9 +143,12 @@ export const setAvailableOCPMap = (control) => {
 }
 
 export const setAvailableConnections = (control, secrets) => {
-    const connections = secrets.filter(
-        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === control.providerId
-    )
+    const connections = secrets.filter((secret) => {
+        const cedentalsType = secret.metadata.labels?.['cluster.open-cluster-management.io/type']
+        return Array.isArray(control.providerId)
+            ? control.providerId.includes(cedentalsType)
+            : control.providerId === cedentalsType
+    })
     control.availableMap = {}
     connections?.forEach?.((c) => {
         const unpackedSecret = unpackProviderConnection(c)
@@ -192,7 +180,18 @@ export const setAvailableConnections = (control, secrets) => {
         control.noHandlebarReplacements = true
         control.isLoaded = true
     })
-    control.available = connections.map((secret) => secret.metadata.name)
+    control.available = connections.map((secret) => secret.metadata.name).sort((a, b) => a.localeCompare(b))
+    const perPostSection = control.groupControlData?.find(({ id }) => id === 'perPostSection')
+    if (
+        Array.isArray(control.providerId)
+            ? !control.providerId.includes('hostinventory')
+            : control.providerId !== 'hostinventory'
+    ) {
+        // unset default ansible secret for subscription wizard as it's not required
+        if (control.setActive && !control.active && !perPostSection) {
+            control.setActive(control.available[0])
+        }
+    }
 }
 
 export const setAvailableTemplates = (control, templates) => {
@@ -297,10 +296,58 @@ export function getOSTNetworkingControlData() {
 
 export const clusterDetailsControlData = [
     {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
+        name: 'creation.ocp.name',
+        tooltip: 'tooltip.creation.ocp.name',
+        placeholder: 'creation.ocp.name.placeholder',
+        id: 'name',
+        type: 'text',
+        validation: {
+            constraint: VALID_DNS_LABEL,
+            notification: 'import.form.invalid.dns.label',
+            required: true,
+        },
+        reverse: 'ClusterDeployment[0].metadata.name',
     },
+    {
+        name: 'creation.ocp.clusterSet',
+        tooltip: 'tooltip.creation.ocp.clusterSet',
+        id: 'clusterSet',
+        type: 'singleselect',
+        placeholder: 'placeholder.creation.ocp.clusterSet',
+        validation: {
+            required: false,
+        },
+        available: [],
+    },
+    {
+        name: 'creation.ocp.baseDomain',
+        tooltip: 'tooltip.creation.ocp.baseDomain',
+        placeholder: 'placeholder.creation.ocp.baseDomain',
+        id: 'baseDomain',
+        type: 'text',
+        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
+    },
+    {
+        name: 'cluster.create.ocp.fips',
+        id: 'fips',
+        type: 'checkbox',
+        active: false,
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
+    },
+    {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
+    },
+]
+
+export const clusterPoolDetailsControlData = [
     {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
@@ -528,6 +575,11 @@ export const automationControlData = [
         info: 'template.clusterCreate.info',
     },
     {
+        type: 'custom',
+        id: 'automationProviderHint',
+        component: <AutomationProviderHint />,
+    },
+    {
         name: 'template.clusterCreate.name',
         id: 'templateName',
         type: 'combobox',
@@ -538,6 +590,16 @@ export const automationControlData = [
             required: false,
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
+    },
+    {
+        type: 'custom',
+        id: 'curatorLinkOut',
+        component: <TemplateLinkOutControl />,
+    },
+    {
+        type: 'custom',
+        id: 'curatorSummary',
+        component: <TemplateSummaryControl />,
     },
     {
         id: 'clusterCuratorSpec',
@@ -575,7 +637,8 @@ export const automationControlData = [
 
 export const architectureData = [
     {
-        name: 'Architecture',
+        name: 'CPU architecture',
+        placeholder: 'Enter CPU architecture',
         tooltip: 'tooltip.architecture',
         id: 'architecture',
         type: 'combobox',
@@ -585,27 +648,24 @@ export const architectureData = [
     },
 ]
 
+const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+function versionGreater(version, x, y) {
+    const matches = version.match(versionRegex)
+    return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
+}
+
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
     const imageSet = getControlByID(controlData, 'imageSet')
-    //NOTE: We will need to adjust this in the future for new OCP versions!
-    if (
-        singleNodeFeatureFlag &&
-        singleNodeFeatureFlag.active &&
-        imageSet &&
-        imageSet.active &&
-        (imageSet.active.includes('release:4.8') ||
-            imageSet.active.includes('release:4.9') ||
-            imageSet.active.includes('release:4.10'))
-    ) {
-        return false
+    if (singleNodeFeatureFlag && singleNodeFeatureFlag.active && imageSet && imageSet.active) {
+        return !versionGreater(imageSet.active, 4, 7)
     }
     return true
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
     const imageSet = getControlByID(controlData, 'imageSet')
-    return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
+    return imageSet && imageSet.active && versionGreater(imageSet.active, 4, 6)
 }
 
 export const isHidden_SNO = (control, controlData) => {
@@ -636,3 +696,38 @@ export const arrayItemHasKey = (options, key) => {
 }
 
 export const append = (...args) => Array.prototype.slice.call(args, 0, -1).join('')
+
+export const appendKlusterletAddonConfig = (includeKlusterletAddonConfig, controlData) => {
+    const klusterletAddonConfigIdx = controlData.findIndex((control) => control.id === 'includeKlusterletAddonConfig')
+    if (klusterletAddonConfigIdx > -1) {
+        controlData[klusterletAddonConfigIdx].active = includeKlusterletAddonConfig
+        return
+    }
+    controlData.push({
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
+    })
+}
+
+export const appendWarning = (warning, controlData) => {
+    const warningIdx = controlData.findIndex((control) => control.id === 'warning')
+    if (warningIdx > -1) {
+        controlData[warningIdx].active = warning
+    }
+    controlData.push({
+        id: 'warning',
+        type: 'custom',
+        component: warning,
+    })
+}
+
+export const insertToggleModalFunction = (handleToggleModal, controlData) => {
+    const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
+
+    if (currentConnectionComponentIdx > -1) {
+        controlData[currentConnectionComponentIdx].footer = (
+            <CreateCredentialModal handleModalToggle={handleToggleModal} />
+        )
+    }
+}

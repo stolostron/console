@@ -85,17 +85,20 @@ export const addPropertyToList = (list, data) => {
     return list
 }
 
-export const createEditLink = (node) => {
-    const kind = _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
+export const createEditLink = (node, overrideKind, overrideCluster, overrideApiVersion) => {
+    const kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
     const apigroup = _.get(node, 'apigroup')
     const apiversion = _.get(node, 'apiversion')
-    let cluster = _.get(node, 'cluster')
+    let cluster = overrideCluster || _.get(node, 'cluster')
     if (!cluster) {
         cluster = getURLSearchData().cluster
     }
     let apiVersion = _.get(node, apiVersionPath)
     if (!apiVersion) {
         apiVersion = apigroup && apiversion ? apigroup + '/' + apiversion : apiversion
+    }
+    if (overrideApiVersion) {
+        apiVersion = overrideApiVersion
     }
 
     return getEditLink({
@@ -426,11 +429,15 @@ export const getNameWithoutPodHash = (relatedKind) => {
 
 //add deployed object to the matching resource in the map
 export const addResourceToModel = (resourceMapObject, kind, relatedKind, nameWithoutChartRelease) => {
-    const kindModel = _.get(resourceMapObject, `specs.${kind}Model`, {})
+    const resourceType = _.get(resourceMapObject, 'type', '')
+    const kindModel =
+        resourceType === 'project'
+            ? _.get(resourceMapObject, `specs.projectModel`, {})
+            : _.get(resourceMapObject, `specs.${kind}Model`, {})
     const kindList = kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] || []
     kindList.push(relatedKind)
     kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] = kindList
-    _.set(resourceMapObject, `specs.${kind}Model`, kindModel)
+    _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind}Model`, kindModel)
 }
 
 // reduce complexity for code smell

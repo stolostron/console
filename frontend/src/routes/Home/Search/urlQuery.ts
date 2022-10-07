@@ -4,15 +4,15 @@
 import queryString from 'query-string'
 
 // This function pushes the new search query to the browsers history
-export function updateBrowserUrl(currentQuery: string) {
+export function updateBrowserUrl(history: any, currentQuery: string) {
     if (currentQuery === '') {
         // on clear search query
-        window.history.pushState({}, '', window.location.pathname)
+        history.push(window.location.pathname)
     } else {
         const url = `${window.location.pathname}?filters={"textsearch":${encodeURIComponent(
             JSON.stringify(currentQuery)
         )}}`
-        window.history.pushState({}, '', url)
+        history.push(url)
     }
 }
 
@@ -20,7 +20,7 @@ export function updateBrowserUrl(currentQuery: string) {
 export function transformBrowserUrlToSearchString(urlQuery: string) {
     // Example browser url string:
     // .../multicloud/home/search?filters={"textsearch":"kind%3Adeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod
-    const prefillSearchQuery = ''
+    const presetSearchQuery = ''
     const preSelectedRelatedResources: string[] = []
     if (urlQuery !== '') {
         const paramString = queryString.parse(urlQuery)
@@ -37,9 +37,9 @@ export function transformBrowserUrlToSearchString(urlQuery: string) {
         const relatedArray = relatedString?.split(',')
 
         return {
-            prefillSearchQuery: filterString,
+            presetSearchQuery: filterString,
             preSelectedRelatedResources: relatedArray,
         }
     }
-    return { prefillSearchQuery, preSelectedRelatedResources }
+    return { presetSearchQuery, preSelectedRelatedResources }
 }

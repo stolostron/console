@@ -9,7 +9,7 @@ import {
     AcmInlineCopy,
     AcmInlineStatus,
     StatusType,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -68,10 +68,12 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
 
     const onClick = async () => {
         /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
+        const namespace = cluster?.isHostedCluster
+            ? cluster.hypershift?.hostingNamespace || ''
+            : cluster?.namespace ?? ''
         /* istanbul ignore next */
-        const name = cluster?.hive.secrets?.kubeadmin ?? ''
-        if (!credentials && !isVisible && cluster?.hive.secrets?.kubeadmin) {
+        const name = cluster?.kubeadmin ?? ''
+        if (!credentials && !isVisible && cluster?.kubeadmin) {
             setLoading(true)
             try {
                 const secret = await getSecret({ name, namespace }).promise
@@ -88,14 +90,14 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
         }
     }
 
-    if (cluster?.hive.secrets?.kubeadmin) {
+    if (cluster?.kubeadmin) {
         return (
             <Fragment>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
                 {isVisible && (
                     <div className={classes.credentialsContainer}>
                         <AcmInlineCopy
-                            text={/* istanbul ignore next */ credentials?.username ?? ''}
+                            text={/* istanbul ignore next */ credentials?.username ?? 'kubeadmin'}
                             id="username-credentials"
                         />
                         {'  /  '}

@@ -14,5 +14,12 @@ declare module '*.svg' {
     export default content
 }
 
+declare module '*.yaml' {
+    const content: string
+    export = content
+}
+
 // for SVG images loaded as url paths
 declare module '*.svg?url'
+
+declare module 'merge-jsons-webpack-plugin'

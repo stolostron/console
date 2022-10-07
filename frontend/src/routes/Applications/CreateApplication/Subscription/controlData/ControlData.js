@@ -9,7 +9,7 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-import React from 'react'
+
 import gitChannelData from './ControlDataGit'
 import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
@@ -59,7 +59,7 @@ export const updateNSControls = (nsControl, globalControl) => {
     return updateControlsForNS(nsControl, nsControl, globalControl)
 }
 
-export const controlData = async () => [
+export const controlData = (isLocalCluster, handleModalToggle) => [
     {
         id: 'main',
         type: 'section',
@@ -137,6 +137,7 @@ export const controlData = async () => [
                 title: 'creation.app.channel.title',
                 collapsable: true,
                 collapsed: false,
+                subgroup: true,
                 info: getSharedSubscriptionWarning,
                 editing: { editMode: true },
             },
@@ -167,7 +168,7 @@ export const controlData = async () => [
                         title: 'channel.type.git',
                         tooltip: 'tooltip.creation.app.channel.git',
                         change: {
-                            insertControlData: await gitChannelData(),
+                            insertControlData: gitChannelData(isLocalCluster, handleModalToggle),
                         },
                     },
                     {
@@ -176,7 +177,7 @@ export const controlData = async () => [
                         title: 'channel.type.helmrepo',
                         tooltip: 'tooltip.channel.type.helmrepo',
                         change: {
-                            insertControlData: await helmReleaseChannelData(),
+                            insertControlData: helmReleaseChannelData(isLocalCluster),
                         },
                     },
                     {
@@ -185,7 +186,7 @@ export const controlData = async () => [
                         title: 'channel.type.objectbucket',
                         tooltip: 'tooltip.channel.type.objectbucket',
                         change: {
-                            insertControlData: await objectstoreChannelData(),
+                            insertControlData: objectstoreChannelData(isLocalCluster),
                         },
                     },
                     {
@@ -195,7 +196,7 @@ export const controlData = async () => [
                         tooltip: 'tooltip.channel.type.other',
                         hidden: true, // only show this if editing existing app
                         change: {
-                            insertControlData: await otherChannelData(),
+                            insertControlData: otherChannelData(isLocalCluster),
                         },
                     },
                 ],

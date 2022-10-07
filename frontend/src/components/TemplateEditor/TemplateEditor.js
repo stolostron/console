@@ -26,6 +26,7 @@ import {
     generateSource,
     getUniqueName,
     cacheUserData,
+    cloneControlData,
 } from './utils/source-utils'
 import { logCreateErrors, logSourceErrors } from './utils/logger'
 import { validateControls } from './utils/validate-controls'
@@ -63,6 +64,7 @@ export default class TemplateEditor extends React.Component {
             creationStatus: PropTypes.string,
             creationMsg: PropTypes.array,
             resetStatus: PropTypes.func,
+            backButtonOverride: PropTypes.func,
         }).isRequired,
         editorReadOnly: PropTypes.bool,
         fetchControl: PropTypes.shape({
@@ -147,10 +149,10 @@ export default class TemplateEditor extends React.Component {
         // has control data been initialized?
         const { controlData: initialControlData, onControlInitialize } = props
         let { controlData, templateYAML, templateObject, templateResources, immutableRows, editStack } = state
-        const { editor, template, showSecrets } = state
+        const { editor, template, showSecrets, otherYAMLTabs } = state
         if (!controlData) {
             // initialize control data
-            const cd = cloneDeep(initialControlData)
+            const cd = cloneControlData(initialControlData)
             controlData = initializeControls(cd, editor, onControlInitialize, i18n)
             newState = { ...newState, controlData }
 
@@ -165,14 +167,15 @@ export default class TemplateEditor extends React.Component {
             // editing an existing set of resources??
             const customResources = get(fetchControl, 'resources')
             if (customResources) {
-                editStack = { customResources, editor, i18n }
+                editStack = { customResources: cloneDeep(customResources), editor, i18n }
             }
 
             // generate source from template or stack of resources
             ;({ templateYAML, templateObject, templateResources, immutableRows } = generateSource(
                 template,
                 editStack,
-                controlData
+                controlData,
+                otherYAMLTabs
             ))
 
             newState = {
@@ -242,6 +245,7 @@ export default class TemplateEditor extends React.Component {
             editor: {
                 forceUpdate: (() => {
                     this.forceUpdate()
+                    this.forceGenerate()
                 }).bind(this),
                 currentData: (() => {
                     return this.state.controlData
@@ -318,7 +322,12 @@ export default class TemplateEditor extends React.Component {
             const rect = this.editorPanel.getBoundingClientRect()
             const width = rect.width - 10
             let height = window.innerHeight - rect.top
-            height = height - (otherYAMLTabs.length >= 0 ? 80 : 50)
+            const header = document.getElementsByClassName('creation-view-yaml-header')[0]
+            if (header) {
+                height = height - header.getBoundingClientRect().height
+            } else {
+                height = height - (otherYAMLTabs.length > 0 ? 80 : 50)
+            }
             this.setState({ showCondensed: width < 500 })
             this.editors.forEach((editor) => {
                 editor.layout({ width, height })
@@ -430,17 +439,40 @@ export default class TemplateEditor extends React.Component {
                 setEditorReadOnly={this.setEditorReadOnly.bind(this)}
                 controlProps={this.props.controlProps}
                 resetStatus={this.state.resetStatus}
+                backButtonOverride={this.props.createControl.backButtonOverride}
             />
         )
+    }
+
+    forceGenerate() {
+        const { template, otherYAMLTabs, editStack, controlData, showEditor } = this.state
+        if (showEditor) {
+            const {
+                templateYAML: newYAML,
+                templateObject,
+                templateResources,
+                immutableRows,
+            } = generateSource(template, editStack, controlData, otherYAMLTabs)
+            highlightImmutables(this.editors, immutableRows)
+            this.setState({
+                templateYAML: newYAML,
+                templateObject,
+                templateResources,
+                immutableRows,
+            })
+        }
     }
 
     handleControlChange(control, controlData, creationView, isCustomName) {
         const { template, templateYAML, otherYAMLTabs, firstTemplateYAML, editStack, isFinalValidate, i18n } =
             this.state
 
-        // if custom editing on a tab, clear it now that user is using controls
+        // if user typed on a tab, save it to be merged with control changes
         otherYAMLTabs.forEach((tab) => {
-            delete tab.control.customYAML
+            if (tab.typingYAML) {
+                tab.typedYAML = tab.typingYAML
+                delete tab.typingYAML
+            }
         })
 
         // custom action when control is selected
@@ -622,7 +654,10 @@ export default class TemplateEditor extends React.Component {
             // insert control data into main control data
             if (insertControlData) {
                 // splice control data with data from this card
-                parentControlData.splice(insertInx + 1, 0, ...cloneDeep(insertControlData))
+                const cloned = cloneControlData(insertControlData)
+                // give wizard chance to init
+                cloned.forEach((ctrl) => onControlInitialize(ctrl))
+                parentControlData.splice(insertInx + 1, 0, ...cloned)
 
                 // if this card control is in a group, tell each control
                 // what group control it belongs to
@@ -992,8 +1027,16 @@ export default class TemplateEditor extends React.Component {
             templateYAML = yaml
         } else {
             tab = otherYAMLTabs[activeYAMLEditor - 1]
-            // protect user edits from being clobbered by form updates
-            tab.control.customYAML = yaml
+            // remember last form generated yaml so we can merge with it
+            // any later form changes
+            if (!tab.baseTemplateYAML) {
+                tab.baseTemplateYAML = tab.templateYAML
+            } else if (tab.mergedYAML) {
+                tab.baseTemplateYAML = tab.mergedYAML
+                delete tab.mergedYAML
+                delete tab.typedYAML
+            }
+            tab.typingYAML = yaml
             // update the yaml shown in this tab
             tab.templateYAML = yaml
         }
@@ -1162,8 +1205,9 @@ export default class TemplateEditor extends React.Component {
                     const {
                         kind,
                         metadata: { name, namespace },
+                        data,
                     } = resource
-                    if (kind === 'Secret') {
+                    if (kind === 'Secret' && !data?.['install-config.yaml']) {
                         const secret = secretsMap[`${namespace}/${name}`]
                         if (secret) {
                             merge(resource, secret.$raw)
@@ -1238,10 +1282,7 @@ export default class TemplateEditor extends React.Component {
         if (createBtn && !showWizard && isLoaded) {
             const { hasPermissions = true } = createControl
             const titleText = !hasPermissions ? (i18n ? i18n('button.save.access.denied') : 'Denied') : undefined
-            let disableButton = true
-            if (this.isDirty && hasPermissions) {
-                disableButton = false
-            }
+            let disableButton = !hasPermissions
             const portal = document.getElementById(createBtn)
             const label = isEditing
                 ? i18n
@@ -1270,7 +1311,7 @@ export default class TemplateEditor extends React.Component {
 
                             setTimeout(() => {
                                 const viewClassname = showEditor ? 'creation-view-controls' : 'SplitPane  vertical '
-                                document.getElementsByClassName(viewClassname)[0].scrollTo({
+                                document.getElementsByClassName(viewClassname)[0]?.scrollTo({
                                     top: 0,
                                     left: 0,
                                     behavior: 'smooth',
@@ -1348,7 +1389,7 @@ export default class TemplateEditor extends React.Component {
     resetEditor() {
         const { controlData: initialControlData, onControlInitialize } = this.props
         const { template, editStack = {}, resetInx, editor, i18n } = this.state
-        const cd = cloneDeep(initialControlData)
+        const cd = cloneControlData(initialControlData)
         const controlData = initializeControls(cd, editor, onControlInitialize, i18n)
         const otherYAMLTabs = []
         if (editStack.initialized) {

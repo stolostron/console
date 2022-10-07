@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '@stolostron/ui-components'
+import { Provider } from '../../ui-components'
 import {
     isDraft,
     getIsSNOCluster,
     getConsoleUrl as getConsoleUrlAI,
     getClusterApiUrl as getClusterApiUrlAI,
     AgentClusterInstallK8sResource,
+    HostedClusterK8sResource,
+    NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
@@ -65,9 +67,10 @@ export const clusterDangerStatuses = [
 ]
 
 export type Cluster = {
-    name?: string
+    name: string
     displayName?: string
     namespace?: string
+    uid: string
     status: ClusterStatus
     statusMessage?: string
     provider?: Provider
@@ -87,6 +90,7 @@ export type Cluster = {
     isHive: boolean
     isManaged: boolean
     isCurator: boolean
+    isHostedCluster: boolean
     clusterSet?: string
     owner: {
         createdBy?: string
@@ -94,6 +98,15 @@ export type Cluster = {
     }
     isSNOCluster: boolean
     creationTimestamp?: string
+    isHypershift: boolean
+    kubeconfig?: string
+    kubeadmin?: string
+    hypershift?: {
+        agent: boolean
+        nodePools?: NodePoolK8sResource[]
+        secretNames: string[]
+        hostingNamespace: string
+    }
 }
 
 export type DistributionInfo = {
@@ -105,8 +118,6 @@ export type DistributionInfo = {
 }
 
 export type HiveSecrets = {
-    kubeconfig?: string
-    kubeadmin?: string
     installConfig?: string
 }
 
@@ -159,7 +170,9 @@ export function mapClusters(
     managedClusterAddOns: ManagedClusterAddOn[] = [],
     clusterClaims: ClusterClaim[] = [],
     clusterCurators: ClusterCurator[] = [],
-    agentClusterInstalls: AgentClusterInstallK8sResource[] = []
+    agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
+    hostedClusters: HostedClusterK8sResource[] = [],
+    nodePools: NodePoolK8sResource[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -167,6 +180,7 @@ export function mapClusters(
             ...clusterDeployments.map((cd) => cd.metadata.name),
             ...managedClusterInfos.map((mc) => mc.metadata.name),
             ...mcs.map((mc) => mc.metadata.name),
+            ...hostedClusters.map((hc) => hc.metadata.name),
         ])
     )
     return uniqueClusterNames.map((cluster) => {
@@ -183,6 +197,7 @@ export function mapClusters(
                     aci.metadata.namespace === clusterDeployment.metadata.namespace &&
                     aci.metadata.name === clusterDeployment?.spec?.clusterInstallRef?.name
             )
+        const hostedCluster = hostedClusters.find((hc) => hc.metadata.name === cluster)
         return getCluster(
             managedClusterInfo,
             clusterDeployment,
@@ -191,7 +206,9 @@ export function mapClusters(
             addons,
             clusterClaim,
             clusterCurator,
-            agentClusterInstall
+            agentClusterInstall,
+            hostedCluster,
+            nodePools
         )
     })
 }
@@ -204,7 +221,9 @@ export function getCluster(
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterClaim: ClusterClaim | undefined,
     clusterCurator: ClusterCurator | undefined,
-    agentClusterInstall: AgentClusterInstallK8sResource | undefined
+    agentClusterInstall: AgentClusterInstallK8sResource | undefined,
+    hostedCluster: HostedClusterK8sResource | undefined,
+    nodePools: NodePoolK8sResource[] | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -214,28 +233,55 @@ export function getCluster(
         managedClusterAddOns,
         clusterCurator,
         agentClusterInstall,
-        clusterClaim
+        clusterClaim,
+        hostedCluster
+    )
+
+    const clusterNodePools = nodePools?.filter(
+        (np) =>
+            np.spec.clusterName === hostedCluster?.metadata.name &&
+            np.metadata.namespace === hostedCluster?.metadata.namespace
     )
     return {
-        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
+        name:
+            clusterDeployment?.metadata.name ??
+            managedCluster?.metadata.name ??
+            managedClusterInfo?.metadata.name ??
+            hostedCluster?.metadata?.name,
         displayName:
             // clusterDeployment?.spec?.clusterPoolRef?.claimName ??
-            clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
+            clusterDeployment?.metadata.name ??
+            managedCluster?.metadata.name ??
+            managedClusterInfo?.metadata.name ??
+            hostedCluster?.metadata?.name,
         namespace:
             managedCluster?.metadata.name ??
             clusterDeployment?.metadata.namespace ??
             managedClusterInfo?.metadata.namespace,
+        uid:
+            managedCluster?.metadata.uid ??
+            clusterDeployment?.metadata.uid ??
+            managedClusterInfo?.metadata.uid ??
+            hostedCluster?.metadata.uid,
         status,
         statusMessage,
-        provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
+        provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
-        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster, agentClusterInstall),
-        isHive: !!clusterDeployment,
+        consoleURL: getConsoleUrl(
+            clusterDeployment,
+            managedClusterInfo,
+            managedCluster,
+            agentClusterInstall,
+            hostedCluster
+        ),
+        isHive: !!clusterDeployment && !hostedCluster,
+        isHypershift: !!hostedCluster,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
+        isHostedCluster: getIsHostedCluster(managedCluster),
         isSNOCluster: getIsSNOCluster(agentClusterInstall),
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
@@ -247,6 +293,23 @@ export function getCluster(
             clusterDeployment?.metadata.creationTimestamp ??
             managedCluster?.metadata.creationTimestamp ??
             managedClusterInfo?.metadata.creationTimestamp,
+        kubeconfig:
+            clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name ||
+            hostedCluster?.status?.kubeconfig?.name,
+        kubeadmin:
+            clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name ||
+            hostedCluster?.status?.kubeadminPassword?.name,
+        hypershift: hostedCluster
+            ? {
+                  agent: !!hostedCluster.spec.platform?.agent,
+                  nodePools: clusterNodePools,
+                  secretNames: [
+                      hostedCluster.spec?.sshKey?.name || '',
+                      hostedCluster.spec?.pullSecret?.name || '',
+                  ].filter((name) => !!name),
+                  hostingNamespace: hostedCluster.metadata.namespace,
+              }
+            : undefined,
     }
 }
 
@@ -331,8 +394,8 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
         clusterPoolNamespace: clusterDeployment?.spec?.clusterPoolRef?.namespace,
         clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
         secrets: {
-            kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
-            kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef.name,
+            kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name,
+            kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name,
             installConfig: clusterDeployment?.spec?.provisioning?.installConfigSecretRef?.name,
         },
         lifetime: clusterClaim?.spec?.lifetime,
@@ -342,11 +405,20 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
 export function getProvider(
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
-    clusterDeployment?: ClusterDeployment
+    clusterDeployment?: ClusterDeployment,
+    hostedCluster?: HostedClusterK8sResource
 ) {
+    if (hostedCluster?.spec?.platform?.agent) {
+        return Provider.hostinventory
+    }
+
+    if (hostedCluster) {
+        return Provider.hypershift
+    }
+
     const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
     if (clusterInstallRef?.kind === AgentClusterInstallKind) {
-        return Provider.hybrid
+        return Provider.hostinventory
     }
 
     const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
@@ -637,11 +709,19 @@ export function getKubeApiServer(
     )
 }
 
+const getHypershiftConsoleURL = (hostedCluster?: HostedClusterK8sResource) => {
+    if (!hostedCluster) {
+        return undefined
+    }
+    return `https://console-openshift-console.apps.${hostedCluster.metadata.name}.${hostedCluster.spec.dns.baseDomain}`
+}
+
 export function getConsoleUrl(
     clusterDeployment?: ClusterDeployment,
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
-    agentClusterInstall?: AgentClusterInstallK8sResource
+    agentClusterInstall?: AgentClusterInstallK8sResource,
+    hostedCluster?: HostedClusterK8sResource
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -651,7 +731,8 @@ export function getConsoleUrl(
         clusterDeployment?.status?.webConsoleURL ??
         managedClusterInfo?.status?.consoleURL ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
-        getConsoleUrlAI(clusterDeployment, agentClusterInstall)
+        getConsoleUrlAI(clusterDeployment, agentClusterInstall) ??
+        getHypershiftConsoleURL(hostedCluster)
     )
 }
 
@@ -686,7 +767,8 @@ export function getClusterStatus(
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterCurator: ClusterCurator | undefined,
     agentClusterInstall: AgentClusterInstallK8sResource | undefined,
-    clusterClaim: ClusterClaim | undefined
+    clusterClaim: ClusterClaim | undefined,
+    hostedCluster: HostedClusterK8sResource | undefined
 ) {
     let statusMessage: string | undefined
 
@@ -757,6 +839,16 @@ export function getClusterStatus(
                 statusMessage = clusterCurator.status?.conditions[0].message
                 return { status: ccStatus, statusMessage }
             }
+        }
+    }
+
+    if (hostedCluster) {
+        if (hostedCluster?.metadata?.deletionTimestamp) {
+            return { status: ClusterStatus.destroying }
+        }
+        const availableCondition = hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')
+        if (!availableCondition || availableCondition.status === 'False') {
+            return { status: ClusterStatus.creating }
         }
     }
 
@@ -959,5 +1051,16 @@ export function getClusterStatus(
         return { status: cdStatus, statusMessage }
     } else {
         return { status: mcStatus, statusMessage }
+    }
+}
+
+export function getIsHostedCluster(managedCluster?: ManagedCluster) {
+    if (
+        managedCluster?.metadata.annotations &&
+        managedCluster?.metadata.annotations['cluster.open-cluster-management.io/hypershiftdeployment']
+    ) {
+        return true
+    } else {
+        return false
     }
 }

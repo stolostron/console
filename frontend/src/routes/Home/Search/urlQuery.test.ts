@@ -11,14 +11,18 @@ test('Correctly returns transformBrowserUrlToSearchString', () => {
 })
 
 test('Correctly returns updateBrowserUrl', () => {
-    window.history.pushState = jest.fn()
+    const history = {
+        push: jest.fn(),
+    }
     const testData = 'kind:deployment name:search-prod-df8fa-search-api kind:'
-    updateBrowserUrl(testData)
-    expect(window.history.pushState).toHaveBeenCalled()
+    updateBrowserUrl(history, testData)
+    expect(history.push).toHaveBeenCalled()
 })
 
 test('Correctly returns updateBrowserUrl with empty query string', () => {
-    window.history.pushState = jest.fn()
-    updateBrowserUrl('')
-    expect(window.history.pushState).toHaveBeenCalled()
+    const history = {
+        push: jest.fn(),
+    }
+    updateBrowserUrl(history, '')
+    expect(history.push).toHaveBeenCalled()
 })

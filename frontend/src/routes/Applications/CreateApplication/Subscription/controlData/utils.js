@@ -12,18 +12,11 @@
 'use strict'
 
 import _ from 'lodash'
-import {
-    getGitChannelBranches,
-    getGitChannelPaths,
-    listChannels,
-    listProviderConnections,
-} from '../../../../../resources'
+import { getGitChannelBranches, getGitChannelPaths, listChannels } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
-const onlineClustersCheckbox = 'online-cluster-only-checkbox'
 const existingRuleCheckbox = 'existingrule-checkbox'
-const localClusterCheckbox = 'local-cluster-checkbox'
 const specPathname = 'spec.pathname'
 
 export const loadExistingChannels = (type) => {
@@ -33,16 +26,6 @@ export const loadExistingChannels = (type) => {
         },
         loadingDesc: 'creation.app.loading.channels',
         setAvailable: setAvailableChannelSpecs.bind(null, type),
-    }
-}
-
-export const loadExistingAnsibleProviders = () => {
-    return {
-        query: () => {
-            return listProviderConnections().promise
-        },
-        loadingDesc: 'creation.app.loading.secrets',
-        setAvailable: setAvailableSecrets.bind(null),
     }
 }
 
@@ -262,25 +245,36 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
     return globalControl
 }
 
+// when namespace changes, need to go through all placement rule sections to unset
+// any control set to an existing placement rule since it might not exist in new namespace
 export const updateControlsForNS = (initiatingControl, nsControl, globalControl) => {
+    // for every radio group of placement selections
     const controlList = getExistingPRControlsSection(initiatingControl, globalControl)
     controlList.forEach((control) => {
-        const existingRuleControl = _.get(control, 'placementrulecombo.active')
-        const existingruleCheckbox = _.get(control, `${existingRuleCheckbox}.active`)
+        // if user selected an existing rule
+        const existingRuleControl = _.get(control, 'placementrulecombo')
+        const existingruleCheckbox = _.get(control, existingRuleCheckbox)
         const selectedRuleNameControl = _.get(control, 'selectedRuleName')
-        // if user has selected an existing rule in a namespace, but they changed the
-        // namespace, need to unset existing rule choice
-        if (existingRuleControl && existingruleCheckbox) {
-            _.set(existingruleCheckbox, 'active', false)
+        if (existingruleCheckbox && existingruleCheckbox.active) {
+            // unselect existing radio
+            _.set(existingruleCheckbox, 'active', true)
             _.set(existingRuleControl, 'active', '')
-            _.set(existingRuleControl, 'type', 'hidden')
             selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', '')
+            _.set(existingRuleControl, 'opaque', false)
 
-            updateNewRuleControlsData('', control)
-        } else {
-            const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
-            _.set(existingPlacementRuleCombo, 'isLoaded', false)
+            // select labels instead
+            const clusterSelectorControl = _.get(control, 'clusterSelector')
+            _.set(clusterSelectorControl, 'active.mode', false)
+            clusterSelectorControl.active.clusterLabelsListID = 1
+            clusterSelectorControl.active.clusterLabelsList = [
+                { id: 0, labelName: '', labelValue: '', validValue: false },
+            ]
+            clusterSelectorControl.showData = []
         }
+
+        // also tell placement rule combo to load existing rules for this namespace
+        const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
+        existingPlacementRuleCombo && _.set(existingPlacementRuleCombo, 'isLoaded', false)
     })
 
     return globalControl
@@ -365,40 +359,6 @@ export const getGitBranches = async (groupControlData, setLoadingState) => {
     retrieveGitDetails(null, groupControlData, setLoadingState)
 }
 
-export const setAvailableRules = (control, result) => {
-    const { loading } = result
-    const { data } = result
-    const placementRules = data
-    control.isLoading = false
-    const error = placementRules ? null : result.error
-    if (!control.available) {
-        control.available = []
-        control.availableMap = {}
-        control.availableData = []
-    }
-    if (error || placementRules) {
-        if (error) {
-            control.isFailed = true
-            control.isLoaded = true
-        } else if (placementRules) {
-            control.isLoaded = true
-            control.availableData = placementRules
-            control.available = control.availableData
-                .map((pr) => pr?.metadata?.name)
-                .filter((name) => name)
-                .sort()
-            //remove default placement rule name if this is not on the list of available placements
-            //in that case the name was set by the reverse function on control initialization
-            if (control.active && !control.available.includes(control.active)) {
-                control.active = null
-            }
-        }
-    } else {
-        control.isLoading = loading
-    }
-    return control
-}
-
 export const setAvailableNSSpecs = (control, result) => {
     const { loading } = result
     const { data } = result
@@ -455,100 +415,6 @@ export const getExistingPRControlsSection = (initiatingControl, control) => {
     return result
 }
 
-export const updateNewRuleControlsData = (selectedPR, control) => {
-    const onlineControl = _.get(control, onlineClustersCheckbox)
-    const clusterSelectorControl = _.get(control, 'clusterSelector')
-    const localClusterControl = _.get(control, localClusterCheckbox)
-    const existingRuleControl = _.get(control, 'placementrulecombo')
-
-    if (selectedPR) {
-        const clusterConditionsList = _.get(selectedPR, 'spec.clusterConditions', [])
-        const localClusterData = clusterConditionsList.filter(
-            (rule) =>
-                _.get(rule, 'status', '').toLowerCase() === 'true' &&
-                _.get(rule, 'type', '') === 'ManagedClusterConditionAvailable'
-        )
-
-        if (localClusterData.length > 0) {
-            _.set(onlineControl, 'type', 'checkbox')
-            _.set(onlineControl, 'disabled', true)
-            _.set(onlineControl, 'active', true)
-        } else {
-            _.set(onlineControl, 'type', 'hidden')
-        }
-
-        const clusterSelectorData = _.get(selectedPR, 'spec.clusterSelector.matchLabels', null)
-
-        clusterSelectorData !== null
-            ? _.set(clusterSelectorControl, 'type', 'custom')
-            : _.set(clusterSelectorControl, 'type', 'hidden')
-
-        clusterSelectorControl.active.mode = clusterSelectorData !== null
-
-        if (clusterSelectorData) {
-            clusterSelectorControl.active.clusterLabelsList.splice(
-                0,
-                clusterSelectorControl.active.clusterLabelsList.length
-            )
-
-            const newData = []
-            let idx = 0
-            Object.keys(clusterSelectorData).forEach((key) => {
-                newData.push({
-                    id: idx,
-                    labelName: key,
-                    labelValue: clusterSelectorData[key],
-                    validValue: true,
-                })
-                idx = idx + 1
-            })
-
-            clusterSelectorControl.active.mode = clusterSelectorControl.active.clusterLabelsList.length > 0
-
-            if (newData.length === 0) {
-                newData.push({
-                    id: 0,
-                    labelName: '',
-                    labelValue: '',
-                    validValue: false,
-                })
-            }
-
-            clusterSelectorControl.showData = newData
-            clusterSelectorControl.active = {
-                mode: true,
-                clusterLabelsList: newData,
-                clusterLabelsListID: newData.length,
-            }
-        }
-
-        _.set(localClusterControl, 'type', 'hidden')
-    } else {
-        if (existingRuleControl.active) {
-            _.set(localClusterControl, 'type', 'checkbox')
-
-            _.set(onlineControl, 'type', 'checkbox')
-            _.set(onlineControl, 'active', false)
-            _.set(onlineControl, 'disabled', false)
-
-            _.set(clusterSelectorControl, 'type', 'custom')
-            _.set(clusterSelectorControl, 'active.mode', true)
-
-            clusterSelectorControl.active.clusterLabelsListID = 1
-            clusterSelectorControl.active.clusterLabelsList = [
-                { id: 0, labelName: '', labelValue: '', validValue: false },
-            ]
-            clusterSelectorControl.showData = []
-        } else {
-            // when a onSelect is fired when clearing the combobox, hide the selector
-            _.set(clusterSelectorControl, 'type', 'hidden')
-            _.set(onlineControl, 'type', 'hidden')
-            _.set(localClusterControl, 'type', 'hidden')
-        }
-    }
-    return control
-}
-
 //return channel path, to show in the combo as a user selection
 export const channelSimplified = (value, control) => {
     if (!control || !value) {
@@ -593,40 +459,6 @@ export const setAvailableChannelSpecs = (type, control, result) => {
             control.isLoading = loading
         }
         return control
-    }
-}
-
-export const setAvailableSecrets = (control, result) => {
-    const { loading } = result
-    const { data = [] } = result
-    const secrets = data
-    control.available = []
-
-    control.isLoading = false
-    const error = secrets ? null : result.error
-    if (!control.available) {
-        control.available = []
-        control.availableMap = {}
-        control.availableData = []
-    }
-    if (control.available.length === 0 && (error || secrets.length)) {
-        if (error) {
-            control.isFailed = true
-        } else if (secrets.length) {
-            control.isLoaded = true
-            const ansibleCredentials = secrets.filter(
-                (providerConnection) =>
-                    providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-                    !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-            )
-            control.available = Array.from(new Set([..._.map(ansibleCredentials, 'metadata.name')])).sort()
-            return control
-        }
-    } else {
-        control.isLoading = loading
-        if (!loading) {
-            control.isLoaded = true
-        }
     }
 }
 

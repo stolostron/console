@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, SelectOption } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '@stolostron/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
@@ -19,7 +19,7 @@ export function LogsContainer(props: ILogsContainerProps) {
     let resourceError = ''
     const t = props.t
     const podModel = _.get(props.node, 'specs.podModel')
-    const pods = podModel ? podModel[Object.keys(podModel)[0]] : []
+    const pods = podModel && Object.keys(podModel).length > 0 ? podModel[Object.keys(podModel)[0]] : []
 
     if (pods.length === 0) {
         resourceError = t('No pods found')

@@ -5,13 +5,13 @@ import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase } from 'lodash'
 import { getValue } from '../../../../../../../../components/TemplateEditor'
-import { AcmLabelsInput, AcmSelect } from '@stolostron/ui-components'
+import { AcmLabelsInput, AcmSelect } from '../../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
+import { useRecoilValue, waitForAll } from 'recoil'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
-import { clusterDeploymentsState, clusterImageSetsState } from '../../../../../../../../atoms'
+import { clusterDeploymentsState, clusterImageSetsState, configMapsState } from '../../../../../../../../atoms'
 import {
     useCanJoinClusterSets,
     useMustJoinClusterSet,
@@ -21,7 +21,7 @@ import { Secret } from '../../../../../../../../resources'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion } from './utils'
 
-const { HostedClusterDetailsStep, labelsToArray, LoadingState } = CIM
+const { HostedClusterDetailsStep, labelsToArray, LoadingState, getSupportedCM } = CIM
 
 type FormControl = {
     active: CIM.ClusterDetailsValues & {
@@ -53,8 +53,9 @@ const fields: any = {
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const { setClusterName, setReleaseImage } = useContext(HypershiftAgentContext)
-    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
-    const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+    const [clusterDeployments, clusterImageSets, configMaps] = useRecoilValue(
+        waitForAll([clusterDeploymentsState, clusterImageSetsState, configMapsState])
+    )
     const formRef = useRef<FormikProps<any>>(null)
     const { t } = useTranslation()
 
@@ -62,6 +63,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const mustJoinClusterSet = useMustJoinClusterSet()
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
+
+    const supportedVersionCM = getSupportedCM(configMaps)
 
     useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -200,6 +203,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         handleChange(control)
     }, [additionalLabels])
 
+    useEffect(() => {
+        control.active = {
+            ...control.active,
+            pullSecret: controlProps?.stringData?.pullSecret || '',
+            baseDnsDomain: controlProps?.stringData?.baseDomain || '',
+        }
+        handleChange(control)
+    }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
+
     return clusterImages ? (
         <HostedClusterDetailsStep
             formRef={formRef}
@@ -207,8 +219,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             clusterImages={clusterImages}
             usedClusterNames={usedClusterNames}
             extensionAfter={extensionAfter}
-            initPullSecret={controlProps?.stringData?.pullSecret}
-            initBaseDomain={controlProps?.stringData?.baseDomain}
+            supportedVersionsCM={supportedVersionCM}
         />
     ) : (
         <LoadingState />

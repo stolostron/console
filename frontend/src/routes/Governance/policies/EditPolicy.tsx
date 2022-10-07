@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
-import { AcmToastContext } from '@stolostron/ui-components'
+import { PolicyWizard } from '../../../wizards/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -24,6 +23,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
+import { AcmToastContext } from '../../../ui-components'
 import {
     getPlacementBindingsForResource,
     getPlacementsForResource,
@@ -101,19 +101,8 @@ export function EditPolicy() {
         }
 
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [
-        channels,
-        helmReleases,
-        history,
-        params.name,
-        params.namespace,
-        placementBindings,
-        placementRules,
-        placements,
-        policies,
-        subscriptions,
-        t,
-    ])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     if (existingResources === undefined) {
         return <LoadingPage />

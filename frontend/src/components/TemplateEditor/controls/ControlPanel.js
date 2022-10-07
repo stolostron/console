@@ -48,6 +48,7 @@ class ControlPanel extends React.Component {
         showEditor: PropTypes.bool,
         showPortals: PropTypes.object,
         templateYAML: PropTypes.any,
+        backButtonOverride: PropTypes.func,
     }
 
     constructor(props) {
@@ -197,6 +198,7 @@ class ControlPanel extends React.Component {
             resetStatus,
             isEditing,
             creationStatus,
+            backButtonOverride,
         } = this.props
         return (
             <ControlPanelWizard
@@ -213,6 +215,7 @@ class ControlPanel extends React.Component {
                 resetStatus={resetStatus}
                 isEditing={isEditing}
                 creationStatus={creationStatus}
+                backButtonOverride={backButtonOverride}
             />
         )
     }
@@ -225,12 +228,17 @@ class ControlPanel extends React.Component {
                 shadowed,
                 collapsed,
             })
+            const sectionContainerClasses = classNames({
+                'creation-view-group-subcontainer': title.subgroup,
+            })
             title.content = _content
             return (
                 <React.Fragment key={id}>
-                    {this.renderControl(id, 'section', title, grpId)}
-                    <div className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
-                        {this.renderControls(_content, grpId)}
+                    <div className={sectionContainerClasses}>
+                        {this.renderControl(id, 'section', title, grpId)}
+                        <div className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
+                            {this.renderControls(_content, grpId)}
+                        </div>
                     </div>
                 </React.Fragment>
             )
@@ -344,7 +352,7 @@ class ControlPanel extends React.Component {
                     setAvailable(control, { loading: true })
                     query()
                         .then((data) => {
-                            setAvailable(control, { loading: false, data })
+                            setAvailable(control, { loading: false, data, i18n: this.props.i18n })
                             control.forceUpdate()
                         })
                         .catch((err) => {

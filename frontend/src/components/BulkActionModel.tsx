@@ -10,7 +10,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmTextInput,
     IAcmTableColumn,
-} from '@stolostron/ui-components'
+} from '../ui-components'
 import {
     ActionGroup,
     Button,
@@ -95,7 +95,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
             onClose={props.close}
         >
             <AcmForm style={{ gap: 0 }}>
-                {!errors ? (
+                {!errors?.length ? (
                     <Fragment>
                         {props.description}
                         {props.checkBox}

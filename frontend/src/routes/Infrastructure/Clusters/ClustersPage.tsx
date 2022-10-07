@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -62,7 +62,7 @@ export function ClustersPage() {
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.managedClusters)}
                             >
-                                <Link to={NavigationPath.clusters}>{t('Managed clusters')}</Link>
+                                <Link to={NavigationPath.clusters}>{t('Cluster list')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
                                 <Link to={NavigationPath.clusterSets}>{t('Cluster sets')}</Link>
