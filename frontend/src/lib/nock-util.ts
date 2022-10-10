@@ -187,6 +187,8 @@ function areBodiesEqual(uri: string, body: any, resource: IResource | ClusterRol
         }
         window.missingNock[uri] = { requestedBody: body, nockedBody: resource }
         return false
+    } else if (window?.missingNock) {
+        delete window.missingNock[uri]
     }
     return true
 }

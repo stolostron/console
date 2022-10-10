@@ -321,11 +321,17 @@ export function nocksAreDone(nocks: Scope[]) {
 }
 
 export async function waitForNocks(nocks: Scope[]) {
-    await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+    const timeout = options.timeout * 2
+    const timeoutMsg = (error: Error) => {
+        error.message = `!!!!!!!!!!! Test timed out in waitForNocks()--waited ${timeout / 1000} seconds !!!!!!!!!!!!!`
+        error.stack = ''
+        return error
+    }
+    await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy(), { timeout, onTimeout: timeoutMsg })
 }
 
 export async function waitForNock(nock: Scope) {
-    await waitFor(() => expect(nock.isDone() || window.missingNock).toBeTruthy(), options)
+    await waitFor(() => expect(nock.isDone()).toBeTruthy(), options)
 }
 
 export async function selectAllRows() {
