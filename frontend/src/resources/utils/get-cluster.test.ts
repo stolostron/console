@@ -92,7 +92,7 @@ const mockManagedClusterInfoHasAvailableUpdates: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '1.2.3', //deprecated
+                desiredVersion: '', //deprecated
                 upgradeFailed: false,
                 channel: 'stable-1.2',
                 desired: {
@@ -115,7 +115,7 @@ const mockManagedClusterInfoFailedInstall: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '1.2.3', //deprecated
+                desiredVersion: '', //deprecated
                 upgradeFailed: true,
                 channel: 'stable-1.2',
                 desired: {
@@ -138,7 +138,7 @@ const mockManagedClusterInfoUpdating: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '1.2.4', //deprecated
+                desiredVersion: '', //deprecated
                 upgradeFailed: false,
                 channel: 'stable-1.2',
                 desired: {
@@ -161,7 +161,7 @@ const mockManagedClusterInfoFailedUpdating: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
-                desiredVersion: '1.2.3', //deprecated
+                desiredVersion: '', //deprecated
                 upgradeFailed: true,
                 channel: 'stable-1.2',
                 desired: {

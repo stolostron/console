@@ -590,35 +590,53 @@ export function getDistributionInfo(
         const matchesA = versionX.match(versionRegex)
         const matchesB = versionY.match(versionRegex)
         if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
-            if (parseInt(matchesA[1], 10) > parseInt(matchesB[1], 10)) {
-                return true
-            } else if (parseInt(matchesA[1], 10) === parseInt(matchesB[1], 10)) {
-                if (parseInt(matchesA[2], 10) > parseInt(matchesB[2], 10)) {
+            for (let index = 1; index < 4; index++) {
+                const parsedMatchA = parseInt(matchesA[index], 10)
+                const parsedMatchB = parseInt(matchesB[index], 10)
+                if (parsedMatchA > parsedMatchB) {
                     return true
-                } else if (parseInt(matchesA[2], 10) === parseInt(matchesB[2], 10)) {
-                    if (parseInt(matchesA[3], 10) > parseInt(matchesB[3], 10)) {
-                        return true
-                    }
+                }
+                if (parsedMatchA < parsedMatchB) {
+                    return false
                 }
             }
             return false
         }
     }
 
-    function isCuratorUpgradeVersionValid() {
-        const currentVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.version
-        const desiredVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion
-        const desiredVersionCC = clusterCurator?.spec?.upgrade?.desiredUpdate
-
-        if (currentVersionMCI && desiredVersionMCI && desiredVersionCC)
-            return (
-                isVersionGreater(desiredVersionCC, currentVersionMCI) &&
-                isVersionGreater(desiredVersionCC, desiredVersionMCI)
-            )
+    function isVersionEqual(versionX: string, versionY: string) {
+        const matchesA = versionX.match(versionRegex)
+        const matchesB = versionY.match(versionRegex)
+        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+            for (let index = 1; index < 4; index++) {
+                const parsedMatchA = parseInt(matchesA[index], 10)
+                const parsedMatchB = parseInt(matchesB[index], 10)
+                if (parsedMatchA !== parsedMatchB) {
+                    return false
+                }
+            }
+            return true
+        }
     }
+    const desiredVersion =
+        managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
+        managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
+        ''
+    const currentVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.version
+    const desiredVersionCC = clusterCurator?.spec?.upgrade?.desiredUpdate
+
     if (clusterCurator || managedClusterInfo) {
+        // check that currentVersionMCI && desiredVersionCC && desiredVersion exist,
+        // then validate that CC desiredVersion is greater than current MCI version
+        // and that CC desiredVersion is greater than or equal to MCI desiredVersion
+        const curatorUpgradeVersionValid =
+            currentVersionMCI &&
+            desiredVersionCC &&
+            desiredVersion &&
+            isVersionGreater(desiredVersionCC, currentVersionMCI) &&
+            (isVersionEqual(desiredVersionCC, desiredVersion) || isVersionGreater(desiredVersionCC, desiredVersion))
+
         const curatorConditions = clusterCurator?.status?.conditions ?? []
-        const curatorUpgradeVersionValid = isCuratorUpgradeVersionValid()
         const isUpgradeCuration =
             clusterCurator?.spec?.desiredCuration === 'upgrade' ||
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
@@ -645,7 +663,6 @@ export function getDistributionInfo(
             clusterCurator?.spec?.upgrade?.desiredUpdate !==
                 managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
             !curatorIsIdle
-
         const isSelectingChannel =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.channel &&
@@ -655,10 +672,6 @@ export function getDistributionInfo(
         const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
         const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
         upgradeInfo.upgradePercentage = percentageMatch.length > 0 && curatorIsUpgrading ? percentageMatch[0] : ''
-        const desiredVersion =
-            managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
-            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
-            ''
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
             curatorIsUpgrading ||
