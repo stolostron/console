@@ -43,7 +43,7 @@ import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
-import { description, HostInventoryBanner } from './HostInventoryBanner'
+import { HostInventoryBanner } from './HostInventoryBanner'
 
 const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
@@ -115,8 +115,17 @@ const InfraEnvironmentsPage: React.FC = () => {
                     title={t('Host inventory')}
                     description={
                         <>
-                            <span>{t('{{count}} infrastructure environment', { count: infraEnvs.length })}</span>
-                            <Popover bodyContent={t(description)}>
+                            <span>
+                                {t('{{hostCount}} hosts in {{infraEnvCount}} infrastructure environment', {
+                                    hostCount: agents.length,
+                                    infraEnvCount: infraEnvs.length,
+                                })}
+                            </span>
+                            <Popover
+                                bodyContent={t(
+                                    'An infrastructure environment manages your hosts and creates clusters that share network, proxy, and location settings.'
+                                )}
+                            >
                                 <Button isInline variant="plain" icon={<OutlinedQuestionCircleIcon />} />
                             </Popover>
                         </>
