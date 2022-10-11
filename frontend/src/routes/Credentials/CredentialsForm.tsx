@@ -118,7 +118,7 @@ export default function CredentialsFormPage() {
         }
         return undefined
     }, [getNamespaces, isEditing, isViewing])
-
+    const history = useHistory()
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
         if (isEditing || isViewing) {
@@ -167,6 +167,9 @@ export default function CredentialsFormPage() {
                     </PageSection>
                 </AcmPage>
             )
+        }
+        if (location.pathname === NavigationPath.addCredentials && location.search === '') {
+            history.push(NavigationPath.credentials)
         }
         return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
     }
@@ -663,8 +666,7 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        // isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
-                        isDisabled: true,
+                        isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
                     },
                     {
                         id: 'credentialsName',
@@ -1445,6 +1447,9 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
+        back: () => {
+            history.goBack()
+        },
         cancel: () =>
             !selectedInfrastructureType
                 ? history.push(NavigationPath.credentials)
@@ -1452,6 +1457,7 @@ export function CredentialsForm(props: {
         stateToSyncs,
         stateToData,
     }
+
     return (
         <AcmDataFormPage
             formData={formData}

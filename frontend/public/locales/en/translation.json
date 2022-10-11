@@ -262,6 +262,7 @@
     "Choose a location": "Choose a location",
     "Choose an option based on your hosts.": "Choose an option based on your hosts.",
     "Choose the policy set where you want to add specific policies.": "Choose the policy set where you want to add specific policies.",
+    "Choose your credential type.": "Choose your credential type.",
     "Choose your infrastructure provider.": "Choose your infrastructure provider.",
     "cim.infra.banner.body": "Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.",
     "cim.infra.banner.header": "A pool of hosts, ready for cluster creation",
