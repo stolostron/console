@@ -42,51 +42,41 @@ async function setupBeforeAll(): Promise<void> {
     nock.enableNetConnect('localhost')
 }
 
+let missingNocks: { method: any; path: any; requestBodyBuffers: any[] }[]
 let consoleWarnings: any[]
 let consoleErrors: any[]
-window.missingNock = undefined
 
 expect.extend({
     hasNoMissingNocks() {
         const msgs: string[] = []
-        let pass = true
-        Object.entries(window.missingNock || {}).forEach(([k, v]) => {
-            if (v.method) {
-                pass = false
-                switch (v.method) {
-                    case 'POST':
-                        if (v?.nockedBody) {
-                            msgs.push('!!!!!!! --------    nockCreate mismatch -----------    !!!!')
-                            msgs.push('\nthis nock: \n')
-                            msgs.push(` const req=${JSON.stringify(v.nockedBody)}`)
-                            msgs.push("\ndoesn't match this nock: \n")
-                            msgs.push(` const req=${JSON.stringify(v.requestedBody)}`)
-                        } else {
-                            msgs.push('!!!!!!! --------    missing nockCreate -----------    !!!!\n')
-                            msgs.push(` const req=${JSON.stringify(v.requestedBody)}`)
-                            msgs.push(` const nock = nockCreate(req)`)
-                            msgs.push(` // UI clicks create`)
-                            msgs.push(` await nock`)
-                        }
-                        msgs.push('\n!!!!!!! ------------------------------------------------    !!!!')
-                        break
-                    case 'GET':
-                        msgs.push('!!!!!!! --------    missing nock get -----------    !!!!\n')
-                        msgs.push(
-                            `   const nock =  nock('${v.options.protocol}//${v.options.hostname}').get('${k}').reply(200, response)`
-                        )
-                        msgs.push(`   // UI clicks somthing`)
-                        msgs.push(`   await nock`)
-                        msgs.push('\n!!!!!!! ------------------------------------------------    !!!!')
-                        break
-                    case 'DELETE':
-                        // if missing a deleted object, probably wasn't created successfully by test
-                        break
-                    default:
-                        console.log(v.method)
-                }
-            }
-        })
+        const pass: boolean = missingNocks.length === 0
+        if (!pass) {
+            const nocks = missingNocks
+                .filter(({ method }) => method !== 'DELETE')
+                .map((req) => {
+                    const arr: any[] = []
+                    req.requestBodyBuffers?.forEach((buffer: { toString: (arg0: string) => any }) => {
+                        arr.push(`\n${buffer.toString('utf8')}`)
+                    })
+                    const body = arr[0]
+                    return {
+                        url: req.path,
+                        method: req.method,
+                        reqBody: JSON.parse(body),
+                    }
+                })
+
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            const { dataMocks, funcMocks } = window.getNockLog(nocks)
+            dataMocks.forEach((data: string) => {
+                msgs.push(data)
+            })
+            msgs.push('\n\n')
+            funcMocks.forEach((func: string) => {
+                msgs.push(func)
+            })
+            msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        }
 
         const message: () => string = () => msgs.join('\n')
         return {
@@ -111,31 +101,20 @@ console.error = (message?: any, ..._optionalParams: any[]) => {
 }
 
 function logNoMatch(req: any) {
-    if (!window.missingNock || !window.missingNock[req.path]) {
-        const body: any[] = []
-        req.requestBodyBuffers?.forEach((buffer: { toString: (arg0: string) => any }) => {
-            body.push(`\n${buffer.toString('utf8')}`)
-        })
-        if (!window.missingNock) {
-            window.missingNock = {}
-        }
-        window.missingNock[req.path] = { requestedBody: body, method: req.method, options: req.options }
-    } else if (window.missingNock[req.path]) {
-        window.missingNock[req.path].method = req.method
-    }
+    missingNocks.push(req)
 }
 
 function setupBeforeEach(): void {
+    missingNocks = []
     consoleErrors = []
     consoleWarnings = []
     nock.emitter.on('no match', logNoMatch)
 }
 
 async function setupAfterEach(): Promise<void> {
-    // await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(missingNocks).hasNoMissingNocks()
     // expect(consoleErrors).toEqual([])
     // expect(consoleWarnings).toEqual([])
-    expect({}).hasNoMissingNocks()
 }
 
 async function setupAfterEachNock(): Promise<void> {

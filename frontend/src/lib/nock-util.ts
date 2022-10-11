@@ -180,19 +180,6 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-function areBodiesEqual(uri: string, body: any, resource: IResource | ClusterRoleBinding | unknown) {
-    if (!isEqual(body, resource)) {
-        if (!window.missingNock) {
-            window.missingNock = {}
-        }
-        window.missingNock[uri] = { requestedBody: body, nockedBody: resource }
-        return false
-    } else if (window?.missingNock) {
-        delete window.missingNock[uri]
-    }
-    return true
-}
-
 /*
     params - map with key/value pairs i.e.
     { param1: 'val1', param2: 'val2' } = ?param1=val1&param2=val2
@@ -218,10 +205,13 @@ export function nockCreate(
     statusCode = 201,
     params?: any
 ) {
-    const uri = getResourceNameApiPath(resource)
     const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .post(`${getResourceApiPath(resource)}${getNockParams(params)}`, (body) => {
-            return areBodiesEqual(uri, body, resource)
+            // if (!isEqual(body, resource)) {
+            //     console.log(body)
+            //     console.log(resource)
+            // }
+            return isEqual(body, resource)
         })
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
@@ -320,7 +310,7 @@ export function nockAnsibleTower(
     statusCode = 200
 ) {
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post('/ansibletower', (body) => areBodiesEqual('/ansibletower', body, data))
+        .post('/ansibletower', (body) => isEqual(body, data))
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -355,16 +345,15 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
-    const uri = getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(uri)
+        .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), (body) => areBodiesEqual(uri, body, resource))
+        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',

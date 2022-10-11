@@ -4,17 +4,18 @@ export declare global {
     interface Window {
         acmConsolePluginProxyPath: string
         getEditorValue: any
-        propsSnapshot: any
-        recoilSnapshot: any
-        missingNock:
-            | {
-                  [index: string]: {
-                      method?: string
-                      nockedBody?: any
-                      requestedBody?: any
-                      options?: any
-                  }
-              }
-            | undefined
+        //
+        propsSnapshot: (props: any, className?: string, max?: number) => void
+        recoilSnapshot: (recoil: any, stateName?: string, max?: number) => void
+        //
+        originalFetch: any
+        nockShots: () => void
+        getNockLog: (fetches: { url: any; method: any; reqBody: any; resBody?: any }[]) => {
+            dataMocks: string[]
+            funcMocks: string[]
+            actionComments: string[]
+        }
+        nockSnapshot: any
+        capturedFetches: any[]
     }
 }
