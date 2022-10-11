@@ -1302,7 +1302,7 @@
     "host.action.message.delete": "You are about to delete host from infrastructure environment. The host will need to be rediscovered before using it again.",
     "host.action.message.unbind": "Are you sure you want to remove this host from cluster?",
     "host.action.message.unbind.alert.bmh": "You are about to remove following host from cluster but it will remain available inside its infrastructure environment for future use.",
-    "host.action.message.unbind.alert.iso": "The host will be removed from the cluster but will remain available inside its infrastructure environment. If you want to make it usable by another cluster, boot it with the discovery ISO again.",
+    "host.action.message.unbind.alert.iso": "The host will be removed from the cluster but will remain available inside its infrastructure environment. Check its status if further action is needed.",
     "host.action.title.delete": "Delete host?",
     "host.action.title.unbind": "Remove host from cluster?",
     "host.action.title.unbind.single": "Remove host from {{clusterName}} cluster?",
