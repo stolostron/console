@@ -286,8 +286,12 @@ publish: Internal
     apiVIP: {{{apiVIP}}}    ##apiVIP
     ingressVIP: {{{ingressVIP}}}  ##ingressVIP
     network: '{{{networkType}}}' ##networkType
+    {{#if_truthy vsphereFolder}}
     folder: '{{{vsphereFolder}}}'
+    {{/if_truthy}}
+    {{#if_truthy vsphereResourcePool}}
     resourcePool: '{{{vsphereResourcePool}}}'
+    {{/if_truthy}}
 {{/case}}
 
 {{#case 'RHV'}}
