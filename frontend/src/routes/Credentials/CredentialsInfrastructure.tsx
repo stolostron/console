@@ -118,15 +118,13 @@ export function CreateInfrastructureCredentials() {
         <Fragment>
             <PageHeader
                 title={t('Credential type')}
-                description={
-                    <Fragment>
-                        <p>{t('Choose your credential type.')}</p>
-                        <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                            {t('What are the different credentials types?')}
-                        </a>
-                    </Fragment>
-                }
+                description={t('Choose your credential type.')}
                 breadcrumbs={breadcrumbs}
+                titleHelp={
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('What are the different credentials types?')}
+                    </a>
+                }
             />
             <ItemView
                 items={cards}
