@@ -969,8 +969,8 @@ export function CredentialsForm(props: {
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
                         label: t('vSphere folder'),
-                        placeholder: t('Enter your vSphere folder absolute path'),
-                        labelHelp: t('The absolute path of the vSphere folder to use. e.g. /DATACENTER/vm/FOLDER'),
+                        placeholder: t('credentialsForm.vsphereFolder.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereFolder.labelHelp'),
                         value: vsphereFolder,
                         onChange: setVsphereFolder,
                         isRequired: false,
@@ -980,10 +980,8 @@ export function CredentialsForm(props: {
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
                         label: t('vSphere resource pool'),
-                        placeholder: t('Enter your vSphere resource pool absolute path'),
-                        labelHelp: t(
-                            'The absolute path of the vSphere resource pool to use. e.g. /DATACENTER/host/CLUSTER/Resources/RESOURCE'
-                        ),
+                        placeholder: t('credentialsForm.vsphereResourcePool.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereResourcePool.labelHelp'),
                         value: vsphereResourcePool,
                         onChange: setVsphereResourcePool,
                         isRequired: false,
