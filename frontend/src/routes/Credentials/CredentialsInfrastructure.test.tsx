@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId, waitForCalled } from '../../lib/test-util'
+import { clickByTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateInfrastructureCredentials } from './CredentialsInfrastructure'
 

@@ -262,13 +262,14 @@ export function CredentialsForm(props: {
             break
     }
 
-    const [credentialsType, setCredentialsType] = useState(
-        urlParamInfrastructureType
-            ? urlPassedCredentialType
-            : infrastructureType
-            ? selectedInfrastructureType
-            : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-    )
+    const passedInfrastructureType = urlParamInfrastructureType
+        ? urlPassedCredentialType
+        : infrastructureType
+        ? selectedInfrastructureType
+        : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+
+    const [credentialsType, setCredentialsType] = useState(passedInfrastructureType)
+
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
     const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
