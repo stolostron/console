@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
 
+import { supportedLanguages } from './src/lib/i18n';
+
 const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js');
 
 const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
@@ -51,7 +53,7 @@ module.exports = {
     lineEnding: 'auto',
     // Control the line ending. See options at https://github.com/ryanve/eol
 
-    locales: ['en'],
+    locales: supportedLanguages,
     // An array of the locales in your applications
 
     namespaceSeparator: '~',

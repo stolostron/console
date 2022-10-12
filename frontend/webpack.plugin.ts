@@ -8,11 +8,12 @@ import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
+import { supportedLanguages } from './src/lib/i18n'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-    const locales = ['en']
+    const locales = supportedLanguages
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         entry: {},
         resolve: {

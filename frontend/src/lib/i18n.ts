@@ -8,6 +8,8 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 
+export const supportedLanguages = ['en', 'ja', 'ko', 'zh-CN']
+
 i18n
     // pass the i18n instance to react-i18next
     .use(initReactI18next)
@@ -30,7 +32,7 @@ i18n
         },
         defaultNS: 'translation', // the default file for strings when using useTranslation, etc
         nsSeparator: '~',
-        supportedLngs: ['en'], // only languages from this array will attempt to be loaded
+        supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
         simplifyPluralSuffix: true,
     })
 

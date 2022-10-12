@@ -13,11 +13,12 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin';
+import { supportedLanguages } from './src/lib/i18n'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-    const locales = ['en']
+    const locales = supportedLanguages
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         resolve: {
             extensions: ['.ts', '.tsx', '.js', '.jsx'],
