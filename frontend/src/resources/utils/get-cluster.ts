@@ -656,7 +656,7 @@ export function getDistributionInfo(
         upgradeInfo.hooksInProgress =
             checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
             checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
-        const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration
+        const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration && !curatorIsIdle
         const isSelectingChannel =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.channel &&
