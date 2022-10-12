@@ -95,6 +95,9 @@ export default function CredentialsFormPage() {
         isViewing = !isEditing
     }
 
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
+
     const [error, setError] = useState<Error>()
 
     // any recoil resources that constantly update because of a time stamp
@@ -171,7 +174,14 @@ export default function CredentialsFormPage() {
         if (location.pathname === NavigationPath.addCredentials && location.search === '') {
             history.push(NavigationPath.credentials)
         }
-        return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
+        return (
+            <CredentialsForm
+                namespaces={projects}
+                isEditing={false}
+                isViewing={false}
+                urlParamInfrastructureType={urlParamInfrastructureType}
+            />
+        )
     }
 }
 
@@ -184,6 +194,7 @@ export function CredentialsForm(props: {
     handleModalToggle?: () => void
     hideYaml?: boolean
     control?: any
+    urlParamInfrastructureType?: string
 }) {
     const { t } = useTranslation()
     const {
@@ -195,6 +206,7 @@ export function CredentialsForm(props: {
         handleModalToggle,
         hideYaml,
         control,
+        urlParamInfrastructureType,
     } = props
     const toastContext = useContext(AcmToastContext)
 
@@ -229,8 +241,6 @@ export function CredentialsForm(props: {
             selectedInfrastructureType = Provider.hostinventory
             break
     }
-    const urlParams = new URLSearchParams(location.search.substring(1))
-    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
     let urlPassedCredentialType = ''
     switch (urlParamInfrastructureType) {
         case 'AWS':

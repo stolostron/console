@@ -9,11 +9,11 @@ import {
     ProviderConnectionStringData,
 } from '../../resources'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
-import { clickByTestId, clickByText, selectByText, typeByTestId, waitForNock, waitForText } from '../../lib/test-util'
+import { clickByText, selectByText, typeByTestId, waitForNock, waitForText } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import AddCredentialPage2 from './CredentialsForm'
 
@@ -22,16 +22,6 @@ const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].m
     kind: NamespaceKind,
     metadata: { name },
 }))
-
-function AddCredentialsTest() {
-    return (
-        <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
-            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
-                <Route component={(props: any) => <AddCredentialPage2 {...props} />} />
-            </MemoryRouter>
-        </RecoilRoot>
-    )
-}
 
 export function createProviderConnection(
     provider: string,
@@ -71,17 +61,26 @@ export function createProviderConnection(
 describe('add credentials page', () => {
     beforeEach(() => nockIgnoreRBAC())
 
-    it('should create aws (Amazon Web Services) credentials', async () => {
-        render(<AddCredentialsTest />)
+    const Component = (props: { infrastructureType: string }) => {
+        return (
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+                <MemoryRouter
+                    initialEntries={[`${NavigationPath.addCredentials}?infrastructureType=${props.infrastructureType}`]}
+                >
+                    <AddCredentialPage2 />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    }
 
+    it('should create aws (Amazon Web Services) credentials', async () => {
+        render(<Component infrastructureType="AWS" />)
         const providerConnection = createProviderConnection(
             'aws',
             { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
             true
         )
 
-        // Credentials type
-        await clickByTestId('aws')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -108,7 +107,7 @@ describe('add credentials page', () => {
     })
 
     it('should create azr (Azure) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="Azure" />)
 
         const providerConnection = createProviderConnection(
             'azr',
@@ -125,8 +124,6 @@ describe('add credentials page', () => {
             true
         )
 
-        // Credentials type
-        await clickByTestId('azr')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -156,7 +153,7 @@ describe('add credentials page', () => {
     })
 
     it('should create gcp (Google Cloud Platform) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="GCP" />)
 
         const providerConnection = createProviderConnection(
             'gcp',
@@ -167,8 +164,6 @@ describe('add credentials page', () => {
             true
         )
 
-        // Credentials type
-        await clickByTestId('gcp')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -195,7 +190,7 @@ describe('add credentials page', () => {
     })
 
     it('should create vmw (VMware) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="vSphere" />)
 
         const providerConnection = createProviderConnection(
             'vmw',
@@ -212,8 +207,6 @@ describe('add credentials page', () => {
             true
         )
 
-        // Credentials type
-        await clickByTestId('vmw')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -248,7 +241,7 @@ describe('add credentials page', () => {
     })
 
     it('should create rhv (Red Hat Virtualization) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="RHV" />)
 
         const providerConnection = createProviderConnection(
             'redhatvirtualization',
@@ -262,8 +255,6 @@ describe('add credentials page', () => {
             true
         )
 
-        // Credentials type
-        await clickByTestId('redhatvirtualization')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -293,7 +284,7 @@ describe('add credentials page', () => {
     })
 
     it('should create ost (OpenStack) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="OpenStack" />)
 
         const providerConnection = createProviderConnection(
             'ost',
@@ -307,8 +298,6 @@ describe('add credentials page', () => {
             true
         )
 
-        // Credentials type
-        await clickByTestId('ost')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
@@ -338,7 +327,7 @@ describe('add credentials page', () => {
     })
 
     it('should create ans (Ansible) credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="Ansible" />)
 
         const providerConnection = createProviderConnection(
             'ans',
@@ -349,8 +338,6 @@ describe('add credentials page', () => {
             false
         )
 
-        // Credentials type
-        await clickByTestId('ans')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await clickByText('Next')
@@ -367,14 +354,12 @@ describe('add credentials page', () => {
     })
 
     it('should create rhocm credentials', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="RedHatCloud" />)
 
         const providerConnection = createProviderConnection('rhocm', {
             ocmAPIToken: 'ocmAPIToken',
         })
 
-        // Credentials type
-        await clickByTestId('rhocm')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await clickByText('Next')
@@ -390,10 +375,8 @@ describe('add credentials page', () => {
     })
 
     it('should throw error for requiredValidationMessage', async () => {
-        render(<AddCredentialsTest />)
+        render(<Component infrastructureType="RedHatCloud" />)
 
-        // Credentials type
-        await clickByTestId('rhocm')
         await clickByText('Next')
         await waitForText('This is a required field.', true)
     })
