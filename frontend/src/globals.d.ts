@@ -5,8 +5,9 @@ export declare global {
         acmConsolePluginProxyPath: string
         getEditorValue: any
         //
-        propShot: (props: any, className?: string, max?: number) => void
+        propShot: (props: any, max?: number) => void
         coilShot: (recoil: any, stateName?: string, max?: number) => void
+        funcShot: (ret: any, max?: number) => void
         //
         nockShot: () => void
         getNockShot: (fetches: { url: any; method: any; reqBody?: any; resBody?: any }[]) => {

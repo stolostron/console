@@ -1,18 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
 import debounce from 'lodash/debounce'
+import capitalize from 'lodash/capitalize'
+import StackTrace from 'stacktrace-js'
+//import { inspect } from 'util'
 
 if (process.env.NODE_ENV !== 'production') {
-    const capitalize = (name: string) => {
-        return name ? name.charAt(0).toUpperCase() + name.slice(1) : ''
-    }
-
     const getSnapshot = (obj: any = {}, max?: number) => {
         interface IProto {
             name?: string
             displayName?: string
         }
-        const mx = max || 10
+        const mx = max || 5
         const funcSet = new Set<string>()
         const getReplacements = () => {
             const seen = new WeakSet()
@@ -32,8 +31,14 @@ if (process.env.NODE_ENV !== 'production') {
                     switch (true) {
                         case filteredKeys.indexOf(key) !== -1:
                             return
+                        case key.startsWith('__'):
+                            return
                         case Array.isArray(value):
                             {
+                                if (seen.has(value)) {
+                                    return
+                                }
+                                seen.add(value)
                                 const array = value as Array<any>
                                 if (array.length > mx) {
                                     return array.slice(0, mx)
@@ -41,13 +46,13 @@ if (process.env.NODE_ENV !== 'production') {
                             }
                             break
                         case type === 'object':
+                            if (seen.has(value)) {
+                                return
+                            }
+                            seen.add(value)
                             if (key === 'metadata' && value.continue !== undefined) {
                                 return
                             }
-                            if (seen.has(value)) {
-                                return { ...value }
-                            }
-                            seen.add(value)
                             if (React.isValidElement(value)) {
                                 const proto = value.type as IProto
                                 return `__COMPONENT__${proto.name || proto.displayName}`
@@ -79,20 +84,21 @@ if (process.env.NODE_ENV !== 'production') {
 
         Array.from(funcSet).forEach((name) => {
             mockFunctions.push(`const mock${name} = jest.fn()`)
-            actualCallTimes.push(`    console.log(mockmock${name}.mock.calls.length)`)
+            actualCallTimes.push(`    console.log(mock${name}.mock.calls.length)`)
             expectCallTimes.push(`//    expect(mock${name}).toHaveBeenCalledTimes(0)`)
         })
         return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
     }
 
-    window.propShot = (props: any, className?: string, max?: number) => {
+    window.propShot = (props: any, max?: number) => {
+        const stack = StackTrace.getSync()
+        const className = stack[1].getFunctionName().split('.')[0]
         const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, max || 10)
         const snippet = `${mockFunctions.join('\n')}\n\n${actualCallTimes.join('\n')}\n\n${expectCallTimes.join(
             '\n'
         )}\n\nconst props = ${snapshot}`
-
         const snip: { [index: string]: string } = {}
-        const key = className ? `${className}Propshot` : 'propshot'
+        const key = `${className}Propshot`
         snip[key] = snippet
         console.log(snip)
     }
@@ -107,6 +113,25 @@ if (process.env.NODE_ENV !== 'production') {
         const key = stateName ? `${stateName}State` : 'state'
         snip[key] = snippet
         console.log(snip)
+    }
+
+    window.funcShot = (ret) => {
+        const stack = StackTrace.getSync()
+        StackTrace.generateArtificially().then((args) => {
+            const f = stack[1].getFunctionName()
+            const g = args[1].getArgs()
+        })
+
+        // const { snapshot } = getSnapshot(recoil, max || 10)
+        // const snippet = `\n\nsnapshot.set(${stateName}, mockRecoil${capitalize(
+        //     stateName || ''
+        // )})\n\nconst mockRecoil${capitalize(stateName || '')} = ${snapshot}`
+
+        // const snip: { [index: string]: string } = {}
+        // const key = stateName ? `${stateName}State` : 'state'
+        // snip[key] = snippet
+        // console.log(snip)
+        return ret
     }
 
     interface IKindData {
