@@ -11,6 +11,7 @@ export interface FormData {
     sections: (Section | SectionGroup)[]
     submit: () => void
     cancel: () => void
+    back?: () => void
     submitText: string
     submittingText: string
     reviewTitle: string

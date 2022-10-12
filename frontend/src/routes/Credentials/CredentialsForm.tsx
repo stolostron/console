@@ -96,6 +96,9 @@ export default function CredentialsFormPage() {
         isViewing = !isEditing
     }
 
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
+
     const [error, setError] = useState<Error>()
 
     // any recoil resources that constantly update because of a time stamp
@@ -119,7 +122,7 @@ export default function CredentialsFormPage() {
         }
         return undefined
     }, [getNamespaces, isEditing, isViewing])
-
+    const history = useHistory()
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
         if (isEditing || isViewing) {
@@ -169,7 +172,17 @@ export default function CredentialsFormPage() {
                 </AcmPage>
             )
         }
-        return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
+        if (location.pathname === NavigationPath.addCredentials && location.search === '') {
+            history.push(NavigationPath.credentials)
+        }
+        return (
+            <CredentialsForm
+                namespaces={projects}
+                isEditing={false}
+                isViewing={false}
+                urlParamInfrastructureType={urlParamInfrastructureType}
+            />
+        )
     }
 }
 
@@ -182,6 +195,7 @@ export function CredentialsForm(props: {
     handleModalToggle?: () => void
     hideYaml?: boolean
     control?: any
+    urlParamInfrastructureType?: string
 }) {
     const { t } = useTranslation()
     const {
@@ -193,6 +207,7 @@ export function CredentialsForm(props: {
         handleModalToggle,
         hideYaml,
         control,
+        urlParamInfrastructureType,
     } = props
     const toastContext = useContext(AcmToastContext)
 
@@ -227,12 +242,45 @@ export function CredentialsForm(props: {
             selectedInfrastructureType = Provider.hostinventory
             break
     }
+    let urlPassedCredentialType = ''
+    switch (urlParamInfrastructureType) {
+        case 'AWS':
+            urlPassedCredentialType = Provider.aws
+            break
+        case 'Azure':
+            urlPassedCredentialType = Provider.azure
+            break
+        case 'GCP':
+            urlPassedCredentialType = Provider.gcp
+            break
+        case 'OpenStack':
+            urlPassedCredentialType = Provider.openstack
+            break
+        case 'RHV':
+            urlPassedCredentialType = Provider.redhatvirtualization
+            break
+        case 'vSphere':
+            urlPassedCredentialType = Provider.vmware
+            break
+        case 'hostInventory':
+            urlPassedCredentialType = Provider.hostinventory
+            break
+        case 'Ansible':
+            urlPassedCredentialType = Provider.ansible
+            break
+        case 'RedHatCloud':
+            urlPassedCredentialType = Provider.redhatcloud
+            break
+    }
 
-    const [credentialsType, setCredentialsType] = useState(
-        infrastructureType
-            ? selectedInfrastructureType
-            : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-    )
+    const passedInfrastructureType = urlParamInfrastructureType
+        ? urlPassedCredentialType
+        : infrastructureType
+        ? selectedInfrastructureType
+        : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+
+    const [credentialsType, setCredentialsType] = useState(passedInfrastructureType)
+
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
     const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
@@ -638,7 +686,7 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        isDisabled: infrastructureType ? true : isEditing,
+                        isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
                     },
                     {
                         id: 'credentialsName',
@@ -1441,6 +1489,9 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
+        back: () => {
+            history.goBack()
+        },
         cancel: () =>
             !selectedInfrastructureType
                 ? history.push(NavigationPath.credentials)
@@ -1448,6 +1499,7 @@ export function CredentialsForm(props: {
         stateToSyncs,
         stateToData,
     }
+
     return (
         <AcmDataFormPage
             formData={formData}
