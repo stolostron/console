@@ -58,16 +58,23 @@ expect.extend({
                     req.requestBodyBuffers?.forEach((buffer: { toString: (arg0: string) => any }) => {
                         arr.push(`\n${buffer.toString('utf8')}`)
                     })
-                    const body = arr[0]
-                    return {
+                    const ret: {
+                        url: string
+                        method: string
+                        reqBody?: string
+                    } = {
                         url: req.path,
                         method: req.method,
-                        reqBody: JSON.parse(body),
                     }
+                    const body = arr[0]
+                    if (body) {
+                        ret.reqBody = JSON.parse(body)
+                    }
+                    return ret
                 })
 
             msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
-            const { dataMocks, funcMocks } = window.getNockLog(nocks)
+            const { dataMocks, funcMocks } = window.getNockShot(nocks)
             dataMocks.forEach((data: string) => {
                 msgs.push(data)
             })

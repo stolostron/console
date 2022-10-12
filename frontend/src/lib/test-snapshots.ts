@@ -16,8 +16,17 @@ if (process.env.NODE_ENV !== 'production') {
         const funcSet = new Set<string>()
         const getReplacements = () => {
             const seen = new WeakSet()
-            const filteredKeys = ['managedFields', 'annotations', 'finalizers']
-            return (key: any, value: {} | null | undefined) => {
+            const filteredKeys = [
+                'managedFields',
+                'annotations',
+                'finalizers',
+                'creationTimestamp',
+                'resourceVersion',
+                'generation',
+                'uid',
+            ]
+
+            return (key: any, value: { continue?: any } | null | undefined) => {
                 if (value) {
                     const type = typeof value
                     switch (true) {
@@ -32,6 +41,9 @@ if (process.env.NODE_ENV !== 'production') {
                             }
                             break
                         case type === 'object':
+                            if (key === 'metadata' && value.continue !== undefined) {
+                                return
+                            }
                             if (seen.has(value)) {
                                 return { ...value }
                             }
@@ -73,19 +85,19 @@ if (process.env.NODE_ENV !== 'production') {
         return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
     }
 
-    window.propsSnapshot = (props: any, className?: string, max?: number) => {
+    window.propShot = (props: any, className?: string, max?: number) => {
         const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, max || 10)
         const snippet = `${mockFunctions.join('\n')}\n\n${actualCallTimes.join('\n')}\n\n${expectCallTimes.join(
             '\n'
         )}\n\nconst props = ${snapshot}`
 
         const snip: { [index: string]: string } = {}
-        const key = className ? `${className}Props` : 'props'
+        const key = className ? `${className}Propshot` : 'propshot'
         snip[key] = snippet
         console.log(snip)
     }
 
-    window.recoilSnapshot = (recoil: any, stateName?: string, max?: number) => {
+    window.coilShot = (recoil: any, stateName?: string, max?: number) => {
         const { snapshot } = getSnapshot(recoil, max || 10)
         const snippet = `\n\nsnapshot.set(${stateName}, mockRecoil${capitalize(
             stateName || ''
@@ -97,47 +109,58 @@ if (process.env.NODE_ENV !== 'production') {
         console.log(snip)
     }
 
-    //managedFields
-    interface MethodData {
+    interface IKindData {
+        key: string
         name: string
         reqBody: string
         resBody: string
+        inlineComment: string
     }
 
-    const getDataName = (
-        dataMap: { [x: string]: { [x: string]: [MethodData] } },
+    const getNockShotName = (
+        dataMap: { [x: string]: { [x: string]: IKindData[] } },
         prefix: string,
         kind: string,
         reqBody: any,
-        resBody: any
+        resBody: any,
+        inlineComment: string
     ) => {
         let methodMap = dataMap[prefix]
         if (!methodMap) {
             methodMap = dataMap[prefix] = {}
+        }
+        let kindList: IKindData[] = methodMap[kind]
+        if (!kindList) {
+            kindList = methodMap[kind] = []
         }
         ;({ snapshot: reqBody } = getSnapshot(reqBody, 5))
         if (resBody) {
             ;({ snapshot: resBody } = getSnapshot(resBody, 5))
         }
         const key = `${reqBody}\\\\${resBody}`
-        let data = methodMap[key]
-        if (!data) {
-            data = methodMap[key] = <[MethodData]>(<unknown>[])
+        const inx = kindList.findIndex((kind: IKindData) => {
+            return kind.key === key
+        })
+        if (inx !== -1) {
+            return kindList[inx].name
+        } else {
+            const name = `${prefix}${capitalize(kind)}${kindList.length + 1}`
+            kindList.push({ key, name, reqBody, resBody, inlineComment })
+            return name
         }
-        const name = `${prefix}${capitalize(kind)}${data.length + 1}`
-        data.push({ name, reqBody, resBody })
-        return name
     }
 
-    const dumpData = (dataMap: { [x: string]: { [x: string]: [MethodData] } }) => {
+    const dumpNockShotData = (dataMap: { [x: string]: { [x: string]: [IKindData] } }) => {
         const dumpedData: string[] = []
         Object.values(dataMap).forEach((method) => {
             Object.values(method).forEach((data) => {
-                data.forEach(({ name, reqBody, resBody }) => {
+                data.forEach(({ name, reqBody, resBody, inlineComment }) => {
                     if (resBody) {
-                        dumpedData.push(`const ${name} = {req: ${reqBody}, res: ${resBody}}`)
+                        dumpedData.push(
+                            `\n\n//---${inlineComment}---\nconst ${name} = {req: ${reqBody}, res: ${resBody}}`
+                        )
                     } else {
-                        dumpedData.push(`const ${name} = {req: ${reqBody}}`)
+                        dumpedData.push(`\n\n//---${inlineComment}---\nconst ${name} = {req: ${reqBody}}`)
                     }
                 })
             })
@@ -145,14 +168,14 @@ if (process.env.NODE_ENV !== 'production') {
         return dumpedData
     }
 
-    window.getNockLog = (fetches: { url: any; method: any; reqBody: any; resBody?: any }[]) => {
+    window.getNockShot = (fetches: { url: any; method: any; reqBody: any; resBody?: any }[]) => {
         const dataMap = {}
         const funcMocks: string[] = []
-        const actionComments: string[] = []
+        let nockIgnoreRBAC = false
         fetches.forEach(({ method, url, reqBody, resBody }) => {
             // get if local and what pathname is
             let isList = false
-            let nockIgnoreRBAC = false
+            let inlineComment = ''
             const isSearch = url.indexOf('/search') !== -1
             const isLocalhost = !url.startsWith('http')
             let uri,
@@ -180,15 +203,33 @@ if (process.env.NODE_ENV !== 'production') {
                                 apiVersion: version,
                                 kind: `${kind2}`,
                                 metadata: {
-                                    namespaces: name1,
+                                    namespace: name1,
                                     name: name2,
                                 },
                             }
+                            inlineComment = `'${kind2}' in '${name1}' namespace`
                         } else {
                             reqBody = {
                                 apiVersion: version,
                                 kind: `${kind1}`,
                             }
+                            inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
+                        }
+                    } else {
+                        if (typeof reqBody === 'string') {
+                            reqBody = JSON.parse(reqBody)
+                        }
+                        const _kind = reqBody?.kind
+                        const _name = reqBody?.metadata?.name
+                        const _namespace = reqBody?.metadata?.namespace
+                        if (_namespace) {
+                            if (_name) {
+                                inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+                            } else {
+                                inlineComment = `'${_kind}' in '${_namespace}' namespace`
+                            }
+                        } else {
+                            inlineComment = `'${_kind}'`
                         }
                     }
                     kind = kind2 || kind1
@@ -209,79 +250,87 @@ if (process.env.NODE_ENV !== 'production') {
                     if (isLocalhost) {
                         if (isList) {
                             prefix = 'list'
+                            inlineComment = `get all ${inlineComment}`
                         } else {
                             prefix = 'get'
+                            inlineComment = `get ${inlineComment}`
                         }
                     } else {
-                        prefix = kind
+                        prefix = 'get'
+                        inlineComment = `get ${kind} ${inlineComment}`
+                    }
+                    break
+                case 'POST':
+                    if (isSearch) {
+                        prefix = 'search'
+                        inlineComment = `search ${inlineComment}`
+                    } else {
+                        prefix = 'create'
+                        inlineComment = `create ${inlineComment}`
+                    }
+                    break
+                case 'DELETE':
+                    prefix = 'delete'
+                    inlineComment = `delete ${inlineComment}`
+                    break
+                case 'PATCH':
+                    prefix = 'patch'
+                    inlineComment = `patch ${inlineComment}`
+                    break
+            }
+
+            const dataName =
+                kind === 'selfsubjectaccessreviews'
+                    ? 'ignore'
+                    : getNockShotName(dataMap, prefix, kind, reqBody, resBody, inlineComment)
+            switch (method) {
+                case 'GET':
+                    if (isLocalhost) {
+                        if (isList) {
+                            funcMocks.push(`    nockList(${dataName}.req, ${dataName}.res)  // ${inlineComment}`)
+                        } else {
+                            funcMocks.push(`    nockGet(${dataName}.req, ${dataName}.res)   // ${inlineComment}`)
+                        }
+                    } else {
+                        funcMocks.push(`    nock('${origin}').get('${pathname}').reply(200, ${dataName}.res)`)
                     }
                     break
                 case 'POST':
                     if (kind === 'selfsubjectaccessreviews') {
                         nockIgnoreRBAC = true
                     } else if (isSearch) {
-                        prefix = 'search'
+                        funcMocks.push(`    nockSearch(${dataName}.req, ${dataName}.res)`)
                     } else {
-                        prefix = 'create'
+                        funcMocks.push(`    nockCreate(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
                     }
                     break
                 case 'DELETE':
-                    prefix = 'delete'
+                    funcMocks.push(`    nockDelete(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
                     break
                 case 'PATCH':
-                    prefix = 'patch'
+                    funcMocks.push(`    nockPatch(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
+                    // nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource )
+                    break
+                case 'OPTION':
+                    // nockOptions(resource: Resource, response?: IResource)==> no reqBody
                     break
             }
-
-            if (nockIgnoreRBAC) {
-                funcMocks.unshift('    nockIgnoreRBAC()')
-            } else {
-                const dataName = getDataName(dataMap, prefix, kind, reqBody, resBody)
-                switch (method) {
-                    case 'GET':
-                        if (isLocalhost) {
-                            if (isList) {
-                                funcMocks.push(`    nockList(${dataName}.req, ${dataName}.res)`)
-                            } else {
-                                funcMocks.push(`    nockGet(${dataName}.req, ${dataName}.res)`)
-                            }
-                        } else {
-                            funcMocks.push(`    nock('${origin}').get('${pathname}').reply(200, ${dataName}.res)`)
-                        }
-                        break
-                    case 'POST':
-                        if (isSearch) {
-                            funcMocks.push(`    nockSearch(${dataName}.req, ${dataName}.res)`)
-                        } else {
-                            funcMocks.push(`    nockCreate(${dataName}.req, ${dataName}.res)`)
-                        }
-                        break
-                    case 'DELETE':
-                        funcMocks.push(`    nockDelete(${dataName}.req, ${dataName}.res)`)
-                        break
-                    case 'PATCH':
-                        funcMocks.push(`    nockPatch(${dataName}.req, ${dataName}.res)`)
-                        // nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource )
-                        break
-                    case 'OPTION':
-                        // nockOptions(resource: Resource, response?: IResource)==> no reqBody
-                        break
-                }
-            }
         })
-        return { dataMocks: dumpData(dataMap), funcMocks: funcMocks, actionComments }
+        if (nockIgnoreRBAC) {
+            funcMocks.unshift('    nockIgnoreRBAC()  //approve all RBAC checks')
+        }
+        return { dataMocks: dumpNockShotData(dataMap), funcMocks: funcMocks }
     }
 
-    window.nockSnapshot = (fetches: any) => {
-        const { dataMocks, funcMocks, actionComments } = window.getNockLog(fetches)
-        const snip: { [index: string]: { data: string; nocks: string } } = {}
-
-        const key = 'nockShot'
-        snip[key] = { data: dataMocks.join('\n'), nocks: funcMocks.join('\n') }
+    const logNockShot = (fetches: any) => {
+        const { dataMocks, funcMocks } = window.getNockShot(fetches)
+        const snip: { [index: string]: string } = {}
+        const snippet = `${dataMocks.join('\n')}\n\n${funcMocks.join('\n')}`
+        snip['nockShot'] = snippet
         console.log(snip)
     }
 
-    const nockSnapshotDebounced = debounce(window.nockSnapshot, 1000)
+    const logNockShotDebounced = debounce(logNockShot, 1000)
 
     const overrideFetch = (url: any, options: any) => {
         const promise = window.originalFetch(url, options)
@@ -306,13 +355,13 @@ if (process.env.NODE_ENV !== 'production') {
                 }
 
                 window.capturedFetches.push({ url, method: options.method, reqBody: options.body, resBody })
-                nockSnapshotDebounced(window.capturedFetches)
+                logNockShotDebounced(window.capturedFetches)
             }
             return res
         })
     }
 
-    window.nockShots = () => {
+    window.nockShot = () => {
         if (!window.originalFetch) {
             window.capturedFetches = []
             window.originalFetch = window.fetch
