@@ -3,7 +3,7 @@
 
 import { parseYAML, escapeYAML, getImmutables, getImmutableRows } from './source-utils'
 import { setSourcePaths } from './initialize-control-functions'
-import { caseFn, defaultFn, if_eqFn, if_existsFn, if_gtFn, if_neFn, if_orFn, switchFn } from '../helpers'
+import { caseFn, defaultFn, if_eqFn, if_gtFn, if_neFn, if_orFn, if_truthyFn, switchFn } from '../helpers'
 import get from 'lodash/get'
 import capitalize from 'lodash/capitalize'
 
@@ -12,10 +12,10 @@ const helpers = {
         case: caseFn,
         default: defaultFn,
         if_eq: if_eqFn,
-        if_exists: if_existsFn,
         if_gt: if_gtFn,
         if_ne: if_neFn,
         if_or: if_orFn,
+        if_truthy: if_truthyFn,
         switch: switchFn,
     },
 }
