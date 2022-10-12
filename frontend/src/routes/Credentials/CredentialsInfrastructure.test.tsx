@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId } from '../../lib/test-util'
+import { clickByTestId, waitForCalled } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateInfrastructureCredentials } from './CredentialsInfrastructure'
 
@@ -63,5 +64,23 @@ describe('CreateInfrastructure credential', () => {
     test('can select redhatcloud', async () => {
         render(<Component />)
         await clickByTestId('redhatcloud')
+    })
+
+    test('can click cancel', async () => {
+        render(<Component />)
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /cancel/i,
+            })
+        )
+    })
+
+    test('can click back', async () => {
+        render(<Component />)
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /back/i,
+            })
+        )
     })
 })
