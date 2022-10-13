@@ -147,7 +147,7 @@ export default class TemplateEditor extends React.Component {
 
         // has control data been initialized?
         const { controlData: initialControlData, onControlInitialize } = props
-        let { controlData, templateYAML, templateObject, templateResources, immutableRows, editStack } = state
+        let { controlData, templateYAML, editStack } = state
         const { editor, template, showSecrets, otherYAMLTabs } = state
         if (!controlData) {
             // initialize control data
@@ -171,6 +171,7 @@ export default class TemplateEditor extends React.Component {
             }
 
             // generate source from template or stack of resources
+            let templateObject, templateResources, immutableRows
             ;({ templateYAML, templateObject, templateResources, immutableRows } = generateSource(
                 template,
                 editStack,
