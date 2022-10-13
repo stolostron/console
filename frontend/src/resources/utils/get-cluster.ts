@@ -491,7 +491,54 @@ export function getDistributionInfo(
             break
     }
 
+    const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+
+    function isVersionGreater(versionX: string, versionY: string) {
+        const matchesA = versionX.match(versionRegex)
+        const matchesB = versionY.match(versionRegex)
+        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+            for (let index = 1; index < 4; index++) {
+                const parsedMatchA = parseInt(matchesA[index], 10)
+                const parsedMatchB = parseInt(matchesB[index], 10)
+                if (parsedMatchA > parsedMatchB) {
+                    return true
+                }
+                if (parsedMatchA < parsedMatchB) {
+                    return false
+                }
+            }
+            return false
+        }
+    }
+
+    function isVersionEqual(versionX: string, versionY: string) {
+        const matchesA = versionX.match(versionRegex)
+        const matchesB = versionY.match(versionRegex)
+        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+            for (let index = 1; index < 4; index++) {
+                const parsedMatchA = parseInt(matchesA[index], 10)
+                const parsedMatchB = parseInt(matchesB[index], 10)
+                if (parsedMatchA !== parsedMatchB) {
+                    return false
+                }
+            }
+            return true
+        }
+    }
+    const desiredVersion =
+        managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
+        managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
+        ''
+    const currentVersionMCI = managedClusterInfo?.status?.distributionInfo?.ocp.version
+    const desiredVersionCC = clusterCurator?.spec?.upgrade?.desiredUpdate
+
     if (clusterCurator || managedClusterInfo) {
+        const curatorUpgradeVersionValid =
+            currentVersionMCI &&
+            desiredVersionCC &&
+            desiredVersion &&
+            isVersionGreater(desiredVersionCC, currentVersionMCI) &&
+            (isVersionEqual(desiredVersionCC, desiredVersion) || isVersionGreater(desiredVersionCC, desiredVersion))
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration =
             clusterCurator?.spec?.desiredCuration === 'upgrade' ||
@@ -512,13 +559,7 @@ export function getDistributionInfo(
         upgradeInfo.hooksInProgress =
             checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
             checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
-        const curatorIsUpgrading =
-            isUpgradeCuration &&
-            clusterCurator?.spec?.upgrade?.desiredUpdate &&
-            clusterCurator?.spec?.upgrade?.desiredUpdate !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
-            !curatorIsIdle
-
+        const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration && !curatorIsIdle
         const isSelectingChannel =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.channel &&
@@ -527,11 +568,7 @@ export function getDistributionInfo(
 
         const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
         const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
-        upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
-        const desiredVersion =
-            managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
-            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
-            ''
+        upgradeInfo.upgradePercentage = percentageMatch.length > 0 && curatorIsUpgrading ? percentageMatch[0] : ''
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
             curatorIsUpgrading ||
