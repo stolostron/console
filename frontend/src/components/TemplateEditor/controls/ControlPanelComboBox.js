@@ -9,6 +9,7 @@ import ControlPanelFormGroup from './ControlPanelFormGroup'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 import set from 'lodash/set'
+import get from 'lodash/get'
 import uniq from 'lodash/uniq'
 import invert from 'lodash/invert'
 
@@ -47,6 +48,12 @@ class ControlPanelComboBox extends React.Component {
                         control.active = searchText
                         userData.push(searchText)
                         set(control, 'userData', userData)
+
+                        // if this combobox is fetched from server, make sure whatever user types in has an availableMap entry
+                        const setAvailableMap = get(control, 'fetchAvailable.setAvailableMap')
+                        if (setAvailableMap) {
+                            setAvailableMap(control)
+                        }
                     }
                     handleComboChange(searchText)
                     searchText = null
