@@ -13,8 +13,7 @@ import {
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilCallback } from 'recoil'
-import { namespacesState } from '../../atoms'
+import { useRecoilCallback } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -50,6 +49,7 @@ import {
     unpackProviderConnection,
 } from '../../resources'
 import schema from './schema.json'
+import { useSharedAtoms } from '../../shared-recoil'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
@@ -87,6 +87,7 @@ export default function CredentialsFormPage() {
     const params = useParams<{ namespace: string; name: string }>()
     const location = useLocation()
     const { name, namespace } = params
+    const { namespacesState } = useSharedAtoms()
     const { t } = useTranslation()
 
     let isEditing = false

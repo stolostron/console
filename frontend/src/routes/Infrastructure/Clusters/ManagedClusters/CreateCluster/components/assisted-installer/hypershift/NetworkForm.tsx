@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { HostedClusterNetworkStep, LoadingState } from 'openshift-assisted-ui-lib/cim'
-import { agentsState, infrastructuresState } from '../../../../../../../../atoms'
-import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 import isMatch from 'lodash/isMatch'
@@ -10,6 +8,7 @@ import isMatch from 'lodash/isMatch'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { Secret } from '../../../../../../../../resources'
 import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 
 type FormControl = {
     active: any
@@ -31,6 +30,8 @@ type NetworkFormProps = {
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, controlProps }) => {
     const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace } =
         React.useContext(HypershiftAgentContext)
+    const { waitForAll } = useSharedRecoil()
+    const { agentsState, infrastructuresState } = useSharedAtoms()
     const [agents, infrastructures] = useRecoilValue(waitForAll([agentsState, infrastructuresState]))
 
     const formRef = React.useRef<FormikProps<any>>(null)

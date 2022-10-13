@@ -6,8 +6,7 @@ import { Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { AcmAlert, AcmLoadingPage, AcmSelect } from '../../../../ui-components'
 import { useEffect, useRef, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { managedClustersState } from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_BASE_PATH } from '../../../../lib/doc-util'
 import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources'
@@ -46,6 +45,7 @@ export default function LogsPage(props: {
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
+    const { managedClustersState } = useSharedAtoms()
     const [managedClusters] = useRecoilState(managedClustersState)
 
     useEffect(() => {

@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useRecoilValue, waitForAll } from 'recoil'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
@@ -20,20 +19,12 @@ import {
     createResources,
     IResource,
 } from '../../../../../../../resources'
-import {
-    agentClusterInstallsState,
-    agentsState,
-    bareMetalAssetsState,
-    clusterDeploymentsState,
-    configMapsState,
-    infraEnvironmentsState,
-    multiClusterEnginesState,
-} from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -291,12 +282,16 @@ export const onSaveNetworking = async (
 }
 
 export const useAssistedServiceNamespace = () => {
+    const { waitForAll } = useSharedRecoil()
+    const { multiClusterEnginesState } = useSharedAtoms()
     const [[multiClusterEngine]] = useRecoilValue(waitForAll([multiClusterEnginesState]))
     return useMemo(() => multiClusterEngine?.spec?.targetNamespace ?? 'multicluster-engine', [multiClusterEngine])
 }
 
 export const useAssistedServiceConfigMap = () => {
     const namespace = useAssistedServiceNamespace()
+    const { configMapsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [configMaps] = useRecoilValue(waitForAll([configMapsState]))
     return useMemo(
         () => configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === namespace),
@@ -311,6 +306,8 @@ export const useClusterDeployment = ({
     name?: string
     namespace?: string
 }): CIM.ClusterDeploymentK8sResource | undefined => {
+    const { clusterDeploymentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
     return useMemo(
         () =>
@@ -328,6 +325,8 @@ export const useAgentClusterInstall = ({
     name?: string
     namespace?: string
 }): CIM.AgentClusterInstallK8sResource | undefined => {
+    const { agentClusterInstallsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [agentClusterInstalls] = useRecoilValue(waitForAll([agentClusterInstallsState]))
     return useMemo(
         () => agentClusterInstalls.find((aci) => aci.metadata.name === name && aci.metadata.namespace === namespace),
@@ -336,6 +335,8 @@ export const useAgentClusterInstall = ({
 }
 
 export const useInfraEnv = ({ name, namespace }: { name: string; namespace: string }) => {
+    const { infraEnvironmentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [infraEnvs] = useRecoilValue(waitForAll([infraEnvironmentsState]))
     return useMemo(
         () => infraEnvs.find((ie) => ie.metadata.name === name && ie.metadata.namespace === namespace),
@@ -550,6 +551,8 @@ export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hos
     ]).promise
 
 export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }): AgentK8sResource[] => {
+    const { agentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [agents] = useRecoilValue(waitForAll([agentsState]))
     return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents]) || []
 }
@@ -561,6 +564,8 @@ export const useBMHsOfAIFlow = ({
     name?: string
     namespace?: string
 }): BareMetalHostK8sResource[] => {
+    const { bareMetalAssetsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [bmhs] = useRecoilValue(waitForAll([bareMetalAssetsState]))
     return (
         useMemo(

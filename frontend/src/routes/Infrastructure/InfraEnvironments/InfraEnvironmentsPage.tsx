@@ -33,8 +33,6 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import { useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { agentsState, infraEnvironmentsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -44,6 +42,7 @@ import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { description, HostInventoryBanner } from './HostInventoryBanner'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
 
 const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
@@ -104,6 +103,8 @@ const deleteInfraEnv = (
 }
 
 const InfraEnvironmentsPage: React.FC = () => {
+    const { agentsState, infraEnvironmentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
     const { t } = useTranslation()
 

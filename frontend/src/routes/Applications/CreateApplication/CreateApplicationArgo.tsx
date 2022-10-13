@@ -20,7 +20,7 @@ import {
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
-import { ansibleCredentialsValue } from '../../../selectors'
+import { useSharedSelectors } from '../../../shared-recoil'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
@@ -68,6 +68,7 @@ export function CreateApplicationArgo() {
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+    const { ansibleCredentialsValue } = useSharedSelectors()
 
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)

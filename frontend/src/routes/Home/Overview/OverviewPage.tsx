@@ -3,14 +3,7 @@
 import { PageSection, Stack } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import {
-    applicationsState,
-    argoApplicationsState,
-    managedClusterInfosState,
-    policyreportState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -152,6 +145,8 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 
 export default function OverviewPage() {
     const { t } = useTranslation()
+    const { applicationsState, argoApplicationsState, managedClusterInfosState, policyreportState, usePolicies } =
+        useSharedAtoms()
     const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)

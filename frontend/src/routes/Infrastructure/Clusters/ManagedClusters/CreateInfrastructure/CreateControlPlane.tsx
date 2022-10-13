@@ -12,17 +12,17 @@ import {
 } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { customResourceDefinitionsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const clusterTypeTooltips = 'Required operator: Red Hat Advanced Cluster Management or multicluster engine'
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
     const history = useHistory()
+    const { customResourceDefinitionsState } = useSharedAtoms()
     const [crds] = useRecoilState(customResourceDefinitionsState)
 
     const isHypershiftEnabled = crds.some(({ metadata }) => metadata.name === 'hostedclusters.hypershift.openshift.io')

@@ -4,15 +4,15 @@ import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '../../../..
 import { Card, CardBody } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../../atoms'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 export function ProgressStepBar() {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
+    const { ansibleJobState, clusterCuratorsState, configMapsState } = useSharedAtoms()
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const [configMaps] = useRecoilState(configMapsState)

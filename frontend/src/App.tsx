@@ -52,7 +52,7 @@ import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
 import logo from './assets/RHACM-Logo.svg?url'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { LoadData, logout } from './atoms'
+import { logout } from './logout'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
@@ -63,6 +63,8 @@ import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
+import { PluginDataContextProvider, usePluginDataContextValue } from './lib/PluginDataContext'
+import { PluginData } from './components/PluginData'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -352,44 +354,52 @@ export default function App() {
         }
     }, [])
 
+    const pluginDataContextValue = usePluginDataContextValue()
+
     return (
-        <BrowserRouter>
-            <Page
-                header={<AppHeader />}
-                sidebar={<AppSidebar routes={routes} />}
-                isManagedSidebar
-                defaultManagedSidebarIsOpen={true}
-                style={{ height: '100vh' }}
-            >
-                <LoadData>
-                    <AcmToastProvider>
-                        <AcmToastGroup />
-                        <AcmTablePaginationContextProvider localStorageKey="clusters">
-                            <Suspense fallback={<LoadingPage />}>
-                                <Switch>
-                                    {routes.map((route) =>
-                                        route.type === 'group' ? (
-                                            route.routes.map((route) => (
+        <PluginDataContextProvider value={pluginDataContextValue}>
+            <BrowserRouter>
+                <Page
+                    header={<AppHeader />}
+                    sidebar={<AppSidebar routes={routes} />}
+                    isManagedSidebar
+                    defaultManagedSidebarIsOpen={true}
+                    style={{ height: '100vh' }}
+                >
+                    <PluginData>
+                        <AcmToastProvider>
+                            <AcmToastGroup />
+                            <AcmTablePaginationContextProvider localStorageKey="clusters">
+                                <Suspense fallback={<LoadingPage />}>
+                                    <Switch>
+                                        {routes.map((route) =>
+                                            route.type === 'group' ? (
+                                                route.routes.map((route) => (
+                                                    <Route
+                                                        key={route.title}
+                                                        path={route.route}
+                                                        component={route.component}
+                                                    />
+                                                ))
+                                            ) : (
                                                 <Route
                                                     key={route.title}
                                                     path={route.route}
                                                     component={route.component}
                                                 />
-                                            ))
-                                        ) : (
-                                            <Route key={route.title} path={route.route} component={route.component} />
-                                        )
-                                    )}
-                                    <Route path="*">
-                                        <Redirect to={NavigationPath.welcome} />
-                                    </Route>
-                                </Switch>
-                            </Suspense>
-                        </AcmTablePaginationContextProvider>
-                    </AcmToastProvider>
-                </LoadData>
-            </Page>
-        </BrowserRouter>
+                                            )
+                                        )}
+                                        <Route path="*">
+                                            <Redirect to={NavigationPath.welcome} />
+                                        </Route>
+                                    </Switch>
+                                </Suspense>
+                            </AcmTablePaginationContextProvider>
+                        </AcmToastProvider>
+                    </PluginData>
+                </Page>
+            </BrowserRouter>
+        </PluginDataContextProvider>
     )
 }
 

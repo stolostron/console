@@ -2,17 +2,17 @@
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterImageSetsState, secretsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
     const history = useHistory()
+    const { clusterImageSetsState, secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const [clusterImageSets] = useRecoilState(clusterImageSetsState)
     const credentials = useMemo(

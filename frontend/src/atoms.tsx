@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { noop } from 'lodash'
 import {
     AgentClusterInstallK8sResource,
     AgentK8sResource,
@@ -11,10 +10,10 @@ import {
     NMStateK8sResource,
     NodePoolK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo, useContext } from 'react'
+import { PluginDataContext } from './lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
-import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -78,7 +77,6 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    fetchGet,
     getBackendUrl,
     GitOpsCluster,
     GitOpsClusterApiVersion,
@@ -168,6 +166,7 @@ import {
     UserPreferenceApiVersion,
     UserPreferenceKind,
 } from './resources'
+import { tokenExpired } from './logout'
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -267,7 +266,8 @@ export interface SettingsEvent {
 type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function LoadData(props: { children?: ReactNode }) {
-    const [loading, setLoading] = useState(true)
+    const { setLoaded } = useContext(PluginDataContext)
+
     const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
     const setAgents = useSetRecoilState(agentsState)
     const setAnsibleJobs = useSetRecoilState(ansibleJobState)
@@ -512,11 +512,11 @@ export function LoadData(props: { children?: ReactNode }) {
                             eventQueue.length = 0
                             break
                         case 'LOADED':
-                            setLoading((loading) => {
-                                if (loading) {
+                            setLoaded((loaded) => {
+                                if (!loaded) {
                                     processEventQueue()
                                 }
-                                return false
+                                return true
                             })
                             break
                         case 'SETTINGS':
@@ -551,7 +551,7 @@ export function LoadData(props: { children?: ReactNode }) {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
-    }, [setSettings, setters])
+    }, [setSettings, setters, setLoaded])
 
     useEffect(() => {
         function checkLoggedIn() {
@@ -575,12 +575,13 @@ export function LoadData(props: { children?: ReactNode }) {
                     setTimeout(checkLoggedIn, 30 * 1000)
                 })
         }
-        checkLoggedIn()
+
+        if (process.env.MODE !== 'plugin') {
+            checkLoggedIn()
+        }
     }, [])
 
     const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
-
-    if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
     return children
 }
@@ -596,35 +597,4 @@ export function usePolicies() {
 export function useSavedSearchLimit() {
     const settings = useRecoilValue(settingsState)
     return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
-}
-
-export async function tokenExpired() {
-    if (process.env.NODE_ENV === 'production') {
-        logout()
-    } else {
-        window.location.href = `${getBackendUrl()}/login`
-    }
-}
-
-export async function logout() {
-    const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(getBackendUrl() + '/configure')
-    await fetchGet(getBackendUrl() + '/logout').catch(noop)
-
-    const iframe = document.createElement('iframe')
-    iframe.setAttribute('type', 'hidden')
-    iframe.name = 'hidden-form'
-    document.body.appendChild(iframe)
-
-    const form = document.createElement('form')
-    form.method = 'POST'
-    form.target = 'hidden-form'
-    const url = new URL(tokenEndpointResult.data.token_endpoint)
-    form.action = `${url.protocol}//${url.host}/logout`
-    document.body.appendChild(form)
-
-    form.submit()
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    location.pathname = '/'
 }

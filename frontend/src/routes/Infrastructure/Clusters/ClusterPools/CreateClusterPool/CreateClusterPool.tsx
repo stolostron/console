@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
@@ -10,7 +10,6 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { namespacesState, settingsState, clusterPoolsState } from '../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../ManagedClusters/CreateCluster/style.css'
 
@@ -21,7 +20,6 @@ import {
     arrayItemHasKey,
 } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
-import { secretsState } from '../../../../../atoms'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -104,6 +102,7 @@ export default function CreateClusterPoolPage() {
 export function CreateClusterPool() {
     const history = useHistory()
     const location = useLocation<CancelBackState>()
+    const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
