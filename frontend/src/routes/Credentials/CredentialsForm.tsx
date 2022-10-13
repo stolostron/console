@@ -44,6 +44,7 @@ import {
     IResource,
     patchResource,
     ProviderConnection,
+    ProviderConnectionStringData,
     Secret,
     SecretDefinition,
     unpackProviderConnection,
@@ -95,6 +96,9 @@ export default function CredentialsFormPage() {
         isViewing = !isEditing
     }
 
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
+
     const [error, setError] = useState<Error>()
 
     // any recoil resources that constantly update because of a time stamp
@@ -118,7 +122,7 @@ export default function CredentialsFormPage() {
         }
         return undefined
     }, [getNamespaces, isEditing, isViewing])
-
+    const history = useHistory()
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
         if (isEditing || isViewing) {
@@ -168,7 +172,17 @@ export default function CredentialsFormPage() {
                 </AcmPage>
             )
         }
-        return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
+        if (location.pathname === NavigationPath.addCredentials && location.search === '') {
+            history.push(NavigationPath.credentials)
+        }
+        return (
+            <CredentialsForm
+                namespaces={projects}
+                isEditing={false}
+                isViewing={false}
+                urlParamInfrastructureType={urlParamInfrastructureType}
+            />
+        )
     }
 }
 
@@ -181,6 +195,7 @@ export function CredentialsForm(props: {
     handleModalToggle?: () => void
     hideYaml?: boolean
     control?: any
+    urlParamInfrastructureType?: string
 }) {
     const { t } = useTranslation()
     const {
@@ -192,6 +207,7 @@ export function CredentialsForm(props: {
         handleModalToggle,
         hideYaml,
         control,
+        urlParamInfrastructureType,
     } = props
     const toastContext = useContext(AcmToastContext)
 
@@ -226,12 +242,45 @@ export function CredentialsForm(props: {
             selectedInfrastructureType = Provider.hostinventory
             break
     }
+    let urlPassedCredentialType = ''
+    switch (urlParamInfrastructureType) {
+        case 'AWS':
+            urlPassedCredentialType = Provider.aws
+            break
+        case 'Azure':
+            urlPassedCredentialType = Provider.azure
+            break
+        case 'GCP':
+            urlPassedCredentialType = Provider.gcp
+            break
+        case 'OpenStack':
+            urlPassedCredentialType = Provider.openstack
+            break
+        case 'RHV':
+            urlPassedCredentialType = Provider.redhatvirtualization
+            break
+        case 'vSphere':
+            urlPassedCredentialType = Provider.vmware
+            break
+        case 'hostInventory':
+            urlPassedCredentialType = Provider.hostinventory
+            break
+        case 'Ansible':
+            urlPassedCredentialType = Provider.ansible
+            break
+        case 'RedHatCloud':
+            urlPassedCredentialType = Provider.redhatcloud
+            break
+    }
 
-    const [credentialsType, setCredentialsType] = useState(
-        infrastructureType
-            ? selectedInfrastructureType
-            : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-    )
+    const passedInfrastructureType = urlParamInfrastructureType
+        ? urlPassedCredentialType
+        : infrastructureType
+        ? selectedInfrastructureType
+        : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+
+    const [credentialsType, setCredentialsType] = useState(passedInfrastructureType)
+
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
     const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
@@ -338,6 +387,10 @@ export function CredentialsForm(props: {
     const [cluster, setVmClusterName] = useState(() => providerConnection?.stringData?.cluster ?? '')
     const [datacenter, setDatacenter] = useState(() => providerConnection?.stringData?.datacenter ?? '')
     const [defaultDatastore, setDatastore] = useState(() => providerConnection?.stringData?.defaultDatastore ?? '')
+    const [vsphereFolder, setVsphereFolder] = useState(() => providerConnection?.stringData?.vsphereFolder ?? '')
+    const [vsphereResourcePool, setVsphereResourcePool] = useState(
+        () => providerConnection?.stringData?.vsphereResourcePool ?? ''
+    )
 
     // OpenStack
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
@@ -367,6 +420,7 @@ export function CredentialsForm(props: {
     const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function stateToData() {
+        const stringData: ProviderConnectionStringData = {}
         const secret: ProviderConnection = {
             apiVersion: 'v1',
             kind: 'Secret',
@@ -382,7 +436,7 @@ export function CredentialsForm(props: {
                     },
                 },
             },
-            stringData: {},
+            stringData,
         }
         let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
         if (annotations) {
@@ -395,119 +449,120 @@ export function CredentialsForm(props: {
 
         switch (credentialsType) {
             case Provider.aws:
-                secret.stringData!.aws_access_key_id = aws_access_key_id
-                secret.stringData!.aws_secret_access_key = aws_secret_access_key
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.aws_access_key_id = aws_access_key_id
+                stringData.aws_secret_access_key = aws_secret_access_key
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.azure:
-                secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                secret.stringData!.cloudName = cloudName
-                secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
+                stringData.baseDomainResourceGroupName = baseDomainResourceGroupName
+                stringData.cloudName = cloudName
+                stringData['osServicePrincipal.json'] = JSON.stringify({
                     clientId,
                     clientSecret,
                     tenantId,
                     subscriptionId,
                 })
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.gcp:
-                secret.stringData!.projectID = projectID
-                secret.stringData!['osServiceAccount.json'] = osServiceAccountJson
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.projectID = projectID
+                stringData['osServiceAccount.json'] = osServiceAccountJson
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.vmware:
-                secret.stringData!.vCenter = vCenter
-                secret.stringData!.username = username
-                secret.stringData!.password = password
-                secret.stringData!.cacertificate = cacertificate
-                secret.stringData!.cluster = cluster
-                secret.stringData!.datacenter = datacenter
-                secret.stringData!.defaultDatastore = defaultDatastore
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.imageContentSources = imageContentSources
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.vCenter = vCenter
+                stringData.username = username
+                stringData.password = password
+                stringData.cacertificate = cacertificate
+                stringData.cluster = cluster
+                stringData.datacenter = datacenter
+                stringData.defaultDatastore = defaultDatastore
+                stringData.vsphereFolder = vsphereFolder
+                stringData.vsphereResourcePool = vsphereResourcePool
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.imageContentSources = imageContentSources
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.openstack:
-                secret.stringData!['clouds.yaml'] = cloudsYaml
-                secret.stringData!.cloud = cloud
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.clusterOSImage = clusterOSImage
-                secret.stringData!.imageContentSources = imageContentSources
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData['clouds.yaml'] = cloudsYaml
+                stringData.cloud = cloud
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.clusterOSImage = clusterOSImage
+                stringData.imageContentSources = imageContentSources
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.redhatvirtualization:
-                secret.stringData!.ovirt_url = ovirtUrl
-                secret.stringData!.ovirt_fqdn = ovirtFqdn
-                secret.stringData!.ovirt_username = ovirtUsername
-                secret.stringData!.ovirt_password = ovirtPassword
-                secret.stringData!.ovirt_ca_bundle = ovirtCABundle
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-privatekey'] = sshPrivatekey
-                secret.stringData!['ssh-publickey'] = sshPublickey
-                secret.stringData!.httpProxy = httpProxy
-                secret.stringData!.httpsProxy = httpsProxy
-                secret.stringData!.noProxy = noProxy
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                stringData.ovirt_url = ovirtUrl
+                stringData.ovirt_fqdn = ovirtFqdn
+                stringData.ovirt_username = ovirtUsername
+                stringData.ovirt_password = ovirtPassword
+                stringData.ovirt_ca_bundle = ovirtCABundle
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-privatekey'] = sshPrivatekey
+                stringData['ssh-publickey'] = sshPublickey
+                stringData.httpProxy = httpProxy
+                stringData.httpsProxy = httpsProxy
+                stringData.noProxy = noProxy
+                stringData.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.ansible:
-                secret.stringData!.host = _.trimEnd(ansibleHost, '/')
-                secret.stringData!.token = ansibleToken
+                stringData.host = _.trimEnd(ansibleHost, '/')
+                stringData.token = ansibleToken
                 break
             case Provider.redhatcloud:
-                secret.stringData!.ocmAPIToken = ocmAPIToken
+                stringData.ocmAPIToken = ocmAPIToken
                 break
             case Provider.hostinventory:
             case Provider.hybrid:
-                secret.stringData!.baseDomain = baseDomain
-                secret.stringData!.pullSecret = pullSecret
-                secret.stringData!['ssh-publickey'] = sshPublickey
+                stringData.baseDomain = baseDomain
+                stringData.pullSecret = pullSecret
+                stringData['ssh-publickey'] = sshPublickey
                 break
         }
-        if (secret.stringData?.pullSecret && !secret.stringData.pullSecret.endsWith('\n')) {
-            secret.stringData.pullSecret += '\n'
+        if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
+            stringData.pullSecret += '\n'
         }
-        if (secret.stringData?.['ssh-privatekey'] && !secret.stringData['ssh-privatekey'].endsWith('\n')) {
-            secret.stringData['ssh-privatekey'] += '\n'
+        if (stringData?.['ssh-privatekey'] && !stringData['ssh-privatekey'].endsWith('\n')) {
+            stringData['ssh-privatekey'] += '\n'
         }
-        if (secret.stringData?.['ssh-publickey'] && !secret.stringData['ssh-publickey'].endsWith('\n')) {
-            secret.stringData['ssh-publickey'] += '\n'
+        if (stringData?.['ssh-publickey'] && !stringData['ssh-publickey'].endsWith('\n')) {
+            stringData['ssh-publickey'] += '\n'
         }
         return secret
-        // return packProviderConnection(secret)
     }
     function stateToSyncs() {
         const syncs = [
@@ -532,6 +587,8 @@ export function CredentialsForm(props: {
             { path: 'Secret[0].stringData.cluster', setState: setVmClusterName },
             { path: 'Secret[0].stringData.datacenter', setState: setDatacenter },
             { path: 'Secret[0].stringData.defaultDatastore', setState: setDatastore },
+            { path: 'Secret[0].stringData.vsphereFolder', setState: setVsphereFolder },
+            { path: 'Secret[0].stringData.vsphereResourcePool', setState: setVsphereResourcePool },
             { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
             { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
             { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
@@ -629,7 +686,7 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        isDisabled: infrastructureType ? true : isEditing,
+                        isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
                     },
                     {
                         id: 'credentialsName',
@@ -954,6 +1011,28 @@ export function CredentialsForm(props: {
                         value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
+                    },
+                    {
+                        id: 'vsphereFolder',
+                        isHidden: credentialsType !== Provider.vmware,
+                        type: 'Text',
+                        label: t('vSphere folder'),
+                        placeholder: t('credentialsForm.vsphereFolder.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereFolder.labelHelp'),
+                        value: vsphereFolder,
+                        onChange: setVsphereFolder,
+                        isRequired: false,
+                    },
+                    {
+                        id: 'vsphereResourcePool',
+                        isHidden: credentialsType !== Provider.vmware,
+                        type: 'Text',
+                        label: t('vSphere resource pool'),
+                        placeholder: t('credentialsForm.vsphereResourcePool.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereResourcePool.labelHelp'),
+                        value: vsphereResourcePool,
+                        onChange: setVsphereResourcePool,
+                        isRequired: false,
                     },
                 ],
             },
@@ -1410,6 +1489,9 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
+        back: () => {
+            history.goBack()
+        },
         cancel: () =>
             !selectedInfrastructureType
                 ? history.push(NavigationPath.credentials)
@@ -1417,6 +1499,7 @@ export function CredentialsForm(props: {
         stateToSyncs,
         stateToData,
     }
+
     return (
         <AcmDataFormPage
             formData={formData}

@@ -615,8 +615,10 @@ export function AcmDataFormWizard(props: {
                                 </Button>
                                 <Button
                                     variant="secondary"
-                                    onClick={onBack}
-                                    isDisabled={activeStep.id === firstSection?.title || isSubmitting}
+                                    onClick={formData.back ? formData.back : onBack}
+                                    isDisabled={
+                                        formData.back ? false : activeStep.id === firstSection?.title || isSubmitting
+                                    }
                                 >
                                     {formData.backLabel}
                                 </Button>
@@ -689,7 +691,7 @@ export function AcmDataFormWizard(props: {
                 <Wizard
                     titleId="create-credential-title"
                     descriptionId="create-credential-description"
-                    title={t('Create credential')}
+                    title={t('Add credential')}
                     description={t(
                         'A credential stores the access credentials and configuration information for creating clusters.'
                     )}
