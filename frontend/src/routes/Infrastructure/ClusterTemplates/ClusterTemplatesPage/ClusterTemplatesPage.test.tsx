@@ -8,10 +8,6 @@ import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useHelmRepositoriesCount } from '../hooks/useHelmRepositories';
 import { waitForText } from '../../../../lib/test-util';
 
-jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s', () => ({
-  k8sBasePath: 'https://k8s-base-path/',
-}));
-
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const MockComponent = require('../mocks/MockComponent').default;

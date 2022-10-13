@@ -14,9 +14,8 @@ import { useHelmRepositoriesCount } from '../hooks/useHelmRepositories';
 import { getNavLabelWithCount } from '../utils';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { clusterTemplateGVK } from '../constants';
-import { getReference } from '@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s-ref';
 
-const clusterTemplateReference = getReference(clusterTemplateGVK);
+const clusterTemplateReference = `${clusterTemplateGVK.group}~${clusterTemplateGVK.version}~${clusterTemplateGVK.kind}`;
 
 const ClusterTemplatesPage = () => {
   const { t } = useTranslation();

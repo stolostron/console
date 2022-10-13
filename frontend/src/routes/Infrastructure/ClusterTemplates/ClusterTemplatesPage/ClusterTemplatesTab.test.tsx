@@ -7,7 +7,6 @@ import { RecoilRoot } from 'recoil';
 import { waitForTestId, waitForText } from '../../../../lib/test-util';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { ClusterTemplate } from '../types';
-import { K8sModel } from '@openshift-console/dynamic-plugin-sdk';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
 import ClusterTemplatesTab, { ClusterTemplateRow } from './ClusterTemplatesTab';
 
@@ -40,7 +39,7 @@ const clusterTemplateMock1: ClusterTemplate = {
 
 const clusterTemplatesListMock: ClusterTemplate[] = [clusterTemplateMock1];
 
-const clusterTemplateModelMock: K8sModel & { path: string } = {
+const clusterTemplateModelMock = {
   kind: 'ClusterTemplate',
   namespaced: false,
   verbs: ['delete', 'deletecollection', 'get', 'list', 'patch', 'create', 'update', 'watch'],
@@ -65,9 +64,6 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
     k8sDelete: jest.fn(),
   };
 });
-jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s', () => ({
-  k8sBasePath: 'https://k8s-base-path/',
-}));
 
 jest.mock('../hooks/useClusterTemplates');
 jest.mock('../hooks/useClusterTemplateInstances');
