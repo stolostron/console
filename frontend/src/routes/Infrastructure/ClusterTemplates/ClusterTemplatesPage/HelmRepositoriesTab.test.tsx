@@ -10,6 +10,7 @@ import { HelmChartRepository, HelmRepoIndex, HelmRepoIndexChartEntry } from '../
 import HelmRepositoriesTab, { HelmRepoRow } from './HelmRepositoriesTab';
 import * as useHelmRepositoryIndex from '../hooks/useHelmRepositoryIndex';
 import userEvent from '@testing-library/user-event';
+import { HCRModelMock } from '../mocks/models';
 
 const helmRepositoryMock1 = {
   kind: 'HelmChartRepository',
@@ -69,21 +70,6 @@ const helmRepositoryIndexMock: HelmRepoIndex = {
     'hypershift-template--cluster-templates-repo': [hypershiftTemplateRepoCharts],
   },
   generated: '2022-09-23T14:42:54.245748+02:00',
-};
-
-const HCRModelMock = {
-  kind: 'HelmChartRepository',
-  namespaced: false,
-  verbs: ['delete', 'deletecollection', 'get', 'list', 'patch', 'create', 'update', 'watch'],
-  label: 'Helm Chart Repository',
-  plural: 'helmchartrepositories',
-  apiVersion: 'v1beta1',
-  abbr: 'HCR',
-  apiGroup: 'helm.openshift.io',
-  labelPlural: 'Helm Chart Repositories',
-  path: 'helmchartrepositories',
-  id: 'helmchartrepository',
-  crd: true,
 };
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {

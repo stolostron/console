@@ -12,28 +12,31 @@ import {
   Alert,
   AlertVariant,
 } from '@patternfly/react-core';
+import * as Yup from 'yup';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { TFunction } from 'react-i18next';
 import { Formik } from 'formik';
 import { useTranslation } from '../../../lib/acm-i18next';
 import { ConfigMap, HelmChartRepository, Secret } from './types';
 import {
   k8sCreate,
   k8sDelete,
-  k8sGet,
-  K8sGroupVersionKind,
   k8sPatch,
-  K8sResourceCommon,
-  useK8sModel,
   useK8sModels,
+  useK8sWatchResources,
 } from '@openshift-console/dynamic-plugin-sdk';
 import { getReference } from '@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s-ref';
 import { configMapGVK, helmRepoGVK, secretGVK } from './constants';
 import TableLoader from './helpers/TableLoader';
 import { InputField, CheckboxField, TextAreaField } from 'formik-pf';
 import { getErrorMessage } from './utils';
+import SelectField from './helpers/SelectField';
 
-type EditHelmRepoCredsValues = {
+export type EditHelmRepoCredsValues = {
   url: string;
   useCredentials: boolean;
+  existingSecretName: string;
+  existingConfigMapName: string;
   caCertificate: string;
   tlsClientCert: string;
   tlsClientKey: string;
@@ -44,7 +47,15 @@ type EditHelmRepositoryDialogProps = {
   closeDialog: () => void;
 };
 
-const getHelmRepoConnectionConfigPatch = ({
+const SECRET_TYPE = 'kubernetes.io/tls';
+const NAMESPACE = 'openshift-config';
+
+export const getDefaultSecretName = (helmChartRepositoryName?: string) =>
+  `${helmChartRepositoryName || 'unknown'}-tls-configs`;
+export const getDefaultConfigMapName = (helmChartRepositoryName?: string) =>
+  `${helmChartRepositoryName || 'unknown'}-ca-certificate`;
+
+export const getHelmRepoConnectionConfigPatch = ({
   url,
   useCredentials,
   secretName,
@@ -61,13 +72,8 @@ const getHelmRepoConnectionConfigPatch = ({
   return { url };
 };
 
-function getInitialValues(
-  helmChartRepository: HelmChartRepository,
-  secret?: Secret,
-  configMap?: ConfigMap,
-): EditHelmRepoCredsValues {
-  const { tlsClientConfig, ca, url } = helmChartRepository.spec.connectionConfig;
-  const decodedSecretData = Object.entries(secret?.data || {}).reduce<{
+export function getDecodedSecretData(secretData: Secret['data'] = {}) {
+  const decodedSecretData = Object.entries(secretData).reduce<{
     ['tls.crt']?: string;
     ['tls.key']?: string;
   }>(
@@ -76,70 +82,45 @@ function getInitialValues(
   );
   const tlsClientCert = decodedSecretData['tls.crt'];
   const tlsClientKey = decodedSecretData['tls.key'];
+  return { tlsClientCert, tlsClientKey };
+}
+
+export const getValidationSchema = (t: TFunction) =>
+  Yup.object().shape({
+    url: Yup.string()
+      .url(t('URL must be a valid URL starting with "http://" or "https://"'))
+      .required(t('Required.')),
+    useCredentials: Yup.boolean(),
+    caCertificate: Yup.string().when('useCredentials', {
+      is: true,
+      then: (schema) => schema.required(t('Required.')),
+    }),
+    tlsClientCert: Yup.string().when('useCredentials', {
+      is: true,
+      then: (schema) => schema.required(t('Required.')),
+    }),
+    tlsClientKey: Yup.string().when('useCredentials', {
+      is: true,
+      then: (schema) => schema.required(t('Required.')),
+    }),
+  });
+
+export function getInitialValues(
+  helmChartRepository: HelmChartRepository,
+  secret?: Secret,
+  configMap?: ConfigMap,
+): EditHelmRepoCredsValues {
+  const { tlsClientConfig, ca, url } = helmChartRepository.spec.connectionConfig;
+  const useCredentials = !!(tlsClientConfig || ca);
+  const { tlsClientCert, tlsClientKey } = getDecodedSecretData(secret?.data);
   return {
     url,
-    useCredentials: !!(tlsClientConfig || ca),
+    useCredentials,
+    existingSecretName: secret?.metadata?.name || '',
+    existingConfigMapName: configMap?.metadata?.name || '',
     caCertificate: configMap?.data?.['ca-bundle.crt'] || '',
     tlsClientCert: tlsClientCert || '',
     tlsClientKey: tlsClientKey || '',
-  };
-}
-
-function useFetchHelmRepositoryCredential<Resource extends K8sResourceCommon>(
-  credential: { name: string } | undefined,
-  resourceGVK: K8sGroupVersionKind,
-): [resource: Resource | undefined, loaded: boolean, loadError: unknown] {
-  const [data, setData] = React.useState<Resource>();
-  const [loaded, setLoaded] = React.useState(false);
-  const [loadError, setLoadError] = React.useState<unknown>();
-  const [model] = useK8sModel(resourceGVK);
-
-  React.useEffect(() => {
-    const fetch = async () => {
-      try {
-        setLoadError(undefined);
-        setLoaded(false);
-        setData(undefined);
-        const resource = await k8sGet<Resource>({
-          model,
-          name: credential?.name,
-          ns: 'openshift-config',
-        });
-        setData(resource);
-      } catch (error) {
-        setLoadError(undefined);
-      } finally {
-        setLoaded(true);
-      }
-    };
-
-    if (!credential) {
-      setLoadError(undefined);
-      setLoaded(true);
-      setData(undefined);
-    } else {
-      fetch();
-    }
-  }, [model, credential?.name]);
-
-  return [data, loaded, loadError];
-}
-
-function useFetchHelmRepositoryCredentials(helmRepository: HelmChartRepository) {
-  const { ca, tlsClientConfig } = helmRepository.spec.connectionConfig;
-
-  const [configMap, configMapLoaded, configMapLoadError] =
-    useFetchHelmRepositoryCredential<ConfigMap>(ca, configMapGVK);
-  const [secret, secretLoaded, secretLoadError] = useFetchHelmRepositoryCredential<Secret>(
-    tlsClientConfig,
-    secretGVK,
-  );
-
-  return {
-    configMap,
-    secret,
-    loaded: secretLoaded && configMapLoaded,
-    loadError: secretLoadError || configMapLoadError,
   };
 }
 
@@ -156,21 +137,50 @@ const EditHelmRepositoryDialog = ({
       [helmChartRepositoryReference]: helmChartRepoModel,
     },
   ] = useK8sModels();
-  const { configMap, secret, loaded, loadError } =
-    useFetchHelmRepositoryCredentials(helmChartRepository);
   const [formError, setFormError] = React.useState<
     { title: string; message: string } | undefined
   >();
+  const { ca, tlsClientConfig } = helmChartRepository.spec.connectionConfig;
+  const {
+    secrets: { data: secrets, loaded: secretsLoaded },
+    configMaps: { data: configMaps, loaded: configMapsLoaded },
+  } = useK8sWatchResources<{
+    secrets: Secret[];
+    configMaps: ConfigMap[];
+  }>({
+    secrets: {
+      groupVersionKind: secretGVK,
+      namespace: NAMESPACE,
+      isList: true,
+    },
+    configMaps: {
+      groupVersionKind: configMapGVK,
+      namespace: NAMESPACE,
+      isList: true,
+    },
+  });
+
+  const availableTlsSecrets = secrets.filter((s) => s.type === SECRET_TYPE);
+  const initialConfigMap = configMaps.find((cm) => cm.metadata?.name === ca?.name);
+  const initialSecret = secrets.find((s) => s.metadata?.name === tlsClientConfig?.name);
+  const dataLoaded = secretsLoaded && configMapsLoaded;
 
   const handleSubmit = async ({
+    url,
+    existingConfigMapName,
+    existingSecretName,
     useCredentials,
     tlsClientCert,
     tlsClientKey,
     caCertificate,
-    url,
   }: EditHelmRepoCredsValues) => {
-    const secretName = `${helmChartRepository.metadata?.name || 'unknown'}-tls-configs`;
-    const configMapName = `${helmChartRepository.metadata?.name || 'unknown'}-ca-certificate`;
+    const configMapName =
+      existingConfigMapName || getDefaultConfigMapName(helmChartRepository.metadata?.name);
+    const secretName =
+      existingSecretName || getDefaultSecretName(helmChartRepository.metadata?.name);
+
+    const configMapToUpdate = configMaps.find((cm) => cm.metadata?.name === existingConfigMapName);
+    const secretToUpdate = secrets.find((s) => s.metadata?.name === existingSecretName);
 
     setFormError(undefined);
 
@@ -193,7 +203,7 @@ const EditHelmRepositoryDialog = ({
         ],
       }),
     );
-    if (!secret && useCredentials) {
+    if (!secretToUpdate && useCredentials) {
       promises.push(
         k8sCreate<Secret>({
           model: secretModel,
@@ -202,18 +212,19 @@ const EditHelmRepositoryDialog = ({
             kind: secretGVK.kind,
             metadata: {
               name: secretName,
-              namespace: 'openshift-config',
+              namespace: NAMESPACE,
               // labels: { },
             },
             data: {
               ['tls.crt']: Buffer.from(tlsClientCert, 'ascii').toString('base64'),
               ['tls.key']: Buffer.from(tlsClientKey, 'ascii').toString('base64'),
             },
+            type: SECRET_TYPE,
           },
         }),
       );
     }
-    if (!configMap && useCredentials) {
+    if (!configMapToUpdate && useCredentials) {
       promises.push(
         k8sCreate<ConfigMap>({
           model: configMapModel,
@@ -222,7 +233,7 @@ const EditHelmRepositoryDialog = ({
             kind: configMapGVK.kind,
             metadata: {
               name: configMapName,
-              namespace: 'openshift-config',
+              namespace: NAMESPACE,
             },
             data: {
               ['ca-bundle.crt']: caCertificate,
@@ -231,11 +242,11 @@ const EditHelmRepositoryDialog = ({
         }),
       );
     }
-    if (secret && useCredentials) {
+    if (secretToUpdate && useCredentials) {
       promises.push(
         k8sPatch<Secret>({
           model: secretModel,
-          resource: secret,
+          resource: secretToUpdate,
           data: [
             {
               op: 'add',
@@ -251,11 +262,11 @@ const EditHelmRepositoryDialog = ({
         }),
       );
     }
-    if (configMap && useCredentials) {
+    if (configMapToUpdate && useCredentials) {
       promises.push(
         k8sPatch<ConfigMap>({
           model: configMapModel,
-          resource: configMap,
+          resource: configMapToUpdate,
           data: [
             {
               op: 'add',
@@ -266,11 +277,20 @@ const EditHelmRepositoryDialog = ({
         }),
       );
     }
-    if (secret && !useCredentials) {
-      promises.push(k8sDelete<Secret>({ model: secretModel, resource: secret }));
+    if (
+      secretToUpdate &&
+      !useCredentials &&
+      secretToUpdate.metadata?.name === getDefaultSecretName(helmChartRepository?.metadata?.name)
+    ) {
+      promises.push(k8sDelete<Secret>({ model: secretModel, resource: secretToUpdate }));
     }
-    if (configMap && !useCredentials) {
-      promises.push(k8sDelete<ConfigMap>({ model: configMapModel, resource: configMap }));
+    if (
+      configMapToUpdate &&
+      !useCredentials &&
+      configMapToUpdate.metadata?.name ===
+        getDefaultConfigMapName(helmChartRepository?.metadata?.name)
+    ) {
+      promises.push(k8sDelete<ConfigMap>({ model: configMapModel, resource: configMapToUpdate }));
     }
     try {
       await Promise.all(promises);
@@ -289,75 +309,131 @@ const EditHelmRepositoryDialog = ({
       showClose
       hasNoBodyWrapper
     >
-      <TableLoader
-        loaded={loaded}
-        error={loadError}
-        errorMessage={typeof loadError === 'string' ? loadError : undefined}
-      >
+      <TableLoader loaded={dataLoaded}>
         <Formik<EditHelmRepoCredsValues>
-          initialValues={getInitialValues(helmChartRepository, secret, configMap)}
+          initialValues={getInitialValues(helmChartRepository, initialSecret, initialConfigMap)}
           onSubmit={handleSubmit}
+          validationSchema={getValidationSchema(t)}
         >
-          {({ handleSubmit, values, isSubmitting }) => (
-            <>
-              <ModalBoxBody>
-                <Form id="edit-helm-repo-credentials-form" onSubmit={handleSubmit}>
-                  <InputField
-                    fieldId="url"
-                    name="url"
-                    label={t('HELM chart repositoriy URL')}
-                    type={TextInputTypes.text}
-                    placeholder="Repository URL"
-                    isRequired
-                  />
-                  <CheckboxField
-                    fieldId="useCredentials"
-                    name="useCredentials"
-                    label={t('Requires authentication')}
-                    helperText={t(
-                      'Add credentials and custom certificate authority (CA) certificates to connect to private helm chart repository.',
+          {({
+            handleSubmit,
+            values,
+            isSubmitting,
+            isValid,
+            errors,
+            setFieldValue,
+            setFieldTouched,
+          }) => {
+            const setTlsConfigValues = async (
+              value: EditHelmRepoCredsValues['existingSecretName'],
+            ) => {
+              const { tlsClientCert, tlsClientKey } = getDecodedSecretData(
+                availableTlsSecrets.find((secret) => secret.metadata?.name === value)?.data,
+              );
+              await setFieldValue('tlsClientCert', tlsClientCert || '', true);
+              await setFieldTouched('tlsClientCert', true);
+              await setFieldValue('tlsClientKey', tlsClientKey || '', true);
+              await setFieldTouched('tlsClientKey', true);
+            };
+            const setCaCertificateValue = async (
+              value: EditHelmRepoCredsValues['existingConfigMapName'],
+            ) => {
+              await setFieldValue(
+                'caCertificate',
+                configMaps.find((cm) => cm.metadata?.name === value)?.data?.['ca-bundle.crt'] || '',
+                true,
+              );
+              await setFieldTouched('caCertificate', true);
+            };
+            return (
+              <>
+                <ModalBoxBody>
+                  <Form id="edit-helm-repo-form" onSubmit={handleSubmit}>
+                    <InputField
+                      fieldId="url"
+                      name="url"
+                      label={t('HELM chart repositoriy URL')}
+                      type={TextInputTypes.text}
+                      placeholder="Repository URL"
+                      isRequired
+                    />
+                    <CheckboxField
+                      fieldId="useCredentials"
+                      name="useCredentials"
+                      label={t('Requires authentication')}
+                      helperText={t(
+                        'Add credentials and custom certificate authority (CA) certificates to connect to private helm chart repository.',
+                      )}
+                    />
+                    {values.useCredentials && (
+                      <>
+                        <SelectField
+                          name="existingConfigMapName"
+                          fieldId="existingConfigMapName"
+                          label={t('CA certificate ConfigMap')}
+                          placeholder={t('Select a ConfigMap')}
+                          onChange={(value) => setCaCertificateValue(value.toString())}
+                          options={configMaps.map((cm) => ({
+                            value: cm.metadata?.name || '',
+                            disabled: false,
+                          }))}
+                        />
+                        <TextAreaField
+                          fieldId="caCertificate"
+                          name="caCertificate"
+                          label={t('CA certificate')}
+                          helperTextInvalid={errors.tlsClientKey}
+                          isRequired
+                        />
+                        <SelectField
+                          name="existingSecretName"
+                          fieldId="existingSecretName"
+                          label={t('TLS config Credential')}
+                          placeholder={t('Select a credential')}
+                          onChange={(value) => setTlsConfigValues(value.toString())}
+                          options={availableTlsSecrets.map((secret) => ({
+                            value: secret.metadata?.name || '',
+                            disabled: false,
+                          }))}
+                        />
+                        <TextAreaField
+                          fieldId="tlsClientCert"
+                          name="tlsClientCert"
+                          label={t('TLS client certificate')}
+                          helperTextInvalid={errors.tlsClientCert}
+                          isRequired
+                        />
+                        <TextAreaField
+                          fieldId="tlsClientKey"
+                          name="tlsClientKey"
+                          label={t('TLS client key')}
+                          helperTextInvalid={errors.tlsClientKey}
+                          isRequired
+                        />
+                      </>
                     )}
-                  />
-                  {values.useCredentials && (
-                    <>
-                      <TextAreaField
-                        fieldId="caCertificate"
-                        name="caCertificate"
-                        label={t('CA certificate')}
-                      />
-                      <TextAreaField
-                        fieldId="tlsClientCert"
-                        name="tlsClientCert"
-                        label={t('TLS client certificate')}
-                      />
-                      <TextAreaField
-                        fieldId="tlsClientKey"
-                        name="tlsClientKey"
-                        label={t('TLS client key')}
-                      />
-                    </>
-                  )}
-                  {formError && (
-                    <Alert variant={AlertVariant.danger} title={formError?.title} isInline>
-                      {formError?.message}
-                    </Alert>
-                  )}
-                </Form>
-              </ModalBoxBody>
-              <ModalBoxFooter>
-                <Button
-                  onClick={() => handleSubmit()}
-                  variant={ButtonVariant.primary}
-                  isDisabled={isSubmitting}
-                >
-                  {t('Submit')}
-                </Button>
-                <Button onClick={closeDialog} variant={ButtonVariant.link}>
-                  {t('Cancel')}
-                </Button>
-              </ModalBoxFooter>
-            </>
-          )}
+                    {formError && (
+                      <Alert variant={AlertVariant.danger} title={formError?.title} isInline>
+                        {formError?.message}
+                      </Alert>
+                    )}
+                  </Form>
+                </ModalBoxBody>
+                <ModalBoxFooter>
+                  <Button
+                    onClick={() => handleSubmit()}
+                    variant={ButtonVariant.primary}
+                    isDisabled={isSubmitting || !isValid}
+                  >
+                    {t('Submit')}
+                  </Button>
+                  <Button onClick={closeDialog} variant={ButtonVariant.link}>
+                    {t('Cancel')}
+                  </Button>
+                </ModalBoxFooter>
+              </>
+            );
+          }}
         </Formik>
       </TableLoader>
     </Modal>

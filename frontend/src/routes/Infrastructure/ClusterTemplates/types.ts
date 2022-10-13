@@ -132,11 +132,11 @@ export type ClusterTemplateQuota = K8sResourceCommon & {
   };
 };
 
-export type Secret = {
+export type Secret = K8sResourceCommon & {
   data?: { [key: string]: string };
   stringData?: { [key: string]: string };
   type?: string;
-} & K8sResourceCommon;
+};
 
 export type ConfigMap = {
   data?: { [key: string]: string };
