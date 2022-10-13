@@ -351,7 +351,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     }
                 } else if (cluster.provider === Provider.azure) {
                     submarinerConfig.spec.gatewayConfig!.azure = {
-                        instanceType: azInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.azInstanceType,
+                        instanceType:
+                            azInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.azureInstanceType,
                     }
                 }
                 resources.push(submarinerConfig)
@@ -687,7 +688,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Base domain resource group name'),
                                     placeholder: t('Enter your base domain resource group name'),
                                     labelHelp: t(
-                                        'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.'
+                                        'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
                                     ),
                                     value: baseDomainResourceGroupNames[clusterName] ?? '',
                                     onChange: (value: string) => {
@@ -706,7 +707,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Client ID'),
                                     placeholder: t('Enter your client ID'),
                                     labelHelp: t(
-                                        "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                                        "Your client ID. This value is generated as the 'appId' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
                                     ),
                                     value: clientIds[clusterName] ?? '',
                                     onChange: (value: string) => {
@@ -725,7 +726,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Client secret'),
                                     placeholder: t('Enter your client secret'),
                                     labelHelp: t(
-                                        "Your client password. This value is generated as the 'password' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                                        "Your client password. This value is generated as the 'password' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
                                     ),
                                     value: clientSecrets[clusterName] ?? '',
                                     onChange: (value: string) => {
@@ -745,7 +746,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Subscription ID'),
                                     placeholder: t('Enter your subscription ID'),
                                     labelHelp: t(
-                                        "Your subscription ID. This is the value of the 'id' property in the output of the command: 'az account show'"
+                                        "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'"
                                     ),
                                     value: subscriptionIds[clusterName] ?? '',
                                     onChange: (value: string) => {
@@ -764,7 +765,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Tenant ID'),
                                     placeholder: t('Enter your tenant ID'),
                                     labelHelp: t(
-                                        "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'"
+                                        "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'"
                                     ),
                                     value: tenantIds[clusterName] ?? '',
                                     onChange: (value: string) => {
@@ -796,8 +797,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     type: 'Text',
                                     label: t('submariner.install.form.instancetype'),
                                     placeholder: t('submariner.install.form.instancetype.placeholder'),
-                                    labelHelp: t('submariner.install.form.instancetype.labelHelp.az'),
-                                    value: azInstanceTypes[clusterName] ?? submarinerConfigDefault.azInstanceType,
+                                    labelHelp: t('submariner.install.form.instancetype.labelHelp.azure'),
+                                    value: azInstanceTypes[clusterName] ?? submarinerConfigDefault.azureInstanceType,
                                     isHidden: cluster.provider !== Provider.azure,
                                     onChange: (value) => {
                                         const copy = { ...azInstanceTypes }

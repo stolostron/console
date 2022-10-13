@@ -54,7 +54,7 @@ type SubmarinerConfigDefaults = {
     cableDriver: CableDriver
     gateways: number
     awsInstanceType: string
-    azInstanceType: string
+    azureInstanceType: string
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
@@ -63,5 +63,5 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     cableDriver: CableDriver.libreswan,
     gateways: 1,
     awsInstanceType: 'c5d.large',
-    azInstanceType: 'Standard_F4s_v2',
+    azureInstanceType: 'Standard_F4s_v2',
 }

@@ -391,7 +391,7 @@ const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
         gatewayConfig: {
             gateways: submarinerConfigDefault.gateways,
             azure: {
-                instanceType: submarinerConfigDefault.azInstanceType,
+                instanceType: submarinerConfigDefault.azureInstanceType,
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
@@ -476,7 +476,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfigAzure: SubmarinerConfig = {
         gatewayConfig: {
             gateways: submarinerConfigDefault.gateways,
             azure: {
-                instanceType: submarinerConfigDefault.azInstanceType,
+                instanceType: submarinerConfigDefault.azureInstanceType,
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
