@@ -15,7 +15,6 @@ describe('EditorBar component', () => {
                     hasUndo={false}
                     hasRedo={true}
                     exceptions={exceptions}
-                    gotoEditorLine={fn}
                     handleEditorCommand={fn}
                     handleSearchChange={fn}
                     i18n={fn}
