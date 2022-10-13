@@ -10,7 +10,6 @@ import { HelmChartRepository, HelmRepoIndex, HelmRepoIndexChartEntry } from '../
 import HelmRepositoriesTab, { HelmRepoRow } from './HelmRepositoriesTab';
 import * as useHelmRepositoryIndex from '../hooks/useHelmRepositoryIndex';
 import userEvent from '@testing-library/user-event';
-import { K8sModel } from '@openshift-console/dynamic-plugin-sdk';
 
 const helmRepositoryMock1 = {
   kind: 'HelmChartRepository',
@@ -72,7 +71,7 @@ const helmRepositoryIndexMock: HelmRepoIndex = {
   generated: '2022-09-23T14:42:54.245748+02:00',
 };
 
-const HCRModelMock: K8sModel & { path: string } = {
+const HCRModelMock = {
   kind: 'HelmChartRepository',
   namespaced: false,
   verbs: ['delete', 'deletecollection', 'get', 'list', 'patch', 'create', 'update', 'watch'],
@@ -96,9 +95,6 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
     k8sDelete: jest.fn(),
   };
 });
-jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s', () => ({
-  k8sBasePath: 'https://k8s-base-path/',
-}));
 
 jest.mock('../hooks/useHelmRepositories');
 jest.mock('../hooks/useClusterTemplates');

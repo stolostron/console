@@ -6,6 +6,7 @@ import {
   TableData,
   useK8sWatchResource,
   VirtualizedTable,
+  TableColumn,
 } from '@openshift-console/dynamic-plugin-sdk';
 import { sortable, Td } from '@patternfly/react-table';
 import * as React from 'react';
@@ -13,7 +14,7 @@ import { useFormikContext } from 'formik';
 import { pipelineGVK } from '../../../constants';
 import { FormikValues } from '../../types';
 
-const columns = [
+const columns: TableColumn<K8sResourceCommon>[] = [
   {
     title: '',
     props: { style: { width: '8.333%' } },
@@ -22,13 +23,13 @@ const columns = [
   {
     title: 'Name',
     sort: 'metadata.name',
-    transforms: [sortable],
+    transforms: [sortable as any],
     id: 'name',
   },
   {
     title: 'Namespace',
     sort: 'metadata.namespace',
-    transforms: [sortable],
+    transforms: [sortable as any],
     id: 'namespace',
   },
   //{
