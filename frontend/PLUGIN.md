@@ -26,7 +26,14 @@ In the case of 4.10+ we will install addition [resources](https://github.com/ope
 
 ## Development
 
-### Running console as OCP dynamic plugins
+### Prerequisites
+
+- python
+- [jq](https://stedolan.github.io/jq/download/)
+- [oc](https://docs.openshift.com/container-platform/4.10/cli_reference/openshift_cli/getting-started-cli.html)
+- podman or docker
+
+## Running console as OCP dynamic plugins
 
 From the root of the `console` repository make sure your kubecontext is set to a hub cluster, then run:
 
@@ -35,7 +42,18 @@ npm run setup
 npm run plugins
 ```
 
-This will concurrently start the backend server and frontend webpack development server.
+This will concurrently start the backend server, frontend webpack development server and OCP console.
+
+The console will be running at localhost:9000.
+
+## Running against local development build of OCP console
+
+```
+npm run setup
+npm run plugins-dev
+```
+
+This will concurrently start the backend server and frontend webpack development server
 
 ### [OCP Console Git Repo](https://github.com/openshift/console)
 
@@ -71,7 +89,7 @@ source ./contrib/oc-environment.sh
 
 The console will be running at localhost:9000.
 
-Bridge variables can also be passes in as environment variables
+Bridge variables can also be passed in as environment variables
 
 ```
 BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/plugin/mce/console/","endpoint":"https://localhost:4000","authorize":true},{"consoleAPIPath":"/api/proxy/plugin/acm/console/","endpoint":"https://localhost:4000","authorize":true}]}'
