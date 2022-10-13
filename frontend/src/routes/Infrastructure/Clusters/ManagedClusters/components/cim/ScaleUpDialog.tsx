@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback } from 'react'
-import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 
-import { agentsState } from '../../../../../../atoms'
 import { patchResource } from '../../../../../../resources/utils/resource-request'
 import { useClusterDeployment, onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 
 const { ScaleUpModal } = CIM
 
@@ -16,6 +15,8 @@ type ScaleUpDialogProps = {
 }
 
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
+    const { agentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [agents] = useRecoilValue(waitForAll([agentsState]))
     const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
 

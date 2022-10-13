@@ -13,8 +13,6 @@ import {
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
@@ -33,6 +31,7 @@ import {
     ResourceError,
     Secret,
 } from '../../../../../resources'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import {
     AcmAlertContext,
     AcmButton,
@@ -89,6 +88,7 @@ export default function DiscoveryConfigPage() {
 }
 
 export function AddDiscoveryConfigData() {
+    const { discoveryConfigState, secretsState } = useSharedAtoms()
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [secrets] = useRecoilState(secretsState)
     const [credentials, setCredentials] = useState<Secret[]>([])

@@ -17,8 +17,7 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@pat
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { userPreferencesState, useSavedSearchLimit } from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
@@ -103,6 +102,7 @@ function RenderSearchBar(props: {
     const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
     const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const [open, toggleOpen] = useState<boolean>(false)
+    const { useSavedSearchLimit } = useSharedAtoms()
     const savedSearchLimit = useSavedSearchLimit()
     const toggle = () => toggleOpen(!open)
 
@@ -282,6 +282,7 @@ export default function SearchPage() {
         presetSearchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
+    const { userPreferencesState } = useSharedAtoms()
     const [userPreferences] = useRecoilState(userPreferencesState)
     const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)

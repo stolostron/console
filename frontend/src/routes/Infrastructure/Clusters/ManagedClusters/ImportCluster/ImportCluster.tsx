@@ -67,17 +67,11 @@ import {
     WizTextInput,
     useSetHasValue,
 } from '@patternfly-labs/react-form-wizard'
-import { useRecoilValue } from 'recoil'
-import {
-    ansibleCredentialsValue,
-    clusterCuratorSupportedCurationsValue,
-    validClusterCuratorTemplatesValue,
-} from '../../../../../selectors'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { getOperatorError } from '../../../../../lib/error-output'
-import { subscriptionOperatorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
+import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
 const acmSchema = [...schema, ...kac]
 
@@ -208,6 +202,7 @@ function reducer(state: State, action: Action): State {
 
 export default function ImportClusterPage() {
     const { t } = useTranslation()
+    const { subscriptionOperatorsState } = useSharedAtoms()
     const toastContext = useContext(AcmToastContext)
     const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
@@ -788,6 +783,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
 const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> }) => {
     const { t } = useTranslation()
+    const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
+        useSharedSelectors()
     const curatorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)

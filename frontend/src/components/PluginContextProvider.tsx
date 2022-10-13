@@ -18,7 +18,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     )
 
     const [contextProviders] = useResolvedExtensions(isContextProvider)
-    //debugger
     const contextProvider = contextProviders.find((e) => {
         return e.properties?.id === 'mce-data-context'
     })

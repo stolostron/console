@@ -5,13 +5,13 @@ import { AcmAlert, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 export function ScaleClusterAlert() {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
+    const { machinePoolsState, submarinerConfigsState } = useSharedAtoms()
     const [machinePoolState] = useRecoilState(machinePoolsState)
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)

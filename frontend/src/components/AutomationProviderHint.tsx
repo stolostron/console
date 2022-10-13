@@ -2,13 +2,13 @@
 import { makeStyles } from '@material-ui/styles'
 import { Hint } from '@patternfly/react-core'
 import { useMemo } from 'react'
-import { useRecoilValue } from 'recoil'
-import { subscriptionOperatorsState } from '../atoms'
+import { useSharedAtoms, useRecoilValue } from '../shared-recoil'
 import { useTranslation } from '../lib/acm-i18next'
 import { getOperatorError } from '../lib/error-output'
 import { isAnsibleOperatorInstalled } from '../resources'
 
 export function AutomationProviderHint() {
+    const { subscriptionOperatorsState } = useSharedAtoms()
     const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
 
     const { t } = useTranslation()

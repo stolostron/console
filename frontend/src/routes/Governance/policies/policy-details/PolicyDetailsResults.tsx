@@ -5,8 +5,7 @@ import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { namespacesState, policiesState } from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -30,6 +29,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
     const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
+    const { namespacesState, policiesState } = useSharedAtoms()
     const [policies] = useRecoilState(policiesState)
     const [namespaces] = useRecoilState(namespacesState)
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)

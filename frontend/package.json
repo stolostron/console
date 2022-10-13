@@ -291,6 +291,16 @@
                 }
             ]
         },
+        "overrides": [
+            {
+                "files": [
+                    "**/*.test.ts?"
+                ],
+                "rules": {
+                    "@typescript-eslint/no-restricted-imports": "off"
+                }
+            }
+        ],
         "settings": {
             "react": {
                 "version": "detect"

@@ -16,8 +16,6 @@ import { AcmTable } from '../../../ui-components'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { getOperatorError } from '../../../lib/error-output'
@@ -32,6 +30,7 @@ import {
 } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
+import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 
 export interface JobTableData {
     name: string
@@ -50,6 +49,7 @@ export function AutomationDetailsSidebar(props: {
     const { policyAutomationMatch, policy, onClose } = props
     const { t } = useTranslation()
     const history = useHistory()
+    const { ansibleJobState, secretsState, subscriptionOperatorsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const [secrets] = useRecoilState(secretsState)
