@@ -1,7 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode } from 'react'
-import { LoadData } from '../atoms'
+import { ReactNode, useContext, useEffect } from 'react'
+import { PluginContext } from '../lib/PluginContext'
+import { LoadingPage } from './LoadingPage'
 
 export function PluginData(props: { children?: ReactNode }) {
-    return <LoadData>{props.children}</LoadData>
+    const { dataContext } = useContext(PluginContext)
+    const { loaded, load } = useContext(dataContext)
+    useEffect(() => {
+        if (!loaded) {
+            load()
+        }
+    }, [load, loaded])
+    return loaded ? <>{props.children}</> : <LoadingPage />
 }

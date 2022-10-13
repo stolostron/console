@@ -13,12 +13,11 @@ import {
 } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useRecoilState } from 'recoil'
 import { FormikProps } from 'formik'
-import { infraEnvironmentsState } from '../../../atoms'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
 
 import './InfraEnvForm.css'
+import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
@@ -48,6 +47,7 @@ type InfraEnvFormProps = {
 }
 
 const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
+    const { infraEnvironmentsState } = useSharedAtoms()
     const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
     const formRef = useRef<FormikProps<any>>(null)
 

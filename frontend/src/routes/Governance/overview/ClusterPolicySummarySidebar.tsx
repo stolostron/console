@@ -6,11 +6,11 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, compareStrings } from '../../../ui-components'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { usePolicies } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { ManagedCluster } from '../../../resources'
 import { ClusterPolicies, getPolicyForCluster } from '../common/util'
+import { useSharedAtoms } from '../../../shared-recoil'
 
 const useStyles = makeStyles({
     body: {
@@ -66,6 +66,7 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
     const { cluster, compliance } = props
     const classes = useStyles()
     const { t } = useTranslation()
+    const { usePolicies } = useSharedAtoms()
     const policies = usePolicies()
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | undefined>(
         compliance === 'compliant' ? 'asc' : 'desc'

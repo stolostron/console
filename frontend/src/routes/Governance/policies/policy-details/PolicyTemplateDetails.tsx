@@ -20,12 +20,12 @@ import {
 } from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useMemo, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { managedClusterAddonsState } from '../../../../atoms'
+import { useRecoilState } from '../../../../shared-recoil'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
+import { useSharedAtoms } from '../../../../shared-recoil'
 
 export function PolicyTemplateDetails(props: {
     clusterName: string
@@ -36,6 +36,7 @@ export function PolicyTemplateDetails(props: {
 }) {
     const { t } = useTranslation()
     const { clusterName, apiGroup, apiVersion, kind, templateName } = props
+    const { managedClusterAddonsState } = useSharedAtoms()
     const [template, setTemplate] = useState<any>()
     const [relatedObjects, setRelatedObjects] = useState<any>()
     const [templateError, setTemplateError] = useState<string>()

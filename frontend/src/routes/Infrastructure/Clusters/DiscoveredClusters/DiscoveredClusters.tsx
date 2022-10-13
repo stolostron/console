@@ -18,11 +18,10 @@ import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -151,6 +150,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
 }
 
 export function DiscoveredClustersPageContent() {
+    const { discoveredClusterState, discoveryConfigState, secretsState } = useSharedAtoms()
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
     const [secrets] = useRecoilState(secretsState)
     const credentials = secrets.map(unpackProviderConnection)

@@ -26,8 +26,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterImageSetsState, clusterPoolsState, clusterClaimsState } from '../../../../atoms'
+import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
@@ -58,7 +57,8 @@ export default function ClusterPoolsPage() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
-
+    const { waitForAll } = useSharedRecoil()
+    const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
 
     return (
@@ -168,6 +168,8 @@ export function ClusterPoolsTable(props: {
     emptyState: React.ReactNode
     tableActionButtons?: IAcmTableButtonAction[]
 }) {
+    const { waitForAll } = useSharedRecoil()
+    const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const [clusterClaims] = useRecoilValue(waitForAll([clusterClaimsState]))
 
