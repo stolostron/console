@@ -43,7 +43,7 @@ class ControlPanelComboBox extends React.Component {
             if (currentSelection === undefined) {
                 if (isBlurred) {
                     const { userData = [] } = control
-                    if (!userData.includes(searchText) && !available.includes(searchText)) {
+                    if (!userData.includes(searchText) && available && !available.includes(searchText)) {
                         control.active = searchText
                         userData.push(searchText)
                         set(control, 'userData', userData)
