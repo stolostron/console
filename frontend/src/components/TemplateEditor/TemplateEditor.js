@@ -10,6 +10,7 @@ import isEmpty from 'lodash/isEmpty'
 import {
     Button,
     Switch,
+    Alert,
     Drawer,
     DrawerColorVariant,
     DrawerContent,
@@ -23,6 +24,7 @@ import {
     getImmutables,
     getImmutableRows,
     generateSource,
+    getUniqueName,
     cacheUserData,
     cloneControlData,
 } from './utils/source-utils'
@@ -140,7 +142,6 @@ export default class TemplateEditor extends React.Component {
         // is a resource loaded in editor?
         const { fetchControl } = props
         const { isLoaded, isFailed } = fetchControl || { isLoaded: true }
-        /* istanbul ignore next */
         const showEditor =
             (monacoEditor || initialOpen) && isLoaded && !!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE)
         let newState = { isLoaded, isFailed, showEditor }
@@ -156,7 +157,6 @@ export default class TemplateEditor extends React.Component {
             newState = { ...newState, controlData }
 
             const showControl = controlData.find(({ id: idCtrl }) => idCtrl === 'showSecrets')
-            /* istanbul ignore else */
             if (showControl) {
                 showControl.active = showSecrets || !showEditor
             }
@@ -192,6 +192,32 @@ export default class TemplateEditor extends React.Component {
             }
         }
 
+        // make sure an auto generated name is unique
+        const { isCustomName } = state
+        if (!isCustomName) {
+            const name = controlData.find(({ id }) => id === 'name')
+            if (name) {
+                const { active, existing } = name
+                const uniqueName = getUniqueName(active, new Set(existing))
+                if (uniqueName !== active) {
+                    name.active = uniqueName
+                    ;({ templateYAML, templateObject, templateResources, immutableRows } = generateSource(
+                        template,
+                        editStack,
+                        controlData
+                    ))
+                    newState = {
+                        ...newState,
+                        controlData,
+                        templateYAML,
+                        templateObject,
+                        templateResources,
+                        immutableRows,
+                    }
+                }
+            }
+        }
+
         return newState
     }
 
@@ -202,7 +228,7 @@ export default class TemplateEditor extends React.Component {
             showEditor: !!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE),
             showSecrets: !!localStorage.getItem(TEMPLATE_EDITOR_SHOW_SECRETS_COOKIE),
             template: props.template,
-            i18n: props.i18n,
+            i18n: props.i18n || ((msg) => msg),
             activeYAMLEditor: 0,
             exceptions: [],
             previouslySelectedCards: [],
@@ -215,6 +241,7 @@ export default class TemplateEditor extends React.Component {
             hasRedo: false,
             resetInx: 0,
             showCondensed: false,
+            hasPauseCreate: !!get(props, 'createControl.pauseCreate'),
             editor: {
                 forceUpdate: (() => {
                     this.forceUpdate()
@@ -238,23 +265,25 @@ export default class TemplateEditor extends React.Component {
         }, 500)
         this.handleEditorCommand = this.handleEditorCommand.bind(this)
         this.handleSearchChange = this.handleSearchChange.bind(this)
+        this.gotoEditorLine = this.gotoEditorLine.bind(this)
         this.handleNewEditorMode = this.handleNewEditorMode.bind(this)
         this.handleControlChange = this.handleControlChange.bind(this)
         this.handleGroupChange = this.handleGroupChange.bind(this)
         if (props.initialOpen) {
             localStorage.setItem(TEMPLATE_EDITOR_OPEN_COOKIE, 'true')
         }
-        this.beforeUnloadFunc = ((event) => {
-            if (this.isDirty) {
-                event.preventDefault()
-                event.returnValue = this.isDirty
-            }
-        }).bind(this)
-        window.addEventListener('beforeunload', this.beforeUnloadFunc)
+        if (!this.state.hasPauseCreate) {
+            this.beforeUnloadFunc = ((event) => {
+                if (this.isDirty) {
+                    event.preventDefault()
+                    event.returnValue = this.isDirty
+                }
+            }).bind(this)
+            window.addEventListener('beforeunload', this.beforeUnloadFunc)
+        }
     }
 
     componentDidMount() {
-        /* istanbul ignore else */
         if (!this.renderedPortals) {
             setTimeout(() => {
                 this.forceUpdate()
@@ -263,6 +292,11 @@ export default class TemplateEditor extends React.Component {
     }
 
     componentWillUnmount() {
+        const { createControl = {} } = this.props
+        if (createControl.pauseCreate) {
+            const { controlData } = this.state
+            createControl.pauseCreate(controlData)
+        }
         window.removeEventListener('beforeunload', this.beforeUnloadFunc)
     }
 
@@ -283,14 +317,12 @@ export default class TemplateEditor extends React.Component {
     }
 
     layoutEditors() {
-        this.editorPanel = document.getElementById('editor-drawer-panel')
         if (this.editorPanel && this.editors.length > 0) {
             const { otherYAMLTabs } = this.state
             const rect = this.editorPanel.getBoundingClientRect()
             const width = rect.width - 10
             let height = window.innerHeight - rect.top
             const header = document.getElementsByClassName('creation-view-yaml-header')[0]
-            /* istanbul ignore next */
             if (header) {
                 height = height - header.getBoundingClientRect().height
             } else {
@@ -313,9 +345,13 @@ export default class TemplateEditor extends React.Component {
     }
 
     render() {
-        const { isLoaded, showEditor, showWizard, resetInx, i18n } = this.state
+        const { isLoaded, isFailed, showEditor, showWizard, resetInx, hasPauseCreate, i18n } = this.state
         if (!showEditor) {
             this.editors = []
+        }
+
+        if (isLoaded && isFailed) {
+            return <Alert variant={'danger'} title={i18n('overview.error.default')} />
         }
         const viewClasses = classNames({
             temptifly: true,
@@ -324,7 +360,7 @@ export default class TemplateEditor extends React.Component {
         })
         return (
             <div key={`key${resetInx}`} className={viewClasses} ref={this.setContainerRef}>
-                <Prompt when={this.isDirty} message={i18n('changes.maybe.lost')} />
+                {!hasPauseCreate && <Prompt when={this.isDirty} message={i18n('changes.maybe.lost')} />}
                 {this.renderSplitEditor(isLoaded)}
                 {this.renderEditButton(isLoaded)}
                 {this.renderCreateButton(isLoaded)}
@@ -768,6 +804,7 @@ export default class TemplateEditor extends React.Component {
                         hasUndo={hasUndo}
                         hasRedo={hasRedo}
                         exceptions={exceptions}
+                        gotoEditorLine={this.gotoEditorLine}
                         handleEditorCommand={this.handleEditorCommand}
                         handleSearchChange={this.handleSearchChange}
                         i18n={this.props.i18n}
@@ -844,6 +881,12 @@ export default class TemplateEditor extends React.Component {
             const hasRedo = model.canRedo()
             this.setState({ hasUndo, hasRedo })
         })
+    }
+
+    gotoEditorLine(line) {
+        const { activeYAMLEditor } = this.state
+        const editor = this.editors[activeYAMLEditor]
+        editor.revealLineInCenter(line)
     }
 
     // text editor commands
