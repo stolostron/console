@@ -12,6 +12,7 @@ import set from 'lodash/set'
 import get from 'lodash/get'
 import uniq from 'lodash/uniq'
 import invert from 'lodash/invert'
+import noop from 'lodash/noop'
 
 class ControlPanelComboBox extends React.Component {
     static propTypes = {
@@ -36,6 +37,7 @@ class ControlPanelComboBox extends React.Component {
         const { currentSelection } = state
         let { isOpen, preselect, searchText } = state
         const { isBlurred, typedText } = state
+        const setAvailableMap = get(control, 'fetchAvailable.setAvailableMap') || noop
 
         /////////////////////////////////////////////////////////////
         // search mode
@@ -49,11 +51,8 @@ class ControlPanelComboBox extends React.Component {
                         userData.push(searchText)
                         set(control, 'userData', userData)
 
-                        // if this combobox is fetched from server, make sure whatever user types in has an availableMap entry
-                        const setAvailableMap = get(control, 'fetchAvailable.setAvailableMap')
-                        if (setAvailableMap) {
-                            setAvailableMap(control)
-                        }
+                        // make sure whatever user types in has an availableMap entry
+                        setAvailableMap(control)
                     }
                     handleComboChange(searchText)
                     searchText = null
