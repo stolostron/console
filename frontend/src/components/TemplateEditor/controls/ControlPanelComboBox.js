@@ -9,8 +9,10 @@ import ControlPanelFormGroup from './ControlPanelFormGroup'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 import set from 'lodash/set'
+import get from 'lodash/get'
 import uniq from 'lodash/uniq'
 import invert from 'lodash/invert'
+import noop from 'lodash/noop'
 
 class ControlPanelComboBox extends React.Component {
     static propTypes = {
@@ -35,6 +37,7 @@ class ControlPanelComboBox extends React.Component {
         const { currentSelection } = state
         let { isOpen, preselect, searchText } = state
         const { isBlurred, typedText } = state
+        const setAvailableMap = get(control, 'fetchAvailable.setAvailableMap') || noop
 
         /////////////////////////////////////////////////////////////
         // search mode
@@ -47,6 +50,9 @@ class ControlPanelComboBox extends React.Component {
                         control.active = searchText
                         userData.push(searchText)
                         set(control, 'userData', userData)
+
+                        // make sure whatever user types in has an availableMap entry
+                        setAvailableMap(control)
                     }
                     handleComboChange(searchText)
                     searchText = null
@@ -173,7 +179,6 @@ class ControlPanelComboBox extends React.Component {
         const isCustom = userData.includes(value)
         value = (!isOpen && !searchText && !isCustom && simplified && simplified(value, control)) || value
         const cancelToggle = simplified && !(!isOpen && !searchText && !isCustom)
-        const noop = () => {}
 
         return (
             <React.Fragment>
