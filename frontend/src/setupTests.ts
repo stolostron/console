@@ -52,7 +52,7 @@ expect.extend({
         const pass: boolean = missingNocks.length === 0
         if (!pass) {
             const nocks = missingNocks
-                .filter(({ method }) => method !== 'DELETE')
+                //.filter(({ method }) => method !== 'DELETE')
                 .map((req) => {
                     const arr: any[] = []
                     req.requestBodyBuffers?.forEach((buffer: { toString: (arg0: string) => any }) => {
@@ -73,7 +73,7 @@ expect.extend({
                     return ret
                 })
 
-            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
             const { dataMocks, funcMocks } = window.getNockShot(nocks)
             dataMocks.forEach((data: string) => {
                 msgs.push(data)

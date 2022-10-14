@@ -72,6 +72,8 @@ export default function CreateSubscriptionApplicationPage() {
     const [secrets] = useRecoilState(secretsState)
     const { projects } = GetProjects()
 
+    window.nockShot()
+
     const onControlChange = useCallback(
         (control: any) => {
             if (control.id === 'connection') {
@@ -366,6 +368,9 @@ export function CreateSubscriptionApplication(
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
+
+    window.coilShot(channels, 'channelsState')
+
     const location = useLocation()
     const editApplication = getEditApplication(location)
     const searchParams = useSearchParams()

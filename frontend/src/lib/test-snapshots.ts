@@ -2,10 +2,13 @@
 import React from 'react'
 import debounce from 'lodash/debounce'
 import capitalize from 'lodash/capitalize'
+import camelCase from 'lodash/camelCase'
 import StackTrace from 'stacktrace-js'
 //import { inspect } from 'util'
+import path from 'path'
 
 if (process.env.NODE_ENV !== 'production') {
+    const hashCode = (str: string) => str.split('').reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0)
     const getSnapshot = (obj: any = {}, max?: number) => {
         interface IProto {
             name?: string
@@ -23,6 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
                 'resourceVersion',
                 'generation',
                 'uid',
+                'controlData',
             ]
 
             return (key: any, value: { continue?: any } | null | undefined) => {
@@ -90,52 +94,84 @@ if (process.env.NODE_ENV !== 'production') {
         return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
     }
 
+    const getSnippet = (stack: StackTrace.StackFrame[], snaps: string[], expects: string[]) => {
+        const className = stack[1].getFunctionName().split('.')[0]
+        const fileName = path.parse(stack[1].getFileName()).name
+        const snippets = []
+        snippets.push(`import React from 'react'`)
+        snippets.push(`import ${className} from './${fileName}'`)
+        snippets.push(`import { render, fireEvent, waitFor, screen } from '@testing-library/react'`)
+        snippets.push(`import userEvent from '@testing-library/user-event'\n\n`)
+        snippets.push(...snaps)
+        snippets.push('\n\n')
+        snippets.push(`describe('${className} component', () => {`)
+        snippets.push(`   it('happy path', async () => {`)
+        snippets.push(`       render(<${className} {...props} />)`)
+        snippets.push(...expects)
+        snippets.push(`\n\n\n    })`)
+        return snippets.join('\n')
+    }
+
     window.propShot = (props: any, max?: number) => {
-        const stack = StackTrace.getSync()
+        const stack: StackTrace.StackFrame[] = StackTrace.getSync()
         const className = stack[1].getFunctionName().split('.')[0]
         const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, max || 10)
-        const snippet = `${mockFunctions.join('\n')}\n\n${actualCallTimes.join('\n')}\n\n${expectCallTimes.join(
-            '\n'
-        )}\n\nconst props = ${snapshot}`
+        const snippet = getSnippet(
+            stack,
+            [...mockFunctions, `const props = ${snapshot}`],
+            ['\n\n', ...expectCallTimes, '\n\n', ...actualCallTimes]
+        )
         const snip: { [index: string]: string } = {}
-        const key = `${className}Propshot`
+        const key = `${className}PropShot`
         snip[key] = snippet
         console.log(snip)
     }
 
-    window.coilShot = (recoil: any, stateName?: string, max?: number) => {
+    window.coilShot = (recoil: any, stateName: string, max?: number) => {
+        const stack: StackTrace.StackFrame[] = StackTrace.getSync()
+        const className = stack[1].getFunctionName().split('.')[0]
+        const fileName = path.parse(stack[1].getFileName()).name
+        const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
         const { snapshot } = getSnapshot(recoil, max || 10)
-        const snippet = `\n\nsnapshot.set(${stateName}, mockRecoil${capitalize(
-            stateName || ''
-        )})\n\nconst mockRecoil${capitalize(stateName || '')} = ${snapshot}`
+        const snippets = []
+        snippets.push(`import React from 'react'`)
+        snippets.push(`import { RecoilRoot } from 'recoil'`)
+        snippets.push(`import ${className} from './${fileName}'`)
+        snippets.push(`import {${stateName}} from '../../atoms'\n\n`)
+        snippets.push(`const ${dataName} = ${snapshot}\n\n`)
+        snippets.push(`   render(`)
+        snippets.push(`     <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`)
+        snippets.push(`        <${className} />`)
+        snippets.push(`     </RecoilRoot>`)
+        snippets.push(`   )`)
 
         const snip: { [index: string]: string } = {}
-        const key = stateName ? `${stateName}State` : 'state'
-        snip[key] = snippet
+        const key = `${stateName}CoilShot`
+        snip[key] = snippets.join('\n')
         console.log(snip)
     }
 
-    window.funcShot = (ret) => {
+    window.funcShot = (args, ret) => {
         const stack = StackTrace.getSync()
-        StackTrace.generateArtificially().then((args) => {
-            const f = stack[1].getFunctionName()
-            const g = args[1].getArgs()
-        })
-
-        // const { snapshot } = getSnapshot(recoil, max || 10)
-        // const snippet = `\n\nsnapshot.set(${stateName}, mockRecoil${capitalize(
-        //     stateName || ''
-        // )})\n\nconst mockRecoil${capitalize(stateName || '')} = ${snapshot}`
-
-        // const snip: { [index: string]: string } = {}
-        // const key = stateName ? `${stateName}State` : 'state'
-        // snip[key] = snippet
-        // console.log(snip)
+        const methodName = stack[1].getFunctionName()
+        const fileName = path.parse(stack[1].getFileName()).name
+        const apiName = camelCase(fileName)
+        const snippets = []
+        const { snapshot: argShot } = getSnapshot(args, 5)
+        const { snapshot: retShot } = getSnapshot(ret, 5)
+        snippets.push(`import * as ${apiName}API from './${fileName}'\n`)
+        snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
+        snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}')`)
+        snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
+        const snip: { [index: string]: string } = {}
+        const key = `${methodName}FuncShot`
+        snip[key] = snippets.join('\n')
+        console.log(snip)
         return ret
     }
 
     interface IKindData {
-        key: string
+        key: number
         name: string
         reqBody: string
         resBody: string
@@ -162,7 +198,7 @@ if (process.env.NODE_ENV !== 'production') {
         if (resBody) {
             ;({ snapshot: resBody } = getSnapshot(resBody, 5))
         }
-        const key = `${reqBody}\\\\${resBody}`
+        const key = hashCode(`${reqBody}\\\\${resBody}`)
         const inx = kindList.findIndex((kind: IKindData) => {
             return kind.key === key
         })
@@ -193,7 +229,7 @@ if (process.env.NODE_ENV !== 'production') {
         return dumpedData
     }
 
-    window.getNockShot = (fetches: { url: any; method: any; reqBody: any; resBody?: any }[]) => {
+    window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?: any }[]) => {
         const dataMap = {}
         const funcMocks: string[] = []
         let nockIgnoreRBAC = false
