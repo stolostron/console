@@ -34,6 +34,15 @@ export interface SubmarinerConfig extends IResource {
             aws?: {
                 instanceType: string
             }
+            gcp?: {
+                instanceType: string
+            }
+            azure?: {
+                instanceType: string
+            }
+            rhos?: {
+                instanceType: string
+            }
             gateways?: number
         }
     }
@@ -45,6 +54,7 @@ type SubmarinerConfigDefaults = {
     cableDriver: CableDriver
     gateways: number
     awsInstanceType: string
+    azureInstanceType: string
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
@@ -53,4 +63,5 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     cableDriver: CableDriver.libreswan,
     gateways: 1,
     awsInstanceType: 'c5d.large',
+    azureInstanceType: 'Standard_F4s_v2',
 }

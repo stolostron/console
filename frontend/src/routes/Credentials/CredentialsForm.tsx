@@ -859,7 +859,7 @@ export function CredentialsForm(props: {
                         label: t('Base domain resource group name'),
                         placeholder: t('Enter your base domain resource group name'),
                         labelHelp: t(
-                            'Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.'
+                            'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
                         ),
                         value: baseDomainResourceGroupName,
                         onChange: setBaseDomainResourceGroupName,
