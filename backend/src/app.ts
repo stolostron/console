@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 /* istanbul ignore file */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
@@ -9,8 +10,8 @@ import { logger, stopLogger } from './lib/logger'
 import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
-import { ansibleTower } from './routes/ansibletower'
 import { ServerSideEvents } from './lib/server-side-events'
+import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
 import { authenticated } from './routes/authenticated'
 import { configure } from './routes/configure'
@@ -40,9 +41,9 @@ router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
 router.get(`/login`, login)
 router.get(`/login/callback`, loginCallback)
-router.get(`/events`, events)
 router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
+router.get(`/events`, events)
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
