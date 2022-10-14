@@ -301,7 +301,6 @@ describe('LogsPage', () => {
         await waitFor(() => expect(rawBtn).toBeInTheDocument())
         userEvent.click(rawBtn)
         expect(window.open).toHaveBeenCalledWith('about:blank')
-        screen.logTestingPlaygroundURL()
 
         const containerBtn = screen.getByText(/testcontainer/i)
         await waitFor(() => expect(containerBtn).toBeInTheDocument())
