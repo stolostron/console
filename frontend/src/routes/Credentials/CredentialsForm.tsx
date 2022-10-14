@@ -233,6 +233,9 @@ export function CredentialsForm(props: {
         case 'rhv':
             selectedInfrastructureType = Provider.redhatvirtualization
             break
+        case 'redhatcloud':
+            selectedInfrastructureType = Provider.redhatcloud
+            break
         case 'vsphere':
             selectedInfrastructureType = Provider.vmware
             break
