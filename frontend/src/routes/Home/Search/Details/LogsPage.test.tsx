@@ -3,13 +3,13 @@
 // Copyright Contributors to the Open Cluster Management project
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../../atoms'
 import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources'
-import LogsPage, { LogsToolbar } from './LogsPage'
+import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
 
 // TODO why does the react-log-viewer not work with testing-library render...
 jest.mock('@patternfly/react-log-viewer', () => ({
@@ -335,5 +335,35 @@ describe('LogsPage', () => {
 
         await waitFor(() => expect(screen.getByText('testContainer')).toBeInTheDocument())
         await waitFor(() => expect(screen.getByText('Collapse')).toBeInTheDocument())
+    })
+
+    it('should render header bar correctly', async () => {
+        render(<LogsHeader cluster={'local-cluster'} namespace={'testNamespace'} linesLength={10} />)
+
+        await waitFor(() => expect(screen.getByText('local-cluster')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('testNamespace')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('10 lines')).toBeInTheDocument())
+    })
+
+    it('should render footer correctly', async () => {
+        const Footer = () => {
+            const logViewerRef = useRef<any>()
+            const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(true)
+            return (
+                <RecoilRoot>
+                    <LogsFooterButton
+                        logViewerRef={logViewerRef}
+                        showJumpToBottomBtn={showJumpToBottomBtn}
+                        setShowJumpToBottomBtn={setShowJumpToBottomBtn}
+                    />
+                </RecoilRoot>
+            )
+        }
+        render(<Footer />)
+
+        const footerBtn = screen.getByText('Jump to the bottom')
+        await waitFor(() => expect(footerBtn).toHaveStyle('visibility: visible'))
+        userEvent.click(footerBtn)
+        await waitFor(() => expect(footerBtn).toHaveStyle('visibility: hidden'))
     })
 })

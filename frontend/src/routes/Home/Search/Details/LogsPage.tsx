@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Button, Checkbox, PageSection, SelectOption } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer, LogViewerSearch } from '@patternfly/react-log-viewer'
-import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import screenfull from 'screenfull'
 import { managedClustersState } from '../../../../atoms'
@@ -183,6 +183,45 @@ export function LogsToolbar(props: {
     )
 }
 
+export function LogsHeader(props: { cluster: string; namespace: string; linesLength: number }) {
+    const { cluster, namespace, linesLength } = props
+    const classes = useStyles()
+    return (
+        <div className={classes.logWindowHeader}>
+            <div className={classes.logWindowHeaderItem}>
+                <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
+                {cluster}
+            </div>
+            <div className={classes.logWindowHeaderItem}>
+                <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
+                {namespace}
+            </div>
+            <div className={classes.logWindowHeaderItem}>
+                <p className={classes.logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
+            </div>
+        </div>
+    )
+}
+
+export function LogsFooterButton(props: {
+    logViewerRef: MutableRefObject<any>
+    showJumpToBottomBtn: boolean
+    setShowJumpToBottomBtn: Dispatch<SetStateAction<boolean>>
+}) {
+    const { logViewerRef, showJumpToBottomBtn, setShowJumpToBottomBtn } = props
+    const { t } = useTranslation()
+
+    function handleClick() {
+        logViewerRef.current?.scrollToBottom()
+        setShowJumpToBottomBtn(false)
+    }
+    return (
+        <Button style={{ visibility: showJumpToBottomBtn ? 'visible' : 'hidden' }} onClick={handleClick}>
+            {t('Jump to the bottom')}
+        </Button>
+    )
+}
+
 export default function LogsPage(props: {
     resourceError: string
     containers: string[]
@@ -194,7 +233,6 @@ export default function LogsPage(props: {
     const logViewerRef = useRef<any>()
     const resourceLogRef = useRef<any>()
     const { t } = useTranslation()
-    const classes = useStyles()
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
@@ -312,36 +350,6 @@ export default function LogsPage(props: {
         }
     }
 
-    function Header() {
-        return (
-            <div className={classes.logWindowHeader}>
-                <div className={classes.logWindowHeaderItem}>
-                    <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
-                    {cluster}
-                </div>
-                <div className={classes.logWindowHeaderItem}>
-                    <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
-                    {namespace}
-                </div>
-                <div className={classes.logWindowHeaderItem}>
-                    <p className={classes.logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
-                </div>
-            </div>
-        )
-    }
-
-    function FooterButton() {
-        function handleClick() {
-            logViewerRef.current?.scrollToBottom()
-            setShowJumpToBottomBtn(false)
-        }
-        return (
-            <Button style={{ visibility: showJumpToBottomBtn ? 'visible' : 'hidden' }} onClick={handleClick}>
-                {t('Jump to the bottom')}
-            </Button>
-        )
-    }
-
     if (resourceError !== '') {
         return (
             <PageSection>
@@ -397,10 +405,16 @@ export default function LogsPage(props: {
                             isFullscreen={isFullscreen}
                         />
                     }
-                    header={<Header />}
+                    header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
                     scrollToRow={linesLength}
                     onScroll={onScroll}
-                    footer={<FooterButton />}
+                    footer={
+                        <LogsFooterButton
+                            logViewerRef={logViewerRef}
+                            showJumpToBottomBtn={showJumpToBottomBtn}
+                            setShowJumpToBottomBtn={setShowJumpToBottomBtn}
+                        />
+                    }
                 />
             </div>
         </PageSection>
