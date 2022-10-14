@@ -179,7 +179,6 @@ class ControlPanelComboBox extends React.Component {
         const isCustom = userData.includes(value)
         value = (!isOpen && !searchText && !isCustom && simplified && simplified(value, control)) || value
         const cancelToggle = simplified && !(!isOpen && !searchText && !isCustom)
-        const noop = () => {}
 
         return (
             <React.Fragment>
