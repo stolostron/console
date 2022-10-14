@@ -11,7 +11,7 @@ import nock from 'nock'
 import 'regenerator-runtime/runtime'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { initReactI18next } from 'react-i18next'
-import './lib/test-snapshots'
+import './lib/test-shots'
 
 require('react')
 
