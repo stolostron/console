@@ -93,6 +93,7 @@ export function LogsToolbar(props: {
 
     const openRawTab = () => {
         const rawWindow = window.open('about:blank')
+        /* istanbul ignore next */
         rawWindow?.document.write(`<pre>${logs}</pre>`)
     }
 
@@ -113,8 +114,11 @@ export function LogsToolbar(props: {
                         label={''}
                         value={container}
                         onChange={(value) => {
-                            setContainer(value ?? container)
-                            sessionStorage.setItem(`${name}-${cluster}-container`, value || container)
+                            setContainer(/* istanbul ignore next */ value ?? container)
+                            sessionStorage.setItem(
+                                `${name}-${cluster}-container`,
+                                /* istanbul ignore next */ value || container
+                            )
                         }}
                     >
                         {containers.map((container) => {
@@ -209,9 +213,11 @@ export default function LogsPage(props: {
     // init screenfull
     useEffect(() => {
         if (screenfull.isEnabled) {
+            /* istanbul ignore next */
             screenfull.on('change', () => {
                 setIsFullscreen(screenfull.isFullscreen)
             })
+            /* istanbul ignore next */
             screenfull.on('error', () => {
                 setIsFullscreen(false)
             })
@@ -219,9 +225,11 @@ export default function LogsPage(props: {
 
         return () => {
             if (screenfull.isEnabled) {
+                /* istanbul ignore next */
                 screenfull.off('change', () => {
                     setIsFullscreen(false)
                 })
+                /* istanbul ignore next */
                 screenfull.off('error', () => {
                     setIsFullscreen(false)
                 })
@@ -238,7 +246,7 @@ export default function LogsPage(props: {
                     getBackendUrl() +
                     `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
                 signal: abortController.signal,
-                retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+                retries: /* istanbul ignore next */ process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
             })
             logsResult
@@ -246,7 +254,9 @@ export default function LogsPage(props: {
                     setLogs(result.data as string)
                 })
                 .catch((err) => {
-                    const managedCluster = managedClusters.find((mc: ManagedCluster) => mc.metadata?.name === cluster)
+                    const managedCluster = managedClusters.find(
+                        (mc: ManagedCluster) => /* istanbul ignore next */ mc.metadata?.name === cluster
+                    )
                     const labels = managedCluster?.metadata?.labels ?? {}
                     const vendor = labels['vendor'] ?? ''
                     if (err.code === 400 && vendor.toLowerCase() !== 'openshift') {
@@ -265,7 +275,7 @@ export default function LogsPage(props: {
                     getBackendUrl() +
                     `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
                 signal: abortController.signal,
-                retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+                retries: /* istanbul ignore next */ process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
             })
             logsResult
@@ -282,6 +292,42 @@ export default function LogsPage(props: {
 
     const toggleFullscreen = () => {
         resourceLogRef.current && screenfull.isEnabled && screenfull.toggle(resourceLogRef.current)
+    }
+
+    const onScroll = ({
+        scrollOffsetToBottom,
+        scrollDirection,
+        scrollUpdateWasRequested,
+    }: {
+        scrollOffsetToBottom: number
+        scrollDirection: 'backward' | 'forward'
+        scrollUpdateWasRequested: boolean
+    }) => {
+        if (!scrollUpdateWasRequested) {
+            if (scrollOffsetToBottom < 1) {
+                setShowJumpToBottomBtn(false)
+            } else if (scrollDirection === 'backward') {
+                setShowJumpToBottomBtn(true)
+            }
+        }
+    }
+
+    function Header() {
+        return (
+            <div className={classes.logWindowHeader}>
+                <div className={classes.logWindowHeaderItem}>
+                    <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
+                    {cluster}
+                </div>
+                <div className={classes.logWindowHeaderItem}>
+                    <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
+                    {namespace}
+                </div>
+                <div className={classes.logWindowHeaderItem}>
+                    <p className={classes.logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
+                </div>
+            </div>
+        )
     }
 
     function FooterButton() {
@@ -334,7 +380,7 @@ export default function LogsPage(props: {
                 <LogViewer
                     ref={logViewerRef}
                     height={'100%'}
-                    data={logs ?? ''}
+                    data={logs}
                     theme="dark"
                     isTextWrapped={wrapLines}
                     toolbar={
@@ -351,31 +397,9 @@ export default function LogsPage(props: {
                             isFullscreen={isFullscreen}
                         />
                     }
-                    header={
-                        <div className={classes.logWindowHeader}>
-                            <div className={classes.logWindowHeaderItem}>
-                                <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
-                                {cluster}
-                            </div>
-                            <div className={classes.logWindowHeaderItem}>
-                                <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
-                                {namespace}
-                            </div>
-                            <div className={classes.logWindowHeaderItem}>
-                                <p className={classes.logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
-                            </div>
-                        </div>
-                    }
+                    header={<Header />}
                     scrollToRow={linesLength}
-                    onScroll={({ scrollOffsetToBottom, scrollDirection, scrollUpdateWasRequested }) => {
-                        if (!scrollUpdateWasRequested) {
-                            if (scrollOffsetToBottom < 1) {
-                                setShowJumpToBottomBtn(false)
-                            } else if (scrollDirection === 'backward') {
-                                setShowJumpToBottomBtn(true)
-                            }
-                        }
-                    }}
+                    onScroll={onScroll}
                     footer={<FooterButton />}
                 />
             </div>

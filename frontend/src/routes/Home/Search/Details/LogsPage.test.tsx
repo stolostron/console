@@ -5,8 +5,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { RecoilRoot } from 'recoil'
+import { managedClustersState } from '../../../../atoms'
 import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources'
 import LogsPage, { LogsToolbar } from './LogsPage'
 
 // TODO why does the react-log-viewer not work with testing-library render...
@@ -39,6 +41,57 @@ jest.mock('screenfull', () => ({
 }))
 
 URL.createObjectURL = jest.fn(() => '/test/url')
+
+const managedClusters: ManagedCluster[] = [
+    {
+        apiVersion: ManagedClusterApiVersion,
+        kind: ManagedClusterKind,
+        metadata: {
+            labels: {
+                cloud: 'Amazon',
+                name: 'testCluster',
+                vendor: 'OpenShift',
+            },
+            name: 'testCluster',
+        },
+        spec: {
+            hubAcceptsClient: true,
+        },
+        status: {
+            allocatable: {
+                cpu: '42',
+                memory: '179120384Ki',
+            },
+            capacity: {
+                memory: '192932096Ki',
+                cpu: '48',
+            },
+            clusterClaims: [
+                {
+                    name: 'id.k8s.io',
+                    value: 'testCluster',
+                },
+            ],
+            conditions: [
+                {
+                    message: 'Accepted by hub cluster admin',
+                    reason: 'HubClusterAdminAccepted',
+                    status: 'True',
+                    type: 'HubAcceptedManagedCluster',
+                },
+                {
+                    message: 'Managed cluster is available',
+                    reason: 'ManagedClusterAvailable',
+                    status: 'True',
+                    type: 'ManagedClusterConditionAvailable',
+                },
+            ],
+            version: {
+                kubernetes: 'v1.20.0+bbbc079',
+            },
+        },
+    },
+]
 
 beforeEach(() => {
     sessionStorage.clear()
@@ -82,7 +135,11 @@ describe('LogsPage', () => {
         )
 
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, managedClusters)
+                }}
+            >
                 <LogsPage
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
@@ -147,6 +204,33 @@ describe('LogsPage', () => {
         await waitFor(() => expect(localClusterLogs.isDone()).toBeTruthy())
         await waitFor(() => expect(screen.getByText('testNamespace')).toBeInTheDocument())
         await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
+    })
+
+    it('should render logs page with local-cluster logs error', async () => {
+        const localClusterLogs = nockGetTextPlain(
+            'testLogs',
+            500,
+            true,
+            '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000'
+        )
+
+        render(
+            <RecoilRoot>
+                <LogsPage
+                    resourceError={''}
+                    containers={['testContainer', 'testContainer1']}
+                    cluster={'local-cluster'}
+                    namespace={'testNamespace'}
+                    name={'testName'}
+                />
+            </RecoilRoot>
+        )
+
+        await waitForNocks([localClusterLogs])
+
+        // Wait for request to finish and check logs are displayed correctly
+        await waitFor(() => expect(localClusterLogs.isDone()).toBeTruthy())
+        await waitFor(() => expect(screen.getByText('Internal Server Error')).toBeInTheDocument())
     })
 
     it('should render logs page with managed cluster logs successfully', async () => {
@@ -217,6 +301,13 @@ describe('LogsPage', () => {
         await waitFor(() => expect(rawBtn).toBeInTheDocument())
         userEvent.click(rawBtn)
         expect(window.open).toHaveBeenCalledWith('about:blank')
+        screen.logTestingPlaygroundURL()
+
+        const containerBtn = screen.getByText(/testcontainer/i)
+        await waitFor(() => expect(containerBtn).toBeInTheDocument())
+        userEvent.click(containerBtn)
+        await waitFor(() => expect(screen.getByText(/testcontainer1/i)).toBeInTheDocument())
+        userEvent.click(screen.getByText(/testcontainer1/i))
     })
 
     it('should render logs toolbar in fullescreen mode', async () => {
