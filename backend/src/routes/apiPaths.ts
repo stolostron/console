@@ -17,10 +17,6 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
         if (authResponse.status === constants.HTTP_STATUS_OK) {
             const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken).then(
                 async (response) => {
-                    // filter...
-                    // TODO: determine if will we fetch all the endpoint with /apis/<Version>
-                    // or fetch one by one with additional perameters to guide search
-
                     // /api/<VERSION>
                     // /apis/<GROUP>
                     // /apis/<GROUP>/<VERSION>
@@ -39,7 +35,8 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
                                 return jsonRequest<unknown>(process.env.CLUSTER_API_URL + path, serviceAccountToken)
                             })
                     )
-                    return apiResourceLists
+                    // return apiResourceLists
+                    return buildPathObject(apiResourceLists)
                 }
             )
 
@@ -57,10 +54,35 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
 }
 
 function buildPathObject(jsonResponse: unknown) {
-    // groupVersion
-    // name:
-    // singular:
-
+    // TODO: handle sub-resources
     const jsonBody = {}
-    jsonRequest
+    jsonResponse.forEach((resourceList) => {
+        const groupVersion = resourceList['groupVersion']
+        resourceList['resources'].forEach((resource) => {
+            const singularName = resource['singularName']
+            const name = resource['name']
+            const kind = resource['kind']
+            jsonBody[kind] = {
+                groupVersion,
+                apiVersion,
+                name,
+                singularName,
+            }
+        })
+    })
+
+    /* 
+    Kind: {
+      groupVersion,
+      name, 
+      singularName,
+    }
+    Example: 
+    "OperatorPKI": {
+    "groupVersion": "network.operator.openshift.io/v1",
+    "name": "operatorpkis",
+    "singularName": "operatorpki"
+  },
+    */
+    return jsonBody
 }
