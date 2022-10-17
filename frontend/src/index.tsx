@@ -4,7 +4,6 @@
 import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import 'regenerator-runtime/runtime'
 import App from './App'
 import '@patternfly/patternfly/patternfly-charts-theme-dark.css'

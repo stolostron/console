@@ -13,7 +13,7 @@ import {
 import { Fragment, ReactNode, useEffect, useMemo, useContext } from 'react'
 import { PluginDataContext } from './lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { atom, SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
