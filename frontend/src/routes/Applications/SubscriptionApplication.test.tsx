@@ -139,6 +139,24 @@ const mockAnsibleSecret: Secret = {
     },
 }
 
+const mockCopiedFromSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-2',
+        namespace: mockProject2.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': 'default',
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-tower-wizard',
+        },
+    },
+    stringData: {
+        host: 'https://invalid.com',
+        token: 'token',
+    },
+}
+
 const nockAnsibleSecret: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
@@ -246,6 +264,8 @@ const mockPlacementRules = [mockPlacementRule]
 const mockNamespaces = [mockNamespace0, mockNamespace1]
 const mockHubChannels = [mockChannel1]
 
+const mockSecrets = [mockAnsibleSecret, mockCopiedFromSecret]
+
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 jest.mock('react-i18next', () => ({
@@ -263,7 +283,7 @@ describe('Create Subscription Application page', () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(secretsState, mockSecrets)
                     snapshot.set(namespacesState, mockNamespaces)
                 }}
             >
@@ -419,7 +439,7 @@ describe('Create Subscription Application page', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(secretsState, mockSecrets)
                     snapshot.set(namespacesState, mockNamespaces)
                     snapshot.set(applicationsState, [mockApplication0])
                     snapshot.set(channelsState, mockHubChannels)
