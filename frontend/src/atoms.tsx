@@ -233,8 +233,6 @@ export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
 
-export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
-
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
 export interface Settings {
@@ -288,6 +286,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setClusterPools = useSetRecoilState(clusterPoolsState)
     const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
     const setConfigMaps = useSetRecoilState(configMapsState)
+    const setCustomResourceDefinitionsState = useSetRecoilState(customResourceDefinitionsState)
     const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
     const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
     const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
@@ -323,11 +322,8 @@ export function LoadData(props: { children?: ReactNode }) {
     const setNodePoolsState = useSetRecoilState(nodePoolsState)
     const setAgentMachinesState = useSetRecoilState(agentMachinesState)
 
-    const [customResourceDefinitions, setCustomResourceDefinitionsState] =
-        useRecoilState(customResourceDefinitionsState)
-    useEffect(() => {
-        globalCustomResourceDefinitions = customResourceDefinitions
-    }, [customResourceDefinitions])
+    
+
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
