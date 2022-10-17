@@ -62,7 +62,8 @@ import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
-import { PluginDataContextProvider, usePluginDataContextValue } from './lib/PluginDataContext'
+import { usePluginDataContextValue } from './lib/PluginDataContext'
+import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { PluginData } from './components/PluginData'
 
 // HOME

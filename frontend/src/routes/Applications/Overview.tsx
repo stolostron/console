@@ -36,6 +36,7 @@ import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 import {
     getAge,
+    getAnnotation,
     getAppChildResources,
     getAppSetRelatedResources,
     getClusterCount,
@@ -120,10 +121,6 @@ export function getAppSetApps(argoApps: IResource[], appSetName: string) {
     })
 
     return appSetApps
-}
-
-export function getAnnotation(resource: IResource, annotationString: string) {
-    return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }
 
 function getAppNamespace(resource: IResource) {
