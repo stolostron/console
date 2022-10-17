@@ -322,9 +322,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const setNodePoolsState = useSetRecoilState(nodePoolsState)
     const setAgentMachinesState = useSetRecoilState(agentMachinesState)
 
-    
-
-
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
         function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
