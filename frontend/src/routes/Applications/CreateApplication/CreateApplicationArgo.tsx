@@ -6,7 +6,7 @@ import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
@@ -20,7 +20,6 @@ import {
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
-import { useSharedSelectors } from '../../../shared-recoil'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
