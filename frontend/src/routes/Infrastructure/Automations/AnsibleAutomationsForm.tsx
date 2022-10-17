@@ -15,7 +15,7 @@ import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '../../.
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -42,7 +42,6 @@ import schema from './schema.json'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../components/GetProjects'
-import { useSharedAtoms } from '../../../shared-recoil'
 
 export default function AnsibleAutomationsFormPage({
     match,

@@ -5,7 +5,12 @@ import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
-import { isSharedContextProvider } from '../lib/ShareableContextProvider'
+import { isSharedContextProvider, SharedContextProvider } from '../lib/SharedContextProvider'
+import { PluginData } from '../lib/PluginDataContext'
+import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+
+const isPluginDataContext = (e: Extension): e is SharedContextProvider<PluginData> =>
+    isSharedContextProvider(e) &&  e.properties?.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -17,9 +22,9 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         [hrefs]
     )
 
-    const [contextProviders] = useResolvedExtensions(isSharedContextProvider)
+    const [contextProviders] = useResolvedExtensions(isPluginDataContext)
     const contextProvider = contextProviders.find((e) => {
-        return e.pluginName === 'mce' && e.properties?.id === 'mce-data-context'
+        return e.pluginName === 'mce'
     })
 
     const isOverviewAvailable = useMemo(() => hrefAvailable('acm-overview'), [hrefAvailable])

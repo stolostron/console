@@ -13,7 +13,7 @@ import {
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilCallback } from '../../shared-recoil'
+import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -49,7 +49,6 @@ import {
     unpackProviderConnection,
 } from '../../resources'
 import schema from './schema.json'
-import { useSharedAtoms } from '../../shared-recoil'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
