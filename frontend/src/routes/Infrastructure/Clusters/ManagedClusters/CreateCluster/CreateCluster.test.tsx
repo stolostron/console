@@ -63,6 +63,7 @@ import {
     mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -812,7 +813,7 @@ describe('CreateCluster AWS', () => {
 
         // create the form
         const { container } = render(
-            <PluginContext.Provider value={{ isACMAvailable: false }}>
+            <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )

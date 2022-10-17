@@ -6,6 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -260,7 +261,7 @@ describe('StatusSummaryCount', () => {
     test('renders without search', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(
-            <PluginContext.Provider value={{ isSearchAvailable: false }}>
+            <PluginContext.Provider value={{ isSearchAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )
@@ -283,7 +284,9 @@ describe('StatusSummaryCount', () => {
     test('renders without applications and governance', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(
-            <PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}>
+            <PluginContext.Provider
+                value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext }}
+            >
                 <Component />
             </PluginContext.Provider>
         )

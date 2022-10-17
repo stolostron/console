@@ -22,6 +22,7 @@ import {
     nockPatch,
 } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
@@ -981,7 +982,7 @@ describe('ClusterSetDetails page without Submariner', () => {
         ]
         nockIgnoreRBAC()
         render(
-            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )
@@ -1004,7 +1005,7 @@ describe('ClusterSetDetails page global clusterset', () => {
         ]
         nockIgnoreRBAC()
         render(
-            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component isGlobal />
             </PluginContext.Provider>
         )
