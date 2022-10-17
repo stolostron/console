@@ -315,7 +315,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             path="metadata.namespace"
                             label="Argo server"
                             placeholder="Select the Argo server"
-                            labelHelpTitle="Configuring managed clusters for the GitOps"
                             labelHelp={
                                 <Fragment>
                                     <Text>
