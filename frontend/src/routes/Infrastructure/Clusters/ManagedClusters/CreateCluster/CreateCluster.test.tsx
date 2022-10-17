@@ -569,28 +569,8 @@ describe('CreateCluster AWS', () => {
         )
     }
 
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
-
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test('can create AWS cluster without ansible template', async () => {
@@ -660,7 +640,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -729,7 +708,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -863,7 +841,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -896,28 +873,8 @@ describe('CreateCluster on premise', () => {
         )
     }
 
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
-
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test(

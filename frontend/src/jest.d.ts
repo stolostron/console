@@ -5,6 +5,6 @@ declare namespace jest {
     interface Matchers<R> {
         hasMissingMocks(): R
         hasUnusedMocks(): R
-        hasNoConsoleLogs(): R
+        hasNoMissingNocks(): R
     }
 }
