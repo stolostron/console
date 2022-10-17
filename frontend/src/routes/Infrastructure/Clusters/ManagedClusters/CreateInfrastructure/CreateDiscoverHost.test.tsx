@@ -10,8 +10,8 @@ describe('CreateDiscoverHost', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createDicoverHost]}>
-                    <Route path={NavigationPath.createDicoverHost}>
+                <MemoryRouter initialEntries={[NavigationPath.createDiscoverHost]}>
+                    <Route path={NavigationPath.createDiscoverHost}>
                         <CreateDiscoverHost />
                     </Route>
                 </MemoryRouter>

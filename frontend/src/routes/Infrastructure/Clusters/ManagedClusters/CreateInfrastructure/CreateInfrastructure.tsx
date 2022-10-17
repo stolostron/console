@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -11,6 +11,7 @@ import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
+    const location = useLocation<CancelBackState>()
     const history = useHistory()
     const { clusterImageSetsState, secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
@@ -212,7 +213,7 @@ export function CreateInfrastructure() {
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
                 onBack={() => history.push(NavigationPath.clusters)}
-                onCancel={() => history.push(NavigationPath.clusters)}
+                onCancel={() => cancelNavigation(location, history, NavigationPath.clusters)}
             />
         </Fragment>
     )

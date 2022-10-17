@@ -89,7 +89,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
-                                    click: () => history.push(NavigationPath.createInfrastructure),
+                                    click: () => history.push(locationWithCancelBack(NavigationPath.createCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,

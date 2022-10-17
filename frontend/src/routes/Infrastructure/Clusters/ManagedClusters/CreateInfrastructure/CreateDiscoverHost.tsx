@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 
 export function CreateDiscoverHost() {
     const [t] = useTranslation()
+    const location = useLocation<CancelBackState>()
     const history = useHistory()
 
     const cards = useMemo(() => {
@@ -55,7 +56,7 @@ export function CreateDiscoverHost() {
 
     const breadcrumbs = [
         { label: t('Clusters'), to: NavigationPath.clusters },
-        { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+        { label: t('Infrastructure'), to: NavigationPath.createCluster },
         { label: t('Control plane type'), to: NavigationPath.createControlPlane },
         { label: t('Hosts') },
     ]
@@ -74,7 +75,7 @@ export function CreateDiscoverHost() {
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
                 onBack={onBack}
-                onCancel={() => history.push(NavigationPath.clusters)}
+                onCancel={() => cancelNavigation(location, history, NavigationPath.clusters)}
             />
         </Fragment>
     )

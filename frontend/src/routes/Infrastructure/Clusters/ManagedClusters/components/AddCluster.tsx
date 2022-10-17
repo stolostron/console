@@ -33,7 +33,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={NavigationPath.createInfrastructure}
+                                to={locationWithCancelBack(NavigationPath.createCluster)}
                             >
                                 {t('managed.createCluster')}
                             </AcmButton>
@@ -58,7 +58,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
         const onSelect = (id: string) => {
             switch (id) {
                 case 'create-cluster':
-                    history.push(NavigationPath.createCluster)
+                    history.push(locationWithCancelBack(NavigationPath.createCluster))
                     break
                 case 'import-cluster':
                     history.push(locationWithCancelBack(NavigationPath.importCluster))
