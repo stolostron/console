@@ -315,13 +315,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             path="metadata.namespace"
                             label="Argo server"
                             placeholder="Select the Argo server"
-                            labelHelpTitle="Configuring Managed Clusters for OpenShift GitOps operator"
+                            labelHelpTitle="Configuring managed clusters for the GitOps"
                             labelHelp={
                                 <Fragment>
                                     <Text>
-                                        To configure GitOps, you can register a set of one or more Red Hat Advanced
-                                        Cluster Management for Kubernetes managed clusters to an instance of Red Hat
-                                        OpenShift Container Platform GitOps operator.
+                                        Register a set of one or more managed clusters to Red Hat OpenShift GitOps.
                                     </Text>
                                     <TextContent>
                                         <Text
