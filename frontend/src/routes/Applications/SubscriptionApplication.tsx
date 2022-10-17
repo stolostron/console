@@ -87,7 +87,14 @@ export default function CreateSubscriptionApplicationPage() {
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
-            setAvailableConnections(connectionControl, secrets)
+            setAvailableConnections(
+                connectionControl,
+                secrets.filter(
+                    (secret) =>
+                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] ||
+                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+                )
+            )
             onControlChange(connectionControl)
         }
     }, [connectionControl, onControlChange, secrets])
