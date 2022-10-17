@@ -7,7 +7,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 
-export function CreateInfrastructureClusterpool() {
+export function CreateClusterPoolInfrastructure() {
     const [t] = useTranslation()
     const history = useHistory()
     const { secretsState } = useSharedAtoms()

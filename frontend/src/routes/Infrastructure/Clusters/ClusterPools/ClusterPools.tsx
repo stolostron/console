@@ -115,7 +115,7 @@ export default function ClusterPoolsPage() {
                                 {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
-                                    click: () => history.push(NavigationPath.createClusterPoolInfrastructure),
+                                    click: () => history.push(NavigationPath.createClusterPool),
                                     variant: ButtonVariant.primary,
                                 },
                             ]}
@@ -133,9 +133,7 @@ export default function ClusterPoolsPage() {
                                         <div>
                                             <AcmButton
                                                 role="link"
-                                                onClick={() =>
-                                                    history.push(NavigationPath.createClusterPoolInfrastructure)
-                                                }
+                                                onClick={() => history.push(NavigationPath.createClusterPool)}
                                             >
                                                 {t('managed.createClusterPool')}
                                             </AcmButton>
