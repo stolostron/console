@@ -132,7 +132,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                     return (
                         (kind === 'subscription' ? name === resourceName : name === nameNoHash) &&
                         namespace === relatedKindList[i].namespace &&
-                        replacedType === relatedKindList[i].kind &&
+                        replacedType === relatedKindList[i].kind.toLowerCase() &&
                         ((specs.clustersNames || []).includes(relatedKindList[i].cluster) ||
                             (specs.searchClusters || []).find((cls) => cls.name === relatedKindList[i].cluster) ||
                             relatedKindList[i].cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
