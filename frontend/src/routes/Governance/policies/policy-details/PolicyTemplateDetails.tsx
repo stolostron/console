@@ -24,7 +24,7 @@ import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../resource'
+import { fireManagedClusterView } from '../../../../resources'
 
 export function PolicyTemplateDetails(props: {
     clusterName: string
