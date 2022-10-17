@@ -18,9 +18,8 @@ export default function RelatedResultsTables(props: {
 }) {
     const { currentQuery, selectedKinds, setDeleteResource } = props
     const { t } = useTranslation()
-    const queryFilters = convertStringToQuery(currentQuery)
     const { data, loading, error } = useSearchResultRelatedItemsQuery({
-        skip: selectedKinds.length === 0 || queryFilters.keywords.length > 0,
+        skip: selectedKinds.length === 0,
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
             input: [{ ...convertStringToQuery(currentQuery), relatedKinds: selectedKinds }],

@@ -233,6 +233,9 @@ export function CredentialsForm(props: {
         case 'rhv':
             selectedInfrastructureType = Provider.redhatvirtualization
             break
+        case 'redhatcloud':
+            selectedInfrastructureType = Provider.redhatcloud
+            break
         case 'vsphere':
             selectedInfrastructureType = Provider.vmware
             break
@@ -391,6 +394,7 @@ export function CredentialsForm(props: {
     const [vsphereResourcePool, setVsphereResourcePool] = useState(
         () => providerConnection?.stringData?.vsphereResourcePool ?? ''
     )
+    const [vsphereDiskType, setVsphereDiskType] = useState(() => providerConnection?.stringData?.vsphereDiskType ?? '')
 
     // OpenStack
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
@@ -500,6 +504,7 @@ export function CredentialsForm(props: {
                 stringData.defaultDatastore = defaultDatastore
                 stringData.vsphereFolder = vsphereFolder
                 stringData.vsphereResourcePool = vsphereResourcePool
+                stringData.vsphereDiskType = vsphereDiskType
                 stringData.baseDomain = baseDomain
                 stringData.pullSecret = pullSecret
                 stringData['ssh-privatekey'] = sshPrivatekey
@@ -587,6 +592,7 @@ export function CredentialsForm(props: {
             { path: 'Secret[0].stringData.cluster', setState: setVmClusterName },
             { path: 'Secret[0].stringData.datacenter', setState: setDatacenter },
             { path: 'Secret[0].stringData.defaultDatastore', setState: setDatastore },
+            { path: 'Secret[0].stringData.vsphereDiskType', setState: setVsphereDiskType },
             { path: 'Secret[0].stringData.vsphereFolder', setState: setVsphereFolder },
             { path: 'Secret[0].stringData.vsphereResourcePool', setState: setVsphereResourcePool },
             { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
@@ -856,7 +862,7 @@ export function CredentialsForm(props: {
                         label: t('Base domain resource group name'),
                         placeholder: t('Enter your base domain resource group name'),
                         labelHelp: t(
-                            'Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.'
+                            'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
                         ),
                         value: baseDomainResourceGroupName,
                         onChange: setBaseDomainResourceGroupName,
@@ -1011,6 +1017,20 @@ export function CredentialsForm(props: {
                         value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
+                    },
+                    {
+                        id: 'vsphereDiskType',
+                        isHidden: credentialsType !== Provider.vmware,
+                        type: 'Select',
+                        label: t('vSphere disk type'),
+                        placeholder: t('credentialsForm.vsphereDiskType.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereDiskType.labelHelp'),
+                        value: vsphereDiskType,
+                        options: ['thin', 'thick', 'eagerZeroedThick'].map((diskType) => ({
+                            id: diskType,
+                            value: diskType,
+                        })),
+                        onChange: setVsphereDiskType,
                     },
                     {
                         id: 'vsphereFolder',

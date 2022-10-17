@@ -212,6 +212,139 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
     },
 }
 
+const mockManagedClusterAzure: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'managed-cluster-Azure-clusterset',
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+    },
+    spec: { hubAcceptsClient: true },
+    status: {
+        allocatable: { cpu: '', memory: '' },
+        capacity: { cpu: '', memory: '' },
+        clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'Azure' }],
+        conditions: [],
+        version: { kubernetes: '' },
+    },
+}
+
+const mockManagedClusterInfoAzure: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: mockManagedClusterAzure.metadata.name!,
+        namespace: mockManagedClusterAzure.metadata.name!,
+    },
+    status: {
+        conditions: [],
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: ['1.2.4', '1.2.5'],
+                desiredVersion: '1.2.4',
+                upgradeFailed: false,
+                versionAvailableUpdates: [],
+            },
+        },
+    },
+}
+
+const mockManagedClusterAzureSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: `${mockManagedClusterAzure.metadata.name}-aws-creds`,
+        namespace: mockManagedClusterAzure.metadata.name,
+    },
+    data: {
+        baseDomainResourceGroupName: 'baseDomainResourceGroupName',
+        cloudName: 'AzurePublicCloud',
+        'osServicePrincipal.json': JSON.stringify({
+            clientid: 'clientId',
+            clientSecret: 'clientSecret',
+            tenantid: 'tenantId',
+            subscriptionid: 'subscriptionId',
+        }),
+    },
+    type: 'Opaque',
+}
+
+const mockManagedClusterNoCredentialsAzure: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'managed-cluster-no-credentials-azure',
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+    },
+    spec: { hubAcceptsClient: true },
+    status: {
+        allocatable: { cpu: '', memory: '' },
+        capacity: { cpu: '', memory: '' },
+        clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'Azure' }],
+        conditions: [],
+        version: { kubernetes: '' },
+    },
+}
+
+const mockManagedClusterInfoNoCredentialsAzure: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: mockManagedClusterNoCredentialsAzure.metadata.name!,
+        namespace: mockManagedClusterNoCredentialsAzure.metadata.name!,
+    },
+    status: {
+        conditions: [],
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: ['1.2.4', '1.2.5'],
+                desiredVersion: '1.2.4',
+                upgradeFailed: false,
+                versionAvailableUpdates: [],
+            },
+        },
+    },
+}
+
+const mockManagedClusterNoCredentialsSecretAzure: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: `${mockManagedClusterNoCredentialsAzure.metadata.name}-azr-creds`,
+        namespace: mockManagedClusterNoCredentialsAzure.metadata.name,
+    },
+    data: {
+        'osServicePrincipal.json': JSON.stringify({
+            clientid: 'clientId',
+            clientSecret: 'clientSecret',
+            tenantid: 'tenantId',
+            subscriptionid: 'subscriptionId',
+        }),
+        baseDomainResourceGroupName: 'baseDomainResourceGroupName',
+    },
+    type: 'Opaque',
+}
+const mockManagedClusterNoCredentialsSecretRequestAzure: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: `${mockManagedClusterNoCredentialsAzure.metadata.name}-azr-creds`,
+        namespace: mockManagedClusterNoCredentialsAzure.metadata.name,
+    },
+
+    stringData: {
+        'osServicePrincipal.json': mockManagedClusterNoCredentialsSecretAzure.data!['osServicePrincipal.json'],
+        baseDomainResourceGroupName: mockManagedClusterNoCredentialsSecretAzure.data!.baseDomainResourceGroupName,
+    },
+    type: 'Opaque',
+}
+
 const mockNoCredentialsAddOn: ManagedClusterAddOn = {
     apiVersion: ManagedClusterAddOnApiVersion,
     kind: ManagedClusterAddOnKind,
@@ -243,6 +376,29 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterExtraSecret.metadata.name!,
+        },
+    },
+}
+
+const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
+    apiVersion: SubmarinerConfigApiVersion,
+    kind: SubmarinerConfigKind,
+    metadata: {
+        name: 'submariner',
+        namespace: mockManagedClusterAzure.metadata.name,
+    },
+    spec: {
+        gatewayConfig: {
+            gateways: submarinerConfigDefault.gateways,
+            azure: {
+                instanceType: submarinerConfigDefault.azureInstanceType,
+            },
+        },
+        IPSecNATTPort: submarinerConfigDefault.nattPort,
+        NATTEnable: submarinerConfigDefault.nattEnable,
+        cableDriver: submarinerConfigDefault.cableDriver,
+        credentialsSecret: {
+            name: mockManagedClusterAzureSecret.metadata.name!,
         },
     },
 }
@@ -285,6 +441,53 @@ const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
     },
 }
 
+const mockSubmarinerAddonAzure: ManagedClusterAddOn = {
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'submariner',
+        namespace: mockManagedClusterAzure.metadata.name,
+    },
+    spec: {
+        installNamespace: 'submariner-operator',
+    },
+}
+
+const mockNoCredentialsAddOnAzure: ManagedClusterAddOn = {
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'submariner',
+        namespace: mockManagedClusterNoCredentialsAzure.metadata.name,
+    },
+    spec: {
+        installNamespace: 'submariner-operator',
+    },
+}
+
+const mockManagedClusterNoCredentialsSubmarinerConfigAzure: SubmarinerConfig = {
+    apiVersion: SubmarinerConfigApiVersion,
+    kind: SubmarinerConfigKind,
+    metadata: {
+        name: 'submariner',
+        namespace: mockManagedClusterNoCredentialsAzure.metadata.name,
+    },
+    spec: {
+        gatewayConfig: {
+            gateways: submarinerConfigDefault.gateways,
+            azure: {
+                instanceType: submarinerConfigDefault.azureInstanceType,
+            },
+        },
+        IPSecNATTPort: submarinerConfigDefault.nattPort,
+        NATTEnable: submarinerConfigDefault.nattEnable,
+        cableDriver: submarinerConfigDefault.cableDriver,
+        credentialsSecret: {
+            name: 'managed-cluster-no-credentials-azure-azr-creds',
+        },
+    },
+}
+
 const Component = (props: { isGlobal?: boolean }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
@@ -295,12 +498,16 @@ const Component = (props: { isGlobal?: boolean }) => (
             snapshot.set(managedClusterInfosState, [
                 ...mockManagedClusterInfos,
                 mockManagedClusterInfoExtra,
+                mockManagedClusterInfoAzure,
                 mockManagedClusterInfoNoCredentials,
+                mockManagedClusterInfoNoCredentialsAzure,
             ])
             snapshot.set(managedClustersState, [
                 ...mockManagedClusters,
                 mockManagedClusterExtra,
+                mockManagedClusterAzure,
                 mockManagedClusterNoCredentials,
+                mockManagedClusterNoCredentialsAzure,
             ])
             snapshot.set(certificateSigningRequestsState, [])
             snapshot.set(managedClusterAddonsState, [mockSubmarinerAddon])
@@ -416,14 +623,23 @@ describe('ClusterSetDetails page', () => {
 
         const nockListExtraSecrets = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
         const nockListNoCredsSecrets = nockNamespacedList(mockManagedClusterNoCredentialsSecret, [])
+        const nockListAzureSecrets = nockNamespacedList(mockManagedClusterAzureSecret, [mockManagedClusterAzureSecret])
+        const nockListNoCredsSecretsAzure = nockNamespacedList(mockManagedClusterNoCredentialsSecretAzure, [])
         await clickByText('Install Submariner add-ons', 0)
-        await waitForNocks([nockListExtraSecrets, nockListNoCredsSecrets])
+        await waitForNocks([
+            nockListExtraSecrets,
+            nockListNoCredsSecrets,
+            nockListAzureSecrets,
+            nockListNoCredsSecretsAzure,
+        ])
 
         await waitForText('Select clusters', true)
 
         await clickByPlaceholderText('Select clusters')
         await clickByText(mockManagedClusterExtra!.metadata.name!)
         await clickByText(mockManagedClusterNoCredentials!.metadata.name!)
+        await clickByText(mockManagedClusterAzure!.metadata.name!)
+        await clickByText(mockManagedClusterNoCredentialsAzure!.metadata.name!)
         await clickByText('Next')
 
         // mockManagedClusterExtra
@@ -439,6 +655,26 @@ describe('ClusterSetDetails page', () => {
 
         await clickByText('Next')
 
+        // mockManagedClusterAzure
+        await waitForTestId('credential-secret')
+        await waitForNotTestId('baseDomainResourceGroupName')
+        await waitForNotTestId('clientId')
+        await waitForNotTestId('clientSecret')
+        await waitForNotTestId('subscriptionId')
+        await clickByText('Next')
+
+        // mockManagedClusterNoCredentialsAzure
+        await waitForNotTestId('credential-secret')
+        await typeByTestId(
+            'baseDomainResourceGroupName',
+            mockManagedClusterNoCredentialsSecretAzure.data!.baseDomainResourceGroupName
+        )
+        await typeByTestId('clientId', 'clientId')
+        await typeByTestId('clientSecret', 'clientSecret')
+        await typeByTestId('subscriptionId', 'subscriptionId')
+        await typeByTestId('tenantId', 'tenantId')
+        await clickByText('Next')
+
         // mockManagedClusterExtra
         const nockMCAExtra = nockCreate(mockSubmarinerAddonExtra)
         const nockSCExtra = nockCreate(mockManagedClusterExtraSubmarinerConfig)
@@ -451,8 +687,31 @@ describe('ClusterSetDetails page', () => {
         )
         const nockSCNoCreds = nockCreate(mockManagedClusterNoCredentialsSubmarinerConfig)
 
+        // mockManagedClusterAzure
+        const nockMCAAzure = nockCreate(mockSubmarinerAddonAzure)
+        const nockSCAzure = nockCreate(mockManagedClusterAzureSubmarinerConfig)
+
+        // mockManagedClusterNoCredentials
+        const nockMCANoCredsAzure = nockCreate(mockNoCredentialsAddOnAzure)
+        const nockSecretNoCredsAzure = nockCreate(
+            mockManagedClusterNoCredentialsSecretRequestAzure,
+            mockManagedClusterNoCredentialsSecretAzure
+        )
+        const nockSCNoCredsAzure = nockCreate(mockManagedClusterNoCredentialsSubmarinerConfigAzure)
+
         await clickByText('Install')
-        await waitForNocks([nockMCAExtra, nockSCExtra, nockMCANoCreds, nockSecretNoCreds, nockSCNoCreds])
+        await waitForNocks([
+            nockMCAExtra,
+            nockSCExtra,
+            nockMCANoCreds,
+            nockSecretNoCreds,
+            nockSCNoCreds,
+            nockMCAAzure,
+            nockSCAzure,
+            nockMCANoCredsAzure,
+            nockSecretNoCredsAzure,
+            nockSCNoCredsAzure,
+        ])
     })
     test('can uninstall submariner add-ons', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)

@@ -13,7 +13,14 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
-import { clickByText, selectByText, typeByTestId, waitForNock, waitForText } from '../../lib/test-util'
+import {
+    clickByPlaceholderText,
+    clickByText,
+    selectByText,
+    typeByTestId,
+    waitForNock,
+    waitForText,
+} from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import AddCredentialPage2 from './CredentialsForm'
 
@@ -202,6 +209,7 @@ describe('add credentials page', () => {
                 cluster: 'cluster',
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
+                vsphereDiskType: 'eagerZeroedThick',
                 vsphereFolder: 'folder',
                 vsphereResourcePool: 'resourcePool',
                 imageContentSources: '',
@@ -222,6 +230,8 @@ describe('add credentials page', () => {
         await typeByTestId('cluster', providerConnection.stringData?.cluster!)
         await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
         await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
+        await clickByPlaceholderText('Select the vSphere disk type')
+        await clickByText(providerConnection.stringData?.vsphereDiskType!)
         await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
         await typeByTestId('vsphereResourcePool', providerConnection.stringData?.vsphereResourcePool!)
         await clickByText('Next')
