@@ -235,7 +235,7 @@ export default function LogsPage(props: {
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
-    
+
     const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(false)
     const [wrapLines, setWrapLines] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
