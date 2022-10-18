@@ -2,7 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
-import { globalCustomResourceDefinitions, apiResourceNameList } from '../atoms'
+import { apiResourceNameList } from '../atoms'
 import { getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
@@ -31,13 +31,6 @@ export function getPluralResourceName(resourceDefinition: IResourceDefinition) {
 }
 
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    const crd = globalCustomResourceDefinitions.find(
-        (crd) =>
-            crd.spec.group === getResourceGroup(resourceDefinition) &&
-            crd.spec.names.kind.toLowerCase() === resourceDefinition.kind.toLowerCase()
-    )
-    if (crd) return crd.spec.names.plural
-
     if (resourceDefinition.kind.endsWith('s')) {
         return resourceDefinition.kind.toLowerCase()
     }

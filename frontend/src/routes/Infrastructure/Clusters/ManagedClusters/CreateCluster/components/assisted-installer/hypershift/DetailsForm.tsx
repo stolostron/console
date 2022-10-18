@@ -18,6 +18,7 @@ import { Secret } from '../../../../../../../../resources'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { NavigationPath } from '../../../../../../../../NavigationPath'
 
 const { HostedClusterDetailsStep, labelsToArray, LoadingState, getSupportedCM } = CIM
 

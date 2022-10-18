@@ -61,6 +61,7 @@ export default function CreateSubscriptionApplicationPage() {
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [newSecret, setNewSecret] = useState<Secret>()
+    const { secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const { projects } = GetProjects()
 

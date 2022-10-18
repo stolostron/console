@@ -4,18 +4,19 @@ import {
     ActionGroup,
     ButtonVariant,
     Divider,
-    Flex,
-    FlexItem,
+    Modal,
+    ModalVariant,
     PageSection,
     SelectOption,
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
+import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
+import { GetProjects } from '../../../../../components/GetProjects'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -45,6 +46,7 @@ import {
     AcmToastContext,
     Provider,
 } from '../../../../../ui-components'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 
 const discoveryVersions = ['4.8', '4.9', '4.10', '4.11']
 
@@ -187,11 +189,14 @@ export function DiscoveryConfigPageContent(props: {
         { day: 30, stringDay: '30 days', value: '30d' },
     ]
 
-    function updateDiscoveryConfig(update: (discoveryConfig: DiscoveryConfig) => void) {
-        const copy = { ...discoveryConfig } as DiscoveryConfig
-        update(copy)
-        setDiscoveryConfig(copy)
-    }
+    const updateDiscoveryConfig = useCallback(
+        (update: (discoveryConfig: DiscoveryConfig) => void) => {
+            const copy = { ...discoveryConfig } as DiscoveryConfig
+            update(copy)
+            setDiscoveryConfig(copy)
+        },
+        [discoveryConfig, setDiscoveryConfig]
+    )
 
     const deleteDiscoveryConfig = async () => {
         alertContext.clearAlerts()
@@ -261,6 +266,8 @@ export function DiscoveryConfigPageContent(props: {
             }
         })
     }
+
+    const { projects } = GetProjects()
 
     const onSubmit = async () => {
         alertContext.clearAlerts()
@@ -346,9 +353,45 @@ export function DiscoveryConfigPageContent(props: {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editing, discoveryConfig.metadata.namespace, t])
 
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
+    const [newSecret, setNewSecret] = useState<Secret>()
+
+    useEffect(() => {
+        if (newSecret) {
+            updateDiscoveryConfig((discoveryConfig) => {
+                discoveryConfig.metadata.namespace = newSecret.metadata.namespace
+                discoveryConfig.spec.credential = newSecret.metadata.name!
+            })
+        }
+    }, [newSecret, updateDiscoveryConfig])
+
     return (
         <AcmForm>
             <ConfirmModal {...modalProps} />
+            <Fragment>
+                <Modal
+                    variant={ModalVariant.large}
+                    showClose={false}
+                    isOpen={isModalOpen}
+                    aria-labelledby="modal-wizard-label"
+                    aria-describedby="modal-wizard-description"
+                    onClose={handleModalToggle}
+                    hasNoBodyWrapper
+                >
+                    <CredentialsForm
+                        namespaces={projects}
+                        isEditing={false}
+                        isViewing={false}
+                        infrastructureType={'redhatcloud'}
+                        handleModalToggle={handleModalToggle}
+                        hideYaml={true}
+                        control={setNewSecret}
+                    />
+                </Modal>
+            </Fragment>
             <AcmFormSection
                 title={editing ? t('discoveryConfig.header.edit') : t('discoveryConfig.header.add')}
             ></AcmFormSection>
@@ -407,6 +450,7 @@ export function DiscoveryConfigPageContent(props: {
                 }}
                 isDisabled={editing && !discoveryConfig.metadata.namespace}
                 isRequired
+                footer={<CreateCredentialModal handleModalToggle={handleModalToggle} />}
             >
                 {credentials?.map((credential) => {
                     const credentialName = credential.metadata.namespace + '/' + credential.metadata.name
@@ -417,13 +461,6 @@ export function DiscoveryConfigPageContent(props: {
                     )
                 })}
             </AcmSelect>
-            <Flex style={{ marginTop: '0px' }}>
-                <FlexItem align={{ default: 'alignRight' }}>
-                    <Link to={NavigationPath.addCredentials}>
-                        {t('discoveryConfig.connections.addCredentials')} <ExternalLinkAltIcon />
-                    </Link>
-                </FlexItem>
-            </Flex>
             {discoveryConfig.metadata!.namespace ? (
                 <Fragment>
                     <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>

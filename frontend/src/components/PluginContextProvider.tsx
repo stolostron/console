@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { isContextProvider, isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
-import { PluginDataContext } from '../lib/PluginDataContext'
 import { LoadingPage } from './LoadingPage'
+import { isSharedContextProvider } from '../lib/ShareableContextProvider'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -17,9 +17,9 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         [hrefs]
     )
 
-    const [contextProviders] = useResolvedExtensions(isContextProvider)
+    const [contextProviders] = useResolvedExtensions(isSharedContextProvider)
     const contextProvider = contextProviders.find((e) => {
-        return e.properties?.id === 'mce-data-context'
+        return e.pluginName === 'mce' && e.properties?.id === 'mce-data-context'
     })
 
     const isOverviewAvailable = useMemo(() => hrefAvailable('acm-overview'), [hrefAvailable])
@@ -33,7 +33,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
 
     const acmExtensions = useAcmExtension()
 
-    return contextProvider?.properties?.context ? (
+    return contextProvider ? (
         <PluginContext.Provider
             value={{
                 isACMAvailable,
@@ -42,7 +42,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 isGovernanceAvailable,
                 isSearchAvailable,
                 isSubmarinerAvailable,
-                dataContext: contextProvider?.properties?.context || PluginDataContext,
+                dataContext: contextProvider.properties.context,
                 acmExtensions,
             }}
         >

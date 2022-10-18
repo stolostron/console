@@ -42,6 +42,7 @@ import {
     mockOCPApplication0,
     mockFluxApplication0,
 } from './Application.sharedmocks'
+import { PluginDataContext } from '../../lib/PluginDataContext'
 
 describe('Applications Page', () => {
     beforeEach(async () => {
@@ -63,7 +64,7 @@ describe('Applications Page', () => {
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.applications]}>
-                    <PluginContext.Provider value={{ acmExtensions: acmExtension }}>
+                    <PluginContext.Provider value={{ acmExtensions: acmExtension, dataContext: PluginDataContext }}>
                         <ApplicationsPage />
                     </PluginContext.Provider>
                 </MemoryRouter>

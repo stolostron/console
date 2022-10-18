@@ -20,7 +20,7 @@ import {
 } from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useMemo, useState } from 'react'
-import { useRecoilState } from '../../../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

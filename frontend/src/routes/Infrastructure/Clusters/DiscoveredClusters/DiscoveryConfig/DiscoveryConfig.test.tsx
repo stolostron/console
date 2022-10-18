@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmToastProvider, AcmToastGroup } from '../../../../../ui-components'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
@@ -20,6 +20,7 @@ import {
     discoveryConfigUpdateSelfSubjectAccessRequest,
     discoveryConfigUpdateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
+import userEvent from '@testing-library/user-event'
 
 function TestAddDiscoveryConfigPage() {
     return (
@@ -71,6 +72,20 @@ describe('discovery config page', () => {
         )
         const { container } = render(<TestAddDiscoveryConfigPage />)
         waitForNocks([discoveryConfigCreateNock])
+
+        // click add credential to show the modal
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /credential options menu/i,
+            })
+        )
+        userEvent.click(screen.getByText(/add credential/i))
+        await waitForText('Enter the basic credentials information')
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /cancel/i,
+            })
+        )
 
         // Select Credential
         await waitFor(() =>
