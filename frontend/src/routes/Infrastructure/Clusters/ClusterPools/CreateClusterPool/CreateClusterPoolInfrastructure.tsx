@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
+import { CreateClusterPoolInfrastructureType } from './CreateClusterPool'
 
 export function CreateClusterPoolInfrastructure() {
     const [t] = useTranslation()
     const history = useHistory()
+    const { search } = useLocation()
     const { secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const credentials = useMemo(
@@ -32,6 +34,12 @@ export function CreateClusterPoolInfrastructure() {
     )
 
     const cards = useMemo(() => {
+        const getSearchWithInfrastructureType = (infrastructureType: CreateClusterPoolInfrastructureType) => {
+            const urlParams = new URLSearchParams(search)
+            urlParams.append('infrastructureType', infrastructureType)
+            return urlParams.toString()
+        }
+
         const newCards: ICatalogCard[] = [
             {
                 id: 'aws',
@@ -47,7 +55,7 @@ export function CreateClusterPoolInfrastructure() {
                 onClick: () =>
                     history.push({
                         pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=AWS',
+                        search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.AWS),
                     }),
             },
             {
@@ -66,7 +74,7 @@ export function CreateClusterPoolInfrastructure() {
                 onClick: () =>
                     history.push({
                         pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=GCP',
+                        search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.GCP),
                     }),
             },
             {
@@ -83,7 +91,7 @@ export function CreateClusterPoolInfrastructure() {
                 onClick: () =>
                     history.push({
                         pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=Azure',
+                        search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.Azure),
                     }),
             },
         ]
