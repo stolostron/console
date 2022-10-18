@@ -10,7 +10,7 @@ import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
 const isPluginDataContext = (e: Extension): e is SharedContextProvider<PluginData> =>
-    isSharedContextProvider(e) &&  e.properties?.id === 'mce-data-context'
+    isSharedContextProvider(e) && e.properties?.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)

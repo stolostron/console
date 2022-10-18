@@ -65,7 +65,7 @@ import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
 import { usePluginDataContextValue } from './lib/PluginDataContext'
 import { PluginDataContextProvider } from './components/PluginDataContextProvider'
-import { PluginData } from './components/PluginData'
+import { LoadPluginData } from './components/LoadPluginData'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -367,7 +367,7 @@ export default function App() {
                     defaultManagedSidebarIsOpen={true}
                     style={{ height: '100vh' }}
                 >
-                    <PluginData>
+                    <LoadPluginData>
                         <AcmToastProvider>
                             <AcmToastGroup />
                             <AcmTablePaginationContextProvider localStorageKey="clusters">
@@ -397,7 +397,7 @@ export default function App() {
                                 </Suspense>
                             </AcmTablePaginationContextProvider>
                         </AcmToastProvider>
-                    </PluginData>
+                    </LoadPluginData>
                 </Page>
             </BrowserRouter>
         </PluginDataContextProvider>

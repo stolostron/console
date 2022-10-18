@@ -3,7 +3,7 @@ import { ReactNode, useContext, useEffect } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { LoadingPage } from './LoadingPage'
 
-export function PluginData(props: { children?: ReactNode }) {
+export const LoadPluginData = (props: { children?: ReactNode }) => {
     const { dataContext } = useContext(PluginContext)
     const { loaded, load } = useContext(dataContext)
     useEffect(() => {

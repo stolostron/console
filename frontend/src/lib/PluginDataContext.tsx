@@ -17,7 +17,7 @@ export type PluginData = {
     load: () => void
 }
 
-const defaultContext = {
+export const defaultContext = {
     recoil,
     atoms,
     selectors,
