@@ -3,6 +3,7 @@
 
 import { join } from 'path'
 import { globalCustomResourceDefinitions } from '../atoms'
+import { getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
@@ -22,13 +23,17 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
+export async function getApiResourceList() {
+    return getApiPaths().promise
+}
+
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+    // const resource = apiResourceList.resources[resourceDefinition.kind]
     const crd = globalCustomResourceDefinitions.find(
         (crd) =>
             crd.spec.group === getResourceGroup(resourceDefinition) &&
             crd.spec.names.kind.toLowerCase() === resourceDefinition.kind.toLowerCase()
     )
-
     if (crd) return crd.spec.names.plural
 
     if (resourceDefinition.kind.endsWith('s')) {

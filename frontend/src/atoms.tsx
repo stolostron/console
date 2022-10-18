@@ -77,6 +77,7 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    getApiResourceList,
     getBackendUrl,
     GitOpsCluster,
     GitOpsClusterApiVersion,
@@ -167,6 +168,7 @@ import {
     UserPreferenceKind,
 } from './resources'
 import { tokenExpired } from './logout'
+import { APIResourceList } from './lib/api-resource-list'
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -232,6 +234,10 @@ export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
+
+export let apiResourceList: APIResourceList = {
+    resources: {},
+}
 
 export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
@@ -328,6 +334,12 @@ export function LoadData(props: { children?: ReactNode }) {
     useEffect(() => {
         globalCustomResourceDefinitions = customResourceDefinitions
     }, [customResourceDefinitions])
+    useEffect(() => {
+        getApiResourceList().then((resourceList) => {
+            apiResourceList = resourceList
+            console.log('checking resourse list: ', apiResourceList)
+        })
+    })
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}

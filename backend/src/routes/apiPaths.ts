@@ -7,20 +7,41 @@ import { respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken, isAuthenticated } from '../lib/token'
 import { getServiceAccountToken } from './liveness'
 
+interface APIPathResponse {
+    paths: string[]
+}
+
+interface APIResourcePathResponse {
+    kind: string
+    groupVersion: string
+    resources: APIResourceMetadata[]
+}
+
+interface APIResourceMetadata {
+    name: string
+    singularName: string
+    namespaced: boolean
+    kind: string
+    verbs: string[]
+}
+
+interface APIResourceNames {
+    [key: string]: {
+        group: string
+        pluralName: string
+        singularName: string
+    }
+}
+
 export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
     const serviceAccountToken = getServiceAccountToken()
-
     try {
         const authResponse = await isAuthenticated(token)
         if (authResponse.status === constants.HTTP_STATUS_OK) {
             const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken).then(
-                async (response) => {
-                    // /api/<VERSION>
-                    // /apis/<GROUP>
-                    // /apis/<GROUP>/<VERSION>
-
+                async (response: APIPathResponse) => {
                     const apiResourceLists = await Promise.all(
                         response.paths
                             .filter((path) => {
@@ -32,7 +53,10 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
                                 )
                             })
                             .map(async (path) => {
-                                return jsonRequest<unknown>(process.env.CLUSTER_API_URL + path, serviceAccountToken)
+                                return jsonRequest<APIResourcePathResponse>(
+                                    process.env.CLUSTER_API_URL + path,
+                                    serviceAccountToken
+                                )
                             })
                     )
                     // return apiResourceLists
@@ -53,36 +77,43 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
     }
 }
 
-function buildPathObject(jsonResponse: unknown) {
+function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
     // TODO: handle sub-resources
-    const jsonBody = {}
-    jsonResponse.forEach((resourceList) => {
-        const groupVersion = resourceList['groupVersion']
-        resourceList['resources'].forEach((resource) => {
+    const resourceNames: APIResourceNames = {}
+    apiResourcePathResponse.forEach((resourceList) => {
+        const group = resourceList.groupVersion
+        resourceList.resources.forEach((resource) => {
             const singularName = resource['singularName']
-            const name = resource['name']
+            const pluralName = resource['name']
             const kind = resource['kind']
-            jsonBody[kind] = {
-                groupVersion,
-                apiVersion,
-                name,
+            resourceNames[kind] = {
+                group,
+                pluralName,
                 singularName,
             }
         })
     })
 
-    /* 
-    Kind: {
-      groupVersion,
-      name, 
-      singularName,
-    }
-    Example: 
-    "OperatorPKI": {
-    "groupVersion": "network.operator.openshift.io/v1",
-    "name": "operatorpkis",
-    "singularName": "operatorpki"
-  },
+    return resourceNames
+    /*
+    What's in use in the frontend:
+        - group name
+        - kind
+        - plural
+        - singular
     */
-    return jsonBody
+    /* 
+    Format we return:
+        Kind: {
+        groupVersion,
+        name, 
+        singularName,
+        }
+        Example: 
+        "OperatorPKI": {
+        "groupVersion": "network.operator.openshift.io/v1",
+        "name": "operatorpkis",
+        "singularName": "operatorpki"
+    },
+    */
 }
