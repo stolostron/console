@@ -31,8 +31,8 @@ import { useTranslation } from '../../../../lib/acm-i18next';
 import TableLoader from '../helpers/TableLoader';
 
 import {
-  ClusterTemplateHelmChartLink,
-  ClusterTemplatePipelineLink,
+  ClusterTemplateHelmChart,
+  ClusterTemplateHelmResourceLink,
   ClusterTemplateUsage,
 } from '../ClusterTemplateDetails/clusterTemplateComponents';
 
@@ -49,10 +49,6 @@ function getTableColumns(t: TFunction): TableColumn[] {
     {
       title: t('HELM chart'),
       id: 'helm-chart',
-    },
-    {
-      title: t('Setup pipeline'),
-      id: 'pipeline',
     },
     {
       title: t('Template uses'),
@@ -90,13 +86,10 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj })
         />
       </Td>
       <Td id={columns[1].id} dataLabel={columns[1].title}>
-        <ClusterTemplateHelmChartLink clusterTemplate={obj} />
+        <ClusterTemplateHelmResourceLink clusterTemplate={obj} />
       </Td>
       <Td id={columns[2].id} dataLabel={columns[2].title}>
-        {obj.spec.helmChartRef?.name}
-      </Td>
-      <Td id={columns[3].id} dataLabel={columns[3].title}>
-        <ClusterTemplatePipelineLink clusterTemplate={obj} />
+        <ClusterTemplateHelmChart clusterTemplate={obj} />
       </Td>
       <Td id={columns[4].id} dataLabel={columns[4].title}>
         <ClusterTemplateUsage clusterTemplate={obj} />

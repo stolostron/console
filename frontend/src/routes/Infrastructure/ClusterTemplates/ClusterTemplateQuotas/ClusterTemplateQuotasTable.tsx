@@ -50,10 +50,16 @@ const QuotaRow: React.FC<{
           name={quota.metadata?.name}
           namespace={quota.metadata?.namespace}
           hideIcon
+          data-testid={`quota-${quota.metadata?.name}`}
         />
       </Td>
       <Td dataLabel={columns[1].title} id="namespace">
-        <ResourceLink groupVersionKind={namespaceGVK} name={quota.metadata?.namespace} hideIcon />
+        <ResourceLink
+          groupVersionKind={namespaceGVK}
+          name={quota.metadata?.namespace}
+          hideIcon
+          data-testid={`namespace-${quota.metadata?.namespace}`}
+        />
       </Td>
       <Td dataLabel={columns[2].title} id="user-management">
         <ClusterTemplateQuotaAccessSummary quota={quota} />

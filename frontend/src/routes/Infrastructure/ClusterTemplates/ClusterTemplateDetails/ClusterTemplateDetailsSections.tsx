@@ -41,7 +41,7 @@ const ClusterTemplateDetailsSections: React.FC<{ clusterTemplate: ClusterTemplat
   return (
     <Stack hasGutter>
       {Object.keys(titles).map((key) => {
-        const section: Section = key as any as Section;
+        const section: Section = key as Section;
         const Component = components[section];
         return (
           <StackItem key={key}>

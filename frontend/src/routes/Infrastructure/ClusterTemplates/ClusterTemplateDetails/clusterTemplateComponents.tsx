@@ -1,10 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
 import { Label } from '@patternfly/react-core';
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../../../../lib/acm-i18next';
-import { getClusterTemplateVendor } from '../clusterTemplateLabelUtils';
-import { helmRepoGVK } from '../constants';
+import {
+  getClusterDefinitionHelmChart,
+  getClusterTemplateVendor,
+  isHelmClusterDefinition,
+} from '../clusterTemplateDataUtils';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
 import { ClusterTemplate, ClusterTemplateVendor } from '../types';
 import { LoadingHelper } from '../utils';
@@ -39,30 +42,34 @@ export const ClusterTemplateVendorLabel: React.FC<{ clusterTemplate: ClusterTemp
   return <Label color={color}>{labelText}</Label>;
 };
 
-export const ClusterTemplateHelmChartLink: React.FC<{ clusterTemplate: ClusterTemplate }> = ({
+export const ClusterTemplateHelmResourceLink: React.FC<{ clusterTemplate: ClusterTemplate }> = ({
   clusterTemplate,
 }) => {
-  const repo = clusterTemplate.spec.helmChartRef.repository;
-  return <ResourceLink groupVersionKind={helmRepoGVK} name={repo} hideIcon />;
+  return isHelmClusterDefinition(clusterTemplate) ? (
+    <Link
+      to={{
+        pathname: clusterTemplate.spec.clusterDefinition.applicationSpec.source.repoURL,
+      }}
+    >
+      {clusterTemplate.spec.clusterDefinition.applicationSpec.source.repoURL}
+    </Link>
+  ) : (
+    <>-</>
+  );
 };
 
+export const ClusterTemplateHelmChart: React.FC<{ clusterTemplate: ClusterTemplate }> = ({
+  clusterTemplate,
+}) => (
+  <>
+    {isHelmClusterDefinition(clusterTemplate)
+      ? getClusterDefinitionHelmChart(clusterTemplate)
+      : '-'}
+  </>
+);
 export const ClusterTemplateCost: React.FC<{ clusterTemplate: ClusterTemplate }> = ({
   clusterTemplate,
 }) => {
   const { t } = useTranslation();
   return <>{`${clusterTemplate.spec.cost} / ${t('Per use')}`}</>;
 };
-
-export const ClusterTemplatePipelineLink: React.FC<{ clusterTemplate: ClusterTemplate }> = ({
-  clusterTemplate,
-}) =>
-  clusterTemplate.spec.clusterSetup?.pipeline ? (
-    <ResourceLink
-      groupVersionKind={helmRepoGVK}
-      name={clusterTemplate.spec.clusterSetup.pipeline.name}
-      namespace={clusterTemplate.spec.clusterSetup.pipeline.namespace}
-      hideIcon
-    />
-  ) : (
-    <>-</>
-  );

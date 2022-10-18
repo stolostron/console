@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core';
+import { Button, Stack, StackItem, Text, TextVariants } from '@patternfly/react-core';
 import { DownloadIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from '../../../../lib/acm-i18next';

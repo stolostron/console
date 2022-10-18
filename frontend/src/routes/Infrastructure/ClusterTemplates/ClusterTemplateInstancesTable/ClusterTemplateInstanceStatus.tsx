@@ -15,15 +15,16 @@ const getStatusIcon = (phase: ClusterTemplateInstanceStatusPhase): React.ReactNo
   switch (phase) {
     case ClusterTemplateInstanceStatusPhase.HelmChartInstallFailed:
     case ClusterTemplateInstanceStatusPhase.ClusterInstallFailed:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineCreateFailed:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineFailed:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupCreateFailed:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupFailed:
     case ClusterTemplateInstanceStatusPhase.CredentialsFailed: {
       return <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" id="failed-icon" />;
     }
-    case ClusterTemplateInstanceStatusPhase.Pending:
+    case ClusterTemplateInstanceStatusPhase.PendingPhase:
+    case ClusterTemplateInstanceStatusPhase.PendingMessage:
     case ClusterTemplateInstanceStatusPhase.ClusterInstalling:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineCreating:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineRunning: {
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupCreating:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupRunning: {
       return <RunningIcon color="var(--pf-global--success-color--100)" id="running-icon" />;
     }
     case ClusterTemplateInstanceStatusPhase.Ready: {
@@ -39,19 +40,20 @@ const getStatusLabel = (t: TFunction, phase: ClusterTemplateInstanceStatusPhase)
   switch (phase) {
     case ClusterTemplateInstanceStatusPhase.HelmChartInstallFailed:
     case ClusterTemplateInstanceStatusPhase.ClusterInstallFailed:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineCreateFailed:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineFailed:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupCreateFailed:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupFailed:
     case ClusterTemplateInstanceStatusPhase.CredentialsFailed: {
       return t('Failed');
     }
-    case ClusterTemplateInstanceStatusPhase.Pending: {
+    case ClusterTemplateInstanceStatusPhase.PendingPhase:
+    case ClusterTemplateInstanceStatusPhase.PendingMessage: {
       return t('Pending');
     }
     case ClusterTemplateInstanceStatusPhase.ClusterInstalling: {
       return t('Installing');
     }
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineCreating:
-    case ClusterTemplateInstanceStatusPhase.SetupPipelineRunning: {
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupCreating:
+    case ClusterTemplateInstanceStatusPhase.ClusterSetupRunning: {
       return t('Post install configuration');
     }
     case ClusterTemplateInstanceStatusPhase.Ready: {

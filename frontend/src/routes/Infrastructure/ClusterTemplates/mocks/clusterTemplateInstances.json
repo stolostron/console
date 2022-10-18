@@ -14,7 +14,7 @@
     },
     "status": {
       "message": "failed to install helm chart - \"unexpected end of JSON input\"",
-      "phase": "HelmChartInstallFailed"
+      "phase": "ClusterSetupFailed"
     }
   },
   {
@@ -25,10 +25,7 @@
       "namespace": "ns1"
     },
     "spec": {
-      "clusterTemplateRef": "cluster-template-example",
-      "values": {
-        "replicas": 0
-      }
+      "clusterTemplateRef": "cluster-template-example"
     },
     "status": {
       "message": "failed to install helm chart - \"unexpected end of JSON input\"",
@@ -43,14 +40,11 @@
       "namespace": "ns1"
     },
     "spec": {
-      "clusterTemplateRef": "cluster-template-example",
-      "values": {
-        "replicas": 0
-      }
+      "clusterTemplateRef": "cluster-template-example"
     },
     "status": {
-      "message": "Pending",
-      "phase": "Pending"
+      "message": "Pending phase",
+      "phase": "PendingPhase"
     }
   },
   {
@@ -61,14 +55,11 @@
       "namespace": "ns"
     },
     "spec": {
-      "clusterTemplateRef": "cluster-template-example",
-      "values": {
-        "replicas": 0
-      }
+      "clusterTemplateRef": "cluster-template-example"
     },
     "status": {
-      "message": "SetupPipelineRunning",
-      "phase": "SetupPipelineRunning"
+      "message": "ClusterSetupRunning",
+      "phase": "ClusterSetupRunning"
     }
   },
   {
@@ -79,10 +70,7 @@
       "namespace": "ns"
     },
     "spec": {
-      "clusterTemplateRef": "cluster-template-example",
-      "values": {
-        "replicas": 0
-      }
+      "clusterTemplateRef": "cluster-template-example"
     },
     "status": {
       "message": "ClusterInstalling",
@@ -101,7 +89,7 @@
     },
     "status": {
       "message": "failed to install helm chart - \"invalid character '\\\"' after top-level value\"",
-      "phase": "HelmChartInstallFailed"
+      "phase": "ClusterSetupFailed"
     }
   }
 ]

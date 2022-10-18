@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
 import _ from 'lodash';
-import { ClusterTemplate, ClusterTemplateVendor } from './types';
+import { ApplicationSpec, ClusterTemplate, ClusterTemplateVendor } from './types';
 
 const TEMPLATES_LABEL_PREFIX = 'clustertemplates.openshift.io';
 
@@ -38,3 +38,11 @@ export const getClusterTemplateLocation = (clusterTemplate: ClusterTemplate): st
 
 export const getClusterTemplateInfraType = (clusterTemplate: ClusterTemplate): string | undefined =>
   getLabelValue(clusterTemplate, TEMPLATE_LABELS.infra);
+
+export const isHelmAppSpec = (appSpec: ApplicationSpec) => !!appSpec.source.chart;
+
+export const getClusterDefinitionHelmChart = (clusterTemplate: ClusterTemplate) =>
+  clusterTemplate.spec.clusterDefinition.applicationSpec.source.chart;
+
+export const isHelmClusterDefinition = (clusterTemplate: ClusterTemplate) =>
+  isHelmAppSpec(clusterTemplate.spec.clusterDefinition.applicationSpec);

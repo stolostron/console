@@ -20,12 +20,11 @@ import {
   getClusterTemplateDescription,
   getClusterTemplateInfraType,
   getClusterTemplateLocation,
-} from '../clusterTemplateLabelUtils';
+} from '../clusterTemplateDataUtils';
 import { clusterTemplateGVK } from '../constants';
 import {
   ClusterTemplateCost,
-  ClusterTemplateHelmChartLink,
-  ClusterTemplatePipelineLink,
+  ClusterTemplateHelmResourceLink,
   ClusterTemplateUsage,
   ClusterTemplateVendorLabel,
 } from './clusterTemplateComponents';
@@ -86,15 +85,15 @@ const DetailsSections: React.FC<{ clusterTemplate: ClusterTemplate }> = ({ clust
     },
     {
       label: t('HELM chart repository'),
-      value: <ClusterTemplateHelmChartLink clusterTemplate={clusterTemplate} />,
+      value: <ClusterTemplateHelmResourceLink clusterTemplate={clusterTemplate} />,
     },
     {
       label: t('HELM chart name'),
-      value: clusterTemplate.spec.helmChartRef.name,
+      value: clusterTemplate.spec.clusterDefinition.applicationSpec.source.chart,
     },
     {
       label: t('HELM chart version'),
-      value: clusterTemplate.spec.helmChartRef.version,
+      value: clusterTemplate.spec.clusterDefinition.applicationSpec.source.targetRevision,
     },
     {
       label: t('Infrastructure type'),
@@ -117,10 +116,6 @@ const DetailsSections: React.FC<{ clusterTemplate: ClusterTemplate }> = ({ clust
   ];
 
   const rightItems: ListItem[] = [
-    {
-      label: t('Pipeline'),
-      value: <ClusterTemplatePipelineLink clusterTemplate={clusterTemplate} />,
-    },
     {
       label: t('Description'),
       value: getClusterTemplateDescription(clusterTemplate),

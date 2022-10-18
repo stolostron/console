@@ -15,64 +15,133 @@
     }
   },
   "spec": {
-    "clusterSetup": {
-      "pipeline": {
-        "name": "argocd-pipeline",
-        "namespace": "cluster-pipelines"
-      }
-    },
-    "cost": 10,
-    "helmChartRef": {
-      "name": "hypershift-template",
-      "repository": "cluster-templates-repo",
-      "version": "0.1.0"
-    },
-    "properties": [
-      {
-        "description": "base64 encoded pull secret",
-        "name": "pullSecret",
-        "overwritable": true,
-        "secretRef": {
-          "name": "myps",
-          "namespace": "myns"
+    "clusterDefinition": {
+      "applicationSpec": {
+        "destination": {
+          "namespace": "instance_ns",
+          "server": "https://kubernetes.default.svc"
         },
-        "type": "string"
+        "project": "default",
+        "source": {
+          "chart": "hypershift-template",
+          "helm": {
+            "parameters": [
+              {
+                "name": "baseDnsDomain",
+                "value": "sampletemplateinstance.com"
+              }
+            ]
+          },
+          "repoURL": "https://repoUrl",
+          "targetRevision": "0.0.2"
+        },
+        "syncPolicy": {
+          "automated": {}
+        }
+      },
+      "propertyDetails": [
+        {
+          "defaultValue": "sampletemplateinstance.com",
+          "description": "Base DNS domain of the cluster",
+          "name": "prop1",
+          "overwritable": true,
+          "type": "string"
+        },
+        {
+          "defaultValue": "LoadBalancer",
+          "description": "API Publishing strategy - can be LoadBalancer or NodePort",
+          "name": "APIPublishingStrategy",
+          "overwritable": true
+        },
+        {
+          "defaultValue": "4.11.9-multi",
+          "description": "OCP version to be used",
+          "name": "ocpVersion",
+          "overwritable": true
+        },
+        {
+          "defaultValue": "x86_64",
+          "description": "OCP arch to be used",
+          "name": "ocpArch",
+          "overwritable": true
+        },
+        {
+          "description": "SSH public key to be injected into all cluster node sshd servers",
+          "name": "sshPublicKey",
+          "overwritable": true,
+          "secretRef": {
+            "name": "secert",
+            "namespace": "default"
+          }
+        },
+        {
+          "description": "Base64 encoded pull secret to be injected into the container runtime of all cluster nodes",
+          "name": "pullSecret",
+          "overwritable": false,
+          "secretRef": {
+            "name": "secert",
+            "namespace": "default"
+          }
+        }
+      ]
+    },
+    "clusterSetup": [
+      {
+        "applicationSpec": {
+          "destination": {
+            "namespace": "default",
+            "server": "server"
+          },
+          "project": "default",
+          "source": {
+            "chart": "chart",
+            "repoURL": "demo",
+            "targetRevision": "0.0.4"
+          },
+          "syncPolicy": {
+            "automated": {}
+          }
+        },
+        "propertyDetails": [
+          {
+            "description": "clusterSetupSecretProp1",
+            "name": "clusterSetupSecretProp1",
+            "overwritable": true,
+            "secretRef": {
+              "name": "secert",
+              "namespace": "default"
+            }
+          }
+        ],
+        "name": "setup1"
       },
       {
-        "defaultValue": "rw.com",
-        "description": "base dns domain",
-        "name": "baseDnsDomain",
-        "overwritable": true,
-        "type": "string"
-      },
-      {
-        "defaultValue": "ssh-rsa vvv",
-        "description": "ssh public key",
-        "name": "sshPublicKey",
-        "overwritable": true,
-        "type": "string"
-      },
-      {
-        "clusterSetup": true,
-        "description": "app do deploy",
-        "name": "argocdapp",
-        "overwritable": true,
-        "type": "string"
-      },
-      {
-        "clusterSetup": true,
-        "description": "dev user email for notifications",
-        "name": "email",
-        "overwritable": true,
-        "type": "string"
-      },
-      {
-        "defaultValue": 0,
-        "description": "number of woker nodes",
-        "name": "replicas",
-        "overwritable": true,
-        "type": "float"
+        "applicationSpec": {
+          "destination": {
+            "namespace": "default",
+            "server": "server"
+          },
+          "project": "default",
+          "source": {
+            "chart": "chart",
+            "repoURL": "demo",
+            "targetRevision": "0.0.4"
+          },
+          "syncPolicy": {
+            "automated": {}
+          }
+        },
+        "propertyDetails": [
+          {
+            "description": "prop for testing duplicated property name",
+            "name": "prop1",
+            "overwritable": true,
+            "type": "string"
+          }
+        ],
+        "name": "setup2"
       }
-    ]
+    ],
+    "cost": 1
   }
 }

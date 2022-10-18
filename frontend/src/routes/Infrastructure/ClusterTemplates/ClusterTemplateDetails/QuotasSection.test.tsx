@@ -9,6 +9,7 @@ import importedQuotas from '../mocks/quotas.json';
 import clusterTemplate from '../mocks/clusterTemplateExample.json';
 import roleBindings from '../mocks/roleBindings.json';
 import { ClusterTemplateQuota } from '../types';
+const useK8sWatchResourceMock = useK8sWatchResource as jest.Mock;
 
 const quotas = importedQuotas as ClusterTemplateQuota[];
 const quotasInTemplate = quotas.filter((quota) =>
@@ -19,8 +20,9 @@ const quotasInTemplate = quotas.filter((quota) =>
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const MockComponent = require('../mocks/MockComponent').default;
   return {
-    ResourceLink: jest.fn().mockImplementation(({ name }) => <div id="resource-name">{name}</div>),
+    ResourceLink: MockComponent,
     useK8sWatchResource: jest.fn(),
   };
 });
@@ -31,19 +33,19 @@ const renderQuotasSection = async () => {
 
 describe('Cluster template details page quotas section', () => {
   it('should show loading state while loading', async () => {
-    useK8sWatchResource.mockReturnValue([[], false, null]);
+    useK8sWatchResourceMock.mockReturnValue([[], false, null]);
     const { getByTestId } = await renderQuotasSection();
     expect(getByTestId('table-skeleton')).toBeInTheDocument();
   });
 
   it('should show error when load quotas returns an error', async () => {
-    useK8sWatchResource.mockReturnValue([undefined, true, new Error('test error')]);
+    useK8sWatchResourceMock.mockReturnValue([undefined, true, new Error('test error')]);
     const { getByTestId } = await renderQuotasSection();
     expect(getByTestId('error')).toBeInTheDocument();
   });
 
   it('should show quotas in table and no users and groups when no cluster template role binding was found', async () => {
-    useK8sWatchResource.mockImplementation(
+    useK8sWatchResourceMock.mockImplementation(
       ({ groupVersionKind }: { groupVersionKind: K8sGroupVersionKind }) => {
         if (groupVersionKind.kind === clusterTemplateQuotaGVK.kind) {
           return [quotas, true, null];
@@ -60,12 +62,12 @@ describe('Cluster template details page quotas section', () => {
     for (let i = 0; i < quotasInTemplate.length; ++i) {
       const quota = quotas[i];
       const rowSelector = `[data-index='${i}'][id=quotas-table-row]`;
-      expect(container.querySelector(`${rowSelector} [id=name]`)).toHaveTextContent(
-        quota.metadata?.name || '',
-      );
-      expect(container.querySelector(`${rowSelector} [id=namespace]`)).toHaveTextContent(
-        quota.metadata?.namespace || '',
-      );
+      expect(
+        container.querySelector(`${rowSelector} [id=quota-${quota.metadata?.name}]`),
+      ).toBeInTheDocument();
+      expect(
+        container.querySelector(`${rowSelector} [id=namespace-${quota.metadata?.namespace}]`),
+      ).toBeInTheDocument();
       expect(container.querySelector(`${rowSelector} [id=user-management]`)).toHaveTextContent(
         `0 user, 0 group`,
       );
@@ -75,7 +77,7 @@ describe('Cluster template details page quotas section', () => {
     }
   });
   it('should show data in user management for first quota when has cluster template RoleBinding for that namespace', async () => {
-    useK8sWatchResource.mockImplementation(
+    useK8sWatchResourceMock.mockImplementation(
       ({
         groupVersionKind,
         namespace,

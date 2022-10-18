@@ -7,6 +7,8 @@ import ClusterTemplateDetailsPage from './ClusterTemplateDetailsPage';
 import { useClusterTemplate } from '../hooks/useClusterTemplates';
 import exampleTemplate from '../mocks/clusterTemplateExample.json';
 
+const useClusterTemplateMock = useClusterTemplate as jest.Mock;
+
 jest.mock('../hooks/useClusterTemplates');
 jest.mock('../hooks/useQuotas', () => {
   return {
@@ -16,13 +18,6 @@ jest.mock('../hooks/useQuotas', () => {
 jest.mock('../hooks/useClusterTemplateInstances', () => {
   return {
     useClusterTemplateInstances: () => [[], true, null],
-  };
-});
-
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return {
-    ResourceLink: jest.fn().mockImplementation(({ name }) => <div>{name}</div>),
   };
 });
 
@@ -45,25 +40,27 @@ const renderTemplatesPage = () => {
 
 describe('Cluster template details page', () => {
   it('should show loading state while loading', async () => {
-    useClusterTemplate.mockReturnValue([undefined, false, null]);
+    useClusterTemplateMock.mockReturnValue([undefined, false, null]);
     const { getByText } = renderTemplatesPage();
     expect(getByText('Loading')).toBeInTheDocument();
   });
 
   it('should show error when useClusterTemplate failed', async () => {
-    useClusterTemplate.mockReturnValue([undefined, false, new Error('test error')]);
+    useClusterTemplateMock.mockReturnValue([undefined, false, new Error('test error')]);
     const { getByTestId } = renderTemplatesPage();
     expect(getByTestId('error')).toBeInTheDocument();
   });
 
   it('should show the four sections when template is loaded', async () => {
-    useClusterTemplate.mockReturnValue([exampleTemplate, true, null]);
+    useClusterTemplateMock.mockReturnValue([exampleTemplate, true, null]);
     const { container, getByTestId } = renderTemplatesPage();
     const details = {
       ['Template name']: exampleTemplate.metadata?.name,
-      ['HELM chart name']: exampleTemplate.spec.helmChartRef.name,
-      ['HELM chart repository']: exampleTemplate.spec.helmChartRef.repository,
-      ['HELM chart version']: exampleTemplate.spec.helmChartRef.version,
+      ['HELM chart name']: exampleTemplate.spec.clusterDefinition.applicationSpec.source.chart,
+      ['HELM chart repository']:
+        exampleTemplate.spec.clusterDefinition.applicationSpec.source.repoURL,
+      ['HELM chart version']:
+        exampleTemplate.spec.clusterDefinition.applicationSpec.source.targetRevision,
       ['Description']:
         exampleTemplate.metadata?.annotations['clustertemplates.openshift.io/description'],
       ['Infrastructure type']:
@@ -72,7 +69,6 @@ describe('Cluster template details page', () => {
       ['Vendor']: 'Custom template',
       ['Cost estimation']: `${exampleTemplate.spec.cost} / Per use`,
       ['Template uses']: '0 cluster',
-      ['Pipeline']: 'argocd-pipeline',
     };
     for (const [key, value] of Object.entries(details)) {
       expect(container.querySelector(`[id='${key} label']`)).toHaveTextContent(key);

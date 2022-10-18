@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sGroupVersionKind, K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
 
 export enum ClusterTemplateVendor {
   CUSTOM = 'Custom',
@@ -20,29 +20,34 @@ export type ClusterTemplateProperty = {
   description: string;
   name: string;
   overwritable: boolean;
-  type: string;
-  defaultValue?: unknown;
+  type?: string;
+  defaultValue?: string;
   secretRef?: {
     name: string;
     namespace: string;
   };
 };
 
+export type ApplicationSpec = {
+  source: {
+    repoURL: string;
+    chart?: string;
+    targetRevision?: string;
+  };
+};
+
 export type ClusterTemplate = K8sResourceCommon & {
   spec: {
     cost: number;
-    helmChartRef: {
-      name: string;
-      version: string;
-      repository: string;
+    clusterDefinition: {
+      applicationSpec: ApplicationSpec;
+      propertyDetails?: ClusterTemplateProperty[];
     };
     clusterSetup?: {
-      pipeline?: {
-        name: string;
-        namespace: string;
-      };
-    };
-    properties: ClusterTemplateProperty[];
+      applicationSpec: ApplicationSpec;
+      name: string;
+      propertyDetails?: ClusterTemplateProperty[];
+    }[];
   };
 };
 
@@ -58,25 +63,30 @@ export enum ConditionStatus {
 }
 
 export enum ClusterTemplateInstanceStatusPhase {
-  Pending = 'Pending',
+  PendingPhase = 'PendingPhase',
+  PendingMessage = 'PendingMessage',
   HelmChartInstallFailed = 'HelmChartInstallFailed',
   ClusterInstalling = 'ClusterInstalling',
   ClusterInstallFailed = 'ClusterInstallFailed',
-  SetupPipelineCreating = 'SetupPipelineCreating',
-  SetupPipelineCreateFailed = 'SetupPipelineCreateFailed',
-  SetupPipelineRunning = 'SetupPipelineRunning',
-  SetupPipelineFailed = 'SetupPipelineFailed',
+  ClusterSetupCreating = 'ClusterSetupCreating',
+  ClusterSetupCreateFailed = 'ClusterSetupCreateFailed',
+  ClusterSetupRunning = 'ClusterSetupRunning',
+  ClusterSetupFailed = 'ClusterSetupFailed',
   Ready = 'Ready',
   CredentialsFailed = 'CredentialsFailed',
   Failed = 'Failed',
 }
 
+export type ClusterTemplateInstancePropertyValue = {
+  clusterSetup?: string;
+  name: string;
+  value: string;
+};
+
 export type ClusterTemplateInstance = K8sResourceCommon & {
   spec: {
     clusterTemplateRef: string;
-    values: {
-      [key: string]: any;
-    };
+    values?: ClusterTemplateInstancePropertyValue[];
   };
   status?: {
     phase?: ClusterTemplateInstanceStatusPhase;

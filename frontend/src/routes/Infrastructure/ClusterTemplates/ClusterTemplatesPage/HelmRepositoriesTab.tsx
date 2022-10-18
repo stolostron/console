@@ -97,7 +97,7 @@ export const HelmRepoRow = ({
   const [templates, templatesLoaded, templatesLoadError] = clusterTemplatesResult;
 
   const templatesFromRepo = templates.filter(
-    (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
+    (t) => t.spec.clusterDefinition.applicationSpec.source.repoURL === obj.metadata?.name,
   );
   const repoChartsCount = repoIndex
     ? getRepoCharts(repoIndex, obj.metadata?.name ?? '').length ?? '-'
