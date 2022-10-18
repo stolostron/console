@@ -11,18 +11,16 @@ import {
     PatternFlyColor,
 } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const clusterTypeTooltips = 'Required operator: Red Hat Advanced Cluster Management or multicluster engine'
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
-    const location = useLocation<CancelBackState>()
-    const history = useHistory()
+    const { nextStep, back, cancel } = useBackCancelNavigation()
     const { customResourceDefinitionsState } = useSharedAtoms()
     const [crds] = useRecoilState(customResourceDefinitionsState)
 
@@ -58,11 +56,10 @@ export function CreateControlPlane() {
                     },
                 ],
                 onClick: isHypershiftEnabled
-                    ? () =>
-                          history.push({
-                              pathname: NavigationPath.createCluster,
-                              search: '?infrastructureType=CIMHypershift',
-                          })
+                    ? nextStep({
+                          pathname: NavigationPath.createCluster,
+                          search: '?infrastructureType=CIMHypershift',
+                      })
                     : undefined,
                 alertTitle: isHypershiftEnabled
                     ? undefined
@@ -111,13 +108,13 @@ export function CreateControlPlane() {
                         ],
                     },
                 ],
-                onClick: () => history.push(NavigationPath.createDiscoverHost),
+                onClick: nextStep(NavigationPath.createDiscoverHost),
                 badge: t('Classic'),
                 badgeColor: CatalogColor.purple,
             },
         ]
         return newCards
-    }, [history, t, isHypershiftEnabled])
+    }, [nextStep, t, isHypershiftEnabled])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -141,8 +138,8 @@ export function CreateControlPlane() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
-                onBack={() => history.push(NavigationPath.createCluster)}
-                onCancel={() => cancelNavigation(location, history, NavigationPath.clusters)}
+                onBack={back(NavigationPath.createCluster)}
+                onCancel={cancel(NavigationPath.clusters)}
             />
         </Fragment>
     )

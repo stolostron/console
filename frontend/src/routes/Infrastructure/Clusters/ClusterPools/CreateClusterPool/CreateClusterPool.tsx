@@ -7,7 +7,7 @@ import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -113,8 +113,8 @@ export default function CreateClusterPool(props: { infrastructureType: CreateClu
 function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolInfrastructureType }) {
     const { infrastructureType } = props
     const history = useHistory()
-    const location = useLocation<CancelBackState>()
-    const { search } = location
+    const { search } = useLocation()
+    const { back, cancel } = useBackCancelNavigation()
     const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
@@ -172,14 +172,8 @@ function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolI
         setIsModalOpen(!isModalOpen)
     }
 
-    function backButtonOverrideFunc() {
-        history.goBack()
-    }
-
-    // cancel button
-    const cancelCreate = () => {
-        cancelNavigation(location, history, NavigationPath.clusterPools)
-    }
+    const backButtonOverride = back(NavigationPath.createClusterPool)
+    const cancelCreate = cancel(NavigationPath.clusterPools)
 
     // setup translation
     const { t } = useTranslation()
@@ -301,7 +295,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolI
                     pauseCreate: () => {},
                     creationStatus: creationStatus?.status,
                     creationMsg: creationStatus?.messages,
-                    backButtonOverride: backButtonOverrideFunc,
+                    backButtonOverride,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}

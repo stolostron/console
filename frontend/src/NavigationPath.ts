@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { History, Location } from 'history'
+import { LocationDescriptor } from 'history'
+import { useMemo } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 
 export enum NavigationPath {
     // Console
@@ -104,20 +106,71 @@ export enum NavigationPath {
     emptyPath = '',
 }
 
-export type CancelBackState = { cancelBack?: boolean }
-
-export function locationWithCancelBack(
-    pathname: History.Pathname,
-    search?: History.Search,
-    hash?: History.Hash
-): Location<CancelBackState> {
-    return { pathname, search: search || '', hash: hash || '', state: { cancelBack: true } }
+export type BackCancelState = {
+    /** Number of entries Back button can navigate back in history */
+    maxBackSteps?: number
+    /** Number of entries Cancel button should navigate back in history to get to starting point */
+    cancelSteps?: number
 }
 
-export function cancelNavigation(location: Location<CancelBackState>, history: History, pathname: string) {
-    if (location.state && location.state?.cancelBack) {
-        history.goBack()
-    } else {
-        history.push(pathname)
-    }
+export function createBackCancelLocation(
+    location: LocationDescriptor<BackCancelState>
+): LocationDescriptor<BackCancelState> {
+    const newState: BackCancelState = { maxBackSteps: 1, cancelSteps: 1 }
+    return typeof location === 'string'
+        ? { pathname: location, state: newState }
+        : {
+              ...location,
+              state: {
+                  ...(location?.state ? location.state : {}),
+                  ...newState,
+              },
+          }
+}
+
+export function useBackCancelNavigation(): {
+    nextStep: (location: LocationDescriptor<BackCancelState>) => () => void
+    back: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
+    cancel: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
+} {
+    const history = useHistory<BackCancelState>()
+    const { state } = useLocation<BackCancelState>()
+
+    return useMemo(
+        () => ({
+            nextStep: (newLocation) => () => {
+                const newState: BackCancelState = {
+                    maxBackSteps: state?.maxBackSteps ? state.maxBackSteps + 1 : 1, // when starting at an intermediate step, back can navigate to this point
+                    cancelSteps: state?.cancelSteps ? state.cancelSteps + 1 : 0, // when starting at an intermediate step, cancel should go to default
+                }
+                history.push(
+                    typeof newLocation === 'string'
+                        ? { pathname: newLocation, state: newState }
+                        : {
+                              ...newLocation,
+                              state: {
+                                  ...(state ? state : {}),
+                                  ...(newLocation.state ? newLocation.state : {}),
+                                  ...newState,
+                              },
+                          }
+                )
+            },
+            back: (defaultLocation) => () => {
+                if (state?.maxBackSteps) {
+                    history.goBack()
+                } else {
+                    history.push(defaultLocation)
+                }
+            },
+            cancel: (defaultLocation) => () => {
+                if (state?.cancelSteps) {
+                    history.go(-state.cancelSteps)
+                } else {
+                    history.push(defaultLocation)
+                }
+            },
+        }),
+        [history, state]
+    )
 }

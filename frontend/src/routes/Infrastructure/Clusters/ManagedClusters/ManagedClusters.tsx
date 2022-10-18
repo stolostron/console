@@ -25,7 +25,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
     addonPathKey,
     addonTextKey,
@@ -89,7 +89,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
-                                    click: () => history.push(locationWithCancelBack(NavigationPath.createCluster)),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.createCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
@@ -97,7 +97,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'importCluster',
                                     title: t('managed.importCluster'),
-                                    click: () => history.push(locationWithCancelBack(NavigationPath.importCluster)),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.importCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.secondary,

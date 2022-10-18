@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 import { DOC_LINKS, viewDocumentation } from '../../../../../lib/doc-util'
 
@@ -33,7 +33,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={locationWithCancelBack(NavigationPath.createCluster)}
+                                to={createBackCancelLocation(NavigationPath.createCluster)}
                             >
                                 {t('managed.createCluster')}
                             </AcmButton>
@@ -44,7 +44,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                                 isDisabled={!canCreateCluster}
                                 tooltip={t('rbac.unauthorized')}
                                 variant={props.buttonType ?? 'primary'}
-                                to={locationWithCancelBack(NavigationPath.importCluster)}
+                                to={createBackCancelLocation(NavigationPath.importCluster)}
                             >
                                 {t('managed.importCluster')}
                             </AcmButton>
@@ -58,10 +58,10 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
         const onSelect = (id: string) => {
             switch (id) {
                 case 'create-cluster':
-                    history.push(locationWithCancelBack(NavigationPath.createCluster))
+                    history.push(createBackCancelLocation(NavigationPath.createCluster))
                     break
                 case 'import-cluster':
-                    history.push(locationWithCancelBack(NavigationPath.importCluster))
+                    history.push(createBackCancelLocation(NavigationPath.importCluster))
                     break
             }
         }

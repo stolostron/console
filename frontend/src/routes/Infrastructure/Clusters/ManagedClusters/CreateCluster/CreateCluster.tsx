@@ -10,13 +10,13 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useHistory } from 'react-router-dom'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
     ClusterCurator,
     createClusterCurator,
@@ -93,6 +93,7 @@ export const isCreateClusterInfrastructureType = (
 export default function CreateCluster(props: { infrastructureType: CreateClusterInfrastructureType }) {
     const { infrastructureType } = props
     const history = useHistory()
+    const { back, cancel } = useBackCancelNavigation()
     const { agentClusterInstallsState, infraEnvironmentsState, managedClustersState, secretsState, settingsState } =
         useSharedAtoms()
     const {
@@ -265,7 +266,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                     setCreationStatus({ status, messages: finishMessage })
                     if (!noRedirect) {
                         setTimeout(() => {
-                            history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                            history.push(generatePath(NavigationPath.clusterDetails, { id: clusterName as string }))
                         }, 2000)
                     }
                 }
@@ -276,9 +277,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
     }
 
     // cancel button
-    const cancelCreate = () => {
-        history.push(NavigationPath.clusters)
-    }
+    const cancelCreate = cancel(NavigationPath.clusters)
 
     //compile templates
     let template = Handlebars.compile(hiveTemplate)
@@ -387,9 +386,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
         { text: t('Infrastructure'), to: NavigationPath.createCluster },
     ]
 
-    function backButtonOverrideFunc() {
-        history.goBack()
-    }
+    const backButtonOverride = back(NavigationPath.clusters)
 
     const handleModalToggle = () => {
         setIsModalOpen(!isModalOpen)
@@ -524,7 +521,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                                         resetStatus: () => {
                                             setCreationStatus(undefined)
                                         },
-                                        backButtonOverride: backButtonOverrideFunc,
+                                        backButtonOverride,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
                                     i18n={i18n}
