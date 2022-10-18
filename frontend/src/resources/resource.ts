@@ -2,7 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
-import { globalCustomResourceDefinitions } from '../atoms'
+import { globalCustomResourceDefinitions, apiResourceNameList } from '../atoms'
 import { getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
@@ -26,9 +26,11 @@ export interface ResourceList<Resource extends IResource> {
 export async function getApiResourceList() {
     return getApiPaths().promise
 }
+export function getPluralResourceName(resourceDefinition: IResourceDefinition) {
+    return apiResourceNameList[resourceDefinition.kind].pluralName
+}
 
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    // const resource = apiResourceList.resources[resourceDefinition.kind]
     const crd = globalCustomResourceDefinitions.find(
         (crd) =>
             crd.spec.group === getResourceGroup(resourceDefinition) &&

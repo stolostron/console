@@ -4,10 +4,6 @@ import { getBackendUrl, getRequest } from '../resources'
 
 const versionUrl = '/apiPaths'
 
-export interface APIResourceList {
-    resources: APIResourceNames
-}
-
 export interface APIResourceNames {
     [key: string]: {
         group: string
@@ -18,5 +14,5 @@ export interface APIResourceNames {
 
 export function getApiPaths() {
     const url = getBackendUrl() + versionUrl
-    return getRequest<APIResourceList>(url)
+    return getRequest<APIResourceNames>(url)
 }
