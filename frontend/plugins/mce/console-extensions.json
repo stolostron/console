@@ -4,7 +4,7 @@
         "properties": {
             "id": "mce-data-context",
             "context": { "$codeRef": "context.PluginDataContext" },
-            "provider": { "$codeRef": "context.PluginDataContextProvider" },
+            "provider": { "$codeRef": "contextProvider.PluginDataContextProvider" },
             "useValueHook": { "$codeRef": "context.usePluginDataContextValue" }
         }
     },
