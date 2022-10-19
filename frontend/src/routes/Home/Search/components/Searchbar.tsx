@@ -18,8 +18,8 @@ import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSavedSearchLimit } from '../../../../atoms'
 import { SavedSearch } from '../../../../resources/userpreference'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -80,6 +80,7 @@ export function Searchbar(props: SearchbarProps) {
     const [menuItems, setMenuItems] = useState<React.ReactElement[]>([])
     const [currentQuery, setCurrentQuery] = useState(queryString)
     const [searchbarTags, setSearchbarTags] = useState<SearchbarTag[]>(convertStringToTags(currentQuery))
+    const { useSavedSearchLimit } = useSharedAtoms()
     const savedSearchLimit = useSavedSearchLimit()
 
     /** refs used to detect when clicks occur inside vs outside of the textInputGroup and menu popper */

@@ -4,7 +4,6 @@
 import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
-import { RecoilRoot } from 'recoil'
 import 'regenerator-runtime/runtime'
 import App from './App'
 import '@patternfly/patternfly/patternfly-charts-theme-dark.css'
@@ -12,9 +11,7 @@ import '@patternfly/patternfly/patternfly-charts-theme-dark.css'
 ReactDOM.render(
     <StrictMode>
         <Suspense fallback={<Fragment />}>
-            <RecoilRoot>
-                <App />
-            </RecoilRoot>
+            <App />
         </Suspense>
     </StrictMode>,
     document.getElementById('root')

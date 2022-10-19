@@ -17,15 +17,7 @@ import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-comp
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    applicationsState,
-    channelsState,
-    namespacesState,
-    placementRulesState,
-    placementsState,
-    subscriptionsState,
-} from '../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -51,6 +43,15 @@ import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
+    const {
+        applicationsState,
+        channelsState,
+        namespacesState,
+        placementsState,
+        placementRulesState,
+        subscriptionsState,
+    } = useSharedAtoms()
+
     const [applications] = useRecoilState(applicationsState)
     const [channels] = useRecoilState(channelsState)
     const [placementrules] = useRecoilState(placementRulesState)

@@ -3,8 +3,6 @@
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useCallback, useContext, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { policyreportState } from '../../../../../atoms'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
@@ -13,6 +11,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { IRequestResult } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
@@ -23,6 +22,7 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 }
 
 export function StatusSummaryCount() {
+    const { policyreportState } = useSharedAtoms()
     const [policyReports] = useRecoilState(policyreportState)
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)

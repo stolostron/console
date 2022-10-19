@@ -5,8 +5,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
-import { useRecoilState } from 'recoil'
-import { policiesState } from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
 
@@ -22,6 +21,7 @@ export function PolicyDetailsHistory(props: {
     templateName: string
 }) {
     const { t } = useTranslation()
+    const { policiesState } = useSharedAtoms()
     const { policyName, policyNamespace, clusterName, templateName } = props
     const [policies] = useRecoilState(policiesState)
 

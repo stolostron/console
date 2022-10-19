@@ -1,17 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RecoilRoot } from 'recoil'
-import { PluginData } from '../../../components/PluginData'
+import { LoadPluginData } from '../../../components/LoadPluginData'
 import { PluginContextProvider } from '../../../components/PluginContextProvider'
 import Search from './Search'
 
 export default function SearchPlugin() {
     return (
         <PluginContextProvider>
-            <RecoilRoot>
-                <PluginData>
-                    <Search />
-                </PluginData>
-            </RecoilRoot>
+            <LoadPluginData>
+                <Search />
+            </LoadPluginData>
         </PluginContextProvider>
     )
 }

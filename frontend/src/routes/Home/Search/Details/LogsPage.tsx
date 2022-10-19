@@ -6,9 +6,8 @@ import { Button, Checkbox, PageSection, SelectOption } from '@patternfly/react-c
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer, LogViewerSearch } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
-import { useRecoilState } from 'recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import screenfull from 'screenfull'
-import { managedClustersState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_BASE_PATH } from '../../../../lib/doc-util'
 import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources'
@@ -236,10 +235,12 @@ export default function LogsPage(props: {
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
+
     const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(false)
     const [wrapLines, setWrapLines] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
-    const [managedClusters] = useRecoilState(managedClustersState)
+    const { managedClustersState } = useSharedAtoms()
+    const managedClusters = useRecoilValue(managedClustersState)
 
     useEffect(() => {
         if (containers.length > 0 && sessionStorage.getItem(`${name}-${cluster}-container`) === null) {

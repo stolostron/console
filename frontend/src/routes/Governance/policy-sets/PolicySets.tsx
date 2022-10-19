@@ -11,8 +11,7 @@ import {
 import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { namespacesState, policySetsState } from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
@@ -59,6 +58,7 @@ export default function PolicySetsPage() {
     const { t } = useTranslation()
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
+    const { namespacesState, policySetsState } = useSharedAtoms()
     const [policySets] = useRecoilState(policySetsState)
     const [namespaces] = useRecoilState(namespacesState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({

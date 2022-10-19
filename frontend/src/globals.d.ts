@@ -2,7 +2,6 @@
 
 export declare global {
     interface Window {
-        acmConsolePluginProxyPath: string
         getEditorValue: any
         //
         propShot: (props: any, max?: number) => void

@@ -18,6 +18,7 @@ require('react')
 process.env.NODE_ENV = 'test'
 process.env.JEST_DEFAULT_HOST = 'http://localhost'
 process.env.REACT_APP_BACKEND_PATH = ''
+process.env.MODE = 'plugin'
 if (!process.env.DEBUG_PRINT_LIMIT) {
     process.env.DEBUG_PRINT_LIMIT = '0'
 }
@@ -32,6 +33,31 @@ global.fetch = jest.fn((input, reqInit) => {
             : input
     return fetchMock(newInput, reqInit)
 })
+global.EventSource = class EventSource {
+    static CONNECTING = 0
+    static OPEN = 1
+    static CLOSED = 2
+
+    constructor(url: string | URL, eventSourceInitDict?: EventSourceInit | undefined) {
+        this.url = url.toString()
+        this.withCredentials = !!eventSourceInitDict?.withCredentials
+    }
+    CONNECTING = 0
+    OPEN = 1
+    CLOSED = 2
+
+    url: string
+    readyState = 0
+    withCredentials = false
+
+    addEventListener = () => {}
+    close = () => {}
+    dispatchEvent = () => false
+    onerror = () => {}
+    onmessage = () => {}
+    onopen = () => {}
+    removeEventListener = () => {}
+}
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)

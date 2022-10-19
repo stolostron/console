@@ -2,21 +2,22 @@
 
 import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
-import { useRecoilValue, waitForAll } from 'recoil'
-import {
-    certificateSigningRequestsState,
-    clusterClaimsState,
-    clusterCuratorsState,
-    clusterDeploymentsState,
-    managedClusterAddonsState,
-    managedClusterInfosState,
-    managedClustersState,
-    agentClusterInstallsState,
-    hostedClustersState,
-    nodePoolsState,
-} from '../../../../../atoms'
+import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
 
 export function useAllClusters() {
+    const { waitForAll } = useSharedRecoil()
+    const {
+        managedClustersState,
+        clusterDeploymentsState,
+        managedClusterInfosState,
+        certificateSigningRequestsState,
+        managedClusterAddonsState,
+        clusterClaimsState,
+        clusterCuratorsState,
+        agentClusterInstallsState,
+        hostedClustersState,
+        nodePoolsState,
+    } = useSharedAtoms()
     const [
         managedClusters,
         clusterDeployments,

@@ -4,8 +4,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Badge, Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { policySetsState } from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
 
@@ -29,6 +28,7 @@ export default function CardViewToolbarFilter(props: {
     setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
 }) {
     const { setViolationFilters, preSelectedFilters } = props
+    const { policySetsState } = useSharedAtoms()
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
     const [policySets] = useRecoilState(policySetsState)

@@ -9,9 +9,6 @@ import { AcmLabelsInput, AcmSelect } from '../../../../../../../../ui-components
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { NavigationPath } from '../../../../../../../../NavigationPath'
-import { clusterDeploymentsState, clusterImageSetsState, configMapsState } from '../../../../../../../../atoms'
 import {
     useCanJoinClusterSets,
     useMustJoinClusterSet,
@@ -20,6 +17,8 @@ import { useClusterImages } from '../utils'
 import { Secret } from '../../../../../../../../resources'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion } from './utils'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { NavigationPath } from '../../../../../../../../NavigationPath'
 
 const { HostedClusterDetailsStep, labelsToArray, LoadingState, getSupportedCM } = CIM
 
@@ -53,6 +52,8 @@ const fields: any = {
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const { setClusterName, setReleaseImage } = useContext(HypershiftAgentContext)
+    const { waitForAll } = useSharedRecoil()
+    const { clusterDeploymentsState, clusterImageSetsState, configMapsState } = useSharedAtoms()
     const [clusterDeployments, clusterImageSets, configMaps] = useRecoilValue(
         waitForAll([clusterDeploymentsState, clusterImageSetsState, configMapsState])
     )
