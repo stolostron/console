@@ -10,7 +10,6 @@ import { HelmChartRepository, HelmRepoIndex, HelmRepoIndexChartEntry } from '../
 import HelmRepositoriesTab, { HelmRepoRow } from './HelmRepositoriesTab';
 import * as useHelmRepositoryIndex from '../hooks/useHelmRepositoryIndex';
 import userEvent from '@testing-library/user-event';
-import { HCRModelMock } from '../mocks/models';
 
 const helmRepositoryMock1 = {
   kind: 'HelmChartRepository',
@@ -75,6 +74,8 @@ const helmRepositoryIndexMock: HelmRepoIndex = {
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const MockComponent = require('../mocks/MockComponent').default;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const HCRModelMock = require('../mocks/MockComponent').HCRModelMock;
   return {
     ResourceLink: MockComponent,
     useK8sModel: jest.fn().mockReturnValue([HCRModelMock]),

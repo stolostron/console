@@ -95,10 +95,6 @@ const configMapMock: ConfigMap = {
   },
 };
 
-jest.mock('@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s', () => ({
-  k8sBasePath: 'https://k8s-base-path/',
-}));
-
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   useK8sModels: jest.fn(),
   useK8sWatchResources: jest.fn(),
@@ -286,7 +282,9 @@ describe('Submitting EditHelmRepositoryDialog', () => {
     await typeByTestId('form-input-caCertificate-field', 'one');
     await typeByTestId('form-input-tlsClientCert-field', 'two');
     await typeByTestId('form-input-tlsClientKey-field', 'three');
-    userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    const submitButton = screen.getByRole('button', { name: 'Submit' });
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    userEvent.click(submitButton);
     await waitFor(() => expect(k8sPatch).toHaveBeenCalled());
     await waitFor(() => expect(k8sCreate).toHaveBeenCalledTimes(2));
   });

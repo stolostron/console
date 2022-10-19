@@ -25,7 +25,6 @@ import {
   useK8sModels,
   useK8sWatchResources,
 } from '@openshift-console/dynamic-plugin-sdk';
-import { getReference } from '@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s-ref';
 import { configMapGVK, helmRepoGVK, secretGVK } from './constants';
 import TableLoader from './helpers/TableLoader';
 import { InputField, CheckboxField, TextAreaField } from 'formik-pf';
@@ -129,7 +128,8 @@ const EditHelmRepositoryDialog = ({
   closeDialog,
 }: EditHelmRepositoryDialogProps) => {
   const { t } = useTranslation();
-  const helmChartRepositoryReference = getReference(helmRepoGVK);
+  const helmChartRepositoryReference = `${helmRepoGVK.group}~${helmRepoGVK.version}~${helmRepoGVK.kind}`;
+
   const [
     {
       ConfigMap: configMapModel,
@@ -352,7 +352,7 @@ const EditHelmRepositoryDialog = ({
                     <InputField
                       fieldId="url"
                       name="url"
-                      label={t('HELM chart repositoriy URL')}
+                      label={t('HELM chart repository URL')}
                       type={TextInputTypes.text}
                       placeholder="Repository URL"
                       isRequired
