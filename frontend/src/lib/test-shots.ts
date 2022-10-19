@@ -98,14 +98,9 @@ if (process.env.NODE_ENV !== 'production') {
         const className = stack[1].getFunctionName().split('.')[0]
         const fileName = path.parse(stack[1].getFileName()).name
         const snippets = []
-        snippets.push(`import React from 'react'`)
         snippets.push(`import ${className} from './${fileName}'`)
-        snippets.push(`import { render, fireEvent, waitFor, screen } from '@testing-library/react'`)
-        snippets.push(`import userEvent from '@testing-library/user-event'\n\n`)
         snippets.push(...snaps)
         snippets.push('\n\n')
-        snippets.push(`describe('${className} component', () => {`)
-        snippets.push(`   it('happy path', async () => {`)
         snippets.push(`       render(<${className} {...props} />)`)
         snippets.push(...expects)
         snippets.push(`\n\n\n    })`)
@@ -134,8 +129,6 @@ if (process.env.NODE_ENV !== 'production') {
         const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
         const { snapshot } = getSnapshot(recoil, max || 10)
         const snippets = []
-        snippets.push(`import React from 'react'`)
-        snippets.push(`import { RecoilRoot } from 'recoil'`)
         snippets.push(`import ${className} from './${fileName}'`)
         snippets.push(`import {${stateName}} from '../../atoms'\n\n`)
         snippets.push(`const ${dataName} = ${snapshot}\n\n`)
