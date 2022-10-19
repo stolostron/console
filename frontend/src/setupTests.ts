@@ -91,6 +91,24 @@ expect.extend({
             pass,
         }
     },
+    hasNoPendingNocks() {
+        const msgs: string[] = []
+        const pendingNocks = window.pendingNocks.filter(({ scope }) => !scope.isDone())
+        const pass: boolean = pendingNocks.length === 0
+        if (!pass) {
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! UNUSED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
+            pendingNocks.forEach(({ nock, source }) => {
+                msgs.push(`Unused "${nock}" ${source.trim()}`)
+            })
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        }
+
+        const message: () => string = () => msgs.join('\n')
+        return {
+            message,
+            pass,
+        }
+    },
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -116,10 +134,12 @@ function setupBeforeEach(): void {
     consoleErrors = []
     consoleWarnings = []
     nock.emitter.on('no match', logNoMatch)
+    window.pendingNocks = []
 }
 
 async function setupAfterEach(): Promise<void> {
     expect(missingNocks).hasNoMissingNocks()
+    expect(missingNocks).hasNoPendingNocks()
     // expect(consoleErrors).toEqual([])
     // expect(consoleWarnings).toEqual([])
 }

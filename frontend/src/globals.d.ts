@@ -16,5 +16,6 @@ export declare global {
         }
         originalFetch: any
         capturedFetches: any[]
+        pendingNocks: any[]
     }
 }

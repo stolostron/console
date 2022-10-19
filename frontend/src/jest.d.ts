@@ -6,5 +6,6 @@ declare namespace jest {
         hasMissingMocks(): R
         hasUnusedMocks(): R
         hasNoMissingNocks(): R
+        hasNoPendingNocks(): R
     }
 }
