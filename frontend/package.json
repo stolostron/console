@@ -14,7 +14,7 @@
         "check": "npm run tsc",
         "clean": "rm -rf coverage build",
         "test": "npm run jest",
-        "jest": "jest",
+        "jest": "jest --maxWorkers=50%",
         "jest:update-snapshot": "jest --updateSnapshot --testPathPattern=src/components/TemplateEditor",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
         "lint:fix": "npm run lint -- --fix",
