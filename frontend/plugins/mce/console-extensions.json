@@ -165,5 +165,18 @@
             },
             "component": { "$codeRef": "createTemplate.default" }
         }
+    },
+    {
+        "type": "console.page/resource/details",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": {
+                "$codeRef": "templateDetails.default"
+            }
+        }
     }
 ]

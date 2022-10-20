@@ -11,9 +11,9 @@ import ClusterTemplatesTab from './ClusterTemplatesTab';
 import HelmRepositoriesTab from './HelmRepositoriesTab';
 import { useClusterTemplatesCount } from '../hooks/useClusterTemplates';
 import { useHelmRepositoriesCount } from '../hooks/useHelmRepositories';
-import { getNavLabelWithCount } from '../utils';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { clusterTemplateGVK } from '../constants';
+import { getNavLabelWithCount } from '../utils';
 
 const clusterTemplateReference = `${clusterTemplateGVK.group}~${clusterTemplateGVK.version}~${clusterTemplateGVK.kind}`;
 

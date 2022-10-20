@@ -5,7 +5,6 @@ import { Button, Wizard, WizardContext, WizardFooter } from '@patternfly/react-c
 import { Formik, useFormikContext } from 'formik';
 import { clusterTemplateGVK } from '../constants';
 import { ClusterTemplate } from '../types';
-import AddPipelinesStep from './Steps/AddPipelinesStep/AddPipelinesStep';
 import ManageAccessStep from './Steps/ManageAccessStep/ManageAccessStep';
 import ReviewStep from './Steps/ReviewStep/ReviewStep';
 import TemplateDetailsStep from './Steps/TemplateDetailsStep/TemplateDetailsStep';
@@ -45,7 +44,6 @@ const CreateClusterTemplateWizard = () => {
   const steps = [
     { name: 'Template details', component: <TemplateDetailsStep /> },
     { name: 'Manage access', component: <ManageAccessStep /> },
-    { name: 'Add pipelines (optional)', component: <AddPipelinesStep /> },
     { name: 'Review', component: <ReviewStep /> },
   ];
   const title = 'Create cluster template';
@@ -73,15 +71,12 @@ const CreateClusterTemplateWizard = () => {
             },
             spec: {
               cost: values.cost,
-              helmChartRef: {
-                name: values.helmChart,
-                repository: values.helmRepo,
-                version: '0.1.0',
-              },
-              clusterSetup: {
-                pipeline: {
-                  name: values.pipelines[0],
-                  namespace: values.pipelines[0],
+              clusterDefinition: {
+                applicationSpec: {
+                  source: {
+                    repoURL: values.helmRepo,
+                    chart: values.helmChart,
+                  },
                 },
               },
             },
