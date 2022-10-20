@@ -11,7 +11,7 @@
         "tsc": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "check": "npm run tsc",
-        "test": "npm run jest",
+        "test": "npm run jest --",
         "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
         "lint": "eslint src test --ext .ts --max-warnings=0",
         "lint:fix": "eslint src test --ext .ts --fix",
