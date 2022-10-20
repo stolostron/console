@@ -1,5 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run copyright:fix
-cd frontend && npm run i18n && ! (git diff --name-only | grep locales)
+npx lint-staged

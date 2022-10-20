@@ -20,12 +20,13 @@
         "lint": "concurrently --kill-others-on-fail \"npm:lint:*(!fix)\" -c green,blue",
         "lint:backend": "cd backend && npm run lint",
         "lint:frontend": "cd frontend && npm run lint",
-        "lint:fix": "concurrently -P --kill-others-on-fail \"npm:lint:fix:* {@}\" -c green,blue --",
+        "lint:fix": "concurrently -P --kill-others-on-fail npm:lint:fix:* -c green,blue",
         "lint:fix:backend": "cd backend && npm run lint:fix",
         "lint:fix:frontend": "cd frontend && npm run lint:fix",
         "test": "concurrently --kill-others-on-fail npm:test:* -c green,blue",
         "test:backend": "cd backend && npm test",
         "test:frontend": "cd frontend && npm test",
+        "i18n:frontend": "cd frontend && npm run i18n --",
         "build": "concurrently npm:build:* -c green,blue,magenta",
         "build:backend": "cd backend && npm run build",
         "build:frontend": "cd frontend && npm run build",
@@ -54,6 +55,7 @@
         "@types/node": "14.18.22",
         "concurrently": "7.2.2",
         "husky": "7.0.4",
+        "lint-staged": "^13.0.3",
         "prettier": "2.7.1",
         "ts-node": "10.9.1",
         "typescript": "4.7.4"
@@ -63,5 +65,14 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "lint-staged": {
+        "*": "npm run copyright:fix --",
+        "backend/**/*.ts": "npm run lint:fix:backend --",
+        "frontend/**/*.{js,jsx,ts,tsx}": [
+            "npm run lint:fix:frontend --",
+            "npm run i18n:frontend --",
+            "git diff --exit-code frontend/public/locales/en/translation.json"
+        ]
     }
 }

@@ -17,7 +17,7 @@
         "jest": "jest",
         "jest:update-snapshot": "jest --updateSnapshot --testPathPattern=src/components/TemplateEditor",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
-        "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+        "lint:fix": "npm run lint -- --fix",
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
         "i18n": "i18next",
