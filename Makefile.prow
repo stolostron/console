@@ -4,7 +4,7 @@
 
 .PHONY: install
 install:
-	bash -c "npm ci --no-optional || npm ci --no-optional"
+	npm ci --no-optional
 	npm run postinstall
 
 .PHONY: build
@@ -13,11 +13,11 @@ build:
 
 .PHONY: check
 check:
-	echo skip
+	npm run check
 
 .PHONY: lint
 lint:
-	echo skip
+	npm run lint
 
 .PHONY: unit-tests
 unit-tests:

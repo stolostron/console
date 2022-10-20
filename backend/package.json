@@ -10,10 +10,11 @@
         "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
         "tsc": "tsc --noEmit",
         "clean": "rm -rf coverage build",
-        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc -c green,blue,cyan,magenta",
+        "check": "npm run tsc",
+        "test": "npm run jest",
         "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
-        "eslint": "eslint src test --ext .ts --max-warnings=0",
-        "eslint:fix": "eslint src test --ext .ts --fix",
+        "lint": "eslint src test --ext .ts --max-warnings=0",
+        "lint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src test",
         "prettier:fix": "prettier --write src test",
         "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
@@ -47,6 +48,8 @@
         "@typescript-eslint/parser": "5.30.6",
         "concurrently": "7.2.2",
         "eslint": "8.20.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.2.1",
         "jest": "27.x.x",
         "jest-sonar-reporter": "^2.0.0",
         "nock": "13.2.8",
@@ -124,9 +127,14 @@
             "eslint:recommended",
             "plugin:@typescript-eslint/eslint-recommended",
             "plugin:@typescript-eslint/recommended",
-            "plugin:@typescript-eslint/recommended-requiring-type-checking"
+            "plugin:@typescript-eslint/recommended-requiring-type-checking",
+            "prettier"
+        ],
+        "plugins": [
+            "prettier"
         ],
         "rules": {
+            "prettier/prettier": "error",
             "@typescript-eslint/no-non-null-assertion": "off",
             "@typescript-eslint/no-use-before-define": "off",
             "@typescript-eslint/no-unused-vars": "off",
