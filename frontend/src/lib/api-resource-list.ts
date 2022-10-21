@@ -5,11 +5,11 @@ import { getBackendUrl, getRequest } from '../resources'
 const versionUrl = '/apiPaths'
 
 export interface APIResourceNames {
-    [key: string]: {
-        group: string
-        pluralName: string
-        singularName: string
-    }
+    [kind: string]: APIResourceMeta
+}
+
+export interface APIResourceMeta {
+    [kind: string]: { pluralName: string; singularName: string }
 }
 
 export function getApiPaths() {

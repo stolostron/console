@@ -2,8 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
-import { apiResourceNameList } from '../atoms'
-import { getApiPaths } from '../lib/api-resource-list'
+import { APIResourceNames, getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
@@ -26,19 +25,39 @@ export interface ResourceList<Resource extends IResource> {
 export async function getApiResourceList() {
     return getApiPaths().promise
 }
-export function getPluralResourceName(resourceDefinition: IResourceDefinition) {
-    return apiResourceNameList[resourceDefinition.kind].pluralName
-}
 
-export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    if (resourceDefinition.kind.endsWith('s')) {
-        return resourceDefinition.kind.toLowerCase()
+/*
+Todo: 
+    1. use getResourcePlural to execute getApiResoruceList
+    2. check to see if cache is empty, and if loading is false
+    3. load, look for resource
+    4. if resource is not found and loaded bool is false, reload and force update 
+    5. if resource is not found and loaded bool is true, exit.
+
+    TODO: restore fallback code for getResourcePlural (which adds plural endings)
+    */
+
+let apiResourceList: APIResourceNames = {}
+
+export async function getResourcePlural(resourceDefinition: IResourceDefinition) {
+    const plural = apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
+
+    if (plural) {
+        return plural || ''
     }
-
-    return resourceDefinition.kind?.toLowerCase().endsWith('y')
-        ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
-        : resourceDefinition.kind?.toLowerCase() + 's'
+    apiResourceList = await getApiResourceList()
+    return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
 }
+
+// export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+//     if (resourceDefinition.kind.endsWith('s')) {
+//         return resourceDefinition.kind.toLowerCase()
+//     }
+
+//     return resourceDefinition.kind?.toLowerCase().endsWith('y')
+//         ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
+//         : resourceDefinition.kind?.toLowerCase() + 's'
+// }
 
 export function getApiVersionResourceGroup(apiVersion: string) {
     if (apiVersion.includes('/')) {
@@ -64,12 +83,12 @@ export function getResourceNamespace(resource: Partial<IResource>) {
     return resource.metadata?.namespace
 }
 
-export function getResourceApiPath(options: {
+export async function getResourceApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { namespace?: string }
-}): string {
+}) {
     const { apiVersion } = options
 
     let path: string
@@ -86,20 +105,22 @@ export function getResourceApiPath(options: {
 
     if (options.plural) {
         path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
     } else if (options.kind) {
-        path = join(path, getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind }))
+        const pluralName = await getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
     }
 
     return path.replace(/\\/g, '/')
 }
 
-export function getResourceNameApiPath(options: {
+export async function getResourceNameApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { name?: string; namespace?: string }
-}): string {
-    let path = getResourceApiPath(options)
+}) {
+    let path = await getResourceApiPath(options)
 
     const name = options.metadata?.name
     if (name) {

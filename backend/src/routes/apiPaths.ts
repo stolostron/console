@@ -25,12 +25,13 @@ interface APIResourceMetadata {
     verbs: string[]
 }
 
-interface APIResourceNames {
-    [key: string]: {
-        group: string
-        pluralName: string
-        singularName: string
-    }
+export interface APIResourceNames {
+    [kind: string]: APIResourceMeta
+}
+
+export interface APIResourceMeta {
+    pluralName: string
+    singularName: string
 }
 
 export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -78,24 +79,36 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
 }
 
 function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
-    // TODO: handle sub-resources
-    const resourceNames: APIResourceNames = {}
+    // TODO: handle sub-resources?
+    let resourceNames: Record<string, APIResourceNames> = {}
     apiResourcePathResponse.forEach((resourceList) => {
-        const group = resourceList.groupVersion
+        const resourceKindMap: { [key: string]: APIResourceMeta } = {}
+        const groupVersion = resourceList.groupVersion
         resourceList.resources.forEach((resource) => {
-            const singularName = resource['singularName']
-            const pluralName = resource['name']
-            const kind = resource['kind']
-            resourceNames[kind] = {
-                group,
-                pluralName,
-                singularName,
+            if (resource['name'].split('/').length === 1) {
+                const pluralName = resource['name']
+                const singularName = resource['singularName']
+                const kind = resource['kind']
+
+                const apiMetadata: APIResourceMeta = {
+                    pluralName,
+                    singularName,
+                }
+                resourceKindMap[kind] = apiMetadata
             }
         })
+        resourceNames[groupVersion] = resourceKindMap
     })
-
     return resourceNames
     /*
+    resourceNames - {
+        groupVersion: {
+            kind: {
+                pluralName, 
+                singularName
+            }
+        }
+    }
     What's in use in the frontend:
         - group name
         - kind
@@ -104,10 +117,12 @@ function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
     */
     /* 
     Format we return:
-        Kind: {
-        groupVersion,
-        name, 
-        singularName,
+        groupVersion: {  
+            Kind: {
+                groupVersion,
+                name, 
+                singularName,
+                }
         }
         Example: 
         "OperatorPKI": {

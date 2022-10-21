@@ -60,8 +60,6 @@ import {
     SubscriptionReport,
     UserPreference,
 } from './resources'
-import { tokenExpired } from './logout'
-import { APIResourceNames } from './lib/api-resource-list'
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -127,10 +125,6 @@ export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
-
-export let apiResourceNameList = atom<APIResourceNames>({ key: 'apiResourceNameList', default: {} })
-
-export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
