@@ -6,10 +6,9 @@ import {
   SelectVariant,
   SelectOption,
   SelectProps,
-  SelectOptionObject,
+  FormGroupProps,
 } from '@patternfly/react-core';
 import { useField } from 'formik';
-import { FormGroupProps } from '@patternfly/react-core';
 
 // https://github.com/patternfly-labs/formik-pf/blob/main/src/components/types.ts
 export type FieldProps = {
@@ -28,7 +27,6 @@ type SelectFieldProps = FieldProps & {
   placeholderText?: React.ReactNode;
   isCreatable?: boolean;
   hasOnCreateOption?: boolean;
-  onChange?: (value: string | SelectOptionObject) => void;
 };
 
 // https://github.com/patternfly-labs/formik-pf/blob/main/src/components/utils.ts
@@ -39,7 +37,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
   name,
   label,
   options,
-  onChange,
   placeholderText,
   helperText,
   isRequired,
@@ -56,14 +53,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
   const onSelect: SelectProps['onSelect'] = (_, value) => {
     setValue(value as string);
-    onChange && onChange(value);
     setTouched(true);
     setIsOpen(false);
   };
 
   const onClearSelection = () => {
     setValue('');
-    onChange && onChange('');
     setTouched(true);
   };
 

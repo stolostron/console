@@ -15,7 +15,7 @@ import {
 import * as Yup from 'yup';
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next';
-import { Formik } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import { useTranslation } from '../../../lib/acm-i18next';
 import { ConfigMap, HelmChartRepository, Secret } from './types';
 import {
@@ -44,6 +44,11 @@ export type EditHelmRepoCredsValues = {
 type EditHelmRepositoryDialogProps = {
   helmChartRepository: HelmChartRepository;
   closeDialog: () => void;
+};
+
+type FormError = {
+  title: string;
+  message: string;
 };
 
 const SECRET_TYPE = 'kubernetes.io/tls';
@@ -137,9 +142,7 @@ const EditHelmRepositoryDialog = ({
       [helmChartRepositoryReference]: helmChartRepoModel,
     },
   ] = useK8sModels();
-  const [formError, setFormError] = React.useState<
-    { title: string; message: string } | undefined
-  >();
+  const [formError, setFormError] = React.useState<FormError | undefined>();
   const { ca, tlsClientConfig } = helmChartRepository.spec.connectionConfig;
   const {
     secrets: { data: secrets, loaded: secretsLoaded },
@@ -179,8 +182,8 @@ const EditHelmRepositoryDialog = ({
     const secretName =
       existingSecretName || getDefaultSecretName(helmChartRepository.metadata?.name);
 
-    const configMapToUpdate = configMaps.find((cm) => cm.metadata?.name === existingConfigMapName);
-    const secretToUpdate = secrets.find((s) => s.metadata?.name === existingSecretName);
+    const configMapToUpdate = configMaps.find((cm) => cm.metadata?.name === configMapName);
+    const secretToUpdate = secrets.find((s) => s.metadata?.name === secretName);
 
     setFormError(undefined);
 
@@ -314,129 +317,159 @@ const EditHelmRepositoryDialog = ({
           initialValues={getInitialValues(helmChartRepository, initialSecret, initialConfigMap)}
           onSubmit={handleSubmit}
           validationSchema={getValidationSchema(t)}
-        >
-          {({
-            handleSubmit,
-            values,
-            isSubmitting,
-            isValid,
-            errors,
-            setFieldValue,
-            setFieldTouched,
-          }) => {
-            const setTlsConfigValues = async (
-              value: EditHelmRepoCredsValues['existingSecretName'],
-            ) => {
-              const { tlsClientCert, tlsClientKey } = getDecodedSecretData(
-                availableTlsSecrets.find((secret) => secret.metadata?.name === value)?.data,
-              );
-              await setFieldValue('tlsClientCert', tlsClientCert || '', true);
-              await setFieldTouched('tlsClientCert', true);
-              await setFieldValue('tlsClientKey', tlsClientKey || '', true);
-              await setFieldTouched('tlsClientKey', true);
-            };
-            const setCaCertificateValue = async (
-              value: EditHelmRepoCredsValues['existingConfigMapName'],
-            ) => {
-              await setFieldValue(
-                'caCertificate',
-                configMaps.find((cm) => cm.metadata?.name === value)?.data?.['ca-bundle.crt'] || '',
-                true,
-              );
-              await setFieldTouched('caCertificate', true);
-            };
-            return (
-              <>
-                <ModalBoxBody>
-                  <Form id="edit-helm-repo-form" onSubmit={handleSubmit}>
-                    <InputField
-                      fieldId="url"
-                      name="url"
-                      label={t('HELM chart repository URL')}
-                      type={TextInputTypes.text}
-                      placeholder="Repository URL"
-                      isRequired
-                    />
-                    <CheckboxField
-                      fieldId="useCredentials"
-                      name="useCredentials"
-                      label={t('Requires authentication')}
-                      helperText={t(
-                        'Add credentials and custom certificate authority (CA) certificates to connect to private helm chart repository.',
-                      )}
-                    />
-                    {values.useCredentials && (
-                      <>
-                        <SelectField
-                          name="existingConfigMapName"
-                          fieldId="existingConfigMapName"
-                          label={t('CA certificate ConfigMap')}
-                          placeholder={t('Select a ConfigMap')}
-                          onChange={(value) => setCaCertificateValue(value.toString())}
-                          options={configMaps.map((cm) => ({
-                            value: cm.metadata?.name || '',
-                            disabled: false,
-                          }))}
-                        />
-                        <TextAreaField
-                          fieldId="caCertificate"
-                          name="caCertificate"
-                          label={t('CA certificate')}
-                          helperTextInvalid={errors.tlsClientKey}
-                          isRequired
-                        />
-                        <SelectField
-                          name="existingSecretName"
-                          fieldId="existingSecretName"
-                          label={t('TLS config Credential')}
-                          placeholder={t('Select a credential')}
-                          onChange={(value) => setTlsConfigValues(value.toString())}
-                          options={availableTlsSecrets.map((secret) => ({
-                            value: secret.metadata?.name || '',
-                            disabled: false,
-                          }))}
-                        />
-                        <TextAreaField
-                          fieldId="tlsClientCert"
-                          name="tlsClientCert"
-                          label={t('TLS client certificate')}
-                          helperTextInvalid={errors.tlsClientCert}
-                          isRequired
-                        />
-                        <TextAreaField
-                          fieldId="tlsClientKey"
-                          name="tlsClientKey"
-                          label={t('TLS client key')}
-                          helperTextInvalid={errors.tlsClientKey}
-                          isRequired
-                        />
-                      </>
-                    )}
-                    {formError && (
-                      <Alert variant={AlertVariant.danger} title={formError?.title} isInline>
-                        {formError?.message}
-                      </Alert>
-                    )}
-                  </Form>
-                </ModalBoxBody>
-                <ModalBoxFooter>
-                  <Button
-                    onClick={() => handleSubmit()}
-                    variant={ButtonVariant.primary}
-                    isDisabled={isSubmitting || !isValid}
-                  >
-                    {t('Submit')}
-                  </Button>
-                  <Button onClick={closeDialog} variant={ButtonVariant.link}>
-                    {t('Cancel')}
-                  </Button>
-                </ModalBoxFooter>
-              </>
-            );
-          }}
-        </Formik>
+          component={(props) => (
+            <FormikContent
+              {...props}
+              availableTlsSecrets={availableTlsSecrets}
+              configMaps={configMaps}
+              formError={formError}
+              closeDialog={closeDialog}
+            />
+          )}
+        />
       </TableLoader>
     </Modal>
+  );
+};
+
+type FormikContentProps = FormikProps<EditHelmRepoCredsValues> & {
+  availableTlsSecrets: Secret[];
+  configMaps: ConfigMap[];
+  closeDialog: EditHelmRepositoryDialogProps['closeDialog'];
+  formError?: FormError;
+};
+
+const FormikContent = ({
+  handleSubmit,
+  values,
+  isSubmitting,
+  isValid,
+  errors,
+  setFieldValue,
+  setFieldTouched,
+  availableTlsSecrets,
+  configMaps,
+  formError,
+  closeDialog,
+}: FormikContentProps) => {
+  const { t } = useTranslation();
+  const isInitialRenderRef = React.useRef(true);
+
+  React.useEffect(() => {
+    if (!isInitialRenderRef.current) setCaCertificateValue(values.existingConfigMapName);
+  }, [values.existingConfigMapName]);
+
+  React.useEffect(() => {
+    if (!isInitialRenderRef.current) setTlsConfigValues(values.existingSecretName);
+  }, [values.existingSecretName]);
+
+  React.useEffect(() => {
+    isInitialRenderRef.current = false;
+  }, []);
+
+  const setTlsConfigValues = async (value: EditHelmRepoCredsValues['existingSecretName']) => {
+    const { tlsClientCert, tlsClientKey } = getDecodedSecretData(
+      availableTlsSecrets.find((secret) => secret.metadata?.name === value)?.data,
+    );
+    await setFieldValue('tlsClientCert', tlsClientCert || '', true);
+    setFieldTouched('tlsClientCert', true, false);
+    await setFieldValue('tlsClientKey', tlsClientKey || '', true);
+    setFieldTouched('tlsClientKey', true, false);
+  };
+
+  const setCaCertificateValue = async (value: EditHelmRepoCredsValues['existingConfigMapName']) => {
+    await setFieldValue(
+      'caCertificate',
+      configMaps.find((cm) => cm.metadata?.name === value)?.data?.['ca-bundle.crt'] || '',
+      true,
+    );
+    setFieldTouched('caCertificate', true, false);
+  };
+  return (
+    <>
+      <ModalBoxBody>
+        <Form id="edit-helm-repo-form" onSubmit={handleSubmit}>
+          <InputField
+            fieldId="url"
+            name="url"
+            label={t('HELM chart repository URL')}
+            type={TextInputTypes.text}
+            placeholder="Repository URL"
+            isRequired
+          />
+          <CheckboxField
+            fieldId="useCredentials"
+            name="useCredentials"
+            label={t('Requires authentication')}
+            helperText={t(
+              'Add credentials and custom certificate authority (CA) certificates to connect to private helm chart repository.',
+            )}
+          />
+          {values.useCredentials && (
+            <>
+              <SelectField
+                name="existingConfigMapName"
+                fieldId="existingConfigMapName"
+                label={t('CA certificate ConfigMap')}
+                placeholder={t('Select a ConfigMap')}
+                options={configMaps.map((cm) => ({
+                  value: cm.metadata?.name || '',
+                  disabled: false,
+                }))}
+              />
+              <TextAreaField
+                fieldId="caCertificate"
+                name="caCertificate"
+                label={t('CA certificate')}
+                helperTextInvalid={errors.tlsClientKey}
+                isRequired
+              />
+              <SelectField
+                name="existingSecretName"
+                fieldId="existingSecretName"
+                label={t('TLS config Credential')}
+                placeholder={t('Select a credential')}
+                options={availableTlsSecrets.map((secret) => ({
+                  value: secret.metadata?.name || '',
+                  disabled: false,
+                }))}
+              />
+              <TextAreaField
+                fieldId="tlsClientCert"
+                name="tlsClientCert"
+                label={t('TLS client certificate')}
+                helperTextInvalid={errors.tlsClientCert}
+                isRequired
+              />
+              <TextAreaField
+                fieldId="tlsClientKey"
+                name="tlsClientKey"
+                label={t('TLS client key')}
+                helperTextInvalid={errors.tlsClientKey}
+                isRequired
+              />
+            </>
+          )}
+          {formError && (
+            <Alert variant={AlertVariant.danger} title={formError?.title} isInline>
+              {formError?.message}
+            </Alert>
+          )}
+        </Form>
+      </ModalBoxBody>
+      <ModalBoxFooter>
+        <Button
+          onClick={() => handleSubmit()}
+          variant={ButtonVariant.primary}
+          isDisabled={isSubmitting || !isValid}
+        >
+          {t('Submit')}
+        </Button>
+        <Button onClick={closeDialog} variant={ButtonVariant.link}>
+          {t('Cancel')}
+        </Button>
+      </ModalBoxFooter>
+    </>
   );
 };
 
