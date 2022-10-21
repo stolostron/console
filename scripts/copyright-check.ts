@@ -1,13 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import events from 'events'
 import { createReadStream } from 'fs'
-import { lstat, readdir } from 'fs/promises'
-import { join } from 'path'
 import readline from 'readline'
+import { executeCopyrightAction } from './copyright'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist']
-
-async function checkFile(path: string) {
+async function checkFile(path: string): Promise<boolean> {
     try {
         let found = false
         const rl = readline
@@ -22,28 +19,14 @@ async function checkFile(path: string) {
                 }
             })
         await events.once(rl, 'close')
-        if (found) process.exitCode = 0
-        else {
+        if (!found) {
             console.log('error:', path, 'needs Copyright')
-            process.exitCode = 1
         }
+        return found
     } catch (err) {
         console.error(err)
+        return false
     }
 }
 
-export async function checkCopyright(directory: string, extensions = ['.ts', '.tsx', '.js']): Promise<void> {
-    const names = await readdir(directory)
-    for (const name of names) {
-        if (ignoreDirectories.find((ignore) => name.includes(ignore))) continue
-        const path = join(directory, name)
-        const stats = await lstat(path)
-        if (stats.isDirectory()) {
-            void checkCopyright(path)
-        }
-        if (!extensions.find((ext) => name.endsWith(ext))) continue
-        checkFile(path)
-    }
-}
-
-void checkCopyright('.')
+executeCopyrightAction(checkFile)
