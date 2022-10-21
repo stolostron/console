@@ -86,7 +86,7 @@ export interface ProviderConnection {
     type: 'Opaque'
 }
 
-export function listProviderConnections() {
+export async function listProviderConnections() {
     const result = listResources<ProviderConnection>(
         {
             apiVersion: ProviderConnectionApiVersion,
@@ -95,10 +95,10 @@ export function listProviderConnections() {
         ['cluster.open-cluster-management.io/credentials=']
     )
     return {
-        promise: result.promise.then((providerConnections) => {
+        promise: (await result).promise.then((providerConnections) => {
             return providerConnections.map(unpackProviderConnection)
         }),
-        abort: result.abort,
+        abort: (await result).abort,
     }
 }
 

@@ -52,7 +52,9 @@ const getClusterDeploymentNameSelector = (name: string) => {
 export async function getProvisionPod(namespace: string, name: string) {
     const provisionJobSelector = 'hive.openshift.io/job-type=provision'
     const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), provisionJobSelector])
-    return await response.promise.then((result) => {
+    return await (
+        await response
+    ).promise.then((result) => {
         const latestProvisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
         return latestProvisionJob
     })
@@ -61,7 +63,9 @@ export async function getProvisionPod(namespace: string, name: string) {
 export async function getDeprovisionPod(namespace: string, name: string) {
     const deprovisionJobSelector = `job-name=${name}-uninstall`
     const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), deprovisionJobSelector])
-    return await response.promise.then((result) => {
+    return await (
+        await response
+    ).promise.then((result) => {
         const latestDeprovisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
         return latestDeprovisionJob
     })
@@ -69,7 +73,9 @@ export async function getDeprovisionPod(namespace: string, name: string) {
 
 export async function getLatestHivePod(namespace: string, name: string) {
     const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name)])
-    return await response.promise.then((result) => {
+    return await (
+        await response
+    ).promise.then((result) => {
         const latestJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
         return latestJob
     })

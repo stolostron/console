@@ -40,8 +40,10 @@ async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: s
     const channelSecret = { user: '', accessToken: '' }
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
         const { secretRef, namespace } = secretArgs
-        await getSecret({ name: secretRef, namespace: namespace })
-            .promise.then((response) => ({
+        await (
+            await getSecret({ name: secretRef, namespace: namespace })
+        ).promise
+            .then((response) => ({
                 user: window.atob(_.get(response, 'data.user', '')),
                 accessToken: window.atob(_.get(response, 'data.accessToken', '')),
             }))

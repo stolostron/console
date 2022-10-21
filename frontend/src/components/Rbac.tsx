@@ -49,7 +49,9 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                         if (action.rbac && action.rbac.length > 0) {
                             const results = await Promise.all(
                                 action.rbac.map(async (rbac) => {
-                                    return await createSubjectAccessReview(rbac).promise
+                                    return await (
+                                        await createSubjectAccessReview(rbac)
+                                    ).promise
                                 })
                             )
                             const isAriaDisabled = !results.every((result) => result?.status?.allowed)
@@ -107,7 +109,9 @@ export function RbacButton(props: RbacButtonProps) {
     useEffect(() => {
         Promise.all(
             rbac.map(async (rbac) => {
-                return await createSubjectAccessReview(rbac).promise
+                return await (
+                    await createSubjectAccessReview(rbac)
+                ).promise
             })
         ).then((results) => {
             const isDisabled = !results.every((result) => result?.status?.allowed)

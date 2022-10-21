@@ -301,7 +301,7 @@ describe('Create Subscription Application page', () => {
     })
 
     test('cancel create should redirect to the correct link', async () => {
-        const initialNocks = [nockList(mockProject, mockProjects)]
+        const initialNocks = [await nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
         render(<Component />)
         await waitForNocks(initialNocks)
@@ -314,7 +314,7 @@ describe('Create Subscription Application page', () => {
     })
 
     test('create a git subscription app', async () => {
-        const initialNocks = [nockList(mockProject, mockProjects)]
+        const initialNocks = [await nockList(mockProject, mockProjects)]
         window.scrollBy = () => {}
         render(<Component />)
         await waitForNocks(initialNocks)
@@ -324,7 +324,10 @@ describe('Create Subscription Application page', () => {
         await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
-        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        await waitForNocks([
+            await nockList(mockChannel1, mockHubChannels),
+            await nockList(mockPlacementRule, mockPlacementRules),
+        ])
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
         userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
@@ -410,11 +413,11 @@ describe('Create Subscription Application page', () => {
 
     test('edit a git subscription application', async () => {
         const initialNocks = [
-            nockList(mockProject, mockProjects),
-            nockGet(mockApplication0),
-            nockGet(mockChannel),
-            nockGet(mockSubscription),
-            nockGet(mockChannelNamespace),
+            await nockList(mockProject, mockProjects),
+            await nockGet(mockApplication0),
+            await nockGet(mockChannel),
+            await nockGet(mockSubscription),
+            await nockGet(mockChannelNamespace),
         ]
         render(
             <RecoilRoot
@@ -449,7 +452,10 @@ describe('Create Subscription Application page', () => {
 
         // click git card
         userEvent.click(screen.getByText(/channel\.type\.git/i))
-        await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+        await waitForNocks([
+            await nockList(mockChannel1, mockHubChannels),
+            await nockList(mockPlacementRule, mockPlacementRules),
+        ])
         const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
         userEvent.type(githubURL, gitLink)
 

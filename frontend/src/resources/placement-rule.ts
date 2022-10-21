@@ -39,7 +39,7 @@ export interface PlacementRuleStatus {
     }[]
 }
 
-export function listPlacementRules(namespace: string) {
+export async function listPlacementRules(namespace: string) {
     if (!namespace) {
         return {
             promise: Promise.resolve([]),
@@ -54,9 +54,9 @@ export function listPlacementRules(namespace: string) {
         },
     })
     return {
-        promise: result.promise.then((placementRules) => {
+        promise: (await result).promise.then((placementRules) => {
             return placementRules
         }),
-        abort: result.abort,
+        abort: (await result).abort,
     }
 }

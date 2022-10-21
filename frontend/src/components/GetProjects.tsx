@@ -19,8 +19,9 @@ export function GetProjects() {
     )
     useEffect(() => {
         getNamespaces()
-            .then((namespaces) => {
-                getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+            .then(async (namespaces) => {
+                const attributes = await rbacCreate(SecretDefinition)
+                getAuthorizedNamespaces([attributes], namespaces)
                     .then((namespaces: string[]) => setProjects(namespaces.sort()))
                     .catch(setError)
             })

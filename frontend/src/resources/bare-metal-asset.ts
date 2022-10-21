@@ -95,36 +95,40 @@ export function getBareMetalAsset(metadata: Metadata) {
     })
 }
 
-export function listBareMetalAssets() {
+export async function listBareMetalAssets() {
     const result = listResources<BareMetalAsset>({
         apiVersion: BareMetalAssetApiVersion,
         kind: BareMetalAssetKind,
     })
     return {
-        promise: result.promise.then((bareMetalAssets) => {
+        promise: (await result).promise.then((bareMetalAssets) => {
             return bareMetalAssets
         }),
-        abort: result.abort,
+        abort: (await result).abort,
     }
 }
 
 export function createBareMetalAssetNamespaces(assets: ImportedBareMetalAsset[]) {
     const namespaces = Object.keys(keyBy(assets, 'namespace'))
     const results = namespaces.map((namespace) => createProject(namespace))
-    return Promise.allSettled(results.map((result) => result.promise))
+    return Promise.allSettled(results.map(async (result) => (await result).promise))
 }
 
 export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestResult {
     return {
         promise: new Promise(async (resolve, reject) => {
             try {
-                await createBareMetalAssetSecret(asset).promise
+                await (
+                    await createBareMetalAssetSecret(asset)
+                ).promise
             } catch (err) {
                 reject(err)
                 return
             }
             try {
-                await createBareMetalAssetResource(asset).promise
+                await (
+                    await createBareMetalAssetResource(asset)
+                ).promise
                 resolve({})
             } catch (err) {
                 const { name, namespace } = asset

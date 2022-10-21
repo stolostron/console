@@ -48,7 +48,6 @@ import {
     DiscoveredClusterKind,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    getApiResourceList,
     getBackendUrl,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
@@ -114,7 +113,6 @@ import {
 import { tokenExpired } from '../logout'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
-    apiResourceNameList,
     agentClusterInstallsState,
     agentsState,
     ansibleJobState,
@@ -181,7 +179,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
     const setAgents = useSetRecoilState(agentsState)
     const setAnsibleJobs = useSetRecoilState(ansibleJobState)
-    const setApiResourceNameList = useSetRecoilState(apiResourceNameList)
     const setAppProjectsState = useSetRecoilState(appProjectsState)
     const setApplicationSetsState = useSetRecoilState(applicationSetsState)
     const setApplicationsState = useSetRecoilState(applicationsState)
@@ -486,11 +483,7 @@ export function LoadData(props: { children?: ReactNode }) {
             checkLoggedIn()
         }
     }, [])
-    useEffect(() => {
-        getApiResourceList().then((resourceList) => {
-            setApiResourceNameList(resourceList)
-        })
-    })
+
     const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
     return children

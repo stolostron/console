@@ -54,7 +54,7 @@ export function createSubjectAccessReview(resourceAttributes: ResourceAttributes
 export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {
     const results = resourceAttributes.map((resource) => createSubjectAccessReview(resource))
     return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
+        promise: Promise.allSettled(results.map(async (result) => (await result).promise)),
+        abort: () => results.forEach(async (result) => (await result).abort()),
     }
 }

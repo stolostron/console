@@ -24,15 +24,14 @@ export type ISearchRelatedResult = {
     }
 }
 
-export function nockGet<Resource extends IResource>(
+export async function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
     statusCode = 200,
     polling = true
 ) {
-    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceNameApiPath(resource)
-    )
+    const resourcePath = await getResourceNameApiPath(resource)
+    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourcePath)
     const finalNockScope = nockScope.reply(statusCode, response ?? resource, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -70,9 +69,14 @@ export function nockGetTextPlain(response: string, statusCode = 200, polling = t
     return finalNockScope
 }
 
-export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
+export async function nockOptions<Resource extends IResource>(
+    resource: Resource,
+    response?: IResource,
+    statusCode = 200
+) {
+    const resourcePath = await getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourcePath)
         .optionally()
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
@@ -81,15 +85,18 @@ export function nockOptions<Resource extends IResource>(resource: Resource, resp
         })
 }
 
-export function nockList<Resource extends IResource>(
+export async function nockList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     resources: Resource[] | IResource,
     labels?: string[],
     query?: object
 ) {
-    let nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind, metadata: resource.metadata })
-    )
+    const resourceApiPaths = await getResourceApiPath({
+        apiVersion: resource.apiVersion,
+        kind: resource.kind,
+        metadata: resource.metadata,
+    })
+    let nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPaths)
 
     if (labels) {
         nockScope = nockScope.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -116,16 +123,15 @@ export function nockList<Resource extends IResource>(
     }
 }
 
-export function nockClusterList<Resource extends IResource>(
+export async function nockClusterList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     resources: Resource[] | IResource,
     labels?: string[],
     polling = true
 ) {
+    const resourceApiPath = await getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
-    )
+    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -148,16 +154,15 @@ export function nockClusterList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockNamespacedList<Resource extends IResource>(
+export async function nockNamespacedList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata: { namespace?: string } },
     resources: Resource[] | IResource,
     labels?: string[],
     polling = true
 ) {
+    const resourceApiPath = await getResourceApiPath(resource)
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath(resource)
-    )
+    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -344,16 +349,17 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
         .reply(statusCode, response)
 }
 
-export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
+export async function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
+    const resourceApiPath = await getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourceApiPath)
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
+        .put(resourceApiPath, (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
@@ -361,16 +367,17 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
         })
 }
 
-export function nockDelete(resource: IResource, response?: IResource) {
+export async function nockDelete(resource: IResource, response?: IResource) {
+    const resourceApiPath = await getResourceNameApiPath(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourceApiPath)
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .delete(getResourceNameApiPath(resource))
+        .delete(resourceApiPath)
         .reply(response ? 200 : 204, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',

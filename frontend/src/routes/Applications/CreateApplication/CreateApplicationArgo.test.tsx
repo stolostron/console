@@ -279,7 +279,7 @@ describe('Create Argo Application Set', () => {
     }
 
     test('can create Argo Application Set with Git', async () => {
-        const initialNocks = [nockGet(gitSecret)]
+        const initialNocks = [await nockGet(gitSecret)]
         render(<AddApplicationSet />)
         await waitForNocks(initialNocks)
 

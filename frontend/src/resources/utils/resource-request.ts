@@ -163,18 +163,20 @@ export async function createResources(
     try {
         for (const resource of resources) {
             const requestResult = createResource(resource, options)
-            abortController?.signal.addEventListener('abort', requestResult.abort)
+            abortController?.signal.addEventListener('abort', (await requestResult).abort)
             try {
-                await requestResult.promise
+                await (
+                    await requestResult
+                ).promise
                 createdResources.push(resource)
             } finally {
-                abortController?.signal.removeEventListener('abort', requestResult.abort)
+                abortController?.signal.removeEventListener('abort', (await requestResult).abort)
             }
         }
     } catch (err) {
         if (options?.dryRun !== true && options?.deleteCreatedOnError) {
             for (const createdResource of createdResources) {
-                deleteResource(createdResource).promise.catch(noop)
+                ;(await deleteResource(createdResource)).promise.catch(noop)
             }
         }
         throw err
@@ -190,7 +192,7 @@ export async function updateResources(
 ): Promise<void> {
     const abortController = options?.abortController
     for (const resource of resources) {
-        const requestResult = replaceResource(resource, options)
+        const requestResult = await replaceResource(resource, options)
         abortController?.signal.addEventListener('abort', requestResult.abort)
         try {
             await requestResult.promise
@@ -210,11 +212,13 @@ export async function deleteResources(
     const abortController = options?.abortController
     for (const resource of resources) {
         const requestResult = deleteResource(resource, options)
-        abortController?.signal.addEventListener('abort', requestResult.abort)
+        abortController?.signal.addEventListener('abort', (await requestResult).abort)
         try {
-            await requestResult.promise
+            await (
+                await requestResult
+            ).promise
         } finally {
-            abortController?.signal.removeEventListener('abort', requestResult.abort)
+            abortController?.signal.removeEventListener('abort', (await requestResult).abort)
         }
     }
 }
@@ -224,7 +228,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
     let subscriptions: any[] = []
     for (const resource of resources) {
         try {
-            const existingResource = await getResource(resource).promise
+            const existingResource = await (await getResource(resource)).promise
             if (existingResource.kind === ApplicationKind) {
                 const existingSubscriptions = getSubscriptionsFromAnnotation(existingResource)
 
@@ -238,7 +242,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
             }
         } catch (err) {
             // if the resource does not exist, create the resource
-            await createResource(resource).promise
+            ;(await createResource(resource)).promise
         }
     }
     if (subscriptionResources.length < subscriptions.length) {
@@ -264,30 +268,30 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
     }
 }
 
-export function createResource<Resource extends IResource, ResultType = Resource>(
+export async function createResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
     options?: { dryRun?: boolean }
-): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
+): Promise<IRequestResult<ResultType>> {
+    let url = getBackendUrl() + (await getResourceApiPath(resource))
     if (options?.dryRun) url += '?dryRun=All'
     return postRequest<Resource, ResultType>(url, resource)
 }
 
-export function replaceResource<Resource extends IResource, ResultType = Resource>(
+export async function replaceResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
     options?: { dryRun?: boolean }
-): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
+): Promise<IRequestResult<ResultType>> {
+    let url = getBackendUrl() + (await getResourceApiPath(resource))
     if (options?.dryRun) url += '?dryRun=All'
     return putRequest<Resource, ResultType>(url, resource)
 }
 
-export function patchResource<Resource extends IResource, ResultType = Resource>(
+export async function patchResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
     data: unknown,
     options?: { dryRun?: boolean }
-): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
+): Promise<IRequestResult<ResultType>> {
+    let url = getBackendUrl() + (await getResourceNameApiPath(resource))
     if (options?.dryRun) url += '?dryRun=All'
     const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
@@ -298,29 +302,29 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     return patchRequest<unknown, ResultType>(url, data, headers)
 }
 
-export function deleteResource<Resource extends IResource>(
+export async function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: { dryRun?: boolean }
-): IRequestResult {
+): Promise<IRequestResult> {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + (await getResourceNameApiPath(resource))
     if (options?.dryRun) url += '?dryRun=All'
     return deleteRequest(url)
 }
 
-export function getResource<Resource extends IResource>(
+export async function getResource<Resource extends IResource>(
     resource: Resource,
     options?: {
         labelSelector?: Record<string, string>
         fieldSelector?: Record<string, unknown>
     }
-): IRequestResult<Resource> {
+): Promise<IRequestResult<Resource>> {
     if (getResourceName(resource) === undefined) {
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     }
 
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + (await getResourceNameApiPath(resource))
 
     let queryString = undefined
 
@@ -349,12 +353,12 @@ export function getResource<Resource extends IResource>(
     return getRequest<Resource>(url)
 }
 
-export function listResources<Resource extends IResource>(
+export async function listResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
-): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
+): Promise<IRequestResult<Resource[]>> {
+    let url = getBackendUrl() + (await getResourceApiPath(resource))
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
         if (query)
@@ -386,11 +390,11 @@ export function listResources<Resource extends IResource>(
     }
 }
 
-export function listClusterResources<Resource extends IResource>(
+export async function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     labels?: string[]
-): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
+): Promise<IRequestResult<Resource[]>> {
+    let url = getBackendUrl() + (await getResourceApiPath(resource))
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
     return {
@@ -399,15 +403,15 @@ export function listClusterResources<Resource extends IResource>(
     }
 }
 
-export function listNamespacedResources<Resource extends IResource>(
+export async function listNamespacedResources<Resource extends IResource>(
     resource: {
         apiVersion: string
         kind: string
         metadata: { namespace: string }
     },
     labels?: string[]
-): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
+): Promise<IRequestResult<Resource[]>> {
+    let url = getBackendUrl() + (await getResourceApiPath(resource))
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
     return {
