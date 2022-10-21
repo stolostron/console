@@ -4,7 +4,6 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { useTranslation } from '../../../../lib/acm-i18next';
 
 export type ErrorStateProps = {
-  error: unknown;
   errorId?: string;
   errorTitle?: string;
   errorMessage?: string;

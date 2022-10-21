@@ -21,7 +21,7 @@ import { useClusterTemplate } from '../hooks/useClusterTemplates';
 import ClusterTemplateDetailsSections from './ClusterTemplateDetailsSections';
 
 export const getResourceListPageUrl = (resourceGVK: K8sGroupVersionKind) =>
-  `/k8s/cluster/${resourceGVK.group}~${resourceGVK.version}~${resourceGVK.kind}/~tabs`;
+  `/k8s/cluster/${resourceGVK.group}~${resourceGVK.version}~${resourceGVK.kind}`;
 
 const PageBreadcrumb: React.FC<{ clusterTemplateName: string }> = ({ clusterTemplateName }) => {
   const { t } = useTranslation();
@@ -64,7 +64,7 @@ const ClusterTemplateDetailsPage: React.FC<{ match: { params: { name: string } }
   const { name } = match.params;
   const [clusterTemplate, loaded, loadError] = useClusterTemplate(name);
   if (loadError) {
-    return <ErrorState error={loadError}></ErrorState>;
+    return <ErrorState />;
   }
   if (!loaded) {
     return <LoadingPage />;
