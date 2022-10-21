@@ -10,7 +10,7 @@ export type HelmChartRepository = K8sResourceCommon & {
   spec: {
     connectionConfig: {
       url: string;
-      tlsConfig?: { name: string };
+      tlsClientConfig?: { name: string };
       ca?: { name: string };
     };
   };
@@ -131,6 +131,16 @@ export type ClusterTemplateQuota = K8sResourceCommon & {
     }[];
   };
 };
+
+export type Secret = K8sResourceCommon & {
+  data?: { [key: string]: string };
+  stringData?: { [key: string]: string };
+  type?: string;
+};
+
+export type ConfigMap = {
+  data?: { [key: string]: string };
+} & K8sResourceCommon;
 
 export type TableColumn = {
   title: string;
