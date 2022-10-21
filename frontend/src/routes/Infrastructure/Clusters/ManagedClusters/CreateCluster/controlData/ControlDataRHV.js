@@ -27,7 +27,9 @@ export const getControlDataRHV = (handleModalToggle, includeAutomation = true, i
     const controlData = [...controlDataRHV]
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     insertToggleModalFunction(handleModalToggle, controlData)
-    if (includeAutomation) return [...controlData, ...automationControlData]
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
     return controlData
 }
 

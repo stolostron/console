@@ -123,7 +123,9 @@ export const getControlDataAWS = (
     includeSno = false
 ) => {
     const controlData = [...controlDataAWS]
-    if (includeSno) addSnoText(controlData)
+    if (includeSno) {
+        addSnoText(controlData)
+    }
     if (includeAwsPrivate) {
         controlData.push(...awsPrivateControlData)
         const regionObject = controlData.find((object) => object.id === 'region')

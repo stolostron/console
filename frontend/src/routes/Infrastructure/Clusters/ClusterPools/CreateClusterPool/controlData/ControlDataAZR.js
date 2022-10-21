@@ -440,8 +440,12 @@ const ApplicationCreationPage = [
 
 export const getControlDataAZR = (handleModalToggle, includeAutomation = true, includeSno = false) => {
     const controlData = [...controlDataAZR]
-    if (includeSno) addSnoText(controlData)
-    if (includeAutomation) return [...controlData, ...automationControlData]
+    if (includeSno) {
+        addSnoText(controlData)
+    }
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
     if (handleModalToggle) {
         insertToggleModalFunction(handleModalToggle, controlData)
     }

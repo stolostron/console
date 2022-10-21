@@ -260,10 +260,14 @@ export const getControlDataGCP = (
     includeKlusterletAddonConfig = true
 ) => {
     const controlData = [...controlDataGCP]
-    if (includeSno) addSnoText(controlData)
+    if (includeSno) {
+        addSnoText(controlData)
+    }
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     insertToggleModalFunction(handleModalToggle, controlData)
-    if (includeAutomation) return [...controlData, ...automationControlData]
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
     return controlData
 }
 

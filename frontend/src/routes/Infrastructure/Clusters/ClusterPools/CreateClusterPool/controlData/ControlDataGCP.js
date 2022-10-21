@@ -254,8 +254,12 @@ const GCPworkerInstanceTypes = [
 
 export const getControlDataGCP = (handleModalToggle, includeAutomation = true, includeSno = false) => {
     const controlData = [...controlDataGCP]
-    if (includeSno) addSnoText(controlData)
-    if (includeAutomation) return [...controlData, ...automationControlData]
+    if (includeSno) {
+        addSnoText(controlData)
+    }
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
     if (handleModalToggle) {
         insertToggleModalFunction(handleModalToggle, controlData)
     }
