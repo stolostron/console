@@ -31,11 +31,12 @@ export const getControlDataVMW = (
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
-    if (includeSno) addSnoText(controlDataVMW)
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataVMW)
-    insertToggleModalFunction(handleModalToggle, controlDataVMW)
-    if (includeAutomation) return [...controlDataVMW, ...automationControlData]
-    return [...controlDataVMW]
+    const controlData = [...controlDataVMW]
+    if (includeSno) addSnoText(controlData)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    if (includeAutomation) return [...controlData, ...automationControlData]
+    return controlData
 }
 
 const controlDataVMW = [

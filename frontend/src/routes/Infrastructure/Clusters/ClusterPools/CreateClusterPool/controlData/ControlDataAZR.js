@@ -439,12 +439,13 @@ const ApplicationCreationPage = [
 ]
 
 export const getControlDataAZR = (handleModalToggle, includeAutomation = true, includeSno = false) => {
-    if (includeSno) addSnoText(controlDataAZR)
-    if (includeAutomation) return [...controlDataAZR, ...automationControlData]
+    const controlData = [...controlDataAZR]
+    if (includeSno) addSnoText(controlData)
+    if (includeAutomation) return [...controlData, ...automationControlData]
     if (handleModalToggle) {
-        insertToggleModalFunction(handleModalToggle, controlDataAZR)
+        insertToggleModalFunction(handleModalToggle, controlData)
     }
-    return [...controlDataAZR]
+    return controlData
 }
 
 const setRegions = (control, controlData) => {

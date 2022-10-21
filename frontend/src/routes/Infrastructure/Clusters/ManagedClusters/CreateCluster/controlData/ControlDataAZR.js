@@ -445,11 +445,12 @@ export const getControlDataAZR = (
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
-    if (includeSno) addSnoText(controlDataAZR)
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAZR)
-    insertToggleModalFunction(handleModalToggle, controlDataAZR)
-    if (includeAutomation) return [...controlDataAZR, ...automationControlData]
-    return [...controlDataAZR]
+    const controlData = [...controlDataAZR]
+    if (includeSno) addSnoText(controlData)
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    if (includeAutomation) return [...controlData, ...automationControlData]
+    return controlData
 }
 
 const setRegions = (control, controlData) => {
