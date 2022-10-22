@@ -17,15 +17,16 @@ export const getControlDataHypershift = (
     includeAutomation = true,
     includeKlusterletAddonConfig = true
 ) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataHypershift)
-    insertToggleModalFunction(handleModalToggle, controlDataHypershift)
+    const controlData = [...controlDataHypershift]
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     if (warning) {
-        appendWarning(warning, controlDataHypershift)
+        appendWarning(warning, controlData)
     }
     if (includeAutomation) {
-        return [...controlDataHypershift, ...automationControlData]
+        return [...controlData, ...automationControlData]
     }
-    return [...controlDataHypershift]
+    return controlData
 }
 
 const controlDataHypershift = [

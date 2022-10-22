@@ -8,7 +8,7 @@ import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
@@ -33,10 +33,10 @@ export function ClusterSetClusterPoolsPageContent() {
                             action={
                                 <RbacButton
                                     component={Link}
-                                    to={locationWithCancelBack(
-                                        NavigationPath.createClusterPool,
-                                        `?clusterSet=${clusterSet!.metadata.name}`
-                                    )}
+                                    to={createBackCancelLocation({
+                                        pathname: NavigationPath.createClusterPool,
+                                        search: `?clusterSet=${clusterSet!.metadata.name}`,
+                                    })}
                                     variant="primary"
                                     rbac={[
                                         rbacCreate(

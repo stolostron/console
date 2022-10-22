@@ -21,12 +21,12 @@ import {
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { generatePath, Link, useHistory } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
     ClusterCurator,
     ClusterCuratorDefinition,
@@ -206,7 +206,7 @@ export default function ImportClusterPage() {
     const toastContext = useContext(AcmToastContext)
     const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
-    const location = useLocation<CancelBackState>()
+    const { cancel } = useBackCancelNavigation()
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
     const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
@@ -419,7 +419,7 @@ export default function ImportClusterPage() {
                                 autoClose: true,
                             })
                             setTimeout(() => {
-                                history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
+                                history.push(generatePath(NavigationPath.clusterDetails, { id: state.clusterName }))
                             }, 2000)
                         } catch (err) {
                             if (err instanceof Error) {
@@ -436,9 +436,7 @@ export default function ImportClusterPage() {
                         }
                     })
                 }}
-                onCancel={function (): void {
-                    cancelNavigation(location, history, NavigationPath.clusters)
-                }}
+                onCancel={cancel(NavigationPath.clusters)}
                 submitButtonText={submitButtonText}
                 submittingButtonText={submittingButtonText}
             >

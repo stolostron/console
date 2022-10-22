@@ -10,13 +10,13 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useHistory, useLocation } from 'react-router-dom'
+import { generatePath, useHistory } from 'react-router-dom'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
     ClusterCurator,
     createClusterCurator,
@@ -74,9 +74,26 @@ const useStyles = makeStyles({
     },
 })
 
-export default function CreateClusterPage() {
+export enum CreateClusterInfrastructureType {
+    AWS = 'AWS',
+    GCP = 'GCP',
+    Azure = 'Azure',
+    vSphere = 'vSphere',
+    OpenStack = 'OpenStack',
+    RHV = 'RHV',
+    CIMHypershift = 'CIMHypershift',
+    CIM = 'CIM',
+    AI = 'AI',
+}
+
+export const isCreateClusterInfrastructureType = (
+    infrastructureType: string
+): infrastructureType is CreateClusterInfrastructureType => infrastructureType in CreateClusterInfrastructureType
+
+export default function CreateCluster(props: { infrastructureType: CreateClusterInfrastructureType }) {
+    const { infrastructureType } = props
     const history = useHistory()
-    const location = useLocation()
+    const { back, cancel } = useBackCancelNavigation()
     const { agentClusterInstallsState, infraEnvironmentsState, managedClustersState, secretsState, settingsState } =
         useSharedAtoms()
     const {
@@ -101,7 +118,7 @@ export default function CreateClusterPage() {
         return t(key, arg)
     }
     const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
-    const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDicoverHost }
+    const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
 
     const settings = useRecoilValue(settingsState)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
@@ -249,7 +266,7 @@ export default function CreateClusterPage() {
                     setCreationStatus({ status, messages: finishMessage })
                     if (!noRedirect) {
                         setTimeout(() => {
-                            history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                            history.push(generatePath(NavigationPath.clusterDetails, { id: clusterName as string }))
                         }, 2000)
                     }
                 }
@@ -260,26 +277,13 @@ export default function CreateClusterPage() {
     }
 
     // cancel button
-    const cancelCreate = () => {
-        history.push(NavigationPath.clusters)
-    }
+    const cancelCreate = cancel(NavigationPath.clusters)
 
     //compile templates
     let template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
     Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
     Handlebars.registerHelper('append', append)
-
-    // if opened from bma page, pass selected bma's to editor
-    const urlParams = new URLSearchParams(location.search.substring(1))
-    const bmasParam = urlParams.get('bmas')
-    const requestedUIDs = bmasParam ? bmasParam.split(',') : []
-    const fetchControl = bmasParam
-        ? {
-              isLoaded: true,
-              fetchData: { requestedUIDs },
-          }
-        : null
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -354,9 +358,12 @@ export default function CreateClusterPage() {
         }
     }
 
-    const infrastructureType = urlParams.get('infrastructureType') || ''
     useEffect(() => {
-        if ((infrastructureType === 'CIM' || infrastructureType === 'CIMHypershift') && !isInfraEnvAvailable) {
+        if (
+            (infrastructureType === CreateClusterInfrastructureType.CIM ||
+                infrastructureType === CreateClusterInfrastructureType.CIMHypershift) &&
+            !isInfraEnvAvailable
+        ) {
             setWarning({
                 title: t('cim.infra.missing.warning.title'),
                 text: t('cim.infra.missing.warning.text'),
@@ -376,19 +383,17 @@ export default function CreateClusterPage() {
     let controlData: any[]
     const breadcrumbs = [
         { text: t('Clusters'), to: NavigationPath.clusters },
-        { text: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+        { text: t('Infrastructure'), to: NavigationPath.createCluster },
     ]
 
-    function backButtonOverrideFunc() {
-        history.goBack()
-    }
+    const backButtonOverride = back(NavigationPath.clusters)
 
     const handleModalToggle = () => {
         setIsModalOpen(!isModalOpen)
     }
 
     switch (infrastructureType) {
-        case 'AWS':
+        case CreateClusterInfrastructureType.AWS:
             controlData = getControlDataAWS(
                 handleModalToggle,
                 true,
@@ -397,7 +402,7 @@ export default function CreateClusterPage() {
                 isACMAvailable
             )
             break
-        case 'GCP':
+        case CreateClusterInfrastructureType.GCP:
             controlData = getControlDataGCP(
                 handleModalToggle,
                 true,
@@ -405,7 +410,7 @@ export default function CreateClusterPage() {
                 isACMAvailable
             )
             break
-        case 'Azure':
+        case CreateClusterInfrastructureType.Azure:
             controlData = getControlDataAZR(
                 handleModalToggle,
                 true,
@@ -413,7 +418,7 @@ export default function CreateClusterPage() {
                 isACMAvailable
             )
             break
-        case 'vSphere':
+        case CreateClusterInfrastructureType.vSphere:
             controlData = getControlDataVMW(
                 handleModalToggle,
                 true,
@@ -421,7 +426,7 @@ export default function CreateClusterPage() {
                 isACMAvailable
             )
             break
-        case 'OpenStack':
+        case CreateClusterInfrastructureType.OpenStack:
             controlData = getControlDataOST(
                 handleModalToggle,
                 true,
@@ -429,26 +434,24 @@ export default function CreateClusterPage() {
                 isACMAvailable
             )
             break
-        case 'RHV':
+        case CreateClusterInfrastructureType.RHV:
             controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
             break
-        case 'CIMHypershift':
+        case CreateClusterInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
             controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
-        case 'CIM':
+        case CreateClusterInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
             controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
-        case 'AI':
+        case CreateClusterInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
             controlData = getControlDataAI(handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
             break
-        default:
-            controlData = []
     }
 
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
@@ -509,7 +512,6 @@ export default function CreateClusterPage() {
                                     controlData={controlData}
                                     template={template}
                                     portals={Portals}
-                                    fetchControl={fetchControl}
                                     createControl={{
                                         createResource,
                                         cancelCreate,
@@ -519,7 +521,7 @@ export default function CreateClusterPage() {
                                         resetStatus: () => {
                                             setCreationStatus(undefined)
                                         },
-                                        backButtonOverride: backButtonOverrideFunc,
+                                        backButtonOverride,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
                                     i18n={i18n}

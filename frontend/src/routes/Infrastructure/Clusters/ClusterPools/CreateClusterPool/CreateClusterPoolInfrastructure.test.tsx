@@ -6,7 +6,7 @@ import { secretsState } from '../../../../../atoms'
 import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ProviderConnectionApiVersion, ProviderConnectionKind, Secret } from '../../../../../resources'
-import { CreateInfrastructureClusterpool } from './CreateIntrastructureClusterpool'
+import { CreateClusterPoolInfrastructure } from './CreateClusterPoolInfrastructure'
 
 const providerConnectionAws: Secret = {
     apiVersion: ProviderConnectionApiVersion,
@@ -29,9 +29,9 @@ describe('CreateInfrastructure clusterpool', () => {
                     snapshot.set(secretsState, [providerConnectionAws])
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createClusterPoolInfrastructure]}>
-                    <Route path={NavigationPath.createClusterPoolInfrastructure}>
-                        <CreateInfrastructureClusterpool />
+                <MemoryRouter initialEntries={[NavigationPath.createClusterPool]}>
+                    <Route path={NavigationPath.createClusterPool}>
+                        <CreateClusterPoolInfrastructure />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>

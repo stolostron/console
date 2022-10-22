@@ -30,8 +30,8 @@ describe('CreateInfrastructure', () => {
                     snapshot.set(secretsState, [providerConnectionAws])
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createInfrastructure]}>
-                    <Route path={NavigationPath.createInfrastructure}>
+                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                    <Route path={NavigationPath.createCluster}>
                         <CreateInfrastructure />
                     </Route>
                 </MemoryRouter>
