@@ -49,7 +49,6 @@ import {
     unpackProviderConnection,
 } from '../../resources'
 import schema from './schema.json'
-import { useSharedAtoms } from '../../shared-recoil'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
