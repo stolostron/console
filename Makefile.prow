@@ -24,4 +24,4 @@ unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test -- --runInBand
+	npm run test -- --maxWorkers=2
