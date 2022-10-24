@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
 import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../../../../../ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
@@ -49,7 +49,7 @@ import getControlDataRHV from './controlData/ControlDataRHV'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataAI from './controlData/ControlDataAI'
-import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { CredentialsForm, CredentialsType } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
 import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
@@ -74,23 +74,38 @@ const useStyles = makeStyles({
     },
 })
 
-export enum CreateClusterInfrastructureType {
-    AWS = 'AWS',
-    GCP = 'GCP',
-    Azure = 'Azure',
-    vSphere = 'vSphere',
-    OpenStack = 'OpenStack',
-    RHV = 'RHV',
-    CIMHypershift = 'CIMHypershift',
-    CIM = 'CIM',
-    AI = 'AI',
+export enum HostInventoryInfrastructureType {
+    CIMHypershift = 'cimhypershift',
+    CIM = 'cim',
+    AI = 'ai',
 }
-
-export const isCreateClusterInfrastructureType = (
+const isHostInventoryInfrastructureType = (
     infrastructureType: string
-): infrastructureType is CreateClusterInfrastructureType => infrastructureType in CreateClusterInfrastructureType
+): infrastructureType is HostInventoryInfrastructureType =>
+    infrastructureType in Object.values(HostInventoryInfrastructureType)
+const clusterInfrastructureTypes = [
+    Provider.aws,
+    Provider.azure,
+    Provider.gcp,
+    Provider.vmware,
+    Provider.openstack,
+    Provider.redhatvirtualization,
+    HostInventoryInfrastructureType.CIMHypershift,
+    HostInventoryInfrastructureType.CIM,
+    HostInventoryInfrastructureType.AI,
+] as const
+export type ClusterInfrastructureType = typeof clusterInfrastructureTypes[number]
+export const isClusterInfrastructureType = (
+    infrastructureType: string
+): infrastructureType is ClusterInfrastructureType =>
+    (clusterInfrastructureTypes as unknown as string[]).includes(infrastructureType)
 
-export default function CreateCluster(props: { infrastructureType: CreateClusterInfrastructureType }) {
+export const getCredentialsTypeForClusterInfrastructureType = (
+    infrastructureType: ClusterInfrastructureType
+): CredentialsType =>
+    isHostInventoryInfrastructureType(infrastructureType) ? Provider.hostinventory : infrastructureType
+
+export default function CreateCluster(props: { infrastructureType: ClusterInfrastructureType }) {
     const { infrastructureType } = props
     const history = useHistory()
     const { back, cancel } = useBackCancelNavigation()
@@ -360,8 +375,8 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
 
     useEffect(() => {
         if (
-            (infrastructureType === CreateClusterInfrastructureType.CIM ||
-                infrastructureType === CreateClusterInfrastructureType.CIMHypershift) &&
+            (infrastructureType === HostInventoryInfrastructureType.CIM ||
+                infrastructureType === HostInventoryInfrastructureType.CIMHypershift) &&
             !isInfraEnvAvailable
         ) {
             setWarning({
@@ -393,7 +408,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
     }
 
     switch (infrastructureType) {
-        case CreateClusterInfrastructureType.AWS:
+        case Provider.aws:
             controlData = getControlDataAWS(
                 handleModalToggle,
                 true,
@@ -402,7 +417,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                 isACMAvailable
             )
             break
-        case CreateClusterInfrastructureType.GCP:
+        case Provider.gcp:
             controlData = getControlDataGCP(
                 handleModalToggle,
                 true,
@@ -410,7 +425,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                 isACMAvailable
             )
             break
-        case CreateClusterInfrastructureType.Azure:
+        case Provider.azure:
             controlData = getControlDataAZR(
                 handleModalToggle,
                 true,
@@ -418,7 +433,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                 isACMAvailable
             )
             break
-        case CreateClusterInfrastructureType.vSphere:
+        case Provider.vmware:
             controlData = getControlDataVMW(
                 handleModalToggle,
                 true,
@@ -426,7 +441,7 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                 isACMAvailable
             )
             break
-        case CreateClusterInfrastructureType.OpenStack:
+        case Provider.openstack:
             controlData = getControlDataOST(
                 handleModalToggle,
                 true,
@@ -434,20 +449,20 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                 isACMAvailable
             )
             break
-        case CreateClusterInfrastructureType.RHV:
+        case Provider.redhatvirtualization:
             controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
             break
-        case CreateClusterInfrastructureType.CIMHypershift:
+        case HostInventoryInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
             controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
-        case CreateClusterInfrastructureType.CIM:
+        case HostInventoryInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
             controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb)
             break
-        case CreateClusterInfrastructureType.AI:
+        case HostInventoryInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
             controlData = getControlDataAI(handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
@@ -498,7 +513,9 @@ export default function CreateCluster(props: { infrastructureType: CreateCluster
                                         namespaces={projects}
                                         isEditing={false}
                                         isViewing={false}
-                                        infrastructureType={infrastructureType}
+                                        credentialsType={getCredentialsTypeForClusterInfrastructureType(
+                                            infrastructureType
+                                        )}
                                         handleModalToggle={handleModalToggle}
                                         hideYaml={true}
                                         control={setNewSecret}

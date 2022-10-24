@@ -6,7 +6,7 @@ import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
-import { CreateClusterPoolInfrastructureType } from './CreateClusterPool'
+import { ClusterPoolInfrastructureType } from './CreateClusterPool'
 
 export function CreateClusterPoolInfrastructure() {
     const [t] = useTranslation()
@@ -34,7 +34,7 @@ export function CreateClusterPoolInfrastructure() {
     )
 
     const cards = useMemo(() => {
-        const getSearchWithInfrastructureType = (infrastructureType: CreateClusterPoolInfrastructureType) => {
+        const getSearchWithInfrastructureType = (infrastructureType: ClusterPoolInfrastructureType) => {
             const urlParams = new URLSearchParams(search)
             urlParams.append('infrastructureType', infrastructureType)
             return urlParams.toString()
@@ -54,7 +54,7 @@ export function CreateClusterPoolInfrastructure() {
                 labels: getCredentialLabels(Provider.aws),
                 onClick: nextStep({
                     pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.AWS),
+                    search: getSearchWithInfrastructureType(Provider.aws),
                 }),
             },
             {
@@ -72,7 +72,7 @@ export function CreateClusterPoolInfrastructure() {
                 labels: getCredentialLabels(Provider.gcp),
                 onClick: nextStep({
                     pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.GCP),
+                    search: getSearchWithInfrastructureType(Provider.gcp),
                 }),
             },
             {
@@ -88,7 +88,7 @@ export function CreateClusterPoolInfrastructure() {
                 labels: getCredentialLabels(Provider.azure),
                 onClick: nextStep({
                     pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.Azure),
+                    search: getSearchWithInfrastructureType(Provider.azure),
                 }),
             },
         ]

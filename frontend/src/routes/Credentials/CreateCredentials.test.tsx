@@ -6,15 +6,15 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { CreateInfrastructureCredentials } from './CredentialsInfrastructure'
+import { CreateCredentialsPage } from './CreateCredentials'
 
 describe('CreateInfrastructure credential', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.addCredentialsInfrastructure]}>
-                    <Route path={NavigationPath.addCredentialsInfrastructure}>
-                        <CreateInfrastructureCredentials />
+                <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
+                    <Route path={NavigationPath.addCredentials}>
+                        <CreateCredentialsPage />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>
@@ -28,27 +28,27 @@ describe('CreateInfrastructure credential', () => {
 
     test('can select google', async () => {
         render(<Component />)
-        await clickByTestId('google')
+        await clickByTestId('gcp')
     })
 
     test('can select azure', async () => {
         render(<Component />)
-        await clickByTestId('azure')
+        await clickByTestId('azr')
     })
 
     test('can select openstack', async () => {
         render(<Component />)
-        await clickByTestId('openstack')
+        await clickByTestId('ost')
     })
 
     test('can select rhv', async () => {
         render(<Component />)
-        await clickByTestId('rhv')
+        await clickByTestId('redhatvirtualization')
     })
 
     test('can select vsphere', async () => {
         render(<Component />)
-        await clickByTestId('vsphere')
+        await clickByTestId('vmw')
     })
 
     test('can select hostinventory', async () => {
@@ -58,12 +58,12 @@ describe('CreateInfrastructure credential', () => {
 
     test('can select ansible', async () => {
         render(<Component />)
-        await clickByTestId('ansible')
+        await clickByTestId('ans')
     })
 
     test('can select redhatcloud', async () => {
         render(<Component />)
-        await clickByTestId('redhatcloud')
+        await clickByTestId('rhocm')
     })
 
     test('can click cancel', async () => {
