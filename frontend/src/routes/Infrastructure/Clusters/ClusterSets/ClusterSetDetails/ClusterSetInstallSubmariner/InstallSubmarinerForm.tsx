@@ -11,7 +11,7 @@ import { RbacButton } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { validateJSON } from '../../../../../../lib/validation'
+import { validateJSON, validateCloudsYaml } from '../../../../../../lib/validation'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import {
     Broker,
@@ -149,7 +149,7 @@ export function InstallSubmarinerFormPage() {
 }
 
 // supported providers for creating a SubmarinerConfig resource
-const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware, Provider.azure]
+const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware, Provider.azure, Provider.openstack]
 
 // used to try to auto-detect the provider secret in the cluster namespace
 const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | undefined> = {
@@ -192,12 +192,16 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [subscriptionIds, setSubscriptionIds] = useState<Record<string, string | undefined>>({})
     const [tenantIds, setTenantIds] = useState<Record<string, string | undefined>>({})
 
+    const [cloudsYamls, setOpenstackCloudsYamls] = useState<Record<string, string | undefined>>({})
+    const [clouds, setOpenstackClouds] = useState<Record<string, string | undefined>>({})
+
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
     const [nattEnables, setNattEnables] = useState<Record<string, boolean>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
     const [azInstanceTypes, setAzInstanceTypes] = useState<Record<string, string>>({})
+    const [openStackInstanceTypes, setOpenStackInstanceTypes] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
 
@@ -308,6 +312,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         })
                         secret.stringData!['baseDomainResourceGroupName'] =
                             baseDomainResourceGroupNames[cluster.displayName!]! || ''
+                    } else if (cluster.provider === Provider.openstack) {
+                        secret.stringData!['cloud'] = clouds[cluster.displayName!] || ''
+                        secret.stringData!['clouds.yaml'] = cloudsYamls[cluster.displayName!] || ''
                     }
 
                     resources.push(secret)
@@ -353,6 +360,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     submarinerConfig.spec.gatewayConfig!.azure = {
                         instanceType:
                             azInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.azureInstanceType,
+                    }
+                } else if (cluster.provider === Provider.openstack) {
+                    submarinerConfig.spec.gatewayConfig!.rhos = {
+                        instanceType:
+                            openStackInstanceTypes[cluster.displayName!] ??
+                            submarinerConfigDefault.openStackInstanceType,
                     }
                 }
                 resources.push(submarinerConfig)
@@ -779,6 +792,50 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
                                 },
                                 {
+                                    id: 'clouds.yaml',
+                                    type: 'TextArea',
+                                    label: t('OpenStack clouds.yaml'),
+                                    placeholder: t('Enter the contents of the OpenStack clouds.yaml'),
+                                    labelHelp: t(
+                                        'The OpenStack clouds.yaml file, including the password, to connect to the OpenStack server.'
+                                    ),
+                                    value: cloudsYamls[clusterName] ?? '',
+                                    isHidden:
+                                        cluster.provider !== Provider.openstack ||
+                                        providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.openstack &&
+                                        providerSecretMap[clusterName] === null,
+                                    onChange: (value: string) => {
+                                        const copy = { ...cloudsYamls }
+                                        copy[clusterName] = value
+                                        setOpenstackCloudsYamls(copy)
+                                    },
+                                    isSecret: true,
+                                    validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, t),
+                                },
+                                {
+                                    id: 'cloud',
+                                    type: 'Text',
+                                    label: t('Cloud name'),
+                                    placeholder: t('Enter the OpenStack cloud name to reference in the clouds.yaml'),
+                                    labelHelp: t(
+                                        'The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.'
+                                    ),
+                                    value: clouds[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...clouds }
+                                        copy[clusterName] = value
+                                        setOpenstackClouds(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.openstack ||
+                                        providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.openstack &&
+                                        providerSecretMap[clusterName] === null,
+                                },
+                                {
                                     id: 'aws-instance-type',
                                     type: 'Text',
                                     label: t('submariner.install.form.instancetype'),
@@ -804,6 +861,24 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         const copy = { ...azInstanceTypes }
                                         copy[clusterName] = value
                                         setAzInstanceTypes(copy)
+                                    },
+                                },
+                                {
+                                    id: 'openstack-instance-type',
+                                    type: 'Text',
+                                    label: t('submariner.install.form.instancetype'),
+                                    placeholder: t('submariner.install.form.instancetype.placeholder'),
+                                    labelHelp: t(
+                                        'The OpenStack instance type of the gateway node that will be created on the managed cluster (default PnTAE.CPU_4_Memory_8192_Disk_50).'
+                                    ),
+                                    value:
+                                        openStackInstanceTypes[clusterName] ??
+                                        submarinerConfigDefault.openStackInstanceType,
+                                    isHidden: cluster.provider !== Provider.openstack,
+                                    onChange: (value) => {
+                                        const copy = { ...openStackInstanceTypes }
+                                        copy[clusterName] = value
+                                        setOpenStackInstanceTypes(copy)
                                     },
                                 },
                                 {
