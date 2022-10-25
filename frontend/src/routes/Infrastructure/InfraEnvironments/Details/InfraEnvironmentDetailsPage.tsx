@@ -5,14 +5,7 @@ import { isMatch } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, Suspense, useMemo, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import {
-    agentClusterInstallsState,
-    agentsState,
-    bareMetalHostsState,
-    infrastructuresState,
-    nmStateConfigsState,
-} from '../../../../atoms'
+import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -46,6 +39,9 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     const [isBmcModalOpen, setBMCModalOpen] = useState(false)
     const [isBmcYamlModalOpen, setBMCYamlModalOpen] = useState(false)
 
+    const { agentClusterInstallsState, agentsState, bareMetalHostsState, infrastructuresState, nmStateConfigsState } =
+        useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [agentClusterInstalls, agents, bareMetalHosts, infrastructures, nmStateConfigs] = useRecoilValue(
         waitForAll([
             agentClusterInstallsState,

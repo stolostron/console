@@ -2,7 +2,6 @@
 
 export declare global {
     interface Window {
-        acmConsolePluginProxyPath: string
         getEditorValue: any
         //
         propShot: (props: any, max?: number) => void
@@ -16,5 +15,6 @@ export declare global {
         }
         originalFetch: any
         capturedFetches: any[]
+        pendingNocks: any[]
     }
 }

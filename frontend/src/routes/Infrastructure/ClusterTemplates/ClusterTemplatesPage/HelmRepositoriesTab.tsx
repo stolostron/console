@@ -44,6 +44,8 @@ import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { LoadingHelper } from '../utils';
 import TableLoader from '../helpers/TableLoader';
+import useDialogsReducer from '../hooks/useDialogsReducer';
+import EditHelmRepositoryDialog from '../EditHelmRepositoryDialog';
 
 const getTableColumns = (t: TFunction): TableColumn[] => [
   {
@@ -80,6 +82,12 @@ const getTableColumns = (t: TFunction): TableColumn[] => [
   },
 ];
 
+type HelmRepositoryActionDialogIds = 'deleteDialog' | 'editCredentialsDialog';
+const helmRepositoryActionDialogIds: HelmRepositoryActionDialogIds[] = [
+  'deleteDialog',
+  'editCredentialsDialog',
+];
+
 type HelmRepoRowProps = RowProps<HelmChartRepository> & {
   helmRepoIndexResult: HelmRepositoryIndexResult;
   clusterTemplatesResult: WatchK8sResult<ClusterTemplate[]>;
@@ -91,25 +99,34 @@ export const HelmRepoRow = ({
   clusterTemplatesResult,
 }: HelmRepoRowProps) => {
   const { t } = useTranslation();
-  const [isDeleteOpen, setDeleteOpen] = React.useState(false);
+
+  const { openDialog, closeDialog, isDialogOpen } = useDialogsReducer(
+    helmRepositoryActionDialogIds,
+  );
   const [model] = useK8sModel(helmRepoGVK);
   const [repoIndex, repoIndexLoaded, repoIndexError] = helmRepoIndexResult;
   const [templates, templatesLoaded, templatesLoadError] = clusterTemplatesResult;
 
   const templatesFromRepo = templates.filter(
-    (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
+    (t) => t.spec.clusterDefinition.applicationSpec.source.repoURL === obj.metadata?.name,
   );
   const repoChartsCount = repoIndex
     ? getRepoCharts(repoIndex, obj.metadata?.name ?? '').length ?? '-'
     : '-';
   const repoChartsUpdatedAt = repoIndex ? new Date(repoIndex.generated).toLocaleString() : '-';
 
-  const getRowActions = (): IAction[] => [
-    {
-      title: t('Delete repository'),
-      onClick: () => setDeleteOpen(true),
-    },
-  ];
+  const getRowActions = (): IAction[] => {
+    return [
+      {
+        title: t('Edit repository'),
+        onClick: () => openDialog('editCredentialsDialog'),
+      },
+      {
+        title: t('Delete repository'),
+        onClick: () => openDialog('deleteDialog'),
+      },
+    ];
+  };
 
   const columns = React.useMemo(() => getTableColumns(t), [t]);
 
@@ -138,7 +155,7 @@ export const HelmRepoRow = ({
         </Text>
       </Td>
       <Td dataLabel={columns[2].title}>
-        {obj.spec.connectionConfig.tlsConfig ? t('Authenticated') : t('Not required')}
+        {obj.spec.connectionConfig.tlsClientConfig ? t('Authenticated') : t('Not required')}
       </Td>
       <Td dataLabel={columns[3].title}>
         <LoadingHelper isLoaded={repoIndexLoaded} error={repoIndexError}>
@@ -166,14 +183,14 @@ export const HelmRepoRow = ({
           )}
         />
       </Td>
-      {isDeleteOpen && (
+      {isDialogOpen('deleteDialog') && (
         <Modal
           variant={ModalVariant.small}
           isOpen
           title={t('Delete Helm chart repository')}
           titleIconVariant="warning"
           showClose
-          onClose={() => setDeleteOpen(false)}
+          onClose={() => closeDialog('deleteDialog')}
           actions={[
             <Button
               key="confirm"
@@ -183,18 +200,24 @@ export const HelmRepoRow = ({
                   model,
                   resource: obj,
                 });
-                setDeleteOpen(false);
+                closeDialog('deleteDialog');
               }}
             >
               {t('Delete')}
             </Button>,
-            <Button key="cancel" variant="link" onClick={() => setDeleteOpen(false)}>
+            <Button key="cancel" variant="link" onClick={() => closeDialog('deleteDialog')}>
               {t('Cancel')}
             </Button>,
           ]}
         >
           {t('Are you sure you want to delete?')}
         </Modal>
+      )}
+      {isDialogOpen('editCredentialsDialog') && (
+        <EditHelmRepositoryDialog
+          helmChartRepository={obj}
+          closeDialog={() => closeDialog('editCredentialsDialog')}
+        />
       )}
     </Tr>
   );

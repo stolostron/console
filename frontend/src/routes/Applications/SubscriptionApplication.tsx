@@ -10,16 +10,8 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
-import {
-    ansibleJobState,
-    applicationsState,
-    channelsState,
-    placementRulesState,
-    secretsState,
-    subscriptionsState,
-} from '../../atoms'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useSearchParams } from '../../lib/search'
@@ -69,6 +61,7 @@ export default function CreateSubscriptionApplicationPage() {
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [newSecret, setNewSecret] = useState<Secret>()
+    const { secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const { projects } = GetProjects()
 
@@ -171,6 +164,8 @@ export function CreateSubscriptionApplication(
 ) {
     const history = useHistory()
     const { t } = useTranslation()
+    const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
+        useSharedAtoms()
     const toastContext = useContext(AcmToastContext)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)

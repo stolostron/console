@@ -13,8 +13,7 @@ import {
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilCallback } from 'recoil'
-import { namespacesState } from '../../atoms'
+import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -87,6 +86,7 @@ export default function CredentialsFormPage() {
     const params = useParams<{ namespace: string; name: string }>()
     const location = useLocation()
     const { name, namespace } = params
+    const { namespacesState } = useSharedAtoms()
     const { t } = useTranslation()
 
     let isEditing = false
@@ -1011,9 +1011,9 @@ export function CredentialsForm(props: {
                         id: 'defaultDatastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('vSphere default defaultDatastore'),
-                        placeholder: t('Enter your vSphere default defaultDatastore'),
-                        labelHelp: t('The name of the default vSphere defaultDatastore to use.'),
+                        label: t('vSphere default datastore'),
+                        placeholder: t('Enter your vSphere default datastore'),
+                        labelHelp: t('The name of the default vSphere datastore to use.'),
                         value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,

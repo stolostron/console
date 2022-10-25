@@ -1,5 +1,14 @@
 [
     {
+        "type": "console.context-provider",
+        "properties": {
+            "id": "mce-data-context",
+            "context": { "$codeRef": "context.PluginDataContext" },
+            "provider": { "$codeRef": "contextProvider.PluginDataContextProvider" },
+            "useValueHook": { "$codeRef": "context.usePluginDataContextValue" }
+        }
+    },
+    {
         "type": "console.flag/model",
         "properties": {
             "flag": "CLUSTER_TEMPLATES",
@@ -155,6 +164,19 @@
                 "kind": "ClusterTemplate"
             },
             "component": { "$codeRef": "createTemplate.default" }
+        }
+    },
+    {
+        "type": "console.page/resource/details",
+        "properties": {
+            "model": {
+                "group": "clustertemplate.openshift.io",
+                "version": "v1alpha1",
+                "kind": "ClusterTemplate"
+            },
+            "component": {
+                "$codeRef": "templateDetails.default"
+            }
         }
     }
 ]

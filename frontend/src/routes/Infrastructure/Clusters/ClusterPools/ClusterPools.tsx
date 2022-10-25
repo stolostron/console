@@ -26,15 +26,14 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterImageSetsState, clusterPoolsState, clusterClaimsState } from '../../../../atoms'
+import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
     Cluster,
     ClusterClaim,
@@ -58,7 +57,8 @@ export default function ClusterPoolsPage() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
-
+    const { waitForAll } = useSharedRecoil()
+    const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
 
     return (
@@ -115,7 +115,8 @@ export default function ClusterPoolsPage() {
                                 {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
-                                    click: () => history.push(NavigationPath.createClusterPoolInfrastructure),
+                                    click: () =>
+                                        history.push(createBackCancelLocation(NavigationPath.createClusterPool)),
                                     variant: ButtonVariant.primary,
                                 },
                             ]}
@@ -134,7 +135,9 @@ export default function ClusterPoolsPage() {
                                             <AcmButton
                                                 role="link"
                                                 onClick={() =>
-                                                    history.push(NavigationPath.createClusterPoolInfrastructure)
+                                                    history.push(
+                                                        createBackCancelLocation(NavigationPath.createClusterPool)
+                                                    )
                                                 }
                                             >
                                                 {t('managed.createClusterPool')}
@@ -168,6 +171,8 @@ export function ClusterPoolsTable(props: {
     emptyState: React.ReactNode
     tableActionButtons?: IAcmTableButtonAction[]
 }) {
+    const { waitForAll } = useSharedRecoil()
+    const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const [clusterClaims] = useRecoilValue(waitForAll([clusterClaimsState]))
 

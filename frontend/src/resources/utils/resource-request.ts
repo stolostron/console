@@ -2,14 +2,14 @@
 
 import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
-import { getCookie } from '.'
+import { getCookie } from './utils'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { tokenExpired } from '../../atoms'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -54,8 +54,9 @@ export class ResourceError extends Error {
 
 export function getBackendUrl() {
     if (process.env.MODE === 'plugin') {
-        const proxyPath = process.env.PLUGIN_PROXY_PATH || window.acmConsolePluginProxyPath
-        return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
+        const proxyPath = process.env.PLUGIN_PROXY_PATH
+        const value = proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : ''
+        return value
     }
     return process.env.REACT_APP_BACKEND_PATH
 }

@@ -31,19 +31,7 @@ import {
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    channelsState,
-    helmReleaseState,
-    namespacesState,
-    placementBindingsState,
-    placementRulesState,
-    placementsState,
-    policyAutomationState,
-    policySetsState,
-    subscriptionsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
@@ -81,6 +69,15 @@ export default function PoliciesPage() {
     const { t } = useTranslation()
     const unauthorizedMessage = t('rbac.unauthorized')
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
+    const {
+        channelsState,
+        helmReleaseState,
+        namespacesState,
+        policyAutomationState,
+        policySetsState,
+        subscriptionsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
@@ -819,6 +816,7 @@ function usePolicyViolationsColumn(
 
 export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]; onClose: () => void }) {
     const { t } = useTranslation()
+    const { policySetsState } = useSharedAtoms()
     const [policySets] = useRecoilState(policySetsState)
     const namespace = useMemo(() => namespaceCheck(props.policyTableItems), [props.policyTableItems])
     const namespacedPolicySets = useMemo(
@@ -971,6 +969,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
 
 export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }) {
     const { t } = useTranslation()
+    const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
     const [placements] = useRecoilState(placementsState)

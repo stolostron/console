@@ -35,8 +35,8 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import CreateClusterPoolPage from './CreateClusterPool'
 import { createProviderConnection } from '../../../../Credentials/CredentialsForm.test'
+import { CreateClusterPoolPage } from '../CreateClusterPoolPage'
 
 const clusterName = 'test'
 

@@ -1,8 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { selector } from 'recoil'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { clusterCuratorsState, managedClustersState, secretsState, settingsState } from './atoms'
 import { Curation } from './resources/cluster-curator'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'
+
+export const providerConnectionsValue = selector({
+    key: 'providerConnections',
+    get: ({ get }) => {
+        const secrets = get(secretsState)
+        return secrets.map(unpackProviderConnection)
+    },
+})
 
 export const ansibleCredentialsValue = selector({
     key: 'ansibleCredentials',
@@ -37,14 +47,6 @@ export const clusterCuratorSupportedCurationsValue = selector({
     get: ({ get }) => {
         const settings = get(settingsState)
         return settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
-    },
-})
-
-export const providerConnectionsValue = selector({
-    key: 'providerConnections',
-    get: ({ get }) => {
-        const secrets = get(secretsState)
-        return secrets.map(unpackProviderConnection)
     },
 })
 

@@ -5,9 +5,10 @@ import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFu
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig = true) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataAI)
-    insertToggleModalFunction(handleModalToggle, controlDataAI)
-    return [...controlDataAI]
+    const controlData = [...controlDataAI]
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    return controlData
 }
 
 export const controlDataAI = [

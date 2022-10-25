@@ -1,0 +1,95 @@
+[
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "hypershift-cluster-0",
+      "namespace": "ns"
+    },
+    "spec": {
+      "clusterTemplateRef": "cluster-template-example",
+      "values": {
+        "replicas": 0
+      }
+    },
+    "status": {
+      "message": "failed to install helm chart - \"unexpected end of JSON input\"",
+      "phase": "ClusterSetupFailed"
+    }
+  },
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "hypershift-cluster-1",
+      "namespace": "ns1"
+    },
+    "spec": {
+      "clusterTemplateRef": "cluster-template-example"
+    },
+    "status": {
+      "message": "failed to install helm chart - \"unexpected end of JSON input\"",
+      "phase": "Ready"
+    }
+  },
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "hypershift-cluster-2",
+      "namespace": "ns1"
+    },
+    "spec": {
+      "clusterTemplateRef": "cluster-template-example"
+    },
+    "status": {
+      "message": "Pending phase",
+      "phase": "PendingPhase"
+    }
+  },
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "hypershift-cluster-3",
+      "namespace": "ns"
+    },
+    "spec": {
+      "clusterTemplateRef": "cluster-template-example"
+    },
+    "status": {
+      "message": "ClusterSetupRunning",
+      "phase": "ClusterSetupRunning"
+    }
+  },
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "hypershift-cluster-4",
+      "namespace": "ns"
+    },
+    "spec": {
+      "clusterTemplateRef": "cluster-template-example"
+    },
+    "status": {
+      "message": "ClusterInstalling",
+      "phase": "ClusterInstalling"
+    }
+  },
+  {
+    "apiVersion": "clustertemplate.openshift.io/v1alpha1",
+    "kind": "ClusterTemplateInstance",
+    "metadata": {
+      "name": "bar",
+      "namespace": "default"
+    },
+    "spec": {
+      "clusterTemplateRef": "hypershift-cluster"
+    },
+    "status": {
+      "message": "failed to install helm chart - \"invalid character '\\\"' after top-level value\"",
+      "phase": "ClusterSetupFailed"
+    }
+  }
+]

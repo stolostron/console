@@ -124,8 +124,10 @@ export const getControlDataAWS = (
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
-    if (includeSno) addSnoText(controlDataAWS)
-    let controlData = [...controlDataAWS]
+    const controlData = [...controlDataAWS]
+    if (includeSno) {
+        addSnoText(controlData)
+    }
     if (includeAwsPrivate) {
         controlData.push(...awsPrivateControlData)
         const regionObject = controlData.find((object) => object.id === 'region')
@@ -134,7 +136,9 @@ export const getControlDataAWS = (
             regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
         }
     }
-    if (includeAutomation) controlData.push(...automationControlData)
+    if (includeAutomation) {
+        controlData.push(...automationControlData)
+    }
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     insertToggleModalFunction(handleModalToggle, controlData)
     return controlData

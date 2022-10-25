@@ -30,6 +30,7 @@ import {
     mockManagedClusters,
 } from '../ManagedClusters/ManagedClusters.test'
 import ClusterSetsPage from './ClusterSets'
+import { PluginDataContext } from '../../../../lib/PluginDataContext'
 
 const Component = () => (
     <RecoilRoot
@@ -87,7 +88,7 @@ describe('ClusterSets page without Submariner', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         render(
-            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )

@@ -1,19 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { noop } from 'lodash'
-import {
-    AgentClusterInstallK8sResource,
-    AgentK8sResource,
-    AgentMachineK8sResource,
-    BareMetalHostK8sResource,
-    HostedClusterK8sResource,
-    InfraEnvK8sResource,
-    InfrastructureK8sResource,
-    NMStateK8sResource,
-    NodePoolK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
-import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { atom, SetterOrUpdater, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
-import { LoadingPage } from './components/LoadingPage'
+import { Fragment, ReactNode, useEffect, useMemo, useContext } from 'react'
+import { PluginDataContext } from '../lib/PluginDataContext'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { SetterOrUpdater, useSetRecoilState } from 'recoil'
 import {
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
@@ -21,68 +10,47 @@ import {
     AgentKindVersion,
     AgentMachineApiVersion,
     AgentMachineKind,
-    AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
-    Application,
     ApplicationApiVersion,
     ApplicationKind,
-    ApplicationSet,
     ApplicationSetApiVersion,
     ApplicationSetKind,
-    ArgoApplication,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
-    BareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
     BareMetalHostApiVersion,
     BareMetalHostKind,
-    CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
     CertificateSigningRequestKind,
-    Channel,
     ChannelApiVersion,
     ChannelKind,
-    ClusterClaim,
     ClusterClaimApiVersion,
     ClusterClaimKind,
-    ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
-    ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
-    ClusterImageSet,
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
-    ClusterManagementAddOn,
     ClusterManagementAddOnApiVersion,
     ClusterManagementAddOnKind,
-    ClusterPool,
     ClusterPoolApiVersion,
     ClusterPoolKind,
-    ClusterProvision,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
-    ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
-    CustomResourceDefinition,
     CustomResourceDefinitionApiVersion,
     CustomResourceDefinitionKind,
-    DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
-    DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    fetchGet,
     getBackendUrl,
-    GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
-    HelmRelease,
     HelmReleaseApiVersion,
     HelmReleaseKind,
     HostedClusterApiVersion,
@@ -91,182 +59,123 @@ import {
     InfraEnvKind,
     InfrastructureApiVersion,
     InfrastructureKind,
-    IResource,
-    MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
-    ManagedCluster,
-    ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
     ManagedClusterApiVersion,
-    ManagedClusterInfo,
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
     ManagedClusterKind,
-    ManagedClusterSet,
     ManagedClusterSetApiVersion,
-    ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
     ManagedClusterSetKind,
-    MultiClusterEngine,
     MultiClusterEngineApiVersion,
     MultiClusterEngineKind,
-    MultiClusterHub,
     MultiClusterHubApiVersion,
     MultiClusterHubKind,
-    Namespace,
     NamespaceApiVersion,
     NamespaceKind,
     NMStateConfigApiVersion,
     NMStateConfigKind,
     NodePoolApiVersion,
     NodePoolKind,
-    OCPAppResource,
-    Placement,
     PlacementApiVersionAlpha,
-    PlacementBinding,
     PlacementBindingApiVersion,
     PlacementBindingKind,
-    PlacementDecision,
     PlacementDecisionApiVersion,
     PlacementDecisionKind,
     PlacementKind,
-    PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
-    Policy,
     PolicyApiVersion,
-    PolicyAutomation,
     PolicyAutomationApiVersion,
     PolicyAutomationKind,
     PolicyKind,
-    PolicyReport,
     PolicyReportApiVersion,
     PolicyReportKind,
-    PolicySet,
     PolicySetApiVersion,
     PolicySetKind,
-    Secret,
     SecretApiVersion,
     SecretKind,
-    SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
-    Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
-    SubscriptionOperator,
     SubscriptionOperatorApiVersion,
     SubscriptionOperatorKind,
-    SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
-    UserPreference,
     UserPreferenceApiVersion,
     UserPreferenceKind,
-} from './resources'
-let atomArrayKey = 0
-function AtomArray<T>() {
-    return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
-}
-
-// throttle events delay
-export const THROTTLE_EVENTS_DELAY = 500
-
-export const discoveredApplicationsState = AtomArray<ArgoApplication>()
-export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
-
-export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
-export const agentsState = AtomArray<AgentK8sResource>()
-export const ansibleJobState = AtomArray<AnsibleJob>()
-export const appProjectsState = AtomArray<IResource>()
-export const applicationSetsState = AtomArray<ApplicationSet>()
-export const applicationsState = AtomArray<Application>()
-export const argoApplicationsState = AtomArray<ArgoApplication>()
-export const argoCDsState = AtomArray<IResource>()
-export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
-export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()
-export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
-export const channelsState = AtomArray<Channel>()
-export const clusterClaimsState = AtomArray<ClusterClaim>()
-export const clusterCuratorsState = AtomArray<ClusterCurator>()
-export const clusterDeploymentsState = AtomArray<ClusterDeployment>()
-export const clusterImageSetsState = AtomArray<ClusterImageSet>()
-export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
-export const clusterPoolsState = AtomArray<ClusterPool>()
-export const clusterProvisionsState = AtomArray<ClusterProvision>()
-export const configMapsState = AtomArray<ConfigMap>()
-export const discoveredClusterState = AtomArray<DiscoveredCluster>()
-export const discoveryConfigState = AtomArray<DiscoveryConfig>()
-export const gitOpsClustersState = AtomArray<GitOpsCluster>()
-export const helmReleaseState = AtomArray<HelmRelease>()
-export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
-export const infrastructuresState = AtomArray<InfrastructureK8sResource>()
-export const machinePoolsState = AtomArray<MachinePool>()
-export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
-export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
-export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding>()
-export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
-export const managedClustersState = AtomArray<ManagedCluster>()
-export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
-export const multiClusterHubState = AtomArray<MultiClusterHub>()
-export const namespacesState = AtomArray<Namespace>()
-export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
-export const policiesState = AtomArray<Policy>()
-export const policyAutomationState = AtomArray<PolicyAutomation>()
-export const policySetsState = AtomArray<PolicySet>()
-export const placementBindingsState = AtomArray<PlacementBinding>()
-export const placementsState = AtomArray<Placement>()
-export const placementRulesState = AtomArray<PlacementRule>()
-export const placementDecisionsState = AtomArray<PlacementDecision>()
-export const policyreportState = AtomArray<PolicyReport>()
-export const secretsState = AtomArray<Secret>()
-export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
-export const subscriptionsState = AtomArray<Subscription>()
-export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
-export const subscriptionReportsState = AtomArray<SubscriptionReport>()
-export const userPreferencesState = AtomArray<UserPreference>()
-export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
-export const nodePoolsState = AtomArray<NodePoolK8sResource>()
-export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
-export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
-
-export let globalCustomResourceDefinitions: CustomResourceDefinition[] = []
-
-export const settingsState = atom<Settings>({ key: 'settings', default: {} })
-
-export interface Settings {
-    LOG_LEVEL?: string
-    SAVED_SEARCH_LIMIT?: string
-    ansibleIntegration?: 'enabled' | 'disabled'
-    singleNodeOpenshift?: 'enabled' | 'disabled'
-    awsPrivateWizardStep?: 'enabled' | 'disabled'
-}
-
-interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
-    object: {
-        kind: string
-        apiVersion: string
-        metadata: {
-            name: string
-            namespace: string
-            resourceVersion: string
-        }
-    }
-}
-
-export interface SettingsEvent {
-    type: 'SETTINGS'
-    settings: Record<string, string>
-}
-
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+} from '../resources'
+import { tokenExpired } from '../logout'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import {
+    agentClusterInstallsState,
+    agentsState,
+    ansibleJobState,
+    appProjectsState,
+    applicationSetsState,
+    applicationsState,
+    argoApplicationsState,
+    argoCDsState,
+    bareMetalAssetsState,
+    bareMetalHostsState,
+    certificateSigningRequestsState,
+    channelsState,
+    clusterClaimsState,
+    clusterCuratorsState,
+    clusterDeploymentsState,
+    clusterImageSetsState,
+    clusterManagementAddonsState,
+    clusterPoolsState,
+    clusterProvisionsState,
+    configMapsState,
+    customResourceDefinitionsState,
+    discoveredClusterState,
+    discoveryConfigState,
+    gitOpsClustersState,
+    helmReleaseState,
+    infraEnvironmentsState,
+    infrastructuresState,
+    machinePoolsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClusterSetBindingsState,
+    managedClusterSetsState,
+    managedClustersState,
+    multiClusterEnginesState,
+    multiClusterHubState,
+    namespacesState,
+    nmStateConfigsState,
+    policiesState,
+    policyAutomationState,
+    policySetsState,
+    placementBindingsState,
+    placementsState,
+    placementRulesState,
+    placementDecisionsState,
+    policyreportState,
+    secretsState,
+    settingsState,
+    submarinerConfigsState,
+    subscriptionsState,
+    subscriptionOperatorsState,
+    subscriptionReportsState,
+    userPreferencesState,
+    hostedClustersState,
+    nodePoolsState,
+    agentMachinesState,
+    WatchEvent,
+    ServerSideEventData,
+    THROTTLE_EVENTS_DELAY,
+} from '../atoms'
 
 export function LoadData(props: { children?: ReactNode }) {
-    const [loading, setLoading] = useState(true)
+    const { setLoaded } = useContext(PluginDataContext)
+
     const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
     const setAgents = useSetRecoilState(agentsState)
     const setAnsibleJobs = useSetRecoilState(ansibleJobState)
@@ -287,6 +196,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setClusterPools = useSetRecoilState(clusterPoolsState)
     const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
     const setConfigMaps = useSetRecoilState(configMapsState)
+    const setCustomResourceDefinitionsState = useSetRecoilState(customResourceDefinitionsState)
     const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
     const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
     const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
@@ -321,12 +231,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const setHostedClustersState = useSetRecoilState(hostedClustersState)
     const setNodePoolsState = useSetRecoilState(nodePoolsState)
     const setAgentMachinesState = useSetRecoilState(agentMachinesState)
-
-    const [customResourceDefinitions, setCustomResourceDefinitionsState] =
-        useRecoilState(customResourceDefinitionsState)
-    useEffect(() => {
-        globalCustomResourceDefinitions = customResourceDefinitions
-    }, [customResourceDefinitions])
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -511,11 +415,11 @@ export function LoadData(props: { children?: ReactNode }) {
                             eventQueue.length = 0
                             break
                         case 'LOADED':
-                            setLoading((loading) => {
-                                if (loading) {
+                            setLoaded((loaded) => {
+                                if (!loaded) {
                                     processEventQueue()
                                 }
-                                return false
+                                return true
                             })
                             break
                         case 'SETTINGS':
@@ -550,7 +454,7 @@ export function LoadData(props: { children?: ReactNode }) {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
-    }, [setSettings, setters])
+    }, [setSettings, setters, setLoaded])
 
     useEffect(() => {
         function checkLoggedIn() {
@@ -574,56 +478,13 @@ export function LoadData(props: { children?: ReactNode }) {
                     setTimeout(checkLoggedIn, 30 * 1000)
                 })
         }
-        checkLoggedIn()
+
+        if (process.env.MODE !== 'plugin') {
+            checkLoggedIn()
+        }
     }, [])
 
     const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
-    if (loading || getBackendUrl() === undefined) return <LoadingPage />
-
     return children
-}
-
-export function usePolicies() {
-    const policies = useRecoilValue(policiesState)
-    return useMemo(
-        () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
-        [policies]
-    )
-}
-
-export function useSavedSearchLimit() {
-    const settings = useRecoilValue(settingsState)
-    return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
-}
-
-export async function tokenExpired() {
-    if (process.env.NODE_ENV === 'production') {
-        logout()
-    } else {
-        window.location.href = `${getBackendUrl()}/login`
-    }
-}
-
-export async function logout() {
-    const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(getBackendUrl() + '/configure')
-    await fetchGet(getBackendUrl() + '/logout').catch(noop)
-
-    const iframe = document.createElement('iframe')
-    iframe.setAttribute('type', 'hidden')
-    iframe.name = 'hidden-form'
-    document.body.appendChild(iframe)
-
-    const form = document.createElement('form')
-    form.method = 'POST'
-    form.target = 'hidden-form'
-    const url = new URL(tokenEndpointResult.data.token_endpoint)
-    form.action = `${url.protocol}//${url.host}/logout`
-    document.body.appendChild(form)
-
-    form.submit()
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    location.pathname = '/'
 }

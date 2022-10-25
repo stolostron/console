@@ -3,8 +3,7 @@ import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, T
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext, compareStrings } from '../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { managedClustersState, namespacesState, usePolicies } from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
@@ -20,6 +19,7 @@ import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolati
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 
 export default function GovernanceOverview() {
+    const { usePolicies, namespacesState } = useSharedAtoms()
     const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const policyViolationSummary = usePolicyViolationSummary(policies)
@@ -198,6 +198,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
 
 function ClustersCard() {
     const { t } = useTranslation()
+    const { usePolicies, managedClustersState } = useSharedAtoms()
     const [clusters] = useRecoilState(managedClustersState)
     const policies = usePolicies()
     const { setDrawerContext } = useContext(AcmDrawerContext)

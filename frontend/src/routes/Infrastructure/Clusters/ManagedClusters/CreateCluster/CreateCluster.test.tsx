@@ -52,7 +52,6 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import CreateClusterPage from './CreateCluster'
 import { Scope } from 'nock/types'
 import {
     clusterName,
@@ -63,6 +62,8 @@ import {
     mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { CreateClusterPage } from '../CreateClusterPage'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -790,7 +791,7 @@ describe('CreateCluster AWS', () => {
 
         // create the form
         const { container } = render(
-            <PluginContext.Provider value={{ isACMAvailable: false }}>
+            <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )

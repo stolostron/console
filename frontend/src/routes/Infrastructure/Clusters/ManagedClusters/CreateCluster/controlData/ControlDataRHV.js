@@ -24,10 +24,13 @@ import { CreateCredentialModal } from '../../../../../../components/CreateCreden
 const installConfig = Handlebars.compile(installConfigHbs)
 
 export const getControlDataRHV = (handleModalToggle, includeAutomation = true, includeKlusterletAddonConfig = true) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataRHV)
-    insertToggleModalFunction(handleModalToggle, controlDataRHV)
-    if (includeAutomation) return [...controlDataRHV, ...automationControlData]
-    return [...controlDataRHV]
+    const controlData = [...controlDataRHV]
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
+    return controlData
 }
 
 const controlDataRHV = [

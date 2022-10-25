@@ -1,18 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterImageSetsState, secretsState } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
-    const history = useHistory()
+    const { nextStep, back, cancel } = useBackCancelNavigation()
+    const { clusterImageSetsState, secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const [clusterImageSets] = useRecoilState(clusterImageSetsState)
     const credentials = useMemo(
@@ -47,11 +46,10 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=AWS',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=AWS',
+                }),
             },
             // {
             //     id: 'alibaba',
@@ -66,7 +64,7 @@ export function CreateInfrastructure() {
             //         },
             //     ],
             //     labels: getCredentialLabels(Provider.alibaba),
-            //     // onClick: () => history.push(NavigationPath.clusters),
+            //     // onClick: () => nextStep(NavigationPath.clusters),
             // },
             {
                 id: 'google',
@@ -81,11 +79,10 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=GCP',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=GCP',
+                }),
             },
             {
                 id: 'hostinventory',
@@ -99,7 +96,7 @@ export function CreateInfrastructure() {
                         ),
                     },
                 ],
-                onClick: clusterImageSets.length ? () => history.push(NavigationPath.createControlPlane) : undefined,
+                onClick: clusterImageSets.length ? nextStep(NavigationPath.createControlPlane) : undefined,
                 alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
                 alertVariant: 'info',
                 alertContent: (
@@ -126,11 +123,10 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=Azure',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=Azure',
+                }),
             },
             {
                 id: 'openstack',
@@ -145,11 +141,10 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.openstack),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=OpenStack',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=OpenStack',
+                }),
             },
             {
                 id: 'rhv',
@@ -164,11 +159,10 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.redhatvirtualization),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=RHV',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=RHV',
+                }),
             },
             {
                 id: 'vsphere',
@@ -183,15 +177,14 @@ export function CreateInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.vmware),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=vSphere',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=vSphere',
+                }),
             },
         ]
         return newCards
-    }, [getCredentialLabels, clusterImageSets.length, history, t])
+    }, [nextStep, getCredentialLabels, clusterImageSets.length, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -211,8 +204,8 @@ export function CreateInfrastructure() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
-                onBack={() => history.push(NavigationPath.clusters)}
-                onCancel={() => history.push(NavigationPath.clusters)}
+                onBack={back(NavigationPath.clusters)}
+                onCancel={cancel(NavigationPath.clusters)}
             />
         </Fragment>
     )

@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 
 export function CreateDiscoverHost() {
     const [t] = useTranslation()
-    const history = useHistory()
+    const { nextStep, back, cancel } = useBackCancelNavigation()
 
     const cards = useMemo(() => {
         const newCards: ICatalogCard[] = [
@@ -24,11 +23,10 @@ export function CreateDiscoverHost() {
                         ),
                     },
                 ],
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=CIM',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=CIM',
+                }),
             },
             {
                 id: 'discover',
@@ -41,26 +39,23 @@ export function CreateDiscoverHost() {
                         ),
                     },
                 ],
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createCluster,
-                        search: '?infrastructureType=AI',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createCluster,
+                    search: '?infrastructureType=AI',
+                }),
             },
         ]
         return newCards
-    }, [history, t])
+    }, [nextStep, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
     const breadcrumbs = [
         { label: t('Clusters'), to: NavigationPath.clusters },
-        { label: t('Infrastructure'), to: NavigationPath.createInfrastructure },
+        { label: t('Infrastructure'), to: NavigationPath.createCluster },
         { label: t('Control plane type'), to: NavigationPath.createControlPlane },
         { label: t('Hosts') },
     ]
-
-    const onBack = useCallback(() => history.push(NavigationPath.createControlPlane), [history])
 
     return (
         <Fragment>
@@ -73,8 +68,8 @@ export function CreateDiscoverHost() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
-                onBack={onBack}
-                onCancel={() => history.push(NavigationPath.clusters)}
+                onBack={back(NavigationPath.createControlPlane)}
+                onCancel={cancel(NavigationPath.clusters)}
             />
         </Fragment>
     )
