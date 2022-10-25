@@ -34,6 +34,6 @@
         "isolatedModules": true,
         "noEmit": true
     },
-    "include": ["src", "webpack.config.ts", "i18n-scripts"],
+    "include": ["src", "webpack.config.ts", "webpack.plugin.ts", "*.ts", "*.js", "i18n-scripts"],
     "exclude": ["**/*.stories.tsx"]
 }
