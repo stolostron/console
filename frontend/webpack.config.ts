@@ -12,8 +12,8 @@ import ReactRefreshTypeScript from 'react-refresh-typescript'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin';
-import { supportedLanguages } from './src/lib/i18n'
+import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
+import { supportedLanguages } from './src/lib/supportedLanguages'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -38,11 +38,11 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.(hbs|yaml)$/, type: 'asset/source' },
-                { 
-                    type: 'asset', 
-                    resourceQuery: /url/
+                {
+                    type: 'asset',
+                    resourceQuery: /url/,
                 },
-                { 
+                {
                     test: /\.(svg)$/i,
                     type: 'asset',
                     resourceQuery: /url/, // *.svg?url  see https://react-svgr.com/docs/webpack/#use-svgr-and-asset-svg-in-the-same-project
@@ -51,7 +51,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     test: /\.svg$/i,
                     issuer: /\.[jt]sx?$/,
                     resourceQuery: { not: [/url/] }, // exlcude react component if *.svg?url
-                    use: ['@svgr/webpack'], 
+                    use: ['@svgr/webpack'],
                 },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
@@ -77,20 +77,20 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
-                'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation')
+                'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation'),
             }) as unknown as webpack.WebpackPluginInstance,
             ...locales.map((locale) => {
                 return new MergeJsonWebpackPlugin({
                     files: [
                         `./public/locales/${locale}/translation.json`,
-                        `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`
-                      ],
+                        `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`,
+                    ],
                     output: {
-                        "fileName": `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`
+                        fileName: `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`,
                     },
-                    space: 4
+                    space: 4,
                 })
-            }), 
+            }),
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
@@ -147,7 +147,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/login': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/logout': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/configure': { target: 'https://localhost:4000', secure: false},
+                '/multicloud/configure': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/username': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/mchVersion': { target: 'https://localhost:4000', secure: false },
             },
