@@ -159,28 +159,6 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     return resourceMap
 }
 
-export const getExistingResourceMapKey = (resourceMap, name, relatedKind) => {
-    // bofore loop, find all items with the same type as relatedKind
-    const isSameType = (item) => item.indexOf(`${relatedKind.kind.toLowerCase()}-`) === 0
-    const keys = R.filter(isSameType, Object.keys(resourceMap))
-    const relatedKindCls = _.get(relatedKind, 'cluster', '')
-    let i
-    for (i = 0; i < keys.length; i++) {
-        const keyObject = resourceMap[keys[i]]
-        const keyObjType = _.get(keyObject, 'type', '')
-        const keyObjName = _.get(keyObject, 'name', '')
-        if (
-            (keys[i].indexOf(name) > -1 && keys[i].indexOf(relatedKindCls) > -1) || //node id doesn't contain cluster name, match cluster using the object type
-            (_.includes(_.get(keyObject, 'specs.clustersNames', []), relatedKindCls) &&
-                name === `${keyObjType}-${keyObjName}-${relatedKindCls}`)
-        ) {
-            return keys[i]
-        }
-    }
-
-    return null
-}
-
 export const mapSingleApplication = (application) => {
     const items = (application ? _.get(application, 'items', []) : []) || []
 
