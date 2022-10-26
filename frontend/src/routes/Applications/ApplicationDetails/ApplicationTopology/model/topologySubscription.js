@@ -387,15 +387,23 @@ export const createReplicaChild = (parentObject, clustersNames, template, links,
         const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
         if (template && template.related) {
             const relatedMap = keyBy(template.related, 'kind')
-            if (relatedMap['replicaset'] || relatedMap['replicationcontroller']) {
+            if (
+                relatedMap['replicaset'] ||
+                relatedMap['ReplicaSet'] ||
+                relatedMap['replicationcontroller'] ||
+                relatedMap['ReplicationController']
+            ) {
                 const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
                 const replicaCount = get(
-                    relatedMap['replicaset'] || relatedMap['replicationcontroller'],
+                    relatedMap['replicaset'] ||
+                        relatedMap['ReplicaSet'] ||
+                        relatedMap['replicationcontroller'] ||
+                        relatedMap['ReplicationController'],
                     'items.0.desired',
                     0
                 )
                 return createChildNode(pNode, clustersNames, 'pod', links, nodes, replicaCount)
-            } else if (relatedMap['pod']) {
+            } else if (relatedMap['pod'] || relatedMap['Pod']) {
                 return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
             }
         } else {
