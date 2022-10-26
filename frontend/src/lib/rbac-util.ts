@@ -156,14 +156,14 @@ export function rbacUpdate(resource: IResource, namespace?: string, name?: strin
     return rbacResource('update', resource, namespace, name)
 }
 
-export async function canUser(
+export function canUser(
     verb: Verb,
     resource: IResource,
     namespace?: string,
     name?: string,
     _subresource?: SubResource
 ) {
-    const resourceAttributes = await rbacResource(verb, resource, namespace, name, _subresource)
+    const resourceAttributes = rbacResource(verb, resource, namespace, name, _subresource)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview
 }
