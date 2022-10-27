@@ -41,6 +41,7 @@ import { validateKubernetesResourceName, validatePolicyName } from '../../lib/va
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { Specifications } from './specifications'
+import { wizardStrings } from '../../lib/wizardStrings'
 
 export function PolicyWizard(props: {
     title: string
@@ -60,6 +61,7 @@ export function PolicyWizard(props: {
 }) {
     return (
         <WizardPage
+            wizardStrings={wizardStrings}
             title={props.title}
             description="A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls."
             yamlEditor={props.yamlEditor}
