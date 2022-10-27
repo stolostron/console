@@ -21,7 +21,7 @@ import {
 
 import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
 
-import { getExistingResourceMapKey, syncControllerRevisionPodStatusMap } from '../model/computeRelated'
+import { syncControllerRevisionPodStatusMap } from '../model/computeRelated'
 
 describe('mustRefreshTopologyMap', () => {
     const updatedTime = 1621025105756
@@ -922,55 +922,6 @@ describe('getPulseStatusForSubscription package with Failed phase in statuses', 
 
     it('getPulseStatusForSubscription return yellow status', () => {
         expect(getPulseStatusForSubscription(node)).toEqual('yellow')
-    })
-})
-
-describe('getExistingResourceMapKey', () => {
-    const resourceMap = {
-        'replicaset-nginx-placement-cluster1, cluster2': 'test',
-    }
-
-    const resourceMapSamePrefix = {
-        'configmap-cfg-from-ch-qa-cluster1, cluster2': 'test',
-        'configmap-cfg-from-ch-qa-2-cluster1, cluster2': 'test1',
-        'configmap-cfg-from-ch-qa-3-cluster1, cluster2': relatedKindSamePrefix,
-    }
-
-    const relatedKindSamePrefix = {
-        cluster: 'cluster1',
-        kind: 'configmap',
-        name: 'configmap-cfg-from-ch-qa-3',
-    }
-
-    const relatedKind = {
-        cluster: 'cluster1',
-        kind: 'replicaset',
-    }
-
-    const relatedKindBadCluster = {
-        cluster: 'cluster3',
-    }
-
-    it('should get key from resourceMap and find the last name', () => {
-        expect(
-            getExistingResourceMapKey(resourceMapSamePrefix, 'configmap-cfg-from-ch-qa-3-', relatedKindSamePrefix)
-        ).toEqual('configmap-cfg-from-ch-qa-3-cluster1, cluster2')
-    })
-
-    it('should get key from resourceMap', () => {
-        expect(getExistingResourceMapKey(resourceMap, 'replicaset-nginx-placement', relatedKind)).toEqual(
-            'replicaset-nginx-placement-cluster1, cluster2'
-        )
-    })
-
-    it('should not get key from resourceMap', () => {
-        expect(getExistingResourceMapKey(resourceMap, 'non-existent-name', relatedKind)).toEqual(null)
-    })
-
-    it('should not get key from resourceMap - non-existent cluster', () => {
-        expect(getExistingResourceMapKey(resourceMap, 'replicaset-nginx-placement', relatedKindBadCluster)).toEqual(
-            null
-        )
     })
 })
 
