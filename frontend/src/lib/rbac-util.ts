@@ -100,12 +100,14 @@ export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], 
 
 export async function checkAdminAccess() {
     const result = (
-        await createSubjectAccessReview({
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        })
+        await createSubjectAccessReview(
+            Promise.resolve({
+                name: '*',
+                namespace: '*',
+                resource: '*',
+                verb: '*',
+            })
+        )
     ).promise
     return result
 }
