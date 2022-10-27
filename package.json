@@ -65,14 +65,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "lint-staged": {
-        "*": "npm run copyright:fix --",
-        "backend/**/*.ts": "npm run lint:fix:backend --",
-        "frontend/**/*.{js,jsx,ts,tsx}": [
-            "npm run lint:fix:frontend --",
-            "npm run i18n:frontend --",
-            "git diff --exit-code frontend/public/locales/en/translation.json"
-        ]
     }
 }
