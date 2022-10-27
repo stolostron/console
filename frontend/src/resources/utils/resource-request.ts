@@ -272,10 +272,6 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource | Promise<Resource>,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-
-    Promise.all([data, url]).then(([data, url]) => {
-
-    }
     const url = Promise.resolve(resource).then((resource) => {
         return getResourceApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
@@ -516,7 +512,9 @@ export function postRequest<DataT, ResultT>(
 ): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: Promise.all([data, url]).then(([data, url]) => fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data)),
+        promise: Promise.all([data, url]).then(([data, url]) =>
+            fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }
