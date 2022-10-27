@@ -272,6 +272,10 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource | Promise<Resource>,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
+
+    Promise.all([data, url]).then(([data, url]) => {
+
+    }
     const url = Promise.resolve(resource).then((resource) => {
         return getResourceApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
@@ -323,7 +327,7 @@ export function deleteResource<Resource extends IResource>(
     return deleteRequest(url)
 }
 
-export async function getResource<Resource extends IResource>(
+export function getResource<Resource extends IResource>(
     resource: Resource,
     options?: {
         labelSelector?: Record<string, string>
@@ -512,11 +516,7 @@ export function postRequest<DataT, ResultT>(
 ): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: Promise.resolve(data).then((data) => {
-            return Promise.resolve(url).then((url) => {
-                return fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data)
-            })
-        }),
+        promise: Promise.all([data, url]).then(([data, url]) => fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data)),
         abort: () => abortController.abort(),
     }
 }
