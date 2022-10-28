@@ -110,8 +110,15 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             },
             distribution: {
                 key: t('table.distribution'),
-                value: cluster?.distribution?.displayVersion && (
-                    <DistributionField cluster={cluster} clusterCurator={clusterCurator} />
+                // value: cluster?.distribution?.displayVersion && (
+                //     <DistributionField cluster={cluster} clusterCurator={clusterCurator} hostedCluster={hostedCluster} />
+                // ),
+                value: (
+                    <DistributionField
+                        cluster={cluster}
+                        clusterCurator={clusterCurator}
+                        hostedCluster={hostedCluster}
+                    />
                 ),
             },
             channel: {
