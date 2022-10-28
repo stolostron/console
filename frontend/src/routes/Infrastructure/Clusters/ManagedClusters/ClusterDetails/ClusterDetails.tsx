@@ -9,6 +9,7 @@ import {
     AcmPageHeader,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
+    AcmToastContext,
     Provider,
 } from '../../../../../ui-components'
 import {
@@ -17,9 +18,9 @@ import {
     HostedClusterK8sResource,
     InfraEnvK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
+import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { ErrorPage } from '../../../../../components/ErrorPage'
+import { ErrorPage, getErrorInfo } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
@@ -35,6 +36,12 @@ import {
     ResourceError,
     SecretDefinition,
     getIsHostedCluster,
+    IResource,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    createResource,
+    patchResource,
 } from '../../../../../resources'
 import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
@@ -70,6 +77,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
+    const toastContext = useContext(AcmToastContext)
+
     const { waitForAll } = useSharedRecoil()
     const {
         agentClusterInstallsState,
@@ -185,15 +194,86 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} />
     }
 
+    function importHostedControlPlaneCluster() {
+        const selectedHostedCluster: HostedClusterK8sResource = hostedClusters.find(
+            (hc) => hc.metadata.name === match.params.id
+        )
+        if (selectedHostedCluster) {
+            const hdName = selectedHostedCluster.metadata.name
+            const hdNamespace = selectedHostedCluster.metadata.namespace
+            const managedClusterResource: ManagedCluster = {
+                apiVersion: ManagedClusterApiVersion,
+                kind: ManagedClusterKind,
+                metadata: {
+                    annotations: {
+                        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+                        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+                        'open-cluster-management/created-via': 'other',
+                    },
+                    labels: {
+                        cloud: 'auto-detect',
+                        'cluster.open-cluster-management.io/clusterset': 'default',
+                        name: hdName,
+                        vendor: 'OpenShift',
+                    },
+                    name: hdName,
+                },
+                spec: {
+                    hubAcceptsClient: true,
+                    leaseDurationSeconds: 60,
+                },
+            }
+
+            const updateAnnotations = {
+                'cluster.open-cluster-management.io/managedcluster-name': hdName,
+                'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
+            }
+
+            createResource(managedClusterResource as IResource)
+                .promise.then(() => {
+                    toastContext.addAlert({
+                        title: t('Import hosted control plane cluster...'),
+                        type: 'success',
+                        autoClose: true,
+                    })
+                })
+                .catch((err) => {
+                    const errorInfo = getErrorInfo(err, t)
+                    toastContext.addAlert({
+                        type: 'danger',
+                        title: errorInfo.title,
+                        message: errorInfo.message,
+                    })
+                })
+
+            patchResource(selectedHostedCluster, [
+                { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
+            ])
+        }
+    }
+
     if (!clusterExists) {
         return (
             <Page>
                 <ErrorPage
                     error={new ResourceError('Not found', 404)}
                     actions={
-                        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
-                            {t('button.backToClusters')}
-                        </AcmButton>
+                        <Fragment>
+                            <AcmButton
+                                role="link"
+                                onClick={() => importHostedControlPlaneCluster()}
+                                style={{ marginRight: '10px' }}
+                            >
+                                {t('managed.importCluster')}
+                            </AcmButton>
+                            <AcmButton
+                                role="link"
+                                onClick={() => history.push(NavigationPath.clusters)}
+                                style={{ marginRight: '10px' }}
+                            >
+                                {t('button.backToClusters')}
+                            </AcmButton>
+                        </Fragment>
                     }
                 />
             </Page>
