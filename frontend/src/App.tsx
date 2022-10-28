@@ -8,6 +8,7 @@ import {
     ApplicationLauncherGroup,
     ApplicationLauncherItem,
     ApplicationLauncherSeparator,
+    Banner,
     Button,
     Dropdown,
     DropdownItem,
@@ -23,6 +24,8 @@ import {
     PageHeaderToolsItem,
     PageSidebar,
     Spinner,
+    Split,
+    SplitItem,
     TextContent,
     TextList,
     TextListItem,
@@ -39,6 +42,9 @@ import {
     RedhatIcon,
 } from '@patternfly/react-icons'
 import {
+    AcmAlertContext,
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmIcon,
     AcmIconVariant,
     AcmTablePaginationContextProvider,
@@ -46,7 +52,7 @@ import {
     AcmToastProvider,
 } from './ui-components'
 import { t } from 'i18next'
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
@@ -55,7 +61,7 @@ import { LoadData, logout } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
-import { DOC_HOME } from './lib/doc-util'
+import { DOC_HOME, DOC_LINKS } from './lib/doc-util'
 import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
@@ -227,6 +233,9 @@ const useStyles = makeStyles({
     about: {
         height: 'min-content',
     },
+    banner: {
+        '--pf-c-banner--link--hover--FontWeight': 'unset',
+    },
     perspective: {
         // 'font-size': '$co-side-nav-font-size',
         // 'justify-content': 'space-between',
@@ -353,6 +362,10 @@ export default function App() {
 
     return (
         <BrowserRouter>
+            <AcmAlertProvider>
+                <AcmAlertGroup canClose />
+                <DeprecationBanner />
+            </AcmAlertProvider>
             <Page
                 header={<AppHeader />}
                 sidebar={<AppSidebar routes={routes} />}
@@ -646,5 +659,42 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
             }
             // className="sidebar"
         />
+    )
+}
+
+function DeprecationBanner() {
+    const { addAlert } = useContext(AcmAlertContext)
+    const { banner } = useStyles()
+    const { pathname, search } = useLocation()
+    const consoleSuffix = useMemo(() => {
+        const params = new URLSearchParams(search)
+        params.set('perspective', 'acm')
+        return `${pathname}?${params.toString()}`
+    }, [pathname, search])
+    const onClickPluginLink = useCallback(
+        () =>
+            launchToOCP(consoleSuffix, false, () =>
+                addAlert({ title: 'Failed to locate OpenShift console', type: 'danger' })
+            ),
+        [addAlert, consoleSuffix]
+    )
+    return (
+        <Banner isSticky variant="warning" className={banner}>
+            <Split hasGutter>
+                <SplitItem isFilled className="pf-u-text-wrap">
+                    This web console is deprecated and will be removed in Red Hat Advanced Cluster Management for
+                    Kubernetes 2.7. Switch to the{' '}
+                    <Button variant="link" isInline onClick={onClickPluginLink}>
+                        Openshift console plug-in
+                    </Button>
+                    .
+                </SplitItem>
+                <SplitItem>
+                    <a href={DOC_LINKS.CONSOLE_PLUGIN} target="_blank" rel="noreferrer">
+                        Learn more
+                    </a>
+                </SplitItem>
+            </Split>
+        </Banner>
     )
 }
