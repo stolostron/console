@@ -1098,7 +1098,8 @@ export function getClusterStatus(
 export function getIsHostedCluster(managedCluster?: ManagedCluster) {
     if (
         managedCluster?.metadata.annotations &&
-        managedCluster?.metadata.annotations['cluster.open-cluster-management.io/hypershiftdeployment']
+        managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] &&
+        managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] === 'Hosted'
     ) {
         return true
     } else {
