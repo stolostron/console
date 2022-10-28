@@ -60,9 +60,9 @@ const Component = () => {
 describe('Edit AI Cluster', () => {
     test('can be rendered', async () => {
         const nocks = [
-            nockGet(pullSecretMock, pullSecretMock),
-            nockList(managedClusterMock, managedClusterMock),
-            nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
+            await nockGet(pullSecretMock, pullSecretMock),
+            await nockList(managedClusterMock, managedClusterMock),
+            await nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
         ]
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))

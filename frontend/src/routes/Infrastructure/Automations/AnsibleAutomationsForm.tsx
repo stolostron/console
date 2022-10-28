@@ -42,7 +42,6 @@ import schema from './schema.json'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../components/GetProjects'
-import { useSharedAtoms } from '../../../shared-recoil'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -516,7 +515,7 @@ export function AnsibleAutomationsForm(props: {
         ],
         submit: () => {
             if (isEditing) {
-                return replaceResource(stateToData() as IResource).promise.then(async () => {
+                return replaceResource(stateToData() as IResource).then(async () => {
                     if (process.env.NODE_ENV === 'development')
                         await new Promise((resolve) => setTimeout(resolve, 4000))
                     history.push(NavigationPath.ansibleAutomations)

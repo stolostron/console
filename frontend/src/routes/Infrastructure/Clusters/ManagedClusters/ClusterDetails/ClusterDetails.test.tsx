@@ -1009,7 +1009,7 @@ describe('ClusterDetails', () => {
     })
 
     test('overview page opens logs', async () => {
-        const nocks: Scope[] = [nockListHiveProvisionJobs()]
+        const nocks: Scope[] = [await nockListHiveProvisionJobs()]
         window.open = jest.fn()
         await clickByText('View logs', 1)
         await waitForNocks(nocks)
@@ -1078,7 +1078,7 @@ describe('ClusterDetails', () => {
 
         const deleteNock = nockDelete(mockManagedCluster)
         await clickByText('Detach')
-        await waitForNock(deleteNock)
+        await waitForNock(await deleteNock)
     })
 
     test('overview page handles destroy', async () => {
@@ -1089,7 +1089,7 @@ describe('ClusterDetails', () => {
             mockManagedCluster.metadata.name!
         )
 
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
+        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster), await nockDelete(mockClusterDeployment)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -1131,7 +1131,7 @@ describe('ClusterDetails for On Premise', () => {
     })
 
     test('overview page renders AI empty details', async () => {
-        const nocks: Scope[] = [mockMultiClusterEngineList()]
+        const nocks: Scope[] = [await mockMultiClusterEngineList()]
         render(<AIComponent />)
         await waitForNocks(nocks)
 

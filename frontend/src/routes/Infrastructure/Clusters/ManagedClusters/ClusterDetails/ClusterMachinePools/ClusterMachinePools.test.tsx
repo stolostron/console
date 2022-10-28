@@ -111,7 +111,7 @@ describe('ClusterMachinePools', () => {
             `Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`,
             mockMachinePoolAuto.metadata.name!
         )
-        const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
+        const deleteNocks: Scope[] = [await nockDelete(mockMachinePoolAuto)]
         await clickByText('Delete')
         await waitForNocks(deleteNocks)
     })

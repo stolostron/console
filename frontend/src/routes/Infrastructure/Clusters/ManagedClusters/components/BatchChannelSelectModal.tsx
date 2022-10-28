@@ -171,7 +171,7 @@ export function BatchChannelSelectModal(props: {
                 let createCuratorResult: IRequestResult<ClusterCurator> | undefined = undefined
                 return {
                     promise: new Promise((resolve, reject) => {
-                        patchCuratorResult.promise
+                        patchCuratorResult
                             .then((data) => {
                                 return resolve(data)
                             })
@@ -187,8 +187,8 @@ export function BatchChannelSelectModal(props: {
                                 }
                             })
                     }),
-                    abort: () => {
-                        patchCuratorResult.abort()
+                    abort: async () => {
+                        ;(await patchCuratorResult).abort()
                         if (createCuratorResult) {
                             createCuratorResult.abort()
                         }

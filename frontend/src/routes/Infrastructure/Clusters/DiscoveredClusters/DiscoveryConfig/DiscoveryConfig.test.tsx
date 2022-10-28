@@ -147,7 +147,7 @@ describe('discovery config page', () => {
             discoveryConfigUpdateSelfSubjectAccessRequest,
             discoveryConfigUpdateSelfSubjectAccessResponse
         )
-        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
+        const nocks = [await nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
@@ -173,7 +173,7 @@ describe('discovery config page', () => {
 
         const replaceNock = nockReplace(discoveryConfigUpdated)
         await clickByText('Save')
-        await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
+        await waitFor(async () => expect((await replaceNock).isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was updated successfully')
@@ -181,7 +181,7 @@ describe('discovery config page', () => {
     })
 
     it('Delete DiscoveryConfig', async () => {
-        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
+        const nocks = [await nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
@@ -200,7 +200,7 @@ describe('discovery config page', () => {
         await clickByText('Delete')
         await waitForText('Delete discovery settings')
         await clickByText('Delete', 1)
-        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
+        await waitFor(async () => expect((await deleteNock).isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was removed successfully')

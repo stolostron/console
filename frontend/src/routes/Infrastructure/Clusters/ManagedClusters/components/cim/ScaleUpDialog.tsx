@@ -42,7 +42,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
                         path: '/spec/role',
                         value: 'worker',
                     },
-                ]).promise
+                ])
             })
 
             await Promise.all(promises)

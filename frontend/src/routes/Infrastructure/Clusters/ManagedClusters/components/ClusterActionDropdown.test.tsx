@@ -204,14 +204,14 @@ describe('ClusterActionDropdown', () => {
         cluster.status = ClusterStatus.hibernating
         render(<Component cluster={cluster} />)
         const rbacNocks: Scope[] = [
-            nockRBAC(rbacPatchManagedCluster()),
-            nockRBAC(rbacPatchClusterDeployment()),
-            nockRBAC(rbacDeleteManagedCluster()),
-            nockRBAC(rbacDeleteClusterDeployment()),
-            nockRBAC(rbacPatchClusterCurator()),
-            nockRBAC(rbacCreateClusterCurator()),
-            nockRBAC(rbacPatchSecret()),
-            nockRBAC(rbacCreateSecret()),
+            nockRBAC(await rbacPatchManagedCluster()),
+            nockRBAC(await rbacPatchClusterDeployment()),
+            nockRBAC(await rbacDeleteManagedCluster()),
+            nockRBAC(await rbacDeleteClusterDeployment()),
+            nockRBAC(await rbacPatchClusterCurator()),
+            nockRBAC(await rbacCreateClusterCurator()),
+            nockRBAC(await rbacPatchSecret()),
+            nockRBAC(await rbacCreateSecret()),
         ]
         await clickByLabel('Actions')
         await waitForNocks(rbacNocks)
