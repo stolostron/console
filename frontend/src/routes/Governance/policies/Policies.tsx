@@ -847,7 +847,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                     }
                 }
                 policies.sort()
-                await replaceResource(policySet).promise
+                await replaceResource(policySet)
             }
             props.onClose()
         } catch (err) {

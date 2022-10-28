@@ -413,7 +413,7 @@ it('should render overview page in empty state', async () => {
     await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
+    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset])
 })
 
 it('should render overview page in error state', async () => {
@@ -447,7 +447,7 @@ it('should render overview page in error state', async () => {
     await wait()
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
+    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset])
 
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
@@ -562,7 +562,7 @@ it('should render overview page with expected data', async () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock])
+    await waitForNocks([await getAddonNock])
 
     // This wait pauses till apollo query is returning data
     await wait()

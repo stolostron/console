@@ -8,7 +8,7 @@ import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
-import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
+import { getResourceApiPath, getResourceName, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
 export interface IRequestResult<ResultType = unknown> {
@@ -296,8 +296,14 @@ export async function patchResource<Resource extends IResource, ResultType = Res
     data: unknown,
     options?: { dryRun?: boolean }
 ): Promise<IRequestResult<ResultType>> {
-    let url = getBackendUrl() + (await getResourceNameApiPath(resource))
-    if (options?.dryRun) url += '?dryRun=All'
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
+
     const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
@@ -329,58 +335,68 @@ export function getResource<Resource extends IResource>(
         labelSelector?: Record<string, string>
         fieldSelector?: Record<string, unknown>
     }
-): Promise<IRequestResult<Resource>> {
+): IRequestResult<Resource> {
     if (getResourceName(resource) === undefined) {
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     }
 
-    let url = getBackendUrl() + (await getResourceNameApiPath(resource))
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            let queryString = undefined
 
-    let queryString = undefined
+            if (options?.labelSelector) {
+                const labels: string[] = []
+                for (const key in options.labelSelector) {
+                    const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
+                    labels.push(`${key}=${value}`)
+                }
+                queryString = 'labelSelector=' + labels.map((label) => label).join(',')
+            }
 
-    if (options?.labelSelector) {
-        const labels: string[] = []
-        for (const key in options.labelSelector) {
-            const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
-            labels.push(`${key}=${value}`)
-        }
-        queryString = 'labelSelector=' + labels.map((label) => label).join(',')
-    }
+            if (options?.fieldSelector) {
+                const fields: string[] = []
+                for (const key in options.fieldSelector) {
+                    const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
+                    fields.push(`${key}=${value}`)
+                }
+                if (queryString) queryString += '&'
+                else queryString = ''
+                queryString += 'fieldSelector=' + fields.map((field) => field).join(',')
+            }
 
-    if (options?.fieldSelector) {
-        const fields: string[] = []
-        for (const key in options.fieldSelector) {
-            const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
-            fields.push(`${key}=${value}`)
-        }
-        if (queryString) queryString += '&'
-        else queryString = ''
-        queryString += 'fieldSelector=' + fields.map((field) => field).join(',')
-    }
+            if (queryString) url += '?' + queryString
 
-    if (queryString) url += '?' + queryString
+            return url
+        })
+    })
 
     return getRequest<Resource>(url)
 }
 
-export async function listResources<Resource extends IResource>(
+export function listResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
-): Promise<IRequestResult<Resource[]>> {
-    let url = getBackendUrl() + (await getResourceApiPath(resource))
-    if (labels) {
-        url += '?labelSelector=' + labels.join(',')
-        if (query)
-            url += `&${Object.keys(query)
-                .map((key) => `${key}=${query[key]}`)
-                .join('&')}`
-    } else {
-        if (query)
-            url += `?${Object.keys(query)
-                .map((key) => `${key}=${query[key]}`)
-                .join('&')}`
-    }
+): IRequestResult<Resource[]> {
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((url) => {
+            if (labels) {
+                url += '?labelSelector=' + labels.join(',')
+                if (query)
+                    url += `&${Object.keys(query)
+                        .map((key) => `${key}=${query[key]}`)
+                        .join('&')}`
+            } else {
+                if (query)
+                    url += `?${Object.keys(query)
+                        .map((key) => `${key}=${query[key]}`)
+                        .join('&')}`
+            }
+            return url
+        })
+    })
+
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => {
@@ -400,12 +416,17 @@ export async function listResources<Resource extends IResource>(
     }
 }
 
-export async function listClusterResources<Resource extends IResource>(
+export function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     labels?: string[]
-): Promise<IRequestResult<Resource[]>> {
-    let url = getBackendUrl() + (await getResourceApiPath(resource))
-    if (labels) url += '?labelSelector=' + labels.join(',')
+): IRequestResult<Resource[]> {
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (labels) url += '?labelSelector=' + labels.join(',')
+            return url
+        })
+    })
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
@@ -413,16 +434,21 @@ export async function listClusterResources<Resource extends IResource>(
     }
 }
 
-export async function listNamespacedResources<Resource extends IResource>(
+export function listNamespacedResources<Resource extends IResource>(
     resource: {
         apiVersion: string
         kind: string
         metadata: { namespace: string }
     },
     labels?: string[]
-): Promise<IRequestResult<Resource[]>> {
-    let url = getBackendUrl() + (await getResourceApiPath(resource))
-    if (labels) url += '?labelSelector=' + labels.join(',')
+): IRequestResult<Resource[]> {
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (labels) url += '?labelSelector=' + labels.join(',')
+            return url
+        })
+    })
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
@@ -490,10 +516,12 @@ export function fetchGetAnsibleJobs(
     })
 }
 
-export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
+export function getRequest<ResultT>(url: string | Promise<string>): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchGet<ResultT>(url, abortController.signal).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) =>
+            fetchGet<ResultT>(url, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }
@@ -520,13 +548,15 @@ export function postRequest<DataT, ResultT>(
 }
 
 export function patchRequest<DataT, ResultT>(
-    url: string,
+    url: string | Promise<string>,
     data: DataT,
     headers?: Record<string, string>
 ): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPatch<ResultT>(url, data, abortController.signal, headers).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) => {
+            return fetchPatch<ResultT>(url, data, abortController.signal, headers).then((result) => result.data)
+        }),
         abort: () => abortController.abort(),
     }
 }

@@ -200,7 +200,7 @@ export function UpdateAutomationModal(props: {
 
                     results.push({
                         promise: new Promise((resolve, reject) => {
-                            result.promise
+                            result
                                 .then((data) => {
                                     return resolve(data)
                                 })
@@ -223,8 +223,8 @@ export function UpdateAutomationModal(props: {
                                     setIsUpdating(false)
                                 })
                         }),
-                        abort: () => {
-                            result.abort()
+                        abort: async () => {
+                            ;(await result).abort()
                             if (createResult) {
                                 createResult.abort()
                             }

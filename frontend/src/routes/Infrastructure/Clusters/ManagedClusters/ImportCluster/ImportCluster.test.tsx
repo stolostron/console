@@ -442,7 +442,7 @@ describe('ImportCluster', () => {
         await clickByText('Generate command')
         await waitForText('Generating')
 
-        await waitForNocks([projectNock, managedClusterNock, kacNock, importSecretNock])
+        await waitForNocks([projectNock, managedClusterNock, kacNock, await importSecretNock])
     })
 
     test('can create resources with ansible template', async () => {
@@ -491,7 +491,7 @@ describe('ImportCluster', () => {
             projectNock,
             managedClusterNock,
             kacNock,
-            importSecretNock,
+            await importSecretNock,
             ansibleCopiedNock,
             clusterCuratorNock,
         ])
@@ -525,7 +525,7 @@ describe('ImportCluster', () => {
         await waitForText('Generate command')
         await clickByText('Generate command')
 
-        await waitForNocks([projectNock, managedClusterNock, importSecretNock])
+        await waitForNocks([projectNock, managedClusterNock, await importSecretNock])
     })
 
     test('can create resources when auto importing using kubeconfig', async () => {
@@ -686,6 +686,6 @@ describe('Import Discovered Cluster', () => {
         await waitForText('Generate command')
         await clickByText('Generate command')
 
-        await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock])
+        await waitForNocks([projectNock, managedClusterNock, kacNock, await importCommandNock])
     })
 })

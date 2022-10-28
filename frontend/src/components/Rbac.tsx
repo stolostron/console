@@ -22,7 +22,7 @@ type Actions<T = unknown> = {
     isAriaDisabled?: boolean
     tooltip?: string
     click: (item: T) => void
-    rbac?: ResourceAttributes[]
+    rbac?: ResourceAttributes[] | Promise<ResourceAttributes[]>
 }
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
@@ -46,20 +46,26 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             const rbacActions: Actions<T>[] = await Promise.all(
                 props.actions.map(async (action) => {
                     try {
-                        if (action.rbac && action.rbac.length > 0) {
-                            const results = await Promise.all(
-                                action.rbac.map(async (rbac) => {
-                                    return await (
-                                        await createSubjectAccessReview(rbac)
-                                    ).promise
-                                })
-                            )
-                            const isAriaDisabled = !results.every((result) => result?.status?.allowed)
-                            return {
-                                ...action,
-                                isAriaDisabled: isAriaDisabled,
-                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
-                            }
+                        if (action.rbac) {
+                            return Promise.resolve(action.rbac).then(async (rbac) => {
+                                if (rbac.length > 0) {
+                                    const results = await Promise.all(
+                                        rbac.map(async (rbac) => {
+                                            return await (
+                                                await createSubjectAccessReview(rbac)
+                                            ).promise
+                                        })
+                                    )
+                                    const isAriaDisabled = !results.every((result) => result?.status?.allowed)
+                                    return {
+                                        ...action,
+                                        isAriaDisabled: isAriaDisabled,
+                                        tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
+                                    }
+                                } else {
+                                    return action
+                                }
+                            })
                         } else {
                             return action
                         }

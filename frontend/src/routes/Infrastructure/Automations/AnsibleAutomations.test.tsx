@@ -167,7 +167,7 @@ describe('ansible job page', () => {
     })
 
     test('should be able to delete a template', async () => {
-        const deleteNock = nockDelete(clusterCurator2)
+        const deleteNock = await nockDelete(clusterCurator2)
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator2.metadata!.name!)
         await clickByLabel('Actions', 1) // Click the action button on the first table row
@@ -177,7 +177,7 @@ describe('ansible job page', () => {
     })
 
     test('should show error if delete a template fails', async () => {
-        const badRequestStatus = nockDelete(clusterCurator2, mockBadRequestStatus)
+        const badRequestStatus = await nockDelete(clusterCurator2, mockBadRequestStatus)
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator2.metadata!.name!)
         await clickByLabel('Actions', 1) // Click the action button on the first table row
@@ -197,8 +197,8 @@ describe('ansible job page', () => {
     })
 
     test('should be able to bulk delete templates', async () => {
-        const deleteNock1 = nockDelete(clusterCurator2)
-        const deleteNock2 = nockDelete(clusterCurator1)
+        const deleteNock1 = await nockDelete(clusterCurator2)
+        const deleteNock2 = await nockDelete(clusterCurator1)
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator1.metadata!.name!)
         await selectTableRow(1)

@@ -113,8 +113,8 @@ export default function CredentialsFormPage() {
     useEffect(() => {
         if (!isEditing && !isViewing) {
             getNamespaces()
-                .then((namespaces) => {
-                    getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                .then(async (namespaces) => {
+                    getAuthorizedNamespaces([await rbacCreate(SecretDefinition)], namespaces)
                         .then((namespaces: string[]) => setProjects(namespaces.sort()))
                         .catch(setError)
                 })
@@ -1474,7 +1474,7 @@ export function CredentialsForm(props: {
                 if (secret.stringData) {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
-                return patchResource(secret, patch).promise.then(() => {
+                return patchResource(secret, patch).then(() => {
                     toastContext.addAlert({
                         title: t('Credentials updated'),
                         /*

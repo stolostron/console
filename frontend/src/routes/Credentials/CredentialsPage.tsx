@@ -216,7 +216,7 @@ export function CredentialsTable(props: {
                     {
                         header: '',
                         cellTransforms: [fitContent],
-                        cell: (secret: Secret) => {
+                        cell: async (secret: Secret) => {
                             const actions = [
                                 {
                                     id: 'editConnection',
@@ -229,7 +229,7 @@ export function CredentialsTable(props: {
                                                 .replace(':name', secret.metadata.name!)
                                         )
                                     },
-                                    rbac: [rbacPatch(secret)], // validate that this is working
+                                    rbac: [await rbacPatch(secret)], // validate that this is working
                                 },
                                 {
                                     id: 'deleteConnection',
@@ -264,7 +264,7 @@ export function CredentialsTable(props: {
                                             icon: 'warning',
                                         })
                                     },
-                                    rbac: [rbacDelete(secret)],
+                                    rbac: [await rbacDelete(secret)],
                                 },
                             ]
 

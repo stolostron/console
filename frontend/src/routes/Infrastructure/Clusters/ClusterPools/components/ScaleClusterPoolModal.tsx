@@ -130,7 +130,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                                 value: runningCount,
                                             },
                                         ])
-                                            .promise.then(() => reset())
+                                            .then(() => reset())
                                             .catch((e) => {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({

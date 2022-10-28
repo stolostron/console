@@ -32,7 +32,7 @@ export const DeleteSearchModal = (props: {
                             setDeleteError(undefined)
                             if (userPreference && searchToDelete) {
                                 patchUserPreference(userPreference, 'remove', searchToDelete)
-                                    .promise.then(() => props.onClose())
+                                    .then(() => props.onClose())
                                     .catch((err) => {
                                         if (err && err.message) {
                                             setDeleteError(err.message)

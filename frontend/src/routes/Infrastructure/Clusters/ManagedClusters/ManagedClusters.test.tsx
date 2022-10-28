@@ -382,7 +382,7 @@ describe('Clusters Page', () => {
             `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
             mockManagedCluster0.metadata!.name!
         )
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
+        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0), await nockDelete(mockClusterDeployment0)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -391,7 +391,7 @@ describe('Clusters Page', () => {
         await selectTableRow(1)
         await clickBulkAction('Destroy clusters')
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
+        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0), await nockDelete(mockClusterDeployment0)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -402,7 +402,7 @@ describe('Clusters Page', () => {
             `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
             mockManagedCluster0.metadata!.name!
         )
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
+        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0)]
         await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
@@ -411,7 +411,7 @@ describe('Clusters Page', () => {
         await selectTableRow(2)
         await clickBulkAction('Detach clusters')
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
+        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster1)]
         await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
@@ -463,7 +463,7 @@ describe('Clusters Page', () => {
 
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
-        const rbacCreateManagedClusterNock = nockRBAC(rbacCreate(ManagedClusterDefinition))
+        const rbacCreateManagedClusterNock = nockRBAC(await rbacCreate(ManagedClusterDefinition))
         const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
             prev.push(
                 nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),

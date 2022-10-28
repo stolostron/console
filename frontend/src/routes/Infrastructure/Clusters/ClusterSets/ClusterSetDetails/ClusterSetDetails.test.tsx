@@ -597,9 +597,9 @@ const mockGlobalClusterRoleBinding: ClusterRoleBinding = {
 describe('ClusterSetDetails page', () => {
     beforeEach(async () => {
         const getNocks = [
-            nockClusterList(mockUser, [mockUser]),
-            nockClusterList(mockGroup, [mockGroup]),
-            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+            await nockClusterList(mockUser, [mockUser]),
+            await nockClusterList(mockGroup, [mockGroup]),
+            await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
         render(<Component />)
@@ -622,10 +622,14 @@ describe('ClusterSetDetails page', () => {
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
-        const nockListExtraSecrets = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
-        const nockListNoCredsSecrets = nockNamespacedList(mockManagedClusterNoCredentialsSecret, [])
-        const nockListAzureSecrets = nockNamespacedList(mockManagedClusterAzureSecret, [mockManagedClusterAzureSecret])
-        const nockListNoCredsSecretsAzure = nockNamespacedList(mockManagedClusterNoCredentialsSecretAzure, [])
+        const nockListExtraSecrets = await nockNamespacedList(mockManagedClusterExtraSecret, [
+            mockManagedClusterExtraSecret,
+        ])
+        const nockListNoCredsSecrets = await nockNamespacedList(mockManagedClusterNoCredentialsSecret, [])
+        const nockListAzureSecrets = await nockNamespacedList(mockManagedClusterAzureSecret, [
+            mockManagedClusterAzureSecret,
+        ])
+        const nockListNoCredsSecretsAzure = await nockNamespacedList(mockManagedClusterNoCredentialsSecretAzure, [])
         await clickByText('Install Submariner add-ons', 0)
         await waitForNocks([
             nockListExtraSecrets,
@@ -728,7 +732,7 @@ describe('ClusterSetDetails page', () => {
         const deleteAddon = nockDelete(mockSubmarinerAddon)
         const deleteConfig = nockDelete(mockSubmarinerConfig)
         await clickByText('Uninstall')
-        await waitForNocks([deleteAddon, deleteConfig])
+        await waitForNocks([await deleteAddon, await deleteConfig])
     })
     test('can update a submariner config', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
@@ -774,14 +778,14 @@ describe('ClusterSetDetails page', () => {
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await clickByText('User management', 0)
-        await waitForNocks([nock])
+        await waitForNocks([await nock])
         await waitForText('mock-user')
         await clickByLabel('Actions', 0)
         await clickByText('Remove')
         await waitForText('Remove users or groups?')
         const deleteNock = nockDelete(mockClusterRoleBinding)
         await clickByText('Remove')
-        await waitForNocks([deleteNock])
+        await waitForNocks([await deleteNock])
     })
     test('can add users to the cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
@@ -789,7 +793,7 @@ describe('ClusterSetDetails page', () => {
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await clickByText('User management', 0)
-        await waitForNocks([nock])
+        await waitForNocks([await nock])
         await clickByText('Add user or group')
         await waitForText(
             'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
@@ -830,7 +834,7 @@ describe('ClusterSetDetails page', () => {
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await clickByText('User management', 0)
-        await waitForNocks([nock])
+        await waitForNocks([await nock])
         await clickByText('Add user or group')
         await waitForText(
             'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
@@ -867,9 +871,9 @@ describe('ClusterSetDetails page', () => {
 describe('Global ClusterSetDetails page', () => {
     beforeEach(async () => {
         const getNocks = [
-            nockClusterList(mockUser, [mockUser]),
-            nockClusterList(mockGroup, [mockGroup]),
-            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+            await nockClusterList(mockUser, [mockUser]),
+            await nockClusterList(mockGroup, [mockGroup]),
+            await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
         render(<Component isGlobal />)
@@ -881,7 +885,7 @@ describe('Global ClusterSetDetails page', () => {
         ])
         await waitForText(mockGlobalManagedClusterSet.metadata.name!, true)
         await clickByText('User management', 0)
-        await waitForNocks([nock])
+        await waitForNocks([await nock])
         await clickByText('Add user or group', 1)
         await waitForText(
             'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
@@ -976,9 +980,9 @@ describe('ClusterSetDetails deletion', () => {
 describe('ClusterSetDetails page without Submariner', () => {
     beforeEach(async () => {
         const getNocks = [
-            nockClusterList(mockUser, [mockUser]),
-            nockClusterList(mockGroup, [mockGroup]),
-            nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
+            await nockClusterList(mockUser, [mockUser]),
+            await nockClusterList(mockGroup, [mockGroup]),
+            await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
         render(
@@ -999,9 +1003,9 @@ describe('ClusterSetDetails page without Submariner', () => {
 describe('ClusterSetDetails page global clusterset', () => {
     beforeEach(async () => {
         const getNocks = [
-            nockClusterList(mockUser, [mockUser]),
-            nockClusterList(mockGroup, [mockGroup]),
-            nockClusterList(mockGlobalClusterRoleBinding, [mockGlobalClusterRoleBinding]),
+            await nockClusterList(mockUser, [mockUser]),
+            await nockClusterList(mockGroup, [mockGroup]),
+            await nockClusterList(mockGlobalClusterRoleBinding, [mockGlobalClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
         render(

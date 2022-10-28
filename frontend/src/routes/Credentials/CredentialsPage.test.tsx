@@ -169,7 +169,7 @@ describe('provider connections page', () => {
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await clickByText('Delete credential')
         await clickByText('Delete')
-        await waitForNock(deleteNock)
+        await waitForNock(await deleteNock)
     })
 
     test('should show error if delete a provider connection fails', async () => {
@@ -179,7 +179,7 @@ describe('provider connections page', () => {
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await clickByText('Delete credential')
         await clickByText('Delete')
-        await waitForNock(badRequestStatus)
+        await waitForNock(await badRequestStatus)
         await waitForText(`Could not process request because of invalid data.`)
     })
 
@@ -199,7 +199,7 @@ describe('provider connections page', () => {
         await selectTableRow(1)
         await clickBulkAction('Delete credentials')
         await clickByText('Delete')
-        await waitForNock(deleteNock)
+        await waitForNock(await deleteNock)
     })
 
     test('should be able to cancel bulk delete provider connections', async () => {

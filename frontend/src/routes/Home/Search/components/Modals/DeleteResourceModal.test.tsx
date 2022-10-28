@@ -221,7 +221,7 @@ describe('DeleteResourceModal', () => {
             await waitForNocks([deleteResourceNock])
 
             // Mimic the polling requests
-            await waitForNocks([getSuccessfulActionNock])
+            await waitForNocks([await getSuccessfulActionNock])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())

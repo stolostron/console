@@ -5,7 +5,6 @@ import { useMemo } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useSharedAtoms } from '../../../shared-recoil'
 
 export function PolicySetViolationsCard() {
     const violations = usePolicySetViolations()

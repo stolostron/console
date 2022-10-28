@@ -118,9 +118,7 @@ describe('NodePoolsTable', () => {
                 nodePools={nodePools}
                 onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
                 onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) =>
-                    patchResource(nodePool, patches).promise as unknown as Promise<void>
-                }
+                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
                 clusterImages={[]}
             />
         )
@@ -183,9 +181,7 @@ describe('NodePoolsTable no status', () => {
                 nodePools={nodePools}
                 onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
                 onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) =>
-                    patchResource(nodePool, patches).promise as unknown as Promise<void>
-                }
+                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
                 clusterImages={[]}
             />
         )
@@ -249,9 +245,7 @@ describe('NodePoolsTable no conditions', () => {
                 nodePools={nodePools}
                 onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
                 onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) =>
-                    patchResource(nodePool, patches).promise as unknown as Promise<void>
-                }
+                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
                 clusterImages={[]}
             />
         )

@@ -230,7 +230,7 @@ describe('CreateClusterPool AWS', () => {
     test('can create a cluster pool', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [nockList(clusterImageSet, mockClusterImageSet)]
+        const initialNocks = [await nockList(clusterImageSet, mockClusterImageSet)]
 
         const newProviderConnection = createProviderConnection(
             'aws',
@@ -274,7 +274,7 @@ describe('CreateClusterPool AWS', () => {
         const createNocks = [
             // create aws namespace (project)
             nockCreate(mockCreateProject),
-            nockReplace(mockNamespaceUpdate),
+            await nockReplace(mockNamespaceUpdate),
 
             // create the managed cluster
             nockCreate(mockPullSecret),

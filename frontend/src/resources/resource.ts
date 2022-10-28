@@ -22,8 +22,8 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
-export async function getApiResourceList() {
-    return getApiPaths().promise
+export function getApiResourceList() {
+    return getApiPaths()
 }
 
 /*
@@ -45,8 +45,10 @@ export async function getResourcePlural(resourceDefinition: IResourceDefinition)
     if (plural) {
         return plural || ''
     }
-    apiResourceList = await getApiResourceList()
-    return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
+    return getApiResourceList().promise.then((list) => {
+        apiResourceList = list
+        return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
+    })
 }
 
 // export function getResourcePlural(resourceDefinition: IResourceDefinition) {
