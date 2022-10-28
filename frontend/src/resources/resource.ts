@@ -40,10 +40,8 @@ Todo:
 let apiResourceList: APIResourceNames = {}
 
 export async function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    const plural = apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
-
-    if (plural) {
-        return plural || ''
+    if (apiResourceList[resourceDefinition.apiVersion as string]) {
+        return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
     }
     return getApiResourceList().promise.then((list) => {
         apiResourceList = list
