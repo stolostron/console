@@ -6,17 +6,16 @@ import {
   ListPageHeader,
   NavPage,
 } from '@openshift-console/dynamic-plugin-sdk';
-import { Redirect, useHistory } from 'react-router-dom';
+import { Redirect, Switch, useHistory } from 'react-router-dom';
 import ClusterTemplatesTab from './ClusterTemplatesTab';
 import HelmRepositoriesTab from './HelmRepositoriesTab';
 import { useClusterTemplatesCount } from '../hooks/useClusterTemplates';
 import { useHelmRepositoriesCount } from '../hooks/useHelmRepositories';
-import { getNavLabelWithCount } from '../utils';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import { clusterTemplateGVK } from '../constants';
-import { getReference } from '@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/k8s-ref';
+import { getNavLabelWithCount } from '../utils';
 
-const clusterTemplateReference = getReference(clusterTemplateGVK);
+const clusterTemplateReference = `${clusterTemplateGVK.group}~${clusterTemplateGVK.version}~${clusterTemplateGVK.kind}`;
 
 const ClusterTemplatesPage = () => {
   const { t } = useTranslation();
@@ -59,23 +58,26 @@ const ClusterTemplatesPage = () => {
   };
 
   return (
-    <>
+    <Switch>
       <Redirect
         from={`/k8s/cluster/${clusterTemplateReference}`}
         to={`/k8s/cluster/${clusterTemplateReference}/~tabs`}
+        exact
       />
-      <ListPageHeader title="Cluster templates">
-        <ListPageCreateDropdown
-          createAccessReview={{ groupVersionKind: clusterTemplateReference }}
-          items={actionItems}
-          onClick={handleCreateDropdownActionClick}
-        >
-          {t('Create')}
-        </ListPageCreateDropdown>
-      </ListPageHeader>
+      <>
+        <ListPageHeader title="Cluster templates">
+          <ListPageCreateDropdown
+            createAccessReview={{ groupVersionKind: clusterTemplateReference }}
+            items={actionItems}
+            onClick={handleCreateDropdownActionClick}
+          >
+            {t('Create')}
+          </ListPageCreateDropdown>
+        </ListPageHeader>
 
-      <HorizontalNav pages={pages} />
-    </>
+        <HorizontalNav pages={pages} />
+      </>
+    </Switch>
   );
 };
 

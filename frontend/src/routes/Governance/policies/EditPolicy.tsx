@@ -1,22 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
+import { PolicyWizard } from '../../../wizards/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    channelsState,
-    helmReleaseState,
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementBindingsState,
-    placementRulesState,
-    placementsState,
-    subscriptionsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -58,6 +45,19 @@ export function EditPolicy() {
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
+    const {
+        channelsState,
+        helmReleaseState,
+        managedClusterSetBindingsState,
+        managedClusterSetsState,
+        managedClustersState,
+        namespacesState,
+        placementBindingsState,
+        placementRulesState,
+        placementsState,
+        subscriptionsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)

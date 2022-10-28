@@ -9,12 +9,11 @@ import { AcmLabelsInput, AcmSelect } from '../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret } from '../../../../../../../resources'
-import { clusterDeploymentsState, clusterImageSetsState } from '../../../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 import { useClusterImages } from './utils'
+import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../../../shared-recoil'
 
 const {
     ACMClusterDeploymentDetailsStep,
@@ -54,6 +53,8 @@ const fields: any = {
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
+    const { clusterDeploymentsState, clusterImageSetsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const formRef = useRef<FormikProps<any>>(null)

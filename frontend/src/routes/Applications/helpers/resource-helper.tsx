@@ -34,7 +34,6 @@ import {
 } from '../../../resources'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
-import { getAnnotation } from '../Overview'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
@@ -559,4 +558,8 @@ export const getAppChildResources = (
     })
 
     return [children.sort((a, b) => a.label.localeCompare(b.label)), sharedChildren]
+}
+
+export function getAnnotation(resource: IResource, annotationString: string) {
+    return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }

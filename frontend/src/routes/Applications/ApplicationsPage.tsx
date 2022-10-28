@@ -1,37 +1,65 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
-import { Fragment, lazy, Suspense, useEffect } from 'react'
-import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { useSetRecoilState } from 'recoil'
-import { discoveredApplicationsState, discoveredOCPAppResourcesState } from '../../atoms'
+import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
+import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
 import { useTranslation } from '../../lib/acm-i18next'
 import { queryRemoteArgoApps, queryOCPAppResources } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
+import { useSetRecoilState, useSharedAtoms } from '../../shared-recoil'
+import { LoadingPage } from '../../components/LoadingPage'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 
 export default function ApplicationsPage() {
-    const location = useLocation()
     const { t } = useTranslation()
+    const location = useLocation()
+    const applicationsMatch = useRouteMatch()
+    const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
 
-    const { data, startPolling } = useQuery(queryRemoteArgoApps)
-    const dataOCPResources = useQuery(queryOCPAppResources).data
-    const startPollingOCPResources = useQuery(queryOCPAppResources).startPolling
+    const { discoveredApplicationsState, discoveredOCPAppResourcesState } = useSharedAtoms()
 
-    useEffect(startPolling, [startPolling])
-    useEffect(startPollingOCPResources, [startPollingOCPResources])
-
-    const setDiscoveredAppilcations = useSetRecoilState(discoveredApplicationsState)
+    const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
+    const {
+        data: dataOCPResources,
+        loading: loadingOCPResources,
+        startPolling: startPollingOCPResources,
+    } = useQuery(queryOCPAppResources)
+    const [timedOut, setTimedOut] = useState<boolean>()
+    const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)
     const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
+
+    useEffect(() => {
+        if (applicationsMatch.isExact) {
+            // No need to poll for Advanced configuration page
+            startPolling()
+            startPollingOCPResources()
+        }
+    }, [applicationsMatch, startPolling, startPollingOCPResources])
+
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
-        setDiscoveredAppilcations(remoteArgoApps)
+        setDiscoveredApplications(remoteArgoApps)
         const ocpAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredOCPAppResources(ocpAppResources)
-    }, [data, dataOCPResources, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
+    }, [data, dataOCPResources, setDiscoveredApplications, setDiscoveredOCPAppResources])
+
+    // failsafe in case search api is sleeping
+    useEffect(() => {
+        const handle = setTimeout(() => {
+            setTimedOut(true)
+        }, 5000)
+
+        return () => {
+            clearInterval(handle)
+        }
+    }, [])
+
+    if ((loading || loadingOCPResources) && !timedOut) {
+        return <LoadingPage />
+    }
 
     return (
         <AcmPage
@@ -41,12 +69,10 @@ export default function ApplicationsPage() {
                     title={t('Applications')}
                     navigation={
                         <AcmSecondaryNav>
-                            <AcmSecondaryNavItem isActive={location.pathname.endsWith(NavigationPath.applications)}>
+                            <AcmSecondaryNavItem isActive={applicationsMatch.isExact}>
                                 <Link to={NavigationPath.applications}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={location.pathname.endsWith(NavigationPath.advancedConfiguration)}
-                            >
+                            <AcmSecondaryNavItem isActive={!!advancedMatch?.isExact}>
                                 <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>

@@ -58,6 +58,7 @@ export function AcmTile(props: AcmTileProps) {
         }
         return (
             <Tile
+                id={props.id}
                 className={classes.tileRoot}
                 title={props.title}
                 onClick={props.onClick}

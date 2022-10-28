@@ -21,7 +21,14 @@ import {
     metadataName,
 } from '../model/computeStatuses'
 
-export const nodesWithNoNS = ['namespace', 'clusterrole', 'clusterrolebinding', 'customresourcedefinition', 'node']
+export const nodesWithNoNS = [
+    'namespace',
+    'clusterrole',
+    'clusterrolebinding',
+    'customresourcedefinition',
+    'node',
+    'project',
+]
 
 export const isDeployableResource = (node) => {
     //check if this node has been created using a deployable object
@@ -103,7 +110,7 @@ export const getClusterName = (nodeId, node, findAll) => {
 export const getRouteNameWithoutIngressHash = (relatedKind, relateKindName) => {
     let name = relateKindName
     const isRouteGeneratedByIngress =
-        relatedKind.kind === 'route' && !_.get(relatedKind, '_hostingDeployable', '').endsWith(name)
+        relatedKind.kind.toLowerCase() === 'route' && !_.get(relatedKind, '_hostingDeployable', '').endsWith(name)
     if (isRouteGeneratedByIngress) {
         //this is a route generated from an Ingress resource, remove generated hash
         const names = _.get(relatedKind, '_hostingDeployable', '').split('Ingress-')

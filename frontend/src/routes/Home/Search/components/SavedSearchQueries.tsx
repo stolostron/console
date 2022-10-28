@@ -13,7 +13,6 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSavedSearchLimit } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
 import { AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
@@ -37,7 +36,6 @@ export default function SavedSearchQueries(props: {
     const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
     const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
     const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
-    const savedSearchLimit = useSavedSearchLimit()
 
     const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
@@ -111,11 +109,10 @@ export default function SavedSearchQueries(props: {
                         userPreference={userPreference}
                     />
                 )}
-
                 {savedSearches.length > 0 && (
                     <AcmExpandableWrapper
                         maxHeight={'16.5rem'}
-                        headerLabel={t(`Saved searches ( ${savedSearches.length} / ${savedSearchLimit} )`)}
+                        headerLabel={t('Saved searches')}
                         withCount={false}
                         expandable={true}
                     >

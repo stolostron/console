@@ -1,21 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import {
-    applicationSetsState,
-    channelsState,
-    gitOpsClustersState,
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementsState,
-} from '../../../atoms'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -32,7 +22,6 @@ import {
     PlacementKind,
     reconcileResources,
 } from '../../../resources'
-import { ansibleCredentialsValue } from '../../../selectors'
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
@@ -59,6 +48,18 @@ function getWizardSyncEditor() {
 
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
+    const {
+        channelsState,
+        namespacesState,
+        applicationSetsState,
+        placementsState,
+        gitOpsClustersState,
+        managedClustersState,
+        managedClusterSetsState,
+        managedClusterSetBindingsState,
+    } = useSharedAtoms()
+    const { ansibleCredentialsValue } = useSharedSelectors()
+
     const history = useHistory()
     const searchParams = useSearchParams()
     const toast = useContext(AcmToastContext)

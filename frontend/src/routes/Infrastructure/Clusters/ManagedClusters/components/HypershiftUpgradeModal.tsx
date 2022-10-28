@@ -214,7 +214,7 @@ export function HypershiftUpgradeModal(props: {
         checkNodepoolErrors,
         checkNodepoolsDisabled,
         overallNodepoolVersion,
-        props.controlPlane.distribution?.ocp?.version
+        props.controlPlane.distribution?.ocp?.version,
     ])
 
     const isNodepoolChecked = (name: string | undefined) => {

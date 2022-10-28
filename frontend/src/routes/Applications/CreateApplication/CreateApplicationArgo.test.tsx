@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+    applicationSetsState,
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
@@ -18,7 +19,7 @@ import {
     nockCreate,
     nockGet,
 } from '../../../lib/nock-util'
-import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks } from '../../../lib/test-util'
+import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ApplicationSet,
@@ -47,6 +48,7 @@ import {
     SecretKind,
 } from '../../../resources'
 import CreateApplicationArgo from './CreateApplicationArgo'
+import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
 const gitOpsCluster: GitOpsCluster = {
     apiVersion: GitOpsClusterApiVersion,
@@ -370,5 +372,30 @@ describe('Create Argo Application Set', () => {
         await clickByText('Submit')
 
         await waitForNocks(createHelmAppSetNocks)
+    })
+
+    test('can render Edit Argo Application Page', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(applicationSetsState, [argoAppSetGit])
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
+                    <Route
+                        component={(props: any) => {
+                            const newProps = { ...props }
+                            newProps.match = props.match || { params: {} }
+                            newProps.match.params.name = argoAppSetGit?.metadata.name
+                            newProps.match.params.namespace = argoAppSetGit?.metadata.namespace
+                            return <EditArgoApplicationSet {...newProps} />
+                        }}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        await waitForText('Edit application set')
     })
 })

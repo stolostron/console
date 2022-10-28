@@ -58,6 +58,7 @@ import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -506,7 +507,7 @@ describe('ImportCluster', () => {
         const importSecretNock = nockGet(mockSecretResponse)
 
         render(
-            <PluginContext.Provider value={{ isACMAvailable: false }}>
+            <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )

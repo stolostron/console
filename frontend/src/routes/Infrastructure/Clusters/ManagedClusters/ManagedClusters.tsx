@@ -21,13 +21,12 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, clusterManagementAddonsState, hostedClustersState } from '../../../../atoms'
+import { hostedClustersState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
     addonPathKey,
     addonTextKey,
@@ -51,6 +50,7 @@ import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 
 export default function ManagedClusters() {
     const { t } = useTranslation()
@@ -91,7 +91,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
-                                    click: () => history.push(NavigationPath.createInfrastructure),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.createCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
@@ -99,7 +99,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'importCluster',
                                     title: t('managed.importCluster'),
-                                    click: () => history.push(locationWithCancelBack(NavigationPath.importCluster)),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.importCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.secondary,
@@ -124,6 +124,7 @@ export default function ManagedClusters() {
 }
 
 const PageActions = () => {
+    const { clusterManagementAddonsState } = useSharedAtoms()
     const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const addons = clusterManagementAddons.filter(
         (cma) => cma.metadata.annotations?.[addonTextKey] && cma.metadata.annotations?.[addonPathKey]
@@ -150,7 +151,7 @@ export function ClustersTable(props: {
         sessionStorage.removeItem('DiscoveredClusterConsoleURL')
         sessionStorage.removeItem('DiscoveredClusterApiURL')
     }, [])
-
+    const { clusterCuratorsState } = useSharedAtoms()
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const [hostedClusters] = useRecoilState(hostedClustersState)
 

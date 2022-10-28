@@ -55,6 +55,7 @@ import userEvent from '@testing-library/user-event'
 import { PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ApplicationActionProps } from '../../../plugin-extensions/properties'
+import { PluginDataContext } from '../../../lib/PluginDataContext'
 
 const mockApplication0: Application = {
     apiVersion: ApplicationApiVersion,
@@ -666,7 +667,7 @@ describe('Applications Page', () => {
             >
                 <MemoryRouter>
                     <MockedProvider mocks={mocks}>
-                        <PluginContext.Provider value={{ acmExtensions: acmExtension }}>
+                        <PluginContext.Provider value={{ acmExtensions: acmExtension, dataContext: PluginDataContext }}>
                             <ApplicationDetailsPage {...props} />
                         </PluginContext.Provider>
                     </MockedProvider>

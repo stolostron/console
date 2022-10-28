@@ -86,21 +86,19 @@ function SearchResultTables(props: {
                     />
                 </PageSection>
             ) : null}
-            <PageSection>
-                <Stack hasGutter>
-                    {kinds.sort().map((kind: string) => {
-                        const items = kindSearchResultItems[kind]
-                        return (
-                            <SearchResultExpandableCard
-                                key={`results-table-${kind}`}
-                                title={`${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items.length})`}
-                                renderContent={() => renderContent(kind, items)}
-                                defaultExpanded={kinds.length === 1}
-                            />
-                        )
-                    })}
-                </Stack>
-            </PageSection>
+            <Stack hasGutter>
+                {kinds.sort().map((kind: string) => {
+                    const items = kindSearchResultItems[kind]
+                    return (
+                        <SearchResultExpandableCard
+                            key={`results-table-${kind}`}
+                            title={`${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items.length})`}
+                            renderContent={() => renderContent(kind, items)}
+                            defaultExpanded={kinds.length === 1}
+                        />
+                    )
+                })}
+            </Stack>
         </Fragment>
     )
 }
@@ -114,14 +112,18 @@ export default function SearchResults(props: { currentQuery: string; preSelected
         // If the url has a preselected related resource -> automatically show the selected related resource tables - otherwise hide the section
         preSelectedRelatedResources.length > 0 ? true : false
     )
-    const isKeywordSearch = useMemo(() => {
-        const queryFilters = convertStringToQuery(currentQuery)
-        return queryFilters.keywords.length > 0
-    }, [currentQuery])
 
     const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
+
+    useEffect(() => {
+        // If the current search query changes -> hide related resources
+        if (preSelectedRelatedResources.length === 0) {
+            setShowRelatedResources(false)
+            setSelectedKinds([])
+        }
+    }, [preSelectedRelatedResources])
 
     useEffect(() => {
         if (!called) {
@@ -187,45 +189,43 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                 currentQuery={deleteResource.currentQuery}
                 relatedResource={deleteResource.relatedResource}
             />
-            {!isKeywordSearch && (
-                <PageSection>
-                    <Stack hasGutter>
-                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                            <ExpandableSection
-                                onToggle={() => setShowRelatedResources(!showRelatedResources)}
-                                isExpanded={showRelatedResources}
-                                toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
-                            />
-                            <Tooltip
-                                content={t(
-                                    'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
-                                )}
-                            >
-                                <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
-                            </Tooltip>
-                        </div>
-                        {showRelatedResources && (
-                            <RelatedResultsTiles
-                                currentQuery={currentQuery}
-                                selectedKinds={selectedKinds}
-                                setSelectedKinds={setSelectedKinds}
-                            />
-                        )}
-                        {showRelatedResources && selectedKinds.length > 0 && (
-                            <RelatedResultsTables
-                                currentQuery={currentQuery}
-                                selectedKinds={selectedKinds}
-                                setDeleteResource={setDeleteResource}
-                            />
-                        )}
-                    </Stack>
-                </PageSection>
-            )}
-            <SearchResultTables
-                data={searchResultItems}
-                currentQuery={currentQuery}
-                setDeleteResource={setDeleteResource}
-            />
+            <PageSection>
+                <Stack hasGutter>
+                    <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                        <ExpandableSection
+                            onToggle={() => setShowRelatedResources(!showRelatedResources)}
+                            isExpanded={showRelatedResources}
+                            toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
+                        />
+                        <Tooltip
+                            content={t(
+                                'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
+                            )}
+                        >
+                            <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
+                        </Tooltip>
+                    </div>
+                    {showRelatedResources && (
+                        <RelatedResultsTiles
+                            currentQuery={currentQuery}
+                            selectedKinds={selectedKinds}
+                            setSelectedKinds={setSelectedKinds}
+                        />
+                    )}
+                    {showRelatedResources && selectedKinds.length > 0 && (
+                        <RelatedResultsTables
+                            currentQuery={currentQuery}
+                            selectedKinds={selectedKinds}
+                            setDeleteResource={setDeleteResource}
+                        />
+                    )}
+                    <SearchResultTables
+                        data={searchResultItems}
+                        currentQuery={currentQuery}
+                        setDeleteResource={setDeleteResource}
+                    />
+                </Stack>
+            </PageSection>
         </Fragment>
     )
 }

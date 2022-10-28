@@ -3,7 +3,14 @@ import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
-import { IsAcmExtensions } from '../plugin-extensions/handler'
+import { useAcmExtension } from '../plugin-extensions/handler'
+import { LoadingPage } from './LoadingPage'
+import { isSharedContextProvider, SharedContextProvider } from '../lib/SharedContextProvider'
+import { PluginData } from '../lib/PluginDataContext'
+import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+
+const isPluginDataContext = (e: Extension): e is SharedContextProvider<PluginData> =>
+    isSharedContextProvider(e) && e.properties?.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -15,6 +22,11 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         [hrefs]
     )
 
+    const [contextProviders] = useResolvedExtensions(isPluginDataContext)
+    const contextProvider = contextProviders.find((e) => {
+        return e.pluginName === 'mce'
+    })
+
     const isOverviewAvailable = useMemo(() => hrefAvailable('acm-overview'), [hrefAvailable])
     const isApplicationsAvailable = useMemo(() => hrefAvailable('acm-applications'), [hrefAvailable])
     const isGovernanceAvailable = useMemo(() => hrefAvailable('acm-governance'), [hrefAvailable])
@@ -23,9 +35,10 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     const isSubmarinerAvailable = isOverviewAvailable
 
     // ACM Custom extensions
-    const acmExtensions = IsAcmExtensions()
 
-    return (
+    const acmExtensions = useAcmExtension()
+
+    return contextProvider ? (
         <PluginContext.Provider
             value={{
                 isACMAvailable,
@@ -34,6 +47,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 isGovernanceAvailable,
                 isSearchAvailable,
                 isSubmarinerAvailable,
+                dataContext: contextProvider.properties.context,
                 acmExtensions,
             }}
         >
@@ -48,5 +62,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 </div>
             </div>
         </PluginContext.Provider>
+    ) : (
+        <LoadingPage />
     )
 }

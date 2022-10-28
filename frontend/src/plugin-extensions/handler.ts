@@ -5,12 +5,12 @@ import { ApplicationActionProps, ApplicationListColumnProps } from './properties
 import { AcmExtension } from './types'
 
 // Type guards
-export function IsAcmExtensions() {
+export function useAcmExtension() {
     const acmExtension: AcmExtension = {}
 
     // Resolving application action to acm compatible type
-    const [applicationAction, reslovedApplicationAction] = useResolvedExtensions(isApplicationAction)
-    if (reslovedApplicationAction) {
+    const [applicationAction, resolvedApplicationAction] = useResolvedExtensions(isApplicationAction)
+    if (resolvedApplicationAction) {
         acmExtension.applicationAction = applicationAction.map((action) => action.properties as ApplicationActionProps)
     }
 

@@ -5,20 +5,20 @@ import { AcmButton, AcmPageProcess, Provider } from '../../../../../ui-component
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClusterContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const { LogsDownloadButton } = CIM
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
     const { t } = useTranslation()
     const history = useHistory()
+    const { configMapsState } = useSharedAtoms()
     const [configMaps] = useRecoilState(configMapsState)
     const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     const { agentClusterInstall } = useContext(ClusterContext)

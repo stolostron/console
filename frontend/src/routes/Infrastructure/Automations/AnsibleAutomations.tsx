@@ -14,9 +14,7 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import { subscriptionOperatorsState } from '../../../atoms'
-import { ansibleCredentialsValue, clusterCuratorTemplatesValue } from '../../../selectors'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -35,6 +33,7 @@ import {
 
 export default function AnsibleAutomationsPage() {
     const alertContext = useContext(AcmAlertContext)
+    const { subscriptionOperatorsState } = useSharedAtoms()
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
 
     const isOperatorInstalled = useMemo(
@@ -81,6 +80,7 @@ export default function AnsibleAutomationsPage() {
 
 function AnsibleJobTemplateTable() {
     // Load Data
+    const { ansibleCredentialsValue, clusterCuratorTemplatesValue } = useSharedSelectors()
     const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 

@@ -4,6 +4,8 @@
     "displayName": "multicluster engine for Kubernetes",
     "description": "Integrates multicluster engine for Kubernetes functionality into the OpenShift Container Platform web console",
     "exposedModules": {
+        "context": "../../src/lib/PluginDataContext.tsx",
+        "contextProvider": "../../src/components/PluginDataContextProvider.tsx",
         "perspective": "../../src/perspective.tsx",
         "clusters": "../../src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
         "automations": "../../src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
@@ -11,7 +13,8 @@
         "credentials": "../../src/routes/Credentials/CredentialsPlugin.tsx",
         "templates": "../../src/routes/Infrastructure/ClusterTemplates/ClusterTemplatesPage/ClusterTemplatesPage.tsx",
         "helmRepositoryForm": "../../src/routes/Infrastructure/ClusterTemplates/HelmRepositoryForm/HelmRepositoryForm.tsx",
-        "createTemplate": "../../src/routes/Infrastructure/ClusterTemplates/CreateClusterTemplateWizard/CreateClusterTemplateWizard.tsx"
+        "createTemplate": "../../src/routes/Infrastructure/ClusterTemplates/CreateClusterTemplateWizard/CreateClusterTemplateWizard.tsx",
+        "templateDetails": "../../src/routes/Infrastructure/ClusterTemplates/ClusterTemplateDetails/ClusterTemplateDetailsPage.tsx"
     },
     "dependencies": {
         "@console/pluginAPI": "*"

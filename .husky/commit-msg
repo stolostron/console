@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+RED=""
+NORMAL=""
+if command -v tput >/dev/null 2>&1 && [ $(tput colors) -ge 8 ]; then
+    RED=$(tput setaf 1)
+    NORMAL=$(tput sgr0)
+fi
+
+if [ "1" != "$(grep -c '^Signed-off-by: ' "$1")" ]; then
+    printf >&2 "%sMissing or extra Signed-off-by lines%s\n" "$RED" "$NORMAL"
+    exit 1
+fi

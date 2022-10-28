@@ -21,12 +21,12 @@ import {
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { generatePath, Link, useHistory } from 'react-router-dom'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
     ClusterCurator,
     ClusterCuratorDefinition,
@@ -65,19 +65,13 @@ import {
     WizSingleSelect,
     WizTextArea,
     WizTextInput,
+    useSetHasValue,
 } from '@patternfly-labs/react-form-wizard'
-import { useSetHasValue } from '@patternfly-labs/react-form-wizard/lib/src/contexts/HasValueProvider'
-import { useRecoilValue } from 'recoil'
-import {
-    ansibleCredentialsValue,
-    clusterCuratorSupportedCurationsValue,
-    validClusterCuratorTemplatesValue,
-} from '../../../../../selectors'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { getOperatorError } from '../../../../../lib/error-output'
-import { subscriptionOperatorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
+import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
 const acmSchema = [...schema, ...kac]
 
@@ -208,10 +202,11 @@ function reducer(state: State, action: Action): State {
 
 export default function ImportClusterPage() {
     const { t } = useTranslation()
+    const { subscriptionOperatorsState } = useSharedAtoms()
     const toastContext = useContext(AcmToastContext)
     const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
-    const location = useLocation<CancelBackState>()
+    const { cancel } = useBackCancelNavigation()
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
     const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
@@ -424,7 +419,7 @@ export default function ImportClusterPage() {
                                 autoClose: true,
                             })
                             setTimeout(() => {
-                                history.push(NavigationPath.clusterDetails.replace(':id', state.clusterName))
+                                history.push(generatePath(NavigationPath.clusterDetails, { id: state.clusterName }))
                             }, 2000)
                         } catch (err) {
                             if (err instanceof Error) {
@@ -441,9 +436,7 @@ export default function ImportClusterPage() {
                         }
                     })
                 }}
-                onCancel={function (): void {
-                    cancelNavigation(location, history, NavigationPath.clusters)
-                }}
+                onCancel={cancel(NavigationPath.clusters)}
                 submitButtonText={submitButtonText}
                 submittingButtonText={submittingButtonText}
             >
@@ -788,6 +781,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
 const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> }) => {
     const { t } = useTranslation()
+    const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
+        useSharedSelectors()
     const curatorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)

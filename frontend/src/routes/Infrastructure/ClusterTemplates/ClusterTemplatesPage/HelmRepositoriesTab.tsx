@@ -3,131 +3,194 @@ import * as React from 'react';
 import {
   k8sDelete,
   ResourceLink,
-  RowProps,
-  TableData,
   useK8sModel,
-  VirtualizedTable,
+  WatchK8sResult,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Button,
-  Dropdown,
-  DropdownItem,
-  KebabToggle,
   Label,
   Modal,
   ModalVariant,
   PageSection,
-  Skeleton,
+  Truncate,
+  Text,
+  KebabToggle,
+  Page,
+  Card,
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
-import { sortable } from '@patternfly/react-table';
-import { ExternalLink } from 'openshift-assisted-ui-lib/cim';
+import {
+  ActionsColumn,
+  CustomActionsToggleProps,
+  IAction,
+  TableComposable,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@patternfly/react-table';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { TFunction } from 'react-i18next';
 import { helmRepoGVK } from '../constants';
-import { HelmChartRepository, HelmRepoIndex } from '../types';
+import { ClusterTemplate, HelmChartRepository, RowProps, TableColumn } from '../types';
 import { useHelmRepositories } from '../hooks/useHelmRepositories';
-import { useHelmRepositoryIndex, getRepoCharts } from '../hooks/useHelmRepositoryIndex';
+import {
+  useHelmRepositoryIndex,
+  getRepoCharts,
+  HelmRepositoryIndexResult,
+} from '../hooks/useHelmRepositoryIndex';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
+import { useTranslation } from '../../../../lib/acm-i18next';
+import { LoadingHelper } from '../utils';
+import TableLoader from '../helpers/TableLoader';
+import useDialogsReducer from '../hooks/useDialogsReducer';
+import EditHelmRepositoryDialog from '../EditHelmRepositoryDialog';
 
-const columns = [
+const getTableColumns = (t: TFunction): TableColumn[] => [
   {
-    title: 'Name',
-    sort: 'metadata.name',
-    transforms: [sortable],
+    title: t('Name'),
     id: 'name',
   },
   {
-    title: 'Repo URL',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
+    title: t('URL'),
     id: 'url',
   },
   {
-    title: 'Helm charts',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
+    title: t('Credentials'),
+    id: 'credentials',
+  },
+  {
+    title: t('Last updated'),
+    id: 'updated-at',
+  },
+  {
+    title: t('Helm charts'),
     id: 'charts',
   },
   {
-    title: 'Templates published',
-    sort: 'spec.connectionConfig.url',
-    transforms: [sortable],
+    title: t('Templates published'),
     id: 'templates',
+  },
+  {
+    title: t('Group'),
+    id: 'group',
   },
   {
     title: '',
     id: 'kebab-menu',
-    props: { className: 'pf-c-table__action' },
   },
 ];
 
-const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColumnIDs }) => {
-  const [isOpen, setOpen] = React.useState(false);
-  const [isDeleteOpen, setDeleteOpen] = React.useState(false);
+type HelmRepositoryActionDialogIds = 'deleteDialog' | 'editCredentialsDialog';
+const helmRepositoryActionDialogIds: HelmRepositoryActionDialogIds[] = [
+  'deleteDialog',
+  'editCredentialsDialog',
+];
+
+type HelmRepoRowProps = RowProps<HelmChartRepository> & {
+  helmRepoIndexResult: HelmRepositoryIndexResult;
+  clusterTemplatesResult: WatchK8sResult<ClusterTemplate[]>;
+};
+
+export const HelmRepoRow = ({
+  obj,
+  helmRepoIndexResult,
+  clusterTemplatesResult,
+}: HelmRepoRowProps) => {
+  const { t } = useTranslation();
+
+  const { openDialog, closeDialog, isDialogOpen } = useDialogsReducer(
+    helmRepositoryActionDialogIds,
+  );
   const [model] = useK8sModel(helmRepoGVK);
-  const { indexFile, loaded, error } = React.useContext(RowContext);
-  const [templates, templatesLoaded, loadError] = useClusterTemplates();
+  const [repoIndex, repoIndexLoaded, repoIndexError] = helmRepoIndexResult;
+  const [templates, templatesLoaded, templatesLoadError] = clusterTemplatesResult;
 
   const templatesFromRepo = templates.filter(
-    (t) => t.spec.helmChartRef.repository === obj.metadata?.name,
+    (t) => t.spec.clusterDefinition.applicationSpec.source.repoURL === obj.metadata?.name,
   );
-
-  const chartsFromRepo = indexFile
-    ? getRepoCharts(indexFile, obj.metadata?.name || '').length
+  const repoChartsCount = repoIndex
+    ? getRepoCharts(repoIndex, obj.metadata?.name ?? '').length ?? '-'
     : '-';
+  const repoChartsUpdatedAt = repoIndex ? new Date(repoIndex.generated).toLocaleString() : '-';
+
+  const getRowActions = (): IAction[] => {
+    return [
+      {
+        title: t('Edit repository'),
+        onClick: () => openDialog('editCredentialsDialog'),
+      },
+      {
+        title: t('Delete repository'),
+        onClick: () => openDialog('deleteDialog'),
+      },
+    ];
+  };
+
+  const columns = React.useMemo(() => getTableColumns(t), [t]);
 
   return (
-    <>
-      <TableData id="name" activeColumnIDs={activeColumnIDs}>
+    <Tr>
+      <Td dataLabel={columns[0].title}>
         <ResourceLink
           groupVersionKind={helmRepoGVK}
           name={obj.metadata?.name}
           namespace={obj.metadata?.namespace}
+          hideIcon
         />
-      </TableData>
-      <TableData id="url" activeColumnIDs={activeColumnIDs}>
-        <ExternalLink href={obj.spec.connectionConfig.url} />
-      </TableData>
-      <TableData id="charts" activeColumnIDs={activeColumnIDs}>
-        {!loaded ? <Skeleton /> : error ? <>-</> : <>{chartsFromRepo}</>}
-      </TableData>
-      <TableData id="url" activeColumnIDs={activeColumnIDs}>
-        {!templatesLoaded ? (
-          <Skeleton />
-        ) : loadError ? (
-          <>-</>
-        ) : (
+      </Td>
+      <Td dataLabel={columns[1].title}>
+        <Text
+          component="a"
+          href={obj.spec.connectionConfig.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Truncate
+            content={obj.spec.connectionConfig.url}
+            position={'middle'}
+            trailingNumChars={10}
+          />
+        </Text>
+      </Td>
+      <Td dataLabel={columns[2].title}>
+        {obj.spec.connectionConfig.tlsClientConfig ? t('Authenticated') : t('Not required')}
+      </Td>
+      <Td dataLabel={columns[3].title}>
+        <LoadingHelper isLoaded={repoIndexLoaded} error={repoIndexError}>
+          {repoChartsUpdatedAt}
+        </LoadingHelper>
+      </Td>
+      <Td dataLabel={columns[4].title}>
+        <LoadingHelper isLoaded={repoIndexLoaded} error={repoIndexError}>
+          {repoChartsCount}
+        </LoadingHelper>
+      </Td>
+      <Td dataLabel={columns[5].title}>
+        <LoadingHelper isLoaded={templatesLoaded} error={templatesLoadError}>
           <Label color="green" icon={<CheckCircleIcon />}>
             {templatesFromRepo.length}
           </Label>
-        )}
-      </TableData>
-      <TableData id="kebab-menu" activeColumnIDs={activeColumnIDs} className="pf-c-table__action">
-        <Dropdown
-          toggle={<KebabToggle onToggle={setOpen} id="toggle-id-6" />}
-          isOpen={isOpen}
-          isPlain
-          dropdownItems={[
-            <DropdownItem
-              onClick={() => {
-                setDeleteOpen(true);
-                setOpen(false);
-              }}
-              key="delete"
-            >
-              Delete HelmChartRepository
-            </DropdownItem>,
-          ]}
-          position="right"
+        </LoadingHelper>
+      </Td>
+      <Td dataLabel={columns[6].title}>-</Td>
+      <Td isActionCell>
+        <ActionsColumn
+          items={getRowActions()}
+          actionsToggle={(props: CustomActionsToggleProps) => (
+            <KebabToggle id="repo-actions-toggle" {...props} />
+          )}
         />
-      </TableData>
-      {isDeleteOpen && (
+      </Td>
+      {isDialogOpen('deleteDialog') && (
         <Modal
           variant={ModalVariant.small}
           isOpen
-          title="Delete HelmChartRepository"
+          title={t('Delete Helm chart repository')}
           titleIconVariant="warning"
           showClose
-          onClose={() => setDeleteOpen(false)}
+          onClose={() => closeDialog('deleteDialog')}
           actions={[
             <Button
               key="confirm"
@@ -137,56 +200,72 @@ const HelmRepoRow: React.FC<RowProps<HelmChartRepository>> = ({ obj, activeColum
                   model,
                   resource: obj,
                 });
-                setDeleteOpen(false);
+                closeDialog('deleteDialog');
               }}
             >
-              Delete
+              {t('Delete')}
             </Button>,
-            <Button key="cancel" variant="link" onClick={() => setDeleteOpen(false)}>
-              Cancel
+            <Button key="cancel" variant="link" onClick={() => closeDialog('deleteDialog')}>
+              {t('Cancel')}
             </Button>,
           ]}
         >
-          Are you sure you want to delete ?
+          {t('Are you sure you want to delete?')}
         </Modal>
       )}
-    </>
+      {isDialogOpen('editCredentialsDialog') && (
+        <EditHelmRepositoryDialog
+          helmChartRepository={obj}
+          closeDialog={() => closeDialog('editCredentialsDialog')}
+        />
+      )}
+    </Tr>
   );
 };
 
-const RowContext = React.createContext<{
-  indexFile: HelmRepoIndex | undefined;
-  loaded: boolean;
-  error: unknown;
-}>({
-  indexFile: undefined,
-  loaded: false,
-  error: undefined,
-});
-
 const HelmRepositoriesTab = () => {
-  const [repositories, loaded, loadError] = useHelmRepositories();
-  const [repoIndex, repoLoaded, repoError] = useHelmRepositoryIndex();
+  const [repositories, repositoriesLoaded, repositoriesError] = useHelmRepositories();
+  const helmRepoIndexResult = useHelmRepositoryIndex();
+  const clusterTemplatesResult = useClusterTemplates();
+  const { t } = useTranslation();
 
   return (
-    <PageSection>
-      <RowContext.Provider
-        value={{
-          indexFile: repoIndex,
-          loaded: repoLoaded,
-          error: repoError,
-        }}
-      >
-        <VirtualizedTable
-          data={repositories}
-          unfilteredData={repositories}
-          columns={columns}
-          Row={HelmRepoRow}
-          loaded={loaded}
-          loadError={loadError}
-        />
-      </RowContext.Provider>
-    </PageSection>
+    <Page>
+      <PageSection>
+        <TableLoader
+          loaded={repositoriesLoaded}
+          error={repositoriesError}
+          errorId="helm-repositories-load-error"
+          errorMessage={t('The Helm repositories could not be loaded.')}
+        >
+          <Card>
+            <TableComposable
+              aria-label="Helm repositories table"
+              id="helm-repositories-table"
+              variant="compact"
+            >
+              <Thead>
+                <Tr>
+                  {getTableColumns(t).map((column) => (
+                    <Th key={column.id}>{column.title}</Th>
+                  ))}
+                </Tr>
+              </Thead>
+              <Tbody>
+                {repositories.map((repository) => (
+                  <HelmRepoRow
+                    key={repository.metadata?.name}
+                    obj={repository}
+                    clusterTemplatesResult={clusterTemplatesResult}
+                    helmRepoIndexResult={helmRepoIndexResult}
+                  />
+                ))}
+              </Tbody>
+            </TableComposable>
+          </Card>
+        </TableLoader>
+      </PageSection>
+    </Page>
   );
 };
 

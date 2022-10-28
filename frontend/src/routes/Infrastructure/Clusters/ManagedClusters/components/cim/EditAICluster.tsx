@@ -2,14 +2,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory } from 'react-router'
-import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
 import { patchResource } from '../../../../../../resources'
-import { agentsState, clusterImageSetsState, nmStateConfigsState } from '../../../../../../atoms'
 import {
     fetchSecret,
     getClusterDeploymentLink,
@@ -35,6 +33,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 
 const {
     ClusterDeploymentWizard,
@@ -59,7 +58,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const { t } = useTranslation()
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
+    const { agentsState, clusterImageSetsState, nmStateConfigsState } = useSharedAtoms()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const { waitForAll } = useSharedRecoil()
     const [clusterImageSets, agents, nmStateConfigs] = useRecoilValue(
         waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState])
     )

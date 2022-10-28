@@ -12,8 +12,6 @@ import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { machinePoolsState } from '../../../../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../../../components/TechPreviewAlert'
@@ -22,6 +20,7 @@ import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
+import { useSharedAtoms, useRecoilState } from '../../../../../../shared-recoil'
 
 export function MachinePoolsPageContent() {
     return (
@@ -37,6 +36,7 @@ export function MachinePoolsPageContent() {
 export function MachinePoolsTable() {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
+    const { machinePoolsState } = useSharedAtoms()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
         open: false,
     })

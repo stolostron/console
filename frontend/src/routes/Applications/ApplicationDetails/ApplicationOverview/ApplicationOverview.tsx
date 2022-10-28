@@ -27,15 +27,7 @@ import {
     OutlinedQuestionCircleIcon,
     SyncAltIcon,
 } from '@patternfly/react-icons'
-import { useRecoilState } from 'recoil'
-import { Fragment, useEffect, useState } from 'react'
-import {
-    argoApplicationsState,
-    channelsState,
-    namespacesState,
-    placementRulesState,
-    subscriptionsState,
-} from '../../../../atoms'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import {
     getClusterCount,
     getClusterCountField,
@@ -70,6 +62,8 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
+import { useRecoilState } from '../../../../shared-recoil'
+import { PluginContext } from '../../../../lib/PluginContext'
 
 const clusterResourceStatusText = 'Cluster resource status'
 const clusterResourceStatusTooltip = 'Status represents the subscription selection within Resource topology.'
@@ -80,6 +74,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const { applicationData } = props
     const { t } = useTranslation()
     const localClusterStr = 'local-cluster'
+
+    const { dataContext } = useContext(PluginContext)
+    const { atoms } = useContext(dataContext)
+    const { argoApplicationsState, channelsState, namespacesState, placementRulesState, subscriptionsState } = atoms
 
     const [argoApplications] = useRecoilState(argoApplicationsState)
     const [channels] = useRecoilState(channelsState)

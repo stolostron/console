@@ -4,19 +4,19 @@ import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../..
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const { LogsDownloadButton } = CIM
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation()
+    const { ansibleJobState, configMapsState } = useSharedAtoms()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)

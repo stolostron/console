@@ -12,12 +12,7 @@
 'use strict'
 
 import _ from 'lodash'
-import {
-    getGitChannelBranches,
-    getGitChannelPaths,
-    listChannels,
-    listProviderConnections,
-} from '../../../../../resources'
+import { getGitChannelBranches, getGitChannelPaths, listChannels } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
@@ -31,16 +26,6 @@ export const loadExistingChannels = (type) => {
         },
         loadingDesc: 'creation.app.loading.channels',
         setAvailable: setAvailableChannelSpecs.bind(null, type),
-    }
-}
-
-export const loadExistingAnsibleProviders = () => {
-    return {
-        query: () => {
-            return listProviderConnections().promise
-        },
-        loadingDesc: 'creation.app.loading.secrets',
-        setAvailable: setAvailableSecrets.bind(null),
     }
 }
 
@@ -474,40 +459,6 @@ export const setAvailableChannelSpecs = (type, control, result) => {
             control.isLoading = loading
         }
         return control
-    }
-}
-
-export const setAvailableSecrets = (control, result) => {
-    const { loading } = result
-    const { data = [] } = result
-    const secrets = data
-    control.available = []
-
-    control.isLoading = false
-    const error = secrets ? null : result.error
-    if (!control.available) {
-        control.available = []
-        control.availableMap = {}
-        control.availableData = []
-    }
-    if (control.available.length === 0 && (error || secrets.length)) {
-        if (error) {
-            control.isFailed = true
-        } else if (secrets.length) {
-            control.isLoaded = true
-            const ansibleCredentials = secrets.filter(
-                (providerConnection) =>
-                    providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-                    !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-            )
-            control.available = Array.from(new Set([..._.map(ansibleCredentials, 'metadata.name')])).sort()
-            return control
-        }
-    } else {
-        control.isLoading = loading
-        if (!loading) {
-            control.isLoaded = true
-        }
     }
 }
 

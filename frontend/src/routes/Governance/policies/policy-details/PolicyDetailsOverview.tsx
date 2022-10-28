@@ -5,16 +5,7 @@ import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../..
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    namespacesState,
-    placementBindingsState,
-    placementDecisionsState,
-    placementRulesState,
-    placementsState,
-    policyAutomationState,
-    policySetsState,
-} from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -47,6 +38,15 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const { policy } = props
     const { t } = useTranslation()
     const { setDrawerContext } = useContext(AcmDrawerContext)
+    const {
+        namespacesState,
+        placementBindingsState,
+        placementDecisionsState,
+        placementRulesState,
+        placementsState,
+        policyAutomationState,
+        policySetsState,
+    } = useSharedAtoms()
     const [placements] = useRecoilState(placementsState)
     const [policySets] = useRecoilState(policySetsState)
     const [placementBindings] = useRecoilState(placementBindingsState)

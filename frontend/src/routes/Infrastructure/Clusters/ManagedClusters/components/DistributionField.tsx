@@ -15,14 +15,7 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import {
-    agentMachinesState,
-    agentsState,
-    ansibleJobState,
-    clusterImageSetsState,
-    nodePoolsState,
-} from '../../../../../atoms'
+import { agentMachinesState, agentsState, nodePoolsState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -30,6 +23,7 @@ import { useAgentClusterInstall } from '../CreateCluster/components/assisted-ins
 import { CIM } from 'openshift-assisted-ui-lib'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
 
 const { getVersionFromReleaseImage } = CIM
 
@@ -42,10 +36,12 @@ export function DistributionField(props: {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
+    const { ansibleJobState, clusterImageSetsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const [nodePools] = useRecoilState(nodePoolsState)
     const [agents] = useRecoilState(agentsState)
     const [agentMachines] = useRecoilState(agentMachinesState)
+    const { waitForAll } = useSharedRecoil()
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const agentClusterInstall = useAgentClusterInstall({
         name: props.cluster?.name,

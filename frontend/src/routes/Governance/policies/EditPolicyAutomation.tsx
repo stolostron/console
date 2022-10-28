@@ -1,17 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicyAutomationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicyAutomation/PolicyAutomationWizard'
+import { PolicyAutomationWizard } from '../../../wizards/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    configMapsState,
-    policyAutomationState,
-    secretsState,
-    subscriptionOperatorsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -46,6 +39,8 @@ export function EditPolicyAutomation() {
     const params = useParams<{ namespace: string; name: string }>()
     const { name, namespace } = params
     const history = useHistory()
+    const { configMapsState, policyAutomationState, secretsState, subscriptionOperatorsState, usePolicies } =
+        useSharedAtoms()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
     const [configMaps] = useRecoilState(configMapsState)

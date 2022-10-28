@@ -48,6 +48,7 @@ export const DOC_LINKS = {
     POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/multicluster_engine/index#hosted-control-planes-intro`,
+    GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {
