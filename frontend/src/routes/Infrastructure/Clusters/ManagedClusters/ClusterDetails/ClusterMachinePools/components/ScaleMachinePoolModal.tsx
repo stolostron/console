@@ -150,7 +150,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                             patches.push({ op: 'replace', path: '/spec/replicas', value: replicas })
                                         }
                                         return patchResource(props.machinePool!, patches)
-                                            .then(() => reset())
+                                            .promise.then(() => reset())
                                             .catch((e) => {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({

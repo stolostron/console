@@ -121,7 +121,7 @@ export const SaveAndEditSearchModal = (props: {
                 description: searchDesc,
                 searchText: searchText,
             })
-                .then(() => savedSearchSuccess())
+                .promise.then(() => savedSearchSuccess())
                 .catch((err) => {
                     setRequestError(err)
                 })

@@ -282,20 +282,25 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource)
 }
 
-export async function replaceResource<Resource extends IResource, ResultType = Resource>(
+export function replaceResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
     options?: { dryRun?: boolean }
-): Promise<IRequestResult<ResultType>> {
-    let url = getBackendUrl() + (await getResourceApiPath(resource))
-    if (options?.dryRun) url += '?dryRun=All'
+): IRequestResult<ResultType> {
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
     return putRequest<Resource, ResultType>(url, resource)
 }
 
-export async function patchResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource,
+export function patchResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource | Promise<Resource>,
     data: unknown,
     options?: { dryRun?: boolean }
-): Promise<IRequestResult<ResultType>> {
+): IRequestResult<ResultType> {
     const url = Promise.resolve(resource).then((resource) => {
         return getResourceApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
@@ -526,10 +531,12 @@ export function getRequest<ResultT>(url: string | Promise<string>): IRequestResu
     }
 }
 
-export function putRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+export function putRequest<DataT, ResultT>(url: string | Promise<string>, data: DataT): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) =>
+            fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }

@@ -63,7 +63,7 @@ export function PolicyActionDropdown(props: {
     )
 
     const actions = useMemo(
-        async () => [
+        () => [
             {
                 id: 'add-to-set',
                 text: t('Add to policy set'),
@@ -71,7 +71,7 @@ export function PolicyActionDropdown(props: {
                 click: (policy: PolicyTableItem) => {
                     setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
                 },
-                rbac: [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'enable-policy',
@@ -108,7 +108,7 @@ export function PolicyActionDropdown(props: {
                     })
                 },
                 rbac: item.policy.spec.disabled
-                    ? [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)]
+                    ? [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)]
                     : undefined,
             },
             {
@@ -147,7 +147,7 @@ export function PolicyActionDropdown(props: {
                 },
                 rbac: item.policy.spec.disabled
                     ? undefined
-                    : [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                    : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'inform-policy',
@@ -187,7 +187,7 @@ export function PolicyActionDropdown(props: {
                 rbac:
                     policyRemediationAction === 'inform'
                         ? undefined
-                        : [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                        : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'enforce-policy',
@@ -226,7 +226,7 @@ export function PolicyActionDropdown(props: {
                 rbac:
                     policyRemediationAction === 'enforce'
                         ? undefined
-                        : [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                        : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'edit-policy',
@@ -242,7 +242,7 @@ export function PolicyActionDropdown(props: {
                     }
                     history.push(path)
                 },
-                rbac: [await rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'delete-policy',
@@ -252,7 +252,7 @@ export function PolicyActionDropdown(props: {
                 click: (policy: PolicyTableItem) => {
                     setModal(<DeletePolicyModal item={policy} onClose={() => setModal(undefined)} />)
                 },
-                rbac: [await rbacDelete(PolicyDefinition, item.policy.metadata.namespace, item.policy.metadata.name)],
+                rbac: [rbacDelete(PolicyDefinition, item.policy.metadata.namespace, item.policy.metadata.name)],
             },
         ],
         [

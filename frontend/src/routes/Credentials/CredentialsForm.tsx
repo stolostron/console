@@ -1474,7 +1474,7 @@ export function CredentialsForm(props: {
                 if (secret.stringData) {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
-                return patchResource(secret, patch).then(() => {
+                return patchResource(secret, patch).promise.then(() => {
                     toastContext.addAlert({
                         title: t('Credentials updated'),
                         /*

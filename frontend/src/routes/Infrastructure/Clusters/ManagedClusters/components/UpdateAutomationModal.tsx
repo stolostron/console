@@ -200,7 +200,7 @@ export function UpdateAutomationModal(props: {
 
                     results.push({
                         promise: new Promise((resolve, reject) => {
-                            result
+                            result.promise
                                 .then((data) => {
                                     return resolve(data)
                                 })

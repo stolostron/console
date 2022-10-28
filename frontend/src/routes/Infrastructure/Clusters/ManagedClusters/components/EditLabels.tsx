@@ -97,7 +97,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                                     }
 
                                     return patchResource(resource!, patch)
-                                        .then(() => {
+                                        .promise.then(() => {
                                             props.close()
                                         })
                                         .catch((err) => {

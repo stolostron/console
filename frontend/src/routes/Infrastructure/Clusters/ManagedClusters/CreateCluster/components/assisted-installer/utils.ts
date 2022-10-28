@@ -76,7 +76,7 @@ const addAgentsToCluster = async ({
                         namespace,
                     },
                 },
-            ])
+            ]).promise
         })
     )
 }
@@ -100,7 +100,7 @@ export const setProvisionRequirements = (
             path: '/spec/provisionRequirements',
             value: provisionRequirements,
         },
-    ])
+    ]).promise
 }
 
 export const onHostsNext = async ({ values, clusterDeployment, agents, agentClusterInstall }: OnHostsNext) => {
@@ -126,7 +126,7 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
                     path: '/spec/role',
                     value: '',
                 },
-            ])
+            ]).promise
         })
     )
 
@@ -147,7 +147,7 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
             path: '/metadata/annotations',
             value: getAnnotationsFromAgentSelector(clusterDeployment, values),
         },
-    ])
+    ]).promise
     //}
 }
 
@@ -271,7 +271,7 @@ export const onSaveNetworking = async (
     try {
         const patches = getNetworkingPatches(agentClusterInstall, values)
         if (patches.length > 0) {
-            await patchResource(agentClusterInstall, patches)
+            await patchResource(agentClusterInstall, patches).promise
         }
     } catch (e) {
         if (e instanceof Error) {
@@ -351,7 +351,7 @@ export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
             path: '/spec/approved',
             value: true,
         },
-    ])
+    ]).promise
 
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
@@ -471,7 +471,7 @@ export const onSaveBMH =
             appendPatch(patches, '/data/username', btoa(values.username), editModal.secret.data.username)
             appendPatch(patches, '/data/password', btoa(values.password), editModal.secret.data.password)
             if (patches.length) {
-                await patchResource(editModal.secret, patches)
+                await patchResource(editModal.secret, patches).promise
             }
         } else {
             const secret = getBareMetalHostCredentialsSecret(values, editModal?.bmh?.metadata.namespace)
@@ -483,7 +483,7 @@ export const onSaveBMH =
             appendPatch(patches, '/spec/config', nmState.spec.config, editModal.nmState.spec.config)
             appendPatch(patches, '/spec/interfaces', nmState.spec.interfaces, editModal.nmState.spec.interfaces)
             if (patches.length) {
-                await patchResource(editModal.nmState, patches)
+                await patchResource(editModal.nmState, patches).promise
             }
         } else if (nmState) {
             await createResource<any>(nmState).promise
@@ -516,7 +516,7 @@ export const onSaveBMH =
                 )
             }
             if (patches.length) {
-                await patchResource(editModal.bmh, patches)
+                await patchResource(editModal.bmh, patches).promise
             }
         }
     }
@@ -539,7 +539,7 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
             path: '/spec/hostname',
             value: hostname,
         },
-    ])
+    ]).promise
 
 export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hostname: string) =>
     patchResource(bmh, [
@@ -548,7 +548,7 @@ export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hos
             path: `/metadata/annotations/${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}`,
             value: hostname,
         },
-    ])
+    ]).promise
 
 export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }): AgentK8sResource[] => {
     const { agentsState } = useSharedAtoms()
@@ -644,7 +644,7 @@ export const getOnSaveISOParams =
         const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
 
         if (patches.length) {
-            await patchResource(infraEnv, patches)
+            await patchResource(infraEnv, patches).promise
             // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
             // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
             // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
@@ -662,7 +662,7 @@ export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource)
     const patches: any[] = []
     appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec.sshAuthorizedKey)
     if (patches.length) {
-        return patchResource(infraEnv, patches)
+        return patchResource(infraEnv, patches).promise
     }
 }
 
@@ -690,7 +690,7 @@ export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) =
                 path: '/data/.dockerconfigjson',
                 value: btoa(values.pullSecret),
             },
-        ])
+        ]).promise
     }
 }
 
@@ -711,7 +711,7 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
             infraEnv.spec.additionalNTPSources
         )
     }
-    return patchResource(infraEnv, patches)
+    return patchResource(infraEnv, patches).promise
 }
 
 export const onMassDeleteHost = (

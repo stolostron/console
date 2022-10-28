@@ -171,7 +171,7 @@ export function BatchChannelSelectModal(props: {
                 let createCuratorResult: IRequestResult<ClusterCurator> | undefined = undefined
                 return {
                     promise: new Promise((resolve, reject) => {
-                        patchCuratorResult
+                        patchCuratorResult.promise
                             .then((data) => {
                                 return resolve(data)
                             })

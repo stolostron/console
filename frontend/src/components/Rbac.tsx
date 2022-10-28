@@ -22,7 +22,7 @@ type Actions<T = unknown> = {
     isAriaDisabled?: boolean
     tooltip?: string
     click: (item: T) => void
-    rbac?: ResourceAttributes[] | Promise<ResourceAttributes[]>
+    rbac?: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
@@ -46,26 +46,18 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             const rbacActions: Actions<T>[] = await Promise.all(
                 props.actions.map(async (action) => {
                     try {
-                        if (action.rbac) {
-                            return Promise.resolve(action.rbac).then(async (rbac) => {
-                                if (rbac.length > 0) {
-                                    const results = await Promise.all(
-                                        rbac.map(async (rbac) => {
-                                            return await (
-                                                await createSubjectAccessReview(rbac)
-                                            ).promise
-                                        })
-                                    )
-                                    const isAriaDisabled = !results.every((result) => result?.status?.allowed)
-                                    return {
-                                        ...action,
-                                        isAriaDisabled: isAriaDisabled,
-                                        tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
-                                    }
-                                } else {
-                                    return action
-                                }
-                            })
+                        if (action.rbac && action.rbac.length > 0) {
+                            const results = await Promise.all(
+                                action.rbac.map(async (rbac) => {
+                                    return await createSubjectAccessReview(rbac).promise
+                                })
+                            )
+                            const isAriaDisabled = !results.every((result) => result?.status?.allowed)
+                            return {
+                                ...action,
+                                isAriaDisabled: isAriaDisabled,
+                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
+                            }
                         } else {
                             return action
                         }
@@ -94,7 +86,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
 }
 
 type RbacButtonProps = Parameters<typeof AcmButton>[0] & {
-    rbac: ResourceAttributes[]
+    rbac: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
 
 const useStyles = makeStyles({
@@ -109,15 +101,13 @@ const useStyles = makeStyles({
 export function RbacButton(props: RbacButtonProps) {
     const { t } = useTranslation()
     const [isDisabled, setIsDisabled] = useState<boolean>(true)
-    const [rbac] = useState<ResourceAttributes[]>(props.rbac)
+    const [rbac] = useState<ResourceAttributes[] | Promise<ResourceAttributes>[]>(props.rbac)
     const classes = useStyles(isDisabled)
 
     useEffect(() => {
         Promise.all(
             rbac.map(async (rbac) => {
-                return await (
-                    await createSubjectAccessReview(rbac)
-                ).promise
+                return await createSubjectAccessReview(rbac).promise
             })
         ).then((results) => {
             const isDisabled = !results.every((result) => result?.status?.allowed)
