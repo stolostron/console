@@ -100,14 +100,14 @@ describe('ClusterSetActionDropdown', () => {
 
         await clickByText(createSecondNamespaceBinding.metadata.namespace!)
 
-        const deleteNock = nockDelete(firstNamespaceBinding)
+        const deleteNock = await nockDelete(firstNamespaceBinding)
         const createNock = nockCreate(createSecondNamespaceBinding)
 
         await clickByText('Save')
         await waitForNocks([deleteNock, createNock])
     })
     test('delete action should delete the managed cluster set', async () => {
-        const nock = nockDelete(mockManagedClusterSet)
+        const nock = await nockDelete(mockManagedClusterSet)
         await clickByText('Actions')
         await clickByText('Delete cluster set')
         await typeByText(

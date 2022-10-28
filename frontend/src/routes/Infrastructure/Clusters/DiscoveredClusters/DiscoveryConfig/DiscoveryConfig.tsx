@@ -287,7 +287,7 @@ export function DiscoveryConfigPageContent(props: {
                     })
                     history.push(NavigationPath.discoveredClusters)
                 } else {
-                    const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                    const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig)
                     resolve(importcmd)
                     toastContext.addAlert({
                         title: t('alert.updated.header', {

@@ -83,7 +83,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 path: '/spec/imageSetRef/name',
                 value: values.openshiftVersion,
             },
-        ]).promise
+        ])
     }
 
     // Specific for the AI flow which has single&dedicated InfraEnv per Cluster
@@ -112,7 +112,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                     path: '/spec/role',
                     value: role,
                 },
-            ]).promise
+            ])
         },
         onDeleteHost,
         onSetInstallationDiskId: (agent: CIM.AgentK8sResource, diskId: string) => {
@@ -122,7 +122,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                     path: '/spec/installation_disk_id',
                     value: diskId,
                 },
-            ]).promise
+            ])
         },
     }
 
@@ -137,7 +137,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 path: '/spec/holdInstallation',
                                 value: true,
                             },
-                        ]).promise
+                        ])
                     }
                 } finally {
                     setPatchingHoldInstallation(false)
@@ -161,7 +161,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 path: '/spec/holdInstallation',
                 value: false,
             },
-        ]).promise
+        ])
 
         history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
     }

@@ -47,7 +47,7 @@ const Component = () => {
 
 describe('Infrastructure Environment Details page', () => {
     test('can render', async () => {
-        const initialNocks = [nockGet(mockPullSecret)]
+        const initialNocks = [await nockGet(mockPullSecret)]
         render(<Component />)
         await waitForText('ai:Environment details')
         await waitForNocks(initialNocks)

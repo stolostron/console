@@ -282,7 +282,7 @@ describe('ClusterPools page', () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickRowAction(1, 'Destroy cluster pool')
         await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
-        const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+        const deleteNocks: Scope[] = [await nockDelete(mockClusterPool)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -290,7 +290,7 @@ describe('ClusterPools page', () => {
         await selectTableRow(1)
         await clickBulkAction('Destroy cluster pools')
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
-        const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+        const deleteNocks: Scope[] = [await nockDelete(mockClusterPool)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -352,7 +352,7 @@ describe('ClusterPools page', () => {
         await clickByText('Claim cluster', 0)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaimFulfilled)]
+        const createNocks: Scope[] = [nockCreate(mockClusterClaim), await nockGet(mockClusterClaimFulfilled)]
         await clickByText('Claim')
         await waitForNocks(createNocks)
         await waitForText('View cluster')
@@ -386,7 +386,7 @@ describe('ClusterPools page', () => {
         await clickByText('Delete claim', 1)
         await waitForText('You are about to delete a cluster claim.')
         await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
-        const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
+        const deleteNocks: Scope[] = [await nockDelete(mockClusterClaimPending)]
         await clickByText('Delete')
         await waitForNocks(deleteNocks)
     })
