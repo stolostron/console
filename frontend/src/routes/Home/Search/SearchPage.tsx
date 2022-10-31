@@ -27,7 +27,7 @@ import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchMod
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
 import { Searchbar } from './components/Searchbar'
-import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
+import { convertStringToQuery, FormatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
@@ -176,12 +176,12 @@ function RenderSearchBar(props: {
                         currentSearch === '' ||
                         (!currentSearch.endsWith(':') &&
                             !operators.some((operator: string) => currentSearch.endsWith(operator)))
-                            ? formatSearchbarSuggestions(
+                            ? FormatSearchbarSuggestions(
                                   _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
                                   'filter',
                                   '' // Dont need to de-dupe filters
                               )
-                            : formatSearchbarSuggestions(
+                            : FormatSearchbarSuggestions(
                                   _.get(searchCompleteResults, 'data.searchComplete', []),
                                   'value',
                                   currentSearch // pass current search query in order to de-dupe already selected values

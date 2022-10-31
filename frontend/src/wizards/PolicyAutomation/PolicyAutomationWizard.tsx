@@ -18,6 +18,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
 import { ConfigMap } from '../../resources'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
 
 export function PolicyAutomationWizard(props: {
     title: string
@@ -47,6 +48,7 @@ export function PolicyAutomationWizard(props: {
     )
     const [jobNames, setJobNames] = useState<string[]>()
     const [alert, setAlert] = useState<{ title: string; message: string }>()
+    const { t } = useTranslation()
 
     function getOperatorError() {
         const openShiftConsoleConfig = props.configMaps?.find(
@@ -55,10 +57,10 @@ export function PolicyAutomationWizard(props: {
         const openShiftConsoleUrl: string = openShiftConsoleConfig?.data?.consoleURL
         return (
             <div>
-                {'The Ansible Automation Platform Resource Operator is required to create an Ansible job. '}
+                {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
                 {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
                     <div>
-                        {'Install the Operator through the following link: '}
+                        {t('Install the Operator through the following link: ')}
                         <Button
                             isInline
                             variant={ButtonVariant.link}
@@ -74,7 +76,7 @@ export function PolicyAutomationWizard(props: {
                         </Button>
                     </div>
                 ) : (
-                    'Install the Operator through operator hub.'
+                    t('Install the Operator through operator hub.')
                 )}
             </div>
         )
@@ -90,13 +92,13 @@ export function PolicyAutomationWizard(props: {
                 .then((jobNames) => setJobNames(jobNames))
                 .catch((err) => {
                     if (err instanceof Error) {
-                        setAlert({ title: 'Failed to get job names from ansible', message: err.message })
+                        setAlert({ title: t('Failed to get job names from ansible'), message: err.message })
                     } else {
-                        setAlert({ title: 'Failed to get job names from ansible', message: 'Unknown error' })
+                        setAlert({ title: t('Failed to get job names from ansible'), message: 'Unknown error' })
                     }
                 })
         }
-    }, [ansibleCredentials, props])
+    }, [ansibleCredentials, props, t])
 
     return (
         <WizardPage
@@ -125,7 +127,7 @@ export function PolicyAutomationWizard(props: {
                 {!props.isAnsibleOperatorInstalled && (
                     <Alert isInline title={getOperatorError()} variant={AlertVariant.danger} />
                 )}
-                <Section label="Policy automation">
+                <Section label={t('Policy automation')}>
                     {alert && (
                         <WizDetailsHidden>
                             <Alert title={alert.title} isInline variant="danger">
@@ -135,7 +137,7 @@ export function PolicyAutomationWizard(props: {
                     )}
                     <Select
                         id="secret"
-                        label="Ansible credential"
+                        label={t('Ansible credential')}
                         path="spec.automationDef.secret"
                         options={ansibleCredentialNames}
                         onValueChange={(value, item) => {
@@ -154,13 +156,13 @@ export function PolicyAutomationWizard(props: {
                                     .catch((err) => {
                                         if (err instanceof Error) {
                                             setAlert({
-                                                title: 'Failed to get job names from ansible',
+                                                title: t('Failed to get job names from ansible'),
                                                 message: err.message,
                                             })
                                         } else {
                                             setAlert({
-                                                title: 'Failed to get job names from ansible',
-                                                message: 'Unknown error',
+                                                title: t('Failed to get job names from ansible'),
+                                                message: t('Unknown error'),
                                             })
                                         }
                                     })
@@ -174,7 +176,7 @@ export function PolicyAutomationWizard(props: {
                                     variant={ButtonVariant.link}
                                     onClick={props.createCredentialsCallback}
                                 >
-                                    {'Create credential'}
+                                    {t('Create credential')}
                                 </Button>
                             </>
                         }
@@ -182,7 +184,7 @@ export function PolicyAutomationWizard(props: {
                     />
                     <Select
                         id="job"
-                        label="Ansible job"
+                        label={t('Ansible job')}
                         path="spec.automationDef.name"
                         options={jobNames}
                         hidden={(item) => !item.spec?.automationDef?.secret}
@@ -191,8 +193,8 @@ export function PolicyAutomationWizard(props: {
                     <WizKeyValue
                         id="extra_vars"
                         path="spec.automationDef.extra_vars"
-                        label="Extra variables"
-                        placeholder="Add variable"
+                        label={t('Extra variables')}
+                        placeholder={t('Add variable')}
                         hidden={(item) => !item.spec?.automationDef?.name}
                     />
                     <WizNumberInput
@@ -204,28 +206,45 @@ export function PolicyAutomationWizard(props: {
                     />
                     <Select
                         id="mode"
-                        label="Schedule"
+                        label={t('Schedule')}
                         labelHelp={
                             <div>
                                 <p>
-                                    <strong>Run everyEvent:</strong> When a policy is violated, the automation runs
-                                    every time for each unique policy violation per managed cluster.
+                                    {
+                                        <Trans
+                                            i18nKey="<bold>Run everyEvent:</bold> When a policy is violated, the automation runs every time for each unique policy violations per managed cluster."
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
                                 </p>
                                 <p>
-                                    <strong>Run once:</strong> When a policy is violated, the automation runs one time,
-                                    after which it is disabled.
+                                    {
+                                        <Trans
+                                            i18nKey="<bold>Run once:</bold> When a policy is violated, the automation runs one time, after which it is disabled."
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
                                 </p>
                                 <p>
-                                    <strong>Disabled:</strong> The automation does not run automatically.
+                                    {
+                                        <Trans
+                                            i18nKey="<bold>Disabled:</bold> The automation does not run automatically."
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
                                 </p>
-                                <p>{`(To run automation manually, select "Disabled" and check the "Manual run" checkbox.)`}</p>
+                                <p>
+                                    {t(
+                                        'To run automation manually, select "Disabled" and check the "Manual run" checkbox.)'
+                                    )}
+                                </p>
                             </div>
                         }
                         path="spec.mode"
                         options={[
-                            { label: 'Once', value: 'once' },
-                            { label: 'EveryEvent', value: 'everyEvent' },
-                            { label: 'Disabled', value: 'disabled' },
+                            { label: t('Once'), value: 'once' },
+                            { label: t('EveryEvent'), value: 'everyEvent' },
+                            { label: t('Disabled'), value: 'disabled' },
                         ]}
                         hidden={(item) => !item.spec?.automationDef?.name}
                         required
@@ -241,7 +260,9 @@ export function PolicyAutomationWizard(props: {
                     <WizCheckbox
                         hidden={(item) => item.spec?.mode !== 'disabled'}
                         path="metadata.annotations.policy\.open-cluster-management\.io/rerun"
-                        label="Manual run: Set this automation to run once. After the automation runs, it is set to disabled."
+                        label={t(
+                            'Manual run: Set this automation to run once. After the automation runs, it is set to disabled.'
+                        )}
                         inputValueToPathValue={(inputValue) => {
                             // inputValue is either true or false - this fn returns the string of the current boolean.
                             if (inputValue) {
@@ -254,13 +275,11 @@ export function PolicyAutomationWizard(props: {
                     <WizNumberInput
                         hidden={(item) => item.spec?.mode !== 'everyEvent'}
                         path="spec.delayAfterRunSeconds"
-                        label="Delay After Run Seconds"
-                        labelHelp="DelayAfterRunSeconds is the minimum seconds before an automation can be restarted on the same cluster. 
-                        When a policy is violated, the automation runs one time before the delay period.
-                        If the policy is violated multiple times during the delay period and kept in the violated state, 
-                        the automation runs one time after the delay period. 
-                        The default is 0 seconds and is only applicable for the everyEvent mode."
-                        helperText="The period in seconds."
+                        label={t('Delay After Run Seconds')}
+                        labelHelp={t(
+                            'DelayAfterRunSeconds is the minimum seconds before an automation can be restarted on the same cluster. When a policy is violated, the automation runs one time before the delay period. If the policy is violated multiple times during the delay period and kept in the violated state, the automation runs one time after the delay period. The default is 0 seconds and is only applicable for the everyEvent mode.'
+                        )}
+                        helperText={t('The period in seconds.')}
                     />
                 </Section>
             </Step>
