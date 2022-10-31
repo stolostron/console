@@ -10,13 +10,13 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import R from 'ramda'
 import _ from 'lodash'
 import moment from 'moment'
+import R from 'ramda'
+import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
+import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
-import { getURLSearchData } from './diagram-helpers-argo'
-import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -270,7 +270,7 @@ export const createResourceURL = (node, t, isLogURL = false) => {
 
     if (!isLogURL) {
         return (
-            '/multicloud/home/search/resources?' +
+            '/multicloud/home/search/resources/yaml?' +
             encodeURIComponent(
                 `cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`
             )
