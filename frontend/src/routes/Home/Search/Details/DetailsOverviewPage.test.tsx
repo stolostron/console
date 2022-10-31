@@ -7,7 +7,6 @@ import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 import DetailsOverviewPage, {
-    getDate,
     LablesGroup,
     OwnerReferences,
     ResourceConditions,
@@ -63,16 +62,6 @@ describe('DetailsOverviewPage', () => {
         // Test that the component has rendered correctly with data
         await waitFor(() => expect(screen.queryByText('test=test1')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('region=east')).toBeTruthy())
-    })
-
-    it('Should correctly return empty date', async () => {
-        const errorDate = getDate()
-        expect(errorDate).toMatchSnapshot()
-    })
-
-    it('Should correctly return getDate', async () => {
-        const errorDate = getDate('2022-10-31T11:34:27Z')
-        expect(errorDate).toMatchSnapshot()
     })
 
     it('Should correctly return empty OwnerReferences', async () => {
