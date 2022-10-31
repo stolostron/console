@@ -177,6 +177,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     )
     const prevCluster = usePrevious(cluster)
     const showMachinePoolTab = cluster.isHive && cluster.isManaged && cluster.provider !== Provider.baremetal
+    const selectedHostedCluster: HostedClusterK8sResource = hostedClusters.find(
+        (hc) => hc.metadata.name === match.params.id
+    )
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
     useEffect(() => {
@@ -195,61 +198,59 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }
 
     function importHostedControlPlaneCluster() {
-        const selectedHostedCluster: HostedClusterK8sResource = hostedClusters.find(
-            (hc) => hc.metadata.name === match.params.id
-        )
-        if (selectedHostedCluster) {
-            const hdName = selectedHostedCluster.metadata.name
-            const hdNamespace = selectedHostedCluster.metadata.namespace
-            const managedClusterResource: ManagedCluster = {
-                apiVersion: ManagedClusterApiVersion,
-                kind: ManagedClusterKind,
-                metadata: {
-                    annotations: {
-                        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
-                        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-                        'open-cluster-management/created-via': 'other',
-                    },
-                    labels: {
-                        cloud: 'auto-detect',
-                        'cluster.open-cluster-management.io/clusterset': 'default',
-                        name: hdName,
-                        vendor: 'OpenShift',
-                    },
+        const hdName = selectedHostedCluster.metadata.name
+        const hdNamespace = selectedHostedCluster.metadata.namespace
+        const managedClusterResource: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                annotations: {
+                    'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+                    'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+                    'open-cluster-management/created-via': 'other',
+                },
+                labels: {
+                    cloud: 'auto-detect',
+                    'cluster.open-cluster-management.io/clusterset': 'default',
                     name: hdName,
+                    vendor: 'OpenShift',
                 },
-                spec: {
-                    hubAcceptsClient: true,
-                    leaseDurationSeconds: 60,
-                },
-            }
-
-            const updateAnnotations = {
-                'cluster.open-cluster-management.io/managedcluster-name': hdName,
-                'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
-            }
-
-            createResource(managedClusterResource as IResource)
-                .promise.then(() => {
-                    toastContext.addAlert({
-                        title: t('Import hosted control plane cluster...'),
-                        type: 'success',
-                        autoClose: true,
-                    })
-                })
-                .catch((err) => {
-                    const errorInfo = getErrorInfo(err, t)
-                    toastContext.addAlert({
-                        type: 'danger',
-                        title: errorInfo.title,
-                        message: errorInfo.message,
-                    })
-                })
-
-            patchResource(selectedHostedCluster, [
-                { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
-            ])
+                name: hdName,
+            },
+            spec: {
+                hubAcceptsClient: true,
+                leaseDurationSeconds: 60,
+            },
         }
+
+        const updateAnnotations = {
+            'cluster.open-cluster-management.io/managedcluster-name': hdName,
+            'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
+        }
+
+        window.nockShot()
+
+        createResource(managedClusterResource as IResource)
+            .promise.then(() => {
+                toastContext.addAlert({
+                    title: t('Import hosted control plane cluster...'),
+                    type: 'success',
+                    autoClose: true,
+                })
+            })
+            .catch((err) => {
+                const errorInfo = getErrorInfo(err, t)
+                toastContext.addAlert({
+                    type: 'danger',
+                    title: errorInfo.title,
+                    message: errorInfo.message,
+                })
+            })
+
+        patchResource(selectedHostedCluster, [
+            { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
+        ])
+        window.nockShot()
     }
 
     if (!clusterExists) {
@@ -259,13 +260,17 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     error={new ResourceError('Not found', 404)}
                     actions={
                         <Fragment>
-                            <AcmButton
-                                role="link"
-                                onClick={() => importHostedControlPlaneCluster()}
-                                style={{ marginRight: '10px' }}
-                            >
-                                {t('managed.importCluster')}
-                            </AcmButton>
+                            {selectedHostedCluster ? (
+                                <AcmButton
+                                    role="link"
+                                    onClick={() => importHostedControlPlaneCluster()}
+                                    style={{ marginRight: '10px' }}
+                                >
+                                    {t('managed.importCluster')}
+                                </AcmButton>
+                            ) : (
+                                ''
+                            )}
                             <AcmButton
                                 role="link"
                                 onClick={() => history.push(NavigationPath.clusters)}
