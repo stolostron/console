@@ -1,47 +1,47 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { formatSearchbarSuggestions, convertStringToQuery, getSearchCompleteString } from './search-helper'
+import { FormatSearchbarSuggestions, convertStringToQuery, getSearchCompleteString } from './search-helper'
 
-test('Correctly returns formatSearchbarSuggestions', () => {
+test('Correctly returns FormatSearchbarSuggestions', () => {
     const testData = ['kind', 'cluster', 'deployment']
-    const result = formatSearchbarSuggestions(testData, 'filter', '')
+    const result = FormatSearchbarSuggestions(testData, 'filter', '')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions of name values', () => {
+test('Correctly returns FormatSearchbarSuggestions of name values', () => {
     const testData = ['name1', 'name2', 'name3']
-    const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 name:')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'name:name1 name:')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions of namespace values', () => {
+test('Correctly returns FormatSearchbarSuggestions of namespace values', () => {
     const testData = ['namespace1', 'namespace2', 'namespace3']
-    const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 namespace:')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'name:name1 namespace:')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions of operators', () => {
+test('Correctly returns FormatSearchbarSuggestions of operators', () => {
     const testData = ['isNumber']
-    const result = formatSearchbarSuggestions(testData, 'value', 'cpu:')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'cpu:')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions with operator already chosen', () => {
+test('Correctly returns FormatSearchbarSuggestions with operator already chosen', () => {
     const testData = ['isNumber', '1', '10']
-    const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'cpu:=')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions with operator already chosen (single number option)', () => {
+test('Correctly returns FormatSearchbarSuggestions with operator already chosen (single number option)', () => {
     const testData = ['isNumber', '1']
-    const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'cpu:=')
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns formatSearchbarSuggestions with date', () => {
+test('Correctly returns FormatSearchbarSuggestions with date', () => {
     const testData = ['isDate']
-    const result = formatSearchbarSuggestions(testData, 'value', 'created:')
+    const result = FormatSearchbarSuggestions(testData, 'value', 'created:')
     expect(result).toMatchSnapshot()
 })
 

@@ -1882,11 +1882,11 @@ exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
 
 exports[`Correctly returns empty labels 1`] = `"-"`;
 
-exports[`Correctly returns formatSearchbarSuggestions no timestamp 1`] = `"-"`;
+exports[`Correctly returns FormatSearchbarSuggestions no timestamp 1`] = `"-"`;
 
-exports[`Correctly returns formatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
+exports[`Correctly returns FormatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
 
-exports[`Correctly returns formatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;
+exports[`Correctly returns FormatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;
 
 exports[`Correctly returns label components 1`] = `
 <AcmLabels

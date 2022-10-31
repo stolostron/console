@@ -37,7 +37,7 @@ export default function SavedSearchQueries(props: {
     const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
     const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-    const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
+    const suggestedQueryTemplates = SuggestQueryTemplates() ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
     const input = [
         ...savedSearches.map((query) => convertStringToQuery(query.searchText)),

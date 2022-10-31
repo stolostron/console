@@ -73,6 +73,7 @@ import {
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
+import { useTranslation } from '../../lib/acm-i18next'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -353,6 +354,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const initialSort = props.initialSort || defaultSort
     const initialSearch = props.initialSearch || ''
     const initialFilters = props.initialFilters || {}
+    const { t } = useTranslation()
 
     // State that can come from context or component state (perPage)
     const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -367,7 +369,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const [stateSearch, stateSetSearch] = useState(initialSearch)
     const search = props.search || stateSearch
     const setSearch = props.setSearch || stateSetSearch
-    const searchPlaceholder = props.searchPlaceholder || 'Search'
+    const searchPlaceholder = props.searchPlaceholder || t('Search')
     const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
     const sort = props.sort || stateSort
     const setSort = props.setSort || stateSetSort
@@ -1049,7 +1051,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                     variant={PaginationVariant.top}
                                     onSetPage={(_event, page) => setPage(page)}
                                     onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                                    aria-label="Pagination top"
+                                    aria-label={t('Pagination top')}
                                     isCompact
                                 />
                             </ToolbarItem>
@@ -1062,7 +1064,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     <EmptyState>
                         <EmptyStateIcon variant="container" component={Spinner} />
                         <Title size="lg" headingLevel="h4">
-                            Loading
+                            {t('Loading')}
                         </Title>
                     </EmptyState>
                 </PageSection>
@@ -1073,8 +1075,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 >
                     {props.emptyState ?? (
                         <AcmEmptyState
-                            title={`No ${props.plural} found`}
-                            message={`You do not have any ${props.plural} yet.`}
+                            // CHECKBACK
+                            title={t('No {{items}} found', { items: props.plural })}
+                            message={t('You do not have any {{items}} yet', { items: props.plural })}
                         />
                     )}
                 </PageSection>
@@ -1107,7 +1110,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                 rowWrapper={OuiaIdRowWrapper}
                                 actionResolver={actionResolver}
                                 actions={actions}
-                                aria-label="Simple Table"
+                                aria-label={t('Simple Table')}
                                 sortBy={adjustedSort}
                                 onSort={(_event, index, direction) => updateSort({ index, direction })}
                                 onSelect={
@@ -1135,12 +1138,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     {!filtered.length && (
                         <PageSection variant="light" padding={{ default: 'noPadding' }}>
                             <AcmEmptyState
-                                title="No results found"
-                                message="No results match the filter criteria. Clear filters to show results."
+                                title={t('No results found')}
+                                message={t('No results match the filter criteria. Clear filters to show results.')}
                                 showIcon={false}
                                 action={
                                     <AcmButton variant="link" onClick={clearSearchAndFilters}>
-                                        Clear all filters
+                                        {t('Clear all filters')}
                                     </AcmButton>
                                 }
                             />
@@ -1154,7 +1157,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                             variant={PaginationVariant.bottom}
                             onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
                             onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
-                            aria-label="Pagination bottom"
+                            aria-label={t('Pagination bottom')}
                         />
                     )}
                 </Fragment>
@@ -1176,13 +1179,14 @@ function TableColumnFilters<T>(props: {
     const [isOpen, setIsOpen] = useState(false)
     const classes = useStyles()
     const { filters, toolbarFilterIds, setToolbarFilterIds, items } = props
+    const { t } = useTranslation()
 
     const onFilterSelect = useCallback(
         (selection: string | SelectOptionObject) => {
             /* istanbul ignore if */
             if (typeof selection !== 'string') {
                 /* istanbul ignore next */
-                throw new Error('Filter select error: Incorrect selection type')
+                throw new Error(t('Filter select error: Incorrect selection type'))
             }
             let filterId = ''
             for (const filter of filters) {
@@ -1343,7 +1347,7 @@ function TableColumnFilters<T>(props: {
                     placeholderText={
                         <div>
                             <FilterIcon className={classes.filterLabelMargin} />
-                            {'Filter'}
+                            {t('Filter')}
                         </div>
                     }
                 >
@@ -1401,6 +1405,7 @@ function TableActionsDropdown<T>(props: {
     /* istanbul ignore next */
     const { actions, selections = {}, items = [], keyFn } = props
     const [open, setOpen] = useState(false)
+    const { t } = useTranslation()
     function DropdownItems(
         actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[],
         selections: { [uid: string]: boolean },
@@ -1472,7 +1477,7 @@ function TableActionsDropdown<T>(props: {
                     toggleIndicator={CaretDownIcon}
                     isPrimary={Object.keys(selections).length > 0}
                 >
-                    Actions
+                    {t('Actions')}
                 </DropdownToggle>
             }
             isOpen={open}
@@ -1542,7 +1547,7 @@ export interface TableSelectionDropdownProps {
 
 export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
     const [isOpen, setIsOpen] = useState(false)
-
+    const [t] = useTranslation()
     const onToggleCheckbox = useCallback(() => {
         if (props.selectedCount > 0) props.onSelectNone()
         else props.onSelectAll()
@@ -1550,9 +1555,9 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
     }, [props.selectedCount, props.onSelectNone, props.onSelectAll])
 
     const toggleText = useMemo(() => {
-        return props.selectedCount > 0 ? `${props.selectedCount} selected` : ''
+        return props.selectedCount > 0 ? t('{{count}} selected', { count: props.selectedCount }) : ''
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.selectedCount, props.selectedCount])
+    }, [props.selectedCount, props.selectedCount, t])
 
     const toggle = useMemo(() => {
         return (
@@ -1561,7 +1566,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                     <DropdownToggleCheckbox
                         id="select-all"
                         key="select-all"
-                        aria-label="Select all"
+                        aria-label={t('Select all')}
                         isChecked={props.selectedCount > 0}
                         onChange={onToggleCheckbox}
                     >
@@ -1584,11 +1589,11 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                     setIsOpen(false)
                 }}
             >
-                Select none
+                {t('Select none')}
             </DropdownItem>
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.onSelectNone])
+    }, [props.onSelectNone, t])
 
     const selectPageDropdownItem = useMemo(() => {
         return (
@@ -1600,7 +1605,8 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                     setIsOpen(false)
                 }}
             >
-                {`Select ${Math.min(props.perPage, props.itemCount)} page items`}
+                {t('Select {{count}} page items', { count: Math.min(props.perPage, props.itemCount) })}
+                {/* CHECKBACK */}
             </DropdownItem>
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1616,7 +1622,8 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                     setIsOpen(false)
                 }}
             >
-                {`Select all ${props.itemCount} items`}
+                {t('Select all {{count}} items', { count: props.itemCount })}
+                {/* CHECKBACK */}
             </DropdownItem>
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps

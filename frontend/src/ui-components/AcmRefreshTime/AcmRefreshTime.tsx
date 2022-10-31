@@ -3,6 +3,7 @@
 import { makeStyles } from '@material-ui/styles'
 import moment from 'moment'
 import { Spinner } from '@patternfly/react-core'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export type AcmRefreshTimeProps = {
     timestamp: string
@@ -28,11 +29,13 @@ export const AcmRefreshTime = (props: AcmRefreshTimeProps) => {
     const classes = useStyles()
     const { reloading, timestamp } = props
     const time = moment(new Date(timestamp)).format('LTS')
-
+    const { t } = useTranslation()
     return (
         <div className={classes.timestamp}>
             {reloading && <Spinner size="sm" />}
-            <p>Last update: {time}</p>
+            <p>
+                {t('Last update:')} {time}
+            </p>
         </div>
     )
 }

@@ -1,22 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
+import { useTranslation } from '../../../lib/acm-i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
 
-export function formatSearchbarSuggestions(
+export function FormatSearchbarSuggestions(
     data: string[],
     suggestionKind: 'label' | 'filter' | 'value',
     searchQuery: string
 ) {
+    const { t } = useTranslation()
     let valuesToRemoveFromSuggestions: string[] = []
     let suggestions: DropdownSuggestionsProps[] = []
     const labelTag = {
         id: 'id-suggestions-label',
         key: 'key-suggestions-label',
-        name: 'Filters',
+        name: t('Filters'),
         kind: suggestionKind,
         disabled: true,
     }
@@ -60,7 +62,7 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-operator-label',
-                name: 'Operators',
+                name: t('Operators'),
                 kind: 'label',
                 disabled: true,
             })

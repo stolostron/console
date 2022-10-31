@@ -33,6 +33,7 @@ import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } fro
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
+// const {t} = useTranslation()
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const savedSearches = 'Saved searches'
 const useStyles = makeStyles({
@@ -192,7 +193,7 @@ function RenderSearchBar(props: {
                             updateBrowserUrl(history, newQuery)
                         }
                         if (newQuery !== currentSearch) {
-                            setSelectedSearch(savedSearches)
+                            setSelectedSearch(t('Saved searches'))
                         }
                     }}
                     toggleInfoModal={toggle}
@@ -219,14 +220,14 @@ function RenderDropDownAndNewTab(props: {
         (id: string) => {
             if (id === 'savedSearchesID') {
                 updateBrowserUrl(history, '')
-                setSelectedSearch(savedSearches)
+                setSelectedSearch(t('Saved searches'))
             } else {
                 const selectedQuery = savedSearchQueries.filter((query) => query.id === id)
                 updateBrowserUrl(history, selectedQuery[0].searchText || '')
                 setSelectedSearch(selectedQuery[0].name || '')
             }
         },
-        [history, savedSearchQueries, setSelectedSearch]
+        [history, savedSearchQueries, setSelectedSearch, t]
     )
 
     function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: SavedSearch[] }) {
@@ -234,7 +235,7 @@ function RenderDropDownAndNewTab(props: {
             const items: any[] = props.savedSearchQueries.map((query) => {
                 return { id: query.id, text: query.name }
             })
-            items.unshift({ id: 'savedSearchesID', text: savedSearches })
+            items.unshift({ id: 'savedSearchesID', text: t('Saved searches') })
             return items
         }, [props.savedSearchQueries])
 
@@ -289,7 +290,7 @@ export default function SearchPage() {
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
     const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-
+    const { t } = useTranslation()
     useEffect(() => {
         getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
     }, [userPreferences])
@@ -300,9 +301,9 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (presetSearchQuery === '') {
-            setSelectedSearch(savedSearches)
+            setSelectedSearch(t('Saved searches'))
         }
-    }, [presetSearchQuery])
+    }, [presetSearchQuery, t])
 
     const query = convertStringToQuery(presetSearchQuery)
     const msgQuery = useGetMessagesQuery({

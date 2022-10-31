@@ -4,6 +4,7 @@ import { useMediaQuery } from '@material-ui/core'
 import { Button, Popover, Split, SplitItem, Title, TitleProps } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export type AcmFormSectionProps = Omit<TitleProps, 'headingLevel'> & {
     title: string
@@ -16,7 +17,7 @@ export function AcmFormSection(props: AcmFormSectionProps) {
 
     /* istanbul ignore next */
     const marginTop = props.spacing ? (isFullWidthPage ? '24px' : '16px') : undefined
-
+    const { t } = useTranslation()
     return (
         <Split style={{ marginTop }}>
             <SplitItem>
@@ -36,7 +37,7 @@ export function AcmFormSection(props: AcmFormSectionProps) {
                             <Button
                                 variant="plain"
                                 id={`${props.id}-label-help-button`}
-                                aria-label="More info"
+                                aria-label={t('More info')}
                                 onClick={/* istanbul ignore next */ (e) => e.preventDefault()}
                                 className="pf-c-form__group-label-help"
                             >

@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLoadingPage } from '../AcmLoadingPage/AcmLoadingPage'
 import DestroyedImage from '../assets/resource-destroyed.png'
+import { useTranslation } from '../../lib/acm-i18next'
 
 const useStyles = makeStyles({
     container: {
@@ -38,6 +39,7 @@ export type AcmPageProccessProps = {
 
 export function AcmPageProcess(props: AcmPageProccessProps) {
     const classes = useStyles()
+    const { t } = useTranslation()
 
     if (props.isLoading) {
         return (
@@ -59,7 +61,7 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
                     <img src={DestroyedImage} role="presentation" className={classes.image} />
                     <div className={classes.body}>
                         <Title size="lg" headingLevel="h4">
-                            {props.successTitle ?? 'Success'}
+                            {props.successTitle ?? t('Success')}
                         </Title>
                         <EmptyStateBody>{props.successMessage}</EmptyStateBody>
                     </div>

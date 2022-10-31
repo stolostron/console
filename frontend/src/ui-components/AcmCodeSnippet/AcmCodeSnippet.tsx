@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { TooltipPosition } from '@patternfly/react-core'
 import { ClipboardCopyButton } from '@patternfly/react-core/dist/js/components/ClipboardCopy/ClipboardCopyButton'
 import { onCopy } from '../utils'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function AcmCodeSnippet(props: {
     id: string
@@ -13,6 +14,7 @@ export function AcmCodeSnippet(props: {
     copyTooltipText: string
     copySuccessText: string
 }) {
+    const { t } = useTranslation()
     const [copied, setCopied] = useState<boolean>(false)
     useEffect(() => {
         if (copied) {
@@ -33,7 +35,7 @@ export function AcmCodeSnippet(props: {
                 position={TooltipPosition.auto}
                 id={`copy-button-${props.id}`}
                 textId={`text-input-${props.id}`}
-                aria-label={'Copy buton'}
+                aria-label={t('Copy buton')}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onClick={(event: any) => {
                     setCopied(true)
