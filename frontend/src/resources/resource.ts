@@ -22,10 +22,6 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
-export function getApiResourceList() {
-    return getApiPaths()
-}
-
 /*
 Todo: 
     1. use getResourcePlural to execute getApiResoruceList
@@ -34,30 +30,69 @@ Todo:
     4. if resource is not found and loaded bool is false, reload and force update 
     5. if resource is not found and loaded bool is true, exit.
 
+    Notes: With a queue, I can avoid redundant, parallel, calls to the api (so no need for the load state...)
+    it seem like in any case, if the resource is not found, we will ring the 
+    API a second time. To avoid making needless calls, each chained promise will check the cache
+    if the resource isn't there, it will ping the api again.
+
     TODO: restore fallback code for getResourcePlural (which adds plural endings)
     */
 
 let apiResourceList: APIResourceNames = {}
+let callCache: Promise<string>[] = []
+let pendingPromise = false
 
-export async function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    if (apiResourceList[resourceDefinition.apiVersion as string]) {
-        return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
+// Check to see if
+export async function getResourcePlural(resourceDefinition: IResourceDefinition): Promise<string> {
+    let plural = getPluralFromCache(resourceDefinition)
+    if (plural) {
+        return plural
     }
-    return getApiResourceList().promise.then((list) => {
-        apiResourceList = list
-        return apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName || ''
-    })
+
+    if (pendingPromise) {
+        // when queuing another call, we find the last call in the list and execute our next call in
+        // the resolving callback. In that call back we check to see if the resource
+        // is in the newly populated cache
+        const previousCall = callCache[callCache.length - 1]
+        const queuedAsyncResult = previousCall.then(() => {
+            plural = getPluralFromCache(resourceDefinition)
+            if (plural) {
+                return plural
+            }
+
+            return getApiResourceList().then((list) => {
+                apiResourceList = list
+                callCache.shift()
+                pendingPromise = callCache.length == 0 ? false : true
+                return getPluralFromCache(resourceDefinition)
+            })
+        })
+        callCache.push(queuedAsyncResult)
+        return queuedAsyncResult
+    } else {
+        pendingPromise = true
+        const asyncResult = getApiResourceList().then((list) => {
+            apiResourceList = list
+            callCache.shift()
+            pendingPromise = callCache.length == 0 ? false : true
+            return getPluralFromCache(resourceDefinition)
+        })
+
+        callCache.push(asyncResult)
+        return asyncResult
+    }
 }
 
-// export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-//     if (resourceDefinition.kind.endsWith('s')) {
-//         return resourceDefinition.kind.toLowerCase()
-//     }
+export function getApiResourceList() {
+    return getApiPaths().promise
+}
 
-//     return resourceDefinition.kind?.toLowerCase().endsWith('y')
-//         ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
-//         : resourceDefinition.kind?.toLowerCase() + 's'
-// }
+function getPluralFromCache(resourceDefinition: IResourceDefinition) {
+    return apiResourceList[resourceDefinition.apiVersion as string] &&
+        apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind]
+        ? apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
+        : ''
+}
 
 export function getApiVersionResourceGroup(apiVersion: string) {
     if (apiVersion.includes('/')) {
