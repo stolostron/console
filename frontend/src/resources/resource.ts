@@ -39,7 +39,7 @@ Todo:
     */
 
 let apiResourceList: APIResourceNames = {}
-let callCache: Promise<string>[] = []
+const callCache: Promise<string>[] = []
 let pendingPromise = false
 
 // Check to see if
