@@ -7,13 +7,6 @@
         }
     },
     {
-        "type": "acm.shared-context",
-        "properties": {
-            "id": "mce-data-context",
-            "context": { "$codeRef": "context.PluginDataContext" },
-        }
-    },
-    {
         "type": "console.flag/model",
         "properties": {
             "flag": "CLUSTER_TEMPLATES",
