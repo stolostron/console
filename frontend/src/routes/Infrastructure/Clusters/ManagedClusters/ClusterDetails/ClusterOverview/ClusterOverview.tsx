@@ -216,7 +216,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     <AcmButton
                         variant="link"
                         isInline
-                        onClick={() => window.open(cluster.acmConsoleURL!, '_blank')}
+                        onClick={() => window.open(cluster.acmConsoleURL, '_blank')}
                         isDisabled={cluster.status === ClusterStatus.hibernating}
                         tooltip={t('hibernating.tooltip')}
                         icon={<ExternalLinkAltIcon />}
