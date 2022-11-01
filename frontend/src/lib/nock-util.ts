@@ -16,6 +16,7 @@ import {
     StatusApiVersion,
     StatusKind,
 } from '../resources'
+import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export type ISearchRelatedResult = {
@@ -321,6 +322,12 @@ export function nockAnsibleTower(
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
+}
+
+export function nockApiPaths(response: APIResourceNames, data?: unknown, statusCode = 200) {
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+        .get('/apiPaths', (body) => isEqual(body, data))
+        .reply(statusCode, response)
 }
 
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
