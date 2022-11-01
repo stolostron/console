@@ -2,9 +2,9 @@
 import { Context } from 'react'
 import { CodeRef, Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
-/** Extends 'console.context-provider' extension to enable sharing of a React context across plugins. */
-export type SharedContextProvider<T = any> = ExtensionDeclaration<
-    'console.context-provider',
+/** Enables sharing of a React context across plugins. */
+export type SharedContext<T = any> = ExtensionDeclaration<
+    'acm.shared-context',
     {
         /** Unique identifier for this item. */
         id: string
@@ -15,5 +15,5 @@ export type SharedContextProvider<T = any> = ExtensionDeclaration<
 
 // Type guards
 
-export const isSharedContextProvider = (e: Extension): e is SharedContextProvider =>
-    e.type === 'console.context-provider' && e.properties.id && e.properties.context
+export const isSharedContext = (e: Extension): e is SharedContext =>
+    e.type === 'acm.shared-context' && e.properties.id && e.properties.context

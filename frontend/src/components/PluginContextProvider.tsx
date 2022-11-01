@@ -5,12 +5,12 @@ import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
-import { isSharedContextProvider, SharedContextProvider } from '../lib/SharedContextProvider'
+import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
-const isPluginDataContext = (e: Extension): e is SharedContextProvider<PluginData> =>
-    isSharedContextProvider(e) && e.properties?.id === 'mce-data-context'
+const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
+    isSharedContext(e) && e.properties.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
