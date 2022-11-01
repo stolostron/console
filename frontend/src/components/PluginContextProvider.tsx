@@ -16,14 +16,14 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
     const hrefAvailable = useCallback(
         (id: string) =>
-            hrefs.findIndex((e) => {
+            hrefs?.findIndex((e) => {
                 return e.properties.perspective === 'acm' && e.properties.id === id
             }) >= 0,
         [hrefs]
     )
 
     const [contextProviders] = useResolvedExtensions(isContextProvider)
-    const contextProvider = contextProviders.find((e) => {
+    const contextProvider = contextProviders?.find((e) => {
         return e.pluginName === 'mce'
     })
 
