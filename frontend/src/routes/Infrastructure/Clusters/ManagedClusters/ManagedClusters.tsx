@@ -21,7 +21,6 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { hostedClustersState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
@@ -151,7 +150,7 @@ export function ClustersTable(props: {
         sessionStorage.removeItem('DiscoveredClusterConsoleURL')
         sessionStorage.removeItem('DiscoveredClusterApiURL')
     }, [])
-    const { clusterCuratorsState } = useSharedAtoms()
+    const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const [hostedClusters] = useRecoilState(hostedClustersState)
 

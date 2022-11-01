@@ -13,9 +13,8 @@ import {
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { agentMachinesState, agentsState, nodePoolsState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -36,7 +35,7 @@ export function DistributionField(props: {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const { ansibleJobState, clusterImageSetsState } = useSharedAtoms()
+    const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState, nodePoolsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const [nodePools] = useRecoilState(nodePoolsState)
     const [agents] = useRecoilState(agentsState)
@@ -55,153 +54,52 @@ export function DistributionField(props: {
     )
     const openshiftText = 'OpenShift'
 
-    const mockNodepools: NodePool[] = [
-        {
-            apiVersion: 'hypershift.openshift.io/v1alpha1',
-            kind: 'NodePool',
-            metadata: {
-                name: 'feng-hypershift-test-1',
-                namespace: 'clusters',
-            },
-            spec: {
-                clusterName: '',
-                platform: {
-                    aws: {
-                        instanceProfile: '',
-                        instanceType: '',
-                        rootVolume: {
-                            size: 1,
-                            type: '',
-                        },
-                    },
-                    type: '',
-                },
-                release: {
-                    image: '',
-                },
-                replicas: 1,
-            },
-            status: {
-                version: '4.11.12',
-            },
-        },
-        {
-            apiVersion: 'hypershift.openshift.io/v1alpha1',
-            kind: 'NodePool',
-            metadata: {
-                name: 'feng-hypershift-test-2',
-                namespace: 'clusters',
-            },
-            spec: {
-                clusterName: '',
-                platform: {
-                    aws: {
-                        instanceProfile: '',
-                        instanceType: '',
-                        rootVolume: {
-                            size: 1,
-                            type: '',
-                        },
-                    },
-                    type: '',
-                },
-                release: {
-                    image: '',
-                },
-                replicas: 1,
-            },
-            status: {
-                version: '4.10.18',
-            },
-        },
-        {
-            apiVersion: 'hypershift.openshift.io/v1alpha1',
-            kind: 'NodePool',
-            metadata: {
-                name: 'feng-hypershift-test-3',
-                namespace: 'clusters',
-            },
-            spec: {
-                clusterName: '',
-                platform: {
-                    aws: {
-                        instanceProfile: '',
-                        instanceType: '',
-                        rootVolume: {
-                            size: 1,
-                            type: '',
-                        },
-                    },
-                    type: '',
-                },
-                release: {
-                    image: '',
-                },
-                replicas: 1,
-            },
-            status: {
-                version: '4.10.17',
-            },
-        },
-        {
-            apiVersion: 'hypershift.openshift.io/v1alpha1',
-            kind: 'NodePool',
-            metadata: {
-                name: 'feng-hypershift-test-4',
-                namespace: 'clusters',
-            },
-            spec: {
-                clusterName: '',
-                platform: {
-                    aws: {
-                        instanceProfile: '',
-                        instanceType: '',
-                        rootVolume: {
-                            size: 1,
-                            type: '',
-                        },
-                    },
-                    type: '',
-                },
-                release: {
-                    image: '',
-                },
-                replicas: 1,
-            },
-            status: {
-                version: '4.10.16',
-            },
-        },
-        {
-            apiVersion: 'hypershift.openshift.io/v1alpha1',
-            kind: 'NodePool',
-            metadata: {
-                name: 'feng-hypershift-test-5',
-                namespace: 'clusters',
-            },
-            spec: {
-                clusterName: '',
-                platform: {
-                    aws: {
-                        instanceProfile: '',
-                        instanceType: '',
-                        rootVolume: {
-                            size: 1,
-                            type: '',
-                        },
-                    },
-                    type: '',
-                },
-                release: {
-                    image: '',
-                },
-                replicas: 1,
-            },
-            status: {
-                version: '4.10.15',
-            },
-        },
-    ]
+    const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
+        const currentVersionParts = currentVersion.split('.')
+        const newVersionParts = newVersion.split('.')
+
+        if (newVersionParts[0] !== currentVersionParts[0]) {
+            return false
+        }
+
+        if (
+            newVersionParts[0] === currentVersionParts[0] &&
+            Number(newVersionParts[1]) > Number(currentVersionParts[1])
+        ) {
+            return true
+        }
+
+        if (
+            newVersionParts[0] === currentVersionParts[0] &&
+            Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
+            Number(newVersionParts[2]) > Number(currentVersionParts[2])
+        ) {
+            return true
+        }
+
+        return false
+    }
+
+    const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
+        if (!(props.cluster?.isHypershift || props.cluster?.isHostedCluster)) {
+            return {}
+        }
+        const updates: any = {}
+        clusterImageSets.forEach((cis) => {
+            const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
+            if (isUpdateVersionAcceptable(props.cluster?.distribution?.ocp?.version || '', releaseImageVersion)) {
+                updates[releaseImageVersion] = cis.spec?.releaseImage
+            }
+        })
+
+        return updates
+    }, [
+        clusterImageSets,
+        props.cluster?.distribution?.ocp?.version,
+        props.cluster?.isHostedCluster,
+        props.cluster?.isHypershift,
+    ])
+
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
         latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
@@ -403,7 +301,11 @@ export function DistributionField(props: {
                 </span>
             </>
         )
-    } else if (props.cluster?.isHostedCluster || props.cluster?.isHypershift) {
+    } else if (
+        (props.cluster?.isHostedCluster || props.cluster?.isHypershift) &&
+        Object.keys(hypershiftAvailableUpdates).length > 0
+    ) {
+        // UPGRADE AVAILABLE HYPERSHIFT
         return (
             <>
                 {props.nodepool ? (
@@ -428,10 +330,10 @@ export function DistributionField(props: {
                     </RbacButton>
                     <HypershiftUpgradeModal
                         controlPlane={props.cluster}
-                        nodepools={mockNodepools}
+                        nodepools={clusterNodePools}
                         open={open}
                         close={toggle}
-                        clusterImageSets={clusterImageSets}
+                        availableUpdates={hypershiftAvailableUpdates}
                         agents={agents}
                         agentMachines={agentMachines}
                         hostedCluster={props.hostedCluster}

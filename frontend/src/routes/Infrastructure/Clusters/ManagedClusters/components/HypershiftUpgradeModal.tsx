@@ -1,24 +1,40 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterImageSet, NodePool } from '../../../../../resources'
+import {
+    Cluster,
+    HostedClusterApiVersion,
+    HostedClusterKind,
+    IRequestResult,
+    NodePool,
+    NodePoolApiVersion,
+    NodePoolKind,
+    patchResource,
+    ResourceError,
+    resultsSettled,
+} from '../../../../../resources'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmAlert, AcmExpandableCheckbox, AcmForm, AcmModal, AcmSelect, AcmSubmit } from '../../../../../ui-components'
+import {
+    AcmAlert,
+    AcmExpandableCheckbox,
+    AcmForm,
+    AcmModal,
+    AcmSelect,
+    AcmSubmit,
+    AcmTable,
+} from '../../../../../ui-components'
 import { ModalVariant, Checkbox, ActionGroup, ButtonVariant, Button, SelectOption } from '@patternfly/react-core'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { TableComposable, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { AgentK8sResource, AgentMachineK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { getNodepoolAgents } from '../utils/nodepool'
-
-const { getVersionFromReleaseImage } = CIM
 
 export function HypershiftUpgradeModal(props: {
     close: () => void
     open: boolean
     controlPlane: Cluster
     nodepools: NodePool[]
-    clusterImageSets: ClusterImageSet[]
+    availableUpdates: Record<string, string>
     agents?: AgentK8sResource[]
     agentMachines?: AgentMachineK8sResource[]
     hostedCluster?: HostedClusterK8sResource
@@ -39,56 +55,11 @@ export function HypershiftUpgradeModal(props: {
     const [nodepoolGroupDisabled, setNodepoolGroupDisabled] = useState<boolean>(false)
     const [nodepoolsDisabled, setNodepoolsDisabled] = useState<any>({})
     const [controlPlaneCheckboxDisabled, setControlPlaneCheckboxDisabled] = useState<boolean>(false)
-
-    const availableUpdates = {
-        // '4.10.34': 'image/4.10.34',
-        // '4.11.12': 'image',
-        // '4.12.34': 'image',
-        // '4.13.34': 'image',
-        // '4.14.34': 'image',
-        // '5.01.34': 'image'
-    }
-    const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
-        const currentVersionParts = currentVersion.split('.')
-        const newVersionParts = newVersion.split('.')
-
-        if (newVersionParts[0] !== currentVersionParts[0]) {
-            return false
-        }
-
-        if (
-            newVersionParts[0] === currentVersionParts[0] &&
-            Number(newVersionParts[1]) > Number(currentVersionParts[1])
-        ) {
-            return true
-        }
-
-        if (
-            newVersionParts[0] === currentVersionParts[0] &&
-            Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
-            Number(newVersionParts[2]) > Number(currentVersionParts[2])
-        ) {
-            return true
-        }
-
-        return false
-    }
-
-    // const availableUpdates = useMemo(() => {
-    //     const updates: any = {}
-    //     props.clusterImageSets.forEach((cis) => {
-    //         const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
-    //         if (isUpdateVersionAcceptable(props.controlPlane.distribution?.ocp?.version || '', releaseImageVersion)) {
-    //             updates[releaseImageVersion] = cis.spec?.releaseImage
-    //         }
-    //     })
-
-    //     return updates
-    // }, [props.clusterImageSets, props.controlPlane.distribution?.ocp?.version])
+    const [patchErrors, setPatchErrors] = useState<any[]>([])
 
     const availableUpdateKeys = useMemo(() => {
-        return Object.keys(availableUpdates).sort().reverse()
-    }, [availableUpdates])
+        return Object.keys(props.availableUpdates).sort().reverse()
+    }, [props.availableUpdates])
 
     const useControlPlaneNameTdRefCallback = () => {
         const setRef = useCallback((node) => {
@@ -162,6 +133,7 @@ export function HypershiftUpgradeModal(props: {
     )
 
     useEffect(() => {
+        setPatchErrors([])
         if (availableUpdateKeys.length === 0) {
             setControlPlaneCheckboxDisabled(true)
             setControlPlaneChecked(false)
@@ -196,10 +168,15 @@ export function HypershiftUpgradeModal(props: {
                 }
                 if ((np.status?.version || '') < (availableUpdateVersion || '')) {
                     nodepoolsChecked[np.metadata.name || ''] = true
+                } else {
+                    nodepoolsDisabled[np.metadata.name || ''] = true
+                    setNodepoolGroupDisabled(true)
+                    setNodepoolGroupChecked(null)
                 }
             })
 
             setNodepoolsChecked({ ...nodepoolsChecked })
+            setNodepoolsDisabled({ ...nodepoolsDisabled })
         }
 
         if (!isOverallNodepoolVersionSet && !overallNodepoolVersion) {
@@ -215,6 +192,7 @@ export function HypershiftUpgradeModal(props: {
         checkNodepoolsDisabled,
         overallNodepoolVersion,
         props.controlPlane.distribution?.ocp?.version,
+        nodepoolsDisabled,
     ])
 
     const isNodepoolChecked = (name: string | undefined) => {
@@ -376,6 +354,56 @@ export function HypershiftUpgradeModal(props: {
         }
     }
 
+    const performUpgrade = (resourceType: string, resource: Cluster | NodePool, newVersion: string | undefined) => {
+        let resourceYAML
+        let resourceCastType
+        const patchYAML = {
+            spec: {
+                release: {
+                    image: newVersion,
+                },
+            },
+        }
+
+        if (resourceType === 'Cluster') {
+            resourceCastType = resource as Cluster
+            resourceYAML = {
+                apiVersion: HostedClusterApiVersion,
+                kind: HostedClusterKind,
+                metadata: {
+                    name: resourceCastType.name,
+                    namespace: resourceCastType.hypershift?.hostingNamespace,
+                },
+            } as HostedClusterK8sResource
+        } else if (resourceType === 'NodePool') {
+            resourceCastType = resource as NodePool
+            resourceYAML = {
+                apiVersion: NodePoolApiVersion,
+                kind: NodePoolKind,
+                metadata: {
+                    name: resourceCastType.metadata.name,
+                    namespace: resourceCastType.metadata.namespace,
+                },
+            } as NodePool
+        }
+
+        const patchResult = patchResource(resourceYAML, patchYAML)
+        return {
+            promise: new Promise((resolve, reject) => {
+                patchResult.promise
+                    .then((data) => {
+                        return resolve(data)
+                    })
+                    .catch((err: ResourceError) => {
+                        reject(err)
+                    })
+            }),
+            abort: () => {
+                patchResult.abort()
+            },
+        }
+    }
+
     const columnNames = {
         name: 'Name',
         currentVersion: 'Current version',
@@ -392,262 +420,353 @@ export function HypershiftUpgradeModal(props: {
     return (
         <AcmModal variant={ModalVariant.medium} title={t('Upgrade version')} isOpen={true} onClose={props.close}>
             <AcmForm style={{ gap: 0 }}>
-                <Fragment>
-                    {t(
-                        'Select the new versions for the cluster and nodepools that you want to upgrade. This action is irreversible.'
-                    )}
-                    <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
-                        <Thead>
-                            <Tr>
-                                <Th>{t(columnNames.name)}</Th>
-                                <Th>{t(columnNames.currentVersion)}</Th>
-                                <Th>{t(columnNames.newVersion)}</Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            {controlPlaneCheckboxDisabled && (
-                                <Tr key="hypershift-controlplane-error" style={{ borderBottom: '0px' }}>
-                                    <Td colSpan={3} style={paddingZero}>
-                                        <AcmAlert
-                                            isInline
-                                            noClose
-                                            variant="info"
-                                            title={t('Version availability')}
-                                            message={t(
-                                                'Hosted control plane is already upgrade to the latest version available. Cluster nodepools can be upgraded to match the control plane.'
-                                            )}
-                                        />
+                {patchErrors.length === 0 ? (
+                    <Fragment>
+                        {t(
+                            'Select the new versions for the cluster and nodepools that you want to upgrade. This action is irreversible.'
+                        )}
+                        <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
+                            <Thead>
+                                <Tr>
+                                    <Th>{t(columnNames.name)}</Th>
+                                    <Th>{t(columnNames.currentVersion)}</Th>
+                                    <Th>{t(columnNames.newVersion)}</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {controlPlaneCheckboxDisabled && (
+                                    <Tr key="hypershift-controlplane-error" style={{ borderBottom: '0px' }}>
+                                        <Td colSpan={3} style={paddingZero}>
+                                            <AcmAlert
+                                                isInline
+                                                noClose
+                                                variant="info"
+                                                title={t('Version availability')}
+                                                message={t(
+                                                    'Hosted control plane is already upgrade to the latest version available. Cluster nodepools can be upgraded to match the control plane.'
+                                                )}
+                                            />
+                                        </Td>
+                                    </Tr>
+                                )}
+                                <Tr key="hypershift-controlplane">
+                                    <Td dataLabel={columnNames.name} ref={controlPlaneNameTdRef}>
+                                        <div>
+                                            <span style={{ paddingRight: '10px' }} ref={controlPlaneCheckboxSpanRef}>
+                                                <Checkbox
+                                                    isChecked={controlPlaneChecked}
+                                                    id="controlplane-checkbox"
+                                                    name={props.controlPlane.name}
+                                                    onChange={() => handleControlPlaneChecked()}
+                                                    isDisabled={controlPlaneCheckboxDisabled}
+                                                />
+                                            </span>
+                                            {props.controlPlane.name}
+                                        </div>
+                                        <div style={{ fontSize: '14px', color: '#6A6E73' }}>
+                                            <span style={{ paddingLeft: controlPlaneCheckboxSpanWidth }}>
+                                                {t('Hosted control plane')}
+                                            </span>
+                                        </div>
+                                    </Td>
+                                    <Td dataLabel={columnNames.currentVersion} ref={controlPlaneVersionTdRef}>
+                                        {props.controlPlane.distribution?.ocp?.version}
+                                    </Td>
+                                    <Td dataLabel={columnNames.newVersion}>
+                                        <AcmSelect
+                                            id="controlplane-version-dropdown"
+                                            onChange={(version) => {
+                                                setControlPlaneNewVersion(version)
+                                                checkNodepoolErrors(version)
+                                                checkNodepoolsDisabled(version)
+                                                props.nodepools.forEach((np) => {
+                                                    if (isTwoVersionsGreater(version, np.status?.version)) {
+                                                        nodepoolsChecked[np.metadata.name || ''] = true
+                                                    }
+                                                })
+                                                setNodepoolsChecked({ ...nodepoolsChecked })
+                                                if (countTrue(nodepoolsChecked) === props.nodepools.length) {
+                                                    setNodepoolGroupChecked(true)
+                                                }
+                                            }}
+                                            value={controlPlaneNewVersion || ''}
+                                            label=""
+                                            maxHeight={'10em'}
+                                            isRequired
+                                            isDisabled={!controlPlaneChecked}
+                                        >
+                                            {availableUpdateKeys.map((version) => (
+                                                <SelectOption key={`${version}`} value={version}>
+                                                    {version}
+                                                </SelectOption>
+                                            ))}
+                                        </AcmSelect>
+                                        <ReleaseNotesLink version={controlPlaneNewVersion} />
                                     </Td>
                                 </Tr>
-                            )}
-                            <Tr key="hypershift-controlplane">
-                                <Td dataLabel={columnNames.name} ref={controlPlaneNameTdRef}>
-                                    <div>
-                                        <span style={{ paddingRight: '10px' }} ref={controlPlaneCheckboxSpanRef}>
-                                            <Checkbox
-                                                isChecked={controlPlaneChecked}
-                                                id="controlplane-checkbox"
-                                                name={props.controlPlane.name}
-                                                onChange={() => handleControlPlaneChecked()}
-                                                isDisabled={controlPlaneCheckboxDisabled}
-                                            />
-                                        </span>
-                                        {props.controlPlane.name}
-                                    </div>
-                                    <div style={{ fontSize: '14px', color: '#6A6E73' }}>
-                                        <span style={{ paddingLeft: controlPlaneCheckboxSpanWidth }}>
-                                            {t('Hosted control plane')}
-                                        </span>
-                                    </div>
-                                </Td>
-                                <Td dataLabel={columnNames.currentVersion} ref={controlPlaneVersionTdRef}>
-                                    {props.controlPlane.distribution?.ocp?.version}
-                                </Td>
-                                <Td dataLabel={columnNames.newVersion}>
-                                    <AcmSelect
-                                        id="controlplane-version-dropdown"
-                                        onChange={(version) => {
-                                            setControlPlaneNewVersion(version)
-                                            checkNodepoolErrors(version)
-                                            checkNodepoolsDisabled(version)
-                                            props.nodepools.forEach((np) => {
-                                                if (isTwoVersionsGreater(version, np.status?.version)) {
-                                                    nodepoolsChecked[np.metadata.name || ''] = true
-                                                }
-                                            })
-                                            setNodepoolsChecked({ ...nodepoolsChecked })
-                                            if (countTrue(nodepoolsChecked) === props.nodepools.length) {
-                                                setNodepoolGroupChecked(true)
-                                            }
-                                        }}
-                                        value={controlPlaneNewVersion || ''}
-                                        label=""
-                                        maxHeight={'10em'}
-                                        isRequired
-                                        isDisabled={!controlPlaneChecked}
-                                    >
-                                        {availableUpdateKeys.map((version) => (
-                                            <SelectOption key={`${version}`} value={version}>
-                                                {version}
-                                            </SelectOption>
-                                        ))}
-                                    </AcmSelect>
-                                    <ReleaseNotesLink version={controlPlaneNewVersion} />
-                                </Td>
-                            </Tr>
-                            {props.nodepools && props.nodepools.length > 0 && (
-                                <Fragment>
-                                    {countTrue(nodepoolErrors) > 0 && (
-                                        <Tr key="nodepool-error" style={borderNone}>
-                                            <Td colSpan={3} style={paddingZero}>
-                                                <AcmAlert
-                                                    isInline
-                                                    noClose
-                                                    variant="info"
-                                                    title={t('Version compatibility')}
-                                                    message={t(
-                                                        'Nodepools must be upgraded to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
-                                                    )}
-                                                />
-                                            </Td>
-                                        </Tr>
-                                    )}
-                                    {controlPlaneError && (
-                                        <Tr key="nodepool-error" style={borderNone}>
-                                            <Td colSpan={3} style={paddingZero}>
-                                                <AcmAlert
-                                                    isInline
-                                                    noClose
-                                                    variant="info"
-                                                    title={t('Version compatibility')}
-                                                    message={t(
-                                                        'Nodepools cannot be upgraded to a later version than the control plane. If you wish to upgrade the nodepool(s), you must select to upgrade your control plane first.'
-                                                    )}
-                                                />
-                                            </Td>
-                                        </Tr>
-                                    )}
-                                    <Tr key="hypershift-nodepools">
-                                        <Td
-                                            colSpan={nodepoolsExpanded ? 3 : undefined}
-                                            dataLabel={columnNames.name}
-                                            style={paddingZero}
-                                        >
-                                            <AcmExpandableCheckbox
-                                                onToggle={() => setNodepoolsExpanded(!nodepoolsExpanded)}
-                                                expanded={nodepoolsExpanded}
-                                                checked={nodepoolGroupChecked}
-                                                label={t('Cluster nodepools')}
-                                                onCheck={() => handleNodepoolGroupChecked()}
-                                                isDisabled={nodepoolGroupDisabled}
-                                                expandable={true}
-                                            >
-                                                <TableComposable
-                                                    aria-label={t('Hypershift upgrade nodepools table')}
-                                                    borders={false}
-                                                    variant="compact"
-                                                >
-                                                    <Tbody>
-                                                        {props.nodepools.map((np) => {
-                                                            return (
-                                                                <Tr key={np.metadata.name}>
-                                                                    <Td style={{ width: nodepoolsNameTdWidth }}>
-                                                                        <AcmExpandableCheckbox
-                                                                            onToggle={() =>
-                                                                                handleNodepoolToggled(
-                                                                                    np.metadata.name || ''
-                                                                                )
-                                                                            }
-                                                                            expanded={isNodepoolToggled(
-                                                                                np.metadata.name || ''
-                                                                            )}
-                                                                            checked={isNodepoolChecked(
-                                                                                np.metadata.name
-                                                                            )}
-                                                                            label={np.metadata.name || ''}
-                                                                            onCheck={() =>
-                                                                                handleNodepoolsChecked(
-                                                                                    np.metadata.name || ''
-                                                                                )
-                                                                            }
-                                                                            isDisabled={isNodepoolDisabled(
-                                                                                np.metadata.name || ''
-                                                                            )}
-                                                                            additionalLabels={
-                                                                                props.controlPlane.hypershift?.agent
-                                                                                    ? [`${np.spec.replicas} hosts`]
-                                                                                    : undefined
-                                                                            }
-                                                                            expandable={
-                                                                                props.controlPlane.hypershift?.agent
-                                                                            }
-                                                                        >
-                                                                            {props.controlPlane.hypershift?.agent &&
-                                                                                getNodepoolAgents(
-                                                                                    np,
-                                                                                    props.agents,
-                                                                                    props.agentMachines,
-                                                                                    props.hostedCluster
-                                                                                ).map((agent) => {
-                                                                                    return (
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style={{
-                                                                                                    paddingLeft:
-                                                                                                        controlPlaneCheckboxSpanWidth,
-                                                                                                }}
-                                                                                            >
-                                                                                                {agent.spec.hostname ||
-                                                                                                    agent.status
-                                                                                                        ?.inventory
-                                                                                                        .hostname}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    )
-                                                                                })}
-                                                                        </AcmExpandableCheckbox>
-                                                                    </Td>
-                                                                    <Td style={{ width: nodepoolsVersionTdWidth }}>
-                                                                        {np.status?.version}
-                                                                    </Td>
-                                                                    <Td>
-                                                                        {isNodepoolChecked(np.metadata.name) ? (
-                                                                            <Fragment>
-                                                                                {controlPlaneChecked ? (
-                                                                                    <span>
-                                                                                        {controlPlaneNewVersion}
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span>
-                                                                                        {
-                                                                                            props.controlPlane
-                                                                                                .distribution?.ocp
-                                                                                                ?.version
-                                                                                        }
-                                                                                    </span>
-                                                                                )}
-                                                                            </Fragment>
-                                                                        ) : (
-                                                                            <span>-</span>
-                                                                        )}
-                                                                    </Td>
-                                                                </Tr>
-                                                            )
-                                                        })}
-                                                    </Tbody>
-                                                </TableComposable>
-                                            </AcmExpandableCheckbox>
-                                        </Td>
-                                        {!nodepoolsExpanded && (
-                                            <Fragment>
-                                                <Td dataLabel={columnNames.currentVersion}>
-                                                    <span>{overallNodepoolVersion}</span>
+                                {props.nodepools && props.nodepools.length > 0 && (
+                                    <Fragment>
+                                        {countTrue(nodepoolErrors) > 0 && (
+                                            <Tr key="nodepool-error" style={borderNone}>
+                                                <Td colSpan={3} style={paddingZero}>
+                                                    <AcmAlert
+                                                        isInline
+                                                        noClose
+                                                        variant="info"
+                                                        title={t('Version compatibility')}
+                                                        message={t(
+                                                            'Nodepools must be upgraded to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
+                                                        )}
+                                                    />
                                                 </Td>
-                                                <Td dataLabel={columnNames.newVersion}>
-                                                    <span>{nodepoolGroupChecked ? controlPlaneNewVersion : '-'}</span>
-                                                </Td>
-                                            </Fragment>
+                                            </Tr>
                                         )}
-                                    </Tr>
-                                </Fragment>
-                            )}
-                        </Tbody>
-                    </TableComposable>
-                    <ActionGroup>
-                        <AcmSubmit
-                            key="submit-hypershift-upgrade-action"
-                            id="submit-button-hypershift-upgrade"
-                            isDisabled={!(controlPlaneChecked || countTrue(nodepoolsChecked) > 0) || controlPlaneError}
-                            variant={ButtonVariant.primary}
-                            onClick={() => {}}
-                            label={t('Upgrade')}
-                            processingLabel={t('Processing')}
+                                        {controlPlaneError && (
+                                            <Tr key="nodepool-error" style={borderNone}>
+                                                <Td colSpan={3} style={paddingZero}>
+                                                    <AcmAlert
+                                                        isInline
+                                                        noClose
+                                                        variant="info"
+                                                        title={t('Version compatibility')}
+                                                        message={t(
+                                                            'Nodepools cannot be upgraded to a later version than the control plane. If you wish to upgrade the nodepool(s), you must select to upgrade your control plane first.'
+                                                        )}
+                                                    />
+                                                </Td>
+                                            </Tr>
+                                        )}
+                                        <Tr key="hypershift-nodepools">
+                                            <Td
+                                                colSpan={nodepoolsExpanded ? 3 : undefined}
+                                                dataLabel={columnNames.name}
+                                                style={paddingZero}
+                                            >
+                                                <AcmExpandableCheckbox
+                                                    onToggle={() => setNodepoolsExpanded(!nodepoolsExpanded)}
+                                                    expanded={nodepoolsExpanded}
+                                                    checked={nodepoolGroupChecked}
+                                                    label={t('Cluster nodepools')}
+                                                    onCheck={() => handleNodepoolGroupChecked()}
+                                                    isDisabled={nodepoolGroupDisabled}
+                                                    expandable={true}
+                                                >
+                                                    <TableComposable
+                                                        aria-label={t('Hypershift upgrade nodepools table')}
+                                                        borders={false}
+                                                        variant="compact"
+                                                    >
+                                                        <Tbody>
+                                                            {props.nodepools.map((np) => {
+                                                                return (
+                                                                    <Tr key={np.metadata.name}>
+                                                                        <Td style={{ width: nodepoolsNameTdWidth }}>
+                                                                            <AcmExpandableCheckbox
+                                                                                onToggle={() =>
+                                                                                    handleNodepoolToggled(
+                                                                                        np.metadata.name || ''
+                                                                                    )
+                                                                                }
+                                                                                expanded={isNodepoolToggled(
+                                                                                    np.metadata.name || ''
+                                                                                )}
+                                                                                checked={isNodepoolChecked(
+                                                                                    np.metadata.name
+                                                                                )}
+                                                                                label={np.metadata.name || ''}
+                                                                                onCheck={() =>
+                                                                                    handleNodepoolsChecked(
+                                                                                        np.metadata.name || ''
+                                                                                    )
+                                                                                }
+                                                                                isDisabled={isNodepoolDisabled(
+                                                                                    np.metadata.name || ''
+                                                                                )}
+                                                                                additionalLabels={
+                                                                                    props.controlPlane.hypershift?.agent
+                                                                                        ? [`${np.spec.replicas} hosts`]
+                                                                                        : undefined
+                                                                                }
+                                                                                expandable={
+                                                                                    props.controlPlane.hypershift?.agent
+                                                                                }
+                                                                            >
+                                                                                {props.controlPlane.hypershift?.agent &&
+                                                                                    getNodepoolAgents(
+                                                                                        np,
+                                                                                        props.agents,
+                                                                                        props.agentMachines,
+                                                                                        props.hostedCluster
+                                                                                    ).map((agent) => {
+                                                                                        return (
+                                                                                            <div>
+                                                                                                <span
+                                                                                                    style={{
+                                                                                                        paddingLeft:
+                                                                                                            controlPlaneCheckboxSpanWidth,
+                                                                                                    }}
+                                                                                                >
+                                                                                                    {agent.spec
+                                                                                                        .hostname ||
+                                                                                                        agent.status
+                                                                                                            ?.inventory
+                                                                                                            .hostname}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        )
+                                                                                    })}
+                                                                            </AcmExpandableCheckbox>
+                                                                        </Td>
+                                                                        <Td style={{ width: nodepoolsVersionTdWidth }}>
+                                                                            {np.status?.version}
+                                                                        </Td>
+                                                                        <Td>
+                                                                            {isNodepoolChecked(np.metadata.name) ? (
+                                                                                <Fragment>
+                                                                                    {controlPlaneChecked ? (
+                                                                                        <span>
+                                                                                            {controlPlaneNewVersion}
+                                                                                        </span>
+                                                                                    ) : (
+                                                                                        <span>
+                                                                                            {
+                                                                                                props.controlPlane
+                                                                                                    .distribution?.ocp
+                                                                                                    ?.version
+                                                                                            }
+                                                                                        </span>
+                                                                                    )}
+                                                                                </Fragment>
+                                                                            ) : (
+                                                                                <span>-</span>
+                                                                            )}
+                                                                        </Td>
+                                                                    </Tr>
+                                                                )
+                                                            })}
+                                                        </Tbody>
+                                                    </TableComposable>
+                                                </AcmExpandableCheckbox>
+                                            </Td>
+                                            {!nodepoolsExpanded && (
+                                                <Fragment>
+                                                    <Td dataLabel={columnNames.currentVersion}>
+                                                        <span>{overallNodepoolVersion}</span>
+                                                    </Td>
+                                                    <Td dataLabel={columnNames.newVersion}>
+                                                        <span>
+                                                            {nodepoolGroupChecked ? controlPlaneNewVersion : '-'}
+                                                        </span>
+                                                    </Td>
+                                                </Fragment>
+                                            )}
+                                        </Tr>
+                                    </Fragment>
+                                )}
+                            </Tbody>
+                        </TableComposable>
+                        <ActionGroup>
+                            <AcmSubmit
+                                key="submit-hypershift-upgrade-action"
+                                id="submit-button-hypershift-upgrade"
+                                isDisabled={
+                                    !(controlPlaneChecked || countTrue(nodepoolsChecked) > 0) || controlPlaneError
+                                }
+                                variant={ButtonVariant.primary}
+                                onClick={async () => {
+                                    const errors: any[] = []
+                                    const resultArr: IRequestResult[] = []
+                                    if (controlPlaneChecked) {
+                                        resultArr.push(
+                                            performUpgrade(
+                                                'Cluster',
+                                                props.controlPlane,
+                                                props.availableUpdates[controlPlaneNewVersion || '']
+                                            )
+                                        )
+                                    }
+                                    props.nodepools.forEach((np) => {
+                                        if (nodepoolsChecked[np.metadata.name || ''] === true) {
+                                            resultArr.push(
+                                                performUpgrade(
+                                                    'NodePool',
+                                                    np,
+                                                    controlPlaneChecked
+                                                        ? props.availableUpdates[controlPlaneNewVersion || '']
+                                                        : props.availableUpdates[
+                                                              props.controlPlane.distribution?.ocp?.version || ''
+                                                          ]
+                                                )
+                                            )
+                                        }
+                                    })
+
+                                    const requestResult = resultsSettled(resultArr)
+                                    const promiseResults = await requestResult.promise
+                                    promiseResults.forEach((promiseResult, index) => {
+                                        if (promiseResult.status === 'rejected') {
+                                            errors.push({
+                                                name:
+                                                    index === 0
+                                                        ? props.controlPlane.name
+                                                        : props.nodepools[index - 1].metadata.name,
+                                                type: index === 0 ? 'HostedCluster' : 'NodePool',
+                                                msg: promiseResult.reason,
+                                            })
+                                        }
+                                    })
+
+                                    await new Promise((resolve) => setTimeout(resolve, 500))
+                                    setPatchErrors(errors)
+                                    if (errors.length === 0) {
+                                        props.close()
+                                    }
+                                }}
+                                label={t('Upgrade')}
+                                processingLabel={t('Processing')}
+                            />
+                            <Button variant="link" onClick={props.close} key="cancel-hypershift-upgrade">
+                                {t('cancel')}
+                            </Button>
+                        </ActionGroup>
+                    </Fragment>
+                ) : (
+                    <Fragment>
+                        <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
+                        <AcmTable
+                            plural=""
+                            items={patchErrors}
+                            columns={[
+                                {
+                                    header: t('Name'),
+                                    cell: (error) => {
+                                        return error.name
+                                    },
+                                },
+                                {
+                                    header: t('Type'),
+                                    cell: (error) => {
+                                        return error.type
+                                    },
+                                },
+                                {
+                                    header: t('Error'),
+                                    cell: (error) => {
+                                        return error.msg
+                                    },
+                                },
+                            ]}
+                            keyFn={(error) => error.name as string}
+                            tableActions={[]}
+                            rowActions={[]}
+                            perPageOptions={[]}
+                            autoHidePagination
                         />
-                        <Button variant="link" onClick={props.close} key="cancel-hypershift-upgrade">
-                            {t('cancel')}
+                        <Button variant="link" onClick={props.close} key="hypershift-upgrade-error-close">
+                            {t('close')}
                         </Button>
-                    </ActionGroup>
-                </Fragment>
+                    </Fragment>
+                )}
             </AcmForm>
         </AcmModal>
     )
