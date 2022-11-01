@@ -112,7 +112,7 @@ export async function reconcileResources(
             if (existing) {
                 const patch = jsonpatch.compare(existing, resource)
                 if (patch.length) {
-                    await patchResource(existing, patch, { dryRun: true })
+                    patchResource(existing, patch, { dryRun: true })
                 }
             }
         }
@@ -130,7 +130,7 @@ export async function reconcileResources(
                 if (existing) {
                     const patch = jsonpatch.compare(existing, resource)
                     if (patch.length) {
-                        await patchResource(existing, patch)
+                        patchResource(existing, patch)
                     }
                 }
             }
@@ -164,20 +164,18 @@ export async function createResources(
     try {
         for (const resource of resources) {
             const requestResult = createResource(resource, options)
-            abortController?.signal.addEventListener('abort', (await requestResult).abort)
+            abortController?.signal.addEventListener('abort', requestResult.abort)
             try {
-                await (
-                    await requestResult
-                ).promise
+                await requestResult.promise
                 createdResources.push(resource)
             } finally {
-                abortController?.signal.removeEventListener('abort', (await requestResult).abort)
+                abortController?.signal.removeEventListener('abort', requestResult.abort)
             }
         }
     } catch (err) {
         if (options?.dryRun !== true && options?.deleteCreatedOnError) {
             for (const createdResource of createdResources) {
-                ;(await deleteResource(createdResource)).promise.catch(noop)
+                deleteResource(createdResource).promise.catch(noop)
             }
         }
         throw err
@@ -193,7 +191,7 @@ export async function updateResources(
 ): Promise<void> {
     const abortController = options?.abortController
     for (const resource of resources) {
-        const requestResult = await replaceResource(resource, options)
+        const requestResult = replaceResource(resource, options)
         abortController?.signal.addEventListener('abort', requestResult.abort)
         try {
             await requestResult.promise
@@ -213,13 +211,11 @@ export async function deleteResources(
     const abortController = options?.abortController
     for (const resource of resources) {
         const requestResult = deleteResource(resource, options)
-        abortController?.signal.addEventListener('abort', (await requestResult).abort)
+        abortController?.signal.addEventListener('abort', requestResult.abort)
         try {
-            await (
-                await requestResult
-            ).promise
+            await requestResult.promise
         } finally {
-            abortController?.signal.removeEventListener('abort', (await requestResult).abort)
+            abortController?.signal.removeEventListener('abort', requestResult.abort)
         }
     }
 }
@@ -229,7 +225,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
     let subscriptions: any[] = []
     for (const resource of resources) {
         try {
-            const existingResource = await (await getResource(resource)).promise
+            const existingResource = await getResource(resource).promise
             if (existingResource.kind === ApplicationKind) {
                 const existingSubscriptions = getSubscriptionsFromAnnotation(existingResource)
 
@@ -239,11 +235,11 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
             }
             const patch = jsonpatch.compare(existingResource, resource)
             if (patch.length) {
-                await patchResource(existingResource, patch)
+                patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource
-            ;(await createResource(resource)).promise
+            createResource(resource).promise
         }
     }
     if (subscriptionResources.length < subscriptions.length) {
