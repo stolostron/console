@@ -70,7 +70,7 @@ export default function RelatedResultsTables(props: {
     return (
         <Stack hasGutter>
             {selectedKinds.map((kind) => {
-                const items = relatedResultItems.filter((item) => item?.kind === kind)
+                const items = relatedResultItems.filter((item) => item?.kind.toLowerCase() === kind.toLowerCase())
                 if (items && items[0]?.items && items.length > 0) {
                     return (
                         <SearchResultExpandableCard

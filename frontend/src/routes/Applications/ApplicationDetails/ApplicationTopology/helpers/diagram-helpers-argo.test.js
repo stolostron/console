@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { showArgoApplicationSetLink, getURLSearchData } from './diagram-helpers-argo'
+import { getURLSearchData, showArgoApplicationSetLink } from './diagram-helpers-argo'
 
 const t = (string) => {
     return string
@@ -74,7 +74,7 @@ describe('showArgoApplicationSetLink', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=argoproj.io%2Fv1alpha1&cluster=local-cluster&kind=applicationset&name=nginx-sample&namespace=openshift-gitops',
+                        '/multicloud/home/search/resources/yaml?apiversion=argoproj.io%2Fv1alpha1&cluster=local-cluster&kind=applicationset&name=nginx-sample&namespace=openshift-gitops',
                 },
             },
             indent: true,

@@ -4,48 +4,48 @@
 
 import {
     computeNodeStatus,
-    setSubscriptionDeployStatus,
-    setResourceDeployStatus,
-    setApplicationDeployStatus,
-    setPodDeployStatus,
-    getPulseForData,
-    setPlacementRuleDeployStatus,
     getPodState,
+    getPulseForData,
     getPulseStatusForCluster,
+    setApplicationDeployStatus,
+    setPlacementRuleDeployStatus,
+    setPodDeployStatus,
+    setResourceDeployStatus,
+    setSubscriptionDeployStatus,
 } from './computeStatuses'
 
 import {
-    genericNodeYellowNotDefined,
-    persVolumePendingStateYellow,
-    persVolumePendingStateGreen,
-    subscriptionInputRed1,
-    subscriptionInputRed,
-    subscriptionInputYellow,
-    subscriptionGreenNotPlacedYellow,
-    subscriptionInputNotPlaced,
-    genericNodeInputRed,
-    genericNodeInputRed2,
-    deploymentNodeRed,
-    deploymentNodeYellow4,
-    deploymentNodeYellow2,
-    deploymentNodeNoPODS,
-    deploymentNodeNoPODSNoRes,
-    deploymentNodeRed3,
-    deploymentNodeNoPodModel,
-    genericNodeYellow,
-    packageNodeOrange,
-    ruleNodeRed,
-    ruleNodeGreen2,
-    appNoChannelRed,
     appNoChannelGreen,
-    podCrash,
-    persVolumePendingStateGreenRes,
-    persVolumePendingStatePendingRes,
+    appNoChannelRed,
     appSetDeployable,
     appSetDesignFalse,
+    deploymentNodeNoPodModel,
+    deploymentNodeNoPODS,
+    deploymentNodeNoPODSNoRes,
+    deploymentNodeRed,
+    deploymentNodeRed3,
+    deploymentNodeYellow2,
+    deploymentNodeYellow4,
+    genericNodeInputRed,
+    genericNodeInputRed2,
+    genericNodeYellow,
+    genericNodeYellowNotDefined,
+    packageNodeOrange,
+    persVolumePendingStateGreen,
+    persVolumePendingStateGreenRes,
+    persVolumePendingStatePendingRes,
+    persVolumePendingStateYellow,
+    podCrash,
+    ruleNodeGreen2,
+    ruleNodeRed,
+    subscriptionGreenNotPlacedYellow,
+    subscriptionInputNotPlaced,
+    subscriptionInputRed,
+    subscriptionInputRed1,
+    subscriptionInputYellow,
 } from './computeStatuses.data.js'
 
-import { ansibleSuccess, ansibleError, ansibleError2, ansibleErrorAllClusters } from './TestingData'
+import { ansibleError, ansibleError2, ansibleErrorAllClusters, ansibleSuccess } from './TestingData'
 
 const t = (string) => {
     return string
@@ -832,7 +832,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
+                        '/multicloud/home/search/resources/yaml?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -902,7 +902,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources/yaml?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -962,7 +962,7 @@ describe('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources/yaml?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1021,7 +1021,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources/yaml?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1050,7 +1050,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources/yaml?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1078,7 +1078,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
-                    editLink: '/multicloud/home/search/resources?cluster=local-cluster&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=local-cluster&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1158,7 +1158,7 @@ describe('setResourceDeployStatus 2', () => {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
                     editLink:
-                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                        '/multicloud/home/search/resources/yaml?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1240,7 +1240,7 @@ describe('setResourceDeployStatus 2 with filter green', () => {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
                     editLink:
-                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                        '/multicloud/home/search/resources/yaml?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1810,7 +1810,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -1941,7 +1941,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -1994,7 +1994,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2047,7 +2047,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2193,7 +2193,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources/yaml?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
