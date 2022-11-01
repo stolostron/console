@@ -51,12 +51,12 @@ import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useL
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
 import logo from './assets/RHACM-Logo.svg?url'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { logout } from './logout'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
 import { DOC_HOME } from './lib/doc-util'
+import './lib/test-shots'
 import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
@@ -65,7 +65,7 @@ import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
 import { usePluginDataContextValue } from './lib/PluginDataContext'
 import { PluginDataContextProvider } from './components/PluginDataContextProvider'
-import { PluginData } from './components/PluginData'
+import { LoadPluginData } from './components/LoadPluginData'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -367,7 +367,7 @@ export default function App() {
                     defaultManagedSidebarIsOpen={true}
                     style={{ height: '100vh' }}
                 >
-                    <PluginData>
+                    <LoadPluginData>
                         <AcmToastProvider>
                             <AcmToastGroup />
                             <AcmTablePaginationContextProvider localStorageKey="clusters">
@@ -397,7 +397,7 @@ export default function App() {
                                 </Suspense>
                             </AcmTablePaginationContextProvider>
                         </AcmToastProvider>
-                    </PluginData>
+                    </LoadPluginData>
                 </Page>
             </BrowserRouter>
         </PluginDataContextProvider>

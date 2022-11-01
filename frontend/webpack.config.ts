@@ -13,11 +13,12 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
+import { supportedLanguages } from './src/lib/supportedLanguages'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-    const locales = ['en']
+    const locales = supportedLanguages
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         resolve: {
             extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -51,10 +52,6 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     issuer: /\.[jt]sx?$/,
                     resourceQuery: { not: [/url/] }, // exlcude react component if *.svg?url
                     use: ['@svgr/webpack'],
-                },
-                {
-                    test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/,
-                    type: 'asset/resource',
                 },
                 {
                     test: /\.css$/,
@@ -93,10 +90,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     space: 4,
                 })
             }),
-            new webpack.ProvidePlugin({
-                Buffer: ['buffer', 'Buffer'],
-                process: 'process',
-            }),
+            new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
                 new CopyPlugin({
@@ -150,71 +144,20 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         devServer: {
             port: 3000,
             proxy: {
-                '/multicloud/api': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/apis': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/apiPaths': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/events': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/proxy/search': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/ansibletower': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/authenticated': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/common': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/version': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/login': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/logout': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/console-links': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/configure': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/username': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/mchVersion': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                },
-                '/multicloud/socket.io': {
-                    target: 'https://localhost:4000',
-                    secure: false,
-                    ws: true,
-                },
+                '/multicloud/api': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/apis': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/events': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/proxy/search': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/ansibletower': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/common': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/version': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/login': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/logout': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/configure': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/username': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/mchVersion': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,

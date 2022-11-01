@@ -1,6 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Flex, FlexItem, Split, Stack, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { GitAltIcon } from '@patternfly/react-icons'
+import {
+    Button,
+    Flex,
+    FlexItem,
+    Split,
+    Stack,
+    TextContent,
+    Text,
+    ToggleGroup,
+    ToggleGroupItem,
+    TextVariants,
+} from '@patternfly/react-core'
+import { ExternalLinkAltIcon, GitAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import {
     useItem,
@@ -35,6 +46,7 @@ import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '.
 import { validateKubernetesResourceName, validateWebURL } from '../../lib/validation'
 import { Placement } from '../Placement/Placement'
 import HelmIcon from './logos/HelmIcon.svg'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 interface Channel {
     metadata?: {
@@ -303,7 +315,30 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             path="metadata.namespace"
                             label="Argo server"
                             placeholder="Select the Argo server"
-                            labelHelp="Argo server to deploy Argo app set. Click the Add cluster sets tab to create a new cluster set."
+                            labelHelp={
+                                <Fragment>
+                                    <Text>
+                                        Register a set of one or more managed clusters to Red Hat OpenShift GitOps.
+                                    </Text>
+                                    <TextContent>
+                                        <Text
+                                            component={TextVariants.a}
+                                            isVisitedLink
+                                            href={DOC_LINKS.GITOPS_CONFIG}
+                                            target="_blank"
+                                            style={{
+                                                cursor: 'pointer',
+                                                display: 'inline-block',
+                                                padding: '0px',
+                                                fontSize: '14px',
+                                                color: '#0066cc',
+                                            }}
+                                        >
+                                            {'View documentation'} <ExternalLinkAltIcon />
+                                        </Text>
+                                    </TextContent>
+                                </Fragment>
+                            }
                             options={props.argoServers}
                             required
                         />

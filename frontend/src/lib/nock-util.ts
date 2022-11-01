@@ -18,11 +18,27 @@ import {
 } from '../resources'
 import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
+import StackTrace from 'stacktrace-js'
+import { Url } from 'url'
 
 export type ISearchRelatedResult = {
     data: {
         searchResult: any
     }
+}
+
+// keep track of what nocks aren't done
+const nocked = (args: string | RegExp | Url, options?: nock.Options | undefined) => {
+    const stack = StackTrace.getSync()
+    const scope = nock(args, options)
+    if (window.pendingNocks) {
+        window.pendingNocks.push({
+            scope,
+            nock: stack[1].getFunctionName(),
+            source: stack[2].getSource(),
+        })
+    }
+    return scope
 }
 
 export async function nockGet<Resource extends IResource>(
@@ -52,7 +68,7 @@ export async function nockGet<Resource extends IResource>(
 }
 
 export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
-    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
+    const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
     const finalNockScope = nockScope.reply(statusCode, response, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -211,7 +227,7 @@ export function nockCreate(
     statusCode = 201,
     params?: any
 ) {
-    const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .post(`${getResourceApiPath(resource)}${getNockParams(params)}`, (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
@@ -234,7 +250,7 @@ export function nockPatch(
     statusCode = 204,
     params?: any
 ) {
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(`${getResourceNameApiPath(resource)}${getNockParams(params)}`)
         .optionally()
         .reply(200, undefined, {
@@ -251,7 +267,7 @@ export function nockPatch(
 }
 
 export function nockIgnoreRBAC() {
-    const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .persist()
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', () => true)
         .optionally()
@@ -315,7 +331,7 @@ export function nockAnsibleTower(
     response: AnsibleTowerJobTemplateList,
     statusCode = 200
 ) {
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .post('/ansibletower', (body) => isEqual(body, data))
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',
@@ -332,7 +348,7 @@ export function nockApiPaths(response: APIResourceNames, data?: unknown, statusC
 
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
     const url = new URL(repositoryUrl)
-    return nock('https://api.github.com')
+    return nocked('https://api.github.com')
         .get('/repos' + url.pathname + '/branches')
         .reply(statusCode, response.branchList)
 }
@@ -344,14 +360,14 @@ export function nockArgoGitPathSha(
     statusCode = 200
 ) {
     const url = new URL(repositoryUrl)
-    return nock('https://api.github.com')
+    return nocked('https://api.github.com')
         .get('/repos' + url.pathname + '/branches/' + branch)
         .reply(statusCode, response)
 }
 
 export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPathsArgoResponse, statusCode = 200) {
     const url = new URL(repositoryUrl)
-    return nock('https://api.github.com')
+    return nocked('https://api.github.com')
         .get('/repos' + url.pathname + '/git/trees/01?recursive=true')
         .reply(statusCode, response)
 }
@@ -398,7 +414,7 @@ export function nockSearch(
     statusCode = 201,
     polling = true
 ) {
-    nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
         .reply(204, undefined, {
@@ -407,7 +423,7 @@ export function nockSearch(
             'Access-Control-Allow-Credentials': 'true',
         })
 
-    const networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).post(
+    const networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).post(
         apiSearchUrl,
         JSON.stringify(query)
     )
@@ -430,7 +446,7 @@ export function nockSearch(
 }
 
 export function nockRequest(pathname: string, response: object, statusCode = 200) {
-    return nock(process.env.JEST_DEFAULT_HOST as string)
+    return nocked(process.env.JEST_DEFAULT_HOST as string)
         .get(pathname)
         .reply(statusCode, response)
 }

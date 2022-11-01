@@ -1,0 +1,89 @@
+[
+  {
+    "metadata": {
+      "name": "admin",
+      "namespace": "myns"
+    },
+    "subjects": [
+      {
+        "kind": "User",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "admin"
+      }
+    ],
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": "cluster-templates-user"
+    }
+  },
+  {
+    "metadata": {
+      "name": "admin-system:serviceaccounts:dedicated-admin",
+      "namespace": "devuserns"
+    },
+    "subjects": [
+      {
+        "kind": "Group",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "system:serviceaccounts:dedicated-admin"
+      }
+    ],
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": "admin"
+    }
+  },
+  {
+    "metadata": {
+      "name": "clustertemplatesuser",
+      "namespace": "devuserns"
+    },
+    "subjects": [
+      {
+        "kind": "User",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "user0"
+      },
+      {
+        "kind": "User",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "user1"
+      },
+      {
+        "kind": "Group",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "test-group0"
+      },
+      {
+        "kind": "Group",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "test-group1"
+      }
+    ],
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": "cluster-templates-user"
+    }
+  },
+  {
+    "metadata": {
+      "name": "clustertemplatesuser0",
+      "namespace": "devuserns"
+    },
+    "subjects": [
+      {
+        "kind": "User",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "user0"
+      }
+    ],
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": "cluster-templates-user"
+    }
+  }
+]

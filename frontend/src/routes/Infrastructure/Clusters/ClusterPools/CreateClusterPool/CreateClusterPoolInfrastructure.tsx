@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
+import { CreateClusterPoolInfrastructureType } from './CreateClusterPool'
 
-export function CreateInfrastructureClusterpool() {
+export function CreateClusterPoolInfrastructure() {
     const [t] = useTranslation()
-    const history = useHistory()
+    const { search } = useLocation()
+    const { nextStep, back, cancel } = useBackCancelNavigation()
     const { secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const credentials = useMemo(
@@ -32,6 +34,12 @@ export function CreateInfrastructureClusterpool() {
     )
 
     const cards = useMemo(() => {
+        const getSearchWithInfrastructureType = (infrastructureType: CreateClusterPoolInfrastructureType) => {
+            const urlParams = new URLSearchParams(search)
+            urlParams.append('infrastructureType', infrastructureType)
+            return urlParams.toString()
+        }
+
         const newCards: ICatalogCard[] = [
             {
                 id: 'aws',
@@ -44,11 +52,10 @@ export function CreateInfrastructureClusterpool() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=AWS',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createClusterPool,
+                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.AWS),
+                }),
             },
             {
                 id: 'google',
@@ -63,11 +70,10 @@ export function CreateInfrastructureClusterpool() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=GCP',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createClusterPool,
+                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.GCP),
+                }),
             },
             {
                 id: 'azure',
@@ -80,15 +86,14 @@ export function CreateInfrastructureClusterpool() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
-                onClick: () =>
-                    history.push({
-                        pathname: NavigationPath.createClusterPool,
-                        search: '?infrastructureType=Azure',
-                    }),
+                onClick: nextStep({
+                    pathname: NavigationPath.createClusterPool,
+                    search: getSearchWithInfrastructureType(CreateClusterPoolInfrastructureType.Azure),
+                }),
             },
         ]
         return newCards
-    }, [getCredentialLabels, history, t])
+    }, [nextStep, getCredentialLabels, search, t])
 
     const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -108,8 +113,8 @@ export function CreateInfrastructureClusterpool() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
-                onBack={() => history.push(NavigationPath.clusterPools)}
-                onCancel={() => history.push(NavigationPath.clusterPools)}
+                onBack={back(NavigationPath.clusterPools)}
+                onCancel={cancel(NavigationPath.clusterPools)}
             />
         </Fragment>
     )

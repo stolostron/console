@@ -6,6 +6,14 @@ import { Curation } from './resources/cluster-curator'
 import { selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'
 
+export const providerConnectionsValue = selector({
+    key: 'providerConnections',
+    get: ({ get }) => {
+        const secrets = get(secretsState)
+        return secrets.map(unpackProviderConnection)
+    },
+})
+
 export const ansibleCredentialsValue = selector({
     key: 'ansibleCredentials',
     get: ({ get }) => {
@@ -39,14 +47,6 @@ export const clusterCuratorSupportedCurationsValue = selector({
     get: ({ get }) => {
         const settings = get(settingsState)
         return settings.ansibleIntegration === 'enabled' ? allCurations : basicCurations
-    },
-})
-
-export const providerConnectionsValue = selector({
-    key: 'providerConnections',
-    get: ({ get }) => {
-        const secrets = get(secretsState)
-        return secrets.map(unpackProviderConnection)
     },
 })
 

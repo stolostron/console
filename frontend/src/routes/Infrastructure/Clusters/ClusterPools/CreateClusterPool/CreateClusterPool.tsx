@@ -7,7 +7,7 @@ import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -45,7 +45,18 @@ const Portals = Object.freeze({
 
 Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
 
-export default function CreateClusterPoolPage() {
+export enum CreateClusterPoolInfrastructureType {
+    AWS = 'AWS',
+    GCP = 'GCP',
+    Azure = 'Azure',
+}
+
+export const isCreateClusterPoolInfrastructureType = (
+    infrastructureType: string
+): infrastructureType is CreateClusterPoolInfrastructureType =>
+    infrastructureType in CreateClusterPoolInfrastructureType
+
+export default function CreateClusterPool(props: { infrastructureType: CreateClusterPoolInfrastructureType }) {
     const { t } = useTranslation()
 
     // create portals for buttons in header
@@ -91,7 +102,7 @@ export default function CreateClusterPoolPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
                     <PageSection variant="light" isFilled type="wizard">
-                        <CreateClusterPool />
+                        <CreateClusterPoolWizard {...props} />
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -99,9 +110,11 @@ export default function CreateClusterPoolPage() {
     )
 }
 
-export function CreateClusterPool() {
+function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolInfrastructureType }) {
+    const { infrastructureType } = props
     const history = useHistory()
-    const location = useLocation<CancelBackState>()
+    const { search } = useLocation()
+    const { back, cancel } = useBackCancelNavigation()
     const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
@@ -159,14 +172,8 @@ export function CreateClusterPool() {
         setIsModalOpen(!isModalOpen)
     }
 
-    function backButtonOverrideFunc() {
-        history.goBack()
-    }
-
-    // cancel button
-    const cancelCreate = () => {
-        cancelNavigation(location, history, NavigationPath.clusterPools)
-    }
+    const backButtonOverride = back(NavigationPath.createClusterPool)
+    const cancelCreate = cancel(NavigationPath.clusterPools)
 
     // setup translation
     const { t } = useTranslation()
@@ -178,20 +185,9 @@ export function CreateClusterPool() {
     const template = Handlebars.compile(hiveTemplate)
 
     // if openned from bma page, pass selected bma's to editor
-    const urlParams = new URLSearchParams(location.search.substring(1))
-    const bmasParam = urlParams.get('bmas')
-    const requestedUIDs = bmasParam ? bmasParam.split(',') : []
-    const fetchControl = bmasParam
-        ? {
-              isLoaded: true,
-              fetchData: { requestedUIDs },
-          }
-        : null
-
-    const infrastructureType = urlParams.get('infrastructureType') || ''
     let controlData: any[]
     switch (infrastructureType) {
-        case 'AWS':
+        case CreateClusterPoolInfrastructureType.AWS:
             controlData = getControlDataAWS(
                 handleModalToggle,
                 false,
@@ -199,18 +195,16 @@ export function CreateClusterPool() {
                 settings.singleNodeOpenshift === 'enabled'
             )
             break
-        case 'GCP':
+        case CreateClusterPoolInfrastructureType.GCP:
             controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
-        case 'Azure':
+        case CreateClusterPoolInfrastructureType.Azure:
             controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
-
-        default:
-            controlData = []
     }
 
     // Check for pre-selected cluster set
+    const urlParams = new URLSearchParams(search)
     const selectedClusterSet = urlParams.get('clusterSet')
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -295,14 +289,13 @@ export function CreateClusterPool() {
                 controlData={fixupControlsForClusterPool(controlData)}
                 template={template}
                 portals={Portals}
-                fetchControl={fetchControl}
                 createControl={{
                     createResource,
                     cancelCreate,
                     pauseCreate: () => {},
                     creationStatus: creationStatus?.status,
                     creationMsg: creationStatus?.messages,
-                    backButtonOverride: backButtonOverrideFunc,
+                    backButtonOverride,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}

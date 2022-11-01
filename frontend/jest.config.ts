@@ -52,7 +52,8 @@ const config: Config.InitialOptions = {
         '!<rootDir>/node_modules/**',
     ],
     reporters: ['default'],
-    bail: true,
+    verbose: true,
+    bail: false,
 }
 
 export default config

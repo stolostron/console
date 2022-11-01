@@ -9,33 +9,7 @@ import { useClusterTemplates } from '../hooks/useClusterTemplates';
 import { ClusterTemplate } from '../types';
 import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
 import ClusterTemplatesTab, { ClusterTemplateRow } from './ClusterTemplatesTab';
-
-const clusterTemplateMock1: ClusterTemplate = {
-  kind: 'ClusterTemplate',
-  apiVersion: 'clustertemplate.openshift.io/v1alpha1',
-  metadata: {
-    creationTimestamp: '2022-09-23T06:53:05Z',
-    generation: 1,
-    name: 'hive-bm',
-    resourceVersion: '312732574',
-    uid: '806afad3-d18f-4e68-81e8-29df93273814',
-  },
-  spec: {
-    clusterSetup: {
-      pipeline: {
-        name: 'argocd-pipeline',
-        namespace: 'cluster-pipelines',
-      },
-    },
-    cost: 10,
-    helmChartRef: {
-      name: 'hypershift-template',
-      repository: 'cluster-templates-repo',
-      version: '0.1.0',
-    },
-    properties: [],
-  },
-};
+import clusterTemplateMock1 from '../mocks/clusterTemplateExample.json';
 
 const clusterTemplatesListMock: ClusterTemplate[] = [clusterTemplateMock1];
 
@@ -83,9 +57,16 @@ describe('ClusterTemplatesTab', () => {
   });
 });
 
+const renderRow = () =>
+  render(
+    <MemoryRouter>
+      <ClusterTemplateRow obj={clusterTemplateMock1} />
+    </MemoryRouter>,
+  );
+
 describe('ClusterTemplateRow', () => {
   test('Cluster template deletion action and modal button', async () => {
-    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
+    renderRow();
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
     await waitForText('Delete template');
     await userEvent.click(screen.getByText('Delete template'));
@@ -94,7 +75,7 @@ describe('ClusterTemplateRow', () => {
     expect(screen.queryByText('Delete cluster template')).toBeNull();
   });
   test('Cluster template deletion modal close button closes the dialog', async () => {
-    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
+    renderRow();
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
     await waitForText('Delete template');
     await userEvent.click(screen.getByText('Delete template'));
@@ -103,7 +84,7 @@ describe('ClusterTemplateRow', () => {
     expect(screen.queryByText('Delete cluster template')).toBeNull();
   });
   test('Repo deletion modal x button closes the dialog', async () => {
-    render(<ClusterTemplateRow obj={clusterTemplateMock1} />);
+    renderRow();
     await userEvent.click(screen.getByTestId('cluster-template-actions-toggle'));
     await waitForText('Delete template');
     await userEvent.click(screen.getByText('Delete template'));

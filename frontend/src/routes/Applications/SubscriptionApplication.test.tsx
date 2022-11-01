@@ -139,6 +139,24 @@ const mockAnsibleSecret: Secret = {
     },
 }
 
+const mockCopiedFromSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    type: 'Opaque',
+    metadata: {
+        name: 'ans-2',
+        namespace: mockProject2.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': 'default',
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-tower-wizard',
+        },
+    },
+    stringData: {
+        host: 'https://invalid.com',
+        token: 'token',
+    },
+}
+
 const nockAnsibleSecret: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
@@ -246,6 +264,8 @@ const mockPlacementRules = [mockPlacementRule]
 const mockNamespaces = [mockNamespace0, mockNamespace1]
 const mockHubChannels = [mockChannel1]
 
+const mockSecrets = [mockAnsibleSecret, mockCopiedFromSecret]
+
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 jest.mock('react-i18next', () => ({
@@ -263,7 +283,7 @@ describe('Create Subscription Application page', () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(secretsState, mockSecrets)
                     snapshot.set(namespacesState, mockNamespaces)
                 }}
             >
@@ -276,28 +296,9 @@ describe('Create Subscription Application page', () => {
             </RecoilRoot>
         )
     }
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
 
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test('cancel create should redirect to the correct link', async () => {
@@ -407,8 +408,6 @@ describe('Create Subscription Application page', () => {
             nockCreate(mockSubscription, undefined, 201),
             nockCreate(mockPlacementRule, undefined, 201),
         ])
-
-        expect(consoleInfos).hasNoConsoleLogs()
     })
 
     test('edit a git subscription application', async () => {
@@ -422,7 +421,7 @@ describe('Create Subscription Application page', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(secretsState, [mockAnsibleSecret])
+                    snapshot.set(secretsState, mockSecrets)
                     snapshot.set(namespacesState, mockNamespaces)
                     snapshot.set(applicationsState, [mockApplication0])
                     snapshot.set(channelsState, mockHubChannels)
@@ -480,6 +479,5 @@ describe('Create Subscription Application page', () => {
             })
         )
         await waitForNocks(patchNocks)
-        expect(consoleInfos).hasNoConsoleLogs()
     })
 })

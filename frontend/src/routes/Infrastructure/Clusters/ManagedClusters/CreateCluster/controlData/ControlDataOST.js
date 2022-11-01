@@ -38,11 +38,16 @@ export const getControlDataOST = (
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
-    if (includeSno) addSnoText(controlDataOST)
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataOST)
-    insertToggleModalFunction(handleModalToggle, controlDataOST)
-    if (includeAutomation) return [...controlDataOST, ...automationControlData]
-    return [...controlDataOST]
+    const controlData = [...controlDataOST]
+    if (includeSno) {
+        addSnoText(controlData)
+    }
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    if (includeAutomation) {
+        return [...controlData, ...automationControlData]
+    }
+    return controlData
 }
 
 const controlDataOST = [

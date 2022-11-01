@@ -11,14 +11,13 @@
         "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
         "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
         "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
-        "tsc:noEmit": "tsc --noEmit",
+        "check": "npm run tsc",
         "clean": "rm -rf coverage build",
-        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc -c green,blue,cyan,magenta",
-        "jest": "jest --runInBand",
-        "jest:parallel": "jest",
+        "test": "npm run jest --",
+        "jest": "jest",
         "jest:update-snapshot": "jest --updateSnapshot --testPathPattern=src/components/TemplateEditor",
-        "eslint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
-        "eslint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+        "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+        "lint:fix": "npm run lint -- --fix",
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
         "i18n": "i18next",
@@ -26,8 +25,7 @@
         "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
         "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
-        "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
-        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
+        "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin"
     },
     "dependencies": {
         "@apollo/client": "3.5.10",
@@ -37,7 +35,7 @@
         "@material-ui/styles": "4.11.5",
         "@octokit/rest": "19.0.3",
         "@octokit/types": "6.40.0",
-        "@patternfly-labs/react-form-wizard": "^1.10.0",
+        "@patternfly-labs/react-form-wizard": "^1.11.0",
         "@patternfly/patternfly": "4.196.7",
         "@patternfly/react-charts": "^6.74.3",
         "@patternfly/react-code-editor": "4.65.1",
@@ -48,7 +46,7 @@
         "@react-hook/resize-observer": "1.2.5",
         "@redhat-cloud-services/rule-components": "^3.2.5",
         "@reduxjs/toolkit": "1.8.x",
-        "@stolostron/react-data-view": "^1.0.38",
+        "@stolostron/react-data-view": "^1.2.0",
         "ajv": "8.11.0",
         "axios": "0.27.2",
         "cidr-tools": "4.3.0",
@@ -146,6 +144,7 @@
         "compression-webpack-plugin": "10.0.0",
         "concurrently": "7.2.2",
         "copy-webpack-plugin": "11.0.0",
+        "stacktrace-js": "2.0.2",
         "crypto": "1.0.1",
         "crypto-browserify": "3.12.0",
         "css-loader": "6.7.1",
@@ -222,7 +221,8 @@
             "eslint:recommended",
             "plugin:@typescript-eslint/recommended",
             "plugin:jest/recommended",
-            "plugin:react-hooks/recommended"
+            "plugin:react-hooks/recommended",
+            "prettier"
         ],
         "ignorePatterns": [
             "**/*.stories.tsx"
@@ -231,13 +231,15 @@
             "react",
             "@typescript-eslint",
             "jest",
-            "react-hooks"
+            "react-hooks",
+            "prettier"
         ],
         "env": {
             "browser": true,
             "node": true
         },
         "rules": {
+            "prettier/prettier": "error",
             "@typescript-eslint/no-non-null-assertion": "off",
             "react/react-in-jsx-scope": "off",
             "@typescript-eslint/explicit-module-boundary-types": "off",

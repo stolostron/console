@@ -2,7 +2,7 @@
 
 import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
-import { getCookie } from '.'
+import { getCookie } from './utils'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
 import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
@@ -55,7 +55,8 @@ export class ResourceError extends Error {
 export function getBackendUrl() {
     if (process.env.MODE === 'plugin') {
         const proxyPath = process.env.PLUGIN_PROXY_PATH
-        return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
+        const value = proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : ''
+        return value
     }
     return process.env.REACT_APP_BACKEND_PATH
 }
