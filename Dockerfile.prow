@@ -8,9 +8,6 @@ COPY ./frontend/package.json ./frontend/package-lock.json ./
 RUN npm ci --no-optional || npm ci --no-optional
 COPY ./frontend .
 
-FROM frontend-packages as frontend
-RUN npm run build
-
 FROM frontend-packages as dynamic-plugin
 RUN npm run build:plugin:acm
 
@@ -33,7 +30,6 @@ WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
 COPY --from=backend /app/backend/backend.mjs ./
-COPY --from=frontend /app/frontend/build ./public
 COPY --from=dynamic-plugin /app/frontend/plugins/acm/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]
