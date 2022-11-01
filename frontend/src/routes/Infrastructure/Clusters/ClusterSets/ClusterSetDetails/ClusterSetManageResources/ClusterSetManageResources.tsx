@@ -70,9 +70,10 @@ export function ClusterSetManageResourcesContent() {
     clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 
     const clusters = useAllClusters()
-    const { clusterCuratorsState, managedClusterSetsState } = useSharedAtoms()
+    const { clusterCuratorsState, managedClusterSetsState, hostedClustersState } = useSharedAtoms()
     const managedClusterSets = useRecoilValue(managedClusterSetsState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
+    const [hostedClusters] = useRecoilState(hostedClustersState)
 
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
@@ -103,7 +104,7 @@ export function ClusterSetManageResourcesContent() {
 
     const clusterNameColumn = useClusterNameColumn()
     const clusterProviderColumn = useClusterProviderColumn()
-    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
+    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
     const clusterNodesColumn = useClusterNodesColumn()
     const clusterLabelsColumn = useClusterLabelsColumn()
 
