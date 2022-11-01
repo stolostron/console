@@ -123,6 +123,17 @@ const mockManagedCluster7: ManagedCluster = {
     },
     spec: { hubAcceptsClient: true },
 }
+const mockManagedCluster8: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'regional-cluster',
+        labels: {
+            'feature.open-cluster-management.io/addon-multicluster-global-hub-controller': 'available',
+        },
+    },
+    spec: { hubAcceptsClient: true },
+}
 export const mockManagedClusters: ManagedCluster[] = [
     mockManagedCluster0,
     mockManagedCluster1,
@@ -291,6 +302,11 @@ const mockManagedClusterInfo7: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
     metadata: { name: 'hypershift-cluster', namespace: 'hypershift-cluster' },
+}
+const mockManagedClusterInfo8: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'regional-cluster', namespace: 'regional-cluster' },
 }
 export const mockManagedClusterInfos = [
     mockManagedClusterInfo0,
@@ -514,5 +530,29 @@ describe('Clusters Page hypershift', () => {
             </RecoilRoot>
         )
         await waitForText(mockManagedCluster6.metadata.name!)
+    })
+})
+
+describe('Clusters Page regional hub cluster', () => {
+    test('should render regional hub clusters', async () => {
+        nockIgnoreRBAC()
+        const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
+        const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, mockRegionalHubClusters)
+                    snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+                    snapshot.set(managedClusterInfosState, mockRegionalHubClusterInfos)
+                    snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                }}
+            >
+                <MemoryRouter>
+                    <ManagedClusters />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText(mockManagedCluster8.metadata.name!)
+        await waitForText('Hub')
     })
 })
