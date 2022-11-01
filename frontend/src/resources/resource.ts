@@ -42,7 +42,27 @@ let apiResourceList: APIResourceNames = {}
 const callCache: Promise<string>[] = []
 let pendingPromise = false
 
-// Check to see if
+function fallbackPlural(resourceDefinition: IResourceDefinition) {
+    if (resourceDefinition.kind.endsWith('s')) {
+        return resourceDefinition.kind.toLowerCase()
+    }
+
+    return resourceDefinition.kind?.toLowerCase().endsWith('y')
+        ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
+        : resourceDefinition.kind?.toLowerCase() + 's'
+}
+
+function getPluralFromCache(resourceDefinition: IResourceDefinition) {
+    return apiResourceList[resourceDefinition.apiVersion as string] &&
+        apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind]
+        ? apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
+        : ''
+}
+
+export function getApiResourceList() {
+    return getApiPaths().promise
+}
+
 export async function getResourcePlural(resourceDefinition: IResourceDefinition): Promise<string> {
     let plural = getPluralFromCache(resourceDefinition)
     if (plural) {
@@ -59,12 +79,12 @@ export async function getResourcePlural(resourceDefinition: IResourceDefinition)
             if (plural) {
                 return plural
             }
-
             return getApiResourceList().then((list) => {
                 apiResourceList = list
                 callCache.shift()
                 pendingPromise = callCache.length == 0 ? false : true
-                return getPluralFromCache(resourceDefinition)
+                plural = getPluralFromCache(resourceDefinition)
+                return plural ? plural : fallbackPlural(resourceDefinition)
             })
         })
         callCache.push(queuedAsyncResult)
@@ -75,23 +95,13 @@ export async function getResourcePlural(resourceDefinition: IResourceDefinition)
             apiResourceList = list
             callCache.shift()
             pendingPromise = callCache.length == 0 ? false : true
-            return getPluralFromCache(resourceDefinition)
+            plural = getPluralFromCache(resourceDefinition)
+            return plural ? plural : fallbackPlural(resourceDefinition)
         })
 
         callCache.push(asyncResult)
         return asyncResult
     }
-}
-
-export function getApiResourceList() {
-    return getApiPaths().promise
-}
-
-function getPluralFromCache(resourceDefinition: IResourceDefinition) {
-    return apiResourceList[resourceDefinition.apiVersion as string] &&
-        apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind]
-        ? apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
-        : ''
 }
 
 export function getApiVersionResourceGroup(apiVersion: string) {
