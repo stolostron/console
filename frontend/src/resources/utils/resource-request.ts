@@ -386,7 +386,8 @@ export function listResources<Resource extends IResource>(
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((url) => {
+        return getResourceApiPath(resource).then((resourcePath) => {
+            let url = getBackendUrl() + resourcePath
             if (labels) {
                 url += '?labelSelector=' + labels.join(',')
                 if (query)
