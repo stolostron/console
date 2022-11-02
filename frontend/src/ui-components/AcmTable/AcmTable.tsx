@@ -1075,7 +1075,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 >
                     {props.emptyState ?? (
                         <AcmEmptyState
-                            // CHECKBACK
                             title={t('No {{items}} found', { items: props.plural })}
                             message={t('You do not have any {{items}} yet', { items: props.plural })}
                         />
@@ -1606,7 +1605,6 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 }}
             >
                 {t('Select {{count}} page items', { count: Math.min(props.perPage, props.itemCount) })}
-                {/* CHECKBACK */}
             </DropdownItem>
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1623,7 +1621,6 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
                 }}
             >
                 {t('Select all {{count}} items', { count: props.itemCount })}
-                {/* CHECKBACK */}
             </DropdownItem>
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps

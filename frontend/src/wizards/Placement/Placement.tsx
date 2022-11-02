@@ -20,6 +20,7 @@ import { IPlacement, PlacementKind, PlacementType, Predicate } from '../common/r
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function Placements(props: {
     clusterSets: IResource[]
@@ -48,17 +49,21 @@ export function Placements(props: {
         )
     }, [props.bindingKind, props.clusterSetBindings, props.clusterSets, resources])
 
+    const { t } = useTranslation()
+
     return (
         <WizArrayInput
             id="placements"
-            label="Placements"
-            helperText="A placement selects clusters from the cluster sets which have bindings to the resource namespace."
+            label={t('Placements')}
+            helperText={t(
+                'A placement selects clusters from the cluster sets which have bindings to the resource namespace.'
+            )}
             path={null}
             isSection
             filter={(resource) => resource.kind === PlacementKind}
-            placeholder="Add placement"
+            placeholder={t('Add placement')}
             collapsedContent="metadata.name"
-            collapsedPlaceholder="Expand to enter placement"
+            collapsedPlaceholder={t('Expand to enter placement')}
             newValue={{ ...PlacementType, metadata: { name: '', namespace: '' }, spec: {} }}
             defaultCollapsed={editMode === EditMode.Edit}
         >
@@ -79,6 +84,7 @@ export function Placement(props: {
 }) {
     const editMode = useEditMode()
     const placement = useItem() as IPlacement
+    const { t } = useTranslation()
 
     return (
         <Fragment>
@@ -86,21 +92,27 @@ export function Placement(props: {
                 <WizTextInput
                     id="name"
                     path="metadata.name"
-                    label="Name"
+                    label={t('Name')}
                     required
                     readonly={placement.metadata?.uid !== undefined}
-                    helperText="The name of the placement should match the placement name in a placement binding so that it is bound to a policy or policy set. The placement name must be unique to the namespace."
+                    helperText={t(
+                        'The name of the placement should match the placement name in a placement binding so that it is bound to a policy or policy set. The placement name must be unique to the namespace.'
+                    )}
                     validation={validateKubernetesResourceName}
                 />
             )}
 
             {/* <TextInput label="Placement name" path="metadata.name" required labelHelp="Name needs to be unique to the namespace." /> */}
             <WizMultiSelect
-                label="Cluster sets"
+                label={t('Cluster sets')}
                 path="spec.clusterSets"
-                placeholder="Select the cluster sets"
-                labelHelp="Select clusters from the cluster sets bound to the namespace. Cluster can then be further selected using cluster labels."
-                helperText="If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace."
+                placeholder={t('Select the cluster sets')}
+                labelHelp={t(
+                    'Select clusters from the cluster sets bound to the namespace. Cluster can then be further selected using cluster labels.'
+                )}
+                helperText={t(
+                    'If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.'
+                )}
                 footer={
                     props.createClusterSetCallback ? (
                         <Button
@@ -109,7 +121,7 @@ export function Placement(props: {
                             variant="link"
                             onClick={props.createClusterSetCallback}
                         >
-                            Create cluster set
+                            {t('Create cluster set')}
                         </Button>
                     ) : undefined
                 }
@@ -128,11 +140,13 @@ export function Placement(props: {
             </WizHidden>
 
             <WizArrayInput
-                label="Cluster selectors"
+                label={t('Cluster selectors')}
                 path="spec.predicates"
-                placeholder="Add cluster selector"
+                placeholder={t('Add cluster selector')}
                 collapsedContent={<PredicateSummary />}
-                helperText="A cluster selector further selects clusters from the clusters in the cluster sets which have bindings to the namespace. Clusters matching any cluster selector will be selected."
+                helperText={t(
+                    'A cluster selector further selects clusters from the clusters in the cluster sets which have bindings to the namespace. Clusters matching any cluster selector will be selected.'
+                )}
                 defaultCollapsed
                 hidden={(placement) => {
                     if (editMode === EditMode.Edit) return false
@@ -144,7 +158,7 @@ export function Placement(props: {
                 <PlacementPredicate clusters={props.clusters} />
             </WizArrayInput>
             <WizNumberInput
-                label="Limit the number of clusters selected"
+                label={t('Limit the number of clusters selected')}
                 path="spec.numberOfClusters"
                 zeroIsUndefined
                 hidden={(placement) => placement.spec?.numberOfClusters === undefined}
@@ -157,13 +171,16 @@ export function PlacementPredicate(props: { rootPath?: string; clusters: IResour
     const rootPath = props.rootPath ?? ''
     const editMode = useEditMode()
     const labelValuesMap = useLabelValuesMap(props.clusters)
+    const { t } = useTranslation()
     return (
         <Fragment>
             <WizKeyValue
-                label="Label selectors"
+                label={t('Label selectors')}
                 path={`${rootPath}requiredClusterSelector.labelSelector.matchLabels`}
-                labelHelp="Select clusters from the clusters in selected cluster sets using cluster labels. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions."
-                placeholder="Add cluster label selector"
+                labelHelp={t(
+                    'Select clusters from the clusters in selected cluster sets using cluster labels. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions.'
+                )}
+                placeholder={t('Add cluster label selector')}
                 hidden={(item) =>
                     get(item, `${rootPath}requiredClusterSelector.labelSelector.matchLabels`) === undefined
                 }
@@ -171,8 +188,10 @@ export function PlacementPredicate(props: { rootPath?: string; clusters: IResour
             <WizArrayInput
                 label="Label expressions"
                 path={`${rootPath}requiredClusterSelector.labelSelector.matchExpressions`}
-                placeholder="Add label expression"
-                labelHelp="Select clusters from the clusters in selected cluster sets using cluster labels. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions."
+                placeholder={t('Add label expression')}
+                labelHelp={t(
+                    'Select clusters from the clusters in selected cluster sets using cluster labels. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions.'
+                )}
                 collapsedContent={<MatchExpressionCollapsed />}
                 newValue={{ key: '', operator: 'In', values: [] }}
                 defaultCollapsed={editMode !== EditMode.Create}
@@ -180,10 +199,12 @@ export function PlacementPredicate(props: { rootPath?: string; clusters: IResour
                 <MatchExpression labelValuesMap={labelValuesMap} />
             </WizArrayInput>
             <WizArrayInput
-                label="Cluster claim expressions"
+                label={t('Cluster claim expressions')}
                 path={`${rootPath}requiredClusterSelector.claimSelector.matchExpressions`}
-                placeholder="Add claim expression"
-                labelHelp="Select clusters from the clusters in selected cluster sets using cluster claims status. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions."
+                placeholder={t('Add claim expression')}
+                labelHelp={t(
+                    'Select clusters from the clusters in selected cluster sets using cluster claims status. For a cluster to be be selected, the cluster must match all label selectors, label expressions, and claim expressions.'
+                )}
                 collapsedContent={<MatchExpressionCollapsed />}
                 newValue={{ key: '', operator: 'In', values: [] }}
                 defaultCollapsed={editMode !== EditMode.Create}
@@ -202,14 +223,14 @@ export function PredicateSummary() {
     const labelSelectorLabels = predicate.requiredClusterSelector?.labelSelector?.matchLabels ?? {}
     const labelSelectorExpressions = predicate.requiredClusterSelector?.labelSelector?.matchExpressions ?? []
     const claimSelectorExpressions = predicate.requiredClusterSelector?.claimSelector?.matchExpressions ?? []
-
+    const { t } = useTranslation()
     const labelSelectors: string[] = []
     for (const matchLabel in labelSelectorLabels) {
         labelSelectors.push(`${matchLabel}=${labelSelectorLabels[matchLabel]}`)
     }
 
     if (labelSelectors.length === 0 && labelSelectorExpressions.length === 0 && claimSelectorExpressions.length === 0) {
-        return <div>Expand to enter details</div>
+        return <div>{t('Expand to enter details')}</div>
     }
 
     return (

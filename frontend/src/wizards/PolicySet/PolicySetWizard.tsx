@@ -127,7 +127,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                             {(item: IResource) => (
                                 <Fragment>
                                     <WizTextInput
-                                        label="Name"
+                                        label={t('Name')}
                                         path="metadata.name"
                                         id="name"
                                         required
@@ -136,7 +136,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                                     />
                                     <WizTextArea label={t('Description')} path="spec.description" />
                                     <WizSingleSelect
-                                        label="Namespace"
+                                        label={t('Namespace')}
                                         path="metadata.namespace"
                                         id="namespace"
                                         required
@@ -149,10 +149,10 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                     </WizItemSelector>
                 </Section>
             </Step>
-            <Step label="Policies" id="policies-step">
+            <Step label={t('Policies')} id="policies-step">
                 <PoliciesSection policies={virtualPolicies} />
             </Step>
-            <Step label="Placement" id="placement-step">
+            <Step label={t('Placement')} id="placement-step">
                 <PlacementSection
                     existingClusterSets={props.clusterSets}
                     existingClusterSetBindings={props.clusterSetBindings}
@@ -194,7 +194,7 @@ function PoliciesSection(props: { policies: IResource[] }) {
     }, [resources, namespacedPolicies])
 
     return (
-        <Section label="Policies">
+        <Section label={t('Policies')}>
             {arePoliciesMissing && (
                 <Alert title={t('One or more selected policies can not be found.')} variant="warning" isInline />
             )}
@@ -204,8 +204,8 @@ function PoliciesSection(props: { policies: IResource[] }) {
                     path="spec.policies"
                     label=""
                     columns={[
-                        { name: 'Name', cellFn: (policy: IResource) => policy.metadata?.name },
-                        { name: 'Namespace', cellFn: (policy: IResource) => policy.metadata?.namespace },
+                        { name: t('Name'), cellFn: (policy: IResource) => policy.metadata?.name },
+                        { name: t('Namespace'), cellFn: (policy: IResource) => policy.metadata?.namespace },
                         { name: '', cellFn: (policy: IResource) => (policy.metadata?.uid ? '' : t('Not found')) },
                     ]}
                     items={namespacedPolicies}

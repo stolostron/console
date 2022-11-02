@@ -917,7 +917,7 @@ function ArgoWizardPlacementSection(props: {
 
     const { update } = useData()
     return (
-        <Section label="Placement">
+        <Section label={t('Placement')}>
             {(editMode === EditMode.Create || !hasPlacement) && (
                 <WizDetailsHidden>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

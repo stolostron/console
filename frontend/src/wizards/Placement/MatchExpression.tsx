@@ -14,14 +14,16 @@ import {
     useDisplayMode,
 } from '@patternfly-labs/react-form-wizard'
 import { IExpression } from '../common/resources/IMatchExpression'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function MatchExpression(props: { labelValuesMap?: Record<string, string[]> }) {
     const labelValuesMap = props.labelValuesMap
+    const { t } = useTranslation()
     return (
         <Flex style={{ rowGap: 16 }}>
             {labelValuesMap ? (
                 <WizSingleSelect
-                    label="Label"
+                    label={t('Label')}
                     path="key"
                     options={Object.keys(labelValuesMap)}
                     isCreatable
@@ -30,20 +32,20 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
                 />
             ) : (
                 <WizTextInput
-                    label="Label"
+                    label={t('Label')}
                     path="key"
                     required
                     onValueChange={(_value, item) => set(item as object, 'values', [])}
                 />
             )}
             <Select
-                label="Operator"
+                label={t('Operator')}
                 path="operator"
                 options={[
-                    { label: 'equals any of', value: 'In' },
-                    { label: 'does not equal any of', value: 'NotIn' },
-                    { label: 'exists', value: 'Exists' },
-                    { label: 'does not exist', value: 'DoesNotExist' },
+                    { label: t('equals any of'), value: 'In' },
+                    { label: t('does not equal any of'), value: 'NotIn' },
+                    { label: t('exists'), value: 'Exists' },
+                    { label: t('does not exist'), value: 'DoesNotExist' },
                 ]}
                 required
                 onValueChange={(value, item) => {
@@ -62,7 +64,7 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
                         const values = labelValuesMap[selectedLabel] ?? []
                         return (
                             <WizMultiSelect
-                                label="Values"
+                                label={t('Values')}
                                 path="values"
                                 isCreatable
                                 required
@@ -74,7 +76,7 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
                 </ItemContext.Consumer>
             ) : (
                 <WizStringsInput
-                    label="Values"
+                    label={t('Values')}
                     path="values"
                     required
                     hidden={(labelSelector) => !['In', 'NotIn'].includes(labelSelector?.operator)}
@@ -91,28 +93,28 @@ export function MatchExpressionCollapsed() {
 
 export function MatchExpressionSummary(props: { expression: IExpression }) {
     const { expression } = props
-
-    let operator = 'unknown'
+    const { t } = useTranslation()
+    let operator = t('unknown')
     switch (expression?.operator) {
         case 'In':
             if (expression.values && expression.values.length > 1) {
-                operator = 'equals any of'
+                operator = t('equals any of')
             } else {
-                operator = 'equals'
+                operator = t('equals')
             }
             break
         case 'NotIn':
             if (expression.values && expression.values.length > 1) {
-                operator = 'does not equal any of'
+                operator = t('does not equal any of')
             } else {
-                operator = 'does not equal'
+                operator = t('does not equal')
             }
             break
         case 'Exists':
-            operator = 'exists'
+            operator = t('exists')
             break
         case 'DoesNotExist':
-            operator = 'does not exist'
+            operator = t('does not exist')
             break
     }
 
@@ -120,7 +122,7 @@ export function MatchExpressionSummary(props: { expression: IExpression }) {
 
     if (!expression?.key) {
         if (displayMode === DisplayMode.Details) return <Fragment />
-        return <div>Expand to enter expression</div>
+        return <div>{t('Expand to enter expression')}</div>
     }
 
     return (

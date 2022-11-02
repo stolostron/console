@@ -51,7 +51,6 @@ export function AcmLabels(props: {
     }, [labelsRecord, props.collapse])
 
     /* istanbul ignore next */
-    // CHECKBACK
     let collapsedText = props.collapsedText ?? t('{{count}} more', { count: hidden.length })
 
     if (hidden.length > 0 && labels.length === 0 && props.allCollapsedText) {
