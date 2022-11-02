@@ -38,15 +38,23 @@ function SearchResultTables(props: {
 
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
+            const colDefs = _.get(
+                searchDefinitions,
+                `[${kind.toLowerCase()}].columns`,
+                searchDefinitions['genericresource'].columns
+            )
+
+            const transColumns = colDefs.map((item: any) => {
+                const temp = Object.assign({}, item)
+                temp.header = t(`${item.header}`)
+                return temp
+            })
+
             return (
                 <AcmTable
                     plural=""
                     items={items}
-                    columns={_.get(
-                        searchDefinitions,
-                        `[${kind.toLowerCase()}].columns`,
-                        searchDefinitions['genericresource'].columns
-                    )}
+                    columns={transColumns}
                     keyFn={(item: any) => item._uid.toString()}
                     rowActions={GetRowActions(
                         kind,
@@ -195,7 +203,9 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                         <ExpandableSection
                             onToggle={() => setShowRelatedResources(!showRelatedResources)}
                             isExpanded={showRelatedResources}
-                            toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
+                            toggleText={
+                                !showRelatedResources ? t('Show related resources') : t('Hide related resources')
+                            }
                         />
                         <Tooltip
                             content={t(

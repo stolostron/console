@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { useTranslation } from '../../../lib/acm-i18next'
+
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -12,13 +12,12 @@ export function FormatSearchbarSuggestions(
     suggestionKind: 'label' | 'filter' | 'value',
     searchQuery: string
 ) {
-    const { t } = useTranslation()
     let valuesToRemoveFromSuggestions: string[] = []
     let suggestions: DropdownSuggestionsProps[] = []
     const labelTag = {
         id: 'id-suggestions-label',
         key: 'key-suggestions-label',
-        name: t('Filters'),
+        name: 'Filters',
         kind: suggestionKind,
         disabled: true,
     }
@@ -62,7 +61,7 @@ export function FormatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-operator-label',
-                name: t('Operators'),
+                name: 'Operators',
                 kind: 'label',
                 disabled: true,
             })
