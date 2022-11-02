@@ -340,9 +340,9 @@ export function nockAnsibleTower(
         })
 }
 
-export function nockApiPaths(response: APIResourceNames, data?: unknown, statusCode = 200) {
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .get('/apiPaths', (body) => isEqual(body, data))
+export function nockApiPaths(response: APIResourceNames, statusCode = 200) {
+    return nocked(process.env.JEST_DEFAULT_HOST as string)
+        .get('/apiPaths')
         .reply(statusCode, response)
 }
 
