@@ -9,7 +9,7 @@ import path from 'path'
 
 if (process.env.NODE_ENV !== 'production') {
     const hashCode = (str: string) => str.split('').reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0)
-    const getSnapshot = (obj: any = {}, max?: number) => {
+    const getSnapshot = (obj: any = {}, unfiltered: boolean, max?: number) => {
         interface IProto {
             name?: string
             displayName?: string
@@ -18,16 +18,17 @@ if (process.env.NODE_ENV !== 'production') {
         const funcSet = new Set<string>()
         const getReplacements = () => {
             const seen = new WeakSet()
-            const filteredKeys = [
-                'managedFields',
-                'annotations',
-                'finalizers',
-                'creationTimestamp',
-                'resourceVersion',
-                'generation',
-                'uid',
-                'controlData',
-            ]
+            const filteredKeys = unfiltered
+                ? []
+                : [
+                      'managedFields',
+                      'finalizers',
+                      'creationTimestamp',
+                      'resourceVersion',
+                      'generation',
+                      'uid',
+                      'controlData',
+                  ]
 
             return (key: any, value: { continue?: any } | null | undefined) => {
                 if (value) {
@@ -108,58 +109,66 @@ if (process.env.NODE_ENV !== 'production') {
     }
 
     window.propShot = (props: any, max?: number) => {
-        const stack: StackTrace.StackFrame[] = StackTrace.getSync()
-        const className = stack[1].getFunctionName().split('.')[0]
-        const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, max || 10)
-        const snippet = getSnippet(
-            stack,
-            [...mockFunctions, `const props = ${snapshot}`],
-            ['\n\n', ...expectCallTimes, '\n\n', ...actualCallTimes]
-        )
-        const snip: { [index: string]: string } = {}
-        const key = `${className}PropShot`
-        snip[key] = snippet
-        console.log(snip)
+        if (process.env.NODE_ENV !== 'test') {
+            const stack: StackTrace.StackFrame[] = StackTrace.getSync()
+            const className = stack[1].getFunctionName().split('.')[0]
+            const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, false, max || 10)
+            const snippet = getSnippet(
+                stack,
+                [...mockFunctions, `const props = ${snapshot}`],
+                ['\n\n', ...expectCallTimes, '\n\n', ...actualCallTimes]
+            )
+            const snip: { [index: string]: string } = {}
+            const key = `${className}PropShot`
+            snip[key] = snippet
+            console.log(snip)
+        }
     }
 
     window.coilShot = (recoil: any, stateName: string, max?: number) => {
-        const stack: StackTrace.StackFrame[] = StackTrace.getSync()
-        const className = stack[1].getFunctionName().split('.')[0]
-        const fileName = path.parse(stack[1].getFileName()).name
-        const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
-        const { snapshot } = getSnapshot(recoil, max || 10)
-        const snippets = []
-        snippets.push(`import ${className} from './${fileName}'`)
-        snippets.push(`import {${stateName}} from '../../atoms'\n\n`)
-        snippets.push(`const ${dataName} = ${snapshot}\n\n`)
-        snippets.push(`   render(`)
-        snippets.push(`     <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`)
-        snippets.push(`        <${className} />`)
-        snippets.push(`     </RecoilRoot>`)
-        snippets.push(`   )`)
+        if (process.env.NODE_ENV !== 'test') {
+            const stack: StackTrace.StackFrame[] = StackTrace.getSync()
+            const className = stack[1].getFunctionName().split('.')[0]
+            const fileName = path.parse(stack[1].getFileName()).name
+            const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
+            const { snapshot } = getSnapshot(recoil, false, max || 10)
+            const snippets = []
+            snippets.push(`import ${className} from './${fileName}'`)
+            snippets.push(`import {${stateName}} from '../../atoms'\n\n`)
+            snippets.push(`const ${dataName} = ${snapshot}\n\n`)
+            snippets.push(`   render(`)
+            snippets.push(
+                `     <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`
+            )
+            snippets.push(`        <${className} />`)
+            snippets.push(`     </RecoilRoot>`)
+            snippets.push(`   )`)
 
-        const snip: { [index: string]: string } = {}
-        const key = `${stateName}CoilShot`
-        snip[key] = snippets.join('\n')
-        console.log(snip)
+            const snip: { [index: string]: string } = {}
+            const key = `${stateName}CoilShot`
+            snip[key] = snippets.join('\n')
+            console.log(snip)
+        }
     }
 
     window.funcShot = (args, ret) => {
-        const stack = StackTrace.getSync()
-        const methodName = stack[1].getFunctionName()
-        const fileName = path.parse(stack[1].getFileName()).name
-        const apiName = camelCase(fileName)
-        const snippets = []
-        const { snapshot: argShot } = getSnapshot(args, 5)
-        const { snapshot: retShot } = getSnapshot(ret, 5)
-        snippets.push(`import * as ${apiName}API from './${fileName}'\n`)
-        snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
-        snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}')`)
-        snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
-        const snip: { [index: string]: string } = {}
-        const key = `${methodName}FuncShot`
-        snip[key] = snippets.join('\n')
-        console.log(snip)
+        if (process.env.NODE_ENV !== 'test') {
+            const stack = StackTrace.getSync()
+            const methodName = stack[1].getFunctionName()
+            const fileName = path.parse(stack[1].getFileName()).name
+            const apiName = camelCase(fileName)
+            const snippets = []
+            const { snapshot: argShot } = getSnapshot(args, false, 5)
+            const { snapshot: retShot } = getSnapshot(ret, false, 5)
+            snippets.push(`import * as ${apiName}API from './${fileName}'\n`)
+            snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
+            snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}')`)
+            snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
+            const snip: { [index: string]: string } = {}
+            const key = `${methodName}FuncShot`
+            snip[key] = snippets.join('\n')
+            console.log(snip)
+        }
         return ret
     }
 
@@ -168,6 +177,7 @@ if (process.env.NODE_ENV !== 'production') {
         name: string
         reqBody: string
         resBody: string
+        resource: string
         inlineComment: string
     }
 
@@ -177,6 +187,8 @@ if (process.env.NODE_ENV !== 'production') {
         kind: string,
         reqBody: any,
         resBody: any,
+        resource: any,
+        unfiltered: boolean,
         inlineComment: string
     ) => {
         let methodMap = dataMap[prefix]
@@ -187,9 +199,12 @@ if (process.env.NODE_ENV !== 'production') {
         if (!kindList) {
             kindList = methodMap[kind] = []
         }
-        ;({ snapshot: reqBody } = getSnapshot(reqBody, 5))
+        ;({ snapshot: reqBody } = getSnapshot(reqBody, unfiltered, 5))
         if (resBody) {
-            ;({ snapshot: resBody } = getSnapshot(resBody, 5))
+            ;({ snapshot: resBody } = getSnapshot(resBody, unfiltered, 5))
+        }
+        if (resource) {
+            ;({ snapshot: resource } = getSnapshot(resource, unfiltered, 5))
         }
         const key = hashCode(`${reqBody}\\\\${resBody}`)
         const inx = kindList.findIndex((kind: IKindData) => {
@@ -199,7 +214,7 @@ if (process.env.NODE_ENV !== 'production') {
             return kindList[inx].name
         } else {
             const name = `${prefix}${capitalize(kind)}${kindList.length + 1}`
-            kindList.push({ key, name, reqBody, resBody, inlineComment })
+            kindList.push({ key, name, reqBody, resBody, resource, inlineComment })
             return name
         }
     }
@@ -208,21 +223,18 @@ if (process.env.NODE_ENV !== 'production') {
         const dumpedData: string[] = []
         Object.values(dataMap).forEach((method) => {
             Object.values(method).forEach((data) => {
-                data.forEach(({ name, reqBody, resBody, inlineComment }) => {
-                    if (resBody) {
-                        dumpedData.push(
-                            `\n\n//---${inlineComment}---\nconst ${name} = {req: ${reqBody}, res: ${resBody}}`
-                        )
-                    } else {
-                        dumpedData.push(`\n\n//---${inlineComment}---\nconst ${name} = {req: ${reqBody}}`)
-                    }
+                data.forEach(({ name, reqBody, resBody, resource, inlineComment }) => {
+                    const beg = resource ? `req: ${resource}, ` : ''
+                    const mid = `${resource ? 'data' : 'req'}: ${reqBody}`
+                    const end = resBody ? `, res: ${resBody}` : ''
+                    dumpedData.push(`\n\n//---${inlineComment}---\nconst ${name} = {${beg} ${mid} ${end}}`)
                 })
             })
         })
         return dumpedData
     }
 
-    window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?: any }[]) => {
+    window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?: any }[], unfiltered: boolean) => {
         const dataMap = {}
         const funcMocks: string[] = []
         let nockIgnoreRBAC = false
@@ -230,6 +242,7 @@ if (process.env.NODE_ENV !== 'production') {
             // get if local and what pathname is
             let isList = false
             let inlineComment = ''
+            let resource
             const isSearch = url.indexOf('/search') !== -1
             const isLocalhost = !url.startsWith('http')
             let uri,
@@ -243,7 +256,7 @@ if (process.env.NODE_ENV !== 'production') {
                     url = url.split('?')[0] // strip any queries
                     const [, rest] = url.split('/api') //assume they're all api calls
                     const parts = rest.split('/')
-                    isList = parts.shift() === 's' // was '/apis'
+                    isList = parts.shift().endsWith('s') // was '/apis' or 'apiPaths' or anything plural
                     let version // one or two part version?
                     if (parts[0].startsWith('v')) {
                         version = parts.shift()
@@ -273,17 +286,33 @@ if (process.env.NODE_ENV !== 'production') {
                         if (typeof reqBody === 'string') {
                             reqBody = JSON.parse(reqBody)
                         }
-                        const _kind = reqBody?.kind
-                        const _name = reqBody?.metadata?.name
-                        const _namespace = reqBody?.metadata?.namespace
-                        if (_namespace) {
-                            if (_name) {
-                                inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+                        if (Array.isArray(reqBody)) {
+                            resource = {
+                                apiVersion: version,
+                                kind: `${kind2}`,
+                                metadata: {
+                                    namespace: name1,
+                                    name: name2,
+                                },
+                            }
+                            if (kind1 === 'namespaces') {
+                                inlineComment = `'${kind2}' in '${name1}' namespace`
                             } else {
-                                inlineComment = `'${_kind}' in '${_namespace}' namespace`
+                                inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
                             }
                         } else {
-                            inlineComment = `'${_kind}'`
+                            const _kind = reqBody?.kind
+                            const _name = reqBody?.metadata?.name
+                            const _namespace = reqBody?.metadata?.namespace
+                            if (_namespace) {
+                                if (_name) {
+                                    inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+                                } else {
+                                    inlineComment = `'${_kind}' in '${_namespace}' namespace`
+                                }
+                            } else {
+                                inlineComment = `'${_kind}'`
+                            }
                         }
                     }
                     kind = kind2 || kind1
@@ -336,7 +365,7 @@ if (process.env.NODE_ENV !== 'production') {
             const dataName =
                 kind === 'selfsubjectaccessreviews'
                     ? 'ignore'
-                    : getNockShotName(dataMap, prefix, kind, reqBody, resBody, inlineComment)
+                    : getNockShotName(dataMap, prefix, kind, reqBody, resBody, resource, unfiltered, inlineComment)
             switch (method) {
                 case 'GET':
                     if (isLocalhost) {
@@ -362,8 +391,9 @@ if (process.env.NODE_ENV !== 'production') {
                     funcMocks.push(`    nockDelete(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
                     break
                 case 'PATCH':
-                    funcMocks.push(`    nockPatch(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
-                    // nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource )
+                    funcMocks.push(
+                        `    nockPatch(${dataName}.req, ${dataName}.data, ${dataName}.res)    // ${inlineComment}`
+                    )
                     break
                 case 'OPTION':
                     // nockOptions(resource: Resource, response?: IResource)==> no reqBody
@@ -377,7 +407,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
 
     const logNockShot = (fetches: any) => {
-        const { dataMocks, funcMocks } = window.getNockShot(fetches)
+        const { dataMocks, funcMocks } = window.getNockShot(fetches, false)
         const snip: { [index: string]: string } = {}
         const snippet = `${dataMocks.join('\n')}\n\n${funcMocks.join('\n')}`
         snip['nockShot'] = snippet
