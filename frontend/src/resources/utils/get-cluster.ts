@@ -411,6 +411,41 @@ export enum CuratorCondition {
     upgrade = 'DesiredCuration: upgrade',
 }
 
+const versionRegex = /(\d{1,5})\.(\d{1,5})\.(\d{1,5})/
+
+export function isVersionGreater(versionX: string, versionY: string) {
+    const matchesA = versionX.match(versionRegex)
+    const matchesB = versionY.match(versionRegex)
+    if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+        for (let index = 1; index < 4; index++) {
+            const parsedMatchA = parseInt(matchesA[index], 10)
+            const parsedMatchB = parseInt(matchesB[index], 10)
+            if (parsedMatchA > parsedMatchB) {
+                return true
+            }
+            if (parsedMatchA < parsedMatchB) {
+                return false
+            }
+        }
+        return false
+    }
+}
+
+export function isVersionEqual(versionX: string, versionY: string) {
+    const matchesA = versionX.match(versionRegex)
+    const matchesB = versionY.match(versionRegex)
+    if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
+        for (let index = 1; index < 4; index++) {
+            const parsedMatchA = parseInt(matchesA[index], 10)
+            const parsedMatchB = parseInt(matchesB[index], 10)
+            if (parsedMatchA !== parsedMatchB) {
+                return false
+            }
+        }
+        return true
+    }
+}
+
 export function getDistributionInfo(
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
@@ -491,40 +526,6 @@ export function getDistributionInfo(
             break
     }
 
-    const versionRegex = /(\d{1,5})\.(\d{1,5})\.(\d{1,5})/
-
-    function isVersionGreater(versionX: string, versionY: string) {
-        const matchesA = versionX.match(versionRegex)
-        const matchesB = versionY.match(versionRegex)
-        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
-            for (let index = 1; index < 4; index++) {
-                const parsedMatchA = parseInt(matchesA[index], 10)
-                const parsedMatchB = parseInt(matchesB[index], 10)
-                if (parsedMatchA > parsedMatchB) {
-                    return true
-                }
-                if (parsedMatchA < parsedMatchB) {
-                    return false
-                }
-            }
-            return false
-        }
-    }
-
-    function isVersionEqual(versionX: string, versionY: string) {
-        const matchesA = versionX.match(versionRegex)
-        const matchesB = versionY.match(versionRegex)
-        if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
-            for (let index = 1; index < 4; index++) {
-                const parsedMatchA = parseInt(matchesA[index], 10)
-                const parsedMatchB = parseInt(matchesB[index], 10)
-                if (parsedMatchA !== parsedMatchB) {
-                    return false
-                }
-            }
-            return true
-        }
-    }
     const desiredVersion =
         managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
         managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
