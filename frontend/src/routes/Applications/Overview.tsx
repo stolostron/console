@@ -73,6 +73,9 @@ const labelArr: string[] = [
 ]
 
 const cachedFilters = JSON.parse(localStorage.getItem('cachedFilters') || '[]')
+
+localStorage.setItem('cachedFilters', JSON.stringify(cachedFilters))
+
 const initialFilters = { 'table.filter.type.acm.application.label': cachedFilters }
 
 type IApplicationResource = IResource | OCPAppResource
@@ -744,7 +747,6 @@ export default function ApplicationsOverview() {
                     },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-                    localStorage.setItem('cachedFilters', JSON.stringify(selectedValues))
                     return selectedValues.some((value) => {
                         if (isOCPAppResource(item)) {
                             const isFlux = isFluxApplication(item.label)
@@ -763,6 +765,7 @@ export default function ApplicationsOverview() {
                         }
                     })
                 },
+                cachedFilters: cachedFilters,
             },
         ],
         [t]
@@ -1051,7 +1054,7 @@ export default function ApplicationsOverview() {
                 items={tableItems}
                 filters={filters}
                 customTableAction={appCreationButton}
-                initialFilters={initialFilters}
+                initialFilters={cachedFilters.length ? initialFilters : undefined}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
