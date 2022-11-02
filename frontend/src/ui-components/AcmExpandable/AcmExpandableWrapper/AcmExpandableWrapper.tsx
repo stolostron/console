@@ -71,7 +71,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
                 <AcmButton className={classes.showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
                     {showAll
                         ? t('Show less')
-                        : t('Show all {{count}}', {
+                        : t('Show all ({{count}})', {
                               count: Children.count(children),
                           })}
                 </AcmButton>

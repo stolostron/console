@@ -2263,6 +2263,7 @@
     "Shared with:": "Shared with:",
     "Show": "Show",
     "Show all ({{count}})": "Show all ({{count}})",
+    "Show all ({{count}})_plural": "Show all ({{count}})",
     "Show all {{count}}": "Show all {{count}}",
     "Show all {{count}}_plural": "Show all {{count}}",
     "Show less": "Show less",
