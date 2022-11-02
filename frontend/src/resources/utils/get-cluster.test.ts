@@ -13,6 +13,11 @@ const mockClusterCurator: ClusterCurator = {
         name: clusterName,
         namespace: clusterName,
     },
+    spec: {
+        upgrade: {
+            desiredUpdate: '1.2.5',
+        },
+    },
 }
 const conditionCuratorJobRunning = {
     reason: 'Job_has_finished',
@@ -35,7 +40,7 @@ const mockClusterCuratorUpdating: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
@@ -47,7 +52,7 @@ const mockClusterCuratorMonitoring: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
