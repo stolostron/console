@@ -2,11 +2,13 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
+    hostedClustersState,
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../atoms'
@@ -32,6 +34,8 @@ import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterDefinition,
@@ -339,6 +343,38 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
+const mockHostedCluster0: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'hypershift-cluster',
+        namespace: 'hypershift-cluster',
+    },
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        platform: {},
+    },
+}
+
+const mockHostedCluster1: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'hypershift-cluster2',
+        namespace: 'hypershift-cluster2',
+    },
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        platform: {},
+    },
+}
+
+const mockHostedClusters: HostedClusterK8sResource[] = [mockHostedCluster0, mockHostedCluster1]
+
 function getClusterCuratorCreateResourceAttributes(name: string) {
     return {
         resource: 'clustercurators',
@@ -506,6 +542,7 @@ describe('Clusters Page hypershift', () => {
                     snapshot.set(clusterDeploymentsState, mockClusterDeployments)
                     snapshot.set(managedClusterInfosState, hypershiftMockManagedClusterInfos)
                     snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                    snapshot.set(hostedClustersState, mockHostedClusters)
                 }}
             >
                 <MemoryRouter>
