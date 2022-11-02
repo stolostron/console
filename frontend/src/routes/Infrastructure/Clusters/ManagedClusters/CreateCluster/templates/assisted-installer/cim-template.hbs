@@ -4,6 +4,9 @@ kind: ClusterDeployment
 metadata:
   annotations:
     agentBareMetal-agentSelector/autoSelect: "true"
+    {{#if ai.cpuArchitecture}}
+    agentBareMetal-cpuArchitecture: {{{ai.cpuArchitecture}}}
+    {{/if}}
   labels:
   {{#if ai.managedClusterSet}}
     "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'

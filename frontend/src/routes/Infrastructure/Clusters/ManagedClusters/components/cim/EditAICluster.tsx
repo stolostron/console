@@ -21,12 +21,12 @@ import {
     onSaveNetworking,
     useClusterDeployment,
     useAgentClusterInstall,
-    useInfraEnv,
     fetchInfraEnv,
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
     useOnDeleteHost,
     useAssistedServiceConfigMap,
+    useClusterDeploymentInfraEnv,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -68,7 +68,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 
     const clusterDeployment = useClusterDeployment({ name, namespace })
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
-    const infraEnv = useInfraEnv({ name, namespace })
+    const infraEnv = useClusterDeploymentInfraEnv(
+        clusterDeployment?.metadata?.name,
+        clusterDeployment?.metadata?.namespace
+    )
 
     const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
 

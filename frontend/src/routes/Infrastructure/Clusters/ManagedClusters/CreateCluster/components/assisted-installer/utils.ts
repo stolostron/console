@@ -344,6 +344,24 @@ export const useInfraEnv = ({ name, namespace }: { name: string; namespace: stri
     )
 }
 
+export const useClusterDeploymentInfraEnv = (cdName: string, cdNamespace: string) => {
+    const { infraEnvironmentsState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
+    const [infraEnvs] = useRecoilValue(waitForAll([infraEnvironmentsState]))
+    return useMemo(
+        () => findInfraEnvByClusterRef({ name: cdName, namespace: cdNamespace }, infraEnvs),
+        [cdName, cdNamespace, infraEnvs]
+    )
+}
+
+export const findInfraEnvByClusterRef = (
+    clusterRef: CIM.InfraEnvK8sResource['spec']['clusterRef'],
+    infraEnvs: CIM.InfraEnvK8sResource[]
+) => {
+    const { name, namespace } = clusterRef
+    return infraEnvs.find((ie) => ie.spec?.clusterRef?.name === name && ie.spec?.clusterRef?.namespace === namespace)
+}
+
 export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
     patchResource(agent, [
         {
