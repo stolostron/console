@@ -491,7 +491,7 @@ export function getDistributionInfo(
             break
     }
 
-    const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+    const versionRegex = /(\d{1,5})\.(\d{1,5})\.(\d{1,5})/
 
     function isVersionGreater(versionX: string, versionY: string) {
         const matchesA = versionX.match(versionRegex)
