@@ -797,7 +797,7 @@ const getACMConsoleURL = (acmVersion: string | undefined, consoleURL: string | u
         return undefined
     }
     if (semver.gte(acmVersion, '2.7.0')) {
-        return consoleURL + '/multicloud/infrastructure/clusters/managed'
+        return consoleURL + '/multicloud/infrastructure/clusters/managed?perspective=acm'
     } else {
         return consoleURL?.replace('console-openshift', 'multicloud')
     }

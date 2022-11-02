@@ -166,11 +166,37 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             },
             acmDistribution: {
                 key: t('table.acm.distribution'),
-                value: cluster?.acmDistribution?.version,
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.version}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.distribution.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
             },
             acmChannel: {
                 key: t('table.acm.channel'),
-                value: cluster?.acmDistribution?.channel,
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.channel}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.channel.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
             },
             labels: {
                 key: t('table.labels'),
@@ -217,8 +243,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         variant="link"
                         isInline
                         onClick={() => window.open(cluster.acmConsoleURL, '_blank')}
-                        isDisabled={cluster.status === ClusterStatus.hibernating}
-                        tooltip={t('hibernating.tooltip')}
+                        tooltip={t('table.acm.consoleUrl.helperText')}
                         icon={<ExternalLinkAltIcon />}
                         iconPosition="right"
                     >
