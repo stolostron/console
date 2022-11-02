@@ -27,7 +27,6 @@ import {
     TextList,
     TextListItem,
     Title,
-    Truncate,
 } from '@patternfly/react-core'
 import {
     CaretDownIcon,
@@ -66,6 +65,7 @@ import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
 import { usePluginDataContextValue } from './lib/PluginDataContext'
 import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { LoadPluginData } from './components/LoadPluginData'
+import { Truncate } from './components/Truncate'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
