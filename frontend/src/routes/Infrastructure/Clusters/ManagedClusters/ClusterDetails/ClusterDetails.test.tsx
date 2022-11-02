@@ -1149,7 +1149,7 @@ describe('ClusterDetails for On Premise', () => {
         await waitForTestId('col-header-memory')
         await waitForTestId('col-header-disk')
 
-        await waitForText('Waiting for hosts...')
+        await waitForText('ai:Waiting for hosts...')
 
         // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
         await waitForText('On Premise')

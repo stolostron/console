@@ -12,6 +12,7 @@ import {
     clusterImageSetsState,
     configMapsState,
     infraEnvironmentsState,
+    nmStateConfigsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
 import { nockGet, nockList } from '../../../../../../lib/nock-util'
@@ -40,6 +41,7 @@ const Component = () => {
                 snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI])
                 snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
                 snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
+                snapshot.set(nmStateConfigsState, [])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.editCluster]}>
@@ -68,15 +70,15 @@ describe('Edit AI Cluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         await waitForText('Installation type')
-        await waitForText('Cluster details', true)
-        await waitForText('Cluster hosts')
-        await waitForText('Cluster network')
-        await waitForText('Review and create')
+        await waitForText('ai:Cluster details', true)
+        await waitForText('ai:Cluster hosts')
+        await waitForText('ai:Cluster network')
+        await waitForText('ai:Review and create')
 
         await waitForTestId('form-static-openshiftVersion-field')
-        await waitForText('OpenShift 4.8.15')
+        await waitForText('ai:OpenShift 4.8.15')
 
-        await clickByText('Next')
+        await clickByText('ai:Next')
         await waitForNocks(nocks)
 
         await waitForTestId('form-input-autoSelectHosts-field')

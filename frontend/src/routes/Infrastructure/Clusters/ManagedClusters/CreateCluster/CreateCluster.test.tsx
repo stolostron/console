@@ -1344,7 +1344,7 @@ describe('CreateCluster', () => {
             await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
 
             await clickByTestId('form-input-highAvailabilityMode-field')
-            await waitForText('SNO enables you to install OpenShift using only one host.')
+            await waitForText('ai:SNO enables you to install OpenShift using only one host.')
             await clickByTestId('form-input-highAvailabilityMode-field')
 
             await waitForText('OpenShift 4.8.15') // single value of combobox
