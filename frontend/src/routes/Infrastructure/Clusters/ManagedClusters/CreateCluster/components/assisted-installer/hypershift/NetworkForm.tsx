@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { HostedClusterNetworkStep, LoadingState } from 'openshift-assisted-ui-lib/cim'
-import { agentsState, infrastructuresState } from '../../../../../../../../atoms'
+import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from 'openshift-assisted-ui-lib/cim'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 import isMatch from 'lodash/isMatch'
 
-import { HypershiftAgentContext } from './HypershiftAgentContext'
-import { Secret } from '../../../../../../../../resources'
+import { agentsState, infrastructuresState } from '../../../../../../../../atoms'
 import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
+import { getTemplateValue } from '../utils'
+
+import { HypershiftAgentContext } from './HypershiftAgentContext'
 
 type FormControl = {
     active: any
@@ -25,10 +26,10 @@ type FormControl = {
 type NetworkFormProps = {
     control: FormControl
     handleChange: (control: FormControl) => void
-    controlProps: Secret
+    templateYAML: string
 }
 
-const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, controlProps }) => {
+const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
     const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace } =
         React.useContext(HypershiftAgentContext)
     const [agents, infrastructures] = useRecoilValue(waitForAll([agentsState, infrastructuresState]))
@@ -81,34 +82,6 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, contro
         return summary
     }
 
-    /*
-    control.reverse = (
-        control: {
-            active: FormControl['active']
-        },
-        templateObject: any
-    ) => {
-            const serviceCIDR = getValue(templateObject, 'HostedCluster[0].spec.networking.serviceCIDR')
-            const podCIDR = getValue(templateObject, 'HostedCluster[0].spec.networking.podCIDR')
-            const active = {
-                ...control.active,
-                machineCIDR: getValue(templateObject, 'HostedCluster[0].spec.networking.machineCIDR'),
-                serviceCIDR: serviceCIDR || '172.31.0.0/16',
-                podCIDR: podCIDR || '192.168.122.0/24',
-                sshPublicKey: getValue(templateObject, 'Secret[1].stringData')?.['id_rsa.pub'] || '',
-                isAdvanced: formRef.current ? formRef.current.values.isAdvanced : isAdvancedNetworking,
-            }
-
-            if (!isEqual(active, control.active)) {
-                control.active = active
-            }
-
-            if (formRef.current && !isEqual(active, formRef.current.values)) {
-                formRef.current.setValues(active)
-            }
-    }
-    */
-
     const { matchingAgents, count } = nodePools?.reduce<{ matchingAgents: string[]; count: number }>(
         (acc, nodePool) => {
             const labels = nodePool.agentLabels.reduce((acc, curr) => {
@@ -125,27 +98,48 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, contro
         { matchingAgents: [], count: 0 }
     ) || { matchingAgents: [], count: 0 }
 
-    HostedClusterNetworkStep
-    isBMPlatform
-    matchingAgents
-    count
-    controlProps
-    isAdvancedNetworking
-    infrastructures
-    onValuesChanged
+    const initialValues: NetworkFormValues = React.useMemo(() => {
+        // To preserve form values on Back button
+        // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
+        const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
+        const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', '172.31.0.0/16')
+        const podCIDR = getTemplateValue(templateYAML, 'podCIDR', '10.132.0.0/14')
+        const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
+
+        const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
+        const httpsProxy = getTemplateValue(templateYAML, 'httpsProxy', '')
+        const noProxy = getTemplateValue(templateYAML, 'noProxy', '')
+        const enableProxy = !!(httpProxy || httpsProxy || noProxy)
+
+        const nodePortPort: number = parseInt(getTemplateValue(templateYAML, 'port', '0'))
+        const nodePortAddress = getTemplateValue(templateYAML, 'address', '')
+        const isNodePort: boolean = nodePortPort !== undefined || !!nodePortAddress
+
+        return {
+            machineCIDR,
+            isAdvanced: isAdvancedNetworking,
+            sshPublicKey,
+            serviceCIDR,
+            podCIDR,
+            enableProxy,
+            httpProxy,
+            httpsProxy,
+            noProxy,
+            apiPublishingStrategy: isNodePort || isBMPlatform(infrastructures[0]) ? 'NodePort' : 'LoadBalancer',
+            nodePortPort,
+            nodePortAddress,
+        }
+    }, [templateYAML, infrastructures, isAdvancedNetworking])
 
     return agents ? (
-        <div>Will be fixed in follow-up</div>
+        <HostedClusterNetworkStep
+            formRef={formRef}
+            agents={matchingAgents}
+            count={count}
+            onValuesChanged={onValuesChanged}
+            initialValues={initialValues}
+        />
     ) : (
-        // <HostedClusterNetworkStep
-        //     formRef={formRef}
-        //     agents={matchingAgents}
-        //     count={count}
-        //     onValuesChanged={onValuesChanged}
-        //     initAdvancedNetworking={isAdvancedNetworking}
-        //     initSSHPublicKey={controlProps?.stringData?.['ssh-publickey']}
-        //     isBMPlatform={isBMPlatform(infrastructures[0])}
-        // />
         <LoadingState />
     )
 }

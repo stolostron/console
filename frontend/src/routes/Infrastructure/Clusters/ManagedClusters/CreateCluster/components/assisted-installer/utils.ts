@@ -736,3 +736,24 @@ export const fetchInfraEnv = (name: string, namespace: string) =>
 export const importYaml = (yamlContent: unknown) => {
     return createResources(yamlContent as IResource[])
 }
+
+// Simple string search is _so far_ enough.
+// Full key-path support would be ineffective when not actually needed.
+export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: string) => {
+    const lines = yaml.split('\n')
+    const regex = new RegExp(`^ *${simpleKey}: *`)
+
+    const rows = lines.filter((l) => l.match(regex))
+
+    if (rows.length === 0) {
+        return defaultValue
+    }
+
+    if (rows.length > 1) {
+        // Provide better key (i.e. leverage indentation). If this is not enough, let's full-parse the yaml instead.
+        throw new Error(`Multiple matches for yaml key "${simpleKey}"`)
+    }
+
+    const value = rows[0].replace(regex, '').trim()
+    return value
+}
