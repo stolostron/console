@@ -322,6 +322,17 @@ export function Searchbar(props: SearchbarProps) {
                 }
                 break
             case ',':
+                if (currentQuery.endsWith(':')) {
+                    // only allow comma delimiter if user is adding a value
+                    handleAddition()
+                }
+                break
+            case ':':
+                if (!currentQuery.endsWith(':')) {
+                    // only allow colon delimiter if user is adding a filter
+                    handleAddition()
+                }
+                break
             case ' ':
                 handleAddition()
                 break
