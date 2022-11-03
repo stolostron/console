@@ -1,33 +1,42 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { WizardStrings } from '@patternfly-labs/react-form-wizard'
+import { useMemo } from 'react'
+import { useTranslation } from './acm-i18next'
 
-export const wizardStrings: WizardStrings = {
-    reviewLabel: 'Review',
-    unknownError: 'Unknown Error',
-    errorString: 'error',
-    stepsAriaLabel: 'steps',
-    contentAriaLabel: 'content',
-    actionAriaLabel: 'Action',
-    detailsAriaLabel: 'Details',
-    sortableMoveItemUpAriaLabel: 'Move item up',
-    sortableMoveItemDownAriaLabel: 'Move item down',
-    removeItemAriaLabel: 'Remove item',
-    deselectAllAriaLabel: 'Deselect all',
-    selectAllAriaLabel: 'Select all',
-    clearButtonTooltip: 'Clear',
-    pasteButtonTooltip: 'Paste',
-    backButtonText: 'Back',
-    cancelButtonText: 'Cancel',
-    nextButtonText: 'Next',
-    fixValidationErrorsMsg: 'Please fix validation errors',
-    submitText: 'Submit',
-    submittingText: 'Submitting',
-    moreInfo: 'More info',
-    hideSecretTooltip: 'Hide secret',
-    showSecretTooltip: 'Show secret',
-    spinnerButtonTooltip: 'Loading',
-    syncButtonTooltip: 'Refresh',
-    required: 'Required',
-    expandToFixValidationErrors: 'Expand to fix validation errors',
+export const useWizardStrings = (
+    wizardSpecificStrings: Pick<WizardStrings, 'stepsAriaLabel' | 'contentAriaLabel'>
+): WizardStrings => {
+    const { t } = useTranslation()
+    return useMemo(
+        () => ({
+            ...wizardSpecificStrings,
+            reviewLabel: t('Review'),
+            unknownError: t('Unknown Error'),
+            errorString: t('error'),
+            actionAriaLabel: t('Action'),
+            detailsAriaLabel: t('Details'),
+            sortableMoveItemUpAriaLabel: t('Move item up'),
+            sortableMoveItemDownAriaLabel: t('Move item down'),
+            removeItemAriaLabel: t('Remove item'),
+            deselectAllAriaLabel: t('Deselect all'),
+            selectAllAriaLabel: t('Select all'),
+            clearButtonTooltip: t('Clear'),
+            pasteButtonTooltip: t('Paste'),
+            backButtonText: t('Back'),
+            cancelButtonText: t('Cancel'),
+            nextButtonText: t('Next'),
+            fixValidationErrorsMsg: t('Please fix validation errors'),
+            submitText: t('Submit'),
+            submittingText: t('Submitting'),
+            moreInfo: t('More info'),
+            hideSecretTooltip: t('Hide secret'),
+            showSecretTooltip: t('Show secret'),
+            spinnerButtonTooltip: t('Loading'),
+            syncButtonTooltip: t('Refresh'),
+            required: t('Required'),
+            expandToFixValidationErrors: t('Expand to fix validation errors'),
+        }),
+        [wizardSpecificStrings, t]
+    )
 }

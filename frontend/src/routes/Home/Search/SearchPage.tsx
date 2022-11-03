@@ -33,7 +33,6 @@ import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } fro
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
-// const {t} = useTranslation()
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const savedSearches = 'Saved searches'
 const useStyles = makeStyles({

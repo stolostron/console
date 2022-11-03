@@ -27,6 +27,7 @@ import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../common/resou
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { useTranslation } from '../../lib/acm-i18next'
+import { useWizardStrings } from '../../lib/wizardStrings'
 
 export interface PolicySetWizardProps {
     breadcrumb?: { label: string; to?: string }[]
@@ -75,8 +76,14 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
         return virtualPolicies
     }, [policySet, props.policies])
 
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Policy set steps'),
+        contentAriaLabel: t('Policy set content'),
+    })
+
     return (
         <WizardPage
+            wizardStrings={translatedWizardStrings}
             title={props.title}
             breadcrumb={props.breadcrumb}
             onSubmit={props.onSubmit}

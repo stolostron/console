@@ -41,7 +41,7 @@ import { validateKubernetesResourceName, validatePolicyName } from '../../lib/va
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { Specifications } from './specifications'
-import { wizardStrings } from '../../lib/wizardStrings'
+import { useWizardStrings } from '../../lib/wizardStrings'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function PolicyWizard(props: {
@@ -61,9 +61,14 @@ export function PolicyWizard(props: {
     onCancel: WizardCancel
 }) {
     const { t } = useTranslation()
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Policy steps'),
+        contentAriaLabel: t('Policy content'),
+    })
+
     return (
         <WizardPage
-            wizardStrings={wizardStrings}
+            wizardStrings={translatedWizardStrings}
             title={props.title}
             description={t(
                 'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls.'

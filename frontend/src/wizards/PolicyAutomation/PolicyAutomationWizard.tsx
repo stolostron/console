@@ -19,6 +19,7 @@ import { IResource } from '../common/resources/IResource'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
 import { ConfigMap } from '../../resources'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { useWizardStrings } from '../../lib/wizardStrings'
 
 export function PolicyAutomationWizard(props: {
     title: string
@@ -100,8 +101,14 @@ export function PolicyAutomationWizard(props: {
         }
     }, [ansibleCredentials, props, t])
 
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Policy automation steps'),
+        contentAriaLabel: t('Policy automation content'),
+    })
+
     return (
         <WizardPage
+            wizardStrings={translatedWizardStrings}
             title={props.title}
             breadcrumb={props.breadcrumb}
             onSubmit={props.onSubmit}

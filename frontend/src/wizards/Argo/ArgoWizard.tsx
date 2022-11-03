@@ -48,6 +48,7 @@ import { Placement } from '../Placement/Placement'
 import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
+import { useWizardStrings } from '../../lib/wizardStrings'
 
 interface Channel {
     metadata?: {
@@ -225,8 +226,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
         }
     }, [props.channels, props.getGitPaths, props.getGitRevisions, resources, gitChannels])
 
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Argo application steps'),
+        contentAriaLabel: t('Argo application content'),
+    })
+
     return (
         <WizardPage
+            wizardStrings={translatedWizardStrings}
             breadcrumb={props.breadcrumb}
             title={props.resources ? t('Edit application set') : t('Create application set')}
             yamlEditor={props.yamlEditor}
