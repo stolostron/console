@@ -33,6 +33,7 @@ import { usePluginDataContextValue } from './lib/PluginDataContext'
 import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { LoadPluginData } from './components/LoadPluginData'
 import { Truncate } from './components/Truncate'
+import { useTranslation } from './lib/acm-i18next'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -67,7 +68,8 @@ interface IRouteGroup {
 }
 
 function UserDropdownToggle() {
-    const [name, setName] = useState<string>('loading...')
+    const { t } = useTranslation()
+    const [name, setName] = useState<string>(t('loading...'))
 
     useEffect(() => {
         // Get the username from the console backend
@@ -93,7 +95,7 @@ function UserDropdownToggle() {
 
 function UserDropdown() {
     const [userIsOpen, userSetOpen] = useState<boolean>(false)
-
+    const { t } = useTranslation()
     function configureClient() {
         // Get the user token endpoint from the console backend to launch to the OCP Display Token page
         const resp = configure()
@@ -112,21 +114,21 @@ function UserDropdown() {
     function LogoutButton() {
         return (
             <ApplicationLauncherItem component="button" id="logout" onClick={logout}>
-                Logout
+                {t('Logout')}
             </ApplicationLauncherItem>
         )
     }
     function ConfigureButton() {
         return (
             <ApplicationLauncherItem component="button" id="configure" onClick={() => configureClient()}>
-                Configure client
+                {t('Configure client')}
             </ApplicationLauncherItem>
         )
     }
 
     return (
         <ApplicationLauncher
-            aria-label="user-menu"
+            aria-label={t('user-menu')}
             data-test="user-dropdown"
             onSelect={() => userSetOpen(false)}
             onToggle={() => userSetOpen(!userIsOpen)}
@@ -140,26 +142,27 @@ function UserDropdown() {
 }
 
 export default function App() {
+    const { t } = useTranslation()
     const routes: (IRoute | IRouteGroup)[] = useMemo(
         () => [
             {
-                title: 'Home',
+                title: t('Home'),
                 type: 'group',
                 routes: [
                     {
-                        title: 'Welcome',
+                        title: t('Welcome'),
                         type: 'route',
                         route: NavigationPath.welcome,
                         component: WelcomePage,
                     },
                     {
-                        title: 'Overview',
+                        title: t('Overview'),
                         type: 'route',
                         route: NavigationPath.overview,
                         component: OverviewPage,
                     },
                     {
-                        title: 'Search',
+                        title: t('Search'),
                         type: 'route',
                         route: NavigationPath.search,
                         component: Search,
@@ -167,23 +170,23 @@ export default function App() {
                 ],
             },
             {
-                title: 'Infrastructure',
+                title: t('Infrastructure'),
                 type: 'group',
                 routes: [
                     {
-                        title: 'Clusters',
+                        title: t('Clusters'),
                         type: 'route',
                         route: NavigationPath.clusters,
                         component: Clusters,
                     },
                     {
-                        title: 'Automation',
+                        title: t('Automation'),
                         type: 'route',
                         route: NavigationPath.ansibleAutomations,
                         component: Automations,
                     },
                     {
-                        title: 'Host inventory',
+                        title: t('Host inventory'),
                         type: 'route',
                         route: NavigationPath.infraEnvironments,
                         component: InfraEnvironments,
@@ -191,26 +194,26 @@ export default function App() {
                 ],
             },
             {
-                title: 'Applications',
+                title: t('Applications'),
                 type: 'route',
                 route: NavigationPath.applications,
                 component: Applications,
             },
             {
-                title: 'Governance',
+                title: t('Governance'),
                 type: 'route',
                 route: NavigationPath.governance,
                 component: Governance,
             },
 
             {
-                title: 'Credentials',
+                title: t('Credentials'),
                 type: 'route',
                 route: NavigationPath.credentials,
                 component: Credentials,
             },
         ],
-        []
+        [t]
     )
 
     // Enforce light mode for standalone
@@ -272,6 +275,7 @@ export default function App() {
 function AppHeader() {
     const isFullWidthPage = useMediaQuery('(min-width: 1200px)', { noSsr: true })
     const [isNavOpen, setNavOpen] = useState(window?.localStorage?.getItem('isNavOpen') !== 'false')
+    const { t } = useTranslation()
     useEffect(() => {
         if (!isFullWidthPage) {
             setNavOpen(false)
@@ -313,7 +317,7 @@ function AppHeader() {
                             @stolostron/console
                         </Title>
                         <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-                            <Truncate content="Development Console" />
+                            <Truncate content={t('Development Console')} />
                         </Title>
                     </div>
                 </div>
