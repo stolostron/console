@@ -1,29 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { isContextProvider, isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
-import { isSharedContextProvider, SharedContextProvider } from '../lib/SharedContextProvider'
-import { PluginData } from '../lib/PluginDataContext'
-import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+// import { isSharedContext, SharedContext } from '../lib/SharedContext'
+import { /*PluginData,*/ usePluginDataContextValue } from '../lib/PluginDataContext'
+// import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
-const isPluginDataContext = (e: Extension): e is SharedContextProvider<PluginData> =>
-    isSharedContextProvider(e) && e.properties?.id === 'mce-data-context'
+// const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
+//     isSharedContext(e) && e.properties.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
     const hrefAvailable = useCallback(
         (id: string) =>
-            hrefs.findIndex((e) => {
+            hrefs?.findIndex((e) => {
                 return e.properties.perspective === 'acm' && e.properties.id === id
             }) >= 0,
         [hrefs]
     )
 
-    const [contextProviders] = useResolvedExtensions(isPluginDataContext)
-    const contextProvider = contextProviders.find((e) => {
+    const [contextProviders] = useResolvedExtensions(isContextProvider)
+    const contextProvider = contextProviders?.find((e) => {
         return e.pluginName === 'mce'
     })
 
@@ -47,7 +47,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 isGovernanceAvailable,
                 isSearchAvailable,
                 isSubmarinerAvailable,
-                dataContext: contextProvider.properties.context,
+                dataContext: (contextProvider.properties.useValueHook as typeof usePluginDataContextValue).context,
                 acmExtensions,
             }}
         >

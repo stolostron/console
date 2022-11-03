@@ -2,26 +2,26 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import i18n from 'i18next'
 import {
-    getNodePropery,
-    addPropertyToList,
-    createDeployableYamlLink,
-    createResourceSearchLink,
-    addOCPRouteLocation,
-    addNodeServiceLocation,
-    processResourceActionLink,
-    addNodeServiceLocationForCluster,
-    addNodeOCPRouteLocationForCluster,
-    computeResourceName,
     addIngressNodeInfo,
     addNodeInfoPerCluster,
-    getNameWithoutChartRelease,
-    removeReleaseGeneratedSuffix,
-    checkNotOrObjects,
+    addNodeOCPRouteLocationForCluster,
+    addNodeServiceLocation,
+    addNodeServiceLocationForCluster,
+    addOCPRouteLocation,
+    addPropertyToList,
     checkAndObjects,
+    checkNotOrObjects,
+    computeResourceName,
+    createDeployableYamlLink,
+    createResourceSearchLink,
+    getNameWithoutChartRelease,
+    getNodePropery,
     parseApplicationNodeName,
+    processResourceActionLink,
+    removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import i18n from 'i18next'
 
 const t = i18n.t.bind(i18n)
 
@@ -344,7 +344,7 @@ describe('createDeployableYamlLink for application no selflink', () => {
                         action: 'show_resource_yaml',
                         cluster: 'local-cluster',
                         editLink:
-                            '/multicloud/home/search/resources?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
+                            '/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
                     },
                     label: 'View resource YAML',
                 },
@@ -379,7 +379,7 @@ describe('createDeployableYamlLink for application with editLink', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/multicloud/home/search/resources?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
+                        '/multicloud/home/search/resources/yaml?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
                 },
                 label: 'View resource YAML',
             },
@@ -1399,10 +1399,10 @@ describe('processResourceActionLink openRemoteresourceYaml', () => {
         action: 'show_resource_yaml',
         cluster: 'possiblereptile',
         editLink:
-            '/multicloud/home/search/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
+            '/multicloud/home/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
     }
     const result =
-        '/multicloud/home/search/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
+        '/multicloud/home/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
     it('processResourceActionLink openRemoteresourceYaml', () => {
         expect(processResourceActionLink(openRemoteresourceYaml)).toEqual(result)
     })

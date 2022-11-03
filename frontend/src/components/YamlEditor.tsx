@@ -2,11 +2,26 @@
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import useResizeObserver from '@react-hook/resize-observer'
+import jsYaml from 'js-yaml'
 import { debounce } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import { useCallback, useRef } from 'react'
+import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
+import { useCallback, useEffect, useRef } from 'react'
 import './YAMLEditor.css'
+
+/**
+ *
+ * @param resourceYaml - JSON object of current resource
+ * @param fieldPath  - path to field ex: /metadata/labels, /spec/tolerations
+ */
+export const findResourceFieldLineNumber = (resourceYaml: any, fieldPath: string) => {
+    const fieldIndentation = (fieldPath.split('/').length - 2) * 2
+    const field = fieldPath.split('/')[fieldPath.split('/').length - 1]
+    const indentationStr = ''.padStart(fieldIndentation, ' ')
+    const parsedYaml = jsYaml.dump(resourceYaml).split('\n')
+    return parsedYaml.indexOf(`${indentationStr}${field}:`) + 1
+}
 
 export default function YAMLEditor(props: {
     resourceYAML: any
@@ -14,11 +29,12 @@ export default function YAMLEditor(props: {
     width: string
     height?: string
     setEditedResourceYaml?: React.Dispatch<React.SetStateAction<string>>
+    defaultScrollToLine?: number
 }) {
-    const { resourceYAML, editMode, setEditedResourceYaml, width, height } = props
+    const { resourceYAML, editMode, setEditedResourceYaml, width, height, defaultScrollToLine } = props
     const pageRef = useRef(null)
-    const editorRef = useRef<any | null>(null)
-    const monacoRef = useRef<any | null>(null)
+    const editorRef = useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null)
+    const monacoRef = useRef<typeof monacoEditor | null>(null)
 
     useResizeObserver(pageRef, (entry) => {
         const { width } = entry.contentRect
@@ -26,7 +42,13 @@ export default function YAMLEditor(props: {
         editorRef?.current?.layout({ width, height })
     })
 
-    function onEditorDidMount(editor: any, monaco: any) {
+    useEffect(() => {
+        if (resourceYAML && defaultScrollToLine) {
+            editorRef.current?.revealLineNearTop(defaultScrollToLine)
+        }
+    }, [resourceYAML, editorRef, defaultScrollToLine])
+
+    function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
         // create 'console' theme
         monaco.editor.defineTheme('console', {
             base: 'vs-dark',

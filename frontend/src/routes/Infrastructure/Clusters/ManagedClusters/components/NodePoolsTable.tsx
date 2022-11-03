@@ -36,7 +36,7 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
 
         for (const condition of conditions) {
             if (condition.type === 'Ready') {
-                return condition.status ? 'Ready' : 'Pending'
+                return condition.status === 'True' ? 'Ready' : 'Pending'
             }
         }
     }, [])

@@ -136,7 +136,7 @@ export const persVolumePendingStatePendingRes = [
                 action: 'show_resource_yaml',
                 cluster: 'feng',
                 editLink:
-                    '/multicloud/home/search/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+                    '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
             },
             label: 'View resource YAML',
         },
@@ -174,7 +174,7 @@ export const persVolumePendingStateGreenRes = [
                 action: 'show_resource_yaml',
                 cluster: 'feng',
                 editLink:
-                    '/multicloud/home/search/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+                    '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
             },
             label: 'View resource YAML',
         },

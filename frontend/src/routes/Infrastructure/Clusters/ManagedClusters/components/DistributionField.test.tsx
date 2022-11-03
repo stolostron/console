@@ -545,6 +545,7 @@ describe('DistributionField', () => {
             kubeadmin: '',
             kubeconfig: '',
             isHypershift: false,
+            isRegionalHubCluster: false,
         }
 
         const retResource = render(

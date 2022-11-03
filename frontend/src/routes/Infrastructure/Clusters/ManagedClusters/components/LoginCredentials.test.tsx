@@ -45,6 +45,7 @@ const mockCluster: Cluster = {
     kubeconfig: '',
     kubeadmin: 'test-cluster-0-fk6c9-admin-password',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockKubeadminSecret = {

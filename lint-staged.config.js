@@ -3,7 +3,7 @@
 module.exports = {
     '*': 'npm run copyright:fix --',
     'backend/**/*.ts': 'npm run lint:fix:backend --',
-    'frontend/**/*.{js,jsx,ts,tsx}': (staged) => {
+    'frontend/**/*.{ts,tsx}|frontend/src/**/*.{js,jsx}': (staged) => {
         const files = staged.join(' ')
         return [
             `npm run lint:fix:frontend -- ${files}`,

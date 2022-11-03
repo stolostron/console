@@ -47,3 +47,5 @@ export const usePluginDataContextValue = () => {
     )
     return contextValue
 }
+
+usePluginDataContextValue.context = PluginDataContext

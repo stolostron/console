@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -60,8 +61,23 @@ export default function YAMLPage(props: {
     const [userCanEdit, setUserCanEdit] = useState<boolean | undefined>(undefined)
     const [editedResourceYaml, setEditedResourceYaml] = useState<string>('')
     const [updateResourceError, setUpdateResourceError] = useState<string | undefined>(undefined)
+    const [defaultScrollToLine, setDefaultScrollToLine] = useState<number>(1)
     const [editorHeight, setEditorHeight] = useState('500px')
     const classes = useStyles()
+    const location: {
+        pathname: string
+        state: {
+            search?: string
+            fromSearch?: string
+            scrollToLine?: number
+        }
+    } = useLocation()
+
+    useEffect(() => {
+        if (location.state && location.state?.scrollToLine) {
+            setDefaultScrollToLine(location.state?.scrollToLine)
+        }
+    }, [location.state])
 
     useEffect(() => {
         if (resource) {
@@ -224,6 +240,7 @@ export default function YAMLPage(props: {
                 setEditedResourceYaml={setEditedResourceYaml}
                 width={'100%'}
                 height={editorHeight}
+                defaultScrollToLine={defaultScrollToLine}
             />
         </PageSection>
     )

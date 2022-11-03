@@ -338,7 +338,7 @@ export function ClusterPoolsTable(props: {
                                 tagStartIndex + 1,
                                 releaseImage.indexOf('-', tagStartIndex)
                             )
-                            return `OpenShift ${version}`
+                            return version ? `OpenShift ${version}` : '-'
                         },
                     },
                     {
