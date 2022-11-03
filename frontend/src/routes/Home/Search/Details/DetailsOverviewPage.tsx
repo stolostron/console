@@ -124,23 +124,17 @@ export function getDate(timestamp?: string) {
 export function OwnerReferences(props: { ownerReferences?: OwnerReference[]; namespace?: string; cluster: string }) {
     const { ownerReferences, namespace, cluster } = props
     const { t } = useTranslation()
-    if (!ownerReferences) {
+    if (!ownerReferences || ownerReferences.length === 0) {
         return <div>{t('No owners')}</div>
     }
     return (
-        <div>
-            {ownerReferences.map((o: OwnerReference) => {
-                return (
-                    <ResourceSearchLink
-                        cluster={cluster}
-                        kind={o.kind}
-                        name={o.name}
-                        namespace={namespace}
-                        apiversion={o.apiVersion}
-                    />
-                )
-            })}
-        </div>
+        <ResourceSearchLink
+            cluster={cluster}
+            kind={ownerReferences[0].kind}
+            name={ownerReferences[0].name}
+            namespace={namespace}
+            apiversion={ownerReferences[0].apiVersion}
+        />
     )
 }
 
