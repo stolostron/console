@@ -205,6 +205,7 @@ export interface ITableFilter<T> {
     options: TableFilterOption<FilterOptionValueT>[]
     tableFilterFn: TableFilterFn<T>
     showEmptyOptions?: boolean
+    cachedFilters?: string[]
 }
 
 const useStyles = makeStyles({
@@ -776,7 +777,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const clearSearchAndFilters = useCallback(() => {
         clearSearch()
         clearFilters()
-    }, [clearSearch, clearFilters])
+        for (const filter of filters) {
+            const cachedFilters = filter.cachedFilters
+            if (cachedFilters) {
+                cachedFilters.length = 0
+            }
+        }
+    }, [clearSearch, clearFilters, filters])
 
     const updateSearch = useCallback(
         (newSearch: string) => {
@@ -1182,6 +1189,12 @@ function TableColumnFilters<T>(props: {
                 /* istanbul ignore next */
                 if (filter.options.find((option) => option.value === selection)) {
                     filterId = filter.id
+                    const cachedFilters = filter.cachedFilters
+                    if (cachedFilters) {
+                        if (!cachedFilters.includes(selection)) {
+                            cachedFilters.push(selection)
+                        }
+                    }
                     break
                 }
             }
@@ -1209,6 +1222,15 @@ function TableColumnFilters<T>(props: {
     )
 
     const onDelete = useCallback((filter: string, id: ToolbarChip) => {
+        for (const fil of filters) {
+            const cachedFilters = fil.cachedFilters
+            if (cachedFilters) {
+                if (cachedFilters.includes(id.key)) {
+                    cachedFilters.splice(cachedFilters.indexOf(id.key), 1)
+                }
+            }
+            break
+        }
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
             if (updatedFilters[filter].length === 1) {
