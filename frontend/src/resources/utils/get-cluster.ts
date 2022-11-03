@@ -22,6 +22,7 @@ import { managedClusterSetLabel } from '../managed-cluster-set'
 import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
+import semver from 'semver'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -75,10 +76,12 @@ export type Cluster = {
     statusMessage?: string
     provider?: Provider
     distribution?: DistributionInfo
+    acmDistribution?: ACMDistributionInfo
     labels?: Record<string, string>
     nodes?: Nodes
     kubeApiServer?: string
     consoleURL?: string
+    acmConsoleURL?: string
     hive: {
         clusterPool?: string
         clusterPoolNamespace?: string
@@ -91,6 +94,7 @@ export type Cluster = {
     isManaged: boolean
     isCurator: boolean
     isHostedCluster: boolean
+    isRegionalHubCluster: boolean
     clusterSet?: string
     owner: {
         createdBy?: string
@@ -115,6 +119,11 @@ export type DistributionInfo = {
     displayVersion?: string
     isManagedOpenShift: boolean
     upgradeInfo?: UpgradeInfo
+}
+
+export type ACMDistributionInfo = {
+    version?: string
+    channel?: string
 }
 
 export type HiveSecrets = {
@@ -242,6 +251,16 @@ export function getCluster(
             np.spec.clusterName === hostedCluster?.metadata.name &&
             np.metadata.namespace === hostedCluster?.metadata.namespace
     )
+
+    const acmDistributionInfo = getACMDistributionInfo(managedCluster)
+    const consoleURL = getConsoleUrl(
+        clusterDeployment,
+        managedClusterInfo,
+        managedCluster,
+        agentClusterInstall,
+        hostedCluster
+    )
+
     return {
         name:
             clusterDeployment?.metadata.name ??
@@ -267,22 +286,19 @@ export function getCluster(
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
+        acmDistribution: acmDistributionInfo,
+        acmConsoleURL: getACMConsoleURL(acmDistributionInfo.version, consoleURL),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
-        consoleURL: getConsoleUrl(
-            clusterDeployment,
-            managedClusterInfo,
-            managedCluster,
-            agentClusterInstall,
-            hostedCluster
-        ),
+        consoleURL: consoleURL,
         isHive: !!clusterDeployment && !hostedCluster,
         isHypershift: !!hostedCluster,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
         isHostedCluster: getIsHostedCluster(managedCluster),
         isSNOCluster: getIsSNOCluster(agentClusterInstall),
+        isRegionalHubCluster: getIsRegionalHubCluster(managedCluster),
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
@@ -502,6 +518,25 @@ export enum CuratorCondition {
     posthook = 'posthook-ansiblejob',
     install = 'DesiredCuration: install',
     upgrade = 'DesiredCuration: upgrade',
+}
+
+export function getACMDistributionInfo(managedCluster?: ManagedCluster): ACMDistributionInfo {
+    let version: string | undefined
+    let channel: string | undefined
+
+    if (managedCluster?.status?.clusterClaims) {
+        version =
+            managedCluster?.status?.clusterClaims?.find((claim) => claim.name === 'version.open-cluster-management.io')
+                ?.value ?? undefined
+        if (version) {
+            channel = `release-` + version.substring(0, version.lastIndexOf('.'))
+        }
+    }
+
+    return {
+        version: version,
+        channel: channel,
+    }
 }
 
 export function getDistributionInfo(
@@ -755,6 +790,17 @@ const getHypershiftConsoleURL = (hostedCluster?: HostedClusterK8sResource) => {
         return undefined
     }
     return `https://console-openshift-console.apps.${hostedCluster.metadata.name}.${hostedCluster.spec.dns.baseDomain}`
+}
+
+const getACMConsoleURL = (acmVersion: string | undefined, consoleURL: string | undefined) => {
+    if (!acmVersion) {
+        return undefined
+    }
+    if (semver.gte(acmVersion, '2.7.0')) {
+        return consoleURL + '/multicloud/infrastructure/clusters/managed?perspective=acm'
+    } else {
+        return consoleURL?.replace('console-openshift', 'multicloud')
+    }
 }
 
 export function getConsoleUrl(
@@ -1100,6 +1146,17 @@ export function getIsHostedCluster(managedCluster?: ManagedCluster) {
         managedCluster?.metadata.annotations &&
         managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] &&
         managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] === 'Hosted'
+    ) {
+        return true
+    } else {
+        return false
+    }
+}
+
+export function getIsRegionalHubCluster(managedCluster?: ManagedCluster) {
+    if (
+        managedCluster?.metadata.labels &&
+        managedCluster?.metadata.labels?.['feature.open-cluster-management.io/addon-multicluster-global-hub-controller']
     ) {
         return true
     } else {

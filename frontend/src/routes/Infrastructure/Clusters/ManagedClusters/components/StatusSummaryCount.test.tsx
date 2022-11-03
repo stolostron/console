@@ -130,6 +130,7 @@ const mockCluster: Cluster = {
     kubeconfig: '',
     kubeadmin: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockSearchQuery = {

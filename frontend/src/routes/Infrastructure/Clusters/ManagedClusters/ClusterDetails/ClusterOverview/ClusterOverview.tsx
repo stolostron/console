@@ -54,6 +54,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         if (cluster?.name === 'local-cluster') {
             return t('Hub')
         }
+        if (cluster?.isRegionalHubCluster) {
+            if (cluster?.isHostedCluster || cluster?.isHypershift) {
+                return t('Hub, Hosted')
+            }
+            return t('Hub')
+        }
         if (cluster?.isHostedCluster || cluster?.isHypershift) {
             return t('Hosted')
         } else {
@@ -158,6 +164,40 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     </RbacButton>
                 ),
             },
+            acmDistribution: {
+                key: t('table.acm.distribution'),
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.version}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.distribution.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
+            },
+            acmChannel: {
+                key: t('table.acm.channel'),
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.channel}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.channel.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
+            },
             labels: {
                 key: t('table.labels'),
                 value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
@@ -193,6 +233,21 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         iconPosition="right"
                     >
                         {cluster?.consoleURL}
+                    </AcmButton>
+                ),
+            },
+            acmConsoleUrl: {
+                key: t('table.acm.consoleUrl'),
+                value: cluster?.acmConsoleURL && (
+                    <AcmButton
+                        variant="link"
+                        isInline
+                        onClick={() => window.open(cluster.acmConsoleURL, '_blank')}
+                        tooltip={t('table.acm.consoleUrl.helperText')}
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                    >
+                        {cluster?.acmConsoleURL}
                     </AcmButton>
                 ),
             },
@@ -310,6 +365,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             clusterProperties.credentials,
             clusterProperties.clusterSet,
         ]
+    }
+
+    if (cluster?.isRegionalHubCluster) {
+        leftItems.splice(7, 0, clusterProperties.acmDistribution)
+        leftItems.splice(8, 0, clusterProperties.acmChannel)
+        rightItems.splice(2, 0, clusterProperties.acmConsoleUrl)
     }
 
     let details = <ProgressStepBar />
