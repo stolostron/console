@@ -800,7 +800,7 @@ export function CredentialsForm(props: {
                         label: t('Client ID'),
                         placeholder: t('Enter your client ID'),
                         labelHelp: t(
-                            "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'."
+                            "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
                         ),
                         value: clientId,
                         onChange: setClientId,
@@ -813,7 +813,7 @@ export function CredentialsForm(props: {
                         label: t('Client secret'),
                         placeholder: t('Enter your client secret'),
                         labelHelp: t(
-                            "Your client password. This value is generated as the 'password' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'."
+                            "Your client password. This value is generated as the 'password' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
                         ),
                         isRequired: true,
                         value: clientSecret,
