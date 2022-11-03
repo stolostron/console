@@ -7,7 +7,7 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
-import { getMultiClusterHub } from './mchVersion'
+import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 
 const proxyHeaders = [
     constants.HTTP2_HEADER_ACCEPT,
