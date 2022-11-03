@@ -10,8 +10,8 @@ export enum TruncatePosition {
 }
 
 const truncateStyles = {
-    start: 'pf-c-truncate__start',
-    end: 'pf-c-truncate__end',
+    start: 'pf-c-truncate__end',
+    end: 'pf-c-truncate__start',
 }
 
 const minWidthCharacters = 12
