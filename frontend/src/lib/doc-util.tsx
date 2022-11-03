@@ -50,6 +50,7 @@ export const DOC_LINKS = {
     POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/multicluster_engine/index#hosted-control-planes-intro`,
+    CONSOLE_PLUGIN: `${DOC_BASE_PATH}/web_console/index#ocp-plug-ins`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {

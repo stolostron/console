@@ -39,6 +39,8 @@ import {
     RedhatIcon,
 } from '@patternfly/react-icons'
 import {
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmIcon,
     AcmIconVariant,
     AcmTablePaginationContextProvider,
@@ -62,6 +64,7 @@ import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
+import { DeprecationBanner } from './DeprecationBanner'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -353,6 +356,10 @@ export default function App() {
 
     return (
         <BrowserRouter>
+            <AcmAlertProvider>
+                <AcmAlertGroup canClose />
+                <DeprecationBanner />
+            </AcmAlertProvider>
             <Page
                 header={<AppHeader />}
                 sidebar={<AppSidebar routes={routes} />}

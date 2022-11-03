@@ -1,3 +1,5 @@
+import { getBackendUrl } from '../resources'
+
 /* Copyright Contributors to the Open Cluster Management project */
 function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     return fetch(url, headers).then((response) => {
@@ -10,7 +12,7 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
 
 export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
     api<{ data: { consoleURL: string } }>(
-        '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
+        `${getBackendUrl()}/api/v1/namespaces/openshift-config-managed/configmaps/console-public`
     )
         .then(({ data }) => {
             if (newTab) {
