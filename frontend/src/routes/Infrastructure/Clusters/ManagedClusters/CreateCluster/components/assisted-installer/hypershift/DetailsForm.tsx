@@ -206,8 +206,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     useEffect(() => {
         control.active = {
             ...control.active,
-            pullSecret: controlProps?.stringData?.pullSecret || '',
-            baseDnsDomain: controlProps?.stringData?.baseDomain || '',
+            pullSecret: controlProps?.stringData?.pullSecret || control.active.pullSecret || '',
+            baseDnsDomain: controlProps?.stringData?.baseDomain || control.active.baseDnsDomain || '',
         }
         handleChange(control)
     }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
