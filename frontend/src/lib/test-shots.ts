@@ -9,11 +9,12 @@ import path from 'path'
 
 if (process.env.NODE_ENV !== 'production') {
     const hashCode = (str: string) => str.split('').reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0)
-    const getSnapshot = (obj: any = {}, unfiltered: boolean, max?: number) => {
+    const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
         interface IProto {
             name?: string
             displayName?: string
         }
+        obj = obj || {}
         const mx = max || 5
         const funcSet = new Set<string>()
         const getReplacements = () => {
@@ -185,9 +186,7 @@ if (process.env.NODE_ENV !== 'production') {
         dataMap: { [x: string]: { [x: string]: IKindData[] } },
         prefix: string,
         kind: string,
-        reqBody: any,
-        resBody: any,
-        resource: any,
+        testShot: { reqBody: any; resBody: any; resource: any },
         unfiltered: boolean,
         inlineComment: string
     ) => {
@@ -199,6 +198,7 @@ if (process.env.NODE_ENV !== 'production') {
         if (!kindList) {
             kindList = methodMap[kind] = []
         }
+        let { reqBody, resBody, resource } = testShot
         ;({ snapshot: reqBody } = getSnapshot(reqBody, unfiltered, 5))
         if (resBody) {
             ;({ snapshot: resBody } = getSnapshot(resBody, unfiltered, 5))
@@ -365,7 +365,7 @@ if (process.env.NODE_ENV !== 'production') {
             const dataName =
                 kind === 'selfsubjectaccessreviews'
                     ? 'ignore'
-                    : getNockShotName(dataMap, prefix, kind, reqBody, resBody, resource, unfiltered, inlineComment)
+                    : getNockShotName(dataMap, prefix, kind, { reqBody, resBody, resource }, unfiltered, inlineComment)
             switch (method) {
                 case 'GET':
                     if (isLocalhost) {
