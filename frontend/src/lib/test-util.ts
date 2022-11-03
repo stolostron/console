@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, Matcher, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -10,7 +10,7 @@ const options = { timeout: waitTimeout }
 
 // By Text
 
-export async function waitForText(text: string, multipleAllowed?: boolean) {
+export async function waitForText(text: Matcher, multipleAllowed?: boolean) {
     if (multipleAllowed) {
         await waitFor(() => expect(screen.queryAllByText(text).length).toBeGreaterThan(0), options)
     } else {
