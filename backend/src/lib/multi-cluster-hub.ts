@@ -1,10 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { jsonRequest } from './json-request'
 import { logger } from './logger'
-import { respondInternalServerError, unauthorized } from './respond'
-import { getToken, isAuthenticated } from './token'
 import { getServiceAccountToken } from '../routes/liveness'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
