@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, Suspense, useMemo } from 'react'
+import { ReactNode, Fragment, Suspense, useMemo, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { RbacDropdown } from '../../../../components/Rbac'
+import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, ResourceError } from '../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
@@ -17,9 +16,10 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '../../../../ui-components'
-import { getPolicyDetailSourceLabel } from '../../common/util'
+import { getPolicyDetailSourceLabel, getSource, resolveExternalStatus, resolveSource } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
+import { PolicyTableItem } from '../Policies'
 
 export function PolicyDetailsPage() {
     const location = useLocation()
@@ -30,6 +30,7 @@ export function PolicyDetailsPage() {
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
+    const [modal, setModal] = useState<ReactNode | undefined>()
 
     const params = useParams<{ namespace: string; name: string }>()
     const policyNamespace = params.namespace
@@ -52,28 +53,18 @@ export function PolicyDetailsPage() {
         return policies[idx]
     }, [policies, policyName, policyNamespace])
 
-    const actions = useMemo(
-        () => [
-            {
-                id: 'edit-policy',
-                text: t('Edit policy'),
-                click: () =>
-                    history.push(
-                        NavigationPath.editPolicy.replace(':namespace', policyNamespace).replace(':name', policyName)
-                    ),
-                isAriaDisabled: true,
-                rbac: [
-                    selectedPolicy &&
-                        rbacPatch(
-                            selectedPolicy,
-                            selectedPolicy?.metadata.namespace ?? '',
-                            selectedPolicy?.metadata.name ?? ''
-                        ),
-                ],
-            },
-        ],
-        [selectedPolicy, policyNamespace, policyName, history, t]
-    )
+    const tableItem: PolicyTableItem = useMemo(() => {
+        const isExternal = resolveExternalStatus(selectedPolicy)
+        let source: string | JSX.Element = 'Local'
+        if (isExternal) {
+            const policySource = resolveSource(selectedPolicy, helmReleases, channels, subscriptions)
+            source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
+        }
+        return {
+            policy: selectedPolicy,
+            source,
+        }
+    }, [selectedPolicy, helmReleases, channels, subscriptions, t])
 
     if (!selectedPolicy) {
         return (
@@ -89,51 +80,66 @@ export function PolicyDetailsPage() {
     }
 
     return (
-        <AcmPage
-            hasDrawer
-            header={
-                <AcmPageHeader
-                    title={policyName ?? 'Policy details'}
-                    breadcrumb={[
-                        { text: t('Policies'), to: NavigationPath.policies },
-                        { text: policyName ?? t('Policy details'), to: '' },
-                    ]}
-                    popoverAutoWidth={false}
-                    popoverPosition="bottom"
-                    navigation={
-                        <AcmSecondaryNav>
-                            <AcmSecondaryNavItem isActive={!isResultsTab}>
-                                <Link to={detailsUrl}>{t('Details')}</Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem isActive={isResultsTab}>
-                                <Link to={resultsUrl}>{t('Results')}</Link>
-                            </AcmSecondaryNavItem>
-                        </AcmSecondaryNav>
-                    }
-                    description={getPolicyDetailSourceLabel(selectedPolicy, helmReleases, channels, subscriptions, t)}
-                    actions={
-                        <AcmActionGroup>
-                            {[
-                                <RbacDropdown<Policy>
-                                    id={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
-                                    key={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
-                                    item={selectedPolicy}
-                                    isKebab={false}
-                                    text={t('actions')}
-                                    actions={actions}
-                                />,
-                            ]}
-                        </AcmActionGroup>
-                    }
-                />
-            }
-        >
-            <Suspense fallback={<Fragment />}>
-                <Switch>
-                    <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
-                    <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
-                </Switch>
-            </Suspense>
-        </AcmPage>
+        <div>
+            {modal !== undefined && modal}
+            <AcmPage
+                hasDrawer
+                header={
+                    <AcmPageHeader
+                        title={policyName ?? 'Policy details'}
+                        breadcrumb={[
+                            { text: t('Policies'), to: NavigationPath.policies },
+                            { text: policyName ?? t('Policy details'), to: '' },
+                        ]}
+                        popoverAutoWidth={false}
+                        popoverPosition="bottom"
+                        navigation={
+                            <AcmSecondaryNav>
+                                <AcmSecondaryNavItem isActive={!isResultsTab}>
+                                    <Link to={detailsUrl}>{t('Details')}</Link>
+                                </AcmSecondaryNavItem>
+                                <AcmSecondaryNavItem isActive={isResultsTab}>
+                                    <Link to={resultsUrl}>{t('Results')}</Link>
+                                </AcmSecondaryNavItem>
+                            </AcmSecondaryNav>
+                        }
+                        description={getPolicyDetailSourceLabel(
+                            selectedPolicy,
+                            helmReleases,
+                            channels,
+                            subscriptions,
+                            t
+                        )}
+                        actions={
+                            <AcmActionGroup>
+                                {[
+                                    <PolicyActionDropdown
+                                        key={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
+                                        setModal={setModal}
+                                        item={tableItem}
+                                        isKebab={true}
+                                    />,
+                                ]}
+                            </AcmActionGroup>
+                        }
+                    />
+                }
+            >
+                <Suspense fallback={<Fragment />}>
+                    <Switch>
+                        <Route
+                            exact
+                            path={detailsUrl}
+                            render={() => <PolicyDetailsOverview policy={selectedPolicy} />}
+                        />
+                        <Route
+                            exact
+                            path={resultsUrl}
+                            render={() => <PolicyDetailsResults policy={selectedPolicy} />}
+                        />
+                    </Switch>
+                </Suspense>
+            </AcmPage>
+        </div>
     )
 }
