@@ -35,9 +35,8 @@ export function DistributionField(props: {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState, nodePoolsState } = useSharedAtoms()
+    const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-    const [nodePools] = useRecoilState(nodePoolsState)
     const [agents] = useRecoilState(agentsState)
     const [agentMachines] = useRecoilState(agentMachinesState)
     const { waitForAll } = useSharedRecoil()
@@ -47,11 +46,6 @@ export function DistributionField(props: {
         namespace: props.cluster?.namespace,
     })
 
-    const clusterNodePools = nodePools.filter(
-        (np) =>
-            np.metadata.namespace === props.cluster?.hypershift?.hostingNamespace &&
-            np.spec.clusterName === props.cluster?.name
-    )
     const openshiftText = 'OpenShift'
 
     const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
@@ -99,6 +93,23 @@ export function DistributionField(props: {
         props.cluster?.isHostedCluster,
         props.cluster?.isHypershift,
     ])
+
+    const nodepoolsHasUpdates: boolean = useMemo(() => {
+        let updateAvailable = false
+        if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
+            for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
+                if (
+                    props.cluster?.hypershift?.nodePools[i].status.version <
+                    (props.cluster.distribution?.ocp?.version || '')
+                ) {
+                    updateAvailable = true
+                    break
+                }
+            }
+        }
+
+        return updateAvailable
+    }, [props.cluster?.distribution?.ocp?.version, props.cluster?.hypershift?.nodePools])
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
@@ -303,7 +314,7 @@ export function DistributionField(props: {
         )
     } else if (
         (props.cluster?.isHostedCluster || props.cluster?.isHypershift) &&
-        Object.keys(hypershiftAvailableUpdates).length > 0
+        (Object.keys(hypershiftAvailableUpdates).length > 0 || nodepoolsHasUpdates)
     ) {
         // UPGRADE AVAILABLE HYPERSHIFT
         return (
@@ -330,7 +341,7 @@ export function DistributionField(props: {
                     </RbacButton>
                     <HypershiftUpgradeModal
                         controlPlane={props.cluster}
-                        nodepools={clusterNodePools}
+                        nodepools={props.cluster.hypershift?.nodePools as NodePool[]}
                         open={open}
                         close={toggle}
                         availableUpdates={hypershiftAvailableUpdates}

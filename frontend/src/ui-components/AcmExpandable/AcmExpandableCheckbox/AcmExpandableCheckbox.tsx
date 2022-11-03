@@ -15,10 +15,12 @@ export function AcmExpandableCheckbox(props: {
     additionalLabels?: string[] | Record<string, string>
     isDisabled?: boolean
     expandable?: boolean
+    id?: string
 }) {
     return (
         <div>
             <button
+                id={`${props.id}-toggle` || ''}
                 style={{ border: '0px', backgroundColor: 'white', visibility: props.expandable ? 'visible' : 'hidden' }}
                 onClick={() => props.onToggle(props.expanded)}
             >
@@ -28,8 +30,8 @@ export function AcmExpandableCheckbox(props: {
             <span style={{ paddingRight: '10px' }}>
                 <Checkbox
                     isChecked={props.checked}
-                    id="nodepoolgroup-checkbox"
-                    name="nodepools"
+                    id={`${props.id}-checkbox` || ''}
+                    name={`${props.id}-checkbox` || ''}
                     onChange={() => props.onCheck(props.checked)}
                     isDisabled={props.isDisabled}
                 />

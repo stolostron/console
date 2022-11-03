@@ -550,6 +550,7 @@ export function HypershiftUpgradeModal(props: {
                                                     onCheck={() => handleNodepoolGroupChecked()}
                                                     isDisabled={nodepoolGroupDisabled}
                                                     expandable={true}
+                                                    id="nodepoolgroup"
                                                 >
                                                     <TableComposable
                                                         aria-label={t('Hypershift upgrade nodepools table')}
@@ -590,6 +591,7 @@ export function HypershiftUpgradeModal(props: {
                                                                                 expandable={
                                                                                     props.controlPlane.hypershift?.agent
                                                                                 }
+                                                                                id={np.metadata.name}
                                                                             >
                                                                                 {props.controlPlane.hypershift?.agent &&
                                                                                     getNodepoolAgents(
