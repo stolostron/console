@@ -278,6 +278,13 @@
                         {
                             "name": "recoil",
                             "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
+                        },
+                        {
+                            "name": "@patternfly/react-core",
+                            "importNames": [
+                                "Truncate"
+                            ],
+                            "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead"
                         }
                     ],
                     "patterns": [
