@@ -217,6 +217,7 @@ const mockCluster: Cluster = {
     owner: {},
     kubeadmin: '',
     kubeconfig: '',
+    isRegionalHubCluster: false,
 }
 
 const mockBMCluster: Cluster = {
@@ -252,6 +253,7 @@ const mockBMCluster: Cluster = {
     isCurator: false,
     isHostedCluster: false,
     isSNOCluster: false,
+    isRegionalHubCluster: false,
     hive: {
         isHibernatable: false,
         secrets: {},

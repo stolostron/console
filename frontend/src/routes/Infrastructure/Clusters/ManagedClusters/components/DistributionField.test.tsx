@@ -722,6 +722,7 @@ describe('DistributionField hypershift clusters', () => {
             owner: {},
             kubeadmin: '',
             kubeconfig: '',
+            isRegionalHubCluster: false,
         }
         const { queryAllByText } = await renderDistributionInfoField(
             mockCluster,
@@ -777,6 +778,7 @@ describe('DistributionField hypershift clusters', () => {
             owner: {},
             kubeadmin: '',
             kubeconfig: '',
+            isRegionalHubCluster: false,
         }
         const { queryAllByText } = await renderDistributionInfoField(
             mockCluster,
@@ -833,6 +835,7 @@ describe('DistributionField hypershift clusters', () => {
             owner: {},
             kubeadmin: '',
             kubeconfig: '',
+            isRegionalHubCluster: false,
         }
         const { queryAllByText } = await renderDistributionInfoField(
             mockCluster,
@@ -889,6 +892,7 @@ describe('DistributionField hypershift clusters', () => {
             owner: {},
             kubeadmin: '',
             kubeconfig: '',
+            isRegionalHubCluster: false,
         }
 
         const { queryAllByText } = await renderDistributionInfoField(
