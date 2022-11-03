@@ -164,8 +164,8 @@ export default function SavedSearchQueries(props: {
                                 key={index}
                                 cardHeader={{
                                     hasIcon: true,
-                                    title: query.name,
-                                    description: query.description,
+                                    title: t(query.name),
+                                    description: t(query.description),
                                     actions: [
                                         {
                                             text: t('Share'),
