@@ -21,7 +21,7 @@ module.exports = {
         '\\.(css|less)$': 'jest-raw-loader',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard)',
+        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard|@patternfly/react-tokens)',
     ],
     coverageDirectory: './coverage',
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
