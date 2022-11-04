@@ -6,7 +6,7 @@ import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
-import { ClusterPoolInfrastructureType } from './CreateClusterPool'
+import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 export function CreateClusterPoolInfrastructure() {
     const [t] = useTranslation()
@@ -34,10 +34,13 @@ export function CreateClusterPoolInfrastructure() {
     )
 
     const cards = useMemo(() => {
-        const getSearchWithInfrastructureType = (infrastructureType: ClusterPoolInfrastructureType) => {
+        const getTypedCreateClusterPoolPath = (infrastructureType: ClusterPoolInfrastructureType) => {
             const urlParams = new URLSearchParams(search)
-            urlParams.append('infrastructureType', infrastructureType)
-            return urlParams.toString()
+            urlParams.append(CLUSTER_POOL_INFRA_TYPE_PARAM, infrastructureType)
+            return {
+                pathname: NavigationPath.createClusterPool,
+                search: urlParams.toString(),
+            }
         }
 
         const newCards: ICatalogCard[] = [
@@ -52,10 +55,7 @@ export function CreateClusterPoolInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.aws),
-                onClick: nextStep({
-                    pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(Provider.aws),
-                }),
+                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.aws)),
             },
             {
                 id: 'google',
@@ -70,10 +70,7 @@ export function CreateClusterPoolInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.gcp),
-                onClick: nextStep({
-                    pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(Provider.gcp),
-                }),
+                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.gcp)),
             },
             {
                 id: 'azure',
@@ -86,10 +83,7 @@ export function CreateClusterPoolInfrastructure() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.azure),
-                onClick: nextStep({
-                    pathname: NavigationPath.createClusterPool,
-                    search: getSearchWithInfrastructureType(Provider.azure),
-                }),
+                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.azure)),
             },
         ]
         return newCards

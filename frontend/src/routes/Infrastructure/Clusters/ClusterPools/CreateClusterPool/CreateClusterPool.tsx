@@ -38,6 +38,7 @@ import { Secret } from '../../../../../resources'
 import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
+import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -51,13 +52,6 @@ const Portals = Object.freeze({
 })
 
 Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
-
-const clusterPoolInfrastructureTypes = [Provider.aws, Provider.azure, Provider.gcp] as const
-export type ClusterPoolInfrastructureType = typeof clusterPoolInfrastructureTypes[number]
-export const isClusterPoolInfrastructureType = (
-    infrastructureType: string
-): infrastructureType is ClusterPoolInfrastructureType =>
-    (clusterPoolInfrastructureTypes as unknown as string[]).includes(infrastructureType)
 
 export default function CreateClusterPool(props: { infrastructureType: ClusterPoolInfrastructureType }) {
     const { t } = useTranslation()

@@ -6,11 +6,11 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
-import { CredentialsType } from './CredentialsForm'
+import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
 
-const getTypedCredentialsPath = (type: CredentialsType): LocationDescriptor<BackCancelState> => ({
+const getTypedAddCredentialsPath = (type: CredentialsType): LocationDescriptor<BackCancelState> => ({
     pathname: NavigationPath.addCredentials,
-    search: `?credentialsType=${type}`,
+    search: `?${CREDENTIALS_TYPE_PARAM}=${type}`,
 })
 
 const orderedProviders = [
@@ -35,7 +35,7 @@ export function CreateCredentialsType() {
                 id: provider,
                 icon: <AcmIcon icon={ProviderIconMap[provider]} />,
                 title: ProviderLongTextMap[provider],
-                onClick: nextStep(getTypedCredentialsPath(provider)),
+                onClick: nextStep(getTypedAddCredentialsPath(provider)),
             })),
         ]
         return newCards

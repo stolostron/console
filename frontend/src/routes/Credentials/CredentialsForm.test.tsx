@@ -22,7 +22,8 @@ import {
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { CredentialsType, CreateCredentialsFormPage } from './CredentialsForm'
+import { CreateCredentialsFormPage } from './CredentialsForm'
+import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({

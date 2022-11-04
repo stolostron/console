@@ -2,13 +2,14 @@
 
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { CreateCredentialsFormPage, isCredentialsType } from './CredentialsForm'
+import { CreateCredentialsFormPage } from './CredentialsForm'
+import { CREDENTIALS_TYPE_PARAM, isCredentialsType } from './CredentialsType'
 import { CreateCredentialsType } from './CreateCredentialsType'
 
 export function CreateCredentialsPage() {
     const { search } = useLocation()
     const searchParams = useMemo(() => new URLSearchParams(search), [search])
-    const credentialsType = (searchParams.get('credentialsType') || '').toLowerCase()
+    const credentialsType = (searchParams.get(CREDENTIALS_TYPE_PARAM) || '').toLowerCase()
     return isCredentialsType(credentialsType) ? (
         <CreateCredentialsFormPage credentialsType={credentialsType} />
     ) : (

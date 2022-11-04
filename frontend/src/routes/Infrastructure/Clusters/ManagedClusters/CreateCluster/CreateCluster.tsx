@@ -49,9 +49,14 @@ import getControlDataRHV from './controlData/ControlDataRHV'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataAI from './controlData/ControlDataAI'
-import { CredentialsForm, CredentialsType } from '../../../../Credentials/CredentialsForm'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
 import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import {
+    ClusterInfrastructureType,
+    HostInventoryInfrastructureType,
+    getCredentialsTypeForClusterInfrastructureType,
+} from '../ClusterInfrastructureType'
 
 const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
@@ -73,37 +78,6 @@ const useStyles = makeStyles({
         },
     },
 })
-
-export enum HostInventoryInfrastructureType {
-    CIMHypershift = 'cimhypershift',
-    CIM = 'cim',
-    AI = 'ai',
-}
-const isHostInventoryInfrastructureType = (
-    infrastructureType: string
-): infrastructureType is HostInventoryInfrastructureType =>
-    infrastructureType in Object.values(HostInventoryInfrastructureType)
-const clusterInfrastructureTypes = [
-    Provider.aws,
-    Provider.azure,
-    Provider.gcp,
-    Provider.vmware,
-    Provider.openstack,
-    Provider.redhatvirtualization,
-    HostInventoryInfrastructureType.CIMHypershift,
-    HostInventoryInfrastructureType.CIM,
-    HostInventoryInfrastructureType.AI,
-] as const
-export type ClusterInfrastructureType = typeof clusterInfrastructureTypes[number]
-export const isClusterInfrastructureType = (
-    infrastructureType: string
-): infrastructureType is ClusterInfrastructureType =>
-    (clusterInfrastructureTypes as unknown as string[]).includes(infrastructureType)
-
-export const getCredentialsTypeForClusterInfrastructureType = (
-    infrastructureType: ClusterInfrastructureType
-): CredentialsType =>
-    isHostInventoryInfrastructureType(infrastructureType) ? Provider.hostinventory : infrastructureType
 
 export default function CreateCluster(props: { infrastructureType: ClusterInfrastructureType }) {
     const { infrastructureType } = props

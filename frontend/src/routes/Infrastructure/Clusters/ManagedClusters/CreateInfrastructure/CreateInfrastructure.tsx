@@ -3,10 +3,11 @@ import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader }
 import { Fragment, useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
+import { AcmIcon, AcmIconVariant, Provider, ProviderIconMap, ProviderLongTextMap } from '../../../../../ui-components'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 
 export function CreateInfrastructure() {
     const [t] = useTranslation()
@@ -34,56 +35,39 @@ export function CreateInfrastructure() {
     )
 
     const cards = useMemo(() => {
+        const getProviderCard = (
+            id: string,
+            provider: Provider & ClusterInfrastructureType,
+            description: string
+        ): ICatalogCard => ({
+            id,
+            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+            title: ProviderLongTextMap[provider],
+            items: [
+                {
+                    type: CatalogCardItemType.Description,
+                    description,
+                },
+            ],
+            labels: getCredentialLabels(provider),
+            onClick: nextStep(getTypedCreateClusterPath(provider)),
+        })
         const newCards: ICatalogCard[] = [
-            {
-                id: 'aws',
-                icon: <AcmIcon icon={AcmIconVariant.aws} />,
-                title: t('Amazon Web Services'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster that is running in your AWS subscription.'),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.aws),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=AWS',
-                }),
-            },
-            // {
-            //     id: 'alibaba',
-            //     icon: <AcmIcon icon={AcmIconVariant.alibaba} />,
-            //     title: t('Alibaba'),
-            //     items: [
-            //         {
-            //             type: CatalogCardItemType.Description,
-            //             description: t(
-            //                 'An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.'
-            //             ),
-            //         },
-            //     ],
-            //     labels: getCredentialLabels(Provider.alibaba),
-            //     // onClick: () => nextStep(NavigationPath.clusters),
-            // },
-            {
-                id: 'google',
-                icon: <AcmIcon icon={AcmIconVariant.gcp} />,
-                title: t('Google Cloud'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'A Red Hat OpenShift cluster that is running in your Google Cloud subscription.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.gcp),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=GCP',
-                }),
-            },
+            getProviderCard(
+                'aws',
+                Provider.aws,
+                t('A Red Hat OpenShift cluster that is running in your AWS subscription.')
+            ),
+            // getProviderCard(
+            //     'alibaba',
+            //     Provider.alibaba,
+            //     /*t*/('An OpenShift cluster running in your ALIBABA subscription that uses the ACM multicloud API.')
+            // ),
+            getProviderCard(
+                'google',
+                Provider.gcp,
+                t('A Red Hat OpenShift cluster that is running in your Google Cloud subscription.')
+            ),
             {
                 id: 'hostinventory',
                 icon: <AcmIcon icon={AcmIconVariant.hybrid} />,
@@ -112,76 +96,32 @@ export function CreateInfrastructure() {
                     </>
                 ),
             },
-            {
-                id: 'azure',
-                icon: <AcmIcon icon={AcmIconVariant.azure} />,
-                title: t('Microsoft Azure'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.azure),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=Azure',
-                }),
-            },
-            {
-                id: 'openstack',
-                icon: <AcmIcon icon={AcmIconVariant.redhat} />,
-                title: t('Red Hat OpenStack Platform'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenStack Platform in your on-premise data center.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.openstack),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=OpenStack',
-                }),
-            },
-            {
-                id: 'rhv',
-                icon: <AcmIcon icon={AcmIconVariant.redhat} />,
-                title: t('Red Hat Virtualization'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.redhatvirtualization),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=RHV',
-                }),
-            },
-            {
-                id: 'vsphere',
-                icon: <AcmIcon icon={AcmIconVariant.vmware} />,
-                title: t('VMware vSphere'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.vmware),
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=vSphere',
-                }),
-            },
+            getProviderCard(
+                'azure',
+                Provider.azure,
+                t('A Red Hat OpenShift cluster that is running in your Azure subscription.')
+            ),
+            getProviderCard(
+                'openstack',
+                Provider.openstack,
+                t(
+                    'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenStack Platform in your on-premise data center.'
+                )
+            ),
+            getProviderCard(
+                'rhv',
+                Provider.redhatvirtualization,
+                t(
+                    'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
+                )
+            ),
+            getProviderCard(
+                'vsphere',
+                Provider.vmware,
+                t(
+                    'A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.'
+                )
+            ),
         ]
         return newCards
     }, [nextStep, getCredentialLabels, clusterImageSets.length, t])

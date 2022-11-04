@@ -49,22 +49,7 @@ import {
     unpackProviderConnection,
 } from '../../resources'
 import schema from './schema.json'
-
-const credentialsTypes = [
-    Provider.ansible,
-    Provider.aws,
-    Provider.azure,
-    Provider.gcp,
-    Provider.hostinventory,
-    Provider.hybrid,
-    Provider.openstack,
-    Provider.redhatcloud,
-    Provider.redhatvirtualization,
-    Provider.vmware,
-] as const
-export type CredentialsType = typeof credentialsTypes[number]
-export const isCredentialsType = (credentialsType: string): credentialsType is CredentialsType =>
-    (credentialsTypes as unknown as string[]).includes(credentialsType)
+import { CredentialsType } from './CredentialsType'
 
 type ProviderConnectionOrCredentialsType =
     | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -621,7 +606,7 @@ export function CredentialsForm(
                             { id: CloudNames.AzurePublicCloud, value: CloudNames.AzurePublicCloud },
                             { id: CloudNames.AzureUSGovernmentCloud, value: CloudNames.AzureUSGovernmentCloud },
                         ],
-                        isHidden: credentialsType != Provider.azure,
+                        isHidden: credentialsType !== Provider.azure,
                     },
                 ],
             },
