@@ -28,27 +28,27 @@ describe('CreateInfrastructure credential', () => {
 
     test('can select google', async () => {
         render(<Component />)
-        await clickByTestId('gcp')
+        await clickByTestId('google')
     })
 
     test('can select azure', async () => {
         render(<Component />)
-        await clickByTestId('azr')
+        await clickByTestId('azure')
     })
 
     test('can select openstack', async () => {
         render(<Component />)
-        await clickByTestId('ost')
+        await clickByTestId('openstack')
     })
 
     test('can select rhv', async () => {
         render(<Component />)
-        await clickByTestId('redhatvirtualization')
+        await clickByTestId('rhv')
     })
 
     test('can select vsphere', async () => {
         render(<Component />)
-        await clickByTestId('vmw')
+        await clickByTestId('vsphere')
     })
 
     test('can select hostinventory', async () => {
@@ -58,12 +58,12 @@ describe('CreateInfrastructure credential', () => {
 
     test('can select ansible', async () => {
         render(<Component />)
-        await clickByTestId('ans')
+        await clickByTestId('ansible')
     })
 
     test('can select redhatcloud', async () => {
         render(<Component />)
-        await clickByTestId('rhocm')
+        await clickByTestId('redhatcloud')
     })
 
     test('can click cancel', async () => {
@@ -74,7 +74,6 @@ describe('CreateInfrastructure credential', () => {
             })
         )
     })
-
     test('can click back', async () => {
         render(<Component />)
         userEvent.click(

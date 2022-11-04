@@ -13,17 +13,17 @@ const getTypedAddCredentialsPath = (type: CredentialsType): LocationDescriptor<B
     search: `?${CREDENTIALS_TYPE_PARAM}=${type}`,
 })
 
-const orderedProviders = [
-    Provider.aws,
-    Provider.azure,
-    Provider.gcp,
-    Provider.openstack,
-    Provider.redhatvirtualization,
-    Provider.vmware,
-    Provider.hostinventory,
-    Provider.ansible,
-    Provider.redhatcloud,
-] as const
+const orderedProviders: [provider: CredentialsType, id?: string][] = [
+    [Provider.aws],
+    [Provider.azure, 'azure'],
+    [Provider.gcp, 'google'],
+    [Provider.openstack, 'openstack'],
+    [Provider.redhatvirtualization, 'rhv'],
+    [Provider.vmware, 'vsphere'],
+    [Provider.hostinventory],
+    [Provider.ansible, 'ansible'],
+    [Provider.redhatcloud, 'redhatcloud'],
+]
 
 export function CreateCredentialsType() {
     const [t] = useTranslation()
@@ -31,8 +31,8 @@ export function CreateCredentialsType() {
 
     const cards = useMemo(() => {
         const newCards: ICatalogCard[] = [
-            ...orderedProviders.map((provider) => ({
-                id: provider,
+            ...orderedProviders.map(([provider, id]) => ({
+                id: id || provider,
                 icon: <AcmIcon icon={ProviderIconMap[provider]} />,
                 title: ProviderLongTextMap[provider],
                 onClick: nextStep(getTypedAddCredentialsPath(provider)),
