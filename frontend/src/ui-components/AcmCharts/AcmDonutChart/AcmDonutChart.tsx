@@ -116,6 +116,7 @@ export function AcmDonutChart(props: {
                     legendPosition="right"
                     constrainToVisibleArea={true}
                     data={chartData}
+                    hasPatterns={true}
                     legendData={legendData}
                     legendComponent={buildLegendWithLinks(legendData, props.colorScale)}
                     labels={({ datum }) => `${datum.x}: ${((datum.y / total) * 100).toFixed(2)}%`}

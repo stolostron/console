@@ -103,6 +103,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
             legendPosition="right"
             constrainToVisibleArea={true}
             data={chartData}
+            hasPatterns={true}
             legendData={legendData}
             legendComponent={
                 <ChartLegend

@@ -71,6 +71,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                 legendPosition="right"
                 // constrainToVisibleArea={true}
                 data={chartData}
+                hasPatterns={true}
                 legendComponent={
                     <ChartLegend
                         data={legendData}
