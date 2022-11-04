@@ -1501,23 +1501,21 @@ export function CreateDetailsLink(item: any) {
 }
 
 export function CreateApplicationTopologyLink(item: any) {
-    const { t } = useTranslation()
     if (item.apiversion && item.apigroup) {
         const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
         const link = `${NavigationPath.applicationTopology
             .replace(':namespace', item.namespace)
             .replace(':name', item.name)}?apiVersion=${apiversion}`
-        return <a href={link}>{t('View topology')}</a>
+        return <a href={link}>{'View topology'}</a>
     }
     return '-'
 }
 
 export function CreateExternalLink(item: any) {
-    const { t } = useTranslation()
     if (item.consoleURL) {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${item.consoleURL}`}>
-                {t('Launch')}
+                {'Launch'}
             </a>
         )
     } else if (item.clusterip) {
