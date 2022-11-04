@@ -80,7 +80,7 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
 
 function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
     // TODO: handle sub-resources?
-    let resourceNames: Record<string, APIResourceNames> = {}
+    const resourceNames: Record<string, APIResourceNames> = {}
     apiResourcePathResponse.forEach((resourceList) => {
         const resourceKindMap: { [key: string]: APIResourceMeta } = {}
         const groupVersion = resourceList.groupVersion
