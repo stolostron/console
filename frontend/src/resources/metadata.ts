@@ -15,7 +15,7 @@ export interface Metadata {
     managedFields?: any[]
 }
 
-interface OwnerReference {
+export interface OwnerReference {
     apiVersion: string
     blockOwnerDeletion?: boolean
     controller?: boolean

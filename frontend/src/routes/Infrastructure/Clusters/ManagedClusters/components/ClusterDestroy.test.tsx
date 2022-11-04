@@ -40,6 +40,7 @@ const mockDestroyCluster: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockDetachCluster: Cluster = {
@@ -74,6 +75,7 @@ const mockDetachCluster: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 describe('ClusterDestroy', () => {

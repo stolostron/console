@@ -157,7 +157,6 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/configure': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/username': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/mchVersion': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,

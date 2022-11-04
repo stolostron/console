@@ -62,6 +62,7 @@ const mockCluster: Cluster = {
     kubeadmin: undefined,
     kubeconfig: undefined,
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 function rbacPatchManagedCluster() {

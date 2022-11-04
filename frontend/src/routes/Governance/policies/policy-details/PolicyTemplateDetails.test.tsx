@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { nockGet } from '../../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../../lib/test-util'
-import { PolicyTemplateDetails } from './PolicyTemplateDetails'
-import { screen } from '@testing-library/react'
 import { ManagedClusterAddOn } from '../../../../resources'
+import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 
 jest.mock('../../../../components/YamlEditor', () => {
     // TODO replace with actual YAML Page when Monaco editor is imported correctly
@@ -244,7 +243,7 @@ describe('Policy Template Details content', () => {
         )
         const viewYamlLink = screen.getByText('View yaml')
         expect(viewYamlLink.getAttribute('href')).toEqual(
-            `/multicloud/home/search/resources?cluster=${clusterName}&kind=namespace&apiversion=v1&name=test`
+            `/multicloud/home/search/resources/yaml?cluster=${clusterName}&kind=namespace&apiversion=v1&name=test`
         )
     })
 })
