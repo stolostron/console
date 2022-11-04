@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as React from 'react'
+import { useContext, useState } from 'react'
 import { ExpandableSectionToggle, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -8,6 +8,8 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import ConditionsTable from './ConditionsTable'
 import { AcmButton } from '../../../../../ui-components'
 import './HypershiftClusterInstallProgress.css'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { DistributionField } from './DistributionField'
 
 type HostedClusterProgressProps = {
     hostedCluster: HostedClusterK8sResource
@@ -16,7 +18,8 @@ type HostedClusterProgressProps = {
 
 const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProgressProps) => {
     const { t } = useTranslation()
-    const [isExpanded, setExpanded] = React.useState(true)
+    const { cluster } = useContext(ClusterContext)
+    const [isExpanded, setExpanded] = useState(true)
 
     const hostedClusterAvailable =
         hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
@@ -35,6 +38,13 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
                 </StackItem>
                 {isExpanded && (
                     <>
+                        <StackItem className="nodepool-progress-item__body">
+                            <DistributionField
+                                cluster={cluster}
+                                clusterCurator={undefined}
+                                hostedCluster={hostedCluster}
+                            />
+                        </StackItem>
                         <StackItem className="nodepool-progress-item__body">
                             <ConditionsTable conditions={hostedCluster?.status?.conditions} />
                         </StackItem>

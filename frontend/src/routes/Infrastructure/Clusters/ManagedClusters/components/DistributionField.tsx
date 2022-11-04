@@ -8,33 +8,109 @@ import {
     ClusterStatus,
     CuratorCondition,
     getLatestAnsibleJob,
+    NodePool,
 } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
 
 const { getVersionFromReleaseImage } = CIM
 
-export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
+export function DistributionField(props: {
+    cluster?: Cluster
+    clusterCurator?: ClusterCurator | undefined
+    nodepool?: NodePool
+    hostedCluster?: HostedClusterK8sResource
+}) {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const { ansibleJobState, clusterImageSetsState } = useSharedAtoms()
+    const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const [agents] = useRecoilState(agentsState)
+    const [agentMachines] = useRecoilState(agentMachinesState)
     const { waitForAll } = useSharedRecoil()
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const agentClusterInstall = useAgentClusterInstall({
         name: props.cluster?.name,
         namespace: props.cluster?.namespace,
     })
+
+    const openshiftText = 'OpenShift'
+
+    const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
+        const currentVersionParts = currentVersion.split('.')
+        const newVersionParts = newVersion.split('.')
+
+        if (newVersionParts[0] !== currentVersionParts[0]) {
+            return false
+        }
+
+        if (
+            newVersionParts[0] === currentVersionParts[0] &&
+            Number(newVersionParts[1]) > Number(currentVersionParts[1])
+        ) {
+            return true
+        }
+
+        if (
+            newVersionParts[0] === currentVersionParts[0] &&
+            Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
+            Number(newVersionParts[2]) > Number(currentVersionParts[2])
+        ) {
+            return true
+        }
+
+        return false
+    }
+
+    const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
+        if (!(props.cluster?.isHypershift || props.cluster?.isHostedCluster)) {
+            return {}
+        }
+        const updates: any = {}
+        clusterImageSets.forEach((cis) => {
+            const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
+            if (isUpdateVersionAcceptable(props.cluster?.distribution?.ocp?.version || '', releaseImageVersion)) {
+                updates[releaseImageVersion] = cis.spec?.releaseImage
+            }
+        })
+
+        return updates
+    }, [
+        clusterImageSets,
+        props.cluster?.distribution?.ocp?.version,
+        props.cluster?.isHostedCluster,
+        props.cluster?.isHypershift,
+    ])
+
+    const nodepoolsHasUpdates: boolean = useMemo(() => {
+        let updateAvailable = false
+        if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
+            for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
+                if (
+                    props.cluster?.hypershift?.nodePools[i].status.version <
+                    (props.cluster.distribution?.ocp?.version || '')
+                ) {
+                    updateAvailable = true
+                    break
+                }
+            }
+        }
+
+        return updateAvailable
+    }, [props.cluster?.distribution?.ocp?.version, props.cluster?.hypershift?.nodePools])
+
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
         latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
@@ -49,7 +125,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
             const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
 
             if (version) {
-                return <>{version ? `OpenShift ${version}` : '-'}</>
+                return <>{version ? `${openshiftText} ${version}` : '-'}</>
             }
         }
         return <>-</>
@@ -233,6 +309,46 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                         {t('upgrade.available')}
                     </RbacButton>
                     <BatchUpgradeModal clusters={[props.cluster]} open={open} close={toggle} />
+                </span>
+            </>
+        )
+    } else if (
+        (props.cluster?.isHostedCluster || props.cluster?.isHypershift) &&
+        (Object.keys(hypershiftAvailableUpdates).length > 0 || nodepoolsHasUpdates)
+    ) {
+        // UPGRADE AVAILABLE HYPERSHIFT
+        return (
+            <>
+                {props.nodepool ? (
+                    <div>
+                        {openshiftText} {props.nodepool.status?.version}
+                    </div>
+                ) : (
+                    <div>{props.cluster?.distribution?.displayVersion}</div>
+                )}
+                <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+                    <RbacButton
+                        onClick={toggle}
+                        icon={<ArrowCircleUpIcon />}
+                        variant={ButtonVariant.link}
+                        style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                        rbac={[
+                            rbacCreate(ClusterCuratorDefinition, props.cluster?.namespace),
+                            rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
+                        ]}
+                    >
+                        {t('upgrade.available')}
+                    </RbacButton>
+                    <HypershiftUpgradeModal
+                        controlPlane={props.cluster}
+                        nodepools={props.cluster.hypershift?.nodePools as NodePool[]}
+                        open={open}
+                        close={toggle}
+                        availableUpdates={hypershiftAvailableUpdates}
+                        agents={agents}
+                        agentMachines={agentMachines}
+                        hostedCluster={props.hostedCluster}
+                    />
                 </span>
             </>
         )

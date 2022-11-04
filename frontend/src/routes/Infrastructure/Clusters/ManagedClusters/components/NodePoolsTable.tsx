@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Stack, StackItem } from '@patternfly/react-core'
-import { CheckCircleIcon, InProgressIcon, PlusCircleIcon } from '@patternfly/react-icons'
-import { useCallback, useMemo } from 'react'
+import { ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
+import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
+import { useCallback, useContext, useMemo } from 'react'
 import { ClusterImageSetK8sResource, ConfigMapK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { AcmTable, IAcmTableColumn } from '../../../../../ui-components'
 import { NodePool } from '../../../../../resources'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { DistributionField } from './DistributionField'
 
 type NodePoolsTableProps = {
     nodePools: NodePool[]
@@ -27,6 +29,7 @@ type NodePoolsTableProps = {
 
 const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
     const { t } = useTranslation()
+    const { cluster } = useContext(ClusterContext)
 
     const getNodepoolStatus = useCallback((nodepool: NodePool) => {
         const conditions = nodepool.status?.conditions || []
@@ -97,6 +100,12 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
                 cell: (nodepool) => renderNodepoolStatus(nodepool),
             },
             {
+                header: t('table.distribution'),
+                sort: 'status.version',
+                search: 'status.version',
+                cell: (nodepool) => <DistributionField cluster={cluster} nodepool={nodepool} />,
+            },
+            {
                 header: t('Subnet'),
                 sort: 'spec.platform.aws.subnet.id',
                 search: 'spec.platform.aws.subnet.id',
@@ -133,7 +142,7 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
                 cell: (nodepool) => getAutoscaling(nodepool),
             },
         ],
-        [renderNodepoolStatus, renderHealthCheck, getAutoscaling, t]
+        [renderNodepoolStatus, renderHealthCheck, getAutoscaling, t, cluster]
     )
 
     const keyFn = useCallback(
@@ -169,12 +178,17 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
                         columns={columns}
                         keyFn={keyFn}
                         items={transformedNodepoolItems}
+                        tableActionButtons={[
+                            {
+                                id: 'addNodepool',
+                                title: t('Add nodepool'),
+                                click: () => {},
+                                isDisabled: false,
+                                tooltip: t('rbac.unauthorized'),
+                                variant: ButtonVariant.primary,
+                            },
+                        ]}
                     />
-                </StackItem>
-                <StackItem>
-                    <Button variant="link" icon={<PlusCircleIcon />} iconPosition="right" onClick={undefined}>
-                        {t('Add Nodepool')}
-                    </Button>
                 </StackItem>
             </Stack>
         </>

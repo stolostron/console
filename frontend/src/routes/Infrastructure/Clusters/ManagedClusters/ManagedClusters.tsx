@@ -48,6 +48,7 @@ import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 
 export default function ManagedClusters() {
@@ -149,8 +150,9 @@ export function ClustersTable(props: {
         sessionStorage.removeItem('DiscoveredClusterConsoleURL')
         sessionStorage.removeItem('DiscoveredClusterApiURL')
     }, [])
-    const { clusterCuratorsState } = useSharedAtoms()
+    const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
+    const [hostedClusters] = useRecoilState(hostedClustersState)
 
     const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
@@ -168,7 +170,7 @@ export function ClustersTable(props: {
     const clusterStatusColumn = useClusterStatusColumn()
     const clusterProviderColumn = useClusterProviderColumn()
     const clusterControlPlaneColumn = useClusterControlPlaneColumn()
-    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
+    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
     const clusterLabelsColumn = useClusterLabelsColumn()
     const clusterNodesColumn = useClusterNodesColumn()
     const clusterCreatedDataColumn = useClusterCreatedDateColumn()
@@ -502,7 +504,10 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
     }
 }
 
-export function useClusterDistributionColumn(clusterCurators: ClusterCurator[]): IAcmTableColumn<Cluster> {
+export function useClusterDistributionColumn(
+    clusterCurators: ClusterCurator[],
+    hostedClusters: HostedClusterK8sResource[]
+): IAcmTableColumn<Cluster> {
     const { t } = useTranslation()
     return {
         header: t('table.distribution'),
@@ -512,6 +517,9 @@ export function useClusterDistributionColumn(clusterCurators: ClusterCurator[]):
             <DistributionField
                 cluster={cluster}
                 clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
+                hostedCluster={hostedClusters.find(
+                    (hc) => cluster.namespace === hc.metadata.namespace && cluster.name === hc.metadata.name
+                )}
             />
         ),
     }
