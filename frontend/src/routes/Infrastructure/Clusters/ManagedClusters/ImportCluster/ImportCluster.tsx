@@ -522,12 +522,12 @@ export default function ImportClusterPage() {
                     <Section
                         label={t('Automation')}
                         description={
-                            !isOperatorInstalled && (
-                                <>
-                                    <div className={classes.description}>{t('template.clusterImport.info')}</div>
+                            <>
+                                <div className={classes.description}>{t('template.clusterImport.info')}</div>
+                                {!isOperatorInstalled && (
                                     <Hint>{getOperatorError(configMaps, isOperatorInstalled, t)}</Hint>
-                                </>
-                            )
+                                )}
+                            </>
                         }
                         autohide={false}
                     >
