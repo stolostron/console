@@ -8,7 +8,7 @@ import { clickByTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateCredentialsPage } from './CreateCredentials'
 
-describe('CreateInfrastructure credential', () => {
+describe('CreateCredentialsPage', () => {
     const Component = () => {
         return (
             <RecoilRoot>

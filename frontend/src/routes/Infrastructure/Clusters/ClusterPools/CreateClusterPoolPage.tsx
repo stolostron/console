@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import CreateClusterPool from './CreateClusterPool/CreateClusterPool'
 import { CLUSTER_POOL_INFRA_TYPE_PARAM, isClusterPoolInfrastructureType } from './ClusterPoolInfrastructureType'
-import { CreateClusterPoolInfrastructure } from './CreateClusterPool/CreateClusterPoolInfrastructure'
+import { CreateClusterPoolCatalog } from './CreateClusterPool/CreateClusterPoolCatalog'
 
 export function CreateClusterPoolPage() {
     const { search } = useLocation()
@@ -13,6 +13,6 @@ export function CreateClusterPoolPage() {
     return isClusterPoolInfrastructureType(infrastructureType) ? (
         <CreateClusterPool infrastructureType={infrastructureType} />
     ) : (
-        <CreateClusterPoolInfrastructure />
+        <CreateClusterPoolCatalog />
     )
 }

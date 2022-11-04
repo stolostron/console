@@ -8,7 +8,7 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
 import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
-export function CreateClusterPoolInfrastructure() {
+export function CreateClusterPoolCatalog() {
     const [t] = useTranslation()
     const { search } = useLocation()
     const { nextStep, back, cancel } = useBackCancelNavigation()

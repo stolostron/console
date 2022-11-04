@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import CreateCluster from './CreateCluster/CreateCluster'
 import { CLUSTER_INFRA_TYPE_PARAM, isClusterInfrastructureType } from './ClusterInfrastructureType'
-import { CreateInfrastructure } from './CreateInfrastructure/CreateInfrastructure'
+import { CreateClusterCatalog } from './CreateClusterCatalog/CreateClusterCatalog'
 
 export function CreateClusterPage() {
     const { search } = useLocation()
@@ -13,6 +13,6 @@ export function CreateClusterPage() {
     return isClusterInfrastructureType(infrastructureType) ? (
         <CreateCluster infrastructureType={infrastructureType} />
     ) : (
-        <CreateInfrastructure />
+        <CreateClusterCatalog />
     )
 }

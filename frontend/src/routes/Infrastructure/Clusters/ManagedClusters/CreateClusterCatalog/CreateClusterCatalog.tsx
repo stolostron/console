@@ -9,7 +9,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 
-export function CreateInfrastructure() {
+export function CreateClusterCatalog() {
     const [t] = useTranslation()
     const { nextStep, back, cancel } = useBackCancelNavigation()
     const { clusterImageSetsState, secretsState } = useSharedAtoms()
