@@ -11,7 +11,7 @@ export enum HostInventoryInfrastructureType {
 const isHostInventoryInfrastructureType = (
     infrastructureType: string
 ): infrastructureType is HostInventoryInfrastructureType =>
-    infrastructureType in Object.values(HostInventoryInfrastructureType)
+    (Object.values(HostInventoryInfrastructureType) as string[]).includes(infrastructureType)
 
 const clusterInfrastructureTypes = [
     Provider.aws,
