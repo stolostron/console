@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmIcon, AcmIconVariant, Provider } from '../../../../../ui-components'
+import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '../../../../../ui-components'
 import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 export function CreateClusterPoolCatalog() {
@@ -43,48 +43,40 @@ export function CreateClusterPoolCatalog() {
             }
         }
 
+        const getProviderCard = (
+            id: string,
+            provider: Provider & ClusterPoolInfrastructureType,
+            description: string
+        ): ICatalogCard => ({
+            id,
+            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+            title: ProviderLongTextMap[provider],
+            items: [
+                {
+                    type: CatalogCardItemType.Description,
+                    description,
+                },
+            ],
+            labels: getCredentialLabels(provider),
+            onClick: nextStep(getTypedCreateClusterPoolPath(provider)),
+        })
+
         const newCards: ICatalogCard[] = [
-            {
-                id: 'aws',
-                icon: <AcmIcon icon={AcmIconVariant.aws} />,
-                title: t('Amazon Web Services'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift clusterpool that is running in your AWS subscription.'),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.aws),
-                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.aws)),
-            },
-            {
-                id: 'google',
-                icon: <AcmIcon icon={AcmIconVariant.gcp} />,
-                title: t('Google Cloud'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t(
-                            'A Red Hat OpenShift clusterpool that is running in your Google Cloud subscription.'
-                        ),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.gcp),
-                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.gcp)),
-            },
-            {
-                id: 'azure',
-                icon: <AcmIcon icon={AcmIconVariant.azure} />,
-                title: t('Microsoft Azure'),
-                items: [
-                    {
-                        type: CatalogCardItemType.Description,
-                        description: t('A Red Hat OpenShift clusterpool that is running in your Azure subscription.'),
-                    },
-                ],
-                labels: getCredentialLabels(Provider.azure),
-                onClick: nextStep(getTypedCreateClusterPoolPath(Provider.azure)),
-            },
+            getProviderCard(
+                'aws',
+                Provider.aws,
+                t('A Red Hat OpenShift clusterpool that is running in your AWS subscription.')
+            ),
+            getProviderCard(
+                'google',
+                Provider.gcp,
+                t('A Red Hat OpenShift clusterpool that is running in your Google Cloud subscription.')
+            ),
+            getProviderCard(
+                'azure',
+                Provider.azure,
+                t('A Red Hat OpenShift clusterpool that is running in your Azure subscription.')
+            ),
         ]
         return newCards
     }, [nextStep, getCredentialLabels, search, t])
