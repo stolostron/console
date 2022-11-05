@@ -1506,12 +1506,9 @@
     "HTTPS proxy": "HTTPS proxy",
     "Hub": "Hub",
     "Hub, Hosted": "Hub, Hosted",
-<<<<<<< HEAD
     "Hypershift upgrade nodepools table": "Hypershift upgrade nodepools table",
     "Hypershift upgrade table": "Hypershift upgrade table",
-=======
     "IAM Policy": "IAM Policy",
->>>>>>> 7a12c276 (add translation for policy automation wizard changes)
     "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.": "If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.",
     "Image Content Sources": "Image Content Sources",
