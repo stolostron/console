@@ -174,3 +174,55 @@ export async function getResourceNameApiPath(options: {
 
     return path.replace(/\\/g, '/')
 }
+
+export function getResourceNameApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    let path = getResourceApiPathTestHelper(options)
+
+    const name = options.metadata?.name
+    if (name) {
+        path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}
+
+export function getResourceApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    const { apiVersion } = options
+
+    let path: string
+    if (apiVersion?.includes('/')) {
+        path = join('/apis', apiVersion)
+    } else {
+        path = join('/api', apiVersion)
+    }
+
+    const namespace = options.metadata?.namespace
+    if (namespace) {
+        path = join(path, 'namespaces', namespace)
+    }
+
+    if (options.plural) {
+        path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
+    } else if (options.kind) {
+        const pluralName = fallbackPlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
+    }
+
+    const name = options.metadata?.name
+    if (name) {
+        path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}

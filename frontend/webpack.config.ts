@@ -53,6 +53,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     resourceQuery: { not: [/url/] }, // exlcude react component if *.svg?url
                     use: ['@svgr/webpack'],
                 },
+                { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
                     use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],

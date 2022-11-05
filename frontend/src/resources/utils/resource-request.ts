@@ -8,7 +8,7 @@ import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
-import { getResourceApiPath, getResourceName, IResource, ResourceList } from '../resource'
+import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
 export interface IRequestResult<ResultType = unknown> {
@@ -270,7 +270,7 @@ export function createResource<Resource extends IResource, ResultType = Resource
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((path) => {
+        return getResourceNameApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             if (options?.dryRun) url += '?dryRun=All'
             return url
@@ -284,7 +284,7 @@ export function replaceResource<Resource extends IResource, ResultType = Resourc
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((path) => {
+        return getResourceNameApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             if (options?.dryRun) url += '?dryRun=All'
             return url
@@ -299,7 +299,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((path) => {
+        return getResourceNameApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             if (options?.dryRun) url += '?dryRun=All'
             return url
@@ -322,7 +322,7 @@ export function deleteResource<Resource extends IResource>(
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((path) => {
+        return getResourceNameApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             if (options?.dryRun) url += '?dryRun=All'
             return url
@@ -343,7 +343,7 @@ export function getResource<Resource extends IResource>(
     }
 
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceApiPath(resource).then((path) => {
+        return getResourceNameApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             let queryString = undefined
 
