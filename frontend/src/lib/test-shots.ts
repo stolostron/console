@@ -249,8 +249,10 @@ if (process.env.NODE_ENV !== 'production') {
             let resource
             let origin
             let pathname
-            ;({ isLocalhost, isList, inlineComment, kind, isSearch, resource, origin, pathname, url, reqBody } =
-                getResource(url, reqBody))
+            ;({ isLocalhost, isList, inlineComment, kind, isSearch, resource, origin, pathname, reqBody } = getResource(
+                url,
+                reqBody
+            ))
 
             // eslint-disable-next-line prefer-const
             ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
