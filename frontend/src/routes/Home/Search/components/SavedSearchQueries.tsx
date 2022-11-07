@@ -37,8 +37,6 @@ export default function SavedSearchQueries(props: {
     const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
     const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-    // const suggestedQueryTemplates = useSuggestedQueryTemplates()
-
     const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
     const input = [
@@ -166,8 +164,8 @@ export default function SavedSearchQueries(props: {
                                 key={index}
                                 cardHeader={{
                                     hasIcon: true,
-                                    title: t(query.name),
-                                    description: t(query.description),
+                                    title: query.name,
+                                    description: query.description,
                                     actions: [
                                         {
                                             text: t('Share'),

@@ -7,7 +7,7 @@ import { DropdownSuggestionsProps } from './components/Searchbar'
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
 
-export function FormatSearchbarSuggestions(
+export function formatSearchbarSuggestions(
     data: string[],
     suggestionKind: 'label' | 'filter' | 'value',
     searchQuery: string

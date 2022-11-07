@@ -21,7 +21,7 @@ Object {
 }
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -51,7 +51,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions of name values 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions of name values 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -81,7 +81,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions of namespace values 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions of namespace values 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -111,7 +111,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions of operators 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions of operators 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -164,7 +164,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions with date 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions with date 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -205,7 +205,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions with operator already chosen (single number option) 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions with operator already chosen (single number option) 1`] = `
 Array [
   Object {
     "disabled": true,
@@ -224,7 +224,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns FormatSearchbarSuggestions with operator already chosen 1`] = `
+exports[`Correctly returns formatSearchbarSuggestions with operator already chosen 1`] = `
 Array [
   Object {
     "disabled": true,

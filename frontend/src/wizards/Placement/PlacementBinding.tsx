@@ -114,7 +114,10 @@ function Subject() {
                 path="kind"
                 label={t('Subject kind')}
                 required
-                options={[t('PolicySet'), t('Policy')]}
+                options={[
+                    { label: t('PolicySet'), value: 'PolicySet' },
+                    { label: t('Policy'), value: 'Policy' },
+                ]}
                 onValueChange={(value) => {
                     switch (value) {
                         case t('PolicySet'):

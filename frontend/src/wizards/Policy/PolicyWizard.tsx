@@ -493,7 +493,11 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                     path="objectDefinition.spec.severity"
                     label={t('Severity')}
                     placeholder={t('Select severity')}
-                    options={[t('low'), t('medium'), t('high')]}
+                    options={[
+                        { label: t('low'), value: 'low' },
+                        { label: t('medium'), value: 'medium' },
+                        { label: t('high'), value: 'high' },
+                    ]}
                     required
                 />
             </WizArrayInput>

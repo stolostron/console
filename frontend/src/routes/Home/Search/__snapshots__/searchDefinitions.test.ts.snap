@@ -1975,8 +1975,8 @@ exports[`Correctly returns url search params with all params & apigroup 1`] = `"
 
 exports[`Correctly returns url search params with all params without apigroup 1`] = `"?cluster%3DtestCluster%26kind%3DPod%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;
 
-exports[`Correctly returns useFormatSearchbarSuggestions no timestamp 1`] = `"-"`;
+exports[`Correctly returns formatSearchbarSuggestions no timestamp 1`] = `"-"`;
 
-exports[`Correctly returns useFormatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
+exports[`Correctly returns formatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
 
-exports[`Correctly returns useFormatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;
+exports[`Correctly returns formatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;

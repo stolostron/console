@@ -997,16 +997,7 @@ const searchDefinitions: any = {
                 header: 'Violations',
                 sort: 'compliant',
                 cell: (item: any) => {
-                    switch (item.compliant) {
-                        case 'Compliant':
-                            return ViolationsCell('compliant')
-
-                        case 'NonCompliant':
-                            return ViolationsCell('noncompliant')
-
-                        default:
-                            return '-'
-                    }
+                    return GetViolations(item)
                 },
             },
             {
@@ -1360,20 +1351,24 @@ const searchDefinitions: any = {
     },
 }
 
-export function ViolationsCell(compliance: string) {
+export function GetViolations(item: any) {
     const { t } = useTranslation()
-    if (compliance === 'compliant') {
-        return (
-            <div>
-                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
-            </div>
-        )
+    switch (item.compliant) {
+        case 'Compliant':
+            return (
+                <div>
+                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
+                </div>
+            )
+        case 'NonCompliant':
+            return (
+                <div>
+                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
+                </div>
+            )
+        default:
+            return '-'
     }
-    return (
-        <div>
-            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
-        </div>
-    )
 }
 
 export function GetAge(item: any, key: string) {
@@ -1501,21 +1496,23 @@ export function CreateDetailsLink(item: any) {
 }
 
 export function CreateApplicationTopologyLink(item: any) {
+    const { t } = useTranslation()
     if (item.apiversion && item.apigroup) {
         const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
         const link = `${NavigationPath.applicationTopology
             .replace(':namespace', item.namespace)
             .replace(':name', item.name)}?apiVersion=${apiversion}`
-        return <a href={link}>{'View topology'}</a>
+        return <a href={link}>{t('View topology')}</a>
     }
     return '-'
 }
 
 export function CreateExternalLink(item: any) {
+    const { t } = useTranslation()
     if (item.consoleURL) {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${item.consoleURL}`}>
-                {'Launch'}
+                {t('Launch')}
             </a>
         )
     } else if (item.clusterip) {

@@ -12,7 +12,7 @@ import searchDefinitions, {
     GetUrlSearchParam,
 } from './searchDefinitions'
 
-test('Correctly returns useFormatSearchbarSuggestions without T in timestamp', () => {
+test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
     Date.now = jest.fn(() => 1607028460000)
     const item = {
         name: 'testName',
@@ -23,7 +23,7 @@ test('Correctly returns useFormatSearchbarSuggestions without T in timestamp', (
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns useFormatSearchbarSuggestions with T in timestamp', () => {
+test('Correctly returns formatSearchbarSuggestions with T in timestamp', () => {
     Date.now = jest.fn(() => 1607028460000)
     const item = {
         name: 'testName',
@@ -34,7 +34,7 @@ test('Correctly returns useFormatSearchbarSuggestions with T in timestamp', () =
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns useFormatSearchbarSuggestions no timestamp', () => {
+test('Correctly returns formatSearchbarSuggestions no timestamp', () => {
     Date.now = jest.fn(() => 1607028460000)
     const item = {
         name: 'testName',

@@ -615,7 +615,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         >
                             <Select
                                 label={t('Propogation policy')}
-                                options={[t('foreground'), t('background'), t('orphan')]}
+                                options={[
+                                    { label: t('foreground'), value: 'foreground' },
+                                    { label: t('background'), value: 'background' },
+                                    { label: t('orphan'), value: 'orphan' },
+                                ]}
                                 path="spec.template.spec.syncPolicy.syncOptions"
                                 inputValueToPathValue={prunePropagationPolicyToSyncOptions}
                                 pathValueToInputValue={syncOptionsToPrunePropagationPolicy}

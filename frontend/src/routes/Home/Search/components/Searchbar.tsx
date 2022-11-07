@@ -21,7 +21,7 @@ import { useHistory } from 'react-router-dom'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -183,7 +183,7 @@ export function Searchbar(props: SearchbarProps) {
                 key={'loading-suggestion'}
                 itemId={'loading-suggestion'}
             >
-                {<Trans i18nKey="{{loading}}..." values={{ loading: 'Loading' }} />}
+                {t('Loading...')}
             </MenuItem>,
         ]
         if (!loadingSuggestions) {
