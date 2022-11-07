@@ -122,7 +122,6 @@ export function LogsToolbar(props: {
     }, [name, cluster, container, logs])
 
     const previousLogsDropdown = useMemo(() => {
-        console.log('rendering previousLogsDropdown')
         return (
             <Select
                 id={'previous-log-select'}
