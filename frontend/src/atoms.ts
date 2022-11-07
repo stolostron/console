@@ -18,7 +18,6 @@ import {
     Application,
     ApplicationSet,
     ArgoApplication,
-    BareMetalAsset,
     CertificateSigningRequest,
     Channel,
     ClusterClaim,
@@ -79,7 +78,6 @@ export const applicationSetsState = AtomArray<ApplicationSet>()
 export const applicationsState = AtomArray<Application>()
 export const argoApplicationsState = AtomArray<ArgoApplication>()
 export const argoCDsState = AtomArray<IResource>()
-export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
 export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
 export const channelsState = AtomArray<Channel>()
