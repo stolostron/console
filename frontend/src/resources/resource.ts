@@ -219,10 +219,5 @@ export function getResourceApiPathTestHelper(options: {
         path = join(path, pluralName)
     }
 
-    const name = options.metadata?.name
-    if (name) {
-        path = join(path, name)
-    }
-
     return path.replace(/\\/g, '/')
 }
