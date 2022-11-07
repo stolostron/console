@@ -12,7 +12,6 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  Truncate,
   Text,
   KebabToggle,
   Page,
@@ -46,6 +45,7 @@ import { LoadingHelper } from '../utils';
 import TableLoader from '../helpers/TableLoader';
 import useDialogsReducer from '../hooks/useDialogsReducer';
 import EditHelmRepositoryDialog from '../EditHelmRepositoryDialog';
+import { Truncate } from '../../../../components/Truncate';
 
 const getTableColumns = (t: TFunction): TableColumn[] => [
   {

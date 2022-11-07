@@ -8,18 +8,23 @@ import {
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
     ClusterStatus,
     CuratorCondition,
     DistributionInfo,
+    NodePool,
     ResourceAttributes,
 } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
-import { ansibleJobState } from '../../../../../atoms'
-import { nockRBAC } from '../../../../../lib/nock-util'
+import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
+import { nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -308,6 +313,187 @@ const ansibleJob: AnsibleJob = {
     },
 }
 
+const mockNodepools: NodePool[] = [
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-1',
+            namespace: 'clusters',
+        },
+        spec: {
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+        status: {
+            version: '4.11.12',
+        },
+    },
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-2',
+            namespace: 'clusters',
+        },
+        spec: {
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+        status: {
+            version: '4.10.18',
+        },
+    },
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-3',
+            namespace: 'clusters',
+        },
+        spec: {
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+        status: {
+            version: '4.10.17',
+        },
+    },
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-4',
+            namespace: 'clusters',
+        },
+        spec: {
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+        status: {
+            version: '4.10.16',
+        },
+    },
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-5',
+            namespace: 'clusters',
+        },
+        spec: {
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+        status: {
+            version: '4.10.15',
+        },
+    },
+]
+
+const mockClusterImageSet0: ClusterImageSet = {
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+    metadata: {
+        name: 'img4.12.0-x86-64',
+    },
+    spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.12.0-ec.4-x86_64',
+    },
+}
+
+const mockClusterImageSet1: ClusterImageSet = {
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+    metadata: {
+        name: 'img4.11.9-x86-64',
+    },
+    spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.11.9-x86_64',
+    },
+}
+
+const mockClusterImageSet2: ClusterImageSet = {
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+    metadata: {
+        name: 'img4.11.8-x86-64',
+    },
+    spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.11.8-x86_64',
+    },
+}
+
 function getClusterCuratoResourceAttributes(name: string, verb: string) {
     return {
         resource: 'clustercurators',
@@ -359,6 +545,7 @@ describe('DistributionField', () => {
             kubeadmin: '',
             kubeconfig: '',
             isHypershift: false,
+            isRegionalHubCluster: false,
         }
 
         const retResource = render(
@@ -443,5 +630,293 @@ describe('DistributionField', () => {
         await clickByText('Upgrade prehook')
         await clickByText('View logs')
         await waitForCalled(window.open as jest.Mock)
+    })
+})
+
+describe('DistributionField hypershift clusters', () => {
+    const renderDistributionInfoField = async (
+        cluster?: Cluster,
+        allowUpgrade?: boolean,
+        hasUpgrade = false,
+        clusterCurator?: ClusterCurator,
+        nodepool?: NodePool,
+        hostedCluster?: HostedClusterK8sResource,
+        setClusterImageSet = true
+    ) => {
+        nockIgnoreRBAC()
+        let nockAction: nock.Scope | undefined = undefined
+        let nockAction2: nock.Scope | undefined = undefined
+        if (hasUpgrade) {
+            nockAction = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'patch'), allowUpgrade)
+            nockAction2 = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'create'), allowUpgrade)
+        }
+
+        const retResource = render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(ansibleJobState, [ansibleJob])
+                    snapshot.set(nodePoolsState, mockNodepools)
+                    snapshot.set(
+                        clusterImageSetsState,
+                        setClusterImageSet ? [mockClusterImageSet0, mockClusterImageSet1, mockClusterImageSet2] : []
+                    )
+                }}
+            >
+                <DistributionField
+                    cluster={cluster}
+                    clusterCurator={clusterCurator}
+                    nodepool={nodepool}
+                    hostedCluster={hostedCluster}
+                />
+            </RecoilRoot>
+        )
+        if (nockAction) {
+            await waitForNock(nockAction)
+        }
+        if (nockAction2) {
+            await waitForNock(nockAction2)
+        }
+        return retResource
+    }
+
+    it('should render distribution info for hypershift', async () => {
+        const mockCluster: Cluster = {
+            name: 'hypershift-cluster1',
+            displayName: 'hypershift-cluster1',
+            namespace: 'clusters',
+            uid: 'hypershift-cluster1-uid',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: {
+                ocp: {
+                    version: '4.11.12',
+                    availableUpdates: [],
+                    desiredVersion: '4.11.12',
+                    upgradeFailed: false,
+                },
+                isManagedOpenShift: false,
+            },
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                },
+            },
+            hypershift: {
+                agent: false,
+                hostingNamespace: 'clusters',
+                nodePools: mockNodepools,
+                secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+            },
+            isHive: false,
+            isManaged: true,
+            isCurator: true,
+            isHostedCluster: true,
+            isHypershift: true,
+            isSNOCluster: false,
+            owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isRegionalHubCluster: false,
+        }
+        const { queryAllByText } = await renderDistributionInfoField(
+            mockCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            undefined
+        )
+        expect(queryAllByText('Upgrade available').length).toBe(1)
+    })
+
+    it('should render distribution info for hypershift, only nodepool has updates', async () => {
+        const mockCluster: Cluster = {
+            name: 'hypershift-cluster1',
+            displayName: 'hypershift-cluster1',
+            namespace: 'clusters',
+            uid: 'hypershift-cluster1-uid',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: {
+                ocp: {
+                    version: '4.11.12',
+                    availableUpdates: [],
+                    desiredVersion: '4.11.12',
+                    upgradeFailed: false,
+                },
+                isManagedOpenShift: false,
+            },
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                },
+            },
+            hypershift: {
+                agent: false,
+                hostingNamespace: 'clusters',
+                nodePools: mockNodepools,
+                secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+            },
+            isHive: false,
+            isManaged: true,
+            isCurator: true,
+            isHostedCluster: true,
+            isHypershift: true,
+            isSNOCluster: false,
+            owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isRegionalHubCluster: false,
+        }
+        const { queryAllByText } = await renderDistributionInfoField(
+            mockCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            false
+        )
+        expect(queryAllByText('Upgrade available').length).toBe(1)
+    })
+
+    it('should render distribution info for hypershift, only nodepool has updates', async () => {
+        const mockCluster: Cluster = {
+            name: 'hypershift-cluster1',
+            displayName: 'hypershift-cluster1',
+            namespace: 'clusters',
+            uid: 'hypershift-cluster1-uid',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: {
+                ocp: {
+                    version: '4.11.12',
+                    availableUpdates: [],
+                    desiredVersion: '4.11.12',
+                    upgradeFailed: false,
+                },
+                isManagedOpenShift: false,
+            },
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                },
+            },
+            hypershift: {
+                agent: false,
+                hostingNamespace: 'clusters',
+                nodePools: mockNodepools,
+                secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+            },
+            isHive: false,
+            isManaged: true,
+            isCurator: true,
+            isHostedCluster: true,
+            isHypershift: true,
+            isSNOCluster: false,
+            owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isRegionalHubCluster: false,
+        }
+        const { queryAllByText } = await renderDistributionInfoField(
+            mockCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            false
+        )
+        expect(queryAllByText('Upgrade available').length).toBe(1)
+    })
+
+    it('should render distribution info for hypershift, nodepools tables', async () => {
+        const mockCluster: Cluster = {
+            name: 'hypershift-cluster1',
+            displayName: 'hypershift-cluster1',
+            namespace: 'clusters',
+            uid: 'hypershift-cluster1-uid',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: {
+                ocp: {
+                    version: '4.11.12',
+                    availableUpdates: [],
+                    desiredVersion: '4.11.12',
+                    upgradeFailed: false,
+                },
+                isManagedOpenShift: false,
+            },
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                },
+            },
+            hypershift: {
+                agent: false,
+                hostingNamespace: 'clusters',
+                nodePools: mockNodepools,
+                secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+            },
+            isHive: false,
+            isManaged: true,
+            isCurator: true,
+            isHostedCluster: true,
+            isHypershift: true,
+            isSNOCluster: false,
+            owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isRegionalHubCluster: false,
+        }
+
+        const { queryAllByText } = await renderDistributionInfoField(
+            mockCluster,
+            true,
+            false,
+            undefined,
+            mockNodepools[0],
+            undefined,
+            false
+        )
+        expect(queryAllByText('Upgrade available').length).toBe(1)
+    })
+
+    it('should render distribution info for hypershift, no cluster', async () => {
+        const { queryAllByText } = await renderDistributionInfoField(
+            undefined,
+            true,
+            false,
+            undefined,
+            mockNodepools[0],
+            undefined,
+            false
+        )
+        expect(queryAllByText('Upgrade available').length).toBe(0)
     })
 })

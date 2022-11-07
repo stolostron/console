@@ -17,10 +17,10 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@pat
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
@@ -41,6 +41,7 @@ const useStyles = makeStyles({
         paddingRight: 'var(--pf-c-page__main-section--PaddingRight)',
         paddingLeft: 'var(--pf-c-page__main-section--PaddingLeft)',
         paddingBottom: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
+        paddingTop: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingTop)',
     },
     dropdown: {
         '& ul': {

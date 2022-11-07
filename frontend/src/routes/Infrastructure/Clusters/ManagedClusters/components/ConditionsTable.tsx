@@ -32,11 +32,13 @@ const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
                     if (c.status === 'True') {
                         if (c.type === 'Progressing') {
                             icon = <InProgressIcon size="sm" />
+                        } else if (c.type === 'Degraded') {
+                            icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
                         } else {
                             icon = okIcon
                         }
                     } else if (c.status === 'False') {
-                        if (c.type === 'Progressing') {
+                        if (c.type === 'Progressing' || c.type === 'Degraded') {
                             icon = okIcon
                         } else {
                             icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />

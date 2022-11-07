@@ -53,6 +53,7 @@
     },
     "devDependencies": {
         "@types/node": "14.18.22",
+        "@types/semver": "^7.3.13",
         "concurrently": "7.2.2",
         "husky": "7.0.4",
         "lint-staged": "^13.0.3",
@@ -65,14 +66,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "lint-staged": {
-        "*": "npm run copyright:fix --",
-        "backend/**/*.ts": "npm run lint:fix:backend --",
-        "frontend/**/*.{js,jsx,ts,tsx}": [
-            "npm run lint:fix:frontend --",
-            "npm run i18n:frontend --",
-            "git diff --exit-code frontend/public/locales/en/translation.json"
-        ]
     }
 }

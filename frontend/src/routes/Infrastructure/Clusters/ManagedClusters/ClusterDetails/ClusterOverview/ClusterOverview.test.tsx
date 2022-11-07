@@ -10,6 +10,7 @@ import {
     mockBMHypershiftCluster,
     mockBMHypershiftClusterNoNamespace,
     mockAWSHypershiftClusterNoHypershift,
+    mockRegionalHubCluster,
 } from '../ClusterDetails.sharedmocks'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
@@ -323,5 +324,97 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     it('should render overview with AWS hypershift cluster no hostedCluster', async () => {
         await waitForText(mockAWSHypershiftCluster.name)
         await clickByText('Reveal credentials')
+    })
+})
+
+describe('ClusterOverview with regional hub cluster information', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockSearch(mockSearchQuery, mockSearchResponse)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policyreportState, [])
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(clusterClaimsState, [])
+                    snapshot.set(clusterCuratorsState, [])
+                    snapshot.set(agentClusterInstallsState, [])
+                    snapshot.set(agentsState, [])
+                    snapshot.set(infraEnvironmentsState, [])
+                    snapshot.set(hostedClustersState, [])
+                    snapshot.set(nodePoolsState, [])
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterContext.Provider
+                        value={{
+                            cluster: mockRegionalHubCluster,
+                            addons: undefined,
+                            hostedCluster: undefined,
+                        }}
+                    >
+                        <ClusterOverviewPageContent />
+                    </ClusterContext.Provider>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    })
+
+    it('should render overview with the regional hub cluster', async () => {
+        await waitForText(mockRegionalHubCluster.name)
+        await waitForText('release-2.7')
+        await waitForText('2.7.0')
+    })
+})
+
+describe('ClusterOverview with regional hub cluster information with hostedCluster', () => {
+    beforeEach(() => {
+        mockRegionalHubCluster.isHostedCluster = true
+        nockIgnoreRBAC()
+        nockSearch(mockSearchQuery, mockSearchResponse)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policyreportState, [])
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(clusterClaimsState, [])
+                    snapshot.set(clusterCuratorsState, [])
+                    snapshot.set(agentClusterInstallsState, [])
+                    snapshot.set(agentsState, [])
+                    snapshot.set(infraEnvironmentsState, [])
+                    snapshot.set(hostedClustersState, [])
+                    snapshot.set(nodePoolsState, [])
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterContext.Provider
+                        value={{
+                            cluster: mockRegionalHubCluster,
+                            addons: undefined,
+                            hostedCluster: undefined,
+                        }}
+                    >
+                        <ClusterOverviewPageContent />
+                    </ClusterContext.Provider>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    })
+
+    it('should render overview with the regional hub cluster and hostedCluster', async () => {
+        await waitForText(mockRegionalHubCluster.name)
+        await waitForText('Hub, Hosted')
+        await waitForText('release-2.7')
+        await waitForText('2.7.0')
     })
 })

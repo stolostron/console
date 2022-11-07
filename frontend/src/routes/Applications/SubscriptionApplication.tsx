@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '../../ui-components'
+import {
+    AcmErrorBoundary,
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmToastContext,
+    Provider,
+} from '../../ui-components'
 import Handlebars from 'handlebars'
 import { Location } from 'history'
 import _ from 'lodash'
@@ -137,7 +144,7 @@ export default function CreateSubscriptionApplicationPage() {
                                 namespaces={projects}
                                 isEditing={false}
                                 isViewing={false}
-                                infrastructureType={'ans'}
+                                credentialsType={Provider.ansible}
                                 handleModalToggle={handleModalToggle}
                                 hideYaml={true}
                                 control={setNewSecret}

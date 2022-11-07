@@ -11,6 +11,13 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import jsYaml from 'js-yaml'
+import { useEffect, useMemo, useState } from 'react'
+import YamlEditor from '../../../../components/YamlEditor'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
+import { fireManagedClusterView } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import {
     AcmAlert,
     AcmDescriptionList,
@@ -18,13 +25,6 @@ import {
     AcmTablePaginationContextProvider,
     compareStrings,
 } from '../../../../ui-components'
-import jsYaml from 'js-yaml'
-import { useEffect, useMemo, useState } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
-import YamlEditor from '../../../../components/YamlEditor'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../resources'
 
 export function PolicyTemplateDetails(props: {
     clusterName: string
@@ -208,7 +208,7 @@ export function PolicyTemplateDetails(props: {
                                 <a
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={`${NavigationPath.resources}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`}
+                                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`}
                                 >
                                     {t('View yaml')}
                                 </a>
@@ -218,7 +218,7 @@ export function PolicyTemplateDetails(props: {
                                 <a
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={`${NavigationPath.resources}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}`}
+                                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}`}
                                 >
                                     {t('View yaml')}
                                 </a>

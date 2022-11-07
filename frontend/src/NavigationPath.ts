@@ -16,6 +16,7 @@ export enum NavigationPath {
     // Home - Search
     search = '/multicloud/home/search',
     resources = '/multicloud/home/search/resources',
+    resourceYAML = '/multicloud/home/search/resources/yaml',
     resourceLogs = '/multicloud/home/search/resources/logs',
 
     // Infrastructure
@@ -99,7 +100,6 @@ export enum NavigationPath {
     // Credentials
     credentials = '/multicloud/credentials',
     addCredentials = '/multicloud/credentials/create',
-    addCredentialsInfrastructure = '/multicloud/credentials/create/infrastructure',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 

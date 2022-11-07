@@ -5,8 +5,9 @@ import { RecoilRoot } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { CreateClusterCatalog } from './CreateClusterCatalog'
+
 import { ProviderConnectionApiVersion, ProviderConnectionKind, Secret } from '../../../../../resources'
-import { CreateClusterPoolInfrastructure } from './CreateClusterPoolInfrastructure'
 
 const providerConnectionAws: Secret = {
     apiVersion: ProviderConnectionApiVersion,
@@ -21,7 +22,7 @@ const providerConnectionAws: Secret = {
     },
 }
 
-describe('CreateInfrastructure clusterpool', () => {
+describe('CreateClusterCatalog', () => {
     const Component = () => {
         return (
             <RecoilRoot
@@ -29,9 +30,9 @@ describe('CreateInfrastructure clusterpool', () => {
                     snapshot.set(secretsState, [providerConnectionAws])
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createClusterPool]}>
-                    <Route path={NavigationPath.createClusterPool}>
-                        <CreateClusterPoolInfrastructure />
+                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                    <Route path={NavigationPath.createCluster}>
+                        <CreateClusterCatalog />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>
@@ -43,6 +44,11 @@ describe('CreateInfrastructure clusterpool', () => {
         await clickByTestId('aws')
     })
 
+    test('can select host inventory', async () => {
+        render(<Component />)
+        await clickByTestId('hostinventory')
+    })
+
     test('can select google', async () => {
         render(<Component />)
         await clickByTestId('google')
@@ -51,5 +57,20 @@ describe('CreateInfrastructure clusterpool', () => {
     test('can select azure', async () => {
         render(<Component />)
         await clickByTestId('azure')
+    })
+
+    test('can select openstack', async () => {
+        render(<Component />)
+        await clickByTestId('openstack')
+    })
+
+    test('can select rhv', async () => {
+        render(<Component />)
+        await clickByTestId('rhv')
+    })
+
+    test('can select vsphere', async () => {
+        render(<Component />)
+        await clickByTestId('vsphere')
     })
 })

@@ -3,6 +3,7 @@ import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolos
 import { Fragment, useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
+import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateDiscoverHost() {
     const [t] = useTranslation()
@@ -23,10 +24,7 @@ export function CreateDiscoverHost() {
                         ),
                     },
                 ],
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=CIM',
-                }),
+                onClick: nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIM)),
             },
             {
                 id: 'discover',
@@ -39,10 +37,7 @@ export function CreateDiscoverHost() {
                         ),
                     },
                 ],
-                onClick: nextStep({
-                    pathname: NavigationPath.createCluster,
-                    search: '?infrastructureType=AI',
-                }),
+                onClick: nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.AI)),
             },
         ]
         return newCards

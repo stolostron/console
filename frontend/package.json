@@ -74,7 +74,7 @@
         "moment-timezone": "^0.5.37",
         "monaco-editor": "0.33.0",
         "object-hash": "3.0.0",
-        "openshift-assisted-ui-lib": "2.6.4-cim",
+        "openshift-assisted-ui-lib": "2.7.0-cim",
         "ramda": "0.28.0",
         "react-error-boundary": "3.1.4",
         "react-masonry-css": "1.0.16",
@@ -278,6 +278,13 @@
                         {
                             "name": "recoil",
                             "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
+                        },
+                        {
+                            "name": "@patternfly/react-core",
+                            "importNames": [
+                                "Truncate"
+                            ],
+                            "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead"
                         }
                     ],
                     "patterns": [

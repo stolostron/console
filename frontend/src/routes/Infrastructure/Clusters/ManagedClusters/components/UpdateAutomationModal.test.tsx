@@ -63,6 +63,7 @@ const mockClusterNoAvailable: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockClusterReady1: Cluster = {
@@ -112,6 +113,7 @@ const mockClusterReady1: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockClusterNonOCP: Cluster = {
@@ -156,6 +158,7 @@ const mockClusterNonOCP: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockClusterPending: Cluster = {
@@ -199,6 +202,7 @@ const mockClusterPending: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockClusterRoks: Cluster = {
@@ -245,6 +249,7 @@ const mockClusterRoks: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const providerConnectionAnsible: ProviderConnection = {

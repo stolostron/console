@@ -7,7 +7,7 @@ import { LoadPluginData } from './LoadPluginData'
 import { PluginDataContextProvider } from './PluginDataContextProvider'
 import { waitForText } from '../lib/test-util'
 
-const TestPluginContextProvider = (props: ProviderProps<PluginData>) => {
+const TestPluginDataContextProvider = (props: ProviderProps<PluginData>) => {
     return (
         <PluginDataContextProvider {...props}>
             <LoadPluginData>Main Content</LoadPluginData>
@@ -22,7 +22,7 @@ describe('PluginDataContextProvider', () => {
             loaded: false,
             load: jest.fn(),
         }
-        render(<TestPluginContextProvider value={pluginData} />)
+        render(<TestPluginDataContextProvider value={pluginData} />)
         await waitForText('Loading')
         expect(pluginData.load).toHaveBeenCalled()
     })
@@ -33,7 +33,7 @@ describe('PluginDataContextProvider', () => {
             startLoading: true,
             load: jest.fn(),
         }
-        render(<TestPluginContextProvider value={pluginData} />)
+        render(<TestPluginDataContextProvider value={pluginData} />)
         await waitForText('Main Content')
         expect(pluginData.load).not.toHaveBeenCalled()
     })

@@ -5,6 +5,7 @@ import { render } from '@testing-library/react'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import HostedClusterProgress from './HostedClusterProgress'
+import { RecoilRoot } from 'recoil'
 
 const hostedCluster: HostedClusterK8sResource = {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
@@ -199,7 +200,11 @@ const hostedCluster2: HostedClusterK8sResource = {
 describe('HostedClusterProgress', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
-        render(<HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={jest.fn} />)
+        render(
+            <RecoilRoot>
+                <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={jest.fn} />
+            </RecoilRoot>
+        )
     })
 
     it('should render HostedClusterProgress', async () => {
@@ -210,7 +215,11 @@ describe('HostedClusterProgress', () => {
 describe('HostedClusterProgress click launchToOCP link', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
-        render(<HostedClusterProgress hostedCluster={hostedCluster2} launchToOCP={jest.fn} />)
+        render(
+            <RecoilRoot>
+                <HostedClusterProgress hostedCluster={hostedCluster2} launchToOCP={jest.fn} />
+            </RecoilRoot>
+        )
     })
 
     it('should render HostedClusterProgress', async () => {

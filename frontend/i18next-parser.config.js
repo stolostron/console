@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
 
-import { CustomJSONLexer } from './i18n-scripts/lexers/json'
+const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js')
 
 const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
 const JsxLexer = { lexer: 'JsxLexer', functions: ['t', 'i18n'] }
