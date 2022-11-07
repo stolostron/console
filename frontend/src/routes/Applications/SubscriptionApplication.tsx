@@ -57,6 +57,8 @@ const Portals = Object.freeze({
 })
 
 export default function CreateSubscriptionApplicationPage() {
+    window.nockShot()
+
     const { t } = useTranslation()
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)

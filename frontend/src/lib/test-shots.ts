@@ -240,170 +240,252 @@ if (process.env.NODE_ENV !== 'production') {
         let nockIgnoreRBAC = false
         fetches.forEach(({ method, url, reqBody, resBody }) => {
             // get if local and what pathname is
-            let isList = false
-            let inlineComment = ''
+            let isLocalhost
+            let isList
+            let prefix
+            let inlineComment
+            let kind
+            let isSearch
             let resource
-            const isSearch = url.indexOf('/search') !== -1
-            const isLocalhost = !url.startsWith('http')
-            let uri,
+            let origin
+            let pathname
+            ;({ isLocalhost, isList, inlineComment, kind, isSearch, resource, origin, pathname, url, reqBody } =
+                getResource(url, reqBody))
+
+            // eslint-disable-next-line prefer-const
+            ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
+                method,
+                isLocalhost,
+                isList,
+                inlineComment,
+                kind,
+                isSearch
+            ))
+
+            nockIgnoreRBAC = getNockShotFunctions(
+                kind,
+                getNockShotName,
+                dataMap,
+                prefix,
+                reqBody,
+                resBody,
+                resource,
+                unfiltered,
+                inlineComment,
+                method,
+                isLocalhost,
+                isList,
+                funcMocks,
+                origin,
                 pathname,
-                origin = 'unknown',
-                kind = 'unknown'
-            if (isSearch) {
-                kind = 'search'
-            } else {
-                if (isLocalhost) {
-                    url = url.split('?')[0] // strip any queries
-                    const [, rest] = url.split('/api') //assume they're all api calls
-                    const parts = rest.split('/')
-                    isList = parts.shift().endsWith('s') // was '/apis' or 'apiPaths' or anything plural
-                    let version // one or two part version?
-                    if (parts[0].startsWith('v')) {
-                        version = parts.shift()
-                    } else if (parts[1].startsWith('v')) {
-                        version = `${parts.shift()}/${parts.shift()}`
-                    }
-                    const [kind1, name1, kind2, name2] = parts
-                    if (!reqBody) {
-                        if (kind1 === 'namespaces') {
-                            reqBody = {
-                                apiVersion: version,
-                                kind: `${kind2}`,
-                                metadata: {
-                                    namespace: name1,
-                                    name: name2,
-                                },
-                            }
-                            inlineComment = `'${kind2}' in '${name1}' namespace`
-                        } else {
-                            reqBody = {
-                                apiVersion: version,
-                                kind: `${kind1}`,
-                            }
-                            inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
-                        }
-                    } else {
-                        if (typeof reqBody === 'string') {
-                            reqBody = JSON.parse(reqBody)
-                        }
-                        if (Array.isArray(reqBody)) {
-                            resource = {
-                                apiVersion: version,
-                                kind: `${kind2}`,
-                                metadata: {
-                                    namespace: name1,
-                                    name: name2,
-                                },
-                            }
-                            if (kind1 === 'namespaces') {
-                                inlineComment = `'${kind2}' in '${name1}' namespace`
-                            } else {
-                                inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
-                            }
-                        } else {
-                            const _kind = reqBody?.kind
-                            const _name = reqBody?.metadata?.name
-                            const _namespace = reqBody?.metadata?.namespace
-                            if (_namespace) {
-                                if (_name) {
-                                    inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
-                                } else {
-                                    inlineComment = `'${_kind}' in '${_namespace}' namespace`
-                                }
-                            } else {
-                                inlineComment = `'${_kind}'`
-                            }
-                        }
-                    }
-                    kind = kind2 || kind1
-                } else {
-                    uri = url
-                    try {
-                        uri = new URL(url)
-                        origin = uri.origin
-                        kind = origin.split('.')[1]
-                        pathname = uri.pathname
-                    } catch {}
-                }
-            }
-
-            let prefix = method.toLowerCase()
-            switch (method) {
-                case 'GET':
-                    if (isLocalhost) {
-                        if (isList) {
-                            prefix = 'list'
-                            inlineComment = `get all ${inlineComment}`
-                        } else {
-                            prefix = 'get'
-                            inlineComment = `get ${inlineComment}`
-                        }
-                    } else {
-                        prefix = 'get'
-                        inlineComment = `get ${kind} ${inlineComment}`
-                    }
-                    break
-                case 'POST':
-                    if (isSearch) {
-                        prefix = 'search'
-                        inlineComment = `search ${inlineComment}`
-                    } else {
-                        prefix = 'create'
-                        inlineComment = `create ${inlineComment}`
-                    }
-                    break
-                case 'DELETE':
-                    prefix = 'delete'
-                    inlineComment = `delete ${inlineComment}`
-                    break
-                case 'PATCH':
-                    prefix = 'patch'
-                    inlineComment = `patch ${inlineComment}`
-                    break
-            }
-
-            const dataName =
-                kind === 'selfsubjectaccessreviews'
-                    ? 'ignore'
-                    : getNockShotName(dataMap, prefix, kind, { reqBody, resBody, resource }, unfiltered, inlineComment)
-            switch (method) {
-                case 'GET':
-                    if (isLocalhost) {
-                        if (isList) {
-                            funcMocks.push(`    nockList(${dataName}.req, ${dataName}.res)  // ${inlineComment}`)
-                        } else {
-                            funcMocks.push(`    nockGet(${dataName}.req, ${dataName}.res)   // ${inlineComment}`)
-                        }
-                    } else {
-                        funcMocks.push(`    nock('${origin}').get('${pathname}').reply(200, ${dataName}.res)`)
-                    }
-                    break
-                case 'POST':
-                    if (kind === 'selfsubjectaccessreviews') {
-                        nockIgnoreRBAC = true
-                    } else if (isSearch) {
-                        funcMocks.push(`    nockSearch(${dataName}.req, ${dataName}.res)`)
-                    } else {
-                        funcMocks.push(`    nockCreate(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
-                    }
-                    break
-                case 'DELETE':
-                    funcMocks.push(`    nockDelete(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
-                    break
-                case 'PATCH':
-                    funcMocks.push(
-                        `    nockPatch(${dataName}.req, ${dataName}.data, ${dataName}.res)    // ${inlineComment}`
-                    )
-                    break
-                case 'OPTION':
-                    // nockOptions(resource: Resource, response?: IResource)==> no reqBody
-                    break
-            }
+                nockIgnoreRBAC,
+                isSearch
+            )
         })
         if (nockIgnoreRBAC) {
             funcMocks.unshift('    nockIgnoreRBAC()  //approve all RBAC checks')
         }
         return { dataMocks: dumpNockShotData(dataMap), funcMocks: funcMocks }
+    }
+    const getNockShotFunctions = (
+        kind: string,
+        getNockShotName: (
+            dataMap: { [x: string]: { [x: string]: IKindData[] } },
+            prefix: string,
+            kind: string,
+            testShot: { reqBody: any; resBody: any; resource: any },
+            unfiltered: boolean,
+            inlineComment: string
+        ) => string,
+        dataMap: {},
+        prefix: any,
+        reqBody: any,
+        resBody: any,
+        resource: any,
+        unfiltered: boolean,
+        inlineComment: any,
+        method: any,
+        isLocalhost: boolean,
+        isList: boolean,
+        funcMocks: string[],
+        origin: string,
+        pathname: string | undefined,
+        nockIgnoreRBAC: boolean,
+        isSearch: boolean
+    ) => {
+        const dataName =
+            kind === 'selfsubjectaccessreviews'
+                ? 'ignore'
+                : getNockShotName(dataMap, prefix, kind, { reqBody, resBody, resource }, unfiltered, inlineComment)
+        switch (method) {
+            case 'GET':
+                if (isLocalhost) {
+                    if (isList) {
+                        funcMocks.push(`    nockList(${dataName}.req, ${dataName}.res)  // ${inlineComment}`)
+                    } else {
+                        funcMocks.push(`    nockGet(${dataName}.req, ${dataName}.res)   // ${inlineComment}`)
+                    }
+                } else {
+                    funcMocks.push(`    nock('${origin}').get('${pathname}').reply(200, ${dataName}.res)`)
+                }
+                break
+            case 'POST':
+                if (kind === 'selfsubjectaccessreviews') {
+                    nockIgnoreRBAC = true
+                } else if (isSearch) {
+                    funcMocks.push(`    nockSearch(${dataName}.req, ${dataName}.res)`)
+                } else {
+                    funcMocks.push(`    nockCreate(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
+                }
+                break
+            case 'DELETE':
+                funcMocks.push(`    nockDelete(${dataName}.req, ${dataName}.res)    // ${inlineComment}`)
+                break
+            case 'PATCH':
+                funcMocks.push(
+                    `    nockPatch(${dataName}.req, ${dataName}.data, ${dataName}.res)    // ${inlineComment}`
+                )
+                break
+            case 'OPTION':
+                // nockOptions(resource: Resource, response?: IResource)==> no reqBody
+                break
+        }
+        return nockIgnoreRBAC
+    }
+
+    const getShotNamePrefixAndComment = (
+        method: any,
+        isLocalhost: boolean,
+        isList: boolean,
+        inlineComment: any,
+        kind: string,
+        isSearch: boolean
+    ) => {
+        let prefix = method.toLowerCase()
+        switch (method) {
+            case 'GET':
+                if (isLocalhost) {
+                    if (isList) {
+                        prefix = 'list'
+                        inlineComment = `get all ${inlineComment}`
+                    } else {
+                        prefix = 'get'
+                        inlineComment = `get ${inlineComment}`
+                    }
+                } else {
+                    prefix = 'get'
+                    inlineComment = `get ${kind} ${inlineComment}`
+                }
+                break
+            case 'POST':
+                if (isSearch) {
+                    prefix = 'search'
+                    inlineComment = `search ${inlineComment}`
+                } else {
+                    prefix = 'create'
+                    inlineComment = `create ${inlineComment}`
+                }
+                break
+            case 'DELETE':
+                prefix = 'delete'
+                inlineComment = `delete ${inlineComment}`
+                break
+            case 'PATCH':
+                prefix = 'patch'
+                inlineComment = `patch ${inlineComment}`
+                break
+        }
+        return { prefix, inlineComment }
+    }
+
+    const getResource = (url: any, reqBody: any) => {
+        let isList = false
+        let inlineComment = ''
+        let resource
+        const isSearch = url.indexOf('/search') !== -1
+        const isLocalhost = !url.startsWith('http')
+        let uri,
+            pathname,
+            origin = 'unknown',
+            kind = 'unknown'
+        if (isSearch) {
+            kind = 'search'
+        } else {
+            if (isLocalhost) {
+                url = url.split('?')[0] // strip any queries
+                const [, rest] = url.split('/api') //assume they're all api calls
+                const parts = rest.split('/')
+                isList = parts.shift().endsWith('s') // was '/apis' or 'apiPaths' or anything plural
+                let version // one or two part version?
+                if (parts[0].startsWith('v')) {
+                    version = parts.shift()
+                } else if (parts[1].startsWith('v')) {
+                    version = `${parts.shift()}/${parts.shift()}`
+                }
+                const [kind1, name1, kind2, name2] = parts
+                if (!reqBody) {
+                    if (kind1 === 'namespaces') {
+                        reqBody = {
+                            apiVersion: version,
+                            kind: `${kind2}`,
+                            metadata: {
+                                namespace: name1,
+                                name: name2,
+                            },
+                        }
+                        inlineComment = `'${kind2}' in '${name1}' namespace`
+                    } else {
+                        reqBody = {
+                            apiVersion: version,
+                            kind: `${kind1}`,
+                        }
+                        inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
+                    }
+                } else {
+                    if (typeof reqBody === 'string') {
+                        reqBody = JSON.parse(reqBody)
+                    }
+                    if (Array.isArray(reqBody)) {
+                        resource = {
+                            apiVersion: version,
+                            kind: `${kind2}`,
+                            metadata: {
+                                namespace: name1,
+                                name: name2,
+                            },
+                        }
+                        if (kind1 === 'namespaces') {
+                            inlineComment = `'${kind2}' in '${name1}' namespace`
+                        } else {
+                            inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
+                        }
+                    } else {
+                        const _kind = reqBody?.kind
+                        const _name = reqBody?.metadata?.name
+                        const _namespace = reqBody?.metadata?.namespace
+                        if (_namespace) {
+                            if (_name) {
+                                inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+                            } else {
+                                inlineComment = `'${_kind}' in '${_namespace}' namespace`
+                            }
+                        } else {
+                            inlineComment = `'${_kind}'`
+                        }
+                    }
+                }
+                kind = kind2 || kind1
+            } else {
+                uri = url
+                try {
+                    uri = new URL(url)
+                    origin = uri.origin
+                    kind = origin.split('.')[1]
+                    pathname = uri.pathname
+                } catch {}
+            }
+        }
+        return { isLocalhost, isList, inlineComment, kind, isSearch, resource, origin, pathname, url, reqBody }
     }
 
     const logNockShot = (fetches: any) => {
