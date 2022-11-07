@@ -226,13 +226,36 @@ function ClustersCard() {
             <Card isRounded>
                 <CardTitle>{'Clusters'}</CardTitle>
                 <CardBody>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
                         {clusters.map((cluster) => {
                             const clusterViolationSummary = clusterViolationSummaryMap[cluster.metadata.name ?? '']
                             if (!clusterViolationSummary) return <Fragment />
                             return (
                                 <Fragment key={`${cluster.metadata.name}-card`}>
                                     <span>{cluster.metadata.name}</span>
+                                    {clusterViolationSummary.pending ? (
+                                        <Tooltip
+                                            content={t('policies.pending', {
+                                                count: clusterViolationSummary.pending,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Fragment>
+                                                    <Button
+                                                        isInline
+                                                        variant={ButtonVariant.link}
+                                                        onClick={() => onClick(cluster, 'pending')}
+                                                    >
+                                                        {clusterViolationSummary.pending}
+                                                    </Button>{' '}
+                                                    &nbsp;
+                                                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                                                </Fragment>
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
                                     {clusterViolationSummary.unknown ? (
                                         <Tooltip
                                             content={t('policies.unknown', {

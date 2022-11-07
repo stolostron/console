@@ -6,7 +6,7 @@ import { policiesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import PoliciesPage, { AddToPolicySetModal, PolicyTableItem } from './Policies'
-import { mockPolicy, mockEmptyPolicy, mockPolicySets } from '../governance.sharedMocks'
+import { mockPolicy, mockEmptyPolicy, mockPolicySets, mockPendingPolicy } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
     beforeEach(async () => {
@@ -49,6 +49,22 @@ describe('Policies Page', () => {
         screen.getByRole('button', { name: 'Source' }).click()
         screen.getByRole('button', { name: 'Automation' }).click()
         screen.getByRole('button', { name: 'Name' }).click()
+    })
+
+    test('Should render Policies page correctly', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, mockPendingPolicy)
+                }}
+            >
+                <MemoryRouter>
+                    <PoliciesPage />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        await waitForText(mockPendingPolicy[0].metadata.name!)
     })
 
     test('Should have correct links to PolicySet & Policy detail results pages', async () => {

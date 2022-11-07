@@ -589,6 +589,10 @@ export default function PoliciesPage() {
                         value: 'with-violations',
                     },
                     {
+                        label: t('Pending'),
+                        value: 'pending',
+                    },
+                    {
                         label: t('No status'),
                         value: 'no-status',
                     },
@@ -609,6 +613,16 @@ export default function PoliciesPage() {
                             for (let i = 0; i < item.policy.status?.status.length; i++) {
                                 const cl = item.policy.status?.status[i]
                                 if (cl.compliant !== undefined && cl.compliant == 'Compliant') {
+                                    return true
+                                }
+                            }
+                        }
+                    }
+                    if (selectedValues.includes('pending')) {
+                        if (item.policy.status?.status !== undefined) {
+                            for (let i = 0; i < item.policy.status?.status.length; i++) {
+                                const cl = item.policy.status?.status[i]
+                                if (cl.compliant !== undefined && cl.compliant == 'Pending') {
                                     return true
                                 }
                             }
@@ -780,6 +794,7 @@ function usePolicyViolationsColumn(
             if (
                 clusterViolationSummary.compliant ||
                 clusterViolationSummary.noncompliant ||
+                clusterViolationSummary.pending ||
                 clusterViolationSummary.unknown
             ) {
                 return (
@@ -790,6 +805,10 @@ function usePolicyViolationsColumn(
                             .replace(':name', item.policy.metadata?.name ?? '')}?sort=-1`}
                         noncompliant={clusterViolationSummary.noncompliant}
                         violationHref={`${NavigationPath.policyDetailsResults
+                            .replace(':namespace', item.policy.metadata?.namespace ?? '')
+                            .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
+                        pending={clusterViolationSummary.pending}
+                        pendingHref={`${NavigationPath.policyDetailsResults
                             .replace(':namespace', item.policy.metadata?.namespace ?? '')
                             .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
                         unknown={clusterViolationSummary.unknown}

@@ -122,6 +122,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                                     {t('With violations')}
                                 </div>
                             )
+                        case 'pending':
+                            return (
+                                <div>
+                                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                                    {t('Pending')}
+                                </div>
+                            )
                         default:
                             return (
                                 <div>
@@ -180,7 +187,8 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                         )
                         const templateExists = !(
                             prunedMessage.includes('Failed to create policy template') ||
-                            prunedMessage.includes('check if you have CRD deployed')
+                            prunedMessage.includes('check if you have CRD deployed') ||
+                            prunedMessage.includes('Dependencies were not satisfied')
                         )
                         return (
                             <div>

@@ -13,6 +13,7 @@ export function PolicyViolationsCard(props: { policyViolationSummary: ViolationS
             description="Overview of policy violations"
             noncompliant={props.policyViolationSummary.noncompliant}
             compliant={props.policyViolationSummary.compliant}
+            pending={props.policyViolationSummary.pending}
             unknown={props.policyViolationSummary.unknown}
         />
     )
@@ -21,6 +22,7 @@ export function PolicyViolationsCard(props: { policyViolationSummary: ViolationS
 export interface ViolationSummary {
     noncompliant: number
     compliant: number
+    pending: number
     unknown: number
 }
 
@@ -28,6 +30,7 @@ export function usePolicyViolationSummary(policies: Policy[]): ViolationSummary 
     const violations = useMemo(() => {
         let compliant = 0
         let noncompliant = 0
+        let pending = 0
         let unknown = 0
         for (const policy of policies) {
             if (policy.spec.disabled) continue
@@ -38,12 +41,15 @@ export function usePolicyViolationSummary(policies: Policy[]): ViolationSummary 
                 case 'NonCompliant':
                     noncompliant++
                     break
+                case 'Pending':
+                    pending++
+                    break
                 default:
                     unknown++
                     break
             }
         }
-        return { noncompliant, compliant, unknown }
+        return { noncompliant, compliant, pending, unknown }
     }, [policies])
     return violations
 }
@@ -53,6 +59,7 @@ export function ViolationsCard(props: {
     description: string
     noncompliant: number
     compliant: number
+    pending: number
     unknown?: number
 }) {
     const { t } = useTranslation()
@@ -83,6 +90,11 @@ export function ViolationsCard(props: {
                                 ? `${NavigationPath.policies}?violations=without-violations`
                                 : undefined,
                     },
+                    {
+                        key: 'pending',
+                        value: props.pending,
+                        link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
+                    },
                 ]}
                 colorScale={[
                     'var(--pf-global--danger-color--100)',
@@ -103,6 +115,7 @@ export function usePolicyClusterViolationSummaryMap(policies: Policy[]): PolicyC
             const clusterViolationSummary: ViolationSummary = {
                 compliant: 0,
                 noncompliant: 0,
+                pending: 0,
                 unknown: 0,
             }
             map[policy.metadata.uid ?? ''] = clusterViolationSummary
@@ -114,6 +127,9 @@ export function usePolicyClusterViolationSummaryMap(policies: Policy[]): PolicyC
                         break
                     case 'NonCompliant':
                         clusterViolationSummary.noncompliant++
+                        break
+                    case 'Pending':
+                        clusterViolationSummary.pending++
                         break
                     default:
                         clusterViolationSummary.unknown++

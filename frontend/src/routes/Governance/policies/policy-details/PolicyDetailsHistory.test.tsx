@@ -6,6 +6,7 @@ import { policiesState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { Policy } from '../../../../resources'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
+import { mockPendingPolicy } from '../../governance.sharedMocks'
 
 const rootPolicy: Policy = {
     apiVersion: 'policy.open-cluster-management.io/v1',
@@ -122,6 +123,34 @@ describe('Policy Details History content', () => {
         await waitForText('Without violations')
         await waitForText(
             'notification - namespaces [test] found as specified, therefore this Object template is compliant'
+        )
+    })
+
+    test('Should render Policy Details History Page content correctly for pending policies', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, mockPendingPolicy)
+                }}
+            >
+                <MemoryRouter>
+                    <PolicyDetailsHistory
+                        policyName={'policy-set-with-1-placement-policy'}
+                        policyNamespace={'test'}
+                        clusterName={'local-cluster'}
+                        templateName={'policy-set-with-1-placement-policy-1'}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // wait template name load
+        await waitForText('Template: policy-set-with-1-placement-policy-1')
+
+        // wait for template table load
+        await waitForText('Pending')
+        await waitForText(
+            'template-error; Dependencies were not satisfied: 1 dependencies are still pending (Policy default.policy-pod)'
         )
     })
 })

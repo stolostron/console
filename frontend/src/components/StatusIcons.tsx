@@ -8,15 +8,19 @@ import { Link } from 'react-router-dom'
 export function StatusIcons(props: {
     compliant?: number
     violations?: number
+    pending?: number
     unknown?: number
     compliantTooltip?: string
     violationsTooltip?: string
+    pendingTooltip?: string
     unknownTooltip?: string
     compliantHref?: string
     violationHref?: string
+    pendingHref?: string
     unknownHref?: string
     compliantOnClick?: () => void
     violationOnClick?: () => void
+    pendingOnClick?: () => void
     unknownOnClick?: () => void
 }) {
     const statuses: {
@@ -47,6 +51,17 @@ export function StatusIcons(props: {
             tooltip: props.violationsTooltip,
             href: props.violationHref,
             onClick: props.violationOnClick,
+        })
+    }
+
+    if (props.pending !== undefined && props.pending) {
+        statuses.push({
+            key: 'pending',
+            count: props.pending,
+            icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+            tooltip: props.pendingTooltip,
+            href: props.pendingHref,
+            onClick: props.pendingOnClick,
         })
     }
 

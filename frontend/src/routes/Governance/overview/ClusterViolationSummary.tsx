@@ -10,6 +10,7 @@ export function useClusterViolationSummary(clusterViolationSummaryMap: ClusterVi
     const violations = useMemo(() => {
         let compliant = 0
         let noncompliant = 0
+        let pending = 0
         let unknown = 0
         for (const clusterName in clusterViolationSummaryMap) {
             const clusterViolationSummary = clusterViolationSummaryMap[clusterName]
@@ -17,11 +18,13 @@ export function useClusterViolationSummary(clusterViolationSummaryMap: ClusterVi
                 noncompliant++
             } else if (clusterViolationSummary.compliant) {
                 compliant++
+            } else if (clusterViolationSummary.pending) {
+                pending++
             } else {
                 unknown++
             }
         }
-        return { noncompliant, compliant, unknown }
+        return { noncompliant, compliant, pending, unknown }
     }, [clusterViolationSummaryMap])
     return violations
 }
@@ -36,7 +39,7 @@ export function useClusterViolationSummaryMap(policies: Policy[]): ClusterViolat
             for (const clusterStatus of policy.status?.status ?? []) {
                 let clusterViolationSummary = clusterViolationSummaryMap[clusterStatus.clustername]
                 if (!clusterViolationSummary) {
-                    clusterViolationSummary = { noncompliant: 0, compliant: 0, unknown: 0 }
+                    clusterViolationSummary = { noncompliant: 0, compliant: 0, pending: 0, unknown: 0 }
                     clusterViolationSummaryMap[clusterStatus.clustername] = clusterViolationSummary
                 }
                 switch (clusterStatus.compliant) {
@@ -45,6 +48,9 @@ export function useClusterViolationSummaryMap(policies: Policy[]): ClusterViolat
                         break
                     case 'NonCompliant':
                         clusterViolationSummary.noncompliant++
+                        break
+                    case 'Pending':
+                        clusterViolationSummary.pending++
                         break
                     default:
                         clusterViolationSummary.unknown++
