@@ -178,7 +178,6 @@
     "bulk.message.addSet": "将一个集群添加到集群集会为所有分配的集群集用户授予此集中资源的访问控制权限。集群可以随时从集群集中删除。",
     "bulk.message.addSet.empty": "您没有任何具有向其中添加集群的权限的集群集。如需基于角色的访问控制信息，请联系您的集群管理员。",
     "bulk.message.delete.claim": "您要删除集群声明。",
-    "bulk.message.delete.grc": "bulk.message.delete.grc",
     "bulk.message.delete.infraenv": "您将删除基础架构环境。基础架构环境将不再可用。",
     "bulk.message.deleteMachinePool": "删除机器池将销毁机器池中的任何机器集，相关的节点将被取消置备。删除机器池可能会导致在此集群没有足够的资源运行应用程序。",
     "bulk.message.deleteSet": "删除一个集群集会删除所有分配的集群集用户对此集中资源的访问控制权限。当前在集群集中存在的资源不会被删除。",
