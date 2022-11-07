@@ -9,7 +9,10 @@ export declare global {
         funcShot: (ret: any, max?: number) => void
         //
         nockShot: () => void
-        getNockShot: (fetches: { url: any; method: any; reqBody?: any; resBody?: any }[]) => {
+        getNockShot: (
+            fetches: { url: any; method: any; reqBody?: any; resBody?: any }[],
+            unfiltered: boolean
+        ) => {
             dataMocks: string[]
             funcMocks: string[]
         }
