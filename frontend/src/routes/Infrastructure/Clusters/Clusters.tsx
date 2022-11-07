@@ -9,8 +9,8 @@ import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryC
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import { CreateClusterPage } from './ManagedClusters/CreateClusterPage'
-import { CreateControlPlane } from './ManagedClusters/CreateInfrastructure/CreateControlPlane'
-import { CreateDiscoverHost } from './ManagedClusters/CreateInfrastructure/CreateDiscoverHost'
+import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
+import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 
 export default function Clusters() {

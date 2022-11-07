@@ -68,17 +68,18 @@ export function UpdateAutomationModal(props: {
 }): JSX.Element {
     const { t } = useTranslation()
     const classes = useStyles()
-    const { clusterCuratorsState } = useSharedAtoms()
+    const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
     const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
         useSharedSelectors()
     const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const clusterCurators = useRecoilValue(clusterCuratorsState)
+    const hostedClusters = useRecoilValue(hostedClustersState)
     const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
     const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
     const [selectedCuratorTemplate, setSelectedCuratorTemplate] = useState<ClusterCurator | undefined>()
     const [isUpdating, setIsUpdating] = useState(false)
     const clusterProviders = useClusterProviderColumn()
-    const distributionVersion = useClusterDistributionColumn(clusterCurators)
+    const distributionVersion = useClusterDistributionColumn(clusterCurators, hostedClusters)
 
     const handleCuratorSelect = (uid: string | undefined) => {
         setSelectedCuratorTemplate(

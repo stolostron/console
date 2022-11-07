@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
+import { RecoilRoot } from 'recoil'
 import { waitForText } from '../../../../../lib/test-util'
 import { createResource, deleteResource, patchResource } from '../../../../../resources'
 import NodePoolsTable from './NodePoolsTable'
@@ -114,13 +115,17 @@ describe('NodePoolsTable', () => {
     ]
     beforeEach(() => {
         render(
-            <NodePoolsTable
-                nodePools={nodePools}
-                onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
-                onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
-                clusterImages={[]}
-            />
+            <RecoilRoot>
+                <NodePoolsTable
+                    nodePools={nodePools}
+                    onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
+                    onRemoveNodePool={(np) => deleteResource(np).promise}
+                    onUpdateNodePool={(nodePool, patches) =>
+                        patchResource(nodePool, patches).promise as unknown as Promise<void>
+                    }
+                    clusterImages={[]}
+                />
+            </RecoilRoot>
         )
     })
 
@@ -177,13 +182,17 @@ describe('NodePoolsTable no status', () => {
     ]
     beforeEach(() => {
         render(
-            <NodePoolsTable
-                nodePools={nodePools}
-                onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
-                onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
-                clusterImages={[]}
-            />
+            <RecoilRoot>
+                <NodePoolsTable
+                    nodePools={nodePools}
+                    onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
+                    onRemoveNodePool={(np) => deleteResource(np).promise}
+                    onUpdateNodePool={(nodePool, patches) =>
+                        patchResource(nodePool, patches).promise as unknown as Promise<void>
+                    }
+                    clusterImages={[]}
+                />
+            </RecoilRoot>
         )
     })
 
@@ -241,13 +250,17 @@ describe('NodePoolsTable no conditions', () => {
     ]
     beforeEach(() => {
         render(
-            <NodePoolsTable
-                nodePools={nodePools}
-                onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
-                onRemoveNodePool={(np) => deleteResource(np).promise}
-                onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches) as unknown as Promise<void>}
-                clusterImages={[]}
-            />
+            <RecoilRoot>
+                <NodePoolsTable
+                    nodePools={nodePools}
+                    onAddNodePool={(np) => createResource(np).promise as unknown as Promise<void>}
+                    onRemoveNodePool={(np) => deleteResource(np).promise}
+                    onUpdateNodePool={(nodePool, patches) =>
+                        patchResource(nodePool, patches).promise as unknown as Promise<void>
+                    }
+                    clusterImages={[]}
+                />
+            </RecoilRoot>
         )
     })
 

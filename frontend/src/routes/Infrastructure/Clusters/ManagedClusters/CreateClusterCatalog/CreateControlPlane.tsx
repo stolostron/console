@@ -15,6 +15,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 const clusterTypeTooltips = 'Required operator: Red Hat Advanced Cluster Management or multicluster engine'
 
@@ -56,10 +57,7 @@ export function CreateControlPlane() {
                     },
                 ],
                 onClick: isHypershiftEnabled
-                    ? nextStep({
-                          pathname: NavigationPath.createCluster,
-                          search: '?infrastructureType=CIMHypershift',
-                      })
+                    ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIMHypershift))
                     : undefined,
                 alertTitle: isHypershiftEnabled
                     ? undefined

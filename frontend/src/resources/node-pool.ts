@@ -33,6 +33,7 @@ export interface NodePool extends IResource {
         release: {
             image: string
         }
+        replicas: number
     }
     status?: {
         conditions?: {
@@ -41,5 +42,6 @@ export interface NodePool extends IResource {
             reason: string
             message: string
         }[]
+        version: string
     }
 }
