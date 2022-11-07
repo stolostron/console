@@ -385,7 +385,7 @@ export function DiscoveryConfigPageContent(props: {
                         namespaces={projects}
                         isEditing={false}
                         isViewing={false}
-                        infrastructureType={'redhatcloud'}
+                        credentialsType={Provider.redhatcloud}
                         handleModalToggle={handleModalToggle}
                         hideYaml={true}
                         control={setNewSecret}

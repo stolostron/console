@@ -5,9 +5,8 @@ import { RecoilRoot } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { CreateInfrastructure } from './CreateInfrastructure'
-
 import { ProviderConnectionApiVersion, ProviderConnectionKind, Secret } from '../../../../../resources'
+import { CreateClusterPoolCatalog } from './CreateClusterPoolCatalog'
 
 const providerConnectionAws: Secret = {
     apiVersion: ProviderConnectionApiVersion,
@@ -22,7 +21,7 @@ const providerConnectionAws: Secret = {
     },
 }
 
-describe('CreateInfrastructure', () => {
+describe('CreateClusterPoolCatalog', () => {
     const Component = () => {
         return (
             <RecoilRoot
@@ -30,9 +29,9 @@ describe('CreateInfrastructure', () => {
                     snapshot.set(secretsState, [providerConnectionAws])
                 }}
             >
-                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-                    <Route path={NavigationPath.createCluster}>
-                        <CreateInfrastructure />
+                <MemoryRouter initialEntries={[NavigationPath.createClusterPool]}>
+                    <Route path={NavigationPath.createClusterPool}>
+                        <CreateClusterPoolCatalog />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>
@@ -44,11 +43,6 @@ describe('CreateInfrastructure', () => {
         await clickByTestId('aws')
     })
 
-    test('can select host inventory', async () => {
-        render(<Component />)
-        await clickByTestId('hostinventory')
-    })
-
     test('can select google', async () => {
         render(<Component />)
         await clickByTestId('google')
@@ -57,20 +51,5 @@ describe('CreateInfrastructure', () => {
     test('can select azure', async () => {
         render(<Component />)
         await clickByTestId('azure')
-    })
-
-    test('can select openstack', async () => {
-        render(<Component />)
-        await clickByTestId('openstack')
-    })
-
-    test('can select rhv', async () => {
-        render(<Component />)
-        await clickByTestId('rhv')
-    })
-
-    test('can select vsphere', async () => {
-        render(<Component />)
-        await clickByTestId('vsphere')
     })
 })

@@ -22,7 +22,9 @@ import {
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import AddCredentialPage2 from './CredentialsForm'
+import { CreateCredentialsFormPage } from './CredentialsForm'
+import { CredentialsType } from './CredentialsType'
+import { Provider } from '../../ui-components'
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
     apiVersion: NamespaceApiVersion,
@@ -68,20 +70,20 @@ export function createProviderConnection(
 describe('add credentials page', () => {
     beforeEach(() => nockIgnoreRBAC())
 
-    const Component = (props: { infrastructureType: string }) => {
+    const Component = (props: { credentialsType: CredentialsType }) => {
         return (
             <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
                 <MemoryRouter
-                    initialEntries={[`${NavigationPath.addCredentials}?infrastructureType=${props.infrastructureType}`]}
+                    initialEntries={[`${NavigationPath.addCredentials}?credentialsType=${props.credentialsType}`]}
                 >
-                    <AddCredentialPage2 />
+                    <CreateCredentialsFormPage credentialsType={props.credentialsType} />
                 </MemoryRouter>
             </RecoilRoot>
         )
     }
 
     it('should create aws (Amazon Web Services) credentials', async () => {
-        render(<Component infrastructureType="AWS" />)
+        render(<Component credentialsType={Provider.aws} />)
         const providerConnection = createProviderConnection(
             'aws',
             { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
@@ -114,7 +116,7 @@ describe('add credentials page', () => {
     })
 
     it('should create azr (Azure) credentials', async () => {
-        render(<Component infrastructureType="Azure" />)
+        render(<Component credentialsType={Provider.azure} />)
 
         const providerConnection = createProviderConnection(
             'azr',
@@ -160,7 +162,7 @@ describe('add credentials page', () => {
     })
 
     it('should create gcp (Google Cloud Platform) credentials', async () => {
-        render(<Component infrastructureType="GCP" />)
+        render(<Component credentialsType={Provider.gcp} />)
 
         const providerConnection = createProviderConnection(
             'gcp',
@@ -197,7 +199,7 @@ describe('add credentials page', () => {
     })
 
     it('should create vmw (VMware) credentials', async () => {
-        render(<Component infrastructureType="vSphere" />)
+        render(<Component credentialsType={Provider.vmware} />)
 
         const providerConnection = createProviderConnection(
             'vmw',
@@ -255,7 +257,7 @@ describe('add credentials page', () => {
     })
 
     it('should create rhv (Red Hat Virtualization) credentials', async () => {
-        render(<Component infrastructureType="RHV" />)
+        render(<Component credentialsType={Provider.redhatvirtualization} />)
 
         const providerConnection = createProviderConnection(
             'redhatvirtualization',
@@ -298,7 +300,7 @@ describe('add credentials page', () => {
     })
 
     it('should create ost (OpenStack) credentials', async () => {
-        render(<Component infrastructureType="OpenStack" />)
+        render(<Component credentialsType={Provider.openstack} />)
 
         const providerConnection = createProviderConnection(
             'ost',
@@ -341,7 +343,7 @@ describe('add credentials page', () => {
     })
 
     it('should create ans (Ansible) credentials', async () => {
-        render(<Component infrastructureType="Ansible" />)
+        render(<Component credentialsType={Provider.ansible} />)
 
         const providerConnection = createProviderConnection(
             'ans',
@@ -368,7 +370,7 @@ describe('add credentials page', () => {
     })
 
     it('should create rhocm credentials', async () => {
-        render(<Component infrastructureType="RedHatCloud" />)
+        render(<Component credentialsType={Provider.redhatcloud} />)
 
         const providerConnection = createProviderConnection('rhocm', {
             ocmAPIToken: 'ocmAPIToken',
@@ -389,7 +391,7 @@ describe('add credentials page', () => {
     })
 
     it('should throw error for requiredValidationMessage', async () => {
-        render(<Component infrastructureType="RedHatCloud" />)
+        render(<Component credentialsType={Provider.redhatcloud} />)
 
         await clickByText('Next')
         await waitForText('This is a required field.', true)
