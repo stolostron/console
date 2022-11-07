@@ -12,7 +12,7 @@ import {
     UserPreference,
 } from '../../../../../resources/userpreference'
 import { AcmAlert, AcmButton, AcmForm, AcmModal, AcmTextArea, AcmTextInput } from '../../../../../ui-components'
-import SuggestQueryTemplates from '../SuggestedQueryTemplates'
+import { useSuggestedQueryTemplates } from '../SuggestedQueryTemplates'
 
 type IState = {
     searchName: string
@@ -65,8 +65,10 @@ export const SaveAndEditSearchModal = (props: {
         }
     }
 
+    const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
+
     function onChange(value: string, e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) {
-        const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
+        // const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
         const allSavedQueryNames = [...suggestedQueryTemplates, ...savedSearchQueries].map(
             (savedQuery: SavedSearch) => savedQuery.name?.toLowerCase() || ''
         )

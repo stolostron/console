@@ -405,7 +405,7 @@ export function Searchbar(props: SearchbarProps) {
                             <Chip
                                 key={searchbarTag.id}
                                 onClick={() => deleteChip(idx)}
-                                closeBtnAriaLabel={'delete-chip'}
+                                closeBtnAriaLabel={t('delete-chip')}
                                 textMaxWidth={'100%'}
                             >
                                 {searchbarTag.name}
