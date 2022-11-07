@@ -10,8 +10,9 @@ import {
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../atoms'
-import { nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
-import { rbacCreate } from '../../../../lib/rbac-util'
+import { APIResourceNames } from '../../../../lib/api-resource-list'
+import { nockApiPaths, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import { rbacCreateTestHelper } from '../../../../lib/rbac-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import {
     clickBulkAction,
@@ -355,6 +356,15 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
+const mockApiPathList: APIResourceNames = {
+    'cluster.open-cluster-management.io/v1': {
+        ManagedCluster: {
+            pluralName: 'managedclusters',
+            singularName: 'managedcluster',
+        },
+    },
+}
+
 function getClusterCuratorCreateResourceAttributes(name: string) {
     return {
         resource: 'clustercurators',
@@ -375,6 +385,7 @@ function getClusterCuratorPatchResourceAttributes(name: string) {
 describe('Clusters Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockApiPaths(mockApiPathList).persist()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -398,7 +409,7 @@ describe('Clusters Page', () => {
             `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
             mockManagedCluster0.metadata!.name!
         )
-        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0), await nockDelete(mockClusterDeployment0)]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -407,7 +418,7 @@ describe('Clusters Page', () => {
         await selectTableRow(1)
         await clickBulkAction('Destroy clusters')
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
-        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0), await nockDelete(mockClusterDeployment0)]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -418,7 +429,7 @@ describe('Clusters Page', () => {
             `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
             mockManagedCluster0.metadata!.name!
         )
-        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster0)]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
         await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
@@ -427,7 +438,7 @@ describe('Clusters Page', () => {
         await selectTableRow(2)
         await clickBulkAction('Detach clusters')
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
-        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster1)]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
@@ -479,11 +490,12 @@ describe('Clusters Page', () => {
 
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
-        const rbacCreateManagedClusterNock = nockRBAC(await rbacCreate(ManagedClusterDefinition))
+        nockApiPaths(mockApiPathList).persist()
+        const rbacCreateManagedClusterNock = nockRBAC(rbacCreateTestHelper(ManagedClusterDefinition))
         const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
             prev.push(
-                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),
-                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!))
+                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)).persist(),
+                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!)).persist()
             )
             return prev
         }, [] as Scope[])
@@ -536,6 +548,7 @@ describe('Clusters Page hypershift', () => {
 describe('Clusters Page regional hub cluster', () => {
     test('should render regional hub clusters', async () => {
         nockIgnoreRBAC()
+        nockApiPaths(mockApiPathList).persist()
         const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
         const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
         render(

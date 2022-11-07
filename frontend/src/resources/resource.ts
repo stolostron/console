@@ -42,7 +42,7 @@ let apiResourceList: APIResourceNames = {}
 const callCache: Promise<string>[] = []
 let pendingPromise = false
 
-function fallbackPlural(resourceDefinition: IResourceDefinition) {
+export function fallbackPlural(resourceDefinition: IResourceDefinition) {
     if (resourceDefinition.kind.endsWith('s')) {
         return resourceDefinition.kind.toLowerCase()
     }
