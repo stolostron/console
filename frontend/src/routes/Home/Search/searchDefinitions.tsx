@@ -1397,7 +1397,7 @@ export const GetUrlSearchParam = (resource: any) => {
 }
 
 export function CreateDetailsLink(item: any) {
-    switch (item.kind) {
+    switch (item.kind.toLowerCase()) {
         case 'cluster':
             return <a href={`/multicloud/infrastructure/clusters/details/${item.name}/overview`}>{item.name}</a>
 
@@ -1406,7 +1406,7 @@ export function CreateDetailsLink(item: any) {
             if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
                 // only redirect to apps page if it is an ACM application
                 const params = queryString.stringify({
-                    apiVersion: `${kind}.${apigroup}`,
+                    apiVersion: `${kind}.${apigroup}`.toLowerCase(),
                     cluster: cluster === 'local-cluster' ? undefined : cluster,
                     applicationset: applicationSet == null ? undefined : applicationSet,
                 })
@@ -1493,7 +1493,7 @@ export function CreateDetailsLink(item: any) {
 
 export function CreateApplicationTopologyLink(item: any) {
     if (item.apiversion && item.apigroup) {
-        const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`)
+        const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
         const link = `${NavigationPath.applicationTopology
             .replace(':namespace', item.namespace)
             .replace(':name', item.name)}?apiVersion=${apiversion}`
