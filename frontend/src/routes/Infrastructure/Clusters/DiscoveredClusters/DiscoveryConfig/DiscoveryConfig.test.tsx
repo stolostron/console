@@ -5,7 +5,14 @@ import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace, nockDelete } from '../../../../../lib/nock-util'
+import {
+    nockCreate,
+    nockIgnoreRBAC,
+    nockGet,
+    nockReplace,
+    nockDelete,
+    nockApiPaths,
+} from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../DiscoveredClusters'
@@ -21,6 +28,16 @@ import {
     discoveryConfigUpdateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
 import userEvent from '@testing-library/user-event'
+import { APIResourceNames } from '../../../../../lib/api-resource-list'
+
+const mockApiPathList: APIResourceNames = {
+    'cluster.open-cluster-management.io/v1': {
+        ManagedCluster: {
+            pluralName: 'managedclusters',
+            singularName: 'managedcluster',
+        },
+    },
+}
 
 function TestAddDiscoveryConfigPage() {
     return (
@@ -70,6 +87,7 @@ describe('discovery config page', () => {
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
+        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestAddDiscoveryConfigPage />)
         waitForNocks([discoveryConfigCreateNock])
 
@@ -109,6 +127,7 @@ describe('discovery config page', () => {
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
+        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
         // Select Credential
@@ -147,7 +166,8 @@ describe('discovery config page', () => {
             discoveryConfigUpdateSelfSubjectAccessRequest,
             discoveryConfigUpdateSelfSubjectAccessResponse
         )
-        const nocks = [await nockGet(discoveryConfig, discoveryConfig)]
+        nockApiPaths(mockApiPathList).persist()
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
@@ -173,7 +193,7 @@ describe('discovery config page', () => {
 
         const replaceNock = nockReplace(discoveryConfigUpdated)
         await clickByText('Save')
-        await waitFor(async () => expect((await replaceNock).isDone()).toBeTruthy())
+        await waitFor(async () => expect(replaceNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was updated successfully')
@@ -181,8 +201,8 @@ describe('discovery config page', () => {
     })
 
     it('Delete DiscoveryConfig', async () => {
-        const nocks = [await nockGet(discoveryConfig, discoveryConfig)]
-
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
+        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
 
@@ -200,7 +220,7 @@ describe('discovery config page', () => {
         await clickByText('Delete')
         await waitForText('Delete discovery settings')
         await clickByText('Delete', 1)
-        await waitFor(async () => expect((await deleteNock).isDone()).toBeTruthy())
+        await waitFor(async () => expect(deleteNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was removed successfully')
