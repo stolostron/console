@@ -10,7 +10,7 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../../../atoms'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 
 import {
@@ -37,6 +37,7 @@ import {
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../../../resources'
+import { mockApiPathList } from '../../../Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 import { ApplicationDataType } from '../ApplicationDetails'
 import { ApplicationOverviewPageContent } from './ApplicationOverview'
 
@@ -433,6 +434,7 @@ describe('Overview Tab', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
+        nockApiPaths(mockApiPathList).persist()
         await waitForText('Name')
         // cluster
         await waitForText('Clusters')

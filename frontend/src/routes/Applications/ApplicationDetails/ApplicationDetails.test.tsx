@@ -43,7 +43,7 @@ import {
     subscriptionsState,
 } from '../../../atoms'
 import moment from 'moment'
-import { nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
+import { nockApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom'
@@ -56,6 +56,7 @@ import { PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ApplicationActionProps } from '../../../plugin-extensions/properties'
 import { PluginDataContext } from '../../../lib/PluginDataContext'
+import { mockApiPathList } from '../../Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 
 const mockApplication0: Application = {
     apiVersion: ApplicationApiVersion,
@@ -613,6 +614,7 @@ describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockApiPaths(mockApiPathList).persist()
         const props: any = {
             name: 'application-0',
             namespace: 'namespace-0',
