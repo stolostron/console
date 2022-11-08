@@ -1882,6 +1882,12 @@ exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
 
 exports[`Correctly returns empty labels 1`] = `"-"`;
 
+exports[`Correctly returns formatSearchbarSuggestions no timestamp 1`] = `"-"`;
+
+exports[`Correctly returns formatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
+
+exports[`Correctly returns formatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;
+
 exports[`Correctly returns label components 1`] = `
 <AcmLabels
   collapse={Array []}
@@ -1974,9 +1980,3 @@ exports[`Correctly returns url search params with 0 params 1`] = `"?cluster%3Dte
 exports[`Correctly returns url search params with all params & apigroup 1`] = `"?cluster%3DtestCluster%26kind%3DPod%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;
 
 exports[`Correctly returns url search params with all params without apigroup 1`] = `"?cluster%3DtestCluster%26kind%3DPod%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;
-
-exports[`Correctly returns formatSearchbarSuggestions no timestamp 1`] = `"-"`;
-
-exports[`Correctly returns formatSearchbarSuggestions with T in timestamp 1`] = `"3 days ago"`;
-
-exports[`Correctly returns formatSearchbarSuggestions without T in timestamp 1`] = `"3 days ago"`;

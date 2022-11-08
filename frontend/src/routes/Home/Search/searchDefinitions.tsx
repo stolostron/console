@@ -8,7 +8,6 @@ import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmLabels } from '../../../ui-components'
 
@@ -997,7 +996,24 @@ const searchDefinitions: any = {
                 header: 'Violations',
                 sort: 'compliant',
                 cell: (item: any) => {
-                    return GetViolations(item)
+                    switch (item.compliant) {
+                        case 'Compliant':
+                            return (
+                                <div>
+                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                    {'Without violations'}
+                                </div>
+                            )
+                        case 'NonCompliant':
+                            return (
+                                <div>
+                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                    {'With violations'}
+                                </div>
+                            )
+                        default:
+                            return '-'
+                    }
                 },
             },
             {
@@ -1351,26 +1367,6 @@ const searchDefinitions: any = {
     },
 }
 
-export function GetViolations(item: any) {
-    const { t } = useTranslation()
-    switch (item.compliant) {
-        case 'Compliant':
-            return (
-                <div>
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
-                </div>
-            )
-        case 'NonCompliant':
-            return (
-                <div>
-                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
-                </div>
-            )
-        default:
-            return '-'
-    }
-}
-
 export function GetAge(item: any, key: string) {
     const createdTime = _.get(item, key)
     if (createdTime && createdTime.includes('T')) {
@@ -1496,23 +1492,27 @@ export function CreateDetailsLink(item: any) {
 }
 
 export function CreateApplicationTopologyLink(item: any) {
-    const { t } = useTranslation()
     if (item.apiversion && item.apigroup) {
         const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
         const link = `${NavigationPath.applicationTopology
             .replace(':namespace', item.namespace)
             .replace(':name', item.name)}?apiVersion=${apiversion}`
-        return <a href={link}>{t('View topology')}</a>
+        return (
+            <a href={link}>
+                {/* TODO Not translating - caused issue: https://github.com/open-cluster-management/backlog/issues/9184 */}
+                {'View topology'}
+            </a>
+        )
     }
     return '-'
 }
 
 export function CreateExternalLink(item: any) {
-    const { t } = useTranslation()
     if (item.consoleURL) {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${item.consoleURL}`}>
-                {t('Launch')}
+                {/* TODO Not translating - caused issue: https://github.com/open-cluster-management/backlog/issues/9184 */}
+                {'Launch'}
             </a>
         )
     } else if (item.clusterip) {

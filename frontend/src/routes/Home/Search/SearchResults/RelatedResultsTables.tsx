@@ -27,25 +27,35 @@ export default function RelatedResultsTables(props: {
     })
 
     const renderContent = useCallback(
-        (kind: string, items: ISearchResult[]) => (
-            <AcmTable
-                plural=""
-                items={items}
-                columns={_.get(
-                    searchDefinitions,
-                    `[${kind.toLowerCase()}].columns`,
-                    searchDefinitions['genericresource'].columns
-                )}
-                keyFn={(item: any) => item._uid.toString()}
-                rowActions={GetRowActions(
-                    kind,
-                    t('Delete {{resourceKind}}', { resourceKind: kind }),
-                    currentQuery,
-                    true,
-                    setDeleteResource
-                )}
-            />
-        ),
+        (kind: string, items: ISearchResult[]) => {
+            const colDefs = _.get(
+                searchDefinitions,
+                `[${kind.toLowerCase()}].columns`,
+                searchDefinitions['genericresource'].columns
+            )
+
+            const transColumns = colDefs.map((item: any) => {
+                const temp = Object.assign({}, item)
+                temp.header = t(`${item.header}`)
+                item.tooltip && (temp.tooltip = t(`${item.tooltip}`))
+                return temp
+            })
+            return (
+                <AcmTable
+                    plural=""
+                    items={items}
+                    columns={transColumns}
+                    keyFn={(item: any) => item._uid.toString()}
+                    rowActions={GetRowActions(
+                        kind,
+                        t('Delete {{resourceKind}}', { resourceKind: kind }),
+                        currentQuery,
+                        true,
+                        setDeleteResource
+                    )}
+                />
+            )
+        },
         [currentQuery, setDeleteResource, t]
     )
 
