@@ -139,15 +139,15 @@ const mockSearchQuery = {
         input: [
             {
                 filters: [
-                    { property: 'kind', values: ['subscription'] },
+                    { property: 'kind', values: ['Subscription'] },
                     { property: 'cluster', values: ['test-cluster'] },
                 ],
-                relatedKinds: ['application'],
+                relatedKinds: ['Application'],
             },
             {
                 filters: [
                     { property: 'compliant', values: ['!Compliant'] },
-                    { property: 'kind', values: ['policy'] },
+                    { property: 'kind', values: ['Policy'] },
                     { property: 'namespace', values: ['test-cluster'] },
                     { property: 'cluster', values: ['local-cluster'] },
                 ],
@@ -160,13 +160,13 @@ const mockSearchQuery = {
 const mockSearchResponse = {
     data: {
         searchResult: [
-            { count: 14, related: [{ kind: 'application', count: 4 }], __typename: 'SearchResult' },
+            { count: 14, related: [{ kind: 'Application', count: 4 }], __typename: 'SearchResult' },
             {
                 count: 1,
                 related: [
-                    { kind: 'cluster', count: 1, __typename: 'SearchRelatedResult' },
-                    { kind: 'configurationpolicy', count: 1, __typename: 'SearchRelatedResult' },
-                    { kind: 'policy', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'Cluster', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'ConfigurationPolicy', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'Policy', count: 1, __typename: 'SearchRelatedResult' },
                 ],
                 __typename: 'SearchResult',
             },
@@ -236,7 +236,7 @@ describe('StatusSummaryCount', () => {
             await clickByText('4')
             expect(push).toHaveBeenCalledTimes(1)
             expect(push.mock.calls[0][0]).toBe(
-                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application'
+                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:Subscription"}&showrelated=Application'
             )
 
             await clickByText('Go to Applications')
@@ -246,7 +246,7 @@ describe('StatusSummaryCount', () => {
             await clickByText('1')
             expect(push).toHaveBeenCalledTimes(3)
             expect(push.mock.calls[2][0]).toBe(
-                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}'
+                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:Policy%20namespace:test-cluster%20compliant:!Compliant"}'
             )
 
             await clickByText('Go to Policies')

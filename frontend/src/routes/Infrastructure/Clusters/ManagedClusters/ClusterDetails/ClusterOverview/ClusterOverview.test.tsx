@@ -1,18 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { nockGet, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
-import { ClusterContext } from '../ClusterDetails'
-import { ClusterOverviewPageContent } from './ClusterOverview'
-import {
-    mockAWSHypershiftCluster,
-    mockAWSHostedCluster,
-    mockBMHypershiftCluster,
-    mockBMHypershiftClusterNoNamespace,
-    mockAWSHypershiftClusterNoHypershift,
-    mockRegionalHubCluster,
-} from '../ClusterDetails.sharedmocks'
-import { clickByText, waitForText } from '../../../../../../lib/test-util'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
     agentClusterInstallsState,
@@ -30,8 +19,19 @@ import {
     nodePoolsState,
     policyreportState,
 } from '../../../../../../atoms'
-import { MemoryRouter } from 'react-router-dom'
+import { nockGet, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { ClusterContext } from '../ClusterDetails'
+import {
+    mockAWSHostedCluster,
+    mockAWSHypershiftCluster,
+    mockAWSHypershiftClusterNoHypershift,
+    mockBMHypershiftCluster,
+    mockBMHypershiftClusterNoNamespace,
+    mockRegionalHubCluster,
+} from '../ClusterDetails.sharedmocks'
+import { ClusterOverviewPageContent } from './ClusterOverview'
 
 const mockHistoryPush = jest.fn()
 
@@ -48,17 +48,17 @@ const mockSearchQuery = {
         input: [
             {
                 filters: [
-                    { property: 'kind', values: ['subscription'] },
+                    { property: 'kind', values: ['Subscription'] },
                     { property: 'cluster', values: ['feng-hypershift-test'] },
                 ],
-                relatedKinds: ['application'],
+                relatedKinds: ['Application'],
             },
             {
                 filters: [
                     { property: 'compliant', values: ['!Compliant'] },
-                    { property: 'kind', values: ['policy'] },
+                    { property: 'kind', values: ['Policy'] },
                     { property: 'namespace', values: ['feng-hypershift-test'] },
-                    { property: 'cluster', values: 'local-cluster' },
+                    { property: 'cluster', values: ['local-cluster'] },
                 ],
             },
         ],
