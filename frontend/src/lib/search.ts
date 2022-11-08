@@ -46,10 +46,10 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
                 },
                 {
                     filters: [
-                        { property: 'compliant', values: ['!Compliant'] },
+                        { property: 'compliant', values: ['NonCompliant'] },
                         { property: 'kind', values: ['policy'] },
                         { property: 'namespace', values: [cluster] },
-                        { property: 'cluster', values: 'local-cluster' },
+                        { property: 'cluster', values: ['local-cluster'] },
                     ],
                 },
             ],
