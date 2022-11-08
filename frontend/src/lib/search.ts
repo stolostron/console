@@ -42,7 +42,7 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
                         { property: 'kind', values: ['Subscription'] },
                         { property: 'cluster', values: [cluster] },
                     ],
-                    relatedKinds: ['application'],
+                    relatedKinds: ['Application'],
                 },
                 {
                     filters: [
