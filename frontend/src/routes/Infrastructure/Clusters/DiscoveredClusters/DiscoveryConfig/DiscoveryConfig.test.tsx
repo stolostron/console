@@ -26,18 +26,9 @@ import {
     discoveryConfigCreateSelfSubjectAccessResponse,
     discoveryConfigUpdateSelfSubjectAccessRequest,
     discoveryConfigUpdateSelfSubjectAccessResponse,
+    mockApiPathList,
 } from '../DiscoveryComponents/test-utils'
 import userEvent from '@testing-library/user-event'
-import { APIResourceNames } from '../../../../../lib/api-resource-list'
-
-const mockApiPathList: APIResourceNames = {
-    'cluster.open-cluster-management.io/v1': {
-        ManagedCluster: {
-            pluralName: 'managedclusters',
-            singularName: 'managedcluster',
-        },
-    },
-}
 
 function TestAddDiscoveryConfigPage() {
     return (

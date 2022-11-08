@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { APIResourceNames } from '../../../../../lib/api-resource-list'
 import {
     DiscoveredCluster,
     DiscoveryConfig,
@@ -243,5 +244,14 @@ export const secretCreateSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     },
     status: {
         allowed: true,
+    },
+}
+
+export const mockApiPathList: APIResourceNames = {
+    'cluster.open-cluster-management.io/v1': {
+        ManagedCluster: {
+            pluralName: 'managedclusters',
+            singularName: 'managedcluster',
+        },
     },
 }

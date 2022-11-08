@@ -21,10 +21,11 @@ import { render, waitFor } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
-import { nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
+import { nockApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { mockApiPathList } from '../../DiscoveredClusters/DiscoveryComponents/test-utils'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -568,11 +569,13 @@ describe('DistributionField', () => {
     })
 
     it('should disable the upgrade button when the user lacks permissions', async () => {
+        nockApiPaths(mockApiPathList).persist()
         const { queryByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
         expect(queryByText('Upgrade available')).toHaveAttribute('aria-disabled', 'true')
     })
 
     it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
+        nockApiPaths(mockApiPathList).persist()
         await renderDistributionInfoField(mockDistributionInfo, true, true)
         await clickByText('Upgrade available', 0)
         await waitForText('Name')
@@ -592,6 +595,7 @@ describe('DistributionField', () => {
     })
 
     it('should not show failed when there is no upgrade running', async () => {
+        nockApiPaths(mockApiPathList).persist()
         const { queryAllByText, getAllByText } = await renderDistributionInfoField(
             mockDistributionInfoFailedInstall,
             true,

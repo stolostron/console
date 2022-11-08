@@ -12,7 +12,6 @@ import {
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../atoms'
-import { APIResourceNames } from '../../../../lib/api-resource-list'
 import { nockApiPaths, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
 import { rbacCreateTestHelper } from '../../../../lib/rbac-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
@@ -47,6 +46,7 @@ import {
     managedClusterSetLabel,
     ResourceAttributes,
 } from '../../../../resources'
+import { mockApiPathList } from '../DiscoveredClusters/DiscoveryComponents/test-utils'
 import ManagedClusters from './ManagedClusters'
 
 const mockManagedCluster0: ManagedCluster = {
@@ -359,15 +359,6 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
     metadata: { name: 'managed-cluster-0-clusterset', namespace: 'managed-cluster-0-clusterset' },
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
-
-const mockApiPathList: APIResourceNames = {
-    'cluster.open-cluster-management.io/v1': {
-        ManagedCluster: {
-            pluralName: 'managedclusters',
-            singularName: 'managedcluster',
-        },
-    },
-}
 
 const mockHostedCluster0: HostedClusterK8sResource = {
     apiVersion: HostedClusterApiVersion,

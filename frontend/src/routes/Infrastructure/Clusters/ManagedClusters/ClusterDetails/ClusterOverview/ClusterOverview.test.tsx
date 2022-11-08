@@ -32,7 +32,7 @@ import {
 } from '../../../../../../atoms'
 import { MemoryRouter } from 'react-router-dom'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
-import { APIResourceNames } from '../../../../../../lib/api-resource-list'
+import { mockApiPathList } from '../../../DiscoveredClusters/DiscoveryComponents/test-utils'
 
 const mockHistoryPush = jest.fn()
 
@@ -102,15 +102,6 @@ const kubeAdminPassSecret: Secret = {
         namespace: 'feng-hypershift-test',
     },
     stringData: {},
-}
-
-const mockApiPathList: APIResourceNames = {
-    'cluster.open-cluster-management.io/v1': {
-        ManagedCluster: {
-            pluralName: 'managedclusters',
-            singularName: 'managedcluster',
-        },
-    },
 }
 
 describe('ClusterOverview with AWS hypershift cluster', () => {
