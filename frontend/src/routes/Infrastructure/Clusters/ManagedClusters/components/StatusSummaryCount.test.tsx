@@ -146,7 +146,7 @@ const mockSearchQuery = {
             },
             {
                 filters: [
-                    { property: 'compliant', values: ['NonCompliant'] },
+                    { property: 'compliant', values: ['!Compliant'] },
                     { property: 'kind', values: ['policy'] },
                     { property: 'namespace', values: ['test-cluster'] },
                     { property: 'cluster', values: ['local-cluster'] },
