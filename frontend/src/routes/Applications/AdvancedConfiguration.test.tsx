@@ -12,7 +12,7 @@ import {
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../resources'
-import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import { nockApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
 import ApplicationsPage from './ApplicationsPage'
 import {
@@ -21,6 +21,7 @@ import {
     mockSearchResponse,
     mockSearchResponseOCPApplications,
 } from './Application.sharedmocks'
+import { mockApiPathList } from '../Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 
 const mockSubscription1: Subscription = {
     kind: SubscriptionKind,
@@ -87,6 +88,7 @@ describe('advanced configuration page', () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+        nockApiPaths(mockApiPathList).persist()
     })
 
     test('should render the table with subscriptions', async () => {

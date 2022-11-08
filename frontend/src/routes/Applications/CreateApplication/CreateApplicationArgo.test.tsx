@@ -13,6 +13,7 @@ import {
     secretsState,
 } from '../../../atoms'
 import {
+    nockApiPaths,
     nockArgoGitBranches,
     nockArgoGitPathSha,
     nockArgoGitPathTree,
@@ -47,6 +48,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../../../resources'
+import { mockApiPathList } from '../../Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 import CreateApplicationArgo from './CreateApplicationArgo'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
@@ -279,8 +281,9 @@ describe('Create Argo Application Set', () => {
     }
 
     test('can create Argo Application Set with Git', async () => {
-        const initialNocks = [await nockGet(gitSecret)]
+        const initialNocks = [nockGet(gitSecret)]
         render(<AddApplicationSet />)
+        nockApiPaths(mockApiPathList).persist()
         await waitForNocks(initialNocks)
 
         // General
@@ -331,6 +334,7 @@ describe('Create Argo Application Set', () => {
 
     test('can create an Application Set with Helm', async () => {
         render(<AddApplicationSet />)
+        nockApiPaths(mockApiPathList).persist()
 
         // appset name
         await typeByTestId('name', argoAppSetHelm!.metadata!.name!)

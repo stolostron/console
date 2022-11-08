@@ -15,7 +15,7 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
-import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import { nockApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import { PluginContext } from '../../lib/PluginContext'
@@ -43,12 +43,14 @@ import {
     mockFluxApplication0,
 } from './Application.sharedmocks'
 import { PluginDataContext } from '../../lib/PluginDataContext'
+import { mockApiPathList } from '../Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 
 describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+        nockApiPaths(mockApiPathList).persist()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
