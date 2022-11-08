@@ -270,7 +270,7 @@ export function createResource<Resource extends IResource, ResultType = Resource
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
     const url = Promise.resolve(resource).then((resource) => {
-        return getResourceNameApiPath(resource).then((path) => {
+        return getResourceApiPath(resource).then((path) => {
             let url = getBackendUrl() + path
             if (options?.dryRun) url += '?dryRun=All'
             return url
@@ -616,6 +616,7 @@ export async function fetchRetry<T>(options: {
     headers?: Record<string, string>
     disableRedirectUnauthorizedLogin?: boolean
 }): Promise<{ headers: Headers; status: number; data: T }> {
+    console.log('fetchRetry url: ', options.url)
     let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
     let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
     const headers: Record<string, string> = options.headers ?? {
@@ -651,6 +652,7 @@ export async function fetchRetry<T>(options: {
                 redirect: 'manual',
             })
         } catch (err) {
+            console.log('fetch err: ', err)
             if (options.signal?.aborted) {
                 throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
             }
