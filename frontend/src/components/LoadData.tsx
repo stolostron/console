@@ -18,8 +18,6 @@ import {
     ApplicationSetKind,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
-    BareMetalAssetApiVersion,
-    BareMetalAssetKind,
     BareMetalHostApiVersion,
     BareMetalHostKind,
     CertificateSigningRequestApiVersion,
@@ -121,7 +119,6 @@ import {
     applicationsState,
     argoApplicationsState,
     argoCDsState,
-    bareMetalAssetsState,
     bareMetalHostsState,
     certificateSigningRequestsState,
     channelsState,
@@ -184,7 +181,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const setApplicationsState = useSetRecoilState(applicationsState)
     const setArgoApplicationsState = useSetRecoilState(argoApplicationsState)
     const setArgoCDsState = useSetRecoilState(argoCDsState)
-    const setBareMetalAssets = useSetRecoilState(bareMetalAssetsState)
     const setBareMetalHosts = useSetRecoilState(bareMetalHostsState)
     const setCertificateSigningRequests = useSetRecoilState(certificateSigningRequestsState)
     const setChannelsState = useSetRecoilState(channelsState)
@@ -255,7 +251,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
         addSetter(AgentKindVersion, AgentKind, setAgents)
         addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
-        addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
         addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
         addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
         addSetter(ClusterClaimApiVersion, ClusterClaimKind, setClusterClaims)
@@ -303,7 +298,6 @@ export function LoadData(props: { children?: ReactNode }) {
         setApplicationsState,
         setArgoApplicationsState,
         setArgoCDsState,
-        setBareMetalAssets,
         setBareMetalHosts,
         setCertificateSigningRequests,
         setChannelsState,
