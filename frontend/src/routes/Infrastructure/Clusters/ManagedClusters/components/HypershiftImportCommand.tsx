@@ -46,9 +46,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
 
-    // let clusters = useAllClusters()
-    // const selectedHostedCluster = clusters.find((c) => c.name === cluster?.name)
-
     function importHostedControlPlaneCluster() {
         const hdName = selectedHostedClusterResource.metadata.name
         const hdNamespace = selectedHostedClusterResource.metadata.namespace
