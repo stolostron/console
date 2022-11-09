@@ -11,7 +11,6 @@ import {
     nockGet,
     nockReplace,
     nockDelete,
-    nockApiPaths,
     nockIgnoreApiPaths,
 } from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
@@ -27,7 +26,6 @@ import {
     discoveryConfigCreateSelfSubjectAccessResponse,
     discoveryConfigUpdateSelfSubjectAccessRequest,
     discoveryConfigUpdateSelfSubjectAccessResponse,
-    mockApiPathList,
 } from '../DiscoveryComponents/test-utils'
 import userEvent from '@testing-library/user-event'
 
@@ -121,7 +119,6 @@ describe('discovery config page', () => {
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
-        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
         // Select Credential
@@ -160,7 +157,6 @@ describe('discovery config page', () => {
             discoveryConfigUpdateSelfSubjectAccessRequest,
             discoveryConfigUpdateSelfSubjectAccessResponse
         )
-        nockApiPaths(mockApiPathList).persist()
         const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
@@ -196,7 +192,6 @@ describe('discovery config page', () => {
 
     it('Delete DiscoveryConfig', async () => {
         const nocks = [nockGet(discoveryConfig, discoveryConfig)]
-        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
 
