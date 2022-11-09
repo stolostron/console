@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
@@ -26,6 +26,7 @@ import {
 import {
     nockCreate,
     nockDelete,
+    nockGet,
     nockIgnoreRBAC,
     nockList,
     nockNamespacedList,
@@ -73,6 +74,9 @@ import {
     PodApiVersion,
     PodKind,
     PodList,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
     SelfSubjectAccessReview,
 } from '../../../../../resources'
 import {
@@ -911,6 +915,20 @@ const mockHostedCluster1: HostedClusterK8sResource = {
         name: 'hostedCluster1',
         namespace: clusterName,
     },
+    spec: {
+        dns: {
+            baseDomain: 'test.com',
+        },
+    },
+}
+
+const mockSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        namespace: 'hostedCluster1',
+        name: 'hostedCluster1-import',
+    },
 }
 
 const mockClusterProvisions: ClusterProvision = {
@@ -1228,6 +1246,7 @@ describe('ClusterDetails with not found', () => {
     })
     test('page renders error state, should have option to import', async () => {
         nockIgnoreRBAC()
+        nockGet(mockSecret)
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -1251,7 +1270,15 @@ describe('ClusterDetails with not found', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('Not found')
+
+        await waitForText(mockHostedCluster1.metadata.name, true)
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', {
+                    name: /https:\/\/console-openshift-console\.apps\.hostedcluster1\.test\.com/i,
+                })
+            )
+        )
 
         const mockImportHostedCluster = [
             nockCreate(createManagedcluster1, createManagedcluster1),
