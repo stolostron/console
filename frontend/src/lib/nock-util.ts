@@ -20,6 +20,7 @@ import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import StackTrace from 'stacktrace-js'
 import { Url } from 'url'
+import { mockApiPathList } from '../routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 
 export type ISearchRelatedResult = {
     data: {
@@ -340,6 +341,15 @@ export function nockApiPaths(response: APIResourceNames, statusCode = 200) {
     return nocked(process.env.JEST_DEFAULT_HOST as string)
         .get('/apiPaths')
         .reply(statusCode, response)
+}
+
+export function nockIgnoreApiPaths() {
+    const scope = nocked(process.env.JEST_DEFAULT_HOST as string)
+        .persist()
+        .get('/apiPaths')
+        .optionally()
+        .reply(200, mockApiPathList)
+    return scope
 }
 
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {

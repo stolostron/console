@@ -412,11 +412,11 @@ describe('Create Subscription Application page', () => {
 
     test('edit a git subscription application', async () => {
         const initialNocks = [
-            await nockList(mockProject, mockProjects),
-            await nockGet(mockApplication0),
-            await nockGet(mockChannel),
-            await nockGet(mockSubscription),
-            await nockGet(mockChannelNamespace),
+            nockList(mockProject, mockProjects),
+            nockGet(mockApplication0),
+            nockGet(mockChannel),
+            nockGet(mockSubscription),
+            nockGet(mockChannelNamespace),
         ]
         render(
             <RecoilRoot

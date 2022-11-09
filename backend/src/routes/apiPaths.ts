@@ -19,7 +19,6 @@ interface APIResourcePathResponse {
 
 interface APIResourceMetadata {
     name: string
-    singularName: string
     namespaced: boolean
     kind: string
     verbs: string[]
@@ -31,7 +30,6 @@ export interface APIResourceNames {
 
 export interface APIResourceMeta {
     pluralName: string
-    singularName: string
 }
 
 export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -87,12 +85,10 @@ function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
         resourceList.resources.forEach((resource) => {
             if (resource['name'].split('/').length === 1) {
                 const pluralName = resource['name']
-                const singularName = resource['singularName']
                 const kind = resource['kind']
 
                 const apiMetadata: APIResourceMeta = {
                     pluralName,
-                    singularName,
                 }
                 resourceKindMap[kind] = apiMetadata
             }
@@ -104,8 +100,7 @@ function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
     resourceNames - {
         groupVersion: {
             kind: {
-                pluralName, 
-                singularName
+                pluralName,
             }
         }
     }
@@ -121,14 +116,12 @@ function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
             Kind: {
                 groupVersion,
                 name, 
-                singularName,
                 }
         }
         Example: 
         "OperatorPKI": {
         "groupVersion": "network.operator.openshift.io/v1",
         "name": "operatorpkis",
-        "singularName": "operatorpki"
     },
     */
 }

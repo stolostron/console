@@ -9,7 +9,7 @@ export interface APIResourceNames {
 }
 
 export interface APIResourceMeta {
-    [kind: string]: { pluralName: string; singularName: string }
+    [kind: string]: { pluralName: string }
 }
 
 export function getApiPaths() {

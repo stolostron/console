@@ -36,11 +36,10 @@ Todo:
     if the resource isn't there, it will ping the api again.
 
     TODO: restore fallback code for getResourcePlural (which adds plural endings)
-    */
+*/
 
 let apiResourceList: APIResourceNames = {}
-const callCache: Promise<string>[] = []
-let pendingPromise = false
+let pendingPromise: Promise<string> | undefined
 
 export function fallbackPlural(resourceDefinition: IResourceDefinition) {
     if (resourceDefinition.kind.endsWith('s')) {
@@ -59,7 +58,7 @@ function getPluralFromCache(resourceDefinition: IResourceDefinition) {
         : ''
 }
 
-export function getApiResourceList() {
+function getApiResourceList() {
     return getApiPaths().promise
 }
 
@@ -73,33 +72,22 @@ export async function getResourcePlural(resourceDefinition: IResourceDefinition)
         // when queuing another call, we find the last call in the list and execute our next call in
         // the resolving callback. In that call back we check to see if the resource
         // is in the newly populated cache
-        const previousCall = callCache[callCache.length - 1]
-        const queuedAsyncResult = previousCall.then(() => {
+        const queuedAsyncResult = pendingPromise.then(() => {
             plural = getPluralFromCache(resourceDefinition)
             if (plural) {
                 return plural
             }
-            return getApiResourceList().then((list) => {
-                apiResourceList = list
-                callCache.shift()
-                pendingPromise = callCache.length == 0 ? false : true
-                plural = getPluralFromCache(resourceDefinition)
-                return plural ? plural : fallbackPlural(resourceDefinition)
-            })
+            return fallbackPlural(resourceDefinition)
         })
-        callCache.push(queuedAsyncResult)
         return queuedAsyncResult
     } else {
-        pendingPromise = true
         const asyncResult = getApiResourceList().then((list) => {
             apiResourceList = list
-            callCache.shift()
-            pendingPromise = callCache.length == 0 ? false : true
+            pendingPromise = undefined
             plural = getPluralFromCache(resourceDefinition)
             return plural ? plural : fallbackPlural(resourceDefinition)
         })
-
-        callCache.push(asyncResult)
+        pendingPromise = asyncResult
         return asyncResult
     }
 }
