@@ -4,7 +4,7 @@ import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind }
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
 import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
-import { getDistributionInfo } from './get-cluster'
+import { getDistributionInfo, isVersionEqual, isVersionGreater } from './get-cluster'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -12,6 +12,11 @@ const mockClusterCurator: ClusterCurator = {
     metadata: {
         name: clusterName,
         namespace: clusterName,
+    },
+    spec: {
+        upgrade: {
+            desiredUpdate: '1.2.5',
+        },
     },
 }
 const conditionCuratorJobRunning = {
@@ -35,7 +40,7 @@ const mockClusterCuratorUpdating: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
@@ -47,7 +52,7 @@ const mockClusterCuratorMonitoring: ClusterCurator = {
     spec: {
         desiredCuration: 'upgrade',
         upgrade: {
-            desiredUpdate: '1.2.4',
+            desiredUpdate: '1.2.5',
         },
     },
     status: {
@@ -273,6 +278,14 @@ const mockClusterDeployment: ClusterDeployment = {
 }
 
 describe('getDistributionInfo', () => {
+    it('should evaluate versions correctly', () => {
+        expect(isVersionGreater('1.2.5', '1.2.4')).toBeTruthy()
+        expect(isVersionGreater('1.2.4', '1.2.4')).toBeFalsy()
+        expect(isVersionGreater('1.2.4', '1.2.5')).toBeFalsy()
+
+        expect(isVersionEqual('1.2.4', '1.2.4')).toBeTruthy()
+        expect(isVersionEqual('4.2.4', '1.2.4')).toBeFalsy()
+    })
     it('should have correct available updates and available channels', () => {
         const d = getDistributionInfo(
             mockManagedClusterInfoHasAvailableUpdates,
