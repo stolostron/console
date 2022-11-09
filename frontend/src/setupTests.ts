@@ -99,8 +99,9 @@ expect.extend({
                     return ret
                 })
 
-            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
-            const { dataMocks, funcMocks } = window.getNockShot(nocks)
+            msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push('!!!!!!!!!!!!!!!! MISSING NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+            const { dataMocks, funcMocks } = window.getNockShot(nocks, true)
             dataMocks.forEach((data: string) => {
                 msgs.push(data)
             })
@@ -108,6 +109,19 @@ expect.extend({
             funcMocks.forEach((func: string) => {
                 msgs.push(func)
             })
+            msgs.push('\n!!! THESE nocks are still pending: ')
+            window.pendingNocks
+                .filter(({ scope }) => !scope.isDone())
+                .forEach(({ nock, source }) => {
+                    msgs.push(`'${nock}' ${source.trim()}`)
+                })
+            msgs.push('\n!!! THESE nocks were used:')
+            window.pendingNocks
+                .filter(({ scope }) => scope.isDone())
+                .forEach(({ nock, source }) => {
+                    msgs.push(`'${nock}' ${source.trim()}`)
+                })
+            msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         }
 
@@ -124,7 +138,7 @@ expect.extend({
         if (!pass) {
             msgs.push('\n\n\n!!!!!!!!!!!!!!!! UNUSED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
             pendingNocks.forEach(({ nock, source }) => {
-                msgs.push(`Unused "${nock}" ${source.trim()}`)
+                msgs.push(`Unused '${nock}' ${source.trim()}`)
             })
             msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         }

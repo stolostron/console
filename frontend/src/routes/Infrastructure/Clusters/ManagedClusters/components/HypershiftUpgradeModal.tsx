@@ -423,7 +423,7 @@ export function HypershiftUpgradeModal(props: {
                 {patchErrors.length === 0 ? (
                     <Fragment>
                         {t(
-                            'Select the new versions for the cluster and nodepools that you want to upgrade. This action is irreversible.'
+                            'Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.'
                         )}
                         <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
                             <Thead>
@@ -443,7 +443,7 @@ export function HypershiftUpgradeModal(props: {
                                                 variant="info"
                                                 title={t('Version availability')}
                                                 message={t(
-                                                    'Hosted control plane is already upgrade to the latest version available. Cluster nodepools can be upgraded to match the control plane.'
+                                                    'Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.'
                                                 )}
                                             />
                                         </Td>

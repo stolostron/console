@@ -185,6 +185,7 @@ export default function DetailsPage() {
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
                     <Route path={NavigationPath.resourceLogs}>
                         <LogsPage
+                            resource={resource}
                             resourceError={resourceError}
                             containers={containers}
                             cluster={cluster}

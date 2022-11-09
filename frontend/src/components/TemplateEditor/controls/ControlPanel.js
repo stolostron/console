@@ -15,7 +15,6 @@ import ControlPanelSingleSelect from './ControlPanelSingleSelect'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import ControlPanelMultiSelect from './ControlPanelMultiSelect'
 import ControlPanelCards from './ControlPanelCards'
-import ControlPanelTable from './ControlPanelTable'
 import ControlPanelLabels from './ControlPanelLabels'
 import ControlPanelValues from './ControlPanelValues'
 import ControlPanelWizard from './ControlPanelWizard'
@@ -509,17 +508,6 @@ class ControlPanel extends React.Component {
                         control={control}
                         showEditor={showEditor}
                         handleChange={this.handleCardChange.bind(this, control)}
-                        i18n={i18n}
-                        fetchData={this.props.fetchData}
-                    />
-                )
-            case 'table':
-                return (
-                    <ControlPanelTable
-                        key={controlId}
-                        controlId={controlId}
-                        control={control}
-                        handleChange={this.handleControlChange.bind(this, control)}
                         i18n={i18n}
                         fetchData={this.props.fetchData}
                     />

@@ -28,7 +28,7 @@ describe('SavedSearchQueries Page', () => {
                                 filters: [
                                     {
                                         property: 'kind',
-                                        values: ['pod'],
+                                        values: ['Pod'],
                                     },
                                 ],
                                 limit: 1000,
@@ -38,7 +38,7 @@ describe('SavedSearchQueries Page', () => {
                                 filters: [
                                     {
                                         property: 'kind',
-                                        values: ['daemonset', 'deployment', 'job', 'statefulset', 'replicaset'],
+                                        values: ['DaemonSet', 'Deployment', 'Job', 'StatefulSet', 'ReplicaSet'],
                                     },
                                 ],
                                 limit: 1000,
@@ -48,7 +48,7 @@ describe('SavedSearchQueries Page', () => {
                                 filters: [
                                     {
                                         property: 'kind',
-                                        values: ['pod'],
+                                        values: ['Pod'],
                                     },
                                     {
                                         property: 'status',
@@ -117,7 +117,7 @@ describe('SavedSearchQueries Page', () => {
                                     description: 'testSavedQueryDesc1',
                                     id: '1609811592984',
                                     name: 'testSavedQuery1',
-                                    searchText: 'kind:pod',
+                                    searchText: 'kind:Pod',
                                 },
                             ]}
                             setSelectedSearch={() => {}}

@@ -1,6 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Correctly returns CreateApplicationTopologyLink 1`] = `"-"`;
+exports[`Correctly returns CreateApplicationTopologyLink 1`] = `
+<a
+  href="/multicloud/applications/details/testNamespace/testApp/topology?apiVersion=application.app.k8s.io"
+>
+  View topology
+</a>
+`;
 
 exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 <a
@@ -23,7 +29,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
   to={
     Object {
       "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
+      "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
       "state": Object {
         "from": "/multicloud/home/search",
         "fromSearch": "",
@@ -48,7 +54,7 @@ exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
   to={
     Object {
       "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3Dpolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
+      "search": "?cluster%3DtestCluster%26kind%3DPolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
       "state": Object {
         "from": "/multicloud/home/search",
         "fromSearch": "",
@@ -65,7 +71,7 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
   to={
     Object {
       "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3Dapplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
+      "search": "?cluster%3DtestCluster%26kind%3DApplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
       "state": Object {
         "from": "/multicloud/home/search",
         "fromSearch": "",
@@ -104,7 +110,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -154,7 +160,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -215,7 +221,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -276,7 +282,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -352,7 +358,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -403,7 +409,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -474,7 +480,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -550,7 +556,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -606,7 +612,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -677,7 +683,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -728,7 +734,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -799,7 +805,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -865,7 +871,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -916,7 +922,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -982,7 +988,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1063,7 +1069,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1134,7 +1140,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1190,7 +1196,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1246,7 +1252,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1302,7 +1308,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1373,7 +1379,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1439,7 +1445,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1497,7 +1503,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1550,7 +1556,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1611,7 +1617,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1667,7 +1673,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1733,7 +1739,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1794,7 +1800,7 @@ Array [
       to={
         Object {
           "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
             "from": "/multicloud/home/search",
             "fromSearch": "",
@@ -1971,6 +1977,6 @@ exports[`Correctly returns policyreport policies 1`] = `
 
 exports[`Correctly returns url search params with 0 params 1`] = `"?cluster%3DtestCluster"`;
 
-exports[`Correctly returns url search params with all params & apigroup 1`] = `"?cluster%3DtestCluster%26kind%3Dpods%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;
+exports[`Correctly returns url search params with all params & apigroup 1`] = `"?cluster%3DtestCluster%26kind%3DPod%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;
 
-exports[`Correctly returns url search params with all params without apigroup 1`] = `"?cluster%3DtestCluster%26kind%3Dpods%26apiversion%3Dapps%2Fv1%26namespace%3DtestNamespace%26name%3DtestName"`;
+exports[`Correctly returns url search params with all params without apigroup 1`] = `"?cluster%3DtestCluster%26kind%3DPod%26apiversion%3Dv1%26namespace%3DtestNamespace%26name%3DtestName"`;

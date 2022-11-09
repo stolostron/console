@@ -19,6 +19,7 @@ const config: Config.InitialOptions = {
         '@console/*': '<rootDir>/__mocks__/dummy.ts',
     },
     watchAll: false,
+    slowTestThreshold: 30,
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
     globals: {
