@@ -10,7 +10,7 @@ import {
     FormatPolicyReportPolicies,
     GetAge,
     GetUrlSearchParam,
-    SearchDefinitions,
+    getSearchDefinitions,
 } from './searchDefinitions'
 
 test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
@@ -220,7 +220,6 @@ test('Correctly returns empty labels', () => {
 })
 
 test('Correctly returns all resource definitions', () => {
-    console.log('searchdefs', SearchDefinitions)
     const testItem = {
         name: 'testName',
         namespace: 'testNamespace',
@@ -230,9 +229,10 @@ test('Correctly returns all resource definitions', () => {
         selfLink: '/apigroup/cluster/name',
         created: '2021-01-01T00:00:00Z',
     }
-    const defKeys = Object.keys(SearchDefinitions)
+    const searchDefinitions = getSearchDefinitions((key) => key)
+    const defKeys = Object.keys(searchDefinitions) as (keyof typeof searchDefinitions)[]
     defKeys.forEach((key) => {
-        const definition = SearchDefinitions[key].columns.map((col: any) => {
+        const definition = searchDefinitions[key].columns.map((col: any) => {
             if (typeof col.cell === 'function') {
                 col.cell = col.cell(testItem)
             }
