@@ -72,7 +72,10 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
                 label={t('Placement kind')}
                 helperText={t('The placement rule used to select clusters for placement.')}
                 required
-                options={[t('Placement'), PlacementRuleKind]}
+                options={[
+                    { label: t('Placement'), value: 'Placement' },
+                    { label: t(`${PlacementRuleKind}`), value: PlacementRuleKind },
+                ]}
             />
             <WizTextInput
                 path="placementRef.name"

@@ -683,15 +683,7 @@ export function TimeWindow(props: { timeZone: string[] }) {
                 placeholder={t('Select at least one day to create a time window.')}
                 path="timewindow.daysofweek"
                 required
-                options={[
-                    t('Monday'),
-                    t('Tuesday'),
-                    t('Wednesday'),
-                    t('Thursday'),
-                    t('Friday'),
-                    t('Saturday'),
-                    t('Sunday'),
-                ]}
+                options={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
             />
             <Select
                 path="timeWindow.timezone"
