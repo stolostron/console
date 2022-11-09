@@ -8,7 +8,7 @@ import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
-import searchDefinitions from '../searchDefinitions'
+import { useSearchDefinitions } from '../searchDefinitions'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
 
 export default function RelatedResultsTables(props: {
@@ -26,6 +26,8 @@ export default function RelatedResultsTables(props: {
         },
     })
 
+    const searchDefinitions = useSearchDefinitions()
+
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
             const colDefs = _.get(
@@ -34,17 +36,11 @@ export default function RelatedResultsTables(props: {
                 searchDefinitions['genericresource'].columns
             )
 
-            const transColumns = colDefs.map((item: any) => {
-                const temp = Object.assign({}, item)
-                temp.header = t(`${item.header}`)
-                item.tooltip && (temp.tooltip = t(`${item.tooltip}`))
-                return temp
-            })
             return (
                 <AcmTable
                     plural=""
                     items={items}
-                    columns={transColumns}
+                    columns={colDefs}
                     keyFn={(item: any) => item._uid.toString()}
                     rowActions={GetRowActions(
                         kind,
@@ -56,7 +52,7 @@ export default function RelatedResultsTables(props: {
                 />
             )
         },
-        [currentQuery, setDeleteResource, t]
+        [currentQuery, setDeleteResource, searchDefinitions, t]
     )
 
     if (loading === false && !error && !data) {

@@ -23,7 +23,7 @@ import {
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultItemsLazyQuery } from '../search-sdk/search-sdk'
-import searchDefinitions from '../searchDefinitions'
+import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResultsTables from './RelatedResultsTables'
 import RelatedResultsTiles from './RelatedResultsTiles'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
@@ -36,98 +36,19 @@ function SearchResultTables(props: {
     const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
 
+    const searchDefinitions = useSearchDefinitions()
+
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
-            const colDefs = _.get(
-                searchDefinitions,
-                `[${kind.toLowerCase()}].columns`,
-                searchDefinitions['genericresource'].columns
-            )
-
-            // The following SearchDefinition strings for the SearchResults table headers and applicable tooltips need to be added to translations file:
-            //
-            // t('Access mode'),
-            // t('Active'),
-            // t('Architecture'),
-            // t('Available'),
-            // t('Branch'),
-            // t('Capacity'),
-            // t('Chart name'),
-            // t('Chart version'),
-            // t('Chart path'),
-            // t('Chart URL'),
-            // t('Claim'),
-            // t('Cluster'),
-            // t('Cluster IP'),
-            // t('Completions'),
-            // t('Console URL'),
-            // t('CPU'),
-            // t('Created'),
-            // t('Critical'),
-            // t('Current'),
-            // t('Decisions'),
-            // t('Dependencies'),
-            // t('Desired'),
-            // t('Destination'),
-            // t('Host IP'),
-            // t('Hub accepted'),
-            // t('Important'),
-            // t('Joined'),
-            // t('Kubernetes version'),
-            // t('Labels'),
-            // t('Last schedule'),
-            // t('Local placement'),
-            // t('Low'),
-            // t('Memory'),
-            // t('Moderate'),
-            // t('Name'),
-            // t('Namespace'),
-            // t('Nodes'),
-            // t('OS image'),
-            // t('Package'),
-            // t('Parallelism'),
-            // t('Path'),
-            // t('Pathname'),
-            // t('Persistent volume'),
-            // t('Placement policy'),
-            // t('Pod IP'),
-            // t('Port'),
-            // t('Ready'),
-            // t('Reclaim policy'),
-            // t('Remediation action'),
-            // t('Replicas'),
-            // t('Requests'),
-            // t('Restarts'),
-            // t('Role'),
-            // t('Rules'),
-            // t('schedule'),
-            // t('Scope'),
-            // t('Scope refers to the cluster associated to the PolicyReport.'),
-            // t('Source'),
-            // t('Source type'),
-            // t('Status'),
-            // t('Successful'),
-            // t('Suspend'),
-            // t('Time window'),
-            // t('Topology'),
-            // t('Type'),
-            // t('Updated'),
-            // t('URL'),
-            // t('Use the rules filter to search for PolicyReports that contain a specific rule.'),
-            // t('Violations'),
-
-            const transColumns = colDefs.map((item: any) => {
-                const temp = Object.assign({}, item)
-                temp.header = t(`${item.header}`)
-                item.tooltip && (temp.tooltip = t(`${item.tooltip}`))
-                return temp
-            })
-
             return (
                 <AcmTable
                     plural=""
                     items={items}
-                    columns={transColumns}
+                    columns={_.get(
+                        searchDefinitions,
+                        `[${kind.toLowerCase()}].columns`,
+                        searchDefinitions['genericresource'].columns
+                    )}
                     keyFn={(item: any) => item._uid.toString()}
                     rowActions={GetRowActions(
                         kind,
@@ -139,7 +60,7 @@ function SearchResultTables(props: {
                 />
             )
         },
-        [currentQuery, setDeleteResource, t]
+        [currentQuery, setDeleteResource, searchDefinitions, t]
     )
 
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}

@@ -16,7 +16,7 @@ export const useSuggestedQueryTemplates = () => {
                     name: t('Workloads'),
                     description: t('A pre-defined search to help you review your workloads'),
                     resultHeader: 'search.tile.results',
-                    searchText: 'kind:daemonset,deployment,job,statefulset,replicaset',
+                    searchText: 'kind:DaemonSet,Deployment,Job,StatefulSet,ReplicaSet',
                 },
                 {
                     id: 'search.suggested.unhealthy.name',
@@ -24,7 +24,7 @@ export const useSuggestedQueryTemplates = () => {
                     description: t('Show pods with unhealthy status'),
                     resultHeader: 'table.header.status.unhealthy',
                     searchText:
-                        'kind:pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating',
+                        'kind:Pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating',
                 },
                 {
                     id: 'search.suggested.createdLastHour.name',

@@ -15,7 +15,7 @@
         "clean": "rm -rf coverage build",
         "test": "npm run jest --",
         "jest": "jest",
-        "jest:update-snapshot": "jest --updateSnapshot --testPathPattern=src/components/TemplateEditor",
+        "jest:update-snapshot": "jest --updateSnapshot",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
         "lint:fix": "npm run lint -- --fix",
         "prettier": "prettier --check src public",

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import searchDefinitions, {
+import {
     CreateApplicationTopologyLink,
     CreateDetailsLink,
     CreateExternalLink,
@@ -10,6 +10,7 @@ import searchDefinitions, {
     FormatPolicyReportPolicies,
     GetAge,
     GetUrlSearchParam,
+    SearchDefinitions,
 } from './searchDefinitions'
 
 test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
@@ -219,6 +220,7 @@ test('Correctly returns empty labels', () => {
 })
 
 test('Correctly returns all resource definitions', () => {
+    console.log('searchdefs', SearchDefinitions)
     const testItem = {
         name: 'testName',
         namespace: 'testNamespace',
@@ -228,9 +230,9 @@ test('Correctly returns all resource definitions', () => {
         selfLink: '/apigroup/cluster/name',
         created: '2021-01-01T00:00:00Z',
     }
-    const defKeys = Object.keys(searchDefinitions)
+    const defKeys = Object.keys(SearchDefinitions)
     defKeys.forEach((key) => {
-        const definition = searchDefinitions[key].columns.map((col: any) => {
+        const definition = SearchDefinitions[key].columns.map((col: any) => {
             if (typeof col.cell === 'function') {
                 col.cell = col.cell(testItem)
             }
