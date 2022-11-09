@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { nockCreate, nockGet, nockSearch } from '../../../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { SelfSubjectAccessReview } from '../../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
@@ -183,6 +183,7 @@ const mockSearchResponse = {
 }
 
 describe('DeleteResourceModal', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     it('should call the delete resource mutation with a successful response', async () => {
         const deleteResourceSelfSubjectAccessNock = nockCreate(
             deleteResourceSelfSubjectAccessRequest,

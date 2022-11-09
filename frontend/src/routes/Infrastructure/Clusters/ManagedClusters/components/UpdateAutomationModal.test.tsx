@@ -18,7 +18,7 @@ import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom'
 import { clusterCuratorsState, secretsState } from '../../../../../atoms'
-import { nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Provider } from '../../../../../ui-components/AcmProvider'
 
@@ -352,6 +352,7 @@ describe('UpdateAutomationModal', () => {
     beforeEach(() => {
         window.sessionStorage.clear()
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     const Component = () => {

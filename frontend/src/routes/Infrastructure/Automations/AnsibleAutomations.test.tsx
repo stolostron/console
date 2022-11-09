@@ -16,7 +16,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickBulkAction,
     clickByLabel,
@@ -158,7 +158,10 @@ function TestIntegrationPage(props: {
 }
 
 describe('ansible job page', () => {
-    beforeEach(nockIgnoreRBAC)
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
 
     test('should render the table with templates', async () => {
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)

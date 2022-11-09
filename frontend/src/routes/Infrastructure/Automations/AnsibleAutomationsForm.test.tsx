@@ -19,7 +19,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockAnsibleTower, nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockAnsibleTower, nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByText,
@@ -143,6 +143,7 @@ const mockSubscriptionOperator: SubscriptionOperator = {
 describe('add ansible job template page', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     it('should create a curator template', async () => {

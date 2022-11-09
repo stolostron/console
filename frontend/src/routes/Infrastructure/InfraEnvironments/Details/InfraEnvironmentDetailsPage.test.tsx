@@ -5,7 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
-import { nockGet } from '../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
@@ -46,6 +46,7 @@ const Component = () => {
 }
 
 describe('Infrastructure Environment Details page', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('can render', async () => {
         const initialNocks = [await nockGet(mockPullSecret)]
         render(<Component />)

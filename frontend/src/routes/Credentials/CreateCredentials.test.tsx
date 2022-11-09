@@ -4,11 +4,15 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { nockIgnoreApiPaths } from '../../lib/nock-util'
 import { clickByTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateCredentialsPage } from './CreateCredentials'
 
 describe('CreateCredentialsPage', () => {
+    beforeEach(() => {
+        nockIgnoreApiPaths()
+    })
     const Component = () => {
         return (
             <RecoilRoot>

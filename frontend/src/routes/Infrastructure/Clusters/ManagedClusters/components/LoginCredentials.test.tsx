@@ -3,7 +3,7 @@
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
+import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNock, waitForNocks, waitForNotText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { LoginCredentials } from './LoginCredentials'
@@ -76,6 +76,7 @@ const mockKubeadminSecret = {
 }
 
 describe('LoginCredentials', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('renders', async () => {
         const nock = await nockGet(mockKubeadminSecret)
         render(

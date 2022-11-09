@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
-import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
+import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
@@ -13,6 +13,7 @@ import { mockCluster, mockMachinePoolAuto, mockMachinePoolManual } from '../Clus
 describe('ClusterMachinePools', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

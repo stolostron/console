@@ -14,7 +14,7 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
-import { nockGet, nockList } from '../../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockList } from '../../../../../../lib/nock-util'
 
 import EditAICluster from './EditAICluster'
 import {
@@ -58,6 +58,7 @@ const Component = () => {
 }
 
 describe('Edit AI Cluster', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('can be rendered', async () => {
         const nocks = [
             await nockGet(pullSecretMock, pullSecretMock),

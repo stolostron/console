@@ -5,6 +5,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
+import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { waitForTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage from './InfraEnvironmentsPage'
@@ -85,6 +86,7 @@ const Component = () => {
 }
 
 describe('Infrastructure Environments page', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('can render', async () => {
         render(<Component />)
 

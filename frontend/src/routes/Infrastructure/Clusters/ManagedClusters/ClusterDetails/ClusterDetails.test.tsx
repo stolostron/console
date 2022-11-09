@@ -20,7 +20,14 @@ import {
     managedClusterSetsState,
     managedClustersState,
 } from '../../../../../atoms'
-import { nockCreate, nockDelete, nockIgnoreRBAC, nockList, nockNamespacedList } from '../../../../../lib/nock-util'
+import {
+    nockCreate,
+    nockDelete,
+    nockIgnoreApiPaths,
+    nockIgnoreRBAC,
+    nockList,
+    nockNamespacedList,
+} from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
@@ -999,6 +1006,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
 describe('ClusterDetails', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 
@@ -1096,6 +1104,10 @@ describe('ClusterDetails', () => {
 })
 
 describe('ClusterDetails', () => {
+    beforeEach(async () => {
+        nockIgnoreApiPaths()
+    })
+
     test('page renders error state', async () => {
         const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(
@@ -1128,6 +1140,7 @@ const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment}
 describe('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('overview page renders AI empty details', async () => {
@@ -1160,6 +1173,7 @@ describe('ClusterDetails for On Premise', () => {
 describe('Automation Details', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 

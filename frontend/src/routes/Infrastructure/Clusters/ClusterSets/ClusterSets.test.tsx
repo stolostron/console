@@ -11,7 +11,7 @@ import {
     managedClusterSetsState,
     managedClustersState,
 } from '../../../../atoms'
-import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { PluginContext } from '../../../../lib/PluginContext'
 import { mockManagedClusterSet, mockGlobalClusterSet } from '../../../../lib/test-metadata'
 import {
@@ -87,6 +87,7 @@ describe('ClusterSets page', () => {
 describe('ClusterSets page without Submariner', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component />

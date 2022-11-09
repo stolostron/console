@@ -17,6 +17,7 @@ import {
     nockClusterList,
     nockCreate,
     nockDelete,
+    nockIgnoreApiPaths,
     nockIgnoreRBAC,
     nockNamespacedList,
     nockPatch,
@@ -602,6 +603,7 @@ describe('ClusterSetDetails page', () => {
             await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
         await waitForNocks(getNocks)
     })
@@ -876,6 +878,7 @@ describe('Global ClusterSetDetails page', () => {
             await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component isGlobal />)
         await waitForNocks(getNocks)
     })
@@ -942,6 +945,7 @@ describe('ClusterSetDetails error', () => {
         </RecoilRoot>
     )
     test('renders error page when cluster set does not exist', async () => {
+        nockIgnoreApiPaths()
         nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('Not found')
@@ -971,6 +975,7 @@ describe('ClusterSetDetails deletion', () => {
         </RecoilRoot>
     )
     test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
+        nockIgnoreApiPaths()
         nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding])
         render(<Component />)
         await waitForText('test-cluster-set is being deleted.')
@@ -985,6 +990,7 @@ describe('ClusterSetDetails page without Submariner', () => {
             await nockClusterList(mockClusterRoleBinding, [mockClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
@@ -1008,6 +1014,7 @@ describe('ClusterSetDetails page global clusterset', () => {
             await nockClusterList(mockGlobalClusterRoleBinding, [mockGlobalClusterRoleBinding]),
         ]
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
                 <Component isGlobal />

@@ -52,10 +52,7 @@ export function fallbackPlural(resourceDefinition: IResourceDefinition) {
 }
 
 function getPluralFromCache(resourceDefinition: IResourceDefinition) {
-    return apiResourceList[resourceDefinition.apiVersion as string] &&
-        apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind]
-        ? apiResourceList[resourceDefinition.apiVersion as string][resourceDefinition.kind].pluralName
-        : ''
+    return apiResourceList[resourceDefinition.apiVersion]?.[resourceDefinition.kind]?.pluralName
 }
 
 function getApiResourceList() {

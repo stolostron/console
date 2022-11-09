@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockIgnoreRBAC, nockAnsibleTower, nockCreate } from '../../../lib/nock-util'
+import { nockIgnoreRBAC, nockAnsibleTower, nockCreate, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicyAutomation } from './CreatePolicyAutomation'
@@ -43,6 +43,7 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
 describe('Create Policy Automation Wizard', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can create policy automation', async () => {

@@ -18,7 +18,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
-import { nockCreate, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { clickByLabel, clickByText, waitForNock, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
@@ -126,6 +126,7 @@ const Component = (props: { cluster: Cluster }) => (
 describe('ClusterActionDropdown', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can import detached clusters', async () => {

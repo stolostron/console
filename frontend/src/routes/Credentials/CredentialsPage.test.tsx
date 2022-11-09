@@ -5,7 +5,7 @@ import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../atoms'
-import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
+import { mockBadRequestStatus, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
 import {
     clickBulkAction,
     clickByLabel,
@@ -135,7 +135,10 @@ function TestProviderConnectionsPage(props: {
 }
 
 describe('provider connections page', () => {
-    beforeEach(nockIgnoreRBAC)
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
 
     test('should render the table with provider connections', async () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)

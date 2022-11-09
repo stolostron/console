@@ -9,7 +9,7 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterInfosState, managedClustersState, policiesState, policyreportState } from '../../../atoms'
-import { nockCreate, nockGet } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
     ManagedCluster,
@@ -393,6 +393,7 @@ const mockPolicyReports: PolicyReport[] = [
 ]
 
 it('should render overview page in empty state', async () => {
+    const apiPathNock = nockIgnoreApiPaths()
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const getManageedClusterAccessRequeset = nockCreate(
         mockGetSelfSubjectAccessRequest,
@@ -413,7 +414,7 @@ it('should render overview page in empty state', async () => {
     await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset])
+    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
 })
 
 it('should render overview page in error state', async () => {
@@ -447,13 +448,14 @@ it('should render overview page in error state', async () => {
     await wait()
 
     // Wait for delete resource requests to finish
-    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset])
+    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
 
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
 })
 
 it('should render overview page with expected data', async () => {
+    nockIgnoreApiPaths()
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const mocks = [
         {
@@ -562,7 +564,7 @@ it('should render overview page with expected data', async () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([await getAddonNock])
+    await waitForNocks([getAddonNock])
 
     // This wait pauses till apollo query is returning data
     await wait()

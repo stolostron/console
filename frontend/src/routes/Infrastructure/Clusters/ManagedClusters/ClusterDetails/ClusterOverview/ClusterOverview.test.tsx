@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { nockApiPaths, nockGet, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
 import { ClusterContext } from '../ClusterDetails'
 import { ClusterOverviewPageContent } from './ClusterOverview'
 import {
@@ -32,7 +32,6 @@ import {
 } from '../../../../../../atoms'
 import { MemoryRouter } from 'react-router-dom'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
-import { mockApiPathList } from '../../../DiscoveredClusters/DiscoveryComponents/test-utils'
 
 const mockHistoryPush = jest.fn()
 
@@ -108,7 +107,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -155,7 +154,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockGet(kubeConfigSecret)
         nockGet(kubeAdminPassSecret)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -202,7 +201,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockGet(kubeConfigSecret)
         nockGet(kubeAdminPassSecret)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -249,7 +248,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockGet(kubeConfigSecret)
         nockGet(kubeAdminPassSecret)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -294,7 +293,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -339,7 +338,7 @@ describe('ClusterOverview with regional hub cluster information', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -386,7 +385,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
         mockRegionalHubCluster.isHostedCluster = true
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

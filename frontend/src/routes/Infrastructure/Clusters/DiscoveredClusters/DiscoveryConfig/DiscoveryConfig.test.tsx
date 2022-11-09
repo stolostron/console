@@ -12,6 +12,7 @@ import {
     nockReplace,
     nockDelete,
     nockApiPaths,
+    nockIgnoreApiPaths,
 } from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -73,12 +74,14 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
+    beforeEach(() => {
+        nockIgnoreApiPaths()
+    })
     it('Create Minimal DiscoveryConfig', async () => {
         const discoveryConfigCreateNock = nockCreate(
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
-        nockApiPaths(mockApiPathList).persist()
         const { container } = render(<TestAddDiscoveryConfigPage />)
         waitForNocks([discoveryConfigCreateNock])
 

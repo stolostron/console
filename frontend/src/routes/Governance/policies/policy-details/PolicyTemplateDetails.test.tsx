@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
-import { nockGet } from '../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
@@ -115,6 +115,7 @@ const getResourceResponse = {
 }
 
 describe('Policy Template Details content', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('Should render Policy Template Details Page content correctly', async () => {
         const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
         render(

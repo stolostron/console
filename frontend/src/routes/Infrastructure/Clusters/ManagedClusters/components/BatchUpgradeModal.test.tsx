@@ -4,7 +4,7 @@ import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../..
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
-import { nockCreate, nockPatch } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
@@ -259,6 +259,7 @@ const getPatchUpdate = (version: string) => {
 }
 
 describe('BatchUpgradeModal', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     it('should only show upgradeable ones, and select latest version as default', () => {
         const { queryByText } = render(<BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />)
         expect(queryByText('cluster-0-no-available')).toBeFalsy()

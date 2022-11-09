@@ -11,7 +11,7 @@ import {
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
-import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByPlaceholderText,
@@ -85,6 +85,7 @@ const Component = () => (
 describe('ClusterSetActionDropdown', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
     test('can edit managed cluster set bindings for a cluster set', async () => {

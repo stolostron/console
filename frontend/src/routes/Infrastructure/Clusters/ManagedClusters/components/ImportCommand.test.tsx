@@ -3,7 +3,7 @@
 import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
+import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
 
@@ -54,6 +54,7 @@ const mockCluster: Cluster = {
 }
 
 describe('ImportCommandContainer', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     const Component = () => {
         return (
             <RecoilRoot>

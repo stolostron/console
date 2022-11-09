@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { nockCreate } from '../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -22,6 +22,7 @@ beforeEach(() => {
 })
 
 describe('DiscoveredClusters', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('DiscoveredClusters Table', async () => {
         render(
             <RecoilRoot

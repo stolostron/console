@@ -12,7 +12,7 @@ import {
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
-import { nockNamespacedList } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -110,6 +110,7 @@ const mockPodList = {
 }
 
 describe('HiveNotification', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     window.open = jest.fn()
     const Component = () => {
         return (

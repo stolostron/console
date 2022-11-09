@@ -12,7 +12,7 @@ import {
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../atoms'
-import { nockApiPaths, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
 import { rbacCreateTestHelper } from '../../../../lib/rbac-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import {
@@ -46,7 +46,6 @@ import {
     managedClusterSetLabel,
     ResourceAttributes,
 } from '../../../../resources'
-import { mockApiPathList } from '../DiscoveredClusters/DiscoveryComponents/test-utils'
 import ManagedClusters from './ManagedClusters'
 
 const mockManagedCluster0: ManagedCluster = {
@@ -412,7 +411,7 @@ function getClusterCuratorPatchResourceAttributes(name: string) {
 describe('Clusters Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -517,7 +516,7 @@ describe('Clusters Page', () => {
 
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         const rbacCreateManagedClusterNock = nockRBAC(rbacCreateTestHelper(ManagedClusterDefinition))
         const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
             prev.push(
@@ -549,6 +548,7 @@ describe('Clusters Page RBAC', () => {
 describe('Clusters Page hypershift', () => {
     test('should render hypershift clusters', async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         const hypershiftMockManagedClusters: ManagedCluster[] = [mockManagedCluster6, mockManagedCluster7]
         const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [
             mockManagedClusterInfo6,
@@ -576,7 +576,7 @@ describe('Clusters Page hypershift', () => {
 describe('Clusters Page regional hub cluster', () => {
     test('should render regional hub clusters', async () => {
         nockIgnoreRBAC()
-        nockApiPaths(mockApiPathList).persist()
+        nockIgnoreApiPaths()
         const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
         const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
         render(
