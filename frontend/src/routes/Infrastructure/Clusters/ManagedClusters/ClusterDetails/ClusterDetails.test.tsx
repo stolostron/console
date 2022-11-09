@@ -1007,13 +1007,18 @@ const createManagedcluster1: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
+        annotations: {
+            'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+            'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+            'open-cluster-management/created-via': 'other',
+        },
         labels: {
             cloud: 'auto-detect',
             'cluster.open-cluster-management.io/clusterset': 'default',
-            name: mockHostedCluster1.name,
+            name: 'hostedCluster1',
             vendor: 'OpenShift',
         },
-        name: mockHostedCluster1.name,
+        name: 'hostedCluster1',
     },
     spec: {
         hubAcceptsClient: true,
