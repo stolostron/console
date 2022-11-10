@@ -38,7 +38,7 @@ import {
     settingsState,
     subscriptionOperatorsState,
 } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByTestId,
@@ -573,12 +573,13 @@ describe('CreateCluster AWS', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can create AWS cluster without ansible template', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [await nockList(clusterImageSetAws, mockClusterImageSetAws)]
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
         const { container } = render(<Component />)
@@ -651,7 +652,7 @@ describe('CreateCluster AWS', () => {
     test('can create AWS cluster with ansible template', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [await nockList(clusterImageSetAws, mockClusterImageSetAws)]
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
         const { container } = render(<Component subscriptions={[subscriptionOperator]} />)
@@ -719,7 +720,7 @@ describe('CreateCluster AWS', () => {
     test('can create AWS cluster with private configuration', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [await nockList(clusterImageSetAws, mockClusterImageSetAws)]
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
         const { container } = render(<Component />)
@@ -788,7 +789,7 @@ describe('CreateCluster AWS', () => {
     test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [await nockList(clusterImageSetAws, mockClusterImageSetAws)]
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
         const { container } = render(
@@ -877,12 +878,13 @@ describe('CreateCluster on premise', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test(
         'can create On Premise cluster',
         async () => {
-            const initialNocks: Scope[] = [await nockList(clusterImageSet, mockClusterImageSet)]
+            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
             render(<Component />)
 
             // Create On Premise cluster
