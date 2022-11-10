@@ -100,7 +100,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
 
     const initialValues: NetworkFormValues = React.useMemo(() => {
         // To preserve form values on Back button
-        // TODO: find a better way than parsing the yaml - where is the already parsed up-to-date template?
+        // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
         const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
         const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', '172.31.0.0/16')
         const podCIDR = getTemplateValue(templateYAML, 'podCIDR', '10.132.0.0/14')

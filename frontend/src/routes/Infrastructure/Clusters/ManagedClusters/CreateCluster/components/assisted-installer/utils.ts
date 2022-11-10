@@ -751,7 +751,7 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 
     if (rows.length > 1) {
         // Provide better key (i.e. leverage indentation). If this is not enough, let's full-parse the yaml instead.
-        throw `Multiple matches for yaml key "${simpleKey}"`
+        throw new Error(`Multiple matches for yaml key "${simpleKey}"`)
     }
 
     const value = rows[0].replace(regex, '').trim()
