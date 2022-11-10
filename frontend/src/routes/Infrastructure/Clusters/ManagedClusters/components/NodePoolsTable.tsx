@@ -174,14 +174,14 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
                 <StackItem>
                     <AcmTable<NodePool>
                         key="nodepool-table"
-                        plural={t('Nodepools')}
+                        plural={t('Node pools')}
                         columns={columns}
                         keyFn={keyFn}
                         items={transformedNodepoolItems}
                         tableActionButtons={[
                             {
                                 id: 'addNodepool',
-                                title: t('Add nodepool'),
+                                title: t('Add node pool'),
                                 click: () => {},
                                 isDisabled: false,
                                 tooltip: t('rbac.unauthorized'),

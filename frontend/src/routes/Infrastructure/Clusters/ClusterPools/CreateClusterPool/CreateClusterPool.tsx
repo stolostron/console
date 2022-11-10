@@ -181,7 +181,6 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
     //compile template
     const template = Handlebars.compile(hiveTemplate)
 
-    // if openned from bma page, pass selected bma's to editor
     let controlData: any[]
     switch (infrastructureType) {
         case Provider.aws:
