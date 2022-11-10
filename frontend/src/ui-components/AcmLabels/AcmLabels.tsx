@@ -3,6 +3,7 @@
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { Fragment, useMemo } from 'react'
 import { makeStyles } from '@material-ui/core'
+import { useTranslation } from '../../lib/acm-i18next'
 
 const useStyles = makeStyles({
     acmLabel: {
@@ -18,6 +19,7 @@ export function AcmLabels(props: {
     allCollapsedText?: string
 }) {
     const classes = useStyles()
+    const { t } = useTranslation()
     const labelsRecord: Record<string, string> = useMemo(() => {
         if (props.labels === undefined) return {}
         else if (Array.isArray(props.labels))
@@ -49,14 +51,14 @@ export function AcmLabels(props: {
     }, [labelsRecord, props.collapse])
 
     /* istanbul ignore next */
-    let collapsedText = props.collapsedText ?? `${hidden.length} more`
+    let collapsedText = props.collapsedText ?? t('{{count}} more', { count: hidden.length })
 
     if (hidden.length > 0 && labels.length === 0 && props.allCollapsedText) {
         collapsedText = props.allCollapsedText
     }
 
     /* istanbul ignore next */
-    const expandedText = props.expandedText ?? 'Show less'
+    const expandedText = props.expandedText ?? t('Show less')
 
     if (props.labels === undefined) return <Fragment />
 

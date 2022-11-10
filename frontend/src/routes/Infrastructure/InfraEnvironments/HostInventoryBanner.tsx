@@ -28,7 +28,7 @@ export const HostInventoryBanner = () => {
     return (
         <StackItem>
             <Card>
-                <CardTitle>About host inventory</CardTitle>
+                <CardTitle>{t('About host inventory')}</CardTitle>
                 <CardBody>{t(description)}</CardBody>
                 <CardFooter>
                     <ActionGroup>

@@ -96,7 +96,7 @@ export function PolicyDetailsPage() {
                     title={policyName ?? 'Policy details'}
                     breadcrumb={[
                         { text: t('Policies'), to: NavigationPath.policies },
-                        { text: policyName ?? 'Policy details', to: '' },
+                        { text: policyName ?? t('Policy details'), to: '' },
                     ]}
                     popoverAutoWidth={false}
                     popoverPosition="bottom"

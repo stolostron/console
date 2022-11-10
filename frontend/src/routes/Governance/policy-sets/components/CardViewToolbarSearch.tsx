@@ -15,6 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { SearchIcon, TimesIcon } from '@patternfly/react-icons/dist/js/icons'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 
 function formatSearchSelections(currentSelections: string[]) {
@@ -88,6 +89,8 @@ export default function CardViewToolbarSearch(props: {
         setSearchFilter({})
     }
 
+    const { t } = useTranslation()
+
     useEffect(() => {
         /** in the menu only show items that include the text in the input */
         const filteredMenuItems = menuItemsText
@@ -111,7 +114,7 @@ export default function CardViewToolbarSearch(props: {
         if (filteredMenuItems.length === 0) {
             const noResultItem = (
                 <MenuItem isDisabled key="no result">
-                    No results found
+                    {t('No results found')}
                 </MenuItem>
             )
             setMenuItems([noResultItem])
@@ -121,13 +124,13 @@ export default function CardViewToolbarSearch(props: {
         /** determine the menu heading text based on key selection; or lack thereof */
         const headingItem = (
             <MenuItem isDisabled key="heading">
-                {selectedKey.length ? `${selectedKey} values` : 'Attributes'}
+                {selectedKey.length ? `${selectedKey} ${t('values')}` : t('Attributes')}
             </MenuItem>
         )
 
         const divider = <Divider key="divider" />
         setMenuItems([headingItem, divider, ...filteredMenuItems])
-    }, [inputValue, menuItemsText, selectedKey])
+    }, [inputValue, menuItemsText, selectedKey, t])
 
     /** add selected key/value pair as a chip in the chip group */
     const selectValue = (selectedValue: string) => {

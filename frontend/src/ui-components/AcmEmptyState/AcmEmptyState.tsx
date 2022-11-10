@@ -2,6 +2,7 @@
 
 import { EmptyState, EmptyStateBody, EmptyStatePrimary, EmptyStateVariant, Title } from '@patternfly/react-core'
 import { ReactNode } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import emptyPagePng from '../assets/EmptyPageIcon.png'
 import emptyTablePng from '../assets/EmptyTableIcon.png'
 import Folder from '../assets/Folder.png'
@@ -18,13 +19,14 @@ export function AcmEmptyState(props: {
     image?: AcmEmptyStateImage
     isEmptyTableState?: boolean
 }) {
+    const { t } = useTranslation()
     return (
         <EmptyState variant={EmptyStateVariant.large}>
             {props.showIcon !== false && (
                 <img
                     src={props.image ?? (props.isEmptyTableState ? emptyTablePng : emptyPagePng)}
                     style={{ width: props.isEmptyTableState ? '65%' : '50%' }}
-                    alt="Empty state"
+                    alt={t('Empty state')}
                 />
             )}
             <Title headingLevel="h4" size="lg">

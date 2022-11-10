@@ -5,9 +5,11 @@ import { CopyIcon } from '@patternfly/react-icons'
 import { Popover, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { onCopy } from '../utils'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function AcmInlineCopy(props: { text: string; id: string; displayText?: string }) {
     const [copied, setCopied] = useState<boolean>(false)
+    const { t } = useTranslation()
     useEffect(() => {
         /* istanbul ignore if */
         if (copied) {
@@ -16,7 +18,7 @@ export function AcmInlineCopy(props: { text: string; id: string; displayText?: s
     }, [copied])
     return (
         <span>
-            <Popover bodyContent="" headerContent="Copied!" isVisible={copied} hasAutoWidth showClose={false}>
+            <Popover bodyContent="" headerContent={t('Copied!')} isVisible={copied} hasAutoWidth showClose={false}>
                 <AcmButton
                     id={props.id}
                     variant={ButtonVariant.link}
@@ -28,7 +30,7 @@ export function AcmInlineCopy(props: { text: string; id: string; displayText?: s
                         setCopied(true)
                         onCopy(event, props.text)
                     }}
-                    aria-label="Copy button"
+                    aria-label={t('Copy button')}
                 >
                     {props.displayText ?? props.text}
                 </AcmButton>

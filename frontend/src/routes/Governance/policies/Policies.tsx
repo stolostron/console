@@ -581,15 +581,15 @@ export default function PoliciesPage() {
                 label: 'Cluster violations',
                 options: [
                     {
-                        label: 'Without violations',
+                        label: t('Without violations'),
                         value: 'without-violations',
                     },
                     {
-                        label: 'With violations',
+                        label: t('With violations'),
                         value: 'with-violations',
                     },
                     {
-                        label: 'No status',
+                        label: t('No status'),
                         value: 'no-status',
                     },
                 ],
@@ -630,7 +630,7 @@ export default function PoliciesPage() {
             },
             {
                 id: 'namespace',
-                label: 'Namespace',
+                label: t('Namespace'),
                 options: namespaces.map((namespace) => ({
                     label: namespace.metadata.name,
                     value: namespace.metadata.name ?? '',
@@ -641,7 +641,7 @@ export default function PoliciesPage() {
             },
             {
                 id: 'source',
-                label: 'Source',
+                label: t('Source'),
                 options: getSourceOptions(),
                 tableFilterFn: (selectedValues, item) => {
                     let itemText = item.source as string
@@ -654,11 +654,11 @@ export default function PoliciesPage() {
             },
             {
                 id: 'remediation',
-                label: 'Remediation',
+                label: t('Remediation'),
                 options: [
-                    { label: 'Inform', value: 'inform' },
-                    { label: 'Enforce', value: 'enforce' },
-                    { label: 'Inform/Enforce', value: 'inform/enforce' },
+                    { label: t('Inform'), value: 'inform' },
+                    { label: t('Enforce'), value: 'enforce' },
+                    { label: t('Inform/Enforce'), value: 'inform/enforce' },
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     const policyRemediation = getPolicyRemediation(item.policy)
@@ -667,14 +667,14 @@ export default function PoliciesPage() {
             },
             {
                 id: 'enabled',
-                label: 'Enabled',
+                label: t('Enabled'),
                 options: [
                     {
-                        label: 'True',
+                        label: t('True'),
                         value: 'True',
                     },
                     {
-                        label: 'False',
+                        label: t('False'),
                         value: 'False',
                     },
                 ],
@@ -720,7 +720,7 @@ export default function PoliciesPage() {
                         tooltip: !canCreatePolicy ? unauthorizedMessage : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
-                        title: 'Create policy',
+                        title: t('Create policy'),
                         click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
@@ -739,19 +739,19 @@ export default function PoliciesPage() {
                                         <div style={{ marginLeft: 106, marginTop: '20px', marginBottom: '20px' }}>
                                             <DescriptionList isAutoFit isAutoColumnWidths>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Standards'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {standards ?? '-'}
                                                     </DescriptionListDescription>
                                                 </DescriptionListGroup>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Controls'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {controls ?? '-'}
                                                     </DescriptionListDescription>
                                                 </DescriptionListGroup>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Categories'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {categories ?? '-'}
                                                     </DescriptionListDescription>
@@ -939,7 +939,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             label=""
                             onChange={(key) => setSelectedPolicySetUid(key)}
                             value={selectedPolicySetUid}
-                            placeholder={'Select a policy set'}
+                            placeholder={t('Select a policy set')}
                         >
                             {namespacedPolicySets.map((ps) => (
                                 <SelectOption key={ps.metadata.uid} value={ps.metadata.uid}>

@@ -59,7 +59,7 @@ export default function PolicySetCard(props: {
                 <Stack>
                     {policySet.metadata.name}
                     <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-                        {`Namespace: ${policySet.metadata.namespace}`}
+                        {`${t('Namespace')}: ${policySet.metadata.namespace}`}
                     </div>
                 </Stack>
             ),
@@ -168,7 +168,7 @@ export default function PolicySetCard(props: {
                         <Stack>
                             {policySet.metadata.name}
                             <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-                                {`Namespace: ${policySet.metadata.namespace}`}
+                                {t('Namespace: {{namespace}}', { namespace: policySet.metadata.namespace })}
                             </div>
                         </Stack>
                     </CardTitle>
@@ -277,8 +277,10 @@ function DeletePolicySetModal(props: {
         >
             <Stack hasGutter>
                 <StackItem>
-                    {t(`Removing ${props.item.metadata.name} is irreversible. Select any associated resources that need to be
-            deleted in addition to ${props.item.metadata.name}.`)}
+                    {t(
+                        'Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.',
+                        { name: props.item.metadata.name }
+                    )}
                 </StackItem>
                 <StackItem>
                     <Checkbox

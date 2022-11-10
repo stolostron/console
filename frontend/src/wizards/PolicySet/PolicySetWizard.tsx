@@ -26,6 +26,8 @@ import { PolicyApiVersion, PolicyKind } from '../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../common/resources/IPolicySet'
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { PlacementSection } from '../Placement/PlacementSection'
+import { useTranslation } from '../../lib/acm-i18next'
+import { useWizardStrings } from '../../lib/wizardStrings'
 
 export interface PolicySetWizardProps {
     breadcrumb?: { label: string; to?: string }[]
@@ -46,6 +48,7 @@ export interface PolicySetWizardProps {
 
 export function PolicySetWizard(props: PolicySetWizardProps) {
     const policySet = props.resources?.find((resource) => resource.kind === PolicySetKind)
+    const { t } = useTranslation()
     const virtualPolicies = useMemo(() => {
         const virtualPolicies = [...props.policies]
         if (policySet) {
@@ -73,8 +76,14 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
         return virtualPolicies
     }, [policySet, props.policies])
 
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Policy set steps'),
+        contentAriaLabel: t('Policy set content'),
+    })
+
     return (
         <WizardPage
+            wizardStrings={translatedWizardStrings}
             title={props.title}
             breadcrumb={props.breadcrumb}
             onSubmit={props.onSubmit}
@@ -105,7 +114,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
             }
             yamlEditor={props.yamlEditor}
         >
-            <Step label="Details" id="details-step">
+            <Step label={t('Details')} id="details-step">
                 {props.editMode !== EditMode.Edit && (
                     <Fragment>
                         <Sync kind={PolicySetKind} path="metadata.name" suffix="-placement" />
@@ -119,22 +128,22 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                     </Fragment>
                 )}
                 <Sync kind={PolicySetKind} path="metadata.namespace" />
-                <Section label="Details">
+                <Section label={t('Details')}>
                     <WizItemSelector selectKey="kind" selectValue={PolicySetKind}>
                         <ItemContext.Consumer>
                             {(item: IResource) => (
                                 <Fragment>
                                     <WizTextInput
-                                        label="Name"
+                                        label={t('Name')}
                                         path="metadata.name"
                                         id="name"
                                         required
                                         validation={validateKubernetesResourceName}
                                         readonly={item.metadata?.uid !== undefined}
                                     />
-                                    <WizTextArea label="Description" path="spec.description" />
+                                    <WizTextArea label={t('Description')} path="spec.description" />
                                     <WizSingleSelect
-                                        label="Namespace"
+                                        label={t('Namespace')}
                                         path="metadata.namespace"
                                         id="namespace"
                                         required
@@ -147,10 +156,10 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                     </WizItemSelector>
                 </Section>
             </Step>
-            <Step label="Policies" id="policies-step">
+            <Step label={t('Policies')} id="policies-step">
                 <PoliciesSection policies={virtualPolicies} />
             </Step>
-            <Step label="Placement" id="placement-step">
+            <Step label={t('Placement')} id="placement-step">
                 <PlacementSection
                     existingClusterSets={props.clusterSets}
                     existingClusterSetBindings={props.clusterSetBindings}
@@ -169,6 +178,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 
 function PoliciesSection(props: { policies: IResource[] }) {
     const resources = useItem() as IResource[]
+    const { t } = useTranslation()
     const namespacedPolicies = useMemo(() => {
         if (!resources.find) return []
         const policySet = resources?.find((resource) => resource.kind === PolicySetKind)
@@ -191,9 +201,9 @@ function PoliciesSection(props: { policies: IResource[] }) {
     }, [resources, namespacedPolicies])
 
     return (
-        <Section label="Policies">
+        <Section label={t('Policies')}>
             {arePoliciesMissing && (
-                <Alert title="One or more selected policies can not be found." variant="warning" isInline />
+                <Alert title={t('One or more selected policies can not be found.')} variant="warning" isInline />
             )}
             <WizItemSelector selectKey="kind" selectValue={PolicySetKind}>
                 <WizTableSelect
@@ -201,15 +211,15 @@ function PoliciesSection(props: { policies: IResource[] }) {
                     path="spec.policies"
                     label=""
                     columns={[
-                        { name: 'Name', cellFn: (policy: IResource) => policy.metadata?.name },
-                        { name: 'Namespace', cellFn: (policy: IResource) => policy.metadata?.namespace },
-                        { name: '', cellFn: (policy: IResource) => (policy.metadata?.uid ? '' : 'Not found') },
+                        { name: t('Name'), cellFn: (policy: IResource) => policy.metadata?.name },
+                        { name: t('Namespace'), cellFn: (policy: IResource) => policy.metadata?.namespace },
+                        { name: '', cellFn: (policy: IResource) => (policy.metadata?.uid ? '' : t('Not found')) },
                     ]}
                     items={namespacedPolicies}
                     itemToValue={(policy: IResource) => policy.metadata?.name}
                     valueMatchesItem={(value: unknown, policy: IResource) => value === policy.metadata?.name}
-                    emptyTitle="No policies available for selection."
-                    emptyMessage="Select a namespace to be able to select policies in that namespace."
+                    emptyTitle={t('No policies available for selection.')}
+                    emptyMessage={t('Select a namespace to be able to select policies in that namespace.')}
                 />
             </WizItemSelector>
         </Section>
