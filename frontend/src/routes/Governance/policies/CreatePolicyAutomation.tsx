@@ -21,6 +21,7 @@ import schema from './schemaAutomation.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
             editorTitle={t('Automation YAML')}
