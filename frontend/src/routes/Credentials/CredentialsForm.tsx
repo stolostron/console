@@ -11,7 +11,7 @@ import {
     ProviderLongTextMap,
 } from '../../ui-components'
 import _, { noop } from 'lodash'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useContext, useEffect, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -155,10 +155,20 @@ export function CredentialsForm(
         handleModalToggle?: () => void
         hideYaml?: boolean
         control?: any
+        setCredentialCreateFail?: Dispatch<SetStateAction<boolean>>
     } & ProviderConnectionOrCredentialsType
 ) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, control } = props
+    const {
+        namespaces,
+        providerConnection,
+        isEditing,
+        isViewing,
+        handleModalToggle,
+        hideYaml,
+        control,
+        setCredentialCreateFail,
+    } = props
     const credentialsType =
         props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
     const toastContext = useContext(AcmToastContext)
@@ -1394,6 +1404,7 @@ export function CredentialsForm(
                 }
             }}
             isModalWizard={!!handleModalToggle}
+            setCreateFail={setCredentialCreateFail}
         />
     )
 }

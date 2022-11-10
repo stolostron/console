@@ -114,16 +114,17 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     const managedClusters = useRecoilValue(managedClustersState)
     const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
+    const [credentialCreateFail, setCredentialCreateFail] = useState(false)
     const onControlChange = useCallback(
         (control: any) => {
-            if (control.id === 'connection') {
+            if (control.id === 'connection' && !credentialCreateFail) {
                 if (newSecret && control.setActive) {
                     control.setActive(newSecret.metadata.name)
                 }
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
             }
         },
-        [providerConnections, setSelectedConnection, newSecret]
+        [providerConnections, setSelectedConnection, newSecret, credentialCreateFail]
     )
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
@@ -493,6 +494,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                         handleModalToggle={handleModalToggle}
                                         hideYaml={true}
                                         control={setNewSecret}
+                                        setCredentialCreateFail={setCredentialCreateFail}
                                     />
                                 </Modal>
                                 <TemplateEditor

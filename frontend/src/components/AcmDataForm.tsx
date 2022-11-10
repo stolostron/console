@@ -77,7 +77,7 @@ import {
     TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Fragment, ReactNode, useRef, useState } from 'react'
+import { Dispatch, Fragment, ReactNode, SetStateAction, useRef, useState } from 'react'
 import YAML from 'yaml'
 import {
     FormData,
@@ -106,6 +106,7 @@ export interface AcmDataFormProps {
     operatorError?: ReactNode
     hideYaml?: boolean
     isModalWizard?: boolean
+    setCreateFail?: Dispatch<SetStateAction<boolean>>
 }
 
 export function generalValidationMessage(t: TFunction) {
@@ -123,9 +124,22 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
     const { t } = useTranslation()
 
-    const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml, isModalWizard } = props
+    const {
+        editorTitle,
+        schema,
+        secrets,
+        immutables,
+        formData,
+        operatorError,
+        hideYaml,
+        isModalWizard,
+        setCreateFail,
+    } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
+    if (setCreateFail) {
+        setCreateFail(showFormErrors)
+    }
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
