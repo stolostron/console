@@ -11,7 +11,7 @@ import {
     ProviderLongTextMap,
 } from '../../ui-components'
 import _, { noop } from 'lodash'
-import { Dispatch, Fragment, SetStateAction, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -155,20 +155,10 @@ export function CredentialsForm(
         handleModalToggle?: () => void
         hideYaml?: boolean
         control?: any
-        setCredentialCreateFail?: Dispatch<SetStateAction<boolean>>
     } & ProviderConnectionOrCredentialsType
 ) {
     const { t } = useTranslation()
-    const {
-        namespaces,
-        providerConnection,
-        isEditing,
-        isViewing,
-        handleModalToggle,
-        hideYaml,
-        control,
-        setCredentialCreateFail,
-    } = props
+    const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, control } = props
     const credentialsType =
         props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
     const toastContext = useContext(AcmToastContext)
@@ -314,6 +304,9 @@ export function CredentialsForm(
 
     // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
+
+    // set createFail
+    const [createFail, setCreateFail] = useState(false)
 
     function stateToData() {
         const stringData: ProviderConnectionStringData = {}
@@ -1317,7 +1310,7 @@ export function CredentialsForm(
         ],
         submit: () => {
             let credentialData = formData?.customData ?? stateToData()
-            if (control) {
+            if (control && !createFail) {
                 control(credentialData)
             }
             if (Array.isArray(credentialData)) {
@@ -1404,7 +1397,7 @@ export function CredentialsForm(
                 }
             }}
             isModalWizard={!!handleModalToggle}
-            setCreateFail={setCredentialCreateFail}
+            setCreateFail={setCreateFail}
         />
     )
 }
