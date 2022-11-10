@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -77,8 +76,11 @@ import {
     TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
+import { TFunction } from 'i18next'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
+import { useTranslation } from '../lib/acm-i18next'
+import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     FormData,
     FormDataOrderedInput,
@@ -89,10 +91,8 @@ import {
     SectionGroup,
     SelectOptionInput,
 } from './AcmFormData'
-import { SyncEditor } from './SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
-import { useTranslation } from '../lib/acm-i18next'
-import { TFunction } from 'i18next'
+import { SyncEditor } from './SyncEditor/SyncEditor'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -370,7 +370,7 @@ export function AcmDataFormDefault(props: {
     return (
         <Form isHorizontal={isHorizontal}>
             {formData.sections.map((section) => {
-                if (sectionHidden(section)) return <Fragment />
+                if (sectionHidden(section)) return <Fragment key={`hidden-${section.title}`} />
                 if (section.type === 'Section') {
                     return (
                         <FormSection key={section.title}>
@@ -721,8 +721,8 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
             )}
             {/* <Divider /> */}
             {formData.sections.map((formSection) => {
-                if (!sectionHasValue(formSection)) return <Fragment />
-                if (sectionHidden(formSection)) return <Fragment />
+                if (!sectionHasValue(formSection)) return <Fragment key={`novalue-${formSection.title}`} />
+                if (sectionHidden(formSection)) return <Fragment key={`hidden-${formSection.title}`} />
                 i++
                 return (
                     <FormSection key={formSection.title}>
@@ -756,7 +756,12 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                       style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                                   >
                                       {formSection.inputs &&
-                                          formSection.inputs.map((input) => <AcmInputDescription input={input} />)}
+                                          formSection.inputs.map((input, index) => (
+                                              <AcmInputDescription
+                                                  input={input}
+                                                  key={`formSection-${input.id ?? index}`}
+                                              />
+                                          ))}
                                   </DescriptionList>
                               )
                             : formSection.sections && (
@@ -779,8 +784,11 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                                       }}
                                                   >
                                                       {section.inputs &&
-                                                          section.inputs.map((input) => (
-                                                              <AcmInputDescription input={input} />
+                                                          section.inputs.map((input, index) => (
+                                                              <AcmInputDescription
+                                                                  input={input}
+                                                                  key={`section-${input.id ?? index}`}
+                                                              />
                                                           ))}
                                                   </DescriptionList>
                                               </div>
@@ -811,7 +819,9 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                             <SplitItem isFilled>
                                 {input.isSecret && !showSecrets
                                     ? '****************'
-                                    : input.value?.split('\n').map((line) => <div>{line}</div>)}
+                                    : input.value
+                                          ?.split('\n')
+                                          .map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
                             </SplitItem>
                             {input.isSecret && (
                                 <Stack>
@@ -919,7 +929,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     <DescriptionListDescription>
                         <Stack>
                             {input.value.map((value) => (
-                                <div>{input.keyFn(value)}</div>
+                                <div key={`ordered-items-input-value-${value}`}>{input.keyFn(value)}</div>
                             ))}
                         </Stack>
                     </DescriptionListDescription>
@@ -1274,7 +1284,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             return (
                 <Stack hasGutter>
                     {input.groups.map((group) => (
-                        <Stack hasGutter>
+                        <Stack hasGutter key={`GroupedTiles-input-groups-${group.group}`}>
                             <Title headingLevel="h4">{group.group}</Title>
                             <SelectOptionsGallery input={input} options={group.options} />
                         </Stack>

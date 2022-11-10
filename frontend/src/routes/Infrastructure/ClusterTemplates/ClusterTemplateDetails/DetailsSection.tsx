@@ -22,13 +22,13 @@ import {
   getClusterTemplateLocation,
 } from '../clusterTemplateDataUtils';
 import { clusterTemplateGVK } from '../constants';
+import { ClusterTemplate } from '../types';
 import {
   ClusterTemplateCost,
   ClusterTemplateHelmResourceLink,
   ClusterTemplateUsage,
   ClusterTemplateVendorLabel,
 } from './clusterTemplateComponents';
-import { ClusterTemplate } from '../types';
 
 export type ListItem = {
   label: string;
@@ -61,7 +61,7 @@ const List: React.FC<{ items: ListItem[] }> = ({ items }) => {
   return (
     <DescriptionList isHorizontal>
       {items.map(({ label, action, value }) => (
-        <DescriptionListGroup label={label}>
+        <DescriptionListGroup label={label} key={label}>
           <DescriptionListTerm id={`${label} label`}>
             {label} {action}
           </DescriptionListTerm>

@@ -23,14 +23,14 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 
 export default function PolicySetCard(props: {
@@ -202,7 +202,11 @@ export default function PolicySetCard(props: {
                                     {policySet.status?.statusMessage && (
                                         <div>
                                             {policySet.status?.statusMessage.split(';').map((statusMes) => (
-                                                <DescriptionListDescription>{statusMes}</DescriptionListDescription>
+                                                <DescriptionListDescription
+                                                    key={`${policySet.metadata.name}-${statusMes}`}
+                                                >
+                                                    {statusMes}
+                                                </DescriptionListDescription>
                                             ))}
                                         </div>
                                     )}

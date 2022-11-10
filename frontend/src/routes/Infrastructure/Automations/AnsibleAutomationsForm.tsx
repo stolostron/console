@@ -11,14 +11,14 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
+import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
+import { GetProjects } from '../../../components/GetProjects'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { getOperatorError } from '../../../lib/error-output'
@@ -38,10 +38,10 @@ import {
     replaceResource,
     Secret,
 } from '../../../resources'
-import schema from './schema.json'
-import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
-import { GetProjects } from '../../../components/GetProjects'
+import schema from './schema.json'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -246,12 +246,12 @@ export function AnsibleAutomationsForm(props: {
 
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
         return [
-            <Flex style={{ gap: '8px' }}>
+            <Flex style={{ gap: '8px' }} key={ansibleJob.name}>
                 <FlexItem>{ansibleJob.name}</FlexItem>
                 {ansibleJob.extra_vars && (
                     <ChipGroup>
                         {Object.keys(ansibleJob.extra_vars).map((key) => (
-                            <Chip isReadOnly>
+                            <Chip isReadOnly key={`${ansibleJob.name}-${key}`}>
                                 {key}={ansibleJob.extra_vars![key]}
                             </Chip>
                         ))}
