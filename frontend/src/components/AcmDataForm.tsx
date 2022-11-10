@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -77,8 +76,11 @@ import {
     TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
+import { TFunction } from 'i18next'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
+import { useTranslation } from '../lib/acm-i18next'
+import { AcmButton, AcmPageHeader } from '../ui-components'
 import {
     FormData,
     FormDataOrderedInput,
@@ -89,10 +91,8 @@ import {
     SectionGroup,
     SelectOptionInput,
 } from './AcmFormData'
-import { SyncEditor } from './SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
-import { useTranslation } from '../lib/acm-i18next'
-import { TFunction } from 'i18next'
+import { SyncEditor } from './SyncEditor/SyncEditor'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -756,7 +756,9 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                       style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                                   >
                                       {formSection.inputs &&
-                                          formSection.inputs.map((input) => <AcmInputDescription input={input} />)}
+                                          formSection.inputs.map((input, index) => (
+                                              <AcmInputDescription input={input} key={`formSection-inputs-${index}`} />
+                                          ))}
                                   </DescriptionList>
                               )
                             : formSection.sections && (
@@ -779,8 +781,11 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                                       }}
                                                   >
                                                       {section.inputs &&
-                                                          section.inputs.map((input) => (
-                                                              <AcmInputDescription input={input} />
+                                                          section.inputs.map((input, index) => (
+                                                              <AcmInputDescription
+                                                                  input={input}
+                                                                  key={`section-inputs-${index}`}
+                                                              />
                                                           ))}
                                                   </DescriptionList>
                                               </div>
@@ -811,7 +816,9 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                             <SplitItem isFilled>
                                 {input.isSecret && !showSecrets
                                     ? '****************'
-                                    : input.value?.split('\n').map((line) => <div>{line}</div>)}
+                                    : input.value
+                                          ?.split('\n')
+                                          .map((line, index) => <div key={`input-value-line-${index}`}>{line}</div>)}
                             </SplitItem>
                             {input.isSecret && (
                                 <Stack>
@@ -918,8 +925,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
                     <DescriptionListDescription>
                         <Stack>
-                            {input.value.map((value) => (
-                                <div>{input.keyFn(value)}</div>
+                            {input.value.map((value, index) => (
+                                <div key={`ordered-items-input-value-${index}`}>{input.keyFn(value)}</div>
                             ))}
                         </Stack>
                     </DescriptionListDescription>
@@ -1273,8 +1280,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         case 'GroupedTiles':
             return (
                 <Stack hasGutter>
-                    {input.groups.map((group) => (
-                        <Stack hasGutter>
+                    {input.groups.map((group, index) => (
+                        <Stack hasGutter key={`GroupedTiles-input-groups-${index}`}>
                             <Title headingLevel="h4">{group.group}</Title>
                             <SelectOptionsGallery input={input} options={group.options} />
                         </Stack>

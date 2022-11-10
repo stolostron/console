@@ -2,12 +2,12 @@
 
 import { ClusterTemplateQuota } from '../types';
 
-import { TableComposable, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
+import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
+import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
-import { clusterTemplateQuotaGVK, namespaceGVK } from '../constants';
 import { useTranslation } from '../../../../lib/acm-i18next';
+import { clusterTemplateQuotaGVK, namespaceGVK } from '../constants';
 import {
   ClusterTemplateQuotaAccessSummary,
   ClusterTemplateQuotaCostSummary,
@@ -87,7 +87,7 @@ const ClusterTemplateQuotasTable: React.FC<{
       </Thead>
       <Tbody>
         {quotas.map((quota, index) => (
-          <QuotaRow quota={quota} columns={columns} index={index} />
+          <QuotaRow quota={quota} columns={columns} index={index} key={index} />
         ))}
       </Tbody>
     </TableComposable>
