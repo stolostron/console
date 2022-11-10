@@ -77,7 +77,12 @@ const ClusterTemplateInstanceTable: React.FC<{
       </Thead>
       <Tbody>
         {instances.map((instance, index) => (
-          <InstanceRow instance={instance} columns={columns} index={index} key={index} />
+          <InstanceRow
+            instance={instance}
+            columns={columns}
+            index={index}
+            key={instance.metadata?.uid ?? index}
+          />
         ))}
       </Tbody>
     </TableComposable>

@@ -370,7 +370,7 @@ export function AcmDataFormDefault(props: {
     return (
         <Form isHorizontal={isHorizontal}>
             {formData.sections.map((section) => {
-                if (sectionHidden(section)) return <Fragment />
+                if (sectionHidden(section)) return <Fragment key={`hidden-${section.title}`} />
                 if (section.type === 'Section') {
                     return (
                         <FormSection key={section.title}>
@@ -721,8 +721,8 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
             )}
             {/* <Divider /> */}
             {formData.sections.map((formSection) => {
-                if (!sectionHasValue(formSection)) return <Fragment />
-                if (sectionHidden(formSection)) return <Fragment />
+                if (!sectionHasValue(formSection)) return <Fragment key={`novalue-${formSection.title}`} />
+                if (sectionHidden(formSection)) return <Fragment key={`hidden-${formSection.title}`} />
                 i++
                 return (
                     <FormSection key={formSection.title}>
@@ -757,7 +757,10 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                   >
                                       {formSection.inputs &&
                                           formSection.inputs.map((input, index) => (
-                                              <AcmInputDescription input={input} key={`formSection-inputs-${index}`} />
+                                              <AcmInputDescription
+                                                  input={input}
+                                                  key={`formSection-${formSection.title}-${input.type ?? index}`}
+                                              />
                                           ))}
                                   </DescriptionList>
                               )
@@ -784,7 +787,9 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                                           section.inputs.map((input, index) => (
                                                               <AcmInputDescription
                                                                   input={input}
-                                                                  key={`section-inputs-${index}`}
+                                                                  key={`section--${formSection.title}-${
+                                                                      input.type ?? index
+                                                                  }`}
                                                               />
                                                           ))}
                                                   </DescriptionList>
@@ -818,7 +823,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                                     ? '****************'
                                     : input.value
                                           ?.split('\n')
-                                          .map((line, index) => <div key={`input-value-line-${index}`}>{line}</div>)}
+                                          .map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
                             </SplitItem>
                             {input.isSecret && (
                                 <Stack>
@@ -925,8 +930,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
                     <DescriptionListDescription>
                         <Stack>
-                            {input.value.map((value, index) => (
-                                <div key={`ordered-items-input-value-${index}`}>{input.keyFn(value)}</div>
+                            {input.value.map((value) => (
+                                <div key={`ordered-items-input-value-${value}`}>{input.keyFn(value)}</div>
                             ))}
                         </Stack>
                     </DescriptionListDescription>
@@ -1280,8 +1285,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         case 'GroupedTiles':
             return (
                 <Stack hasGutter>
-                    {input.groups.map((group, index) => (
-                        <Stack hasGutter key={`GroupedTiles-input-groups-${index}`}>
+                    {input.groups.map((group) => (
+                        <Stack hasGutter key={`GroupedTiles-input-groups-${group.group}`}>
                             <Title headingLevel="h4">{group.group}</Title>
                             <SelectOptionsGallery input={input} options={group.options} />
                         </Stack>
