@@ -44,6 +44,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
+import { useAllClusters } from '../components/useAllClusters'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -55,6 +56,7 @@ export const ClusterContext = createContext<{
     // readonly infraEnv?: InfraEnvK8sResource
     readonly infraEnvAIFlow?: InfraEnvK8sResource
     readonly hostedCluster?: HostedClusterK8sResource
+    readonly selectedHostedCluster?: HostedClusterK8sResource
 }>({
     cluster: undefined,
     addons: undefined,
@@ -64,12 +66,14 @@ export const ClusterContext = createContext<{
     // infraEnv: undefined,
     infraEnvAIFlow: undefined,
     hostedCluster: undefined,
+    selectedHostedCluster: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
+
     const { waitForAll } = useSharedRecoil()
     const {
         agentClusterInstallsState,
@@ -154,6 +158,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
+    const clusters = useAllClusters()
+    const selectedHostedCluster = clusters.find((c) => c.name === match.params.id)
+    const selectedHostedClusterResource: HostedClusterK8sResource = hostedClusters.find(
+        (hc) => hc.metadata.name === match.params.id
+    )
+
     const cluster = getCluster(
         managedClusterInfo,
         clusterDeployment,
@@ -164,6 +174,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterCurator,
         agentClusterInstall,
         hostedCluster,
+        selectedHostedCluster,
         nodePools
     )
     const prevCluster = usePrevious(cluster)
@@ -185,13 +196,17 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} />
     }
 
-    if (!clusterExists) {
+    if (!clusterExists && !selectedHostedCluster) {
         return (
             <Page>
                 <ErrorPage
                     error={new ResourceError('Not found', 404)}
                     actions={
-                        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
+                        <AcmButton
+                            role="link"
+                            onClick={() => history.push(NavigationPath.clusters)}
+                            style={{ marginRight: '10px' }}
+                        >
                             {t('button.backToClusters')}
                         </AcmButton>
                     }
@@ -231,6 +246,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 // infraEnv,
                 infraEnvAIFlow,
                 hostedCluster,
+                selectedHostedCluster,
             }}
         >
             <AcmPage
@@ -302,7 +318,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusterOverview}>
-                            <ClusterOverviewPageContent canGetSecret={canGetSecret} />
+                            <ClusterOverviewPageContent
+                                canGetSecret={canGetSecret}
+                                selectedHostedClusterResource={selectedHostedClusterResource}
+                            />
                         </Route>
                         <Route exact path={NavigationPath.clusterNodes}>
                             <NodePoolsPageContent />
