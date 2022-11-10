@@ -60,11 +60,11 @@ export const SearchInfoModal = (props: any) => {
                 <div>
                     <p>{t('To search for a keyword, type the word in the search box.')}</p>
                     <div className={classes.exampleRow}>
-                        <AcmLabels labels={['Type']} />
+                        <AcmLabels labels={[t('Type')]} />
                         <p>OpenShift</p>
                     </div>
                     <div className={classes.exampleRow}>
-                        <AcmLabels labels={['Show']} />
+                        <AcmLabels labels={[t('Show')]} />
                         <p>{t('A list of resources that contain the keyword "OpenShift" in any field.')}</p>
                     </div>
                 </div>
@@ -76,11 +76,11 @@ export const SearchInfoModal = (props: any) => {
                         )}
                     </p>
                     <div className={classes.exampleRow}>
-                        <AcmLabels labels={['Type']} />
+                        <AcmLabels labels={[t('Type')]} />
                         <p>status: failed,pending</p>
                     </div>
                     <div className={classes.exampleRow}>
-                        <AcmLabels labels={['Show']} />
+                        <AcmLabels labels={[t('Show')]} />
                         <p>{t('Resources with "failed" or "pending" status.')}</p>
                     </div>
                 </div>

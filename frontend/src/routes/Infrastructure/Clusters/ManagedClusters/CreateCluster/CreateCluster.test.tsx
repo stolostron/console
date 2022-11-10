@@ -64,6 +64,7 @@ import {
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { CreateClusterPage } from '../CreateClusterPage'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import { CLUSTER_INFRA_TYPE_PARAM } from '../ClusterInfrastructureType'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -561,7 +562,7 @@ describe('CreateCluster AWS', () => {
                     snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=AWS`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -865,7 +866,7 @@ describe('CreateCluster on premise', () => {
                     })
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=CIM`]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=CIM`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -893,9 +894,9 @@ describe('CreateCluster on premise', () => {
             // check integration of AI in the left-side navigation
             await waitForText('Cluster details', true)
             await waitForText('Review and save')
-            await waitForText('Cluster hosts')
+            await waitForText('Hosts')
             await waitForText('Networking')
-            await waitForText('Review')
+            await waitForText('Review and create')
 
             // fill-in Cluster details
             await typeByTestId('form-input-name-field', clusterName)

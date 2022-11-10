@@ -229,7 +229,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 <StackItem>
                     <AcmTable<NodePool>
                         key="nodepool-table"
-                        plural={t('Nodepools')}
+                        plural={t('Node pools')}
                         columns={columns}
                         keyFn={keyFn}
                         items={transformedNodepoolItems}

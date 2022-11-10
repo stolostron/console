@@ -615,7 +615,9 @@ export function AcmDataFormWizard(props: {
                                 </Button>
                                 <Button
                                     variant="secondary"
-                                    onClick={formData.back ? formData.back : onBack}
+                                    onClick={
+                                        activeStep.id === firstSection?.title && formData.back ? formData.back : onBack
+                                    }
                                     isDisabled={
                                         formData.back ? false : activeStep.id === firstSection?.title || isSubmitting
                                     }

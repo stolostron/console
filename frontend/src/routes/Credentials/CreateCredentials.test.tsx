@@ -6,15 +6,15 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { CreateInfrastructureCredentials } from './CredentialsInfrastructure'
+import { CreateCredentialsPage } from './CreateCredentials'
 
-describe('CreateInfrastructure credential', () => {
+describe('CreateCredentialsPage', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.addCredentialsInfrastructure]}>
-                    <Route path={NavigationPath.addCredentialsInfrastructure}>
-                        <CreateInfrastructureCredentials />
+                <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
+                    <Route path={NavigationPath.addCredentials}>
+                        <CreateCredentialsPage />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>
@@ -74,7 +74,6 @@ describe('CreateInfrastructure credential', () => {
             })
         )
     })
-
     test('can click back', async () => {
         render(<Component />)
         userEvent.click(

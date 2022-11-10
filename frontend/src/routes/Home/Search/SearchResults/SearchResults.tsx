@@ -23,7 +23,7 @@ import {
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultItemsLazyQuery } from '../search-sdk/search-sdk'
-import searchDefinitions from '../searchDefinitions'
+import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResultsTables from './RelatedResultsTables'
 import RelatedResultsTiles from './RelatedResultsTiles'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
@@ -35,6 +35,8 @@ function SearchResultTables(props: {
 }) {
     const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
+
+    const searchDefinitions = useSearchDefinitions()
 
     const renderContent = useCallback(
         (kind: string, items: ISearchResult[]) => {
@@ -58,7 +60,7 @@ function SearchResultTables(props: {
                 />
             )
         },
-        [currentQuery, setDeleteResource, t]
+        [currentQuery, setDeleteResource, searchDefinitions, t]
     )
 
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
@@ -195,7 +197,9 @@ export default function SearchResults(props: { currentQuery: string; preSelected
                         <ExpandableSection
                             onToggle={() => setShowRelatedResources(!showRelatedResources)}
                             isExpanded={showRelatedResources}
-                            toggleText={!showRelatedResources ? 'Show related resources' : 'Hide related resources'}
+                            toggleText={
+                                !showRelatedResources ? t('Show related resources') : t('Hide related resources')
+                            }
                         />
                         <Tooltip
                             content={t(

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import searchDefinitions, {
+import {
     CreateApplicationTopologyLink,
     CreateDetailsLink,
     CreateExternalLink,
@@ -10,6 +10,7 @@ import searchDefinitions, {
     FormatPolicyReportPolicies,
     GetAge,
     GetUrlSearchParam,
+    getSearchDefinitions,
 } from './searchDefinitions'
 
 test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
@@ -48,7 +49,7 @@ test('Correctly returns CreateDetailsLink - Cluster', () => {
     const item = {
         name: 'testClusterName',
         namespace: 'testClusterNamespace',
-        kind: 'cluster',
+        kind: 'Cluster',
     }
     const result = CreateDetailsLink(item)
     expect(result).toMatchSnapshot()
@@ -58,10 +59,10 @@ test('Correctly returns CreateDetailsLink - ACM-Application', () => {
     const item = {
         name: 'testApplicationName',
         namespace: 'testApplicationNamespace',
-        kind: 'application',
+        kind: 'Application',
         apigroup: 'app.k8s.io',
         cluster: 'cluster',
-        apiversion: 'apiversion',
+        apiversion: 'v1beta1',
     }
     const result = CreateDetailsLink(item)
     expect(result).toMatchSnapshot()
@@ -71,7 +72,7 @@ test('Correctly returns CreateDetailsLink - NON-Application', () => {
     const item = {
         name: 'testApplicationName',
         namespace: 'testApplicationNamespace',
-        kind: 'application',
+        kind: 'Application',
         cluster: 'testCluster',
         selfLink: '/self/link',
     }
@@ -83,7 +84,7 @@ test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
     const item = {
         name: 'testPolicyName',
         namespace: 'testPolicyNamespace',
-        kind: 'policy',
+        kind: 'Policy',
         _hubClusterResource: true,
         apigroup: 'policy.open-cluster-management.io',
     }
@@ -95,7 +96,7 @@ test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
     const item = {
         name: 'testPolicyName',
         namespace: 'testPolicyNamespace',
-        kind: 'policy',
+        kind: 'Policy',
         cluster: 'testCluster',
         selfLink: '/self/link',
     }
@@ -107,7 +108,7 @@ test('Correctly returns CreateDetailsLink - PolicyReport', () => {
     const item = {
         name: 'testPolicyReport',
         namespace: 'testPolicyReportNamespace',
-        kind: 'policyreport',
+        kind: 'PolicyReport',
         cluster: 'testCluster',
         selfLink: '/self/link',
     }
@@ -119,7 +120,7 @@ test('Correctly returns CreateDetailsLink - Default', () => {
     const item = {
         name: 'testPodName',
         namespace: 'testPodNamespace',
-        kind: 'pod',
+        kind: 'Pod',
         cluster: 'testCluster',
         selfLink: '/self/link',
     }
@@ -129,9 +130,11 @@ test('Correctly returns CreateDetailsLink - Default', () => {
 
 test('Correctly returns CreateApplicationTopologyLink', () => {
     const item = {
-        name: 'testName',
+        name: 'testApp',
         namespace: 'testNamespace',
-        dashboard: 'http://dashboard',
+        kind: 'Application',
+        apiversion: 'v1beta1',
+        apigroup: 'app.k8s.io',
     }
     const result = CreateApplicationTopologyLink(item)
     expect(result).toMatchSnapshot()
@@ -220,13 +223,14 @@ test('Correctly returns all resource definitions', () => {
     const testItem = {
         name: 'testName',
         namespace: 'testNamespace',
-        kind: 'pod',
+        kind: 'Pod',
         cluster: 'testCluster',
         label: 'testLabel=label; testLabel1=label1',
         selfLink: '/apigroup/cluster/name',
         created: '2021-01-01T00:00:00Z',
     }
-    const defKeys = Object.keys(searchDefinitions)
+    const searchDefinitions = getSearchDefinitions((key) => key)
+    const defKeys = Object.keys(searchDefinitions) as (keyof typeof searchDefinitions)[]
     defKeys.forEach((key) => {
         const definition = searchDefinitions[key].columns.map((col: any) => {
             if (typeof col.cell === 'function') {
@@ -241,8 +245,7 @@ test('Correctly returns all resource definitions', () => {
 test('Correctly returns url search params with all params & apigroup', () => {
     const item = {
         cluster: 'testCluster',
-        kind: 'pods',
-        apiGroup: 'apps',
+        kind: 'Pod',
         apiversion: 'v1',
         name: 'testName',
         namespace: 'testNamespace',
@@ -254,8 +257,7 @@ test('Correctly returns url search params with all params & apigroup', () => {
 test('Correctly returns url search params with all params without apigroup', () => {
     const item = {
         cluster: 'testCluster',
-        kind: 'pods',
-        apigroup: 'apps',
+        kind: 'Pod',
         apiversion: 'v1',
         name: 'testName',
         namespace: 'testNamespace',

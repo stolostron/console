@@ -41,6 +41,8 @@ import { validateKubernetesResourceName, validatePolicyName } from '../../lib/va
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { Specifications } from './specifications'
+import { useWizardStrings } from '../../lib/wizardStrings'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function PolicyWizard(props: {
     title: string
@@ -58,10 +60,19 @@ export function PolicyWizard(props: {
     onSubmit: WizardSubmit
     onCancel: WizardCancel
 }) {
+    const { t } = useTranslation()
+    const translatedWizardStrings = useWizardStrings({
+        stepsAriaLabel: t('Policy steps'),
+        contentAriaLabel: t('Policy content'),
+    })
+
     return (
         <WizardPage
+            wizardStrings={translatedWizardStrings}
             title={props.title}
-            description="A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls."
+            description={t(
+                'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls.'
+            )}
             yamlEditor={props.yamlEditor}
             onSubmit={props.onSubmit}
             onCancel={props.onCancel}
@@ -76,7 +87,7 @@ export function PolicyWizard(props: {
                 ]
             }
         >
-            <Step label="Details" id="details">
+            <Step label={t('Details')} id="details">
                 {props.editMode !== EditMode.Edit && (
                     <Fragment>
                         <Sync kind={PolicyKind} path="metadata.namespace" />
@@ -92,14 +103,15 @@ export function PolicyWizard(props: {
 
                 <Sync kind={PolicyKind} path="metadata.namespace" />
                 <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
-                    <Section label="Details" prompt="Enter the details for the policy">
+                    <Section label={t('Details')} prompt={t('Enter the details for the policy')}>
                         {props.gitSource && (
                             <WizDetailsHidden>
-                                <Alert title="This policy is managed externally" variant="warning" isInline>
+                                <Alert title={t('This policy is managed externally')} variant="warning" isInline>
                                     <Fragment>
                                         <p>
-                                            Any changes made here may be overridden by the content of an upstream
-                                            repository.
+                                            {t(
+                                                'Any changes made here may be overridden by the content of an upstream repository.'
+                                            )}
                                         </p>
                                         <Button
                                             icon={<ExternalLinkAltIcon />}
@@ -122,7 +134,7 @@ export function PolicyWizard(props: {
                                     <WizTextInput
                                         id="name"
                                         path="metadata.name"
-                                        label="Name"
+                                        label={t('Name')}
                                         required
                                         validation={validatePolicyName}
                                         readonly={item.metadata?.uid !== undefined}
@@ -130,9 +142,11 @@ export function PolicyWizard(props: {
                                     <WizSingleSelect
                                         id="namespace"
                                         path="metadata.namespace"
-                                        label="Namespace"
-                                        placeholder="Select namespace"
-                                        helperText="The namespace on the hub cluster where the policy resources will be created."
+                                        label={t('Namespace')}
+                                        placeholder={t('Select namespace')}
+                                        helperText={t(
+                                            'The namespace on the hub cluster where the policy resources will be created.'
+                                        )}
                                         options={props.namespaces}
                                         required
                                         readonly={item.metadata?.uid !== undefined}
@@ -142,18 +156,18 @@ export function PolicyWizard(props: {
                         </ItemContext.Consumer>
                         <WizCheckbox
                             path="spec.disabled"
-                            label="Disable policy"
-                            helperText="Select to disable the policy from being propagated to managed clusters."
+                            label={t('Disable policy')}
+                            helperText={t('Select to disable the policy from being propagated to managed clusters.')}
                         />
                     </Section>
                 </WizItemSelector>
             </Step>
-            <Step label="Policy templates" id="templates">
+            <Step label={t('Policy templates')} id="templates">
                 <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
                     <PolicyWizardTemplates policies={props.policies} />
                 </WizItemSelector>
             </Step>
-            <Step label="Placement" id="placement">
+            <Step label={t('Placement')} id="placement">
                 <PolicyPolicySets />
                 <PlacementSection
                     existingPlacements={props.placements}
@@ -168,38 +182,44 @@ export function PolicyWizard(props: {
                     withoutOnlineClusterCondition
                 />
             </Step>
-            <Step label="Policy annotations" id="security-groups">
+            <Step label={t('Policy annotations')} id="security-groups">
                 <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
-                    <Section label="Policy annotations">
+                    <Section label={t('Policy annotations')}>
                         <StringsMapInput
                             id="standards"
                             path={`metadata.annotations.policy\\.open-cluster-management\\.io/standards`}
-                            label="Standards"
+                            label={t('Standards')}
                             map={(value: string | undefined) => {
                                 return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
                             }}
                             unmap={(values: string[]) => values.join(', ')}
-                            labelHelp="The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI)."
+                            labelHelp={t(
+                                'The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).'
+                            )}
                         />
                         <StringsMapInput
                             id="categories"
                             path={`metadata.annotations.policy\\.open-cluster-management\\.io/categories`}
-                            label="Categories"
+                            label={t('Categories')}
                             map={(value: string | undefined) => {
                                 return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
                             }}
                             unmap={(values: string[]) => values.join(', ')}
-                            labelHelp="A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards."
+                            labelHelp={t(
+                                'A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards.'
+                            )}
                         />
                         <StringsMapInput
                             id="controls"
                             path={`metadata.annotations.policy\\.open-cluster-management\\.io/controls`}
-                            label="Controls"
+                            label={t('Controls')}
                             map={(value: string | undefined) => {
                                 return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
                             }}
                             unmap={(values: string[]) => values.join(', ')}
-                            labelHelp="The name of the security control that is being checked. For example, the certificate policy controller."
+                            labelHelp={t(
+                                'The name of the security control that is being checked. For example, the certificate policy controller.'
+                            )}
                         />
                     </Section>
                 </WizItemSelector>
@@ -213,40 +233,47 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
     const editMode = useEditMode()
     const selectorPath = 'objectDefinition.spec.namespaceSelector'
     const selectorMatchLabels = `${selectorPath}.matchLabels`
+    const { t } = useTranslation()
     return (
         <Section
-            label="Templates"
-            description="A policy contains  policy templates that create policies on managed clusters."
+            label={t('Templates')}
+            description={t('A policy contains  policy templates that create policies on managed clusters.')}
         >
             <WizRadioGroup
                 path="spec.remediationAction"
-                label="Remediation"
-                labelHelp="Optional. Specifies the remediation of your policy. The parameter values are enforce and inform. If specified, the spec.remediationAction value that is defined overrides the remediationAction parameter defined in the child policy, from the policy-templates section. For example, if spec.remediationAction value section is set to enforce, then the remediationAction in the policy-templates section is set to enforce during runtime. Important: Some policies might not support the enforce feature."
+                label={t('Remediation')}
+                labelHelp={t(
+                    'Optional. Specifies the remediation of your policy. The parameter values are enforce and inform. If specified, the spec.remediationAction value that is defined overrides the remediationAction parameter defined in the child policy, from the policy-templates section. For example, if spec.remediationAction value section is set to enforce, then the remediationAction in the policy-templates section is set to enforce during runtime. Important: Some policies might not support the enforce feature.'
+                )}
             >
                 <Radio
                     id="inform"
-                    label="Inform"
+                    label={t('Inform')}
                     value="inform"
-                    description="Reports the violation, which requires manual remediation."
+                    description={t('Reports the violation, which requires manual remediation.')}
                 />
                 <Radio
                     id="enforce"
-                    label="Enforce"
+                    label={t('Enforce')}
                     value="enforce"
-                    description="Automatically runs remediation action that is defined in the source, if this feature is supported."
+                    description={t(
+                        'Automatically runs remediation action that is defined in the source, if this feature is supported.'
+                    )}
                 />
                 <Radio
                     id="policyTemplateRemediation"
-                    label="Use policy template remediation"
+                    label={t('Use policy template remediation')}
                     value={undefined}
-                    description="Remediation action will be determined by what is set in the policy template definitions."
+                    description={t(
+                        'Remediation action will be determined by what is set in the policy template definitions.'
+                    )}
                 />
             </WizRadioGroup>
             <WizArrayInput
                 id="templates"
                 path="spec.policy-templates"
-                label="Policy templates"
-                placeholder="Add policy template"
+                label={t('Policy templates')}
+                placeholder={t('Add policy template')}
                 // required
                 dropdownItems={Specifications.map((specification) => {
                     return {
@@ -326,30 +353,30 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
 
                     <WizTextInput
                         path="objectDefinition.metadata.name"
-                        label="Name"
+                        label={t('Name')}
                         required
                         validation={validateKubernetesResourceName}
-                        helperText="Name needs to be unique to the namespace on each of the managed clusters."
+                        helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
                     />
-                    <WizTextInput path="objectDefinition.spec.minimumDuration" label="Minimum duration" required />
+                    <WizTextInput path="objectDefinition.spec.minimumDuration" label={t('Minimum duration')} required />
                 </WizHidden>
 
                 {/* IamPolicy */}
                 <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'IamPolicy'}>
                     <div>
-                        <Title headingLevel="h6">IAM Policy</Title>
+                        <Title headingLevel="h6">{t('IAM Policy')}</Title>
                     </div>
 
                     <WizTextInput
                         path="objectDefinition.metadata.name"
-                        label="Name"
+                        label={t('Name')}
                         required
-                        helperText="Name needs to be unique to the namespace on each of the managed clusters."
+                        helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
                         validation={validateKubernetesResourceName}
                     />
                     <WizNumberInput
                         path="objectDefinition.spec.maxClusterRoleBindingUsers"
-                        label="Limit cluster role bindings"
+                        label={t('Limit cluster role bindings')}
                         required
                     />
                 </WizHidden>
@@ -357,48 +384,54 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                 {/* ConfigurationPolicy */}
                 <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'ConfigurationPolicy'}>
                     <div>
-                        <Title headingLevel="h6">Configuration Policy</Title>
+                        <Title headingLevel="h6">{t('Configuration Policy')}</Title>
                         <Text component="small">
-                            A configuration policy creates configuration objects on managed clusters.
+                            {t('A configuration policy creates configuration objects on managed clusters.')}
                         </Text>
                     </div>
 
                     <WizTextInput
                         path="objectDefinition.metadata.name"
-                        label="Name"
+                        label={t('Name')}
                         required
-                        helperText="Name needs to be unique to the namespace on each of the managed clusters."
+                        helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
                         validation={validateKubernetesResourceName}
                     />
 
                     <WizRadioGroup
                         path="objectDefinition.spec.pruneObjectBehavior"
-                        label="Prune Object Behavior"
-                        labelHelp="Optional. Specifies how related objects on the managed cluster are pruned when the policy is deleted. The parameter values are None, DeleteIfCreated, and DeleteAll."
+                        label={t('Prune Object Behavior')}
+                        labelHelp={t(
+                            'Optional. Specifies how related objects on the managed cluster are pruned when the policy is deleted. The parameter values are None, DeleteIfCreated, and DeleteAll.'
+                        )}
                     >
                         <Radio
                             id="deleteIfCreated"
-                            label="Delete If Created"
+                            label={t('Delete If Created')}
                             value="DeleteIfCreated"
-                            description="Attempts to delete objects known to be created by the policy when the policy is deleted."
+                            description={t(
+                                'Attempts to delete objects known to be created by the policy when the policy is deleted.'
+                            )}
                         />
                         <Radio
                             id="deleteAll"
-                            label="Delete All"
+                            label={t('Delete All')}
                             value="DeleteAll"
-                            description="Attempts to delete all of the objects related to the deleted policy."
+                            description={t('Attempts to delete all of the objects related to the deleted policy.')}
                         />
                         <Radio
                             id="none"
-                            label="None"
+                            label={t('None')}
                             value="None"
-                            description="Does not delete any resources when the policy is deleted. This value is used by default."
+                            description={t(
+                                'Does not delete any resources when the policy is deleted. This value is used by default.'
+                            )}
                         />
                     </WizRadioGroup>
 
                     <WizArrayInput
                         path="objectDefinition.spec.object-templates"
-                        label="Configuration objects"
+                        label={t('Configuration objects')}
                         // placeholder="Add configuration object"
                         collapsedContent="objectDefinition.metadata.name"
                     >
@@ -412,25 +445,25 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                     <WizStringsInput
                         id="include-namespaces"
                         path={`${selectorPath}.include`}
-                        label="Include namespaces"
-                        placeholder="Add namespace"
+                        label={t('Include namespaces')}
+                        placeholder={t('Add namespace')}
                     />
                     <WizStringsInput
                         id="exclude-namespaces"
                         path={`${selectorPath}.exclude`}
-                        label="Exclude namespaces"
-                        placeholder="Add namespace"
+                        label={t('Exclude namespaces')}
+                        placeholder={t('Add namespace')}
                     />
                     <WizKeyValue
-                        label="Namespaces match labels"
+                        label={t('Namespaces match labels')}
                         path={selectorMatchLabels}
-                        placeholder="Add label"
+                        placeholder={t('Add label')}
                         hidden={(item) => get(item, selectorMatchLabels) === undefined}
                     />
                     <WizArrayInput
-                        label="Namespaces match label expressions"
+                        label={t('Namespaces match label expressions')}
                         path={`${selectorPath}.matchExpressions`}
-                        placeholder="Add expression"
+                        placeholder={t('Add expression')}
                         collapsedContent={<MatchExpressionCollapsed />}
                         newValue={{ key: '', operator: 'In', values: [] }}
                         defaultCollapsed={editMode !== EditMode.Create}
@@ -442,23 +475,29 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                 <WizRadioGroup path="objectDefinition.spec.remediationAction" label="Remediation">
                     <Radio
                         id="inform"
-                        label="Inform"
+                        label={t('Inform')}
                         value="inform"
-                        description="Reports the violation, which requires manual remediation."
+                        description={t('Reports the violation, which requires manual remediation.')}
                     />
                     <Radio
                         id="enforce"
-                        label="Enforce"
+                        label={t('Enforce')}
                         value="enforce"
-                        description="Automatically runs remediation action that is defined in the source, if this feature is supported."
+                        description={t(
+                            'Automatically runs remediation action that is defined in the source, if this feature is supported.'
+                        )}
                     />
                 </WizRadioGroup>
 
                 <Select
                     path="objectDefinition.spec.severity"
-                    label="Severity"
-                    placeholder="Select severity"
-                    options={['low', 'medium', 'high']}
+                    label={t('Severity')}
+                    placeholder={t('Select severity')}
+                    options={[
+                        { label: t('low'), value: 'low' },
+                        { label: t('medium'), value: 'medium' },
+                        { label: t('high'), value: 'high' },
+                    ]}
                     required
                 />
             </WizArrayInput>
@@ -484,14 +523,15 @@ export function isExistingTemplateName(name: string, policies: IResource[]) {
 
 function ObjectTemplate() {
     const template: any = useItem()
+    const { t } = useTranslation()
     function getComplianceType(template: any) {
         switch (template?.complianceType) {
             case 'musthave':
-                return 'Must have'
+                return t('Must have')
             case 'mustonlyhave':
-                return 'Must only have'
+                return t('Must only have')
             case 'mustnothave':
-                return 'Must not have'
+                return t('Must not have')
             default:
                 return template?.complianceType
         }
@@ -517,33 +557,33 @@ function ObjectTemplate() {
 
             <WizTextInput
                 path="objectDefinition.metadata.name"
-                label="Name"
+                label={t('Name')}
                 required
                 hidden={(template: any) => template?.objectDefinition?.metadata?.name === undefined}
             />
 
             <WizTextInput
                 path="objectDefinition.metadata.namespace"
-                label="Namespace"
+                label={t('Namespace')}
                 required
                 hidden={(template: any) => template?.objectDefinition?.metadata?.namespace === undefined}
             />
 
             <WizKeyValue
                 path="objectDefinition.metadata.labels"
-                label="Labels"
+                label={t('Labels')}
                 hidden={(template: any) => template?.objectDefinition?.metadata?.labels === undefined}
             />
 
             <WizKeyValue
                 path="objectDefinition.metadata.annotations"
-                label="Annotations"
+                label={t('Annotations')}
                 hidden={(template: any) => template?.objectDefinition?.metadata?.annotations === undefined}
             />
 
             <WizTextInput
                 path="objectDefinition.status.phase"
-                label="Phase"
+                label={t('Phase')}
                 hidden={(template: any) => template?.objectDefinition?.status?.phase === undefined}
             />
 
@@ -551,43 +591,51 @@ function ObjectTemplate() {
             <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'LimitRange'}>
                 <WizArrayInput
                     path="objectDefinition.spec.limits"
-                    label="Limits"
-                    placeholder="Add limit"
+                    label={t('Limits')}
+                    placeholder={t('Add limit')}
                     collapsedContent={'default.memory'}
                 >
                     <WizTextInput
                         path="default.memory"
-                        label="Memory limit"
-                        placeholder="Enter memory limit"
+                        label={t('Memory limit')}
+                        placeholder={t('Enter memory limit')}
                         required
-                        helperText="Examples: 512Mi, 2Gi"
+                        helperText={t('Examples: 512Mi, 2Gi')}
                     />
                     <WizTextInput
                         path="defaultRequest.memory"
-                        label="Memory request"
-                        placeholder="Enter memory request"
+                        label={t('Memory request')}
+                        placeholder={t('Enter memory request')}
                         required
-                        helperText="Examples: 512Mi, 2Gi"
+                        helperText={t('Examples: 512Mi, 2Gi')}
                     />
                 </WizArrayInput>
             </WizHidden>
 
             {/* SecurityContextConstraints */}
             <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'SecurityContextConstraints'}>
-                <WizCheckbox path="objectDefinition.allowHostDirVolumePlugin" label="Allow host dir volume plugin" />
-                <WizCheckbox path="objectDefinition.allowHostIPC" label="Allow host IPC" />
-                <WizCheckbox path="objectDefinition.allowHostNetwork" label="Allow host network" />
-                <WizCheckbox path="objectDefinition.allowHostPID" label="Allow host PID" />
-                <WizCheckbox path="objectDefinition.allowHostPorts" label="Allow host ports" />
-                <WizCheckbox path="objectDefinition.allowPrivilegeEscalation" label="Allow privilege escalation" />
-                <WizCheckbox path="objectDefinition.allowPrivilegedContainer" label="Allow privileged container" />
+                <WizCheckbox
+                    path="objectDefinition.allowHostDirVolumePlugin"
+                    label={t('Allow host dir volume plugin')}
+                />
+                <WizCheckbox path="objectDefinition.allowHostIPC" label={t('Allow host IPC')} />
+                <WizCheckbox path="objectDefinition.allowHostNetwork" label={t('Allow host network')} />
+                <WizCheckbox path="objectDefinition.allowHostPID" label={t('Allow host PID')} />
+                <WizCheckbox path="objectDefinition.allowHostPorts" label={t('Allow host ports')} />
+                <WizCheckbox path="objectDefinition.allowPrivilegeEscalation" label={t('Allow privilege escalation')} />
+                <WizCheckbox path="objectDefinition.allowPrivilegedContainer" label={t('Allow privileged container')} />
             </WizHidden>
 
             {/* ScanSettingBinding */}
             <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'ScanSettingBinding'}>
-                <WizArrayInput id="profiles" label="Profiles" path="objectDefinition.profiles" collapsedContent="name">
-                    <WizTextInput path="kind" label="Kind" required />
-                    <WizTextInput path="name" label="Name" required />
+                <WizArrayInput
+                    id="profiles"
+                    label={t('Profiles')}
+                    path="objectDefinition.profiles"
+                    collapsedContent={t('name')}
+                >
+                    <WizTextInput path="kind" label={t('Kind')} required />
+                    <WizTextInput path="name" label={t('Name')} required />
                 </WizArrayInput>
             </WizHidden>
 
@@ -595,14 +643,14 @@ function ObjectTemplate() {
             <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'Role'}>
                 <WizArrayInput
                     id="rules"
-                    label="Rules"
+                    label={t('Rules')}
                     path="objectDefinition.rules"
-                    collapsedContent="name"
-                    placeholder="Add rule"
+                    collapsedContent={t('name')}
+                    placeholder={t('Add rule')}
                 >
-                    <WizStringsInput label="API Groups" path="apiGroups" />
-                    <WizStringsInput label="Resources" path="resources" />
-                    <WizStringsInput label="Verbs" path="verbs" />
+                    <WizStringsInput label={t('API Groups')} path="apiGroups" />
+                    <WizStringsInput label={t('Resources')} path="resources" />
+                    <WizStringsInput label={t('Verbs')} path="verbs" />
                 </WizArrayInput>
             </WizHidden>
 
@@ -627,7 +675,7 @@ export function pascalCaseToSentenceCase(text: string) {
 
 function PolicyPolicySets() {
     const resources = useItem() as IResource[]
-
+    const { t } = useTranslation()
     const policy = useMemo(() => resources?.find((resource) => resource.kind === PolicyKind), [resources])
 
     const placements = useMemo(() => {
@@ -656,21 +704,22 @@ function PolicyPolicySets() {
                 <Alert
                     title={
                         policySets.length === 1
-                            ? 'Policy placement is managed by a policy set.'
-                            : 'Policy placement is managed by policy sets.'
+                            ? t('Policy placement is managed by a policy set.')
+                            : t('Policy placement is managed by policy sets.')
                     }
                     isInline
                     variant="warning"
                 >
                     <p>
                         {policySets.length === 1
-                            ? 'This policy is placed by the policy set: '
-                            : 'This policy is placed by the policy sets: '}
+                            ? t('This policy is placed by the policy set: ')
+                            : t('This policy is placed by the policy sets: ')}
                         <b>{policySets.join(', ')}</b>
                     </p>
                     <p className="pf-c-form__helper-text">
-                        Only add placement to this policy if you want it to be placed in addition to the policy set
-                        placement.
+                        {t(
+                            'Only add placement to this policy if you want it to be placed in addition to the policy set placement.'
+                        )}
                     </p>
                 </Alert>
             )}

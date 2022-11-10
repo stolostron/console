@@ -152,7 +152,7 @@ export const getClusterList = (
         DeploymentConfigKind,
         JobKind,
         StatefulSetKind,
-    ].map((kind) => kind.toLowerCase())
+    ]
     if (ocpAppResourceKinds.includes(resource.kind)) {
         const clusterSet = new Set<string>()
         if (resource.status.cluster) {

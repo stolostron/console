@@ -37,6 +37,7 @@ import {
 import { NavigationPath } from '../../../../../NavigationPath'
 import { createProviderConnection } from '../../../../Credentials/CredentialsForm.test'
 import { CreateClusterPoolPage } from '../CreateClusterPoolPage'
+import { CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 const clusterName = 'test'
 
@@ -194,7 +195,9 @@ describe('CreateClusterPool AWS', () => {
                     snapshot.set(secretsState, [providerConnection as Secret])
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createClusterPool}?infrastructureType=AWS`]}>
+                <MemoryRouter
+                    initialEntries={[`${NavigationPath.createClusterPool}?${CLUSTER_POOL_INFRA_TYPE_PARAM}=AWS`]}
+                >
                     <Route path={NavigationPath.createClusterPool}>
                         <CreateClusterPoolPage />
                     </Route>
@@ -248,7 +251,7 @@ describe('CreateClusterPool AWS', () => {
         // skip AWS private config
         await clickByText('Next')
 
-        await clickByText('Review')
+        await clickByText('Review and create')
 
         // nocks for cluster creation
         const createNocks = [

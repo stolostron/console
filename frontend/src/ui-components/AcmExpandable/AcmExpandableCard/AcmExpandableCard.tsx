@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardBody, CardExpandableContent, CardHeader, CardTitle } from '@patternfly/react-core'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 const onToggle = (acmCardID: string, open: boolean, setOpen: (open: boolean) => void) => {
     setOpen(!open)
@@ -22,6 +23,7 @@ export function AcmExpandableCard(props: {
     localStorage.getItem(acmCardID) ?? localStorage.setItem(acmCardID, 'show')
 
     const [open, setOpen] = useState<boolean>(localStorage.getItem(acmCardID) === 'show')
+    const { t } = useTranslation()
     return (
         <Card id={props.id} className={props.className} isExpanded={open}>
             <CardHeader
@@ -29,7 +31,7 @@ export function AcmExpandableCard(props: {
                 onClick={() => onToggle(acmCardID, open, setOpen)}
                 toggleButtonProps={{
                     id: 'toggle-button',
-                    'aria-label': 'Toggle details',
+                    'aria-label': t('Toggle details'),
                     'aria-expanded': open,
                 }}
             >

@@ -71,7 +71,7 @@ export const controlDataAI = [
     {
         id: 'aiHostsStep',
         type: 'step',
-        title: 'Cluster hosts',
+        title: 'Hosts',
         disabled: true,
     },
     {

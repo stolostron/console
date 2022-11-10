@@ -2,7 +2,14 @@
 
 import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
+import {
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmErrorBoundary,
+    AcmToastContext,
+    Provider,
+} from '../../../../../ui-components'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -31,6 +38,7 @@ import { Secret } from '../../../../../resources'
 import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
+import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -45,18 +53,7 @@ const Portals = Object.freeze({
 
 Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
 
-export enum CreateClusterPoolInfrastructureType {
-    AWS = 'AWS',
-    GCP = 'GCP',
-    Azure = 'Azure',
-}
-
-export const isCreateClusterPoolInfrastructureType = (
-    infrastructureType: string
-): infrastructureType is CreateClusterPoolInfrastructureType =>
-    infrastructureType in CreateClusterPoolInfrastructureType
-
-export default function CreateClusterPool(props: { infrastructureType: CreateClusterPoolInfrastructureType }) {
+export default function CreateClusterPool(props: { infrastructureType: ClusterPoolInfrastructureType }) {
     const { t } = useTranslation()
 
     // create portals for buttons in header
@@ -110,7 +107,7 @@ export default function CreateClusterPool(props: { infrastructureType: CreateClu
     )
 }
 
-function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolInfrastructureType }) {
+function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrastructureType }) {
     const { infrastructureType } = props
     const history = useHistory()
     const { search } = useLocation()
@@ -184,10 +181,9 @@ function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolI
     //compile template
     const template = Handlebars.compile(hiveTemplate)
 
-    // if openned from bma page, pass selected bma's to editor
     let controlData: any[]
     switch (infrastructureType) {
-        case CreateClusterPoolInfrastructureType.AWS:
+        case Provider.aws:
             controlData = getControlDataAWS(
                 handleModalToggle,
                 false,
@@ -195,10 +191,10 @@ function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolI
                 settings.singleNodeOpenshift === 'enabled'
             )
             break
-        case CreateClusterPoolInfrastructureType.GCP:
+        case Provider.gcp:
             controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
-        case CreateClusterPoolInfrastructureType.Azure:
+        case Provider.azure:
             controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
     }
@@ -276,7 +272,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: CreateClusterPoolI
                     namespaces={projects}
                     isEditing={false}
                     isViewing={false}
-                    infrastructureType={infrastructureType}
+                    credentialsType={infrastructureType}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
                     control={setNewSecret}

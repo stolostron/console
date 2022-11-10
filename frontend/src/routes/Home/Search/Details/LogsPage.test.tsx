@@ -42,6 +42,249 @@ jest.mock('screenfull', () => ({
 
 URL.createObjectURL = jest.fn(() => '/test/url')
 
+const mockPod = {
+    kind: 'Pod',
+    apiVersion: 'v1',
+    metadata: {
+        name: 'alertmanager-main-0',
+        generateName: 'alertmanager-main-',
+        namespace: 'openshift-monitoring',
+        uid: '603b72a8-705e-4e6d-b08f-5590e095aecf',
+        resourceVersion: '110751',
+        creationTimestamp: '2022-11-07T11:32:59Z',
+    },
+    spec: {
+        volumes: [
+            { name: 'config-volume', secret: { secretName: 'alertmanager-main-generated', defaultMode: 420 } },
+            {
+                name: 'tls-assets',
+                projected: { sources: [{ secret: { name: 'alertmanager-main-tls-assets-0' } }], defaultMode: 420 },
+            },
+            { name: 'config-out', emptyDir: {} },
+            { name: 'secret-alertmanager-main-tls', secret: { secretName: 'alertmanager-main-tls', defaultMode: 420 } },
+            {
+                name: 'secret-alertmanager-main-proxy',
+                secret: { secretName: 'alertmanager-main-proxy', defaultMode: 420 },
+            },
+            {
+                name: 'secret-alertmanager-kube-rbac-proxy',
+                secret: { secretName: 'alertmanager-kube-rbac-proxy', defaultMode: 420 },
+            },
+            {
+                name: 'secret-alertmanager-kube-rbac-proxy-metric',
+                secret: { secretName: 'alertmanager-kube-rbac-proxy-metric', defaultMode: 420 },
+            },
+            { name: 'web-config', secret: { secretName: 'alertmanager-main-web-config', defaultMode: 420 } },
+            { name: 'alertmanager-main-db', emptyDir: {} },
+            { name: 'metrics-client-ca', configMap: { name: 'metrics-client-ca', defaultMode: 420 } },
+            {
+                name: 'alertmanager-trusted-ca-bundle',
+                configMap: {
+                    name: 'alertmanager-trusted-ca-bundle-c7nmestil7q08',
+                    items: [{ key: 'ca-bundle.crt', path: 'tls-ca-bundle.pem' }],
+                    defaultMode: 420,
+                    optional: true,
+                },
+            },
+            {
+                name: 'kube-api-access-cmzm6',
+                projected: {
+                    sources: [
+                        { serviceAccountToken: { expirationSeconds: 3607, path: 'token' } },
+                        { configMap: { name: 'kube-root-ca.crt', items: [{ key: 'ca.crt', path: 'ca.crt' }] } },
+                        {
+                            downwardAPI: {
+                                items: [
+                                    {
+                                        path: 'namespace',
+                                        fieldRef: { apiVersion: 'v1', fieldPath: 'metadata.namespace' },
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            configMap: {
+                                name: 'openshift-service-ca.crt',
+                                items: [{ key: 'service-ca.crt', path: 'service-ca.crt' }],
+                            },
+                        },
+                    ],
+                    defaultMode: 420,
+                },
+            },
+        ],
+        containers: [
+            {
+                name: 'alertmanager',
+                image: 'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c5c839b44aad93758054ece373748e991a0e00bf7c486986a9f5bdba5c83bc29',
+                args: [
+                    '--config.file=/etc/alertmanager/config_out/alertmanager.env.yaml',
+                    '--storage.path=/alertmanager',
+                    '--data.retention=120h',
+                    '--cluster.listen-address=[$(POD_IP)]:9094',
+                    '--web.listen-address=127.0.0.1:9093',
+                    '--web.external-url=https:/console-openshift-console.apps.cs-aws-412-xs6bh.dev02.red-chesterfield.com/monitoring',
+                    '--web.route-prefix=/',
+                    '--cluster.peer=alertmanager-main-0.alertmanager-operated:9094',
+                    '--cluster.peer=alertmanager-main-1.alertmanager-operated:9094',
+                    '--cluster.reconnect-timeout=5m',
+                    '--web.config.file=/etc/alertmanager/web_config/web-config.yaml',
+                ],
+                ports: [
+                    { name: 'mesh-tcp', containerPort: 9094, protocol: 'TCP' },
+                    { name: 'mesh-udp', containerPort: 9094, protocol: 'UDP' },
+                ],
+                env: [{ name: 'POD_IP', valueFrom: { fieldRef: { apiVersion: 'v1', fieldPath: 'status.podIP' } } }],
+                resources: { requests: { cpu: '4m', memory: '40Mi' } },
+                volumeMounts: [
+                    { name: 'config-volume', mountPath: '/etc/alertmanager/config' },
+                    { name: 'config-out', readOnly: true, mountPath: '/etc/alertmanager/config_out' },
+                    { name: 'tls-assets', readOnly: true, mountPath: '/etc/alertmanager/certs' },
+                    { name: 'alertmanager-main-db', mountPath: '/alertmanager' },
+                    {
+                        name: 'secret-alertmanager-main-tls',
+                        readOnly: true,
+                        mountPath: '/etc/alertmanager/secrets/alertmanager-main-tls',
+                    },
+                    {
+                        name: 'secret-alertmanager-main-proxy',
+                        readOnly: true,
+                        mountPath: '/etc/alertmanager/secrets/alertmanager-main-proxy',
+                    },
+                    {
+                        name: 'secret-alertmanager-kube-rbac-proxy',
+                        readOnly: true,
+                        mountPath: '/etc/alertmanager/secrets/alertmanager-kube-rbac-proxy',
+                    },
+                    {
+                        name: 'secret-alertmanager-kube-rbac-proxy-metric',
+                        readOnly: true,
+                        mountPath: '/etc/alertmanager/secrets/alertmanager-kube-rbac-proxy-metric',
+                    },
+                    {
+                        name: 'alertmanager-trusted-ca-bundle',
+                        readOnly: true,
+                        mountPath: '/etc/pki/ca-trust/extracted/pem/',
+                    },
+                    {
+                        name: 'web-config',
+                        readOnly: true,
+                        mountPath: '/etc/alertmanager/web_config/web-config.yaml',
+                        subPath: 'web-config.yaml',
+                    },
+                    {
+                        name: 'kube-api-access-cmzm6',
+                        readOnly: true,
+                        mountPath: '/var/run/secrets/kubernetes.io/serviceaccount',
+                    },
+                ],
+                startupProbe: {
+                    exec: { command: ['sh', '-c', 'exec curl --fail http://localhost:9093/-/ready'] },
+                    initialDelaySeconds: 20,
+                    timeoutSeconds: 3,
+                    periodSeconds: 10,
+                    successThreshold: 1,
+                    failureThreshold: 40,
+                },
+                terminationMessagePath: '/dev/termination-log',
+                terminationMessagePolicy: 'FallbackToLogsOnError',
+                imagePullPolicy: 'IfNotPresent',
+                securityContext: {
+                    capabilities: { drop: ['ALL', 'KILL', 'MKNOD', 'SETGID', 'SETUID'] },
+                    readOnlyRootFilesystem: true,
+                    allowPrivilegeEscalation: false,
+                },
+            },
+        ],
+        restartPolicy: 'Always',
+        terminationGracePeriodSeconds: 120,
+        dnsPolicy: 'ClusterFirst',
+        nodeSelector: { 'kubernetes.io/os': 'linux' },
+        serviceAccountName: 'alertmanager-main',
+        serviceAccount: 'alertmanager-main',
+        nodeName: 'ip-10-0-146-85.ec2.internal',
+        securityContext: {
+            seLinuxOptions: { level: 's0:c21,c5' },
+            runAsUser: 65534,
+            runAsNonRoot: true,
+            fsGroup: 65534,
+        },
+        imagePullSecrets: [{ name: 'alertmanager-main-dockercfg-2r4r6' }],
+        hostname: 'alertmanager-main-0',
+        subdomain: 'alertmanager-operated',
+        affinity: {
+            podAntiAffinity: {
+                requiredDuringSchedulingIgnoredDuringExecution: [
+                    {
+                        labelSelector: {
+                            matchLabels: {
+                                'app.kubernetes.io/component': 'alert-router',
+                                'app.kubernetes.io/instance': 'main',
+                                'app.kubernetes.io/name': 'alertmanager',
+                                'app.kubernetes.io/part-of': 'openshift-monitoring',
+                            },
+                        },
+                        namespaces: ['openshift-monitoring'],
+                        topologyKey: 'kubernetes.io/hostname',
+                    },
+                ],
+            },
+        },
+        schedulerName: 'default-scheduler',
+        tolerations: [
+            { key: 'node.kubernetes.io/not-ready', operator: 'Exists', effect: 'NoExecute', tolerationSeconds: 300 },
+            { key: 'node.kubernetes.io/unreachable', operator: 'Exists', effect: 'NoExecute', tolerationSeconds: 300 },
+            { key: 'node.kubernetes.io/memory-pressure', operator: 'Exists', effect: 'NoSchedule' },
+        ],
+        priorityClassName: 'system-cluster-critical',
+        priority: 2000000000,
+        enableServiceLinks: true,
+        preemptionPolicy: 'PreemptLowerPriority',
+    },
+    status: {
+        phase: 'Running',
+        conditions: [
+            { type: 'Initialized', status: 'True', lastProbeTime: null, lastTransitionTime: '2022-11-07T11:32:59Z' },
+            { type: 'Ready', status: 'True', lastProbeTime: null, lastTransitionTime: '2022-11-07T11:34:10Z' },
+            {
+                type: 'ContainersReady',
+                status: 'True',
+                lastProbeTime: null,
+                lastTransitionTime: '2022-11-07T11:34:10Z',
+            },
+            { type: 'PodScheduled', status: 'True', lastProbeTime: null, lastTransitionTime: '2022-11-07T11:32:59Z' },
+        ],
+        hostIP: '10.0.146.85',
+        podIP: '10.130.0.70',
+        podIPs: [{ ip: '10.130.0.70' }],
+        startTime: '2022-11-07T11:32:59Z',
+        containerStatuses: [
+            {
+                name: 'alertmanager',
+                state: { running: { startedAt: '2022-11-07T11:33:48Z' } },
+                lastState: {
+                    terminated: {
+                        exitCode: 1,
+                        reason: 'Error',
+                        message:
+                            'ts=2022-11-07T11:33:40.734Z caller=main.go:231 level=info msg="Starting Alertmanager" version="(version=0.24.0, branch=rhaos-4.12-rhel-8, revision=678e0abedacfaeb85d6ae9550ce5840add96de47)"\nts=2022-11-07T11:33:40.735Z caller=main.go:232 level=info build_context="(go=go1.19.1, user=root@d300d7450dc1, date=20221003-13:17:25)"\nts=2022-11-07T11:33:40.790Z caller=cluster.go:680 level=info component=cluster msg="Waiting for gossip to settle..." interval=2s\nts=2022-11-07T11:33:40.842Z caller=coordinator.go:113 level=info component=configuration msg="Loading configuration file" file=/etc/alertmanager/config_out/alertmanager.env.yaml\nts=2022-11-07T11:33:40.842Z caller=coordinator.go:118 level=error component=configuration msg="Loading configuration file failed" file=/etc/alertmanager/config_out/alertmanager.env.yaml err="open /etc/alertmanager/config_out/alertmanager.env.yaml: no such file or directory"\nts=2022-11-07T11:33:40.842Z caller=cluster.go:689 level=info component=cluster msg="gossip not settled but continuing anyway" polls=0 elapsed=51.818563ms\n',
+                        startedAt: '2022-11-07T11:33:40Z',
+                        finishedAt: '2022-11-07T11:33:41Z',
+                        containerID: 'cri-o://272e120ee46d07d3977d249d2ebc9a4a6dc505e04f22d3b0715067bfbdd546c6',
+                    },
+                },
+                ready: true,
+                restartCount: 1,
+                image: 'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c5c839b44aad93758054ece373748e991a0e00bf7c486986a9f5bdba5c83bc29',
+                imageID:
+                    'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c5c839b44aad93758054ece373748e991a0e00bf7c486986a9f5bdba5c83bc29',
+                containerID: 'cri-o://d80a7e808a5c1f825dc91c2d1d272f947f55df7b26a7f56485461f13d3124c31',
+                started: true,
+            },
+        ],
+    },
+}
+
 const managedClusters: ManagedCluster[] = [
     {
         apiVersion: ManagedClusterApiVersion,
@@ -113,6 +356,7 @@ describe('LogsPage', () => {
         render(
             <RecoilRoot>
                 <LogsPage
+                    resource={mockPod}
                     resourceError={'Invalid request'}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'testCluster'}
@@ -141,6 +385,7 @@ describe('LogsPage', () => {
                 }}
             >
                 <LogsPage
+                    resource={mockPod}
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'testCluster'}
@@ -165,6 +410,7 @@ describe('LogsPage', () => {
         render(
             <RecoilRoot>
                 <LogsPage
+                    resource={mockPod}
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'testCluster'}
@@ -189,6 +435,7 @@ describe('LogsPage', () => {
         render(
             <RecoilRoot>
                 <LogsPage
+                    resource={mockPod}
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'local-cluster'}
@@ -217,6 +464,7 @@ describe('LogsPage', () => {
         render(
             <RecoilRoot>
                 <LogsPage
+                    resource={mockPod}
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'local-cluster'}
@@ -244,6 +492,7 @@ describe('LogsPage', () => {
         render(
             <RecoilRoot>
                 <LogsPage
+                    resource={mockPod}
                     resourceError={''}
                     containers={['testContainer', 'testContainer1']}
                     cluster={'testCluster'}
@@ -268,6 +517,7 @@ describe('LogsPage', () => {
         const Toolbar = () => {
             const [wrapLines, setWrapLines] = useState<boolean>(false)
             const [container, setContainer] = useState<string>('testContainer')
+            const [previousLogs, setPreviousLogs] = useState<boolean>(false)
             return (
                 <RecoilRoot>
                     <LogsToolbar
@@ -281,6 +531,9 @@ describe('LogsPage', () => {
                         wrapLines={wrapLines}
                         toggleFullscreen={() => {}}
                         isFullscreen={false}
+                        containerHasPreviousLogs={false}
+                        previousLogs={previousLogs}
+                        setPreviousLogs={setPreviousLogs}
                     />
                 </RecoilRoot>
             )
@@ -314,19 +567,24 @@ describe('LogsPage', () => {
         document.write = jest.fn()
         const Toolbar = () => {
             const [wrapLines, setWrapLines] = useState<boolean>(false)
+            const [container, setContainer] = useState<string>('testContainer')
+            const [previousLogs, setPreviousLogs] = useState<boolean>(false)
             return (
                 <RecoilRoot>
                     <LogsToolbar
                         logs={'testLogs'}
                         name={'testPod'}
-                        container={'testContainer'}
+                        container={container}
                         cluster={'local-cluster'}
                         containers={['testContainer', 'testContainer1', 'testContainer2']}
-                        setContainer={() => {}}
+                        setContainer={setContainer}
                         toggleWrapLines={setWrapLines}
                         wrapLines={wrapLines}
                         toggleFullscreen={() => {}}
                         isFullscreen={true}
+                        containerHasPreviousLogs={false}
+                        previousLogs={previousLogs}
+                        setPreviousLogs={setPreviousLogs}
                     />
                 </RecoilRoot>
             )

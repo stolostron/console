@@ -78,7 +78,7 @@ const controlDataHypershift = [
     {
         id: 'hypershiftHostsStep',
         type: 'step',
-        title: 'Nodepools',
+        title: 'Node pools',
         disabled: true,
     },
     {

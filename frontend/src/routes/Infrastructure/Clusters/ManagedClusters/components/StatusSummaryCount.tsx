@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useCallback, useContext, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -9,9 +8,10 @@ import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { IRequestResult } from '../../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
@@ -104,8 +104,8 @@ export function StatusSummaryCount() {
                                   countClick: () =>
                                       push(
                                           buildSearchLink(
-                                              { cluster: cluster?.name!, kind: 'subscription' },
-                                              'application'
+                                              { cluster: cluster?.name!, kind: 'Subscription' },
+                                              'Application'
                                           )
                                       ),
                                   title: t('summary.applications'),
@@ -124,7 +124,7 @@ export function StatusSummaryCount() {
                                       push(
                                           buildSearchLink({
                                               cluster: 'local-cluster',
-                                              kind: 'policy',
+                                              kind: 'Policy',
                                               namespace: cluster?.namespace!,
                                               compliant: '!Compliant',
                                           })
