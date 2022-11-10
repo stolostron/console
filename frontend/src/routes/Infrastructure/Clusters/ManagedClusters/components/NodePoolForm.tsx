@@ -449,7 +449,7 @@ export function NodePoolForm(props: {
                             <PanelMainBody>
                                 <Stack hasGutter>
                                     {nodepoolItems.map(({ key, value, edit }) => (
-                                        <StackItem>
+                                        <StackItem key={key}>
                                             {(isEdit || key === 'Namespace') && value !== undefined ? (
                                                 <DescriptionList isHorizontal>
                                                     <DescriptionListGroup key={key}>
