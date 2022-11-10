@@ -14,6 +14,7 @@ import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
+    clearByTestId,
     clickByPlaceholderText,
     clickByText,
     selectByText,
@@ -212,8 +213,8 @@ describe('add credentials page', () => {
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
                 vsphereDiskType: 'eagerZeroedThick',
-                vsphereFolder: 'folder',
-                vsphereResourcePool: 'resourcePool',
+                vsphereFolder: '/datacenter/vm/folder',
+                vsphereResourcePool: '/datacenter/host/cluster/Resources/resourcePool',
                 imageContentSources: '',
             },
             true
@@ -234,7 +235,21 @@ describe('add credentials page', () => {
         await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
         await clickByPlaceholderText('Select the vSphere disk type')
         await clickByText(providerConnection.stringData?.vsphereDiskType!)
+
+        await typeByTestId('vsphereFolder', 'folder')
+        await typeByTestId('vsphereResourcePool', 'resource pool')
+        await clickByText('Next')
+
+        // Confirm validation messages appear
+        await waitForText(`The path must begin with '/${providerConnection.stringData?.datacenter}/vm/'`)
+        await waitForText(
+            `The path must begin with '/${providerConnection.stringData?.datacenter}/host/${providerConnection.stringData?.cluster}/Resources/'`
+        )
+
+        // Fix folder and resource pool and continue
+        await clearByTestId('vsphereFolder')
         await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
+        await clearByTestId('vsphereResourcePool')
         await typeByTestId('vsphereResourcePool', providerConnection.stringData?.vsphereResourcePool!)
         await clickByText('Next')
 

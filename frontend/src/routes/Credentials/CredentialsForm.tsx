@@ -35,6 +35,7 @@ import {
     validateNoProxy,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateRequiredPrefix,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
@@ -831,17 +832,6 @@ export function CredentialsForm(
                         isRequired: true,
                     },
                     {
-                        id: 'cluster',
-                        isHidden: credentialsType !== Provider.vmware,
-                        type: 'Text',
-                        label: t('vSphere cluster name'),
-                        placeholder: t('Enter your vSphere cluster name'),
-                        labelHelp: t('The name of the vSphere cluster to use.'),
-                        value: cluster,
-                        onChange: setVmClusterName,
-                        isRequired: true,
-                    },
-                    {
                         id: 'datacenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
@@ -850,6 +840,17 @@ export function CredentialsForm(
                         labelHelp: t('The name of the vSphere datacenter to use.'),
                         value: datacenter,
                         onChange: setDatacenter,
+                        isRequired: true,
+                    },
+                    {
+                        id: 'cluster',
+                        isHidden: credentialsType !== Provider.vmware,
+                        type: 'Text',
+                        label: t('vSphere cluster name'),
+                        placeholder: t('Enter your vSphere cluster name'),
+                        labelHelp: t('The name of the vSphere cluster to use.'),
+                        value: cluster,
+                        onChange: setVmClusterName,
                         isRequired: true,
                     },
                     {
@@ -886,6 +887,7 @@ export function CredentialsForm(
                         labelHelp: t('credentialsForm.vsphereFolder.labelHelp'),
                         value: vsphereFolder,
                         onChange: setVsphereFolder,
+                        validation: (value) => validateRequiredPrefix(value, `/${datacenter || 'DATACENTER'}/vm/`),
                         isRequired: false,
                     },
                     {
@@ -897,6 +899,11 @@ export function CredentialsForm(
                         labelHelp: t('credentialsForm.vsphereResourcePool.labelHelp'),
                         value: vsphereResourcePool,
                         onChange: setVsphereResourcePool,
+                        validation: (value) =>
+                            validateRequiredPrefix(
+                                value,
+                                `/${datacenter || 'DATACENTER'}/host/${cluster || 'CLUSTER'}/Resources/`
+                            ),
                         isRequired: false,
                     },
                 ],
