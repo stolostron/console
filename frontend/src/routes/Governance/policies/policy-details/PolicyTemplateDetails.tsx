@@ -121,31 +121,31 @@ export function PolicyTemplateDetails(props: {
     const relatedResourceColumns = useMemo(
         () => [
             {
-                header: 'Name',
+                header: t('Name'),
                 cell: 'object.metadata.name',
                 sort: 'object.metadata.name',
                 search: 'object.metadata.name',
             },
             {
-                header: 'Namespace',
+                header: t('Namespace'),
                 cell: (item: any) => item.object?.metadata?.namespace ?? '-',
                 search: (item: any) => item.object?.metadata?.namespace,
                 sort: (a: any, b: any) => compareStrings(a.object?.metadata?.namespace, b.object?.metadata?.namespace),
             },
             {
-                header: 'Kind',
+                header: t('Kind'),
                 cell: 'object.kind',
                 sort: 'object.kind',
                 search: 'object.kind',
             },
             {
-                header: 'API groups',
+                header: t('API groups'),
                 cell: 'object.apiVersion',
                 sort: 'object.apiVersion',
                 search: 'object.apiVersion',
             },
             {
-                header: 'Compliant',
+                header: t('Compliant'),
                 sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
                 cell: (item: any) => {
                     let compliant = item.compliant ?? '-'
@@ -155,14 +155,16 @@ export function PolicyTemplateDetails(props: {
                         case 'compliant':
                             compliant = (
                                 <div>
-                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {'No violations'}
+                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                    {t('No violations')}
                                 </div>
                             )
                             break
                         case 'noncompliant':
                             compliant = (
                                 <div>
-                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {'Violations'}
+                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                    {t('Violations')}
                                 </div>
                             )
                             break
@@ -170,7 +172,7 @@ export function PolicyTemplateDetails(props: {
                             compliant = (
                                 <div>
                                     <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
-                                    {'No status'}
+                                    {t('No status')}
                                 </div>
                             )
                             break
@@ -180,7 +182,7 @@ export function PolicyTemplateDetails(props: {
                 },
             },
             {
-                header: 'Reason',
+                header: t('Reason'),
                 cell: 'reason',
                 search: 'reason',
             },
@@ -275,7 +277,7 @@ export function PolicyTemplateDetails(props: {
                             index: 0,
                             direction: 'asc',
                         }}
-                        plural={'related resources'}
+                        plural={t('related resources')}
                     />
                 </AcmTablePaginationContextProvider>
             </PageSection>

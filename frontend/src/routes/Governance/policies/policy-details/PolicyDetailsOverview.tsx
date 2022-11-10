@@ -87,7 +87,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
             {
                 key: 'Status',
-                value: policy.spec.disabled ? 'Disabled' : 'Enabled' ?? '-',
+                value: policy.spec.disabled ? t('Disabled') : t('Enabled') ?? '-',
             },
             {
                 key: 'Remediation',
@@ -246,17 +246,17 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const placementCols = useMemo(
         () => [
             {
-                header: 'Name',
+                header: t('Name'),
                 cell: 'metadata.name',
                 sort: 'metadata.name',
             },
             {
-                header: 'Kind',
+                header: t('Kind'),
                 cell: 'kind',
                 sort: 'kind',
             },
             {
-                header: 'Clusters',
+                header: t('Clusters'),
                 cell: (item: TableData) => {
                     const decisions = item.status.decisions ?? undefined
                     if (decisions) {
@@ -266,7 +266,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 },
             },
             {
-                header: 'Violations',
+                header: t('Violations'),
                 cell: (item: TableData) => {
                     // Gather full cluster list from placementPolicy status
                     const fullClusterList = item.status.decisions ?? []
@@ -311,15 +311,15 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                     // Push lists of clusters along with status icon, heading, and overflow badge
                     const statusList = []
                     for (const status of Object.keys(clusterList)) {
-                        let statusMsg = ' No status: '
+                        let statusMsg = t(' No status: ')
                         let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
                         switch (status) {
                             case 'noncompliant':
-                                statusMsg = ' With violations: '
+                                statusMsg = t(' With violations: ')
                                 icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
                                 break
                             case 'compliant':
-                                statusMsg = ' Without violations: '
+                                statusMsg = t(' Without violations: ')
                                 icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
                                 break
                         }

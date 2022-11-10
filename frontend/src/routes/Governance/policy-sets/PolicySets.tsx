@@ -238,7 +238,7 @@ export default function PolicySetsPage() {
                                     variant={PaginationVariant.top}
                                     onSetPage={(_event, page) => setPage(page)}
                                     onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                                    aria-label="Pagination top"
+                                    aria-label={t('Pagination top')}
                                     isCompact
                                 />
                             </ToolbarItem>
@@ -276,7 +276,7 @@ export default function PolicySetsPage() {
                 variant={PaginationVariant.bottom}
                 onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
                 onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
-                aria-label="Pagination bottom"
+                aria-label={t('Pagination bottom')}
                 isSticky
             />
         </Fragment>

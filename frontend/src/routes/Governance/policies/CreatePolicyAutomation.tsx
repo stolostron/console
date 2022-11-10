@@ -23,7 +23,7 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
-            editorTitle={'Automation YAML'}
+            editorTitle={t('Automation YAML')}
             variant="toolbar"
             resources={resources}
             schema={schema}
