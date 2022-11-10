@@ -759,7 +759,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                           formSection.inputs.map((input, index) => (
                                               <AcmInputDescription
                                                   input={input}
-                                                  key={`formSection-${formSection.title}-${input.type ?? index}`}
+                                                  key={`formSection-${input.id ?? index}`}
                                               />
                                           ))}
                                   </DescriptionList>
@@ -787,9 +787,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                                           section.inputs.map((input, index) => (
                                                               <AcmInputDescription
                                                                   input={input}
-                                                                  key={`section--${formSection.title}-${
-                                                                      input.type ?? index
-                                                                  }`}
+                                                                  key={`section-${input.id ?? index}`}
                                                               />
                                                           ))}
                                                   </DescriptionList>
