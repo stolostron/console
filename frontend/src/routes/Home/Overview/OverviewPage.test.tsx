@@ -414,7 +414,7 @@ it('should render overview page in empty state', async () => {
     await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([await getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
+    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
 })
 
 it('should render overview page in error state', async () => {

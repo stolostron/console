@@ -137,7 +137,7 @@ describe('Policy Template Details content', () => {
         )
 
         // Wait for delete resource requests to finish
-        await waitForNocks([await getResourceNock])
+        await waitForNocks([getResourceNock])
 
         // wait template description section to load correctly
         await waitForText('Template details')
@@ -231,7 +231,7 @@ describe('Policy Template Details content', () => {
         )
 
         // Wait for the get resource requests to finish
-        await waitForNocks([await getResourceNock])
+        await waitForNocks([getResourceNock])
 
         // Verify the template description section
         await waitForText('Template details')

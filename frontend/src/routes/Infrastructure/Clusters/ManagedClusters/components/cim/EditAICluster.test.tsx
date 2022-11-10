@@ -61,9 +61,9 @@ describe('Edit AI Cluster', () => {
     beforeEach(() => nockIgnoreApiPaths())
     test('can be rendered', async () => {
         const nocks = [
-            await nockGet(pullSecretMock, pullSecretMock),
-            await nockList(managedClusterMock, managedClusterMock),
-            await nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
+            nockGet(pullSecretMock, pullSecretMock),
+            nockList(managedClusterMock, managedClusterMock),
+            nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
         ]
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))

@@ -54,8 +54,8 @@ export const deleteHypershiftCluster = (cluster: Cluster) => {
 
     const deletePromises = resources.map((resource) => deleteResource(resource))
 
-    const promises = Promise.allSettled(deletePromises.map(async (result) => (await result).promise))
-    const abort = () => deletePromises.forEach(async (result) => (await result).abort())
+    const promises = Promise.allSettled(deletePromises.map((result) => result.promise))
+    const abort = () => deletePromises.forEach((result) => result.abort())
 
     return {
         promise: new Promise((resolve, reject) => {

@@ -132,7 +132,7 @@ describe('HiveNotification', () => {
     })
     test('renders the danger notification for failed provision status', async () => {
         mockCluster.status = ClusterStatus.provisionfailed
-        const podScope = await nockNamespacedList(
+        const podScope = nockNamespacedList(
             {
                 apiVersion: PodApiVersion,
                 kind: PodKind,
@@ -158,7 +158,7 @@ describe('HiveNotification', () => {
 
     test('renders the info notification variant for destroying status', async () => {
         mockCluster.status = ClusterStatus.destroying
-        const podScope = await nockNamespacedList(
+        const podScope = nockNamespacedList(
             {
                 apiVersion: PodApiVersion,
                 kind: PodKind,

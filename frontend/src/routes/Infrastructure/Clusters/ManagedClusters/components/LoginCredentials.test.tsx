@@ -78,7 +78,7 @@ const mockKubeadminSecret = {
 describe('LoginCredentials', () => {
     beforeEach(() => nockIgnoreApiPaths())
     test('renders', async () => {
-        const nock = await nockGet(mockKubeadminSecret)
+        const nock = nockGet(mockKubeadminSecret)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials canGetSecret={true} />
@@ -122,7 +122,7 @@ describe('LoginCredentials', () => {
         expect(screen.getByText('-')).toBeInTheDocument()
     })
     test('renders in a failed state', async () => {
-        const nock = await nockGet(mockKubeadminSecret, mockBadRequestStatus)
+        const nock = nockGet(mockKubeadminSecret, mockBadRequestStatus)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials canGetSecret={true} />

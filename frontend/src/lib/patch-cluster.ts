@@ -54,7 +54,7 @@ export function patchClusterSetLabel(
 
     return {
         promise: new Promise((resolve, reject) => {
-            return Promise.allSettled(requests.map(async (request) => (await request).promise)).then((results) => {
+            return Promise.allSettled(requests.map((request) => request.promise)).then((results) => {
                 for (const result of results) {
                     if (result.status === 'rejected') {
                         const error = result.reason
@@ -66,6 +66,6 @@ export function patchClusterSetLabel(
                 return resolve(results)
             })
         }),
-        abort: () => requests.forEach(async (request) => (await request).abort()),
+        abort: () => requests.forEach((request) => request.abort()),
     }
 }

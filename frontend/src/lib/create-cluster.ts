@@ -59,9 +59,7 @@ export async function createCluster(resources: any[]) {
 
     // create project and ignore if it already exists
     try {
-        await (
-            await createProject(namespace, labels)
-        ).promise
+        await createProject(namespace, labels).promise
     } catch (err) {
         if ((err as unknown as { code: number }).code !== 409) {
             return {
@@ -84,7 +82,7 @@ export async function createCluster(resources: any[]) {
     // create cluster resources
     if (errors.length === 0 && clusterResources.length > 0) {
         results = clusterResources.map((resource: any) => createResource(resource))
-        response = await Promise.allSettled(results.map(async (result) => (await result).promise))
+        response = await Promise.allSettled(results.map((result) => result.promise))
         response.forEach((result) => {
             if (result.status === 'rejected') {
                 errors.push({ message: result.reason.message })

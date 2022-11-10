@@ -224,7 +224,7 @@ export function UpdateAutomationModal(props: {
                                     setIsUpdating(false)
                                 })
                         }),
-                        abort: async () => {
+                        abort: () => {
                             result.abort()
                             if (createResult) {
                                 createResult.abort()

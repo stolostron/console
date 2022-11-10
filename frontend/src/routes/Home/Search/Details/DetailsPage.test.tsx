@@ -96,7 +96,7 @@ describe('DetailsPage', () => {
         )
 
         // Wait for delete resource requests to finish
-        await waitForNocks([await deleteResourceNock])
+        await waitForNocks([deleteResourceNock])
 
         // Test that the component has rendered correctly with data
         await waitFor(() => expect(screen.queryByText('testPod')).toBeTruthy())

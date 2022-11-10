@@ -196,7 +196,7 @@ export function BatchUpgradeModal(props: {
                                 }
                             })
                     }),
-                    abort: async () => {
+                    abort: () => {
                         patchCuratorResult.abort()
                         if (createCuratorResult) {
                             createCuratorResult.abort()

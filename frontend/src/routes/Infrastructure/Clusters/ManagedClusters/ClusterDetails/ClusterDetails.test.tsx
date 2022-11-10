@@ -1144,7 +1144,7 @@ describe('ClusterDetails', () => {
 
         const deleteNock = nockDelete(mockManagedCluster)
         await clickByText('Detach')
-        await waitForNock(await deleteNock)
+        await waitForNock(deleteNock)
     })
 
     test('overview page handles destroy', async () => {
@@ -1155,7 +1155,7 @@ describe('ClusterDetails', () => {
             mockManagedCluster.metadata.name!
         )
 
-        const deleteNocks: Scope[] = [await nockDelete(mockManagedCluster), await nockDelete(mockClusterDeployment)]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
@@ -1170,7 +1170,7 @@ describe('ClusterDetails for On Premise', () => {
     })
 
     test('overview page renders AI empty details', async () => {
-        const nocks: Scope[] = [await mockMultiClusterEngineList()]
+        const nocks: Scope[] = [mockMultiClusterEngineList()]
         render(<AIComponent />)
         await waitForNocks(nocks)
 

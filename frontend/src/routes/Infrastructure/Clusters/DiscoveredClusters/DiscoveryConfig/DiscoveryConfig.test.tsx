@@ -183,7 +183,7 @@ describe('discovery config page', () => {
 
         const replaceNock = nockReplace(discoveryConfigUpdated)
         await clickByText('Save')
-        await waitFor(async () => expect(replaceNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was updated successfully')

@@ -20,11 +20,9 @@ export const createImportResources = (clusterName: string, clusterSet?: string) 
     return {
         promise: new Promise(async (resolve, reject) => {
             try {
-                const managedCluster = await (await createManagedCluster({ clusterName, clusterLabels })).promise
+                const managedCluster = await createManagedCluster({ clusterName, clusterLabels }).promise
                 try {
-                    await (
-                        await createKlusterletAddonConfig({ clusterName, clusterLabels })
-                    ).promise
+                    await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
                 } catch (err) {
                     // ignore conflict if KlusterletAddonConfig already exists
                     if (!(err instanceof ResourceError && err.code === ResourceErrorCode.Conflict)) {

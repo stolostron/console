@@ -187,7 +187,7 @@ export function BatchChannelSelectModal(props: {
                                 }
                             })
                     }),
-                    abort: async () => {
+                    abort: () => {
                         patchCuratorResult.abort()
                         if (createCuratorResult) {
                             createCuratorResult.abort()
