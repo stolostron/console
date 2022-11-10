@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -14,6 +16,7 @@ import {
     clusterManagementAddonsState,
     clusterProvisionsState,
     configMapsState,
+    hostedClustersState,
     machinePoolsState,
     managedClusterAddonsState,
     managedClusterInfosState,
@@ -23,10 +26,12 @@ import {
 import {
     nockCreate,
     nockDelete,
-    nockIgnoreApiPaths,
+    nockGet,
     nockIgnoreRBAC,
+    nockIgnoreApiPaths,
     nockList,
     nockNamespacedList,
+    nockPatch,
 } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
@@ -56,6 +61,8 @@ import {
     ClusterProvision,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     ManagedCluster,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
@@ -68,6 +75,9 @@ import {
     PodApiVersion,
     PodKind,
     PodList,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
     SelfSubjectAccessReview,
 } from '../../../../../resources'
 import {
@@ -899,6 +909,29 @@ const mockManagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnSearch,
 ]
 
+const mockHostedCluster1: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'hostedCluster1',
+        namespace: clusterName,
+    },
+    spec: {
+        dns: {
+            baseDomain: 'test.com',
+        },
+    },
+}
+
+const mockSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        namespace: 'hostedCluster1',
+        name: 'hostedCluster1-import',
+    },
+}
+
 const mockClusterProvisions: ClusterProvision = {
     apiVersion: ClusterProvisionApiVersion,
     kind: ClusterProvisionKind,
@@ -970,6 +1003,31 @@ const mockMultiClusterEngineList = () =>
         },
         mockMultiClusterEngineListResponse
     )
+
+const createManagedcluster1: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        annotations: {
+            'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+            'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+            'open-cluster-management/created-via': 'other',
+        },
+        labels: {
+            cloud: 'auto-detect',
+            'cluster.open-cluster-management.io/clusterset': 'default',
+            name: 'hostedCluster1',
+            vendor: 'OpenShift',
+        },
+        name: 'hostedCluster1',
+    },
+    spec: {
+        hubAcceptsClient: true,
+        leaseDurationSeconds: 60,
+    },
+}
+
+const mockHostedClusters = [mockHostedCluster1]
 
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
@@ -1103,38 +1161,6 @@ describe('ClusterDetails', () => {
     })
 })
 
-describe('ClusterDetails', () => {
-    beforeEach(async () => {
-        nockIgnoreApiPaths()
-    })
-
-    test('page renders error state', async () => {
-        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        render(
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(managedClustersState, [])
-                    snapshot.set(clusterDeploymentsState, [])
-                    snapshot.set(managedClusterInfosState, [])
-                    snapshot.set(certificateSigningRequestsState, [])
-                    snapshot.set(clusterManagementAddonsState, [])
-                    snapshot.set(managedClusterAddonsState, [])
-                    snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-                    snapshot.set(configMapsState, [])
-                }}
-            >
-                <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-                    <Switch>
-                        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-                    </Switch>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-        await waitForNocks([nock])
-        await waitForText('Not found')
-    })
-})
-
 const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
 
 describe('ClusterDetails for On Premise', () => {
@@ -1192,5 +1218,96 @@ describe('Automation Details', () => {
 
         await waitForText('Upgrade')
         await waitForText('None selected', true)
+    })
+})
+
+describe('ClusterDetails with not found', () => {
+    test('page renders error state to return to cluster page', async () => {
+        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+                    snapshot.set(configMapsState, [])
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
+                    <Switch>
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+                    </Switch>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForNocks([nock])
+        await waitForText('Not found')
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /back to clusters/i,
+            })
+        )
+        expect(window.location.pathname).toEqual('/')
+    })
+    test('page renders error state, should have option to import', async () => {
+        nockIgnoreRBAC()
+        nockGet(mockSecret)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+                    snapshot.set(configMapsState, [])
+                    snapshot.set(hostedClustersState, mockHostedClusters)
+                }}
+            >
+                <MemoryRouter
+                    initialEntries={[NavigationPath.clusterDetails.replace(':id', mockHostedCluster1.metadata.name)]}
+                >
+                    <Switch>
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+                    </Switch>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        await waitForText(mockHostedCluster1.metadata.name, true)
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', {
+                    name: /https:\/\/console-openshift-console\.apps\.hostedcluster1\.test\.com/i,
+                })
+            )
+        )
+
+        const mockImportHostedCluster = [
+            nockCreate(createManagedcluster1, createManagedcluster1),
+            nockPatch(mockHostedCluster1, [
+                {
+                    op: 'replace',
+                    path: '/metadata/annotations',
+                    value: {
+                        'cluster.open-cluster-management.io/managedcluster-name': 'hostedCluster1',
+                        'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hostedCluster1',
+                    },
+                },
+            ]),
+        ]
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /import cluster/i,
+            })
+        )
+
+        await waitForNocks(mockImportHostedCluster)
     })
 })

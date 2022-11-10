@@ -252,7 +252,7 @@ describe('CreateClusterPool AWS', () => {
         // skip AWS private config
         await clickByText('Next')
 
-        await clickByText('Review')
+        await clickByText('Review and create')
 
         // nocks for cluster creation
         const createNocks = [
