@@ -333,31 +333,34 @@ class ControlPanel extends React.Component {
                 delete control.isLoaded
                 control.isRefetching = true
                 control.forceUpdate()
-                func()
-                    .then((data) => {
-                        control.isRefetching = false
-                        setAvailable(control, { data })
-                        control.forceUpdate()
-                    })
-                    .catch((err) => {
-                        control.isRefetching = false
-                        setAvailable(control, { error: err })
-                        control.forceUpdate()
-                    })
-            }
-
-            if (!control.isLoaded) {
-                if (!control.isLoading) {
-                    setAvailable(control, { loading: true })
-                    query()
+                const funcPromise = func()
+                funcPromise &&
+                    funcPromise
                         .then((data) => {
-                            setAvailable(control, { loading: false, data, i18n: this.props.i18n })
+                            control.isRefetching = false
+                            setAvailable(control, { data })
                             control.forceUpdate()
                         })
                         .catch((err) => {
-                            setAvailable(control, { loading: false, error: err })
+                            control.isRefetching = false
+                            setAvailable(control, { error: err })
                             control.forceUpdate()
                         })
+            }
+            if (!control.isLoaded) {
+                if (!control.isLoading) {
+                    setAvailable(control, { loading: true })
+                    const queryPromise = query()
+                    queryPromise &&
+                        queryPromise
+                            .then((data) => {
+                                setAvailable(control, { loading: false, data, i18n: this.props.i18n })
+                                control.forceUpdate()
+                            })
+                            .catch((err) => {
+                                setAvailable(control, { loading: false, error: err })
+                                control.forceUpdate()
+                            })
                 }
             }
             fetchAvailable.refetch = refetch.bind(this, query)
