@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '../../ui-components'
+import {
+    AcmErrorBoundary,
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmToastContext,
+    Provider,
+} from '../../ui-components'
 import Handlebars from 'handlebars'
 import { Location } from 'history'
 import _ from 'lodash'
@@ -10,16 +17,8 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
-import {
-    ansibleJobState,
-    applicationsState,
-    channelsState,
-    placementRulesState,
-    secretsState,
-    subscriptionsState,
-} from '../../atoms'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useSearchParams } from '../../lib/search'
@@ -69,6 +68,7 @@ export default function CreateSubscriptionApplicationPage() {
     const [title, setTitle] = useState<string>(t('Create application'))
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [newSecret, setNewSecret] = useState<Secret>()
+    const { secretsState } = useSharedAtoms()
     const [secrets] = useRecoilState(secretsState)
     const { projects } = GetProjects()
 
@@ -87,7 +87,14 @@ export default function CreateSubscriptionApplicationPage() {
     const [connectionControl, setConnectionControl] = useState()
     useEffect(() => {
         if (connectionControl) {
-            setAvailableConnections(connectionControl, secrets)
+            setAvailableConnections(
+                connectionControl,
+                secrets.filter(
+                    (secret) =>
+                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] ||
+                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+                )
+            )
             onControlChange(connectionControl)
         }
     }, [connectionControl, onControlChange, secrets])
@@ -137,7 +144,7 @@ export default function CreateSubscriptionApplicationPage() {
                                 namespaces={projects}
                                 isEditing={false}
                                 isViewing={false}
-                                infrastructureType={'ans'}
+                                credentialsType={Provider.ansible}
                                 handleModalToggle={handleModalToggle}
                                 hideYaml={true}
                                 control={setNewSecret}
@@ -164,6 +171,8 @@ export function CreateSubscriptionApplication(
 ) {
     const history = useHistory()
     const { t } = useTranslation()
+    const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
+        useSharedAtoms()
     const toastContext = useContext(AcmToastContext)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)

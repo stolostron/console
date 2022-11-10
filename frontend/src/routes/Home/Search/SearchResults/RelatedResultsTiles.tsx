@@ -15,7 +15,6 @@ export default function RelatedResultsTiles(props: {
     const { t } = useTranslation()
     const queryFilters = convertStringToQuery(currentQuery)
     const { data, error, loading } = useSearchResultRelatedCountQuery({
-        skip: queryFilters.keywords.length > 0,
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
             input: [queryFilters],
@@ -26,16 +25,16 @@ export default function RelatedResultsTiles(props: {
         return (
             <Grid hasGutter>
                 <GridItem key={'loading-tile-0'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-1'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-2'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-3'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
             </Grid>
         )
@@ -51,6 +50,10 @@ export default function RelatedResultsTiles(props: {
     }
 
     const relatedCounts = data.searchResult[0]?.related || []
+    if (relatedCounts.length === 0) {
+        return <Alert variant={'info'} isInline title={t('There are no resources related to your search results.')} />
+    }
+
     return (
         <Grid hasGutter>
             {relatedCounts.map((count) => {

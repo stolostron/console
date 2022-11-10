@@ -1,16 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
-import { useRecoilState } from 'recoil'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '../../../../../ui-components'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import {
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmErrorBoundary,
+    AcmToastContext,
+    Provider,
+} from '../../../../../ui-components'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { namespacesState, settingsState, clusterPoolsState } from '../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../ManagedClusters/CreateCluster/style.css'
 
@@ -21,7 +27,6 @@ import {
     arrayItemHasKey,
 } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
-import { secretsState } from '../../../../../atoms'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -33,6 +38,7 @@ import { Secret } from '../../../../../resources'
 import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
+import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -47,7 +53,7 @@ const Portals = Object.freeze({
 
 Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
 
-export default function CreateClusterPoolPage() {
+export default function CreateClusterPool(props: { infrastructureType: ClusterPoolInfrastructureType }) {
     const { t } = useTranslation()
 
     // create portals for buttons in header
@@ -93,7 +99,7 @@ export default function CreateClusterPoolPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
                     <PageSection variant="light" isFilled type="wizard">
-                        <CreateClusterPool />
+                        <CreateClusterPoolWizard {...props} />
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -101,9 +107,12 @@ export default function CreateClusterPoolPage() {
     )
 }
 
-export function CreateClusterPool() {
+function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrastructureType }) {
+    const { infrastructureType } = props
     const history = useHistory()
-    const location = useLocation<CancelBackState>()
+    const { search } = useLocation()
+    const { back, cancel } = useBackCancelNavigation()
+    const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
@@ -160,14 +169,8 @@ export function CreateClusterPool() {
         setIsModalOpen(!isModalOpen)
     }
 
-    function backButtonOverrideFunc() {
-        history.goBack()
-    }
-
-    // cancel button
-    const cancelCreate = () => {
-        cancelNavigation(location, history, NavigationPath.clusterPools)
-    }
+    const backButtonOverride = back(NavigationPath.createClusterPool)
+    const cancelCreate = cancel(NavigationPath.clusterPools)
 
     // setup translation
     const { t } = useTranslation()
@@ -178,21 +181,9 @@ export function CreateClusterPool() {
     //compile template
     const template = Handlebars.compile(hiveTemplate)
 
-    // if openned from bma page, pass selected bma's to editor
-    const urlParams = new URLSearchParams(location.search.substring(1))
-    const bmasParam = urlParams.get('bmas')
-    const requestedUIDs = bmasParam ? bmasParam.split(',') : []
-    const fetchControl = bmasParam
-        ? {
-              isLoaded: true,
-              fetchData: { requestedUIDs },
-          }
-        : null
-
-    const infrastructureType = urlParams.get('infrastructureType') || ''
     let controlData: any[]
     switch (infrastructureType) {
-        case 'AWS':
+        case Provider.aws:
             controlData = getControlDataAWS(
                 handleModalToggle,
                 false,
@@ -200,18 +191,16 @@ export function CreateClusterPool() {
                 settings.singleNodeOpenshift === 'enabled'
             )
             break
-        case 'GCP':
+        case Provider.gcp:
             controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
-        case 'Azure':
+        case Provider.azure:
             controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
-
-        default:
-            controlData = []
     }
 
     // Check for pre-selected cluster set
+    const urlParams = new URLSearchParams(search)
     const selectedClusterSet = urlParams.get('clusterSet')
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -283,7 +272,7 @@ export function CreateClusterPool() {
                     namespaces={projects}
                     isEditing={false}
                     isViewing={false}
-                    infrastructureType={infrastructureType}
+                    credentialsType={infrastructureType}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
                     control={setNewSecret}
@@ -296,14 +285,13 @@ export function CreateClusterPool() {
                 controlData={fixupControlsForClusterPool(controlData)}
                 template={template}
                 portals={Portals}
-                fetchControl={fetchControl}
                 createControl={{
                     createResource,
                     cancelCreate,
                     pauseCreate: () => {},
                     creationStatus: creationStatus?.status,
                     creationMsg: creationStatus?.messages,
-                    backButtonOverride: backButtonOverrideFunc,
+                    backButtonOverride,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}

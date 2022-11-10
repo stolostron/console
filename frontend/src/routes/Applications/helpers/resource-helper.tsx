@@ -8,33 +8,32 @@ import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
+    ApplicationDefinition,
     ApplicationSet,
+    ApplicationSetDefinition,
     ArgoApplication,
-    ArgoApplicationDefinition,
     ArgoApplicationApiVersion,
+    ArgoApplicationDefinition,
     ArgoApplicationKind,
     Channel,
     Cluster,
+    CronJobKind,
+    DaemonSetKind,
+    DeploymentConfigKind,
+    DeploymentKind,
     IResource,
     IResourceDefinition,
+    JobKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    StatefulSetKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
-    ApplicationSetDefinition,
-    ApplicationDefinition,
-    DeploymentKind,
-    StatefulSetKind,
-    DeploymentConfigKind,
-    JobKind,
-    CronJobKind,
-    DaemonSetKind,
 } from '../../../resources'
-import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
-import { getAnnotation } from '../Overview'
+import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
@@ -153,7 +152,7 @@ export const getClusterList = (
         DeploymentConfigKind,
         JobKind,
         StatefulSetKind,
-    ].map((kind) => kind.toLowerCase())
+    ]
     if (ocpAppResourceKinds.includes(resource.kind)) {
         const clusterSet = new Set<string>()
         if (resource.status.cluster) {
@@ -349,7 +348,7 @@ export const getEditLink = (params: {
     const {
         properties: { name, namespace, kind, apiversion, cluster },
     } = params
-    return `${NavigationPath.resources}?${queryString.stringify({
+    return `${NavigationPath.resourceYAML}?${queryString.stringify({
         cluster,
         name,
         namespace,
@@ -559,4 +558,8 @@ export const getAppChildResources = (
     })
 
     return [children.sort((a, b) => a.label.localeCompare(b.label)), sharedChildren]
+}
+
+export function getAnnotation(resource: IResource, annotationString: string) {
+    return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }

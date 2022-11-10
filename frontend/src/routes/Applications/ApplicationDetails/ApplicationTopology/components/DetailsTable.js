@@ -88,7 +88,11 @@ class DetailsTable extends Component {
 
         if (searchValue) {
             rows = rows.filter((row) => {
-                return get(row, 'name', '').indexOf(searchValue) !== -1
+                return (
+                    get(row, 'name', '').indexOf(searchValue) !== -1 ||
+                    get(row, 'namespace', '').indexOf(searchValue) !== -1 ||
+                    get(row, 'cluster', '').indexOf(searchValue) !== -1
+                )
             })
         }
 

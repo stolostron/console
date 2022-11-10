@@ -52,7 +52,6 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import CreateClusterPage from './CreateCluster'
 import { Scope } from 'nock/types'
 import {
     clusterName,
@@ -63,6 +62,9 @@ import {
     mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { CreateClusterPage } from '../CreateClusterPage'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import { CLUSTER_INFRA_TYPE_PARAM } from '../ClusterInfrastructureType'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -560,7 +562,7 @@ describe('CreateCluster AWS', () => {
                     snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=AWS`]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=AWS`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -569,28 +571,8 @@ describe('CreateCluster AWS', () => {
         )
     }
 
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
-
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test('can create AWS cluster without ansible template', async () => {
@@ -660,7 +642,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -729,7 +710,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -812,7 +792,7 @@ describe('CreateCluster AWS', () => {
 
         // create the form
         const { container } = render(
-            <PluginContext.Provider value={{ isACMAvailable: false }}>
+            <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )
@@ -863,7 +843,6 @@ describe('CreateCluster AWS', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating cluster ...')
 
         // make sure creating
@@ -887,7 +866,7 @@ describe('CreateCluster on premise', () => {
                     })
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?infrastructureType=CIM`]}>
+                <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=CIM`]}>
                     <Route path={NavigationPath.createCluster}>
                         <CreateClusterPage />
                     </Route>
@@ -896,28 +875,8 @@ describe('CreateCluster on premise', () => {
         )
     }
 
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
-
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test(
@@ -935,9 +894,9 @@ describe('CreateCluster on premise', () => {
             // check integration of AI in the left-side navigation
             await waitForText('Cluster details', true)
             await waitForText('Review and save')
-            await waitForText('Cluster hosts')
+            await waitForText('Hosts')
             await waitForText('Networking')
-            await waitForText('Review')
+            await waitForText('Review and create')
 
             // fill-in Cluster details
             await typeByTestId('form-input-name-field', clusterName)

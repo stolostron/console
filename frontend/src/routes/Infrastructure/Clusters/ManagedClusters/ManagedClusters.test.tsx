@@ -2,11 +2,13 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
+    hostedClustersState,
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../atoms'
@@ -32,6 +34,8 @@ import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterDefinition,
@@ -119,6 +123,17 @@ const mockManagedCluster7: ManagedCluster = {
         name: 'hypershift-cluster',
         annotations: {
             'cluster.open-cluster-management.io/hypershiftdeployment': 'hypershift-cluster/hypershift-cluster',
+        },
+    },
+    spec: { hubAcceptsClient: true },
+}
+const mockManagedCluster8: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'regional-cluster',
+        labels: {
+            'feature.open-cluster-management.io/addon-multicluster-global-hub-controller': 'available',
         },
     },
     spec: { hubAcceptsClient: true },
@@ -292,6 +307,11 @@ const mockManagedClusterInfo7: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'hypershift-cluster', namespace: 'hypershift-cluster' },
 }
+const mockManagedClusterInfo8: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'regional-cluster', namespace: 'regional-cluster' },
+}
 export const mockManagedClusterInfos = [
     mockManagedClusterInfo0,
     mockManagedClusterInfo1,
@@ -338,6 +358,38 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
     metadata: { name: 'managed-cluster-0-clusterset', namespace: 'managed-cluster-0-clusterset' },
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
+
+const mockHostedCluster0: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'hypershift-cluster',
+        namespace: 'hypershift-cluster',
+    },
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        platform: {},
+    },
+}
+
+const mockHostedCluster1: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'hypershift-cluster2',
+        namespace: 'hypershift-cluster2',
+    },
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        platform: {},
+    },
+}
+
+const mockHostedClusters: HostedClusterK8sResource[] = [mockHostedCluster0, mockHostedCluster1]
 
 function getClusterCuratorCreateResourceAttributes(name: string) {
     return {
@@ -506,6 +558,7 @@ describe('Clusters Page hypershift', () => {
                     snapshot.set(clusterDeploymentsState, mockClusterDeployments)
                     snapshot.set(managedClusterInfosState, hypershiftMockManagedClusterInfos)
                     snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                    snapshot.set(hostedClustersState, mockHostedClusters)
                 }}
             >
                 <MemoryRouter>
@@ -514,5 +567,29 @@ describe('Clusters Page hypershift', () => {
             </RecoilRoot>
         )
         await waitForText(mockManagedCluster6.metadata.name!)
+    })
+})
+
+describe('Clusters Page regional hub cluster', () => {
+    test('should render regional hub clusters', async () => {
+        nockIgnoreRBAC()
+        const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
+        const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, mockRegionalHubClusters)
+                    snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+                    snapshot.set(managedClusterInfosState, mockRegionalHubClusterInfos)
+                    snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                }}
+            >
+                <MemoryRouter>
+                    <ManagedClusters />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText(mockManagedCluster8.metadata.name!)
+        await waitForText('Hub')
     })
 })

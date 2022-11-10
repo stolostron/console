@@ -3,20 +3,21 @@ import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../reso
 import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState, configMapsState } from '../../../../../atoms'
+import { Link, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const { LogsDownloadButton } = CIM
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation()
+    const location = useLocation()
+    const { ansibleJobState, configMapsState } = useSharedAtoms()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
@@ -79,6 +80,7 @@ export function StatusField(props: { cluster: Cluster }) {
 
     let hasAction = false
     let Action = () => <></>
+    let header = ''
     switch (props.cluster?.status) {
         case ClusterStatus.notstarted:
             hasAction = true
@@ -184,6 +186,18 @@ export function StatusField(props: { cluster: Cluster }) {
                 </Link>
             )
             break
+        case ClusterStatus.pendingimport:
+            header = t('Cluster is pending import')
+            if (!location.pathname.endsWith('/overview')) {
+                hasAction = true
+                Action = () => (
+                    <Link to={`${NavigationPath.clusterOverview.replace(':id', props.cluster?.name!)}`}>
+                        {t('Go to Overview')}
+                    </Link>
+                )
+            }
+
+            break
     }
 
     return (
@@ -199,6 +213,7 @@ export function StatusField(props: { cluster: Cluster }) {
                     </>
                 ),
                 footerContent: hasAction && <Action />,
+                headerContent: header,
                 showClose: false,
             }}
         />

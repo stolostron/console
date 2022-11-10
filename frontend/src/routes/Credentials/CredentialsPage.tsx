@@ -16,17 +16,17 @@ import {
 import moment from 'moment'
 import { Fragment, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { discoveryConfigState, secretsState } from '../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
-import { NavigationPath } from '../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
 
 export default function CredentialsPage() {
+    const { secretsState, discoveryConfigState } = useSharedAtoms()
     const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const credentialsSecrets = useMemo(
@@ -61,7 +61,7 @@ const AddConnectionBtn = () => {
     const { t } = useTranslation()
     return (
         <div>
-            <AcmButton component={Link} to={NavigationPath.addCredentialsInfrastructure}>
+            <AcmButton component={Link} to={createBackCancelLocation(NavigationPath.addCredentials)}>
                 {t('Add credential')}
             </AcmButton>
             <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
@@ -286,7 +286,7 @@ export function CredentialsTable(props: {
                         id: 'add',
                         title: t('Add credential'),
                         click: () => {
-                            history.push(NavigationPath.addCredentialsInfrastructure)
+                            history.push(createBackCancelLocation(NavigationPath.addCredentials))
                         },
                         variant: ButtonVariant.primary,
                     },

@@ -16,15 +16,7 @@ import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '../../../..
 import { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    managedClustersState,
-    placementBindingsState,
-    placementDecisionsState,
-    placementRulesState,
-    placementsState,
-    usePolicies,
-} from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
@@ -101,6 +93,14 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
 export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     const { policySet } = props
     const { t } = useTranslation()
+    const {
+        managedClustersState,
+        placementBindingsState,
+        placementDecisionsState,
+        placementRulesState,
+        placementsState,
+        usePolicies,
+    } = useSharedAtoms()
     const [managedClusters] = useRecoilState(managedClustersState)
     const policies = usePolicies()
     const [placements] = useRecoilState(placementsState)
@@ -352,7 +352,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             </Split>
             {type === 'Clusters' ? (
                 <AcmTable<string>
-                    plural="Clusters"
+                    plural={t('Clusters')}
                     items={policySetClusters}
                     initialSort={{
                         index: 1, // default to sorting by violation count
@@ -368,7 +368,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 />
             ) : (
                 <AcmTable<Policy>
-                    plural="Policies"
+                    plural={t('Policies')}
                     items={policySetPolicies}
                     initialSort={{
                         index: 1, // default to sorting by violation count

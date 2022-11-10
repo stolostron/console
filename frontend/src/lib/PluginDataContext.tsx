@@ -1,39 +1,51 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createContext, ProviderProps } from 'react'
-import * as recoil from 'recoil'
+import { Dispatch, createContext, useState, SetStateAction, useMemo } from 'react'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
-
-const { RecoilRoot } = recoil
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import * as recoil from 'recoil'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import * as selectors from '../selectors'
 
 export type PluginData = {
-    recoil: typeof recoil,
-    atoms: typeof atoms,
+    recoil: typeof recoil
+    atoms: typeof atoms
+    selectors: typeof selectors
+    loaded: boolean
+    startLoading: boolean
+    setLoaded: Dispatch<SetStateAction<boolean>>
+    load: () => void
 }
 
-const defaultContext = {  recoil, atoms }
+export const defaultContext = {
+    recoil,
+    atoms,
+    selectors,
+    loaded: false,
+    startLoading: false,
+    setLoaded: () => {},
+    load: () => {},
+}
 
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
-    // const [snapshot, setSnapshot] = useState<Snapshot | undefined>()
-    // const [release, setRelease] = useState<() => void>()
-    // //const getSnapshot = () => snapshot
-    // // const setSnapshotOnce = useCallback((s: string) => {
-    // //     if (!snapshot) {
-    // //         setSnapshot(s)
-    // //     }
-    // // }, [snapshot, setSnapshot])
-    // const nextSnapshot = useCallback((s: Snapshot) => {
-    //     //debugger
-    //     if (release) release()
-    //     setRelease(s.retain())
-    //     setSnapshot(s)
-    // }, [release])
-    return defaultContext
+    const [loaded, setLoaded] = useState(false)
+    const [startLoading, setStartLoading] = useState(false)
+
+    const contextValue = useMemo(
+        () => ({
+            recoil,
+            atoms,
+            selectors,
+            loaded,
+            startLoading,
+            setLoaded,
+            load: () => setStartLoading(true),
+        }),
+        [loaded, setLoaded, startLoading]
+    )
+    return contextValue
 }
 
-export const PluginDataContextProvider = (props: ProviderProps<PluginData>) => (
-    <PluginDataContext.Provider value={props.value}>
-        <RecoilRoot>{props.children}</RecoilRoot>
-    </PluginDataContext.Provider>
-)
+usePluginDataContextValue.context = PluginDataContext

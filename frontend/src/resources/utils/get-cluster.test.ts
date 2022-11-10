@@ -4,7 +4,7 @@ import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind }
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
 import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
-import { ClusterStatus, getClusterStatus, getDistributionInfo } from './get-cluster'
+import { ClusterStatus, getClusterStatus, getDistributionInfo, getIsHostedCluster } from './get-cluster'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../cluster-claim'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
@@ -792,5 +792,63 @@ describe('getClusterStatus', () => {
         )
         expect(status.status).toBe(ClusterStatus.unknown)
         expect(status.statusMessage).toBeUndefined()
+    })
+})
+
+describe('getIsHostedCluster', () => {
+    it('getIsHostedCluster true', () => {
+        const mc: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                annotations: {
+                    'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+                },
+            },
+        }
+
+        expect(getIsHostedCluster(mc)).toEqual(true)
+    })
+
+    it('getIsHostedCluster no annotation', () => {
+        const mc: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {},
+        }
+
+        expect(getIsHostedCluster(mc)).toEqual(false)
+    })
+
+    it('getIsHostedCluster no kube deploy mode', () => {
+        const mc: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                annotations: {
+                    'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+                },
+            },
+        }
+
+        expect(getIsHostedCluster(mc)).toEqual(false)
+    })
+
+    it('getIsHostedCluster kube deploy mode not hosted', () => {
+        const mc: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                annotations: {
+                    'import.open-cluster-management.io/klusterlet-deploy-mode': 'Standalone',
+                },
+            },
+        }
+
+        expect(getIsHostedCluster(mc)).toEqual(false)
+    })
+
+    it('getIsHostedCluster no mc', () => {
+        expect(getIsHostedCluster(undefined)).toEqual(false)
     })
 })

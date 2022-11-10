@@ -17,21 +17,9 @@ import {
     useState,
 } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilCallback } from 'recoil'
-import {
-    ansibleJobState,
-    applicationSetsState,
-    applicationsState,
-    argoApplicationsState,
-    channelsState,
-    placementRulesState,
-    placementsState,
-    subscriptionReportsState,
-    subscriptionsState,
-    THROTTLE_EVENTS_DELAY,
-} from '../../../atoms'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PluginContext } from '../../../lib/PluginContext'
 import { canUser, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -41,6 +29,7 @@ import {
     ApplicationSetDefinition,
     ApplicationSetKind,
 } from '../../../resources'
+import { useRecoilCallback, useSharedAtoms } from '../../../shared-recoil'
 import {
     AcmActionGroup,
     AcmAlert,
@@ -61,7 +50,6 @@ import {
     isResourceTypeOf,
 } from '../helpers/resource-helper'
 import { getAppSetApps } from '../Overview'
-import { PluginContext } from '../../../lib/PluginContext'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
 import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
@@ -118,6 +106,19 @@ function searchError(completeError: ApolloError | undefined, t: TFunction) {
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
     const { t } = useTranslation()
+    const {
+        ansibleJobState,
+        applicationSetsState,
+        applicationsState,
+        argoApplicationsState,
+        channelsState,
+        placementRulesState,
+        placementsState,
+        subscriptionReportsState,
+        subscriptionsState,
+        THROTTLE_EVENTS_DELAY,
+    } = useSharedAtoms()
+
     const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
     const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
@@ -166,7 +167,17 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             subscriptions: subscriptionsState,
             subscriptionReports: subscriptionReportsState,
         }),
-        []
+        [
+            applicationsState,
+            applicationSetsState,
+            argoApplicationsState,
+            ansibleJobState,
+            channelsState,
+            placementsState,
+            placementRulesState,
+            subscriptionsState,
+            subscriptionReportsState,
+        ]
     )
 
     const getRecoilStates = useCallback(async () => {
@@ -350,7 +361,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 setWaitForApplication(false)
             }, THROTTLE_EVENTS_DELAY)
         }
-    }, [applicationNotFound])
+    }, [applicationNotFound, THROTTLE_EVENTS_DELAY])
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -494,6 +505,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 {[
                                     <RbacDropdown<Application>
                                         id={`${applicationData?.application.app?.metadata.name ?? 'app'}-actions`}
+                                        key={`${applicationData?.application.app?.metadata.name ?? 'app'}-actions`}
                                         item={applicationData?.application.app}
                                         isKebab={false}
                                         text={t('actions')}

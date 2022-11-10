@@ -38,6 +38,9 @@ const propsPlain = {
             'm5.10xlarge - 40 vCPU, 160 GiB RAM - General Purpose': 'm5.10xlarge',
             'm5.16xlarge - 64 vCPU, 256 GiB RAM - General Purpose': 'm5.16xlarge',
         },
+        fetchAvailable: {
+            setAvailableMap: jest.fn(),
+        },
         hasValueDescription: true,
         isInitialized: true,
     },

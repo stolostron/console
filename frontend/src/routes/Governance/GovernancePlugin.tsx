@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PluginData } from '../../components/PluginData'
+import { LoadPluginData } from '../../components/LoadPluginData'
 import { PluginContextProvider } from '../../components/PluginContextProvider'
 import Governance from './Governance'
 
 export default function GovernancePlugin() {
     return (
         <PluginContextProvider>
-            <PluginData>
+            <LoadPluginData>
                 <Governance />
-            </PluginData>
+            </LoadPluginData>
         </PluginContextProvider>
     )
 }

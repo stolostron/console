@@ -10,12 +10,13 @@ import {
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataCIM = (handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlDataCIM)
-    insertToggleModalFunction(handleModalToggle, controlDataCIM)
+    const controlData = [...controlDataCIM]
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     if (warning) {
-        appendWarning(warning, controlDataCIM)
+        appendWarning(warning, controlData)
     }
-    return [...controlDataCIM]
+    return controlData
 }
 
 const controlDataCIM = [
@@ -78,7 +79,7 @@ const controlDataCIM = [
     {
         id: 'aiHostsStep',
         type: 'step',
-        title: 'Cluster hosts',
+        title: 'Hosts',
         disabled: true,
     },
     {

@@ -12,24 +12,29 @@ import {
 } from '@patternfly/react-core';
 import {
   ActionsColumn,
-  CustomActionsToggleProps,
-  IAction,
-  TableComposable,
-  Tbody,
   Td,
   Th,
   Thead,
   Tr,
+  CustomActionsToggleProps,
+  IAction,
+  TableComposable,
+  Tbody,
 } from '@patternfly/react-table';
-import { clusterTemplateGVK, helmRepoGVK, pipelineGVK } from '../constants';
+import { clusterTemplateGVK } from '../constants';
 import { ClusterTemplate, RowProps, TableColumn } from '../types';
 import { useClusterTemplates } from '../hooks/useClusterTemplates';
-import { useClusterTemplateInstances } from '../hooks/useClusterTemplateInstances';
-import { LoadingHelper } from '../utils';
+
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next';
 import { useTranslation } from '../../../../lib/acm-i18next';
 import TableLoader from '../helpers/TableLoader';
+
+import {
+  ClusterTemplateHelmChart,
+  ClusterTemplateHelmResourceLink,
+  ClusterTemplateUsage,
+} from '../ClusterTemplateDetails/clusterTemplateComponents';
 
 function getTableColumns(t: TFunction): TableColumn[] {
   return [
@@ -46,10 +51,6 @@ function getTableColumns(t: TFunction): TableColumn[] {
       id: 'helm-chart',
     },
     {
-      title: t('Setup pipeline'),
-      id: 'pipeline',
-    },
-    {
       title: t('Template uses'),
       id: 'usage',
     },
@@ -64,7 +65,6 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj })
   const { t } = useTranslation();
   const [isDeleteOpen, setDeleteOpen] = React.useState(false);
   const [model] = useK8sModel(clusterTemplateGVK);
-  const [instances, loaded, loadError] = useClusterTemplateInstances();
 
   const getRowActions = (): IAction[] => [
     {
@@ -86,31 +86,13 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj })
         />
       </Td>
       <Td id={columns[1].id} dataLabel={columns[1].title}>
-        <ResourceLink
-          groupVersionKind={helmRepoGVK}
-          name={obj.spec.helmChartRef.repository}
-          hideIcon
-        />
+        <ClusterTemplateHelmResourceLink clusterTemplate={obj} />
       </Td>
       <Td id={columns[2].id} dataLabel={columns[2].title}>
-        {obj.spec.helmChartRef?.name}
-      </Td>
-      <Td id={columns[3].id} dataLabel={columns[3].title}>
-        {obj.spec.clusterSetup?.pipeline ? (
-          <ResourceLink
-            groupVersionKind={pipelineGVK}
-            name={obj.spec.clusterSetup.pipeline.name}
-            namespace={obj.spec.clusterSetup.pipeline.namespace}
-            hideIcon
-          />
-        ) : (
-          <>-</>
-        )}
+        <ClusterTemplateHelmChart clusterTemplate={obj} />
       </Td>
       <Td id={columns[4].id} dataLabel={columns[4].title}>
-        <LoadingHelper isLoaded={loaded} error={loadError}>
-          {instances.filter((i) => i.spec.template === obj.metadata?.name).length}
-        </LoadingHelper>
+        <ClusterTemplateUsage clusterTemplate={obj} />
       </Td>
       <Td id={columns[4].id} isActionCell>
         <ActionsColumn
@@ -157,7 +139,6 @@ export const ClusterTemplateRow: React.FC<RowProps<ClusterTemplate>> = ({ obj })
 const ClusterTemplatesTab = () => {
   const { t } = useTranslation();
   const [templates, loaded, loadError] = useClusterTemplates();
-
   return (
     <Page>
       <PageSection>

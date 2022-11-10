@@ -23,7 +23,7 @@ import { updateBrowserUrl } from '../urlQuery'
 import { DeleteSearchModal } from './Modals/DeleteSearchModal'
 import { SaveAndEditSearchModal } from './Modals/SaveAndEditSearchModal'
 import { ShareSearchModal } from './Modals/ShareSearchModal'
-import SuggestQueryTemplates from './SuggestedQueryTemplates'
+import { useSuggestedQueryTemplates } from './SuggestedQueryTemplates'
 
 export default function SavedSearchQueries(props: {
     savedSearches: SavedSearch[]
@@ -37,7 +37,7 @@ export default function SavedSearchQueries(props: {
     const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
     const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-    const suggestedQueryTemplates = SuggestQueryTemplates?.templates ?? ([] as SavedSearch[])
+    const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
     const input = [
         ...savedSearches.map((query) => convertStringToQuery(query.searchText)),

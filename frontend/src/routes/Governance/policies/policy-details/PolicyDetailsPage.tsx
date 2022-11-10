@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Fragment, Suspense, useMemo } from 'react'
+import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { RbacDropdown } from '../../../../components/Rbac'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { rbacPatch } from '../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import { Policy, ResourceError } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import {
     AcmActionGroup,
     AcmButton,
@@ -8,16 +17,6 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '../../../../ui-components'
-import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { channelsState, helmReleaseState, subscriptionsState, usePolicies } from '../../../../atoms'
-import { ErrorPage } from '../../../../components/ErrorPage'
-import { RbacDropdown } from '../../../../components/Rbac'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { rbacPatch } from '../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../NavigationPath'
-import { Policy, ResourceError } from '../../../../resources'
 import { getPolicyDetailSourceLabel } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
@@ -25,6 +24,7 @@ import PolicyDetailsResults from './PolicyDetailsResults'
 export function PolicyDetailsPage() {
     const location = useLocation()
     const { t } = useTranslation()
+    const { channelsState, helmReleaseState, subscriptionsState, usePolicies } = useSharedAtoms()
     const history = useHistory()
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
@@ -96,7 +96,7 @@ export function PolicyDetailsPage() {
                     title={policyName ?? 'Policy details'}
                     breadcrumb={[
                         { text: t('Policies'), to: NavigationPath.policies },
-                        { text: policyName ?? 'Policy details', to: '' },
+                        { text: policyName ?? t('Policy details'), to: '' },
                     ]}
                     popoverAutoWidth={false}
                     popoverPosition="bottom"
@@ -116,6 +116,7 @@ export function PolicyDetailsPage() {
                             {[
                                 <RbacDropdown<Policy>
                                     id={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
+                                    key={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
                                     item={selectedPolicy}
                                     isKebab={false}
                                     text={t('actions')}

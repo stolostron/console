@@ -25,8 +25,7 @@ import {
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { submarinerConfigsState } from '../../../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -92,6 +91,7 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 export function ClusterSetSubmarinerPageContent() {
     const { t } = useTranslation()
     const history = useHistory()
+    const { submarinerConfigsState } = useSharedAtoms()
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)

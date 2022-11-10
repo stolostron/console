@@ -3,20 +3,7 @@ import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    channelsState,
-    helmReleaseState,
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementBindingsState,
-    placementRulesState,
-    placementsState,
-    subscriptionsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -35,9 +22,10 @@ import schema from './schema.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
-            editorTitle={'Policy YAML'}
+            editorTitle={t('Policy YAML')}
             variant="toolbar"
             resources={resources}
             schema={schema}
@@ -58,6 +46,19 @@ export function EditPolicy() {
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
+    const {
+        channelsState,
+        helmReleaseState,
+        managedClusterSetBindingsState,
+        managedClusterSetsState,
+        managedClustersState,
+        namespacesState,
+        placementBindingsState,
+        placementRulesState,
+        placementsState,
+        subscriptionsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)

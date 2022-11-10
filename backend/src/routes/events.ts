@@ -92,7 +92,6 @@ const definitions: IWatchOptions[] = [
     { kind: 'ClusterProvision', apiVersion: 'hive.openshift.io/v1' },
     { kind: 'MachinePool', apiVersion: 'hive.openshift.io/v1' },
     { kind: 'ManagedClusterInfo', apiVersion: 'internal.open-cluster-management.io/v1beta1' },
-    { kind: 'BareMetalAsset', apiVersion: 'inventory.open-cluster-management.io/v1alpha1' },
     { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
     { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },

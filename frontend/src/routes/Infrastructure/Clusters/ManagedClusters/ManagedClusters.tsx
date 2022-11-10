@@ -21,13 +21,11 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
     addonPathKey,
     addonTextKey,
@@ -50,6 +48,8 @@ import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 
 export default function ManagedClusters() {
     const { t } = useTranslation()
@@ -90,7 +90,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
-                                    click: () => history.push(NavigationPath.createInfrastructure),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.createCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
@@ -98,7 +98,7 @@ export default function ManagedClusters() {
                                 {
                                     id: 'importCluster',
                                     title: t('managed.importCluster'),
-                                    click: () => history.push(locationWithCancelBack(NavigationPath.importCluster)),
+                                    click: () => history.push(createBackCancelLocation(NavigationPath.importCluster)),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.secondary,
@@ -123,6 +123,7 @@ export default function ManagedClusters() {
 }
 
 const PageActions = () => {
+    const { clusterManagementAddonsState } = useSharedAtoms()
     const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const addons = clusterManagementAddons.filter(
         (cma) => cma.metadata.annotations?.[addonTextKey] && cma.metadata.annotations?.[addonPathKey]
@@ -149,8 +150,9 @@ export function ClustersTable(props: {
         sessionStorage.removeItem('DiscoveredClusterConsoleURL')
         sessionStorage.removeItem('DiscoveredClusterApiURL')
     }, [])
-
+    const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
+    const [hostedClusters] = useRecoilState(hostedClustersState)
 
     const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
@@ -168,7 +170,7 @@ export function ClustersTable(props: {
     const clusterStatusColumn = useClusterStatusColumn()
     const clusterProviderColumn = useClusterProviderColumn()
     const clusterControlPlaneColumn = useClusterControlPlaneColumn()
-    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
+    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
     const clusterLabelsColumn = useClusterLabelsColumn()
     const clusterNodesColumn = useClusterNodesColumn()
     const clusterCreatedDataColumn = useClusterCreatedDateColumn()
@@ -487,6 +489,12 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
             if (cluster.name === 'local-cluster') {
                 return t('Hub')
             }
+            if (cluster.isRegionalHubCluster) {
+                if (cluster.isHostedCluster || cluster.isHypershift) {
+                    return t('Hub, Hosted')
+                }
+                return t('Hub')
+            }
             if (cluster.isHostedCluster || cluster.isHypershift) {
                 return t('Hosted')
             } else {
@@ -496,7 +504,10 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
     }
 }
 
-export function useClusterDistributionColumn(clusterCurators: ClusterCurator[]): IAcmTableColumn<Cluster> {
+export function useClusterDistributionColumn(
+    clusterCurators: ClusterCurator[],
+    hostedClusters: HostedClusterK8sResource[]
+): IAcmTableColumn<Cluster> {
     const { t } = useTranslation()
     return {
         header: t('table.distribution'),
@@ -506,6 +517,9 @@ export function useClusterDistributionColumn(clusterCurators: ClusterCurator[]):
             <DistributionField
                 cluster={cluster}
                 clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
+                hostedCluster={hostedClusters.find(
+                    (hc) => cluster.namespace === hc.metadata.namespace && cluster.name === hc.metadata.name
+                )}
             />
         ),
     }

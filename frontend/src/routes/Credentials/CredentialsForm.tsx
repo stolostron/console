@@ -10,11 +10,10 @@ import {
     ProviderIconMap,
     ProviderLongTextMap,
 } from '../../ui-components'
-import _ from 'lodash'
+import _, { noop } from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilCallback } from 'recoil'
-import { namespacesState } from '../../atoms'
+import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
+import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -37,7 +36,7 @@ import {
     validatePrivateSshKey,
     validatePublicSshKey,
 } from '../../lib/validation'
-import { NavigationPath } from '../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
     createResource,
     getSecret,
@@ -50,54 +49,17 @@ import {
     unpackProviderConnection,
 } from '../../resources'
 import schema from './schema.json'
+import { CredentialsType } from './CredentialsType'
 
-const credentialProviders: Provider[] = [
-    Provider.openstack,
-    Provider.redhatvirtualization,
-    Provider.ansible,
-    Provider.redhatcloud,
-    Provider.aws,
-    Provider.azure,
-    Provider.gcp,
-    Provider.vmware,
-    Provider.hostinventory,
-    Provider.hybrid,
-]
+type ProviderConnectionOrCredentialsType =
+    | { providerConnection: ProviderConnection; credentialsType?: never }
+    | { providerConnection?: never; credentialsType: CredentialsType }
 
-enum ProviderGroup {
-    Automation = 'Automation & other credentials',
-    Datacenter = 'Datacenter credentials',
-    CloudProvider = 'Cloud provider credentials',
-}
-
-const providerGroup: Record<string, string> = {
-    [Provider.redhatcloud]: ProviderGroup.Automation,
-    [Provider.ansible]: ProviderGroup.Automation,
-    [Provider.aws]: ProviderGroup.CloudProvider,
-    [Provider.gcp]: ProviderGroup.CloudProvider,
-    [Provider.azure]: ProviderGroup.CloudProvider,
-    [Provider.ibm]: ProviderGroup.CloudProvider,
-    [Provider.openstack]: ProviderGroup.Datacenter,
-    [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
-    [Provider.vmware]: ProviderGroup.Datacenter,
-    [Provider.hostinventory]: ProviderGroup.Datacenter,
-}
-
-export default function CredentialsFormPage() {
-    const params = useParams<{ namespace: string; name: string }>()
-    const location = useLocation()
-    const { name, namespace } = params
+export function CreateCredentialsFormPage(props: { credentialsType: CredentialsType }) {
+    const { namespacesState } = useSharedAtoms()
     const { t } = useTranslation()
 
-    let isEditing = false
-    let isViewing = false
-    if (name !== undefined) {
-        isEditing = location.pathname.startsWith('/multicloud/credentials/edit')
-        isViewing = !isEditing
-    }
-
-    const urlParams = new URLSearchParams(location.search.substring(1))
-    const urlParamInfrastructureType = urlParams.get('infrastructureType') || ''
+    const { credentialsType } = props
 
     const [error, setError] = useState<Error>()
 
@@ -111,175 +73,98 @@ export default function CredentialsFormPage() {
 
     const [projects, setProjects] = useState<string[]>()
     useEffect(() => {
-        if (!isEditing && !isViewing) {
-            getNamespaces()
-                .then((namespaces) => {
-                    getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
-                        .then((namespaces: string[]) => setProjects(namespaces.sort()))
-                        .catch(setError)
-                })
-                .catch(setError)
-        }
+        getNamespaces()
+            .then((namespaces) => {
+                getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                    .then((namespaces: string[]) => setProjects(namespaces.sort()))
+                    .catch(setError)
+            })
+            .catch(setError)
         return undefined
-    }, [getNamespaces, isEditing, isViewing])
-    const history = useHistory()
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
-    useEffect(() => {
-        if (isEditing || isViewing) {
-            const result = getSecret({ name, namespace })
-            result.promise
-                .then((secret) => setProviderConnection(unpackProviderConnection(secret as ProviderConnection)))
-                .catch(setError)
-            return result.abort
-        }
-        return undefined
-    }, [isEditing, isViewing, name, namespace])
+    }, [getNamespaces])
 
     if (error) return <ErrorPage error={error} />
 
-    if (isEditing || isViewing) {
-        if (!providerConnection) return <LoadingPage />
+    if (!projects) return <LoadingPage />
+    if (projects.length === 0) {
         return (
-            <CredentialsForm
-                namespaces={[providerConnection.metadata.namespace!]}
-                providerConnection={providerConnection}
-                isEditing={isEditing}
-                isViewing={isViewing}
-            />
-        )
-    } else {
-        if (!projects) return <LoadingPage />
-        if (projects.length === 0) {
-            return (
-                <AcmPage
-                    header={
-                        <AcmPageHeader
-                            title={t('Add credential')}
-                            breadcrumb={[
-                                { text: t('Credentials'), to: NavigationPath.credentials },
-                                { text: t('Add credential') },
-                            ]}
-                        />
-                    }
-                >
-                    <PageSection variant="light" isFilled>
-                        <AcmEmptyState
-                            title={t('Unauthorized')}
-                            message={t('rbac.unauthorized.namespace')}
-                            showIcon={false}
-                        />
-                    </PageSection>
-                </AcmPage>
-            )
-        }
-        if (location.pathname === NavigationPath.addCredentials && location.search === '') {
-            history.push(NavigationPath.credentials)
-        }
-        return (
-            <CredentialsForm
-                namespaces={projects}
-                isEditing={false}
-                isViewing={false}
-                urlParamInfrastructureType={urlParamInfrastructureType}
-            />
+            <AcmPage
+                header={
+                    <AcmPageHeader
+                        title={t('Add credential')}
+                        breadcrumb={[
+                            { text: t('Credentials'), to: NavigationPath.credentials },
+                            { text: t('Add credential') },
+                        ]}
+                    />
+                }
+            >
+                <PageSection variant="light" isFilled>
+                    <AcmEmptyState
+                        title={t('Unauthorized')}
+                        message={t('rbac.unauthorized.namespace')}
+                        showIcon={false}
+                    />
+                </PageSection>
+            </AcmPage>
         )
     }
+    return (
+        <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} credentialsType={credentialsType} />
+    )
 }
 
-export function CredentialsForm(props: {
-    namespaces: string[]
-    providerConnection?: ProviderConnection
-    isEditing: boolean
-    isViewing: boolean
-    infrastructureType?: string
-    handleModalToggle?: () => void
-    hideYaml?: boolean
-    control?: any
-    urlParamInfrastructureType?: string
-}) {
-    const { t } = useTranslation()
+export function ViewEditCredentialsFormPage() {
     const {
-        namespaces,
-        providerConnection,
-        isEditing,
-        isViewing,
-        infrastructureType,
-        handleModalToggle,
-        hideYaml,
-        control,
-        urlParamInfrastructureType,
-    } = props
+        path,
+        params: { name, namespace },
+    } = useRouteMatch<ExtractRouteParams<NavigationPath.editCredentials | NavigationPath.viewCredentials, string>>()
+
+    const isEditing = path === NavigationPath.editCredentials
+    const isViewing = path === NavigationPath.viewCredentials
+
+    const [error, setError] = useState<Error>()
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
+    useEffect(() => {
+        const result = getSecret({ name, namespace })
+        result.promise
+            .then((secret) => setProviderConnection(unpackProviderConnection(secret as ProviderConnection)))
+            .catch(setError)
+        return result.abort
+    }, [name, namespace])
+
+    if (error) return <ErrorPage error={error} />
+
+    if (!providerConnection) return <LoadingPage />
+    return (
+        <CredentialsForm
+            namespaces={[providerConnection.metadata.namespace!]}
+            providerConnection={providerConnection}
+            isEditing={isEditing}
+            isViewing={isViewing}
+        />
+    )
+}
+
+export function CredentialsForm(
+    props: {
+        namespaces: string[]
+        isEditing: boolean
+        isViewing: boolean
+        handleModalToggle?: () => void
+        hideYaml?: boolean
+        control?: any
+    } & ProviderConnectionOrCredentialsType
+) {
+    const { t } = useTranslation()
+    const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, control } = props
+    const credentialsType =
+        props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
     const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
-
-    let selectedInfrastructureType = ''
-    switch (infrastructureType?.toLowerCase()) {
-        case 'aws':
-            selectedInfrastructureType = Provider.aws
-            break
-        case 'ans':
-            selectedInfrastructureType = Provider.ansible
-            break
-        case 'azure':
-            selectedInfrastructureType = Provider.azure
-            break
-        case 'gcp':
-            selectedInfrastructureType = Provider.gcp
-            break
-        case 'openstack':
-            selectedInfrastructureType = Provider.openstack
-            break
-        case 'rhv':
-            selectedInfrastructureType = Provider.redhatvirtualization
-            break
-        case 'vsphere':
-            selectedInfrastructureType = Provider.vmware
-            break
-        case 'cimhypershift':
-        case 'cim':
-        case 'ai':
-            selectedInfrastructureType = Provider.hostinventory
-            break
-    }
-    let urlPassedCredentialType = ''
-    switch (urlParamInfrastructureType) {
-        case 'AWS':
-            urlPassedCredentialType = Provider.aws
-            break
-        case 'Azure':
-            urlPassedCredentialType = Provider.azure
-            break
-        case 'GCP':
-            urlPassedCredentialType = Provider.gcp
-            break
-        case 'OpenStack':
-            urlPassedCredentialType = Provider.openstack
-            break
-        case 'RHV':
-            urlPassedCredentialType = Provider.redhatvirtualization
-            break
-        case 'vSphere':
-            urlPassedCredentialType = Provider.vmware
-            break
-        case 'hostInventory':
-            urlPassedCredentialType = Provider.hostinventory
-            break
-        case 'Ansible':
-            urlPassedCredentialType = Provider.ansible
-            break
-        case 'RedHatCloud':
-            urlPassedCredentialType = Provider.redhatcloud
-            break
-    }
-
-    const passedInfrastructureType = urlParamInfrastructureType
-        ? urlPassedCredentialType
-        : infrastructureType
-        ? selectedInfrastructureType
-        : providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
-
-    const [credentialsType, setCredentialsType] = useState(passedInfrastructureType)
+    const { back, cancel } = useBackCancelNavigation()
 
     // Details
     const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -321,8 +206,8 @@ export function CredentialsForm(props: {
         providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
     )
 
-    function getDisconnectedDocLink(credentialType: Provider) {
-        switch (credentialType) {
+    function getDisconnectedDocLink(credentialsType: Provider) {
+        switch (credentialsType) {
             case Provider.vmware:
                 return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_VMWARE
             case Provider.openstack:
@@ -332,8 +217,8 @@ export function CredentialsForm(props: {
         }
     }
 
-    function getProxyDocLink(credentialType: Provider) {
-        switch (credentialType) {
+    function getProxyDocLink(credentialsType: Provider) {
+        switch (credentialsType) {
             case Provider.redhatvirtualization:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
             case Provider.aws:
@@ -391,6 +276,7 @@ export function CredentialsForm(props: {
     const [vsphereResourcePool, setVsphereResourcePool] = useState(
         () => providerConnection?.stringData?.vsphereResourcePool ?? ''
     )
+    const [vsphereDiskType, setVsphereDiskType] = useState(() => providerConnection?.stringData?.vsphereDiskType ?? '')
 
     // OpenStack
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
@@ -500,6 +386,7 @@ export function CredentialsForm(props: {
                 stringData.defaultDatastore = defaultDatastore
                 stringData.vsphereFolder = vsphereFolder
                 stringData.vsphereResourcePool = vsphereResourcePool
+                stringData.vsphereDiskType = vsphereDiskType
                 stringData.baseDomain = baseDomain
                 stringData.pullSecret = pullSecret
                 stringData['ssh-privatekey'] = sshPrivatekey
@@ -587,6 +474,7 @@ export function CredentialsForm(props: {
             { path: 'Secret[0].stringData.cluster', setState: setVmClusterName },
             { path: 'Secret[0].stringData.datacenter', setState: setDatacenter },
             { path: 'Secret[0].stringData.defaultDatastore', setState: setDatastore },
+            { path: 'Secret[0].stringData.vsphereDiskType', setState: setVsphereDiskType },
             { path: 'Secret[0].stringData.vsphereFolder', setState: setVsphereFolder },
             { path: 'Secret[0].stringData.vsphereResourcePool', setState: setVsphereResourcePool },
             { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
@@ -628,65 +516,28 @@ export function CredentialsForm(props: {
             {
                 type: 'Section',
                 title: credentialsType ? t('Basic information') : t('Credential type'),
-                wizardTitle: credentialsType
-                    ? t('Enter the basic credentials information')
-                    : t('Select the credentials type'),
-                description: !credentialsType && (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('What are the different credentials types?')}
-                    </a>
-                ),
+                wizardTitle: t('Enter the basic credentials information'),
                 inputs: [
                     {
                         id: 'credentialsType',
-                        type: isEditing || credentialsType ? 'GroupedSelect' : 'GroupedTiles',
+                        type: 'Select',
                         label: t('Credential type'),
-                        placeholder: t('Select the credentials type'),
                         value: credentialsType,
-                        onChange: setCredentialsType,
-                        isRequired: true,
-                        groups: [
+                        onChange: noop,
+                        options: [
                             {
-                                group: ProviderGroup.CloudProvider,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CloudProvider)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
-                            },
-                            {
-                                group: ProviderGroup.Datacenter,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Datacenter)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
-                            },
-                            {
-                                group: ProviderGroup.Automation,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
+                                id: credentialsType,
+                                value: credentialsType,
+                                icon: credentialsType ? (
+                                    <AcmIcon icon={ProviderIconMap[credentialsType as Provider]} />
+                                ) : (
+                                    ''
+                                ),
+                                text: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
                             },
                         ],
-                        isDisabled: infrastructureType || urlParamInfrastructureType ? true : isEditing,
+                        isRequired: false, // always pre-filled
+                        isDisabled: true, // always pre-filled
                     },
                     {
                         id: 'credentialsName',
@@ -755,7 +606,7 @@ export function CredentialsForm(props: {
                             { id: CloudNames.AzurePublicCloud, value: CloudNames.AzurePublicCloud },
                             { id: CloudNames.AzureUSGovernmentCloud, value: CloudNames.AzureUSGovernmentCloud },
                         ],
-                        isHidden: credentialsType != Provider.azure,
+                        isHidden: credentialsType !== Provider.azure,
                     },
                 ],
             },
@@ -856,7 +707,7 @@ export function CredentialsForm(props: {
                         label: t('Base domain resource group name'),
                         placeholder: t('Enter your base domain resource group name'),
                         labelHelp: t(
-                            'Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.'
+                            'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
                         ),
                         value: baseDomainResourceGroupName,
                         onChange: setBaseDomainResourceGroupName,
@@ -1005,12 +856,26 @@ export function CredentialsForm(props: {
                         id: 'defaultDatastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('vSphere default defaultDatastore'),
-                        placeholder: t('Enter your vSphere default defaultDatastore'),
-                        labelHelp: t('The name of the default vSphere defaultDatastore to use.'),
+                        label: t('vSphere default datastore'),
+                        placeholder: t('Enter your vSphere default datastore'),
+                        labelHelp: t('The name of the default vSphere datastore to use.'),
                         value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
+                    },
+                    {
+                        id: 'vsphereDiskType',
+                        isHidden: credentialsType !== Provider.vmware,
+                        type: 'Select',
+                        label: t('vSphere disk type'),
+                        placeholder: t('credentialsForm.vsphereDiskType.placeholder'),
+                        labelHelp: t('credentialsForm.vsphereDiskType.labelHelp'),
+                        value: vsphereDiskType,
+                        options: ['thin', 'thick', 'eagerZeroedThick'].map((diskType) => ({
+                            id: diskType,
+                            value: diskType,
+                        })),
+                        onChange: setVsphereDiskType,
                     },
                     {
                         id: 'vsphereFolder',
@@ -1474,10 +1339,10 @@ export function CredentialsForm(props: {
                         type: 'success',
                         autoClose: true,
                     })
-                    if (!selectedInfrastructureType) {
-                        history.push(NavigationPath.credentials)
+                    if (handleModalToggle) {
+                        handleModalToggle()
                     } else {
-                        handleModalToggle && handleModalToggle()
+                        history.push(NavigationPath.credentials)
                     }
                 })
             }
@@ -1489,13 +1354,8 @@ export function CredentialsForm(props: {
         cancelLabel: t('Cancel'),
         nextLabel: t('Next'),
         backLabel: t('Back'),
-        back: () => {
-            history.goBack()
-        },
-        cancel: () =>
-            !selectedInfrastructureType
-                ? history.push(NavigationPath.credentials)
-                : handleModalToggle && handleModalToggle(),
+        back: handleModalToggle ? handleModalToggle : back(NavigationPath.credentials),
+        cancel: handleModalToggle ? handleModalToggle : cancel(NavigationPath.credentials),
         stateToSyncs,
         stateToData,
     }
@@ -1533,7 +1393,7 @@ export function CredentialsForm(props: {
                     )
                 }
             }}
-            isModalWizard={selectedInfrastructureType.length > 0}
+            isModalWizard={!!handleModalToggle}
         />
     )
 }

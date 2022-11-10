@@ -30,7 +30,7 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/multicluster_engine/index#proxy-virtualization`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/multicluster_engine/index#creating-a-cluster`,
     CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/multicluster_engine/index#creating-a-cluster-on-premises`,
-    CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/multicluster_engine/multicluster_engine_overview#create-a-cluster-prereq`,
+    CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/multicluster_engine/index#create-a-cluster-prereq`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/multicluster_engine/index#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets-intro`,
     GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/multicluster_engine/index#managedclustersets_global`,
@@ -48,6 +48,7 @@ export const DOC_LINKS = {
     POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
     HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/multicluster_engine/index#hosted-control-planes-intro`,
+    GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {

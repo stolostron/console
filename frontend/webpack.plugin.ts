@@ -8,11 +8,12 @@ import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
+import { supportedLanguages } from './src/lib/supportedLanguages'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
-    const locales = ['en']
+    const locales = supportedLanguages
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         entry: {},
         resolve: {
@@ -47,12 +48,12 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
-                    exclude: /node_modules\/\@patternfly/,
+                    exclude: /node_modules\/@patternfly/,
                     use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
                 },
                 {
                     test: /\.css$/,
-                    include: /node_modules\/\@patternfly/,
+                    include: /node_modules\/@patternfly/,
                     loader: 'null-loader',
                 },
                 {

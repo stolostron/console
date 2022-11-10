@@ -35,8 +35,9 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import CreateClusterPoolPage from './CreateClusterPool'
 import { createProviderConnection } from '../../../../Credentials/CredentialsForm.test'
+import { CreateClusterPoolPage } from '../CreateClusterPoolPage'
+import { CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 const clusterName = 'test'
 
@@ -194,7 +195,9 @@ describe('CreateClusterPool AWS', () => {
                     snapshot.set(secretsState, [providerConnection as Secret])
                 }}
             >
-                <MemoryRouter initialEntries={[`${NavigationPath.createClusterPool}?infrastructureType=AWS`]}>
+                <MemoryRouter
+                    initialEntries={[`${NavigationPath.createClusterPool}?${CLUSTER_POOL_INFRA_TYPE_PARAM}=AWS`]}
+                >
                     <Route path={NavigationPath.createClusterPool}>
                         <CreateClusterPoolPage />
                     </Route>
@@ -203,28 +206,8 @@ describe('CreateClusterPool AWS', () => {
         )
     }
 
-    let consoleInfos: string[]
-    const originalConsoleInfo = console.info
-    const originalConsoleGroup = console.group
-    const originalConsoleGroupCollapsed = console.groupCollapsed
-
     beforeEach(() => {
         nockIgnoreRBAC()
-        consoleInfos = []
-        console.info =
-            console.groupCollapsed =
-            console.group =
-                (message?: any, ...optionalParams: any[]) => {
-                    if (message) {
-                        consoleInfos = [...consoleInfos, message, ...optionalParams]
-                    }
-                }
-    })
-
-    afterEach(() => {
-        console.info = originalConsoleInfo
-        console.group = originalConsoleGroup
-        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test('can create a cluster pool', async () => {
@@ -268,7 +251,7 @@ describe('CreateClusterPool AWS', () => {
         // skip AWS private config
         await clickByText('Next')
 
-        await clickByText('Review')
+        await clickByText('Review and create')
 
         // nocks for cluster creation
         const createNocks = [
@@ -286,7 +269,6 @@ describe('CreateClusterPool AWS', () => {
         // click create button
         await clickByText('Create')
 
-        expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('Creating ClusterPool ...')
 
         // make sure creating

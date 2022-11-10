@@ -6,6 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -129,6 +130,7 @@ const mockCluster: Cluster = {
     kubeconfig: '',
     kubeadmin: '',
     isHypershift: false,
+    isRegionalHubCluster: false,
 }
 
 const mockSearchQuery = {
@@ -137,17 +139,17 @@ const mockSearchQuery = {
         input: [
             {
                 filters: [
-                    { property: 'kind', values: ['subscription'] },
+                    { property: 'kind', values: ['Subscription'] },
                     { property: 'cluster', values: ['test-cluster'] },
                 ],
-                relatedKinds: ['application'],
+                relatedKinds: ['Application'],
             },
             {
                 filters: [
                     { property: 'compliant', values: ['!Compliant'] },
-                    { property: 'kind', values: ['policy'] },
+                    { property: 'kind', values: ['Policy'] },
                     { property: 'namespace', values: ['test-cluster'] },
-                    { property: 'cluster', values: 'local-cluster' },
+                    { property: 'cluster', values: ['local-cluster'] },
                 ],
             },
         ],
@@ -158,13 +160,13 @@ const mockSearchQuery = {
 const mockSearchResponse = {
     data: {
         searchResult: [
-            { count: 14, related: [{ kind: 'application', count: 4 }], __typename: 'SearchResult' },
+            { count: 14, related: [{ kind: 'Application', count: 4 }], __typename: 'SearchResult' },
             {
                 count: 1,
                 related: [
-                    { kind: 'cluster', count: 1, __typename: 'SearchRelatedResult' },
-                    { kind: 'configurationpolicy', count: 1, __typename: 'SearchRelatedResult' },
-                    { kind: 'policy', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'Cluster', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'ConfigurationPolicy', count: 1, __typename: 'SearchRelatedResult' },
+                    { kind: 'Policy', count: 1, __typename: 'SearchRelatedResult' },
                 ],
                 __typename: 'SearchResult',
             },
@@ -234,7 +236,7 @@ describe('StatusSummaryCount', () => {
             await clickByText('4')
             expect(push).toHaveBeenCalledTimes(1)
             expect(push.mock.calls[0][0]).toBe(
-                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application'
+                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:Subscription"}&showrelated=Application'
             )
 
             await clickByText('Go to Applications')
@@ -244,7 +246,7 @@ describe('StatusSummaryCount', () => {
             await clickByText('1')
             expect(push).toHaveBeenCalledTimes(3)
             expect(push.mock.calls[2][0]).toBe(
-                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}'
+                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:Policy%20namespace:test-cluster%20compliant:!Compliant"}'
             )
 
             await clickByText('Go to Policies')
@@ -260,7 +262,7 @@ describe('StatusSummaryCount', () => {
     test('renders without search', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(
-            <PluginContext.Provider value={{ isSearchAvailable: false }}>
+            <PluginContext.Provider value={{ isSearchAvailable: false, dataContext: PluginDataContext }}>
                 <Component />
             </PluginContext.Provider>
         )
@@ -283,7 +285,9 @@ describe('StatusSummaryCount', () => {
     test('renders without applications and governance', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(
-            <PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}>
+            <PluginContext.Provider
+                value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext }}
+            >
                 <Component />
             </PluginContext.Provider>
         )

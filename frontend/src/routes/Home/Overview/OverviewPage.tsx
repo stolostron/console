@@ -3,14 +3,7 @@
 import { PageSection, Stack } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import {
-    applicationsState,
-    argoApplicationsState,
-    managedClusterInfosState,
-    policyreportState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -152,6 +145,8 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 
 export default function OverviewPage() {
     const { t } = useTranslation()
+    const { applicationsState, argoApplicationsState, managedClusterInfosState, policyreportState, usePolicies } =
+        useSharedAtoms()
     const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
@@ -312,25 +307,29 @@ export default function OverviewPage() {
         let overviewSummary = [
             {
                 isLoading: !apps || !argoApps,
-                description: 'Applications',
+                description: t('Applications'),
                 count: [...apps, ...argoApps].length || 0,
                 href: buildSummaryLinks('application', true),
             },
             {
                 isLoading: !clusters,
-                description: 'Clusters',
+                description: t('Clusters'),
                 count: selectedClusterNames.length > 0 ? selectedClusterNames.length : clusters.length || 0,
                 href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
             },
             {
                 isLoading: kubernetesTypes?.size === null,
-                description: 'Kubernetes type',
+                description: t('Kubernetes type'),
                 count: kubernetesTypes?.size,
             },
-            { isLoading: regions?.size === null, description: 'Region', count: regions?.size },
+            {
+                isLoading: regions?.size === null,
+                description: t('Region'),
+                count: regions?.size,
+            },
             {
                 isLoading: nodeCount === null,
-                description: 'Nodes',
+                description: t('Nodes'),
                 count: nodeCount || 0,
                 href: buildSummaryLinks('node'),
             },
@@ -351,6 +350,7 @@ export default function OverviewPage() {
         regions?.size,
         searchError,
         selectedClusterNames.length,
+        t,
     ])
 
     const podData = useMemo(() => {
@@ -360,23 +360,23 @@ export default function OverviewPage() {
             selectedClusterNames.length > 0 ? `%20cluster%3A${selectedClusterNames.join(',')}` : ''
         return [
             {
-                key: 'Failed',
+                key: t('Failed'),
                 value: searchResult[2]?.count || 0,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CError%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled%2CCreateContainerError${urlClusterFilter}"}`,
             },
             {
-                key: 'Pending',
+                key: t('Pending'),
                 value: searchResult[1]?.count || 0,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting%2CContainerStatusUnknown${urlClusterFilter}"}`,
             },
             {
-                key: 'Running',
+                key: t('Running'),
                 value: searchResult[0]?.count || 0,
                 isPrimary: true,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
             },
         ]
-    }, [searchResult, selectedClusterNames])
+    }, [searchResult, selectedClusterNames, t])
 
     // TODO: Breaks url if length of selectedClustersFilter is too big.
     // Issue: https://github.com/open-cluster-management/backlog/issues/7087
@@ -388,39 +388,39 @@ export default function OverviewPage() {
     const complianceData = useMemo(() => {
         return [
             {
-                key: 'With violations',
+                key: t('With violations'),
                 value: nonCompliantClusters.size,
                 link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
             },
             {
-                key: 'Without violations',
+                key: t('Without violations'),
                 value: compliantClusters.length,
                 isPrimary: true,
                 link: buildClusterComplianceLinks(compliantClusters),
             },
         ]
-    }, [compliantClusters, nonCompliantClusters])
+    }, [compliantClusters, nonCompliantClusters, t])
 
     const clusterData = useMemo(() => {
         return [
             {
-                key: 'Offline',
+                key: t('Offline'),
                 value: offline,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
             },
             {
-                key: 'Ready',
+                key: t('Ready'),
                 value: ready,
                 isPrimary: true,
                 link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
             },
         ]
-    }, [cloudLabelFilter, offline, ready])
+    }, [cloudLabelFilter, offline, ready, t])
 
     const policyReportData = useMemo(() => {
         return [
             {
-                key: 'Critical',
+                key: t('Critical'),
                 value: policyReportCriticalCount,
                 isPrimary: true,
                 link:
@@ -429,7 +429,7 @@ export default function OverviewPage() {
                         : undefined,
             },
             {
-                key: 'Important',
+                key: t('Important'),
                 value: policyReportImportantCount,
                 link:
                     policyReportImportantCount > 0
@@ -437,7 +437,7 @@ export default function OverviewPage() {
                         : undefined,
             },
             {
-                key: 'Moderate',
+                key: t('Moderate'),
                 value: policyReportModerateCount,
                 link:
                     policyReportModerateCount > 0
@@ -445,7 +445,7 @@ export default function OverviewPage() {
                         : undefined,
             },
             {
-                key: 'Low',
+                key: t('Low'),
                 value: policyReportLowCount,
                 link:
                     policyReportLowCount > 0
@@ -453,7 +453,7 @@ export default function OverviewPage() {
                         : undefined,
             },
         ]
-    }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount])
+    }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
 
     return (
         <AcmPage header={<AcmPageHeader title={t('Overview')} />}>
@@ -489,7 +489,7 @@ export default function OverviewPage() {
                         <Stack hasGutter>
                             <AcmMasonry minSize={400} maxColumns={searchError ? 3 : 4}>
                                 <AcmDonutChart
-                                    title="Cluster violations"
+                                    title={t('Cluster violations')}
                                     description={t('Overview of policy violation status')}
                                     loading={!complianceData}
                                     data={complianceData}
@@ -500,7 +500,7 @@ export default function OverviewPage() {
                                 />
                                 {!searchError ? (
                                     <AcmDonutChart
-                                        title="Pods"
+                                        title={t('Pods')}
                                         description={t('Overview of pod count and status')}
                                         loading={searchLoading}
                                         data={podData}
@@ -512,7 +512,7 @@ export default function OverviewPage() {
                                     />
                                 ) : undefined}
                                 <AcmDonutChart
-                                    title="Cluster status"
+                                    title={t('Cluster status')}
                                     description={t('Overview of cluster status')}
                                     loading={!clusterData}
                                     data={clusterData}
@@ -522,7 +522,7 @@ export default function OverviewPage() {
                                     ]}
                                 />
                                 <AcmDonutChart
-                                    title="Cluster issues"
+                                    title={t('Cluster issues')}
                                     description={t('Overview of cluster issues')}
                                     loading={!policyReportData}
                                     data={policyReportData}

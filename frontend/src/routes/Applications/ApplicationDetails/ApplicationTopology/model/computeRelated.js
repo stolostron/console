@@ -27,10 +27,13 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     }
     const { related } = mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0]))
     // store cluster objects and cluster names as returned by search; these are clusters related to the app
+    const eqIgnoreCase = R.curry((a, b) => String(a).toLowerCase() === String(b).toLowerCase())
+
     const clustersObjects = getResourcesClustersForApp(
-        R.find(R.propEq('kind', 'cluster'))(related) || {},
+        R.find(R.propSatisfies(eqIgnoreCase('cluster'), 'kind'))(related) || {},
         topology.nodes
     )
+
     const clusterNamesList = R.sortBy(R.identity)(R.pluck('name')(clustersObjects))
     if (topology.nodes) {
         const appNode =
@@ -67,7 +70,11 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             remoteCount: isLocal ? appNodeSearchClusters.length - 1 : appNodeSearchClusters.length,
         })
     }
-    const podIndex = _.findIndex(related, ['kind', 'pod'])
+    let podIndex = _.findIndex(related, ['kind', 'pod'])
+    // Also need to check uppercase due to search inconsistency
+    if (podIndex === -1) {
+        podIndex = _.findIndex(related, ['kind', 'Pod'])
+    }
     //move pods last in the related to be processed after all resources producing pods have been processed
     //we want to add the pods to the map by using the pod hash
     let orderedList =
@@ -75,12 +82,14 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             ? related
             : _.concat(_.slice(related, 0, podIndex), _.slice(related, podIndex + 1), related[podIndex])
     orderedList = _.pullAllBy(orderedList, [{ kind: 'deployable' }, { kind: 'cluster' }], 'kind')
+    // Need to do it again for uppercase
+    orderedList = _.pullAllBy(orderedList, [{ kind: 'Deployable' }, { kind: 'Cluster' }], 'kind')
     orderedList.forEach((kindArray) => {
         const relatedKindList = R.pathOr([], ['items'])(kindArray)
         for (let i = 0; i < relatedKindList.length; i++) {
             const { kind, cluster } = relatedKindList[i]
 
-            if (kind === 'replicaset' && relatedKindList[i].desired === 0) {
+            if (kind.toLowerCase() === 'replicaset' && relatedKindList[i].desired === 0) {
                 // skip old replicasets
                 continue
             }
@@ -104,7 +113,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             )
 
             if (
-                kind === 'subscription' &&
+                kind.toLowerCase() === 'subscription' &&
                 cluster === 'local-cluster' &&
                 _.get(relatedKindList[i], 'localPlacement', '') === 'true' &&
                 _.endsWith(resourceName, '-local')
@@ -117,7 +126,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                 const replacedType = type === 'project' ? 'namespace' : type
                 if (specs.resources) {
                     if (
-                        replacedType === relatedKindList[i].kind &&
+                        replacedType === relatedKindList[i].kind.toLowerCase() &&
                         (specs.clustersNames || []).includes(relatedKindList[i].cluster)
                     ) {
                         return (
@@ -130,9 +139,9 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                     }
                 } else {
                     return (
-                        (kind === 'subscription' ? name === resourceName : name === nameNoHash) &&
+                        (kind.toLowerCase() === 'subscription' ? name === resourceName : name === nameNoHash) &&
                         namespace === relatedKindList[i].namespace &&
-                        replacedType === relatedKindList[i].kind &&
+                        replacedType === relatedKindList[i].kind.toLowerCase() &&
                         ((specs.clustersNames || []).includes(relatedKindList[i].cluster) ||
                             (specs.searchClusters || []).find((cls) => cls.name === relatedKindList[i].cluster) ||
                             relatedKindList[i].cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
@@ -148,28 +157,6 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     // need to preprocess and sync up podStatusMap for controllerrevision to parent
     syncControllerRevisionPodStatusMap(resourceMap)
     return resourceMap
-}
-
-export const getExistingResourceMapKey = (resourceMap, name, relatedKind) => {
-    // bofore loop, find all items with the same type as relatedKind
-    const isSameType = (item) => item.indexOf(`${relatedKind.kind}-`) === 0
-    const keys = R.filter(isSameType, Object.keys(resourceMap))
-    const relatedKindCls = _.get(relatedKind, 'cluster', '')
-    let i
-    for (i = 0; i < keys.length; i++) {
-        const keyObject = resourceMap[keys[i]]
-        const keyObjType = _.get(keyObject, 'type', '')
-        const keyObjName = _.get(keyObject, 'name', '')
-        if (
-            (keys[i].indexOf(name) > -1 && keys[i].indexOf(relatedKindCls) > -1) || //node id doesn't contain cluster name, match cluster using the object type
-            (_.includes(_.get(keyObject, 'specs.clustersNames', []), relatedKindCls) &&
-                name === `${keyObjType}-${keyObjName}-${relatedKindCls}`)
-        ) {
-            return keys[i]
-        }
-    }
-
-    return null
 }
 
 export const mapSingleApplication = (application) => {

@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    normalizeRepoType,
-    groupByRepoType,
-    getClusterCountString,
-    getResourceType,
-    getResourceLabel,
-    getAge,
-    getSearchLink,
-    getShortDateTime,
-    getEditLink,
-} from './resource-helper'
 import i18next from 'i18next'
 import moment from 'moment'
 import { ArgoApplicationDefinition } from '../../../resources'
+import {
+    getAge,
+    getClusterCountString,
+    getEditLink,
+    getResourceLabel,
+    getResourceType,
+    getSearchLink,
+    getShortDateTime,
+    groupByRepoType,
+    normalizeRepoType,
+} from './resource-helper'
 
 const t = i18next.t.bind(i18next)
 jest.mock('react-i18next', () => ({
@@ -227,7 +227,7 @@ describe('getEditLink', () => {
                 },
             })
         ).toEqual(
-            '/multicloud/home/search/resources?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
+            '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
         )
     })
 })

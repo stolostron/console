@@ -1,17 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
 import {
-    AboutModal,
     ApplicationLauncher,
-    ApplicationLauncherGroup,
     ApplicationLauncherItem,
-    ApplicationLauncherSeparator,
-    Button,
-    Dropdown,
-    DropdownItem,
-    DropdownToggle,
     Nav,
     NavExpandable,
     NavItem,
@@ -22,46 +14,25 @@ import {
     PageHeaderToolsGroup,
     PageHeaderToolsItem,
     PageSidebar,
-    Spinner,
-    TextContent,
-    TextList,
-    TextListItem,
     Title,
-    Truncate,
 } from '@patternfly/react-core'
-import {
-    CaretDownIcon,
-    CodeIcon,
-    CogsIcon,
-    OpenshiftIcon,
-    PlusCircleIcon,
-    QuestionCircleIcon,
-    RedhatIcon,
-} from '@patternfly/react-icons'
-import {
-    AcmIcon,
-    AcmIconVariant,
-    AcmTablePaginationContextProvider,
-    AcmToastGroup,
-    AcmToastProvider,
-} from './ui-components'
-import { t } from 'i18next'
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { CaretDownIcon } from '@patternfly/react-icons'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
-import ACMPerspectiveIcon from './assets/ACM-icon.svg'
-import logo from './assets/RHACM-Logo.svg?url'
-import { LoadData, logout } from './atoms'
+import { logout } from './logout'
 import { LoadingPage } from './components/LoadingPage'
-import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
-import { DOC_HOME } from './lib/doc-util'
+import './lib/test-shots'
 import './lib/i18n'
-import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { setLightTheme, ThemeSwitcher } from './theme'
-import { checkOCPVersion, launchToOCP } from './lib/ocp-utils'
+import { usePluginDataContextValue } from './lib/PluginDataContext'
+import { PluginDataContextProvider } from './components/PluginDataContextProvider'
+import { LoadPluginData } from './components/LoadPluginData'
+import { Truncate } from './components/Truncate'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -120,38 +91,6 @@ function UserDropdownToggle() {
     )
 }
 
-type AboutDropdownProps = {
-    aboutClick: () => void
-}
-function AboutDropdown(props: AboutDropdownProps) {
-    const [aboutDDIsOpen, aboutDDSetOpen] = useState<boolean>(false)
-
-    function DocsButton() {
-        return <ApplicationLauncherItem href={DOC_HOME}>Documentation</ApplicationLauncherItem>
-    }
-    function AboutButton() {
-        return (
-            <ApplicationLauncherItem component="button" onClick={() => props.aboutClick()}>
-                About
-            </ApplicationLauncherItem>
-        )
-    }
-
-    return (
-        <ApplicationLauncher
-            aria-label={t('About dropdown')}
-            data-test="about-dropdown"
-            onSelect={() => aboutDDSetOpen(false)}
-            onToggle={() => aboutDDSetOpen(!aboutDDIsOpen)}
-            isOpen={aboutDDIsOpen}
-            items={[<DocsButton key="docs" />, <AboutButton key="about_modal_button" />]}
-            data-quickstart-id="qs-masthead-helpmenu"
-            position="right"
-            toggleIcon={<QuestionCircleIcon />}
-        />
-    )
-}
-
 function UserDropdown() {
     const [userIsOpen, userSetOpen] = useState<boolean>(false)
 
@@ -199,76 +138,6 @@ function UserDropdown() {
         />
     )
 }
-
-function AboutModalVersion() {
-    const [version, setVersion] = useState<string | undefined>()
-
-    useEffect(() => {
-        getMCHVersion().promise.then((result) => setVersion(result?.mchVersion))
-    }, [])
-
-    return <span className="version-details__no">{version ? version : <Spinner size="md" />}</span>
-}
-
-function AboutContent() {
-    return (
-        <TextContent>
-            <TextList component="dl">
-                <TextListItem component="dt">ACM Version</TextListItem>
-                <TextListItem component="dd">
-                    <AboutModalVersion />
-                </TextListItem>
-            </TextList>
-        </TextContent>
-    )
-}
-
-const useStyles = makeStyles({
-    about: {
-        height: 'min-content',
-    },
-    perspective: {
-        // 'font-size': '$co-side-nav-font-size',
-        // 'justify-content': 'space-between',
-        width: '100%',
-        padding: 0,
-        color: 'var(--pf-global--Color--light-100)',
-        minHeight: '24px',
-
-        '& .pf-c-dropdown__toggle-icon': {
-            // color: 'var(--pf-global--Color--light-100)',
-            // 'font-size': '$co-side-nav-section-font-size',
-            // 'margin-right': 'var(--pf-c-dropdown__toggle-icon--MarginRight)',
-            // 'margin-left': 'var(--pf-c-dropdown__toggle-icon--MarginLeft)',
-            // 'line-height': 'var(--pf-c-dropdown__toggle-icon--LineHeight)',
-        },
-
-        // '& .pf-c-dropdown__menu-item': {
-        //     'padding-left': '7px',
-        //     '& h2': {
-        //         'font-size': '12px',
-        //         'padding-left': '7px',
-        //     },
-        // },
-
-        '& .pf-c-title': {
-            // color: 'var(--pf-global--Color--light-100)',
-            // 'font-family': 'var(--pf-global--FontFamily--sans-serif)',
-            '& .oc-nav-header__icon': {
-                'margin-right': 'var(--pf-global--spacer--sm)',
-                'vertical-align': '-0.125em',
-            },
-            // '& h2': {
-            //     'font-size': '$co-side-nav-section-font-size',
-            // 'font-family': 'var(--pf-global--FontFamily--sans-serif)',
-            // },
-        },
-
-        '&::before': {
-            border: 'none',
-        },
-    },
-})
 
 export default function App() {
     const routes: (IRoute | IRouteGroup)[] = useMemo(
@@ -351,44 +220,52 @@ export default function App() {
         }
     }, [])
 
+    const pluginDataContextValue = usePluginDataContextValue()
+
     return (
-        <BrowserRouter>
-            <Page
-                header={<AppHeader />}
-                sidebar={<AppSidebar routes={routes} />}
-                isManagedSidebar
-                defaultManagedSidebarIsOpen={true}
-                style={{ height: '100vh' }}
-            >
-                <LoadData>
-                    <AcmToastProvider>
-                        <AcmToastGroup />
-                        <AcmTablePaginationContextProvider localStorageKey="clusters">
-                            <Suspense fallback={<LoadingPage />}>
-                                <Switch>
-                                    {routes.map((route) =>
-                                        route.type === 'group' ? (
-                                            route.routes.map((route) => (
+        <PluginDataContextProvider value={pluginDataContextValue}>
+            <BrowserRouter>
+                <Page
+                    header={<AppHeader />}
+                    sidebar={<AppSidebar routes={routes} />}
+                    isManagedSidebar
+                    defaultManagedSidebarIsOpen={true}
+                    style={{ height: '100vh' }}
+                >
+                    <LoadPluginData>
+                        <AcmToastProvider>
+                            <AcmToastGroup />
+                            <AcmTablePaginationContextProvider localStorageKey="clusters">
+                                <Suspense fallback={<LoadingPage />}>
+                                    <Switch>
+                                        {routes.map((route) =>
+                                            route.type === 'group' ? (
+                                                route.routes.map((route) => (
+                                                    <Route
+                                                        key={route.title}
+                                                        path={route.route}
+                                                        component={route.component}
+                                                    />
+                                                ))
+                                            ) : (
                                                 <Route
                                                     key={route.title}
                                                     path={route.route}
                                                     component={route.component}
                                                 />
-                                            ))
-                                        ) : (
-                                            <Route key={route.title} path={route.route} component={route.component} />
-                                        )
-                                    )}
-                                    <Route path="*">
-                                        <Redirect to={NavigationPath.welcome} />
-                                    </Route>
-                                </Switch>
-                            </Suspense>
-                        </AcmTablePaginationContextProvider>
-                    </AcmToastProvider>
-                </LoadData>
-            </Page>
-        </BrowserRouter>
+                                            )
+                                        )}
+                                        <Route path="*">
+                                            <Redirect to={NavigationPath.welcome} />
+                                        </Route>
+                                    </Switch>
+                                </Suspense>
+                            </AcmTablePaginationContextProvider>
+                        </AcmToastProvider>
+                    </LoadPluginData>
+                </Page>
+            </BrowserRouter>
+        </PluginDataContextProvider>
     )
 }
 
@@ -404,97 +281,6 @@ function AppHeader() {
             }
         }
     }, [isFullWidthPage])
-    const [aboutModalOpen, setAboutModalOpen] = useState<boolean>(false)
-    const [appSwitcherExists, setAppSwitcherExists] = useState<boolean>(true)
-
-    const classes = useStyles()
-
-    function OCPButton() {
-        return (
-            <ApplicationLauncherItem
-                key="ocp_launch"
-                isExternal
-                icon={<OpenshiftIcon style={{ color: '#EE0000' }} />}
-                component="button"
-                onClick={() => launchToOCP('', true)}
-            >
-                Red Hat Openshift Container Platform
-            </ApplicationLauncherItem>
-        )
-    }
-
-    function AppSwitcherTopBar() {
-        const [extraItems, setExtraItems] = useState<Record<string, [IAppSwitcherData]>>({})
-        const [appSwitcherOpen, setAppSwitcherOpen] = useState<boolean>(false)
-
-        useEffect(() => {
-            const appLinks = getApplinks()
-            appLinks.promise
-                .then((payload) => {
-                    setExtraItems(payload.data)
-                })
-                .catch((error) => {
-                    // eslint-disable-next-line no-console
-                    console.error(error)
-                    setExtraItems({})
-                })
-        }, [])
-
-        const extraMenuItems = []
-        let count = 0
-        for (const section in extraItems) {
-            extraMenuItems.push(
-                <ApplicationLauncherGroup label={section} key={section}>
-                    {extraItems[section].map((sectionItem) => (
-                        <ApplicationLauncherItem
-                            key={sectionItem.name + '-launcher'}
-                            isExternal
-                            icon={<img src={sectionItem.icon} />}
-                            component="button"
-                            onClick={() => window.open(sectionItem.url, '_blank')}
-                        >
-                            {sectionItem.name}
-                        </ApplicationLauncherItem>
-                    ))}
-                    {count < Object.keys(extraItems).length - 1 && <ApplicationLauncherSeparator key="separator" />}
-                </ApplicationLauncherGroup>
-            )
-            count = count + 1
-        }
-        return (
-            <ApplicationLauncher
-                hidden={appSwitcherExists}
-                aria-label={t('Application menu')}
-                data-test="app-dropdown"
-                onSelect={() => setAppSwitcherOpen(false)}
-                onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
-                isOpen={appSwitcherOpen}
-                items={[
-                    <ApplicationLauncherGroup label="Red Hat applications" key="ocp-group">
-                        <OCPButton />
-                        <ApplicationLauncherItem
-                            key="app_launch"
-                            isExternal
-                            icon={<AcmIcon icon={AcmIconVariant.redhat} />}
-                            component="button"
-                            onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
-                        >
-                            Openshift Cluster Manager
-                        </ApplicationLauncherItem>
-                        {Object.keys(extraItems).length > 0 && <ApplicationLauncherSeparator key="separator" />}
-                    </ApplicationLauncherGroup>,
-                    ...extraMenuItems,
-                ]}
-                data-quickstart-id="qs-masthead-appmenu"
-                position="right"
-                // style={{ verticalAlign: '0.125em' }}
-            />
-        )
-    }
-
-    useEffect(() => {
-        checkOCPVersion(setAppSwitcherExists)
-    }, [])
 
     const headerTools = (
         <PageHeaderTools>
@@ -509,29 +295,6 @@ function AppHeader() {
                         <ThemeSwitcher />
                     </PageHeaderToolsItem>
                 )}
-                <PageHeaderToolsItem>
-                    <AppSwitcherTopBar />
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
-                    <Button
-                        aria-label={t('Add new resource')}
-                        onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
-                        variant="plain"
-                        icon={<PlusCircleIcon />}
-                    />
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
-                    <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
-                    <AboutModal
-                        isOpen={aboutModalOpen}
-                        onClose={() => setAboutModalOpen(!aboutModalOpen)}
-                        brandImageSrc={logo}
-                        brandImageAlt="ACM logo"
-                        className={classes.about}
-                    >
-                        <AboutContent />
-                    </AboutModal>
-                </PageHeaderToolsItem>
             </PageHeaderToolsGroup>
             <PageHeaderToolsGroup>
                 <PageHeaderToolsItem>
@@ -545,13 +308,12 @@ function AppHeader() {
         <PageHeader
             logo={
                 <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
-                    <RedhatIcon size="lg" style={{ color: '#EE0000', marginTop: -8 }} />
                     <div style={{ color: 'white' }}>
                         <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                            Red Hat
+                            @stolostron/console
                         </Title>
                         <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-                            <Truncate content="Advanced Cluster Management for Kubernetes" />
+                            <Truncate content="Development Console" />
                         </Title>
                     </div>
                 </div>
@@ -567,64 +329,11 @@ function AppHeader() {
 function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
     const { routes } = props
     const location = useLocation()
-    const [open, setOpen] = useState(false)
-    const classes = useStyles()
-    const dropdownItems = [
-        <DropdownItem
-            icon={<ACMPerspectiveIcon />}
-            key="cluster-management"
-            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
-        >
-            Advanced Cluster Management
-        </DropdownItem>,
-        <DropdownItem
-            icon={<CogsIcon />}
-            key="administrator"
-            onClick={() => launchToOCP('?perspective=admin', false)}
-            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
-        >
-            Administrator
-        </DropdownItem>,
-        <DropdownItem
-            icon={<CodeIcon />}
-            key="developer"
-            onClick={() => launchToOCP('?perspective=dev', false)}
-            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
-        >
-            Developer
-        </DropdownItem>,
-    ]
-    const onToggle = useCallback(() => {
-        setOpen((open) => !open)
-    }, [])
-    const onSelect = useCallback(() => {
-        setOpen((open) => !open)
-    }, [])
     return (
         <PageSidebar
             nav={
                 <Nav>
                     <NavList>
-                        <NavItem>
-                            <Dropdown
-                                onSelect={onSelect}
-                                toggle={
-                                    <DropdownToggle
-                                        id="toggle-id"
-                                        onToggle={onToggle}
-                                        className={classes.perspective}
-                                        icon={<ACMPerspectiveIcon />}
-                                        style={{ fontSize: 'small', backgroundColor: 'transparent' }}
-                                    >
-                                        Advanced Cluster Management
-                                    </DropdownToggle>
-                                }
-                                isOpen={open}
-                                dropdownItems={dropdownItems}
-                                width="100%"
-                            />
-                        </NavItem>
-                        {/* <NavItemSeparator style={{ marginTop: 0 }} /> */}
                         {routes.map((route) =>
                             route.type === 'group' ? (
                                 <NavExpandable
@@ -648,7 +357,6 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                     </NavList>
                 </Nav>
             }
-            // className="sidebar"
         />
     )
 }

@@ -3,23 +3,12 @@ import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '../../../wizards/PolicySet/PolicySetWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementBindingsState,
-    placementRulesState,
-    placementsState,
-    policySetsState,
-    usePolicies,
-} from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
+import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import schema from './schema.json'
@@ -27,9 +16,10 @@ import schema from './schema.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
-            editorTitle={'Policy set YAML'}
+            editorTitle={t('Policy set YAML')}
             variant="toolbar"
             resources={resources}
             schema={schema}
@@ -50,6 +40,17 @@ export function EditPolicySet() {
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
+    const {
+        managedClusterSetBindingsState,
+        managedClusterSetsState,
+        managedClustersState,
+        namespacesState,
+        placementBindingsState,
+        placementRulesState,
+        placementsState,
+        policySetsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [policySets] = useRecoilState(policySetsState)
     const [namespaces] = useRecoilState(namespacesState)

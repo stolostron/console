@@ -19,6 +19,7 @@ const config: Config.InitialOptions = {
         '@console/*': '<rootDir>/__mocks__/dummy.ts',
     },
     watchAll: false,
+    slowTestThreshold: 30,
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
     globals: {
@@ -36,7 +37,7 @@ const config: Config.InitialOptions = {
         '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*)',
+        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
     ],
     ci: true,
     collectCoverage: true,
@@ -52,7 +53,8 @@ const config: Config.InitialOptions = {
         '!<rootDir>/node_modules/**',
     ],
     reporters: ['default'],
-    bail: true,
+    verbose: true,
+    bail: false,
 }
 
 export default config

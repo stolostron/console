@@ -71,24 +71,11 @@ const helmRepositoryIndexMock: HelmRepoIndex = {
   generated: '2022-09-23T14:42:54.245748+02:00',
 };
 
-const HCRModelMock = {
-  kind: 'HelmChartRepository',
-  namespaced: false,
-  verbs: ['delete', 'deletecollection', 'get', 'list', 'patch', 'create', 'update', 'watch'],
-  label: 'Helm Chart Repository',
-  plural: 'helmchartrepositories',
-  apiVersion: 'v1beta1',
-  abbr: 'HCR',
-  apiGroup: 'helm.openshift.io',
-  labelPlural: 'Helm Chart Repositories',
-  path: 'helmchartrepositories',
-  id: 'helmchartrepository',
-  crd: true,
-};
-
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const MockComponent = require('../mocks/MockComponent').default;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const HCRModelMock = require('../mocks/MockComponent').HCRModelMock;
   return {
     ResourceLink: MockComponent,
     useK8sModel: jest.fn().mockReturnValue([HCRModelMock]),

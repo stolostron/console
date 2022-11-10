@@ -23,15 +23,14 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 
 export default function PolicySetCard(props: {
@@ -60,7 +59,7 @@ export default function PolicySetCard(props: {
                 <Stack>
                     {policySet.metadata.name}
                     <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-                        {`Namespace: ${policySet.metadata.namespace}`}
+                        {`${t('Namespace')}: ${policySet.metadata.namespace}`}
                     </div>
                 </Stack>
             ),
@@ -169,7 +168,7 @@ export default function PolicySetCard(props: {
                         <Stack>
                             {policySet.metadata.name}
                             <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-                                {`Namespace: ${policySet.metadata.namespace}`}
+                                {t('Namespace: {{namespace}}', { namespace: policySet.metadata.namespace })}
                             </div>
                         </Stack>
                     </CardTitle>
@@ -203,7 +202,11 @@ export default function PolicySetCard(props: {
                                     {policySet.status?.statusMessage && (
                                         <div>
                                             {policySet.status?.statusMessage.split(';').map((statusMes) => (
-                                                <DescriptionListDescription>{statusMes}</DescriptionListDescription>
+                                                <DescriptionListDescription
+                                                    key={`${policySet.metadata.name}-${statusMes}`}
+                                                >
+                                                    {statusMes}
+                                                </DescriptionListDescription>
                                             ))}
                                         </div>
                                     )}
@@ -226,6 +229,7 @@ function DeletePolicySetModal(props: {
     const { t } = useTranslation()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
+    const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementBindings] = useRecoilState(placementBindingsState)
@@ -277,8 +281,10 @@ function DeletePolicySetModal(props: {
         >
             <Stack hasGutter>
                 <StackItem>
-                    {t(`Removing ${props.item.metadata.name} is irreversible. Select any associated resources that need to be
-            deleted in addition to ${props.item.metadata.name}.`)}
+                    {t(
+                        'Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.',
+                        { name: props.item.metadata.name }
+                    )}
                 </StackItem>
                 <StackItem>
                     <Checkbox

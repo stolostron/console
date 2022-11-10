@@ -1,14 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react';
-import {
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
-  Skeleton,
-  Title,
-} from '@patternfly/react-core';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
-import { useTranslation } from '../../../../lib/acm-i18next';
+import { Skeleton } from '@patternfly/react-core';
+import ErrorState from './ErrorState';
 
 type TableLoaderProps = {
   children: React.ReactNode;
@@ -27,7 +20,6 @@ function TableLoader({
   errorMessage,
   children,
 }: TableLoaderProps) {
-  const { t } = useTranslation();
   if (!loaded) {
     return (
       <div id="table-skeleton">
@@ -47,13 +39,12 @@ function TableLoader({
   }
   if (error) {
     return (
-      <EmptyState id={errorId ?? 'error'}>
-        <EmptyStateIcon icon={ExclamationCircleIcon} />
-        <Title size="lg" headingLevel="h4">
-          {errorTitle ?? t('Something went wrong')}
-        </Title>
-        {errorMessage && <EmptyStateBody>{errorMessage}</EmptyStateBody>}
-      </EmptyState>
+      <ErrorState
+        error={error}
+        errorId={errorId}
+        errorTitle={errorTitle}
+        errorMessage={errorMessage}
+      ></ErrorState>
     );
   }
   return <>{children}</>;

@@ -1,5 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { List, ListItem, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useContext, useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
+import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
+import { FormData, Section } from '../../../../../../components/AcmFormData'
+import { RbacButton } from '../../../../../../components/Rbac'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { rbacCreate } from '../../../../../../lib/rbac-util'
+import { validateJSON } from '../../../../../../lib/validation'
+import { NavigationPath } from '../../../../../../NavigationPath'
 import {
     Broker,
     BrokerApiVersion,
@@ -34,19 +47,6 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '../../../../../../ui-components'
-import { List, ListItem, PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
-import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
-import { FormData, Section } from '../../../../../../components/AcmFormData'
-import { RbacButton } from '../../../../../../components/Rbac'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { validateJSON } from '../../../../../../lib/validation'
-import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 
@@ -149,7 +149,7 @@ export function InstallSubmarinerFormPage() {
 }
 
 // supported providers for creating a SubmarinerConfig resource
-const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware]
+const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware, Provider.azure]
 
 // used to try to auto-detect the provider secret in the cluster namespace
 const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | undefined> = {
@@ -184,11 +184,20 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
 
     const [gcServiceAccountKeys, setGcServiceAccountKeys] = useState<Record<string, any>>({})
 
+    const [baseDomainResourceGroupNames, setBaseDomainResourceGroupNames] = useState<
+        Record<string, string | undefined>
+    >({})
+    const [clientIds, setClientIds] = useState<Record<string, string | undefined>>({})
+    const [clientSecrets, setClientSecrets] = useState<Record<string, string | undefined>>({})
+    const [subscriptionIds, setSubscriptionIds] = useState<Record<string, string | undefined>>({})
+    const [tenantIds, setTenantIds] = useState<Record<string, string | undefined>>({})
+
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
     const [nattEnables, setNattEnables] = useState<Record<string, boolean>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
+    const [azInstanceTypes, setAzInstanceTypes] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
 
@@ -286,6 +295,19 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         secret.stringData!['aws_secret_access_key'] = awsSecretAccessKeyIDs[cluster.displayName!]! || ''
                     } else if (cluster.provider === Provider.gcp) {
                         secret.stringData!['osServiceAccount.json'] = gcServiceAccountKeys[cluster.displayName!]! || ''
+                    } else if (cluster.provider === Provider.azure) {
+                        const clientid = clientIds[cluster.displayName!]! || ''
+                        const clientSecret = clientSecrets[cluster.displayName!]! || ''
+                        const tenantid = tenantIds[cluster.displayName!]! || ''
+                        const subscriptionid = subscriptionIds[cluster.displayName!]! || ''
+                        secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
+                            clientid,
+                            clientSecret,
+                            tenantid,
+                            subscriptionid,
+                        })
+                        secret.stringData!['baseDomainResourceGroupName'] =
+                            baseDomainResourceGroupNames[cluster.displayName!]! || ''
                     }
 
                     resources.push(secret)
@@ -327,6 +349,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     submarinerConfig.spec.gatewayConfig!.aws = {
                         instanceType: awsInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.awsInstanceType,
                     }
+                } else if (cluster.provider === Provider.azure) {
+                    submarinerConfig.spec.gatewayConfig!.azure = {
+                        instanceType:
+                            azInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.azureInstanceType,
+                    }
                 }
                 resources.push(submarinerConfig)
             } else {
@@ -367,6 +394,18 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 spec: {
                     gatewayConfig: {
                         gateways: 0,
+                        aws: {
+                            instanceType: '',
+                        },
+                        gcp: {
+                            instanceType: '',
+                        },
+                        azure: {
+                            instanceType: '',
+                        },
+                        rhos: {
+                            instanceType: '',
+                        },
                     },
                     IPSecNATTPort: 0,
                     NATTEnable: false,
@@ -486,7 +525,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         >
                                             <List>
                                                 {withoutSubmarinerConfigClusters.map((cluster) => (
-                                                    <ListItem>
+                                                    <ListItem key={cluster.displayName}>
                                                         {t(
                                                             'managed.clusterSets.submariner.addons.config.notSupported.provider',
                                                             { clusterName: cluster.displayName! }
@@ -584,7 +623,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     isHidden:
                                         providerSecretMap[clusterName] === null || cluster.provider === Provider.vmware,
                                     isRequired:
-                                        [Provider.aws, Provider.gcp].includes(cluster.provider!) &&
+                                        [Provider.aws, Provider.gcp, Provider.azure].includes(cluster.provider!) &&
                                         providerSecretMap[clusterName] !== null,
                                     isDisabled: providerSecretMap[clusterName] !== null,
                                     onChange: () => {},
@@ -644,17 +683,127 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     isSecret: true,
                                 },
                                 {
+                                    id: 'baseDomainResourceGroupName',
+                                    type: 'Text',
+                                    label: t('Base domain resource group name'),
+                                    placeholder: t('Enter your base domain resource group name'),
+                                    labelHelp: t(
+                                        'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
+                                    ),
+                                    value: baseDomainResourceGroupNames[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...baseDomainResourceGroupNames }
+                                        copy[clusterName] = value
+                                        setBaseDomainResourceGroupNames(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.azure || providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                                },
+                                {
+                                    id: 'clientId',
+                                    type: 'Text',
+                                    label: t('Client ID'),
+                                    placeholder: t('Enter your client ID'),
+                                    labelHelp: t(
+                                        "Your client ID. This value is generated as the 'appId' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                                    ),
+                                    value: clientIds[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...clientIds }
+                                        copy[clusterName] = value
+                                        setClientIds(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.azure || providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                                },
+                                {
+                                    id: 'clientSecret',
+                                    type: 'Text',
+                                    label: t('Client secret'),
+                                    placeholder: t('Enter your client secret'),
+                                    labelHelp: t(
+                                        "Your client password. This value is generated as the 'password' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                                    ),
+                                    value: clientSecrets[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...clientSecrets }
+                                        copy[clusterName] = value
+                                        setClientSecrets(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.azure || providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                                    isSecret: true,
+                                },
+                                {
+                                    id: 'subscriptionId',
+                                    type: 'Text',
+                                    label: t('Subscription ID'),
+                                    placeholder: t('Enter your subscription ID'),
+                                    labelHelp: t(
+                                        "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'"
+                                    ),
+                                    value: subscriptionIds[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...subscriptionIds }
+                                        copy[clusterName] = value
+                                        setSubscriptionIds(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.azure || providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                                },
+                                {
+                                    id: 'tenantId',
+                                    type: 'Text',
+                                    label: t('Tenant ID'),
+                                    placeholder: t('Enter your tenant ID'),
+                                    labelHelp: t(
+                                        "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'"
+                                    ),
+                                    value: tenantIds[clusterName] ?? '',
+                                    onChange: (value: string) => {
+                                        const copy = { ...tenantIds }
+                                        copy[clusterName] = value
+                                        setTenantIds(copy)
+                                    },
+                                    isHidden:
+                                        cluster.provider !== Provider.azure || providerSecretMap[clusterName] !== null,
+                                    isRequired:
+                                        cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                                },
+                                {
                                     id: 'aws-instance-type',
                                     type: 'Text',
                                     label: t('submariner.install.form.instancetype'),
                                     placeholder: t('submariner.install.form.instancetype.placeholder'),
-                                    labelHelp: t('submariner.install.form.instancetype.labelHelp'),
+                                    labelHelp: t('submariner.install.form.instancetype.labelHelp.aws'),
                                     value: awsInstanceTypes[clusterName] ?? submarinerConfigDefault.awsInstanceType,
                                     isHidden: cluster.provider !== Provider.aws,
                                     onChange: (value) => {
                                         const copy = { ...awsInstanceTypes }
                                         copy[clusterName] = value
                                         setAwsInstanceTypes(copy)
+                                    },
+                                },
+                                {
+                                    id: 'az-instance-type',
+                                    type: 'Text',
+                                    label: t('submariner.install.form.instancetype'),
+                                    placeholder: t('submariner.install.form.instancetype.placeholder'),
+                                    labelHelp: t('submariner.install.form.instancetype.labelHelp.azure'),
+                                    value: azInstanceTypes[clusterName] ?? submarinerConfigDefault.azureInstanceType,
+                                    isHidden: cluster.provider !== Provider.azure,
+                                    onChange: (value) => {
+                                        const copy = { ...azInstanceTypes }
+                                        copy[clusterName] = value
+                                        setAzInstanceTypes(copy)
                                     },
                                 },
                                 {

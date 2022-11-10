@@ -39,10 +39,14 @@ import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const { getClusterProperties } = CIM
 
-export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
+export function ClusterOverviewPageContent(props: {
+    canGetSecret?: boolean
+    selectedHostedClusterResource?: HostedClusterK8sResource
+}) {
     const { cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
         useContext(ClusterContext)
     const { t } = useTranslation()
@@ -52,6 +56,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
 
     const renderControlPlaneType = () => {
         if (cluster?.name === 'local-cluster') {
+            return t('Hub')
+        }
+        if (cluster?.isRegionalHubCluster) {
+            if (cluster?.isHostedCluster || cluster?.isHypershift) {
+                return t('Hub, Hosted')
+            }
             return t('Hub')
         }
         if (cluster?.isHostedCluster || cluster?.isHypershift) {
@@ -112,7 +122,11 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             distribution: {
                 key: t('table.distribution'),
                 value: cluster?.distribution?.displayVersion && (
-                    <DistributionField cluster={cluster} clusterCurator={clusterCurator} />
+                    <DistributionField
+                        cluster={cluster}
+                        clusterCurator={clusterCurator}
+                        hostedCluster={hostedCluster}
+                    />
                 ),
             },
             channel: {
@@ -158,6 +172,40 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     </RbacButton>
                 ),
             },
+            acmDistribution: {
+                key: t('table.acm.distribution'),
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.version}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.distribution.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
+            },
+            acmChannel: {
+                key: t('table.acm.channel'),
+                value: (
+                    <span>
+                        {cluster?.acmDistribution?.channel}
+                        <Popover
+                            bodyContent={
+                                <Trans i18nKey="table.acm.channel.helperText" components={{ bold: <strong /> }} />
+                            }
+                        >
+                            <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                <OutlinedQuestionCircleIcon />
+                            </AcmButton>
+                        </Popover>
+                    </span>
+                ),
+            },
             labels: {
                 key: t('table.labels'),
                 value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
@@ -193,6 +241,21 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         iconPosition="right"
                     >
                         {cluster?.consoleURL}
+                    </AcmButton>
+                ),
+            },
+            acmConsoleUrl: {
+                key: t('table.acm.consoleUrl'),
+                value: cluster?.acmConsoleURL && (
+                    <AcmButton
+                        variant="link"
+                        isInline
+                        onClick={() => window.open(cluster.acmConsoleURL, '_blank')}
+                        tooltip={t('table.acm.consoleUrl.helperText')}
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                    >
+                        {cluster?.acmConsoleURL}
                     </AcmButton>
                 ),
             },
@@ -312,6 +375,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         ]
     }
 
+    if (cluster?.isRegionalHubCluster) {
+        leftItems.splice(7, 0, clusterProperties.acmDistribution)
+        leftItems.splice(8, 0, clusterProperties.acmChannel)
+        rightItems.splice(2, 0, clusterProperties.acmConsoleUrl)
+    }
+
     let details = <ProgressStepBar />
     if (cluster?.provider === Provider.hostinventory) {
         if (cluster.isHypershift) {
@@ -351,7 +420,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 {cluster?.isHypershift && !cluster?.isHostedCluster ? (
-                    <HypershiftImportCommand />
+                    <HypershiftImportCommand selectedHostedClusterResource={props.selectedHostedClusterResource} />
                 ) : (
                     <ImportCommandContainer />
                 )}

@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { History, Location } from 'history'
+import { LocationDescriptor } from 'history'
+import { useMemo } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 
 export enum NavigationPath {
     // Console
@@ -14,6 +16,7 @@ export enum NavigationPath {
     // Home - Search
     search = '/multicloud/home/search',
     resources = '/multicloud/home/search/resources',
+    resourceYAML = '/multicloud/home/search/resources/yaml',
     resourceLogs = '/multicloud/home/search/resources/logs',
 
     // Infrastructure
@@ -22,9 +25,8 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Managed Clusters
     clusters = '/multicloud/infrastructure/clusters',
     managedClusters = '/multicloud/infrastructure/clusters/managed',
-    createInfrastructure = '/multicloud/infrastructure/clusters/create/infrastructure',
     createControlPlane = '/multicloud/infrastructure/clusters/create/control-plane',
-    createDicoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
+    createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
@@ -50,7 +52,6 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Cluster Pools
     clusterPools = '/multicloud/infrastructure/clusters/pools',
     createClusterPool = '/multicloud/infrastructure/clusters/pools/create',
-    createClusterPoolInfrastructure = '/multicloud/infrastructure/clusters/pools/create/infrastructure',
 
     // Infrastructure - Clusters - Discovery
     discoveredClusters = '/multicloud/infrastructure/clusters/discovered',
@@ -99,27 +100,77 @@ export enum NavigationPath {
     // Credentials
     credentials = '/multicloud/credentials',
     addCredentials = '/multicloud/credentials/create',
-    addCredentialsInfrastructure = '/multicloud/credentials/create/infrastructure',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 
     emptyPath = '',
 }
 
-export type CancelBackState = { cancelBack?: boolean }
-
-export function locationWithCancelBack(
-    pathname: History.Pathname,
-    search?: History.Search,
-    hash?: History.Hash
-): Location<CancelBackState> {
-    return { pathname, search: search || '', hash: hash || '', state: { cancelBack: true } }
+export type BackCancelState = {
+    /** Number of entries Back button can navigate back in history */
+    maxBackSteps?: number
+    /** Number of entries Cancel button should navigate back in history to get to starting point */
+    cancelSteps?: number
 }
 
-export function cancelNavigation(location: Location<CancelBackState>, history: History, pathname: string) {
-    if (location.state && location.state?.cancelBack) {
-        history.goBack()
-    } else {
-        history.push(pathname)
-    }
+export function createBackCancelLocation(
+    location: LocationDescriptor<BackCancelState>
+): LocationDescriptor<BackCancelState> {
+    const newState: BackCancelState = { maxBackSteps: 1, cancelSteps: 1 }
+    return typeof location === 'string'
+        ? { pathname: location, state: newState }
+        : {
+              ...location,
+              state: {
+                  ...(location?.state ? location.state : {}),
+                  ...newState,
+              },
+          }
+}
+
+export function useBackCancelNavigation(): {
+    nextStep: (location: LocationDescriptor<BackCancelState>) => () => void
+    back: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
+    cancel: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
+} {
+    const history = useHistory<BackCancelState>()
+    const { state } = useLocation<BackCancelState>()
+
+    return useMemo(
+        () => ({
+            nextStep: (newLocation) => () => {
+                const newState: BackCancelState = {
+                    maxBackSteps: state?.maxBackSteps ? state.maxBackSteps + 1 : 1, // when starting at an intermediate step, back can navigate to this point
+                    cancelSteps: state?.cancelSteps ? state.cancelSteps + 1 : 0, // when starting at an intermediate step, cancel should go to default
+                }
+                history.push(
+                    typeof newLocation === 'string'
+                        ? { pathname: newLocation, state: newState }
+                        : {
+                              ...newLocation,
+                              state: {
+                                  ...(state ? state : {}),
+                                  ...(newLocation.state ? newLocation.state : {}),
+                                  ...newState,
+                              },
+                          }
+                )
+            },
+            back: (defaultLocation) => () => {
+                if (state?.maxBackSteps) {
+                    history.goBack()
+                } else {
+                    history.push(defaultLocation)
+                }
+            },
+            cancel: (defaultLocation) => () => {
+                if (state?.cancelSteps) {
+                    history.go(-state.cancelSteps)
+                } else {
+                    history.push(defaultLocation)
+                }
+            },
+        }),
+        [history, state]
+    )
 }

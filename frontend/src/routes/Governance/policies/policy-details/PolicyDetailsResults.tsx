@@ -5,8 +5,7 @@ import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { namespacesState, policiesState } from '../../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -30,6 +29,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
     const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
+    const { namespacesState, policiesState } = useSharedAtoms()
     const [policies] = useRecoilState(policiesState)
     const [namespaces] = useRecoilState(namespacesState)
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
@@ -81,7 +81,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     const columns = useMemo(
         () => [
             {
-                header: 'Cluster',
+                header: t('Cluster'),
                 sort: 'clusterNamespace',
                 cell: (item: resultsTableData) => (
                     <Link
@@ -95,7 +95,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 search: (item: resultsTableData) => item.clusterNamespace,
             },
             {
-                header: 'Violations',
+                header: t('Violations'),
                 sort: (itemA: any, itemB: any) => {
                     const messageA = itemA.message ?? '-'
                     const compliantA = messageA && typeof messageA === 'string' ? messageA.split(';')[0] : '-'
@@ -133,13 +133,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 },
             },
             {
-                header: 'Template',
+                header: t('Template'),
                 sort: 'templateName',
                 cell: (item: resultsTableData) => item.templateName,
                 search: (item: resultsTableData) => item.templateName,
             },
             {
-                header: 'Message',
+                header: t('Message'),
                 sort: 'message',
                 cell: (item: resultsTableData) => {
                     const policyName = item?.policyName
@@ -194,13 +194,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 search: (item: resultsTableData) => item.message,
             },
             {
-                header: 'Last report',
+                header: t('Last report'),
                 sort: 'timestamp',
                 cell: (item: resultsTableData) =>
                     item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
             },
             {
-                header: 'History',
+                header: t('History'),
                 cell: (item: resultsTableData) => {
                     const policyName = item?.policyName
                     const policyNamespace = item?.policyNamespace

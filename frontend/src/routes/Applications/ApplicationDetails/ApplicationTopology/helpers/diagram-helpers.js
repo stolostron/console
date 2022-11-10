@@ -10,13 +10,13 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import R from 'ramda'
 import _ from 'lodash'
 import moment from 'moment'
+import R from 'ramda'
+import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
+import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
-import { getURLSearchData } from './diagram-helpers-argo'
-import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -270,7 +270,7 @@ export const createResourceURL = (node, t, isLogURL = false) => {
 
     if (!isLogURL) {
         return (
-            '/multicloud/home/search/resources?' +
+            '/multicloud/home/search/resources/yaml?' +
             encodeURIComponent(
                 `cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`
             )
@@ -290,7 +290,7 @@ export const removeReleaseGeneratedSuffix = (name) => {
 
 //for charts remove release name
 export const getNameWithoutChartRelease = (relatedKind, name, hasHelmReleases) => {
-    const kind = _.get(relatedKind, 'kind', '')
+    const kind = _.get(relatedKind, 'kind', '').toLowerCase()
     if (kind === 'subscription' || !hasHelmReleases.value) {
         return name //ignore subscription objects or objects where the name is not created from the _hostingDeployable
     }
@@ -358,15 +358,15 @@ export const getNameWithoutChartRelease = (relatedKind, name, hasHelmReleases) =
 }
 
 export const computeResourceName = (relatedKind, deployableName, name, isClusterGrouped) => {
-    if (relatedKind.kind === 'pod' && !_.get(relatedKind, '_hostingDeployable') && !deployableName) {
+    if (relatedKind.kind.toLowerCase() === 'pod' && !_.get(relatedKind, '_hostingDeployable') && !deployableName) {
         name = getNameWithoutPodHash(relatedKind).nameNoHash
     }
 
-    if (relatedKind.kind !== 'subscription') {
+    if (relatedKind.kind.toLowerCase() !== 'subscription') {
         //expect for subscriptions, use cluster name to group resources
         name = isClusterGrouped.value
-            ? `${relatedKind.kind}-${name}`
-            : `${relatedKind.kind}-${name}-${relatedKind.cluster}`
+            ? `${relatedKind.kind.toLowerCase()}-${name}`
+            : `${relatedKind.kind.toLowerCase()}-${name}-${relatedKind.cluster}`
     }
 
     return name
@@ -379,7 +379,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
     let deployableName = null
     let podTemplateHashLabelFound = false
 
-    if (_.get(relatedKind, 'kind', '') === 'helmrelease') {
+    if (_.get(relatedKind, 'kind', '').toLowerCase() === 'helmrelease') {
         //for helm releases use hosting deployable to match parent
         nameNoHash = _.get(relatedKind, '_hostingDeployable', nameNoHash)
     }
@@ -402,7 +402,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
                     podHash = hashValues[hashValues.length - 1]
                 }
                 nameNoHash = nameNoHash.split(`-${podHash}`)[0]
-                if (isControllerRevision && relatedKind.kind === 'pod') {
+                if (isControllerRevision && relatedKind.kind.toLowerCase() === 'pod') {
                     // need to remove additional pod suffix
                     nameNoHash = nameNoHash.substring(0, nameNoHash.lastIndexOf('-'))
                 }
@@ -418,7 +418,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
         }
     })
 
-    if (!podTemplateHashLabelFound && relatedKind.kind === 'pod' && relatedKind._ownerUID) {
+    if (!podTemplateHashLabelFound && relatedKind.kind.toLowerCase() === 'pod' && relatedKind._ownerUID) {
         // standalone pods has no ownerUID and no hash at the end
         nameNoHash = nameNoHash.substring(0, nameNoHash.lastIndexOf('-'))
     }
@@ -433,11 +433,11 @@ export const addResourceToModel = (resourceMapObject, kind, relatedKind, nameWit
     const kindModel =
         resourceType === 'project'
             ? _.get(resourceMapObject, `specs.projectModel`, {})
-            : _.get(resourceMapObject, `specs.${kind}Model`, {})
+            : _.get(resourceMapObject, `specs.${kind.toLowerCase()}Model`, {})
     const kindList = kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] || []
     kindList.push(relatedKind)
     kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] = kindList
-    _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind}Model`, kindModel)
+    _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind.toLowerCase()}Model`, kindModel)
 }
 
 // reduce complexity for code smell

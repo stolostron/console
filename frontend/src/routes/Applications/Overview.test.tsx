@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
     applicationSetsState,
@@ -42,6 +42,7 @@ import {
     mockOCPApplication0,
     mockFluxApplication0,
 } from './Application.sharedmocks'
+import { PluginDataContext } from '../../lib/PluginDataContext'
 
 describe('Applications Page', () => {
     beforeEach(async () => {
@@ -63,7 +64,7 @@ describe('Applications Page', () => {
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.applications]}>
-                    <PluginContext.Provider value={{ acmExtensions: acmExtension }}>
+                    <PluginContext.Provider value={{ acmExtensions: acmExtension, dataContext: PluginDataContext }}>
                         <ApplicationsPage />
                     </PluginContext.Provider>
                 </MemoryRouter>
@@ -117,6 +118,9 @@ describe('Applications Page', () => {
         const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
         expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
+
+        // clear subscription filter
+        userEvent.click(screen.getByRole('button', { name: /close subscription/i }))
     })
 
     test('should filter argo apps', async () => {
@@ -134,6 +138,9 @@ describe('Applications Page', () => {
         const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
         expect(screen.getAllByText('Discovered')).toBeTruthy()
+
+        // clear argo filter
+        userEvent.click(screen.getByRole('button', { name: /close argo cd/i }))
     })
 
     test('should filter appset apps', async () => {
@@ -151,6 +158,9 @@ describe('Applications Page', () => {
         const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
         expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
+
+        // clear appset filter
+        userEvent.click(screen.getByRole('button', { name: /close application set/i }))
     })
 
     test('should filter ocp apps', async () => {
@@ -167,5 +177,8 @@ describe('Applications Page', () => {
         expect(applicationType).toBeNull()
         const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
+
+        // clear openshift filter
+        userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
     })
 })

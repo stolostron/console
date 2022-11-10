@@ -8,7 +8,7 @@ import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
-import searchDefinitions from '../searchDefinitions'
+import { useSearchDefinitions } from '../searchDefinitions'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
 
 export default function RelatedResultsTables(props: {
@@ -18,36 +18,41 @@ export default function RelatedResultsTables(props: {
 }) {
     const { currentQuery, selectedKinds, setDeleteResource } = props
     const { t } = useTranslation()
-    const queryFilters = convertStringToQuery(currentQuery)
     const { data, loading, error } = useSearchResultRelatedItemsQuery({
-        skip: selectedKinds.length === 0 || queryFilters.keywords.length > 0,
+        skip: selectedKinds.length === 0,
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
             input: [{ ...convertStringToQuery(currentQuery), relatedKinds: selectedKinds }],
         },
     })
 
+    const searchDefinitions = useSearchDefinitions()
+
     const renderContent = useCallback(
-        (kind: string, items: ISearchResult[]) => (
-            <AcmTable
-                plural=""
-                items={items}
-                columns={_.get(
-                    searchDefinitions,
-                    `[${kind.toLowerCase()}].columns`,
-                    searchDefinitions['genericresource'].columns
-                )}
-                keyFn={(item: any) => item._uid.toString()}
-                rowActions={GetRowActions(
-                    kind,
-                    t('Delete {{resourceKind}}', { resourceKind: kind }),
-                    currentQuery,
-                    true,
-                    setDeleteResource
-                )}
-            />
-        ),
-        [currentQuery, setDeleteResource, t]
+        (kind: string, items: ISearchResult[]) => {
+            const colDefs = _.get(
+                searchDefinitions,
+                `[${kind.toLowerCase()}].columns`,
+                searchDefinitions['genericresource'].columns
+            )
+
+            return (
+                <AcmTable
+                    plural=""
+                    items={items}
+                    columns={colDefs}
+                    keyFn={(item: any) => item._uid.toString()}
+                    rowActions={GetRowActions(
+                        kind,
+                        t('Delete {{resourceKind}}', { resourceKind: kind }),
+                        currentQuery,
+                        true,
+                        setDeleteResource
+                    )}
+                />
+            )
+        },
+        [currentQuery, setDeleteResource, searchDefinitions, t]
     )
 
     if (loading === false && !error && !data) {
@@ -71,7 +76,7 @@ export default function RelatedResultsTables(props: {
     return (
         <Stack hasGutter>
             {selectedKinds.map((kind) => {
-                const items = relatedResultItems.filter((item) => item?.kind === kind)
+                const items = relatedResultItems.filter((item) => item?.kind.toLowerCase() === kind.toLowerCase())
                 if (items && items[0]?.items && items.length > 0) {
                     return (
                         <SearchResultExpandableCard

@@ -8,17 +8,16 @@ import {
     ToolbarGroup,
     ToolbarItem,
 } from '@patternfly/react-core'
-import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { namespacesState, policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
@@ -59,6 +58,7 @@ export default function PolicySetsPage() {
     const { t } = useTranslation()
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
+    const { namespacesState, policySetsState } = useSharedAtoms()
     const [policySets] = useRecoilState(policySetsState)
     const [namespaces] = useRecoilState(namespacesState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
@@ -238,7 +238,7 @@ export default function PolicySetsPage() {
                                     variant={PaginationVariant.top}
                                     onSetPage={(_event, page) => setPage(page)}
                                     onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                                    aria-label="Pagination top"
+                                    aria-label={t('Pagination top')}
                                     isCompact
                                 />
                             </ToolbarItem>
@@ -256,6 +256,7 @@ export default function PolicySetsPage() {
                                 .map((policyset: PolicySet) => {
                                     return (
                                         <PolicySetCard
+                                            key={`${policyset.metadata.name}-${policyset.metadata.namespace}`}
                                             policySet={policyset}
                                             selectedCardID={selectedCardID}
                                             setSelectedCardID={setSelectedCardID}
@@ -276,7 +277,7 @@ export default function PolicySetsPage() {
                 variant={PaginationVariant.bottom}
                 onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
                 onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
-                aria-label="Pagination bottom"
+                aria-label={t('Pagination bottom')}
                 isSticky
             />
         </Fragment>

@@ -31,19 +31,7 @@ import {
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    channelsState,
-    helmReleaseState,
-    namespacesState,
-    placementBindingsState,
-    placementRulesState,
-    placementsState,
-    policyAutomationState,
-    policySetsState,
-    subscriptionsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
@@ -81,6 +69,15 @@ export default function PoliciesPage() {
     const { t } = useTranslation()
     const unauthorizedMessage = t('rbac.unauthorized')
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
+    const {
+        channelsState,
+        helmReleaseState,
+        namespacesState,
+        policyAutomationState,
+        policySetsState,
+        subscriptionsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
@@ -584,15 +581,15 @@ export default function PoliciesPage() {
                 label: 'Cluster violations',
                 options: [
                     {
-                        label: 'Without violations',
+                        label: t('Without violations'),
                         value: 'without-violations',
                     },
                     {
-                        label: 'With violations',
+                        label: t('With violations'),
                         value: 'with-violations',
                     },
                     {
-                        label: 'No status',
+                        label: t('No status'),
                         value: 'no-status',
                     },
                 ],
@@ -633,7 +630,7 @@ export default function PoliciesPage() {
             },
             {
                 id: 'namespace',
-                label: 'Namespace',
+                label: t('Namespace'),
                 options: namespaces.map((namespace) => ({
                     label: namespace.metadata.name,
                     value: namespace.metadata.name ?? '',
@@ -644,7 +641,7 @@ export default function PoliciesPage() {
             },
             {
                 id: 'source',
-                label: 'Source',
+                label: t('Source'),
                 options: getSourceOptions(),
                 tableFilterFn: (selectedValues, item) => {
                     let itemText = item.source as string
@@ -657,11 +654,11 @@ export default function PoliciesPage() {
             },
             {
                 id: 'remediation',
-                label: 'Remediation',
+                label: t('Remediation'),
                 options: [
-                    { label: 'Inform', value: 'inform' },
-                    { label: 'Enforce', value: 'enforce' },
-                    { label: 'Inform/Enforce', value: 'inform/enforce' },
+                    { label: t('Inform'), value: 'inform' },
+                    { label: t('Enforce'), value: 'enforce' },
+                    { label: t('Inform/Enforce'), value: 'inform/enforce' },
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     const policyRemediation = getPolicyRemediation(item.policy)
@@ -670,14 +667,14 @@ export default function PoliciesPage() {
             },
             {
                 id: 'enabled',
-                label: 'Enabled',
+                label: t('Enabled'),
                 options: [
                     {
-                        label: 'True',
+                        label: t('True'),
                         value: 'True',
                     },
                     {
-                        label: 'False',
+                        label: t('False'),
                         value: 'False',
                     },
                 ],
@@ -723,7 +720,7 @@ export default function PoliciesPage() {
                         tooltip: !canCreatePolicy ? unauthorizedMessage : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
-                        title: 'Create policy',
+                        title: t('Create policy'),
                         click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
@@ -742,19 +739,19 @@ export default function PoliciesPage() {
                                         <div style={{ marginLeft: 106, marginTop: '20px', marginBottom: '20px' }}>
                                             <DescriptionList isAutoFit isAutoColumnWidths>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Standards'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {standards ?? '-'}
                                                     </DescriptionListDescription>
                                                 </DescriptionListGroup>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Controls'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {controls ?? '-'}
                                                     </DescriptionListDescription>
                                                 </DescriptionListGroup>
                                                 <DescriptionListGroup>
-                                                    <DescriptionListTerm>{'Categories'}</DescriptionListTerm>
+                                                    <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
                                                     <DescriptionListDescription>
                                                         {categories ?? '-'}
                                                     </DescriptionListDescription>
@@ -819,6 +816,7 @@ function usePolicyViolationsColumn(
 
 export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]; onClose: () => void }) {
     const { t } = useTranslation()
+    const { policySetsState } = useSharedAtoms()
     const [policySets] = useRecoilState(policySetsState)
     const namespace = useMemo(() => namespaceCheck(props.policyTableItems), [props.policyTableItems])
     const namespacedPolicySets = useMemo(
@@ -941,7 +939,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             label=""
                             onChange={(key) => setSelectedPolicySetUid(key)}
                             value={selectedPolicySetUid}
-                            placeholder={'Select a policy set'}
+                            placeholder={t('Select a policy set')}
                         >
                             {namespacedPolicySets.map((ps) => (
                                 <SelectOption key={ps.metadata.uid} value={ps.metadata.uid}>
@@ -971,6 +969,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
 
 export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }) {
     const { t } = useTranslation()
+    const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
     const [placements] = useRecoilState(placementsState)

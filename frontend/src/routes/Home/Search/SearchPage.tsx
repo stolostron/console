@@ -17,11 +17,10 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@pat
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { userPreferencesState, useSavedSearchLimit } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
@@ -42,6 +41,7 @@ const useStyles = makeStyles({
         paddingRight: 'var(--pf-c-page__main-section--PaddingRight)',
         paddingLeft: 'var(--pf-c-page__main-section--PaddingLeft)',
         paddingBottom: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
+        paddingTop: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingTop)',
     },
     dropdown: {
         '& ul': {
@@ -103,6 +103,7 @@ function RenderSearchBar(props: {
     const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
     const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const [open, toggleOpen] = useState<boolean>(false)
+    const { useSavedSearchLimit } = useSharedAtoms()
     const savedSearchLimit = useSavedSearchLimit()
     const toggle = () => toggleOpen(!open)
 
@@ -191,7 +192,7 @@ function RenderSearchBar(props: {
                             updateBrowserUrl(history, newQuery)
                         }
                         if (newQuery !== currentSearch) {
-                            setSelectedSearch(savedSearches)
+                            setSelectedSearch(t('Saved searches'))
                         }
                     }}
                     toggleInfoModal={toggle}
@@ -218,14 +219,14 @@ function RenderDropDownAndNewTab(props: {
         (id: string) => {
             if (id === 'savedSearchesID') {
                 updateBrowserUrl(history, '')
-                setSelectedSearch(savedSearches)
+                setSelectedSearch(t('Saved searches'))
             } else {
                 const selectedQuery = savedSearchQueries.filter((query) => query.id === id)
                 updateBrowserUrl(history, selectedQuery[0].searchText || '')
                 setSelectedSearch(selectedQuery[0].name || '')
             }
         },
-        [history, savedSearchQueries, setSelectedSearch]
+        [history, savedSearchQueries, setSelectedSearch, t]
     )
 
     function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: SavedSearch[] }) {
@@ -233,7 +234,7 @@ function RenderDropDownAndNewTab(props: {
             const items: any[] = props.savedSearchQueries.map((query) => {
                 return { id: query.id, text: query.name }
             })
-            items.unshift({ id: 'savedSearchesID', text: savedSearches })
+            items.unshift({ id: 'savedSearchesID', text: t('Saved searches') })
             return items
         }, [props.savedSearchQueries])
 
@@ -282,12 +283,13 @@ export default function SearchPage() {
         presetSearchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
+    const { userPreferencesState } = useSharedAtoms()
     const [userPreferences] = useRecoilState(userPreferencesState)
     const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
     const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-
+    const { t } = useTranslation()
     useEffect(() => {
         getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
     }, [userPreferences])
@@ -298,9 +300,9 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (presetSearchQuery === '') {
-            setSelectedSearch(savedSearches)
+            setSelectedSearch(t('Saved searches'))
         }
-    }, [presetSearchQuery])
+    }, [presetSearchQuery, t])
 
     const query = convertStringToQuery(presetSearchQuery)
     const msgQuery = useGetMessagesQuery({

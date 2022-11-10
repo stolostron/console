@@ -2,6 +2,7 @@
 
 import { Button, ButtonProps, Form, FormProps } from '@patternfly/react-core'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { AcmAlertContext } from '../AcmAlert/AcmAlert'
 
 export interface IValidationData {
@@ -91,6 +92,7 @@ export function AcmSubmit(props: AcmSubmitProps) {
     const [isDisabled, setDisabled] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const isMountedRef = useRef(false)
+    const { t } = useTranslation()
     useEffect(() => {
         isMountedRef.current = true
         return () => {
@@ -121,7 +123,7 @@ export function AcmSubmit(props: AcmSubmitProps) {
                     setDisabled(hasError)
                     alertContext.addAlert({
                         type: 'danger',
-                        title: 'Validation errors detected',
+                        title: t('Validation errors detected'),
                         group: 'validation',
                         id: 'validation',
                     })

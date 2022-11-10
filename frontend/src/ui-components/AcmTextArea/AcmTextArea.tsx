@@ -3,6 +3,7 @@
 import { Button, FormGroup, Popover, TextArea, TextAreaProps } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmTextAreaProps = TextAreaProps & {
@@ -19,6 +20,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
     const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
     const [error, setError] = useState<string>('')
     const { validation, labelHelp, labelHelpTitle, helperText, ...textAreaProps } = props
+    const { t } = useTranslation()
 
     useLayoutEffect(() => {
         let error: string | undefined = undefined
@@ -26,7 +28,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
         if (props.hidden !== true) {
             if (props.isRequired) {
                 if (!props.value || (typeof props.value === 'string' && props.value.trim() === '')) {
-                    error = 'Required'
+                    error = t('Required')
                 }
             }
             if (!error && validation) {
@@ -62,7 +64,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
                     <Popover headerContent={labelHelpTitle} bodyContent={labelHelp}>
                         <Button
                             variant="plain"
-                            aria-label="More info"
+                            aria-label={t('More info')}
                             onClick={(e) => e.preventDefault()}
                             // aria-describedby="simple-form-name"
                             className="pf-c-form__group-label-help"

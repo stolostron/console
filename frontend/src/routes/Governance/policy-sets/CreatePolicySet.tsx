@@ -4,16 +4,7 @@ import { PolicySetWizard } from '../../../wizards/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    managedClusterSetBindingsState,
-    managedClusterSetsState,
-    managedClustersState,
-    namespacesState,
-    placementRulesState,
-    placementsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -23,9 +14,10 @@ import schema from './schema.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
-            editorTitle={'Policy set YAML'}
+            editorTitle={t('Policy set YAML')}
             variant="toolbar"
             resources={resources}
             schema={schema}
@@ -44,6 +36,15 @@ export function CreatePolicySet() {
     const { t } = useTranslation()
     const toast = useContext(AcmToastContext)
     const history = useHistory()
+    const {
+        managedClusterSetBindingsState,
+        managedClusterSetsState,
+        managedClustersState,
+        namespacesState,
+        placementRulesState,
+        placementsState,
+        usePolicies,
+    } = useSharedAtoms()
     const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)

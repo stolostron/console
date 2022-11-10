@@ -6,9 +6,11 @@ import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
+import { IResource } from '../../../../resources'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import { getResource } from '../../../../resources/utils/resource-request'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import DetailsOverviewPage from './DetailsOverviewPage'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
 
@@ -58,12 +60,14 @@ export default function DetailsPage() {
 
     useEffect(() => {
         if (cluster === 'local-cluster') {
-            getResource({
+            getResource<IResource>({
                 apiVersion: apiversion,
                 kind,
                 metadata: { namespace, name },
             })
                 .promise.then((response) => {
+                    // NOTE: removing managedfields from editor
+                    delete response.metadata?.managedFields
                     setResource(response)
                 })
                 .catch((err) => {
@@ -76,6 +80,8 @@ export default function DetailsPage() {
                     if (viewResponse?.message) {
                         setResourceError(viewResponse.message)
                     } else {
+                        // NOTE: removing managedfields from editor
+                        delete viewResponse?.result.metadata?.managedFields
                         setResource(viewResponse?.result)
                     }
                 })
@@ -129,6 +135,14 @@ export default function DetailsPage() {
                                     replace
                                     to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
                                 >
+                                    Details
+                                </Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
+                                <Link
+                                    replace
+                                    to={`${NavigationPath.resourceYAML}?${encodeURIComponent(resourceUrlParams)}`}
+                                >
                                     YAML
                                 </Link>
                             </AcmSecondaryNavItem>
@@ -149,6 +163,14 @@ export default function DetailsPage() {
         >
             <Switch>
                 <Route exact path={NavigationPath.resources}>
+                    <DetailsOverviewPage
+                        cluster={cluster}
+                        loading={!resource && resourceError !== ''}
+                        error={resourceError}
+                        resource={resource}
+                    />
+                </Route>
+                <Route exact path={NavigationPath.resourceYAML}>
                     <YAMLPage
                         resource={resource}
                         loading={!resource && resourceError !== ''}
@@ -163,6 +185,7 @@ export default function DetailsPage() {
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
                     <Route path={NavigationPath.resourceLogs}>
                         <LogsPage
+                            resource={resource}
                             resourceError={resourceError}
                             containers={containers}
                             cluster={cluster}

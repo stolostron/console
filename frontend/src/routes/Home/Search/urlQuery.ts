@@ -33,7 +33,7 @@ export function transformBrowserUrlToSearchString(urlQuery: string) {
         filterString = filterString?.replace('"}', '')
 
         // get any pre-selected related resources
-        const relatedString = paramString.showrelated?.toString()
+        const relatedString = paramString.showrelated?.toString().toLowerCase()
         const relatedArray = relatedString?.split(',')
 
         return {

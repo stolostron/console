@@ -4,14 +4,7 @@ import { PolicyAutomationWizard } from '../../../wizards/PolicyAutomation/Policy
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import {
-    configMapsState,
-    policyAutomationState,
-    secretsState,
-    subscriptionOperatorsState,
-    usePolicies,
-} from '../../../atoms'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -23,9 +16,10 @@ import schema from './schemaAutomation.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
-            editorTitle={'Automation YAML'}
+            editorTitle={t('Automation YAML')}
             variant="toolbar"
             filters={['*.metadata.managedFields']}
             resources={resources}
@@ -46,6 +40,8 @@ export function EditPolicyAutomation() {
     const params = useParams<{ namespace: string; name: string }>()
     const { name, namespace } = params
     const history = useHistory()
+    const { configMapsState, policyAutomationState, secretsState, subscriptionOperatorsState, usePolicies } =
+        useSharedAtoms()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
     const [configMaps] = useRecoilState(configMapsState)
@@ -119,7 +115,7 @@ export function EditPolicyAutomation() {
                             }
                         })
                         .catch(() => {
-                            reject('Error getting Anisble jobs')
+                            reject(t('Error getting Ansible jobs'))
                         })
                 })
             }}
