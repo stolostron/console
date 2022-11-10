@@ -212,8 +212,8 @@ describe('add credentials page', () => {
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
                 vsphereDiskType: 'eagerZeroedThick',
-                vsphereFolder: 'folder',
-                vsphereResourcePool: 'resourcePool',
+                vsphereFolder: '/datacenter/vm/folder',
+                vsphereResourcePool: '/datacenter/host/cluster/Resources/resourcePool',
                 imageContentSources: '',
             },
             true
