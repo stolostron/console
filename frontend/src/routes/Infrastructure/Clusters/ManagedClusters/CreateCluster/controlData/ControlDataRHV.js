@@ -294,7 +294,7 @@ const controlDataRHV = [
     {
         id: 'networkStep',
         type: 'step',
-        title: 'Networks',
+        title: 'Networking',
     },
     {
         id: 'ovirt_network_name',

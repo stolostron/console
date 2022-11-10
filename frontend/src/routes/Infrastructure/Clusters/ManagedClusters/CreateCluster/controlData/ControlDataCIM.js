@@ -79,7 +79,7 @@ const controlDataCIM = [
     {
         id: 'aiHostsStep',
         type: 'step',
-        title: 'Cluster hosts',
+        title: 'Hosts',
         disabled: true,
     },
     {

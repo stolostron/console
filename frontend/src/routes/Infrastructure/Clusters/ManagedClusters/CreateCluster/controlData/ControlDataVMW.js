@@ -280,7 +280,7 @@ const controlDataVMW = [
     {
         id: 'networkStep',
         type: 'step',
-        title: 'Networks',
+        title: 'Networking',
     },
     {
         id: 'networkType',
