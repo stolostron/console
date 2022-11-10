@@ -217,7 +217,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
     }
     if (getClusterActions(cluster).length > 0) {
-        clusterActionGroupChildren.push(<ClusterActionDropdown cluster={cluster!} isKebab={false} />)
+        clusterActionGroupChildren.push(
+            <ClusterActionDropdown key={'ClusterActionDropdown-cluster-action'} cluster={cluster!} isKebab={false} />
+        )
     }
     return (
         <ClusterContext.Provider
