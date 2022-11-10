@@ -1,35 +1,40 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
-import { useCallback, useContext, useMemo } from 'react'
-import { ClusterImageSetK8sResource, ConfigMapK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { useCallback, useContext, useMemo, useState } from 'react'
+import { ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmTable, IAcmTableColumn } from '../../../../../ui-components'
+import { AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
 import { NodePool } from '../../../../../resources'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
+import { AddNodePoolModal } from './AddNodePoolModal'
+import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManagedNodePoolNodesModal'
+import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
+import { HypershiftCloudPlatformType } from './NodePoolForm'
 
 type NodePoolsTableProps = {
     nodePools: NodePool[]
-    onRemoveNodePool: (nodePool: NodePool) => Promise<unknown>
-    onUpdateNodePool: (
-        nodePool: NodePool,
-        nodePoolPatches: {
-            op: string
-            value: unknown
-            path: string
-        }[]
-    ) => Promise<void>
-    onAddNodePool: (nodePool: NodePool) => Promise<void>
     clusterImages: ClusterImageSetK8sResource[]
-    supportedVersionsCM?: ConfigMapK8sResource
 }
 
-const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
+const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
     const { t } = useTranslation()
-    const { cluster } = useContext(ClusterContext)
+    const { cluster, hostedCluster } = useContext(ClusterContext)
+    const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
+    const toggleAddNodepoolModal = () => toggleOpenAddNodepoolModal(!openAddNodepoolModal)
+    const [manageNodepoolModalProps, setManageNodepoolModalProps] = useState<
+        IManageNodePoolNodesModalProps | { open: false }
+    >({
+        open: false,
+    })
+    const [removeNodepoolModalProps, setRemoveNodepoolModalProps] = useState<
+        IRemoveNodePoolModalProps | { open: false }
+    >({
+        open: false,
+    })
 
     const getNodepoolStatus = useCallback((nodepool: NodePool) => {
         const conditions = nodepool.status?.conditions || []
@@ -168,8 +173,58 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
         () => nodePools.map(generateTransformedData),
         [nodePools, generateTransformedData]
     )
+
+    const rowActionResolver = useCallback(
+        (nodepool: NodePool) => {
+            const actions: IAcmRowAction<any>[] = []
+
+            if (getNodepoolStatus(nodepool) !== 'Pending') {
+                actions.push({
+                    id: 'manageNodepool',
+                    title: t('Manage nodepool'),
+                    click: () => {
+                        setManageNodepoolModalProps({
+                            open: true,
+                            close: () => {
+                                setManageNodepoolModalProps({ open: false })
+                            },
+                            hostedCluster,
+                            nodepool,
+                        })
+                    },
+                })
+            }
+
+            actions.push({
+                id: 'removeNodepool',
+                title: t('Remove nodepool'),
+                click: () => {
+                    setRemoveNodepoolModalProps({
+                        open: true,
+                        close: () => {
+                            setRemoveNodepoolModalProps({ open: false })
+                        },
+                        nodepool,
+                        nodepoolCount: nodePools.length,
+                    })
+                },
+            })
+
+            return actions
+        },
+        [getNodepoolStatus, hostedCluster, nodePools.length, t]
+    )
     return (
         <>
+            <RemoveNodePoolModal {...removeNodepoolModalProps} />
+            <ManageNodePoolNodesModal {...manageNodepoolModalProps} />
+            <AddNodePoolModal
+                open={openAddNodepoolModal}
+                close={toggleAddNodepoolModal}
+                hostedCluster={hostedCluster}
+                refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
+                clusterImages={clusterImages}
+            />
             <Stack hasGutter>
                 <StackItem>
                     <AcmTable<NodePool>
@@ -182,12 +237,18 @@ const NodePoolsTable = ({ nodePools }: NodePoolsTableProps): JSX.Element => {
                             {
                                 id: 'addNodepool',
                                 title: t('Add nodepool'),
-                                click: () => {},
-                                isDisabled: false,
-                                tooltip: t('rbac.unauthorized'),
+                                click: () => toggleAddNodepoolModal(),
+                                isDisabled: hostedCluster.spec.platform.type !== HypershiftCloudPlatformType.AWS,
+                                tooltip:
+                                    hostedCluster.spec.platform.type !== HypershiftCloudPlatformType.AWS
+                                        ? t(
+                                              'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
+                                          )
+                                        : t('rbac.unauthorized'),
                                 variant: ButtonVariant.primary,
                             },
                         ]}
+                        rowActionResolver={rowActionResolver}
                     />
                 </StackItem>
             </Stack>

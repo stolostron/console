@@ -16,16 +16,6 @@ type HypershiftClusterInstallProgressProps = {
     hostedCluster: HostedClusterK8sResource
     fetchSecret: (name: string, namespace: string) => Promise<SecretK8sResource>
     nodePools: NodePoolK8sResource[]
-    onRemoveNodePool: (nodePool: NodePoolK8sResource) => Promise<unknown>
-    onUpdateNodePool: (
-        nodePool: NodePoolK8sResource,
-        nodePoolPatches: {
-            op: string
-            value: unknown
-            path: string
-        }[]
-    ) => Promise<void>
-    onAddNodePool: (nodePool: NodePoolK8sResource) => Promise<void>
     clusterImages: ClusterImageSetK8sResource[]
     launchToOCP: (urlSuffix: string, newTab: boolean) => void
 }

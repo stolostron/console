@@ -322,6 +322,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
+            management: {},
             clusterName: '',
             platform: {
                 aws: {
@@ -330,6 +331,10 @@ const mockNodepools: NodePool[] = [
                     rootVolume: {
                         size: 1,
                         type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
                     },
                 },
                 type: '',
@@ -351,6 +356,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
+            management: {},
             clusterName: '',
             platform: {
                 aws: {
@@ -359,6 +365,10 @@ const mockNodepools: NodePool[] = [
                     rootVolume: {
                         size: 1,
                         type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
                     },
                 },
                 type: '',
@@ -380,6 +390,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
+            management: {},
             clusterName: '',
             platform: {
                 aws: {
@@ -388,6 +399,10 @@ const mockNodepools: NodePool[] = [
                     rootVolume: {
                         size: 1,
                         type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
                     },
                 },
                 type: '',
@@ -409,6 +424,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
+            management: {},
             clusterName: '',
             platform: {
                 aws: {
@@ -417,6 +433,10 @@ const mockNodepools: NodePool[] = [
                     rootVolume: {
                         size: 1,
                         type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
                     },
                 },
                 type: '',
@@ -438,6 +458,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
+            management: {},
             clusterName: '',
             platform: {
                 aws: {
@@ -446,6 +467,10 @@ const mockNodepools: NodePool[] = [
                     rootVolume: {
                         size: 1,
                         type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
                     },
                 },
                 type: '',
