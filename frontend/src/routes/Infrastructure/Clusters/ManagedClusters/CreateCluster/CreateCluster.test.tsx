@@ -896,7 +896,7 @@ describe('CreateCluster on premise', () => {
             await waitForText('Review and save')
             await waitForText('Hosts')
             await waitForText('Networking')
-            await waitForText('Review')
+            await waitForText('Review and create')
 
             // fill-in Cluster details
             await typeByTestId('form-input-name-field', clusterName)

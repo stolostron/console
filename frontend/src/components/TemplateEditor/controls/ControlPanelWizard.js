@@ -128,7 +128,7 @@ class ControlPanelWizard extends React.Component {
         if (lastType !== 'review') {
             steps.push({
                 id: 'review',
-                name: 'Review',
+                name: 'Review and create',
                 control: { nextButtonLabel: isEditing ? 'Save' : 'Create' },
                 component: (
                     <div className={controlClasses}>
