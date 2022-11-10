@@ -183,15 +183,15 @@ const mockSearchResponse = {
 }
 
 describe('DeleteResourceModal', () => {
-    beforeEach(() => nockIgnoreApiPaths())
     it('should call the delete resource mutation with a successful response', async () => {
+        nockIgnoreApiPaths()
         const deleteResourceSelfSubjectAccessNock = nockCreate(
             deleteResourceSelfSubjectAccessRequest,
             deleteResourceSelfSubjectAccessResponse
         )
         const deleteResourceNock = nockCreate(deleteResourceRequest, deleteResourceResponse)
         const getSuccessfulActionNock = nockGet(getMCAResponse)
-        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        const search = nockSearch(mockSearchQuery, mockSearchResponse).persist()
 
         render(
             <DeleteResourceModal
@@ -222,7 +222,7 @@ describe('DeleteResourceModal', () => {
             await waitForNocks([deleteResourceNock])
 
             // Mimic the polling requests
-            await waitForNocks([await getSuccessfulActionNock])
+            await waitForNocks([getSuccessfulActionNock])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
