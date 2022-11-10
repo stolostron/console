@@ -1222,8 +1222,18 @@ describe('Automation Details', () => {
 })
 
 describe('ClusterDetails with not found', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
     test('page renders error state to return to cluster page', async () => {
-        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const nock = nockCreate(
+            mockGetSecretSelfSubjectAccessRequest,
+            mockSelfSubjectAccessResponse,
+            201,
+            undefined,
+            true
+        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -1254,7 +1264,6 @@ describe('ClusterDetails with not found', () => {
         expect(window.location.pathname).toEqual('/')
     })
     test('page renders error state, should have option to import', async () => {
-        nockIgnoreRBAC()
         nockGet(mockSecret)
         render(
             <RecoilRoot

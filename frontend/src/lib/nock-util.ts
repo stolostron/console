@@ -222,21 +222,30 @@ export function nockCreate(
     resource: IResource | ClusterRoleBinding,
     response?: IResource,
     statusCode = 201,
-    params?: any
+    params?: any,
+    optional?: boolean
 ) {
-    const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
-            // if (!isEqual(body, resource)) {
-            //     console.log(body)
-            //     console.log(resource)
-            // }
-            return isEqual(body, resource)
-        })
-        .reply(statusCode, response ?? resource, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
+    const scope = optional
+        ? nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+              .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
+                  return isEqual(body, resource)
+              })
+              .optionally()
+              .reply(statusCode, response ?? resource, {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Credentials': 'true',
+              })
+        : nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+              .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
+                  return isEqual(body, resource)
+              })
+              .reply(statusCode, response ?? resource, {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Credentials': 'true',
+              })
+
     return scope
 }
 

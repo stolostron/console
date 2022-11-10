@@ -198,7 +198,7 @@ describe('DeleteResourceModal', () => {
             deleteResourceSelfSubjectAccessResponse
         )
         const mcaDeleteResourceNock = nockCreate(mcaDeleteResourceRequest, deleteResourceResponse)
-        const deleteResourceNock = nockDelete(deleteResourceRequest)
+        nockDelete(deleteResourceRequest)
         const getSuccessfulActionNock = nockGet(getMCAResponse)
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
@@ -227,16 +227,14 @@ describe('DeleteResourceModal', () => {
             expect(submitButton).toBeTruthy()
             userEvent.click(submitButton)
 
-            // Wait for delete resource requesets to finish
-            await waitForNocks([mcaDeleteResourceNock, deleteResourceNock])
-
-            // Mimic the polling requests
-            await waitForNocks([getSuccessfulActionNock])
+            // Wait for delete resource requesets to finish, Mimic the polling requests
+            await waitForNocks([mcaDeleteResourceNock, getSuccessfulActionNock])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
 
             await wait() // Test that the component has rendered correctly
+
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
     })
