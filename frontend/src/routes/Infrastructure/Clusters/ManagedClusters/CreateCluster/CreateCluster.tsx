@@ -492,7 +492,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                         )}
                                         handleModalToggle={handleModalToggle}
                                         hideYaml={true}
-                                        control={setNewSecret}
+                                        newCredentialCallback={setNewSecret}
                                     />
                                 </Modal>
                                 <TemplateEditor

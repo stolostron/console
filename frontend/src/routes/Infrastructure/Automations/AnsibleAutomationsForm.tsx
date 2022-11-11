@@ -553,7 +553,7 @@ export function AnsibleAutomationsForm(props: {
                     credentialsType={Provider.ansible}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
-                    control={setNewSecret}
+                    newCredentialCallback={setNewSecret}
                 />
             </Modal>
             <AcmDataFormPage
