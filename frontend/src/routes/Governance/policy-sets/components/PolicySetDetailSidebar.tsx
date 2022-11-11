@@ -352,7 +352,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             </Split>
             {type === 'Clusters' ? (
                 <AcmTable<string>
-                    plural="Clusters"
+                    plural={t('Clusters')}
                     items={policySetClusters}
                     initialSort={{
                         index: 1, // default to sorting by violation count
@@ -368,7 +368,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 />
             ) : (
                 <AcmTable<Policy>
-                    plural="Policies"
+                    plural={t('Policies')}
                     items={policySetPolicies}
                     initialSort={{
                         index: 1, // default to sorting by violation count

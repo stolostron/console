@@ -217,6 +217,7 @@ export function mapClusters(
             clusterCurator,
             agentClusterInstall,
             hostedCluster,
+            undefined,
             nodePools
         )
     })
@@ -232,6 +233,7 @@ export function getCluster(
     clusterCurator: ClusterCurator | undefined,
     agentClusterInstall: AgentClusterInstallK8sResource | undefined,
     hostedCluster: HostedClusterK8sResource | undefined,
+    selectedHostedCluster: HostedClusterK8sResource | undefined,
     nodePools: NodePoolK8sResource[] | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
@@ -258,7 +260,8 @@ export function getCluster(
         managedClusterInfo,
         managedCluster,
         agentClusterInstall,
-        hostedCluster
+        hostedCluster,
+        selectedHostedCluster
     )
 
     return {
@@ -266,13 +269,15 @@ export function getCluster(
             clusterDeployment?.metadata.name ??
             managedCluster?.metadata.name ??
             managedClusterInfo?.metadata.name ??
-            hostedCluster?.metadata?.name,
+            hostedCluster?.metadata?.name ??
+            selectedHostedCluster?.name,
         displayName:
             // clusterDeployment?.spec?.clusterPoolRef?.claimName ??
             clusterDeployment?.metadata.name ??
             managedCluster?.metadata.name ??
             managedClusterInfo?.metadata.name ??
-            hostedCluster?.metadata?.name,
+            hostedCluster?.metadata?.name ??
+            selectedHostedCluster?.name,
         namespace:
             managedCluster?.metadata.name ??
             clusterDeployment?.metadata.namespace ??
@@ -293,7 +298,7 @@ export function getCluster(
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
         consoleURL: consoleURL,
         isHive: !!clusterDeployment && !hostedCluster,
-        isHypershift: !!hostedCluster,
+        isHypershift: !!hostedCluster || selectedHostedCluster?.isHypershift,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
         isHostedCluster: getIsHostedCluster(managedCluster),
@@ -808,7 +813,8 @@ export function getConsoleUrl(
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
     agentClusterInstall?: AgentClusterInstallK8sResource,
-    hostedCluster?: HostedClusterK8sResource
+    hostedCluster?: HostedClusterK8sResource,
+    selectedHostedCluster?: HostedClusterK8sResource
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -819,7 +825,8 @@ export function getConsoleUrl(
         managedClusterInfo?.status?.consoleURL ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
         getConsoleUrlAI(clusterDeployment, agentClusterInstall) ??
-        getHypershiftConsoleURL(hostedCluster)
+        getHypershiftConsoleURL(hostedCluster) ??
+        selectedHostedCluster?.consoleURL
     )
 }
 
@@ -940,7 +947,7 @@ export function getClusterStatus(
     }
 
     // ClusterDeployment status
-    let cdStatus = ClusterStatus.pending
+    let cdStatus = ClusterStatus.pendingimport
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
         //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)

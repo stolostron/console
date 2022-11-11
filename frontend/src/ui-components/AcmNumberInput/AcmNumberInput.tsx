@@ -3,6 +3,7 @@
 import { Button, FormGroup, NumberInput, NumberInputProps, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmNumberInputProps = NumberInputProps & {
@@ -19,6 +20,7 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
     const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
     const [error, setError] = useState<string>('')
     const { validation, labelHelp, labelHelpTitle, helperText, ...numberInputProps } = props
+    const { t } = useTranslation()
 
     useLayoutEffect(() => {
         let error: string | undefined = undefined
@@ -27,7 +29,7 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
             if (props.required) {
                 /* istanbul ignore else */
                 if (props.value === undefined) {
-                    error = 'Required'
+                    error = t('Required')
                 }
             }
             if (!error && validation) {
@@ -46,7 +48,7 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
     useLayoutEffect(() => {
         setValidated(error ? 'error' : 'default')
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ValidationContext.validate])
+    }, [ValidationContext.validate, t])
 
     return (
         <FormGroup
@@ -69,7 +71,7 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
                         <Button
                             variant="plain"
                             id={`${props.id}-label-help-button`}
-                            aria-label="More info"
+                            aria-label={t('More info')}
                             onClick={(e) => e.preventDefault()}
                             // aria-describedby="simple-form-name"
                             className="pf-c-form__group-label-help"

@@ -9,6 +9,7 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core'
+import { useTranslation } from '../../lib/acm-i18next'
 
 const useStyles = makeStyles({
     max: {
@@ -23,12 +24,13 @@ export function AcmLoadingPage(props: {
     secondaryActions?: React.ReactNode
 }) {
     const classes = useStyles()
+    const { t } = useTranslation()
     return (
         <EmptyState>
             <EmptyStateIcon variant="container" component={Spinner} />
             <div className={classes.max}>
                 <Title size="lg" headingLevel="h4">
-                    {props.title ?? 'Loading'}
+                    {props.title ?? t('Loading')}
                 </Title>
                 <EmptyStateBody>{props.message}</EmptyStateBody>
             </div>

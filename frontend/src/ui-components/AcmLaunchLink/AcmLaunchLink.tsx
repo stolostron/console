@@ -2,6 +2,7 @@
 
 import { ButtonVariant, Label } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useTranslation } from '../../lib/acm-i18next'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 
@@ -24,7 +25,7 @@ function getLinkIcon(link: LaunchLink) {
 export function AcmLaunchLink(props: { links?: LaunchLink[] }) {
     /* istanbul ignore next */
     const onSelect = () => null
-
+    const { t } = useTranslation()
     if (props.links !== undefined && props.links.length > 0) {
         if (props.links.length === 1) {
             const [link] = props.links
@@ -74,7 +75,7 @@ export function AcmLaunchLink(props: { links?: LaunchLink[] }) {
                 <AcmDropdown
                     isPlain
                     onSelect={onSelect}
-                    text="Launch dashboard"
+                    text={t('Launch dashboard')}
                     id="addon-launch-links"
                     dropdownItems={props.links.map((link) => ({
                         id: link.id,

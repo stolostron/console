@@ -3,6 +3,7 @@
 import { Button, FormGroup, Popover, Select, SelectProps, SelectVariant } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmSelectProps = Pick<
@@ -26,6 +27,7 @@ export function AcmSelect(props: AcmSelectProps) {
     const ValidationContext = useValidationContext()
     const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
     const [error, setError] = useState<string>('')
+    const { t } = useTranslation()
     const {
         validation,
         labelHelp,
@@ -44,9 +46,9 @@ export function AcmSelect(props: AcmSelectProps) {
         if (props.hidden !== true) {
             if (isRequired) {
                 if (props.value === undefined) {
-                    error = 'Required'
+                    error = t('Required')
                 } else if (props.value.trim() === '') {
-                    error = 'Required'
+                    error = t('Required')
                 }
             }
             if (!error && validation) {
@@ -88,7 +90,7 @@ export function AcmSelect(props: AcmSelectProps) {
                         <Button
                             variant="plain"
                             id={`${props.id}-label-help-button`}
-                            aria-label="More info"
+                            aria-label={t('More info')}
                             onClick={(e) => e.preventDefault()}
                             // aria-describedby="simple-form-name"
                             className="pf-c-form__group-label-help"

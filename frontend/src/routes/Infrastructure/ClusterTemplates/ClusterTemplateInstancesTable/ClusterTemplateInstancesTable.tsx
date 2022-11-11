@@ -2,12 +2,12 @@
 
 import { ClusterTemplateInstance } from '../types';
 
-import { TableComposable, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
+import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
+import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
-import { clusterTemplateInstanceGVK, namespaceGVK } from '../constants';
 import { useTranslation } from '../../../../lib/acm-i18next';
+import { clusterTemplateInstanceGVK, namespaceGVK } from '../constants';
 import ClusterTemplateInstanceStatus from './ClusterTemplateInstanceStatus';
 
 type TableColumn = {
@@ -77,7 +77,12 @@ const ClusterTemplateInstanceTable: React.FC<{
       </Thead>
       <Tbody>
         {instances.map((instance, index) => (
-          <InstanceRow instance={instance} columns={columns} index={index} />
+          <InstanceRow
+            instance={instance}
+            columns={columns}
+            index={index}
+            key={instance.metadata?.uid ?? index}
+          />
         ))}
       </Tbody>
     </TableComposable>

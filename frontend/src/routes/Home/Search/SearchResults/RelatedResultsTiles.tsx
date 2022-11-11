@@ -25,16 +25,16 @@ export default function RelatedResultsTiles(props: {
         return (
             <Grid hasGutter>
                 <GridItem key={'loading-tile-0'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-1'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-2'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
                 <GridItem key={'loading-tile-3'} id={'acmtile-loading'} span={3}>
-                    <AcmTile loading={true} title={'loading'} />
+                    <AcmTile loading={true} title={t('loading')} />
                 </GridItem>
             </Grid>
         )

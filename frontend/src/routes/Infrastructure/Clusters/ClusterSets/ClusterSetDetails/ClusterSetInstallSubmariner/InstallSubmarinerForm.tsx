@@ -1,5 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { List, ListItem, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useContext, useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
+import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
+import { FormData, Section } from '../../../../../../components/AcmFormData'
+import { RbacButton } from '../../../../../../components/Rbac'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { rbacCreate } from '../../../../../../lib/rbac-util'
+import { validateJSON } from '../../../../../../lib/validation'
+import { NavigationPath } from '../../../../../../NavigationPath'
 import {
     Broker,
     BrokerApiVersion,
@@ -34,19 +47,6 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '../../../../../../ui-components'
-import { List, ListItem, PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
-import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
-import { FormData, Section } from '../../../../../../components/AcmFormData'
-import { RbacButton } from '../../../../../../components/Rbac'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { validateJSON } from '../../../../../../lib/validation'
-import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 
@@ -525,7 +525,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         >
                                             <List>
                                                 {withoutSubmarinerConfigClusters.map((cluster) => (
-                                                    <ListItem>
+                                                    <ListItem key={cluster.displayName}>
                                                         {t(
                                                             'managed.clusterSets.submariner.addons.config.notSupported.provider',
                                                             { clusterName: cluster.displayName! }

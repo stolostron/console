@@ -22,9 +22,10 @@ import schema from './schema.json'
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
+    const { t } = useTranslation()
     return (
         <SyncEditor
-            editorTitle={'Policy YAML'}
+            editorTitle={t('Policy YAML')}
             variant="toolbar"
             resources={resources}
             schema={schema}
