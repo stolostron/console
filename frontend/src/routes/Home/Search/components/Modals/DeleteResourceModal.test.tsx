@@ -4,7 +4,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { nockCreate, nockDelete, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../../../lib/test-util'
+import { waitForNocks } from '../../../../../lib/test-util'
 import { SelfSubjectAccessReview } from '../../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
@@ -232,8 +232,6 @@ describe('DeleteResourceModal', () => {
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
-
-            await wait() // Test that the component has rendered correctly
 
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
