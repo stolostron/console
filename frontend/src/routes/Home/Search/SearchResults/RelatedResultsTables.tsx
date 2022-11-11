@@ -8,7 +8,7 @@ import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
-import searchDefinitions from '../searchDefinitions'
+import { useSearchDefinitions } from '../searchDefinitions'
 import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
 
 export default function RelatedResultsTables(props: {
@@ -26,27 +26,33 @@ export default function RelatedResultsTables(props: {
         },
     })
 
+    const searchDefinitions = useSearchDefinitions()
+
     const renderContent = useCallback(
-        (kind: string, items: ISearchResult[]) => (
-            <AcmTable
-                plural=""
-                items={items}
-                columns={_.get(
-                    searchDefinitions,
-                    `[${kind.toLowerCase()}].columns`,
-                    searchDefinitions['genericresource'].columns
-                )}
-                keyFn={(item: any) => item._uid.toString()}
-                rowActions={GetRowActions(
-                    kind,
-                    t('Delete {{resourceKind}}', { resourceKind: kind }),
-                    currentQuery,
-                    true,
-                    setDeleteResource
-                )}
-            />
-        ),
-        [currentQuery, setDeleteResource, t]
+        (kind: string, items: ISearchResult[]) => {
+            const colDefs = _.get(
+                searchDefinitions,
+                `[${kind.toLowerCase()}].columns`,
+                searchDefinitions['genericresource'].columns
+            )
+
+            return (
+                <AcmTable
+                    plural=""
+                    items={items}
+                    columns={colDefs}
+                    keyFn={(item: any) => item._uid.toString()}
+                    rowActions={GetRowActions(
+                        kind,
+                        t('Delete {{resourceKind}}', { resourceKind: kind }),
+                        currentQuery,
+                        true,
+                        setDeleteResource
+                    )}
+                />
+            )
+        },
+        [currentQuery, setDeleteResource, searchDefinitions, t]
     )
 
     if (loading === false && !error && !data) {

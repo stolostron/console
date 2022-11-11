@@ -3,6 +3,7 @@
 import { Button, FormGroup, Popover, Select, SelectOption, SelectProps, SelectVariant } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Children, Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmMultiSelectProps = Pick<
@@ -39,6 +40,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
     } = props
 
     const [placeholderText, setPlaceholderText] = useState<ReactNode | undefined>(props.placeholder)
+    const { t } = useTranslation()
 
     useLayoutEffect(() => {
         let error: string | undefined = undefined
@@ -46,9 +48,9 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
         if (props.hidden !== true) {
             if (isRequired) {
                 if (props.value === undefined) {
-                    error = 'Required'
+                    error = t('Required')
                 } else if (props.value.length === 0) {
-                    error = 'Required'
+                    error = t('Required')
                 }
             }
 
@@ -124,7 +126,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
                         <Button
                             variant="plain"
                             id={`${props.id}-label-help-button`}
-                            aria-label="More info"
+                            aria-label={t('More info')}
                             onClick={(e) => e.preventDefault()}
                             className="pf-c-form__group-label-help"
                         >

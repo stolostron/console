@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { AgentK8sResource, AgentMachineK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
     Cluster,
     HostedClusterApiVersion,
@@ -12,7 +17,6 @@ import {
     ResourceError,
     resultsSettled,
 } from '../../../../../resources'
-import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
     AcmAlert,
     AcmExpandableCheckbox,
@@ -22,12 +26,8 @@ import {
     AcmSubmit,
     AcmTable,
 } from '../../../../../ui-components'
-import { ModalVariant, Checkbox, ActionGroup, ButtonVariant, Button, SelectOption } from '@patternfly/react-core'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { TableComposable, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table'
-import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { AgentK8sResource, AgentMachineK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { getNodepoolAgents } from '../utils/nodepool'
+import { ReleaseNotesLink } from './ReleaseNotesLink'
 
 export function HypershiftUpgradeModal(props: {
     close: () => void
@@ -600,19 +600,19 @@ export function HypershiftUpgradeModal(props: {
                                                                                         props.agentMachines,
                                                                                         props.hostedCluster
                                                                                     ).map((agent) => {
+                                                                                        const hostName =
+                                                                                            agent.spec.hostname ||
+                                                                                            agent.status?.inventory
+                                                                                                .hostname
                                                                                         return (
-                                                                                            <div>
+                                                                                            <div key={hostName}>
                                                                                                 <span
                                                                                                     style={{
                                                                                                         paddingLeft:
                                                                                                             controlPlaneCheckboxSpanWidth,
                                                                                                     }}
                                                                                                 >
-                                                                                                    {agent.spec
-                                                                                                        .hostname ||
-                                                                                                        agent.status
-                                                                                                            ?.inventory
-                                                                                                            .hostname}
+                                                                                                    {hostName}
                                                                                                 </span>
                                                                                             </div>
                                                                                         )

@@ -2,16 +2,6 @@
 
 import { Page } from '@patternfly/react-core'
 import {
-    AcmActionGroup,
-    AcmButton,
-    AcmLaunchLink,
-    AcmPage,
-    AcmPageHeader,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-    Provider,
-} from '../../../../../ui-components'
-import {
     AgentClusterInstallK8sResource,
     AgentK8sResource,
     HostedClusterK8sResource,
@@ -31,20 +21,30 @@ import {
     ClusterDeployment,
     ClusterStatus,
     getCluster,
+    getIsHostedCluster,
     mapAddons,
     ResourceError,
     SecretDefinition,
-    getIsHostedCluster,
 } from '../../../../../resources'
+import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import {
+    AcmActionGroup,
+    AcmButton,
+    AcmLaunchLink,
+    AcmPage,
+    AcmPageHeader,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+    Provider,
+} from '../../../../../ui-components'
 import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
+import { useAllClusters } from '../components/useAllClusters'
 import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
-import { useAllClusters } from '../components/useAllClusters'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -220,6 +220,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     if (addonLinks.length > 0) {
         clusterActionGroupChildren.push(
             <AcmLaunchLink
+                key={'AcmLaunchLink-cluster-action'}
                 links={addonLinks?.map((addon) => ({
                     id: addon.launchLink?.displayText!,
                     text: addon.launchLink?.displayText!,
@@ -229,7 +230,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         )
     }
     if (cluster?.hive.secrets?.installConfig || (cluster?.kubeconfig && !cluster.isHypershift)) {
-        clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
+        clusterActionGroupChildren.push(
+            <DownloadConfigurationDropdown
+                key={'DownloadConfigurationDropdown-cluster-action'}
+                canGetSecret={canGetSecret}
+            />
+        )
     }
     if (getClusterActions(cluster).length > 0) {
         clusterActionGroupChildren.push(

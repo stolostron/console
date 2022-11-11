@@ -21,6 +21,7 @@ import { useHistory } from 'react-router-dom'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
+import { useTranslation } from '../../../../lib/acm-i18next'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -136,6 +137,7 @@ export function Searchbar(props: SearchbarProps) {
         setInputValue('')
     }
 
+    const [t] = useTranslation()
     useEffect(() => {
         function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
             if (inputValue !== '' && currentValue.name.toLowerCase().includes(inputValue.toLowerCase())) {
@@ -181,7 +183,7 @@ export function Searchbar(props: SearchbarProps) {
                 key={'loading-suggestion'}
                 itemId={'loading-suggestion'}
             >
-                {'Loading...'}
+                {t('Loading...')}
             </MenuItem>,
         ]
         if (!loadingSuggestions) {
@@ -212,7 +214,7 @@ export function Searchbar(props: SearchbarProps) {
                     itemId={'no-matching-filters'}
                     key={'no-matching-filters'}
                 >
-                    {'No matching filters'}
+                    {t('No matching filters')}
                 </MenuItem>
             )
             setMenuItems([noResultItem])
@@ -222,7 +224,7 @@ export function Searchbar(props: SearchbarProps) {
         const divider = <Divider key="divider" />
 
         setMenuItems([headingItem, divider, ...filteredMenuItems])
-    }, [inputValue, loadingSuggestions, suggestions])
+    }, [inputValue, loadingSuggestions, suggestions, t])
 
     const addChip = (newChipText: string, newChipId?: string) => {
         if (
@@ -396,14 +398,14 @@ export function Searchbar(props: SearchbarProps) {
                     onChange={handleInputChange}
                     onFocus={() => setMenuIsOpen(true)}
                     onKeyDown={handleTextInputKeyDown}
-                    aria-label="Search input"
+                    aria-label={t('Search input')}
                 >
                     <ChipGroup>
                         {searchbarTags.map((searchbarTag, idx) => (
                             <Chip
                                 key={searchbarTag.id}
                                 onClick={() => deleteChip(idx)}
-                                closeBtnAriaLabel={'delete-chip'}
+                                closeBtnAriaLabel={t('delete-chip')}
                                 textMaxWidth={'100%'}
                             >
                                 {searchbarTag.name}
@@ -416,14 +418,14 @@ export function Searchbar(props: SearchbarProps) {
                         <Button
                             variant="plain"
                             onClick={clearChipsAndInput}
-                            aria-label="Clear button for chips and input"
+                            aria-label={t('Clear button for chips and input')}
                         >
                             <TimesIcon />
                         </Button>
                     </TextInputGroupUtilities>
                 )}
                 <Divider isVertical />
-                <Button isInline variant="plain" onClick={toggleInfoModal} aria-label="Search help modal toggle">
+                <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
                     <HelpIcon color={'var(--pf-global--active-color--100)'} />
                 </Button>
                 <Divider isVertical />
@@ -438,7 +440,7 @@ export function Searchbar(props: SearchbarProps) {
                     }}
                     isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
                 >
-                    {'Run search'}
+                    {t('Run search')}
                 </AcmButton>
                 <Divider isVertical />
                 <AcmButton
@@ -454,7 +456,7 @@ export function Searchbar(props: SearchbarProps) {
                     tooltip={saveSearchTooltip}
                     variant="plain"
                 >
-                    {'Save search'}
+                    {t('Save search')}
                 </AcmButton>
             </TextInputGroup>
         </div>

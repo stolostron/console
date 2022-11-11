@@ -2,7 +2,7 @@
 
 import YAML from 'yaml'
 
-import { TFunction } from 'i18next'
+import { t, TFunction } from 'i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
 
@@ -330,5 +330,12 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
         return t(
             'The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters'
         )
+    return undefined
+}
+
+export function validateRequiredPrefix(value: string, requiredPrefix: string) {
+    if (!value?.startsWith(requiredPrefix)) {
+        return t("The path must begin with '{{prefix}}'", { prefix: requiredPrefix })
+    }
     return undefined
 }

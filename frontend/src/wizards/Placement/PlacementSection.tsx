@@ -31,6 +31,7 @@ import {
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
 import { PlacementRule, PlacementRules } from './PlacementRule'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function PlacementSection(props: {
     bindingSubjectKind: string
@@ -45,6 +46,7 @@ export function PlacementSection(props: {
     allowNoPlacement?: boolean
     withoutOnlineClusterCondition?: boolean
 }) {
+    const { t } = useTranslation()
     const { update } = useData()
     const resources = useItem() as IResource[]
     const editMode = useEditMode()
@@ -199,7 +201,7 @@ export function PlacementSection(props: {
 
     return (
         <Section
-            label="Placement"
+            label={t('Placement')}
             // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
             autohide={false}
         >
@@ -259,14 +261,14 @@ export function PlacementSection(props: {
                 <WizItemSelector selectKey="kind" selectValue={PlacementBindingKind}>
                     <Select
                         path="placementRef.name"
-                        label="Placement"
+                        label={t('Placement')}
                         required
                         hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
                         options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
                     />
                     <WizSingleSelect
                         path="placementRef.name"
-                        label="Placement rule"
+                        label={t('Placement rule')}
                         required
                         hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
                         options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}
@@ -291,13 +293,14 @@ export function PlacementSelector(props: {
     const { placementCount, placementRuleCount, placementBindingCount, bindingSubjectKind } = props
     const { update } = useData()
     const validate = useValidate()
+    const { t } = useTranslation()
     return (
         <WizDetailsHidden>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="pf-c-form__label pf-c-form__label-text">How do you want to select clusters?</span>
                 <ToggleGroup aria-label="Default with single selectable">
                     <ToggleGroupItem
-                        text="New placement"
+                        text={t('New placement')}
                         isSelected={placementCount + placementRuleCount === 1}
                         onClick={() => {
                             const bindingSubject = resources.find((resource) => resource.kind === bindingSubjectKind)
@@ -362,7 +365,7 @@ export function PlacementSelector(props: {
                         }}
                     />
                     <ToggleGroupItem
-                        text="Existing placement"
+                        text={t('Existing placement')}
                         isSelected={placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 1}
                         onClick={() => {
                             const bindingSubject = resources.find((resource) => resource.kind === bindingSubjectKind)
@@ -404,7 +407,7 @@ export function PlacementSelector(props: {
                     />
                     {props.allowNoPlacement === true ? (
                         <ToggleGroupItem
-                            text="No placement"
+                            text={t('No placement')}
                             isSelected={placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 0}
                             onClick={() => {
                                 const newResources = resources
@@ -425,7 +428,7 @@ export function PlacementSelector(props: {
                 placementRuleCount === 0 &&
                 placementBindingCount === 0 && (
                     <p className="pf-c-form__helper-text">
-                        Do not add a placement if you want to place this policy using policy set placement.
+                        {t('Do not add a placement if you want to place this policy using policy set placement.')}
                     </p>
                 )}
         </WizDetailsHidden>

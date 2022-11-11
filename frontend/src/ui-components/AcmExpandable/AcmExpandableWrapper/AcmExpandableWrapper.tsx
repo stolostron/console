@@ -4,6 +4,7 @@ import { Children, useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { AcmButton } from '../../AcmButton/AcmButton'
 import { Title, Gallery, GalleryItem } from '@patternfly/react-core'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 type AcmExpandableWrapperProps = {
     headerLabel?: string
@@ -40,7 +41,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
     const { children, headerLabel, withCount, expandable } = props
     const classes = useStyles(props)
     const [showAll, setShowAll] = useState<boolean>(false)
-
+    const { t } = useTranslation()
     return (
         <div className={classes.root}>
             {headerLabel && (
@@ -68,7 +69,11 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
             </div>
             {expandable && (
                 <AcmButton className={classes.showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
-                    {showAll ? 'Show less' : `Show all (${Children.count(children)})`}
+                    {showAll
+                        ? t('Show less')
+                        : t('Show all ({{count}})', {
+                              count: Children.count(children),
+                          })}
                 </AcmButton>
             )}
         </div>

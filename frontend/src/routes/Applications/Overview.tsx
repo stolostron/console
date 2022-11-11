@@ -99,7 +99,7 @@ function isFluxApplication(label: string) {
 function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
         if (resource.kind === ApplicationKind) {
-            return 'Subscription'
+            return t('Subscription')
         }
     } else if (resource.apiVersion === ArgoApplicationApiVersion) {
         if (resource.kind === ArgoApplicationKind) {
@@ -1012,12 +1012,12 @@ export default function ApplicationsOverview() {
                         ? history.push(NavigationPath.createApplicationArgo)
                         : history.push(NavigationPath.createApplicationSubscription)
                 }}
-                text={'Create application'}
+                text={t('Create application')}
                 dropdownItems={[
                     {
                         id: 'psuedo.group.label',
                         isDisabled: true,
-                        text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
+                        text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
                     },
                     {
                         id: 'create-argo',

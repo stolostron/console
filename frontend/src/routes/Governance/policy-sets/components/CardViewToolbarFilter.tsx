@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
+import { useTranslation } from '../../../../lib/acm-i18next'
 
 const useStyles = makeStyles({
     filterLabelMargin: {
@@ -33,6 +34,7 @@ export default function CardViewToolbarFilter(props: {
     const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
     const [policySets] = useRecoilState(policySetsState)
     const classes = useStyles()
+    const { t } = useTranslation()
 
     const onFilterSelect = (selection: string) => {
         window.history.pushState({}, '', NavigationPath.policySets)
@@ -48,7 +50,7 @@ export default function CardViewToolbarFilter(props: {
     }
 
     const selectOptions = [
-        <SelectGroup key={'violation'} label={'Violations'}>
+        <SelectGroup key={'violation'} label={t('Violations')}>
             <SelectOption
                 key={'violation'}
                 inputId={'violation'}
@@ -56,7 +58,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('violation') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'With violation'}
+                    {t('With violation')}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -76,7 +78,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf(noViolation) > -1}
             >
                 <div className={classes.filterOption}>
-                    {'Without violation'}
+                    {t('Without violation')}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -96,7 +98,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('no-status') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'No status'}
+                    {t('No status')}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -127,7 +129,7 @@ export default function CardViewToolbarFilter(props: {
             placeholderText={
                 <div>
                     <FilterIcon className={classes.filterLabelMargin} />
-                    {'Filter'}
+                    {t('Filter')}
                 </div>
             }
         >
