@@ -28,6 +28,7 @@ import {
     nockDelete,
     nockGet,
     nockIgnoreRBAC,
+    nockIgnoreApiPaths,
     nockList,
     nockNamespacedList,
     nockPatch,
@@ -1063,6 +1064,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
 describe('ClusterDetails', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 
@@ -1073,7 +1075,7 @@ describe('ClusterDetails', () => {
     })
 
     test('overview page opens logs', async () => {
-        const nocks: Scope[] = [nockListHiveProvisionJobs()]
+        const nocks: Scope[] = [await nockListHiveProvisionJobs()]
         window.open = jest.fn()
         await clickByText('View logs', 1)
         await waitForNocks(nocks)
@@ -1164,6 +1166,7 @@ const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment}
 describe('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('overview page renders AI empty details', async () => {
@@ -1196,6 +1199,7 @@ describe('ClusterDetails for On Premise', () => {
 describe('Automation Details', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 
@@ -1218,8 +1222,18 @@ describe('Automation Details', () => {
 })
 
 describe('ClusterDetails with not found', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
     test('page renders error state to return to cluster page', async () => {
-        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const nock = nockCreate(
+            mockGetSecretSelfSubjectAccessRequest,
+            mockSelfSubjectAccessResponse,
+            201,
+            undefined,
+            true
+        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -1250,7 +1264,6 @@ describe('ClusterDetails with not found', () => {
         expect(window.location.pathname).toEqual('/')
     })
     test('page renders error state, should have option to import', async () => {
-        nockIgnoreRBAC()
         nockGet(mockSecret)
         render(
             <RecoilRoot

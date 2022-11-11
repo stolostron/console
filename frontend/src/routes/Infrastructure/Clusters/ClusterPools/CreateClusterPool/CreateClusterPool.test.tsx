@@ -24,7 +24,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByText,
@@ -208,6 +208,7 @@ describe('CreateClusterPool AWS', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can create a cluster pool', async () => {

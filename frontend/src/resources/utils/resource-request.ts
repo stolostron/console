@@ -112,7 +112,7 @@ export async function reconcileResources(
             if (existing) {
                 const patch = jsonpatch.compare(existing, resource)
                 if (patch.length) {
-                    await patchResource(existing, patch, { dryRun: true })
+                    patchResource(existing, patch, { dryRun: true })
                 }
             }
         }
@@ -130,7 +130,7 @@ export async function reconcileResources(
                 if (existing) {
                     const patch = jsonpatch.compare(existing, resource)
                     if (patch.length) {
-                        await patchResource(existing, patch)
+                        patchResource(existing, patch)
                     }
                 }
             }
@@ -235,11 +235,11 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
             }
             const patch = jsonpatch.compare(existingResource, resource)
             if (patch.length) {
-                await patchResource(existingResource, patch)
+                patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource
-            await createResource(resource).promise
+            createResource(resource).promise
         }
     }
     if (subscriptionResources.length < subscriptions.length) {
@@ -266,11 +266,16 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
 }
 
 export function createResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource,
+    resource: Resource | Promise<Resource>,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
-    if (options?.dryRun) url += '?dryRun=All'
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
     return postRequest<Resource, ResultType>(url, resource)
 }
 
@@ -278,18 +283,29 @@ export function replaceResource<Resource extends IResource, ResultType = Resourc
     resource: Resource,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
-    if (options?.dryRun) url += '?dryRun=All'
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceNameApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
     return putRequest<Resource, ResultType>(url, resource)
 }
 
 export function patchResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource,
+    resource: Resource | Promise<Resource>,
     data: unknown,
     options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
-    if (options?.dryRun) url += '?dryRun=All'
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceNameApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
+
     const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
@@ -305,8 +321,13 @@ export function deleteResource<Resource extends IResource>(
 ): IRequestResult {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
-    if (options?.dryRun) url += '?dryRun=All'
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceNameApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (options?.dryRun) url += '?dryRun=All'
+            return url
+        })
+    })
     return deleteRequest(url)
 }
 
@@ -321,31 +342,36 @@ export function getResource<Resource extends IResource>(
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     }
 
-    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceNameApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            let queryString = undefined
 
-    let queryString = undefined
+            if (options?.labelSelector) {
+                const labels: string[] = []
+                for (const key in options.labelSelector) {
+                    const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
+                    labels.push(`${key}=${value}`)
+                }
+                queryString = 'labelSelector=' + labels.map((label) => label).join(',')
+            }
 
-    if (options?.labelSelector) {
-        const labels: string[] = []
-        for (const key in options.labelSelector) {
-            const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
-            labels.push(`${key}=${value}`)
-        }
-        queryString = 'labelSelector=' + labels.map((label) => label).join(',')
-    }
+            if (options?.fieldSelector) {
+                const fields: string[] = []
+                for (const key in options.fieldSelector) {
+                    const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
+                    fields.push(`${key}=${value}`)
+                }
+                if (queryString) queryString += '&'
+                else queryString = ''
+                queryString += 'fieldSelector=' + fields.map((field) => field).join(',')
+            }
 
-    if (options?.fieldSelector) {
-        const fields: string[] = []
-        for (const key in options.fieldSelector) {
-            const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
-            fields.push(`${key}=${value}`)
-        }
-        if (queryString) queryString += '&'
-        else queryString = ''
-        queryString += 'fieldSelector=' + fields.map((field) => field).join(',')
-    }
+            if (queryString) url += '?' + queryString
 
-    if (queryString) url += '?' + queryString
+            return url
+        })
+    })
 
     return getRequest<Resource>(url)
 }
@@ -355,19 +381,25 @@ export function listResources<Resource extends IResource>(
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
-    if (labels) {
-        url += '?labelSelector=' + labels.join(',')
-        if (query)
-            url += `&${Object.keys(query)
-                .map((key) => `${key}=${query[key]}`)
-                .join('&')}`
-    } else {
-        if (query)
-            url += `?${Object.keys(query)
-                .map((key) => `${key}=${query[key]}`)
-                .join('&')}`
-    }
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((resourcePath) => {
+            let url = getBackendUrl() + resourcePath
+            if (labels) {
+                url += '?labelSelector=' + labels.join(',')
+                if (query)
+                    url += `&${Object.keys(query)
+                        .map((key) => `${key}=${query[key]}`)
+                        .join('&')}`
+            } else {
+                if (query)
+                    url += `?${Object.keys(query)
+                        .map((key) => `${key}=${query[key]}`)
+                        .join('&')}`
+            }
+            return url
+        })
+    })
+
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => {
@@ -391,8 +423,13 @@ export function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
-    if (labels) url += '?labelSelector=' + labels.join(',')
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (labels) url += '?labelSelector=' + labels.join(',')
+            return url
+        })
+    })
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
@@ -408,8 +445,13 @@ export function listNamespacedResources<Resource extends IResource>(
     },
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = getBackendUrl() + getResourceApiPath(resource)
-    if (labels) url += '?labelSelector=' + labels.join(',')
+    const url = Promise.resolve(resource).then((resource) => {
+        return getResourceApiPath(resource).then((path) => {
+            let url = getBackendUrl() + path
+            if (labels) url += '?labelSelector=' + labels.join(',')
+            return url
+        })
+    })
     const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
@@ -477,46 +519,57 @@ export function fetchGetAnsibleJobs(
     })
 }
 
-export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
+export function getRequest<ResultT>(url: string | Promise<string>): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchGet<ResultT>(url, abortController.signal).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) =>
+            fetchGet<ResultT>(url, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }
 
-export function putRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+export function putRequest<DataT, ResultT>(url: string | Promise<string>, data: DataT): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) =>
+            fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }
 
-export function postRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+export function postRequest<DataT, ResultT>(
+    url: string | Promise<string>,
+    data: DataT | Promise<DataT>
+): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        promise: Promise.all([data, url]).then(([data, url]) =>
+            fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data)
+        ),
         abort: () => abortController.abort(),
     }
 }
 
 export function patchRequest<DataT, ResultT>(
-    url: string,
+    url: string | Promise<string>,
     data: DataT,
     headers?: Record<string, string>
 ): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPatch<ResultT>(url, data, abortController.signal, headers).then((result) => result.data),
+        promise: Promise.resolve(url).then((url) => {
+            return fetchPatch<ResultT>(url, data, abortController.signal, headers).then((result) => result.data)
+        }),
         abort: () => abortController.abort(),
     }
 }
 
-export function deleteRequest(url: string): IRequestResult {
+export function deleteRequest(url: string | Promise<string>): IRequestResult {
     const abortController = new AbortController()
     return {
-        promise: fetchDelete(url, abortController.signal),
+        promise: Promise.resolve(url).then((url) => fetchDelete(url, abortController.signal)),
         abort: () => abortController.abort(),
     }
 }
@@ -565,7 +618,6 @@ export async function fetchRetry<T>(options: {
 }): Promise<{ headers: Headers; status: number; data: T }> {
     let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
     let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
-
     const headers: Record<string, string> = options.headers ?? {
         Accept: 'application/json',
     }

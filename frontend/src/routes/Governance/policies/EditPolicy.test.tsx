@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, namespacesState } from '../../../atoms'
-import { nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
 import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { mockNamespaces, mockPolicy } from '../governance.sharedMocks'
@@ -32,6 +32,7 @@ function TestEditPolicyPage() {
 describe('Edit Policy Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can render Edit Policy Page', async () => {

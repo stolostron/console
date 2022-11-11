@@ -4,7 +4,7 @@ import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../..
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
-import { nockCreate, nockPatch } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
@@ -211,6 +211,7 @@ const getPatchUpdate = (version: string) => {
 }
 
 describe('BatchChannelSelectModal', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     it('should only show selectable ones, and select current channel as default', () => {
         const { queryAllByText, queryByText } = render(
             <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />

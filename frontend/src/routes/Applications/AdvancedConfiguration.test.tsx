@@ -12,7 +12,7 @@ import {
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../resources'
-import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
 import ApplicationsPage from './ApplicationsPage'
 import {
@@ -85,6 +85,7 @@ function TestAdvancedConfigurationPage() {
 describe('advanced configuration page', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
     })

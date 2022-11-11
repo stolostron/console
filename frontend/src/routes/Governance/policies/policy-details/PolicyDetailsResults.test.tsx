@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy } from '../../governance.sharedMocks'
@@ -11,6 +11,7 @@ import { mockPolicy } from '../../governance.sharedMocks'
 describe('Policy Details Results', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render Policy Details Results Page content correctly', async () => {
         render(

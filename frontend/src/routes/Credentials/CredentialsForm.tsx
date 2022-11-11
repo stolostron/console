@@ -75,8 +75,8 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
     const [projects, setProjects] = useState<string[]>()
     useEffect(() => {
         getNamespaces()
-            .then((namespaces) => {
-                getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+            .then(async (namespaces) => {
+                getAuthorizedNamespaces([await rbacCreate(SecretDefinition)], namespaces)
                     .then((namespaces: string[]) => setProjects(namespaces.sort()))
                     .catch(setError)
             })

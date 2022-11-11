@@ -4,6 +4,7 @@ import {
     Cluster,
     createSubjectAccessReview,
     createSubjectAccessReviews,
+    fallbackPlural,
     getResourceGroup,
     getResourcePlural,
     IResource,
@@ -99,29 +100,32 @@ export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], 
 }
 
 export function checkAdminAccess() {
-    const result = createSubjectAccessReview({
-        name: '*',
-        namespace: '*',
-        resource: '*',
-        verb: '*',
-    }).promise
+    const result = createSubjectAccessReview(
+        Promise.resolve({
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
+        })
+    ).promise
     return result
 }
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
 type SubResource = 'join' | 'bind'
 
-export function rbacResource(
+export async function rbacResource(
     verb: Verb,
     resource: IResource,
     namespace?: string,
     name?: string,
     subresource?: SubResource
 ) {
+    const resourcePlural = await getResourcePlural(resource)
     const attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
-        resource: getResourcePlural(resource),
+        resource: resourcePlural,
         subresource,
         verb,
         group: getResourceGroup(resource),
@@ -166,13 +170,13 @@ export function canUser(
 }
 
 export async function checkPermission(
-    resourceAttributes: ResourceAttributes,
+    resourceAttributes: Promise<ResourceAttributes>,
     setStateFn: (state: boolean) => void,
     namespaces: Namespace[]
 ) {
     if (namespaces.length) {
         const fetchAuthorizedNamespaces = async () => {
-            return getAuthorizedNamespaces([resourceAttributes], namespaces)
+            return getAuthorizedNamespaces([await resourceAttributes], namespaces)
         }
         fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
             if (authorizedNamespaces?.length > 0) {
@@ -184,4 +188,52 @@ export async function checkPermission(
     } else {
         setStateFn(false)
     }
+}
+
+export function rbacResourceTestHelper(
+    verb: Verb,
+    resource: IResource,
+    namespace?: string,
+    name?: string,
+    subresource?: SubResource
+) {
+    const resourcePlural = fallbackPlural(resource)
+    const attributes = {
+        name: name ?? resource?.metadata?.name,
+        namespace: namespace ?? resource?.metadata?.namespace,
+        resource: resourcePlural,
+        subresource,
+        verb,
+        group: getResourceGroup(resource),
+    }
+    if (!attributes.name) delete attributes.name
+    if (!attributes.namespace) delete attributes.namespace
+    if (!attributes.subresource) delete attributes.subresource
+
+    return attributes
+}
+
+export function rbacGetTestHelper(resource: IResource, namespace?: string, name?: string) {
+    return rbacResourceTestHelper('get', resource, namespace, name)
+}
+
+export function rbacPatchTestHelper(resource: IResource, namespace?: string, name?: string) {
+    return rbacResourceTestHelper('patch', resource, namespace, name)
+}
+
+export function rbacCreateTestHelper(
+    resource: IResource,
+    namespace?: string,
+    name?: string,
+    subresource?: SubResource
+) {
+    return rbacResourceTestHelper('create', resource, namespace, name, subresource)
+}
+
+export function rbacDeleteTestHelper(resource: IResource, namespace?: string, name?: string) {
+    return rbacResourceTestHelper('delete', resource, namespace, name)
+}
+
+export function rbacUpdateTestHelper(resource: IResource, namespace?: string, name?: string) {
+    return rbacResourceTestHelper('update', resource, namespace, name)
 }

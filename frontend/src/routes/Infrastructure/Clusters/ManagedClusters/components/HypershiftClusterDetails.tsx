@@ -33,7 +33,7 @@ const HypershiftClusterDetails: React.FC = () => {
                         nodePools={clusterNodePools}
                         clusterImages={clusterImageSets}
                         onRemoveNodePool={(np) => deleteResource(np).promise}
-                        onUpdateNodePool={(nodePool, patches) => patchResource(nodePool, patches).promise}
+                        onUpdateNodePool={async (nodePool, patches) => patchResource(nodePool, patches).promise}
                         onAddNodePool={(nodePool) => createResource(nodePool).promise}
                         launchToOCP={(url, newTab) =>
                             launchToOCP(url, newTab, () => window.open(`${window.location.origin}/${url}`))

@@ -3,7 +3,7 @@ import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policySetsState } from '../../../atoms'
-import { nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import PoliciesPage, { AddToPolicySetModal, PolicyTableItem } from './Policies'
 import { mockPolicy, mockEmptyPolicy, mockPolicySets } from '../governance.sharedMocks'
@@ -11,6 +11,7 @@ import { mockPolicy, mockEmptyPolicy, mockPolicySets } from '../governance.share
 describe('Policies Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render empty Policies page correctly', async () => {
         render(

@@ -6,7 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { userPreferencesState } from '../../../../../atoms'
-import { nockPatch } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { wait, waitForNock } from '../../../../../lib/test-util'
 import { UserPreference } from '../../../../../resources/userpreference'
 import { DeleteSearchModal } from './DeleteSearchModal'
@@ -38,6 +38,7 @@ const mockUserPreferences: UserPreference[] = [
 ]
 
 describe('DeleteSearchModal', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     it('should call the delete request with a successful response', async () => {
         render(
             <RecoilRoot

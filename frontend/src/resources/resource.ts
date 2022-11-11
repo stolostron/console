@@ -2,6 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
+import { APIResourceNames, getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
@@ -21,7 +22,26 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
-export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+/*
+Todo: 
+    1. use getResourcePlural to execute getApiResoruceList
+    2. check to see if cache is empty, and if loading is false
+    3. load, look for resource
+    4. if resource is not found and loaded bool is false, reload and force update 
+    5. if resource is not found and loaded bool is true, exit.
+
+    Notes: With a queue, I can avoid redundant, parallel, calls to the api (so no need for the load state...)
+    it seem like in any case, if the resource is not found, we will ring the 
+    API a second time. To avoid making needless calls, each chained promise will check the cache
+    if the resource isn't there, it will ping the api again.
+
+    TODO: restore fallback code for getResourcePlural (which adds plural endings)
+*/
+
+let apiResourceList: APIResourceNames = {}
+let pendingPromise: Promise<string> | undefined
+
+export function fallbackPlural(resourceDefinition: IResourceDefinition) {
     if (resourceDefinition.kind.endsWith('s')) {
         return resourceDefinition.kind.toLowerCase()
     }
@@ -29,6 +49,44 @@ export function getResourcePlural(resourceDefinition: IResourceDefinition) {
     return resourceDefinition.kind?.toLowerCase().endsWith('y')
         ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
         : resourceDefinition.kind?.toLowerCase() + 's'
+}
+
+function getPluralFromCache(resourceDefinition: IResourceDefinition) {
+    return apiResourceList[resourceDefinition.apiVersion]?.[resourceDefinition.kind]?.pluralName
+}
+
+function getApiResourceList() {
+    return getApiPaths().promise
+}
+
+export async function getResourcePlural(resourceDefinition: IResourceDefinition): Promise<string> {
+    let plural = getPluralFromCache(resourceDefinition)
+    if (plural) {
+        return plural
+    }
+
+    if (pendingPromise) {
+        // when queuing another call, we find the last call in the list and execute our next call in
+        // the resolving callback. In that call back we check to see if the resource
+        // is in the newly populated cache
+        const queuedAsyncResult = pendingPromise.then(() => {
+            plural = getPluralFromCache(resourceDefinition)
+            if (plural) {
+                return plural
+            }
+            return fallbackPlural(resourceDefinition)
+        })
+        return queuedAsyncResult
+    } else {
+        const asyncResult = getApiResourceList().then((list) => {
+            apiResourceList = list
+            pendingPromise = undefined
+            plural = getPluralFromCache(resourceDefinition)
+            return plural ? plural : fallbackPlural(resourceDefinition)
+        })
+        pendingPromise = asyncResult
+        return asyncResult
+    }
 }
 
 export function getApiVersionResourceGroup(apiVersion: string) {
@@ -55,12 +113,12 @@ export function getResourceNamespace(resource: Partial<IResource>) {
     return resource.metadata?.namespace
 }
 
-export function getResourceApiPath(options: {
+export async function getResourceApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { namespace?: string }
-}): string {
+}) {
     const { apiVersion } = options
 
     let path: string
@@ -77,24 +135,73 @@ export function getResourceApiPath(options: {
 
     if (options.plural) {
         path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
     } else if (options.kind) {
-        path = join(path, getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind }))
+        const pluralName = await getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
     }
 
     return path.replace(/\\/g, '/')
 }
 
-export function getResourceNameApiPath(options: {
+export async function getResourceNameApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { name?: string; namespace?: string }
-}): string {
-    let path = getResourceApiPath(options)
+}) {
+    let path = await getResourceApiPath(options)
 
     const name = options.metadata?.name
     if (name) {
         path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}
+
+export function getResourceNameApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    let path = getResourceApiPathTestHelper(options)
+
+    const name = options.metadata?.name
+    if (name) {
+        path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}
+
+export function getResourceApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    const { apiVersion } = options
+
+    let path: string
+    if (apiVersion?.includes('/')) {
+        path = join('/apis', apiVersion)
+    } else {
+        path = join('/api', apiVersion)
+    }
+
+    const namespace = options.metadata?.namespace
+    if (namespace) {
+        path = join(path, 'namespaces', namespace)
+    }
+
+    if (options.plural) {
+        path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
+    } else if (options.kind) {
+        const pluralName = fallbackPlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
     }
 
     return path.replace(/\\/g, '/')

@@ -22,7 +22,7 @@ type Actions<T = unknown> = {
     isAriaDisabled?: boolean
     tooltip?: string
     click: (item: T) => void
-    rbac?: ResourceAttributes[]
+    rbac?: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
@@ -86,7 +86,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
 }
 
 type RbacButtonProps = Parameters<typeof AcmButton>[0] & {
-    rbac: ResourceAttributes[]
+    rbac: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
 
 const useStyles = makeStyles({
@@ -101,7 +101,7 @@ const useStyles = makeStyles({
 export function RbacButton(props: RbacButtonProps) {
     const { t } = useTranslation()
     const [isDisabled, setIsDisabled] = useState<boolean>(true)
-    const [rbac] = useState<ResourceAttributes[]>(props.rbac)
+    const [rbac] = useState<ResourceAttributes[] | Promise<ResourceAttributes>[]>(props.rbac)
     const classes = useStyles(isDisabled)
 
     useEffect(() => {

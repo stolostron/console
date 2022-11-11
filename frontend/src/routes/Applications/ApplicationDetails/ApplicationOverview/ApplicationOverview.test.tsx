@@ -10,7 +10,7 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../../../atoms'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 
 import {
@@ -415,6 +415,7 @@ const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoA
 describe('Overview Tab', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('should display subscription app info', async () => {
         render(
