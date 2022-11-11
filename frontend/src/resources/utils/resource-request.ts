@@ -239,7 +239,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
             }
         } catch (err) {
             // if the resource does not exist, create the resource
-            createResource(resource).promise
+            await createResource(resource).promise
         }
     }
     if (subscriptionResources.length < subscriptions.length) {

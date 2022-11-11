@@ -77,7 +77,6 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
 }
 
 function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
-    // TODO: handle sub-resources?
     const resourceNames: Record<string, APIResourceNames> = {}
     apiResourcePathResponse.forEach((resourceList) => {
         const resourceKindMap: { [key: string]: APIResourceMeta } = {}
@@ -96,32 +95,4 @@ function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
         resourceNames[groupVersion] = resourceKindMap
     })
     return resourceNames
-    /*
-    resourceNames - {
-        groupVersion: {
-            kind: {
-                pluralName,
-            }
-        }
-    }
-    What's in use in the frontend:
-        - group name
-        - kind
-        - plural
-        - singular
-    */
-    /* 
-    Format we return:
-        groupVersion: {  
-            Kind: {
-                groupVersion,
-                name, 
-                }
-        }
-        Example: 
-        "OperatorPKI": {
-        "groupVersion": "network.operator.openshift.io/v1",
-        "name": "operatorpkis",
-    },
-    */
 }

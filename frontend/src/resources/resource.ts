@@ -22,22 +22,6 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
-/*
-Todo: 
-    1. use getResourcePlural to execute getApiResoruceList
-    2. check to see if cache is empty, and if loading is false
-    3. load, look for resource
-    4. if resource is not found and loaded bool is false, reload and force update 
-    5. if resource is not found and loaded bool is true, exit.
-
-    Notes: With a queue, I can avoid redundant, parallel, calls to the api (so no need for the load state...)
-    it seem like in any case, if the resource is not found, we will ring the 
-    API a second time. To avoid making needless calls, each chained promise will check the cache
-    if the resource isn't there, it will ping the api again.
-
-    TODO: restore fallback code for getResourcePlural (which adds plural endings)
-*/
-
 let apiResourceList: APIResourceNames = {}
 let pendingPromise: Promise<string> | undefined
 
@@ -66,9 +50,6 @@ export async function getResourcePlural(resourceDefinition: IResourceDefinition)
     }
 
     if (pendingPromise) {
-        // when queuing another call, we find the last call in the list and execute our next call in
-        // the resolving callback. In that call back we check to see if the resource
-        // is in the newly populated cache
         const queuedAsyncResult = pendingPromise.then(() => {
             plural = getPluralFromCache(resourceDefinition)
             if (plural) {
