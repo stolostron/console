@@ -4,7 +4,7 @@
     "license": "SEE LICENSE IN LICENSE",
     "private": "true",
     "scripts": {
-        "postinstall": "concurrently npm:ci:* -c green,blue",
+        "postinstall": "concurrently npm:ci:* -c green,blue ; git status ; npm --version",
         "ci:frontend": "cd frontend && npm ci --legacy-peer-deps",
         "ci:backend": "cd backend && npm ci",
         "frontend:reinstall": "cd frontend && npm reinstall",
@@ -14,7 +14,7 @@
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
         "serve:plugins": "cd frontend && npm run serve:plugins",
-        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test npm:copyright:check -n frontend,backend -c green,blue",
+        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test npm:copyright:check -n frontend,backend -c green,blue ; echo '==== DEBUG ============' ; git status ; git diff ;npm --version",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
         "build": "concurrently npm:build:* -c green,blue,magenta",
