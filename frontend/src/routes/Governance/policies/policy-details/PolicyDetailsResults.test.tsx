@@ -6,7 +6,7 @@ import { policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
-import { mockPolicy } from '../../governance.sharedMocks'
+import { mockPolicy, mockPendingPolicy } from '../../governance.sharedMocks'
 
 describe('Policy Details Results', () => {
     beforeEach(async () => {
@@ -35,6 +35,34 @@ describe('Policy Details Results', () => {
         await waitForText('policy-set-with-1-placement-policy-1', true)
         await waitForText(
             'notification - namespaces [test] found as specified, therefore this Object template is compliant'
+        )
+    })
+})
+
+describe('Policy Details Results with pending status', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
+    test('Should render Policy Details Results Page content correctly for pending status', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, mockPendingPolicy)
+                }}
+            >
+                <MemoryRouter>
+                    <PolicyDetailsResults policy={mockPendingPolicy[0]} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // wait page load
+        await waitForText('Clusters')
+
+        // wait for table cells to load correctly
+        await waitForText('Pending')
+        await waitForText(
+            'template-error; Dependencies were not satisfied: 1 dependencies are still pending (Policy default.policy-pod)'
         )
     })
 })

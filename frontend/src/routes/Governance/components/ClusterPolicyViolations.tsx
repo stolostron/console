@@ -31,9 +31,11 @@ export function ClusterPolicyViolationIcons(props: {
 export function ClusterPolicyViolationIcons2(props: {
     compliant: number
     noncompliant: number
+    pending?: number
     unknown?: number
     compliantHref?: string
     violationHref?: string
+    pendingHref?: string
 }) {
     const { t } = useTranslation()
     return (
@@ -44,6 +46,9 @@ export function ClusterPolicyViolationIcons2(props: {
             violations={props.noncompliant}
             violationsTooltip={t('{{count}} clusters with violations', { count: props.noncompliant })}
             violationHref={props.violationHref}
+            pending={props.pending}
+            pendingTooltip={t('{{count}} clusters with unsatisfied dependencies', { count: props.pending })}
+            pendingHref={props.violationHref}
             unknown={props.unknown}
             unknownTooltip={t('{{count}} clusters with unknown status', { count: props.unknown })}
         />

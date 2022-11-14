@@ -25,7 +25,7 @@ export interface Policy {
         remediationAction?: string
     }
     status?: {
-        compliant?: 'Compliant' | 'NonCompliant'
+        compliant?: 'Compliant' | 'NonCompliant' | 'Pending'
         details?: PolicyStatusDetails[]
         placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
         status?: { clustername: string; clusternamespace: string; compliant?: string }[]
