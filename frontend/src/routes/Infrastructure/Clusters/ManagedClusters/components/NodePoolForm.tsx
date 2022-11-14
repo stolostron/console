@@ -56,7 +56,7 @@ export enum HypershiftCloudPlatformType {
 
 export type ListItems = {
     key: string
-    value?: string | number | React.ReactNode | undefined
+    value?: string | number | React.ReactNode
     edit?: React.ReactNode
 }
 
