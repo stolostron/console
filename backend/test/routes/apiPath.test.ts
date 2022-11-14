@@ -3,8 +3,8 @@ import { request } from '../mock-request'
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import nock from 'nock'
 
-describe(`apiPath serves`, function () {
-    it(`should return resource names`, async function () {
+describe(`apiPath Route`, function () {
+    it(`should serve resource names`, async function () {
         nock(process.env.CLUSTER_API_URL).get('/.well-known/oauth-authorization-server').reply(200, {
             token_endpoint: 'https://oauth-openshift.apps.cs-aws-411-d62fs.dev02.red-chesterfield.com/oauth/token',
         })
