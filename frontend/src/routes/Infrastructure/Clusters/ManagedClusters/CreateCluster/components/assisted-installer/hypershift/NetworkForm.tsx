@@ -11,6 +11,7 @@ import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
 import { getTemplateValue } from '../utils'
 
 import { HypershiftAgentContext } from './HypershiftAgentContext'
+import { defaultPodCIDR, defaultServiceCIDR } from './constants'
 
 type FormControl = {
     active: any
@@ -102,8 +103,8 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
         // To preserve form values on Back button
         // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
         const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
-        const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', '172.31.0.0/16')
-        const podCIDR = getTemplateValue(templateYAML, 'podCIDR', '10.132.0.0/14')
+        const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', defaultServiceCIDR)
+        const podCIDR = getTemplateValue(templateYAML, 'podCIDR', defaultPodCIDR)
         const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
 
         const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
