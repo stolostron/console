@@ -42,6 +42,7 @@ describe('Policy Details Results', () => {
 describe('Policy Details Results with pending status', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render Policy Details Results Page content correctly for pending status', async () => {
         render(
