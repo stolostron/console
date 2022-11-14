@@ -238,9 +238,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 id: 'addNodepool',
                                 title: t('Add nodepool'),
                                 click: () => toggleAddNodepoolModal(),
-                                isDisabled: hostedCluster.spec.platform.type !== HypershiftCloudPlatformType.AWS,
+                                isDisabled: hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS,
                                 tooltip:
-                                    hostedCluster.spec.platform.type !== HypershiftCloudPlatformType.AWS
+                                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                                         ? t(
                                               'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
                                           )

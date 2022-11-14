@@ -22,6 +22,8 @@ const mockHostedCluster0 = {
         },
         dns: {
             baseDomain: 'dev06.red-chesterfield.com',
+            privateZoneID: 'Z04755293B3XJ2ACGO84U',
+            publicZoneID: 'Z2KFHRPLWG1H9H',
         },
         controllerAvailabilityPolicy: 'SingleReplica',
         infraID: 'feng-test',
@@ -38,10 +40,27 @@ const mockHostedCluster0 = {
         },
         infrastructureAvailabilityPolicy: 'SingleReplica',
         platform: {
-            agent: {
-                agentNamespace: 'agent-test2',
+            aws: {
+                cloudProviderConfig: {
+                    subnet: {
+                        id: 'subnet-048b18b8c0a7db89a',
+                    },
+                    vpc: 'vpc-0810759aa5a7598de',
+                    zone: 'us-west-2a',
+                },
+                controlPlaneOperatorCreds: {},
+                endpointAccess: 'Public',
+                kubeCloudControllerCreds: {},
+                nodePoolManagementCreds: {},
+                region: 'us-west-2',
+                resourceTags: [
+                    {
+                        key: 'kubernetes.io/cluster/feng-hs-scale-74zxh',
+                        value: 'owned',
+                    },
+                ],
             },
-            type: 'Agent',
+            type: 'AWS',
         },
         networking: {
             clusterNetwork: [
@@ -437,7 +456,15 @@ describe('NodePoolsTable no status', () => {
     beforeEach(() => {
         render(
             <RecoilRoot>
-                <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                <ClusterContext.Provider
+                    value={{
+                        hostedCluster: mockHostedCluster0,
+                        cluster: undefined,
+                        addons: undefined,
+                    }}
+                >
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                </ClusterContext.Provider>
             </RecoilRoot>
         )
     })
@@ -497,7 +524,15 @@ describe('NodePoolsTable no conditions', () => {
     beforeEach(() => {
         render(
             <RecoilRoot>
-                <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                <ClusterContext.Provider
+                    value={{
+                        hostedCluster: mockHostedCluster0,
+                        cluster: undefined,
+                        addons: undefined,
+                    }}
+                >
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                </ClusterContext.Provider>
             </RecoilRoot>
         )
     })
