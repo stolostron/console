@@ -405,7 +405,7 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
         })
 }
 
-export function nockDelete(resource: IResource, response?: IResource) {
+export function nockDelete(resource: IResource, response?: IResource, statusCode?: number) {
     const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
     return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(resourceNameApiPath)
@@ -416,7 +416,7 @@ export function nockDelete(resource: IResource, response?: IResource) {
             'Access-Control-Allow-Credentials': 'true',
         })
         .delete(resourceNameApiPath)
-        .reply(response ? 200 : 204, response, {
+        .reply(statusCode ? statusCode : response ? 200 : 204, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
