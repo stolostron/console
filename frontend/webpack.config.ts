@@ -95,19 +95,10 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
                 new CopyPlugin({
-                    patterns: [
-                        {
-                            from: 'public',
-                            globOptions: { ignore: ['**/*.html', '**/translation.json'] },
-                        },
-                    ],
+                    patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html', '**/translation.json'] } }],
                 }),
             isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
-            isProduction &&
-                new CompressionPlugin({
-                    algorithm: 'brotliCompress',
-                    filename: '[path][base].br',
-                }),
+            isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
             isDevelopment && new ReactRefreshWebpackPlugin(),
             // new HtmlWebpackPlugin({ title: 'test', favicon: 'public/favicon.svg' }),
             new HtmlWebpackPlugin({ template: './public/index.html' }),
