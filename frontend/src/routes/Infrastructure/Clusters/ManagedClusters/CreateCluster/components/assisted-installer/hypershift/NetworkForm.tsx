@@ -30,6 +30,43 @@ type NetworkFormProps = {
     templateYAML: string
 }
 
+export const getDefaultNetworkFormValues = (
+    templateYAML: string,
+    isBM: boolean,
+    isAdvancedNetworking: boolean
+): NetworkFormValues => {
+    // To preserve form values on Back button
+    // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
+    const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
+    const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', defaultServiceCIDR)
+    const podCIDR = getTemplateValue(templateYAML, 'podCIDR', defaultPodCIDR)
+    const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
+
+    const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
+    const httpsProxy = getTemplateValue(templateYAML, 'httpsProxy', '')
+    const noProxy = getTemplateValue(templateYAML, 'noProxy', '')
+    const enableProxy = !!(httpProxy || httpsProxy || noProxy)
+
+    const nodePortPort: number = parseInt(getTemplateValue(templateYAML, 'port', '0'))
+    const nodePortAddress = getTemplateValue(templateYAML, 'address', '')
+    const isNodePort: boolean = nodePortPort !== undefined || !!nodePortAddress
+
+    return {
+        machineCIDR,
+        isAdvanced: isAdvancedNetworking,
+        sshPublicKey,
+        serviceCIDR,
+        podCIDR,
+        enableProxy,
+        httpProxy,
+        httpsProxy,
+        noProxy,
+        apiPublishingStrategy: isNodePort || isBM ? 'NodePort' : 'LoadBalancer',
+        nodePortPort,
+        nodePortAddress,
+    }
+}
+
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
     const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace } =
         React.useContext(HypershiftAgentContext)
@@ -99,38 +136,10 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
         { matchingAgents: [], count: 0 }
     ) || { matchingAgents: [], count: 0 }
 
-    const initialValues: NetworkFormValues = React.useMemo(() => {
-        // To preserve form values on Back button
-        // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
-        const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
-        const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', defaultServiceCIDR)
-        const podCIDR = getTemplateValue(templateYAML, 'podCIDR', defaultPodCIDR)
-        const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
-
-        const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
-        const httpsProxy = getTemplateValue(templateYAML, 'httpsProxy', '')
-        const noProxy = getTemplateValue(templateYAML, 'noProxy', '')
-        const enableProxy = !!(httpProxy || httpsProxy || noProxy)
-
-        const nodePortPort: number = parseInt(getTemplateValue(templateYAML, 'port', '0'))
-        const nodePortAddress = getTemplateValue(templateYAML, 'address', '')
-        const isNodePort: boolean = nodePortPort !== undefined || !!nodePortAddress
-
-        return {
-            machineCIDR,
-            isAdvanced: isAdvancedNetworking,
-            sshPublicKey,
-            serviceCIDR,
-            podCIDR,
-            enableProxy,
-            httpProxy,
-            httpsProxy,
-            noProxy,
-            apiPublishingStrategy: isNodePort || isBMPlatform(infrastructures[0]) ? 'NodePort' : 'LoadBalancer',
-            nodePortPort,
-            nodePortAddress,
-        }
-    }, [templateYAML, infrastructures, isAdvancedNetworking])
+    const initialValues: NetworkFormValues = React.useMemo(
+        () => getDefaultNetworkFormValues(templateYAML, isBMPlatform(infrastructures[0]), isAdvancedNetworking),
+        [templateYAML, infrastructures, isAdvancedNetworking]
+    )
 
     return agents ? (
         <HostedClusterNetworkStep

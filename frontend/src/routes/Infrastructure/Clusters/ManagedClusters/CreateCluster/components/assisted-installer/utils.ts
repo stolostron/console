@@ -757,3 +757,5 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
     const value = rows[0].replace(regex, '').trim()
     return value
 }
+
+export const getDefault = (values: (string | undefined)[]): string => values.filter(Boolean)?.[0] || ''
