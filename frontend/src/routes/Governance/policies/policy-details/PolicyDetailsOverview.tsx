@@ -322,6 +322,10 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                 statusMsg = t(' Without violations: ')
                                 icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
                                 break
+                            case 'pending':
+                                statusMsg = ' Pending: '
+                                icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                                break
                         }
                         statusList.push(
                             <div key={`${status}-status-container`}>

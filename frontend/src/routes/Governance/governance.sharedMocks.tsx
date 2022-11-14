@@ -223,6 +223,94 @@ const policy1: Policy = {
     },
 }
 
+const pendingPolicy: Policy = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: {
+        name: 'policy-set-with-1-placement-policy',
+        namespace: 'test',
+        uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+    },
+    spec: {
+        disabled: false,
+        'policy-templates': [
+            {
+                objectDefinition: {
+                    apiVersion: 'policy.open-cluster-management.io/v1',
+                    kind: 'ConfigurationPolicy',
+                    metadata: { name: 'policy-set-with-1-placement-policy-1' },
+                    spec: {
+                        namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+                        remediationAction: 'inform',
+                        severity: 'low',
+                    },
+                },
+            },
+        ],
+        remediationAction: 'inform',
+    },
+    status: {
+        compliant: 'Pending',
+        placement: [
+            {
+                placement: 'policy-set-with-1-placement',
+                placementBinding: 'policy-set-with-1-placement',
+                policySet: 'policy-set-with-1-placement',
+            },
+        ],
+        status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Pending' }],
+    },
+}
+
+const pendingPolicy0: Policy = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: {
+        name: 'test.policy-set-with-1-placement-policy',
+        namespace: 'local-cluster',
+        labels: {
+            'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+            'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+            'policy.open-cluster-management.io/root-policy': 'test.policy-set-with-1-placement-policy',
+        },
+    },
+    spec: {
+        disabled: false,
+        'policy-templates': [
+            {
+                objectDefinition: {
+                    apiVersion: 'policy.open-cluster-management.io/v1',
+                    kind: 'ConfigurationPolicy',
+                    metadata: { name: 'policy-set-with-1-placement-policy-1' },
+                    spec: {
+                        namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+                        remediationAction: 'inform',
+                        severity: 'low',
+                    },
+                },
+            },
+        ],
+        remediationAction: 'inform',
+    },
+    status: {
+        compliant: 'Pending',
+        details: [
+            {
+                compliant: 'Pending',
+                history: [
+                    {
+                        eventName: 'test.policy-set-with-1-placement-policy.16d459c516462fbf',
+                        lastTimestamp: '2022-02-16T19:07:46Z',
+                        message:
+                            'Pending; template-error; Dependencies were not satisfied: 1 dependencies are still pending (Policy default.policy-pod)',
+                    },
+                ],
+                templateMeta: { creationTimestamp: null, name: 'policy-set-with-1-placement-policy-1' },
+            },
+        ],
+    },
+}
+
 const policyWithoutStatus: Policy = {
     apiVersion: PolicyApiVersion,
     kind: PolicyKind,
@@ -561,6 +649,8 @@ export const mockEditedPolicyAutomation: PolicyAutomation = {
 
 export const mockEmptyPolicy: Policy[] = []
 export const mockPolicy: Policy[] = [rootPolicy, policy0, policy1]
+export const mockPendingPolicy: Policy[] = [pendingPolicy, pendingPolicy0]
+
 export const mockPolicyNoStatus: Policy = policyWithoutStatus
 
 export const mockEmptyPolicySet: PolicySet[] = []

@@ -78,6 +78,13 @@ export function PolicyDetailsHistory(props: {
                                     {t('With violations')}
                                 </div>
                             )
+                        case 'pending':
+                            return (
+                                <div>
+                                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                                    {t('Pending')}
+                                </div>
+                            )
                         default:
                             return (
                                 <div>

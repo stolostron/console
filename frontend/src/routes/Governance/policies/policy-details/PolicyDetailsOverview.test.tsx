@@ -13,6 +13,7 @@ import {
     mockPlacementDecision,
     mockPlacements,
     mockPolicySets,
+    mockPendingPolicy,
 } from '../../governance.sharedMocks'
 
 describe('Policy Details Results', () => {
@@ -46,5 +47,27 @@ describe('Policy Details Results', () => {
         // verify placement table
         await waitForText('policy-set-with-1-placement')
         await waitForText('Without violations:')
+    })
+
+    test('Should render Policy Details Page content correctly for pending policy', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(placementsState, mockPlacements)
+                    snapshot.set(policySetsState, [mockPolicySets[0]])
+                    snapshot.set(placementBindingsState, mockPlacementBindings)
+                    snapshot.set(placementDecisionsState, mockPlacementDecision)
+                }}
+            >
+                <MemoryRouter>
+                    <PolicyDetailsOverview policy={mockPendingPolicy[0]} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // wait page load
+        await waitForText('policy-set-with-1-placement-policy')
+
+        await waitForText('Pending:')
     })
 })
