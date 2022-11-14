@@ -11,7 +11,7 @@ import { get } from 'lodash'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
 import { AddNodePoolModal } from './AddNodePoolModal'
-import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManagedNodePoolNodesModal'
+import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
 import { HypershiftCloudPlatformType } from './NodePoolForm'
 

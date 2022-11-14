@@ -11,7 +11,7 @@ export function AddNodePoolModal(props: {
     close: () => void
     open: boolean
     hostedCluster: HostedClusterK8sResource
-    clusterImages: ClusterImageSetK8sResource[]
+    clusterImages?: ClusterImageSetK8sResource[]
     refNodepool?: NodePool
     nodepool?: NodePool
 }): JSX.Element {

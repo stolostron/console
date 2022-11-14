@@ -83,6 +83,7 @@ export function NodePoolForm(props: {
     const [awsSubnetID, setAwsSubnetID] = useState<string>()
 
     const [resourceErrors, setResourceErrors] = useState<any[]>([])
+    const [useHCImage, setUseHCImage] = useState<boolean>(false)
     const isEdit = !!props.nodepool
 
     // Need to account for different types of cloud providers ie. AWS, Azure
@@ -268,7 +269,7 @@ export function NodePoolForm(props: {
     }
 
     useEffect(() => {
-        if (selectedImage === undefined && props.clusterImages) {
+        if (selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
             const availableImages = getOCPVersions(props.clusterImages)
             const filteredImages: any[] = []
             availableImages.forEach((image) => {
@@ -277,12 +278,22 @@ export function NodePoolForm(props: {
                     filteredImages.push(image)
                 }
             })
-            setNodepoolImageOptions(filteredImages)
-            setSelectedImage(filteredImages[0].version)
+
+            if (filteredImages.length > 0) {
+                setNodepoolImageOptions(filteredImages)
+                setSelectedImage(filteredImages[0].version)
+                setUseHCImage(false)
+            } else {
+                setSelectedImage(getVersionFromReleaseImage(props.hostedCluster.spec.release.image))
+                setUseHCImage(true)
+            }
+        }
+        if (!props.clusterImages || props.clusterImages.length === 0) {
+            setUseHCImage(true)
         }
 
         if (props.hostedCluster.spec.platform?.type === HypershiftCloudPlatformType.AWS) {
-            if (props.refNodepool?.spec.platform?.aws?.securityGroups.length || 0 > 0) {
+            if (props.refNodepool?.spec.platform?.aws?.securityGroups.length || -1 > 0) {
                 const sgs: any = {}
                 props.refNodepool?.spec.platform?.aws?.securityGroups.forEach((sg: any) => {
                     sgs[sg.id] = ''
@@ -382,8 +393,10 @@ export function NodePoolForm(props: {
                 },
                 platform,
                 release: {
-                    image: props.clusterImages?.find((image) => image.spec.releaseImage.includes(selectedImage)).spec
-                        .releaseImage,
+                    image: useHCImage
+                        ? props.hostedCluster.spec.release.image
+                        : props.clusterImages?.find((image) => image.spec.releaseImage.includes(selectedImage)).spec
+                              .releaseImage,
                 },
                 replicas,
             },
