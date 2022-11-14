@@ -125,17 +125,27 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, contro
         { matchingAgents: [], count: 0 }
     ) || { matchingAgents: [], count: 0 }
 
+    HostedClusterNetworkStep
+    isBMPlatform
+    matchingAgents
+    count
+    controlProps
+    isAdvancedNetworking
+    infrastructures
+    onValuesChanged
+
     return agents ? (
-        <HostedClusterNetworkStep
-            formRef={formRef}
-            agents={matchingAgents}
-            count={count}
-            onValuesChanged={onValuesChanged}
-            initAdvancedNetworking={isAdvancedNetworking}
-            initSSHPublicKey={controlProps?.stringData?.['ssh-publickey']}
-            isBMPlatform={isBMPlatform(infrastructures[0])}
-        />
+        <div>Will be fixed in follow-up</div>
     ) : (
+        // <HostedClusterNetworkStep
+        //     formRef={formRef}
+        //     agents={matchingAgents}
+        //     count={count}
+        //     onValuesChanged={onValuesChanged}
+        //     initAdvancedNetworking={isAdvancedNetworking}
+        //     initSSHPublicKey={controlProps?.stringData?.['ssh-publickey']}
+        //     isBMPlatform={isBMPlatform(infrastructures[0])}
+        // />
         <LoadingState />
     )
 }
