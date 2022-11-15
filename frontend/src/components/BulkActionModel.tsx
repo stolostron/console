@@ -38,7 +38,7 @@ export interface IBulkActionModelProps<T = undefined> {
     description: string | React.ReactNode
     columns?: IAcmTableColumn<T>[]
     keyFn?: (item: T) => string
-    actionFn: (item: T) => IRequestResult | Promise<IRequestResult>
+    actionFn: (item: T) => IRequestResult
     preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
     checkBox?: JSX.Element
     confirmText?: string
@@ -208,10 +208,9 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       }
                                       if (errors.length === 0) {
                                           setProgressCount(props.resources.length)
-                                          const requestArray = await Promise.all(
-                                              props.resources.map(async (resource) => {
-                                                  const promisedRequest = await Promise.resolve(props.actionFn)
-                                                  const r = await promisedRequest(resource)
+                                          const requestResult = resultsSettled(
+                                              props.resources.map((resource) => {
+                                                  const r = props.actionFn(resource)
                                                   return {
                                                       promise: r.promise.finally(() =>
                                                           setProgress((progress) => progress + 1)
@@ -220,8 +219,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                                   }
                                               })
                                           )
-
-                                          const requestResult = resultsSettled(requestArray)
                                           const promiseResults = await requestResult.promise
                                           promiseResults.forEach((promiseResult, index) => {
                                               if (promiseResult.status === 'rejected') {

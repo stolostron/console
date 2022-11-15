@@ -49,7 +49,7 @@ export function nockGet<Resource extends IResource>(
     polling = true
 ) {
     const resourcePath = getResourceNameApiPathTestHelper(resource)
-    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourcePath)
+    const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourcePath)
     const finalNockScope = nockScope.reply(statusCode, response ?? resource, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -89,7 +89,7 @@ export function nockGetTextPlain(response: string, statusCode = 200, polling = t
 
 export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
     const resourcePath = getResourceNameApiPathTestHelper(resource)
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(resourcePath)
         .optionally()
         .reply(statusCode, response ?? resource, {
@@ -110,7 +110,7 @@ export function nockList<Resource extends IResource>(
         kind: resource.kind,
         metadata: resource.metadata,
     })
-    let nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPaths)
+    let nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPaths)
 
     if (labels) {
         nockScope = nockScope.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -145,7 +145,7 @@ export function nockClusterList<Resource extends IResource>(
 ) {
     const resourceApiPath = getResourceApiPathTestHelper({ apiVersion: resource.apiVersion, kind: resource.kind })
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
+    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -176,7 +176,7 @@ export function nockNamespacedList<Resource extends IResource>(
 ) {
     const resourceApiPath = getResourceApiPathTestHelper(resource)
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
+    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -222,30 +222,17 @@ export function nockCreate(
     resource: IResource | ClusterRoleBinding,
     response?: IResource,
     statusCode = 201,
-    params?: any,
-    optional?: boolean
+    params?: any
 ) {
-    const scope = optional
-        ? nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-              .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
-                  return isEqual(body, resource)
-              })
-              .optionally()
-              .reply(statusCode, response ?? resource, {
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                  'Access-Control-Allow-Credentials': 'true',
-              })
-        : nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-              .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
-                  return isEqual(body, resource)
-              })
-              .reply(statusCode, response ?? resource, {
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                  'Access-Control-Allow-Credentials': 'true',
-              })
-
+    const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+        .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
+            return isEqual(body, resource)
+        })
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
     return scope
 }
 
@@ -389,7 +376,7 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
     const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(resourceNameApiPath)
         .optionally()
         .reply(204, undefined, {
@@ -407,7 +394,7 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
 
 export function nockDelete(resource: IResource, response?: IResource, statusCode?: number) {
     const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
-    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(resourceNameApiPath)
         .optionally()
         .reply(204, undefined, {

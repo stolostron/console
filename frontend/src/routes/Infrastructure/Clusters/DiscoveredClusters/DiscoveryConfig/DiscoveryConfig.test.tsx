@@ -209,7 +209,7 @@ describe('discovery config page', () => {
         await clickByText('Delete')
         await waitForText('Delete discovery settings')
         await clickByText('Delete', 1)
-        await waitFor(async () => expect(deleteNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('ocm/ocm-api-token discovery setting was removed successfully')

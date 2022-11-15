@@ -1227,13 +1227,6 @@ describe('ClusterDetails with not found', () => {
         nockIgnoreApiPaths()
     })
     test('page renders error state to return to cluster page', async () => {
-        const nock = nockCreate(
-            mockGetSecretSelfSubjectAccessRequest,
-            mockSelfSubjectAccessResponse,
-            201,
-            undefined,
-            true
-        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -1254,7 +1247,6 @@ describe('ClusterDetails with not found', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([nock])
         await waitForText('Not found')
         userEvent.click(
             screen.getByRole('button', {

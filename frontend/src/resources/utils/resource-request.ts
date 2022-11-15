@@ -112,7 +112,7 @@ export async function reconcileResources(
             if (existing) {
                 const patch = jsonpatch.compare(existing, resource)
                 if (patch.length) {
-                    patchResource(existing, patch, { dryRun: true })
+                    await patchResource(existing, patch, { dryRun: true })
                 }
             }
         }
