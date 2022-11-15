@@ -520,8 +520,8 @@ describe('Clusters Page RBAC', () => {
         const rbacCreateManagedClusterNock = nockRBAC(rbacCreateTestHelper(ManagedClusterDefinition))
         const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
             prev.push(
-                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)).persist(),
-                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!)).persist()
+                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),
+                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!))
             )
             return prev
         }, [] as Scope[])

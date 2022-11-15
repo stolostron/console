@@ -20,7 +20,6 @@ import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import StackTrace from 'stacktrace-js'
 import { Url } from 'url'
-import { mockApiPathList } from '../routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryComponents/test-utils'
 
 export type ISearchRelatedResult = {
     data: {
@@ -333,12 +332,6 @@ export function nockAnsibleTower(
         })
 }
 
-export function nockApiPaths(response: APIResourceNames, statusCode = 200) {
-    return nocked(process.env.JEST_DEFAULT_HOST as string)
-        .get('/apiPaths')
-        .reply(statusCode, response)
-}
-
 export function nockIgnoreApiPaths() {
     const scope = nocked(process.env.JEST_DEFAULT_HOST as string)
         .persist()
@@ -469,4 +462,82 @@ export const mockNotFoundStatus = {
     status: 'Failure',
     message: 'Not Found.',
     code: 404,
+}
+
+const mockApiPathList: APIResourceNames = {
+    'cluster.open-cluster-management.io/v1': {
+        ManagedCluster: {
+            pluralName: 'managedclusters',
+        },
+    },
+    'hive.openshift.io/v1': {
+        ClusterDeployment: {
+            pluralName: 'clusterdeployments',
+        },
+        SyncSet: {
+            pluralName: 'syncsets',
+        },
+        ClusterClaim: {
+            pluralName: 'clusterclaims',
+        },
+        ClusterPool: {
+            pluralName: 'clusterpools',
+        },
+        ClusterImageSet: {
+            pluralName: 'clusterimagesets',
+        },
+        HiveConfig: {
+            pluralName: 'hiveconfigs',
+        },
+        ClusterState: {
+            pluralName: 'clusterstates',
+        },
+        ClusterProvision: {
+            pluralName: 'clusterprovisions',
+        },
+        MachinePool: {
+            pluralName: 'machinepools',
+        },
+    },
+    'cluster.open-cluster-management.io/v1beta1': {
+        Placement: {
+            pluralName: 'placements',
+        },
+        ClusterCurator: {
+            pluralName: 'clustercurators',
+        },
+        ManagedClusterSet: {
+            pluralName: 'managedclustersets',
+        },
+    },
+    v1: {
+        Binding: {
+            pluralName: 'bindings',
+        },
+        ConfigMap: {
+            pluralName: 'configmaps',
+        },
+        Secret: {
+            pluralName: 'secrets',
+        },
+    },
+    'authorization.k8s.io/v1': {
+        LocalSubjectAccessReview: {
+            pluralName: 'localsubjectaccessreviews',
+        },
+        SelfSubjectAccessReview: {
+            pluralName: 'selfsubjectaccessreviews',
+        },
+        SelfSubjectRulesReview: {
+            pluralName: 'selfsubjectrulesreviews',
+        },
+        SubjectAccessReview: {
+            pluralName: 'subjectaccessreviews',
+        },
+    },
+    'app.k8s.io/v1beta1': {
+        Application: {
+            pluralName: 'applications',
+        },
+    },
 }

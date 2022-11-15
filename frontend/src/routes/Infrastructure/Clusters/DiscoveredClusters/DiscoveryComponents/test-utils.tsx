@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { APIResourceNames } from '../../../../../lib/api-resource-list'
 import {
     DiscoveredCluster,
     DiscoveryConfig,
@@ -244,83 +243,5 @@ export const secretCreateSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     },
     status: {
         allowed: true,
-    },
-}
-
-export const mockApiPathList: APIResourceNames = {
-    'cluster.open-cluster-management.io/v1': {
-        ManagedCluster: {
-            pluralName: 'managedclusters',
-        },
-    },
-    'hive.openshift.io/v1': {
-        ClusterDeployment: {
-            pluralName: 'clusterdeployments',
-        },
-        SyncSet: {
-            pluralName: 'syncsets',
-        },
-        ClusterClaim: {
-            pluralName: 'clusterclaims',
-        },
-        ClusterPool: {
-            pluralName: 'clusterpools',
-        },
-        ClusterImageSet: {
-            pluralName: 'clusterimagesets',
-        },
-        HiveConfig: {
-            pluralName: 'hiveconfigs',
-        },
-        ClusterState: {
-            pluralName: 'clusterstates',
-        },
-        ClusterProvision: {
-            pluralName: 'clusterprovisions',
-        },
-        MachinePool: {
-            pluralName: 'machinepools',
-        },
-    },
-    'cluster.open-cluster-management.io/v1beta1': {
-        Placement: {
-            pluralName: 'placements',
-        },
-        ClusterCurator: {
-            pluralName: 'clustercurators',
-        },
-        ManagedClusterSet: {
-            pluralName: 'managedclustersets',
-        },
-    },
-    v1: {
-        Binding: {
-            pluralName: 'bindings',
-        },
-        ConfigMap: {
-            pluralName: 'configmaps',
-        },
-        Secret: {
-            pluralName: 'secrets',
-        },
-    },
-    'authorization.k8s.io/v1': {
-        LocalSubjectAccessReview: {
-            pluralName: 'localsubjectaccessreviews',
-        },
-        SelfSubjectAccessReview: {
-            pluralName: 'selfsubjectaccessreviews',
-        },
-        SelfSubjectRulesReview: {
-            pluralName: 'selfsubjectrulesreviews',
-        },
-        SubjectAccessReview: {
-            pluralName: 'subjectaccessreviews',
-        },
-    },
-    'app.k8s.io/v1beta1': {
-        Application: {
-            pluralName: 'applications',
-        },
     },
 }
