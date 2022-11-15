@@ -306,9 +306,6 @@ export function CredentialsForm(
     // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
-    // set createFail
-    const [createFail, setCreateFail] = useState(false)
-
     function stateToData() {
         const stringData: ProviderConnectionStringData = {}
         const secret: ProviderConnection = {
@@ -1311,9 +1308,6 @@ export function CredentialsForm(
         ],
         submit: () => {
             let credentialData = formData?.customData ?? stateToData()
-            if (newCredentialCallback && !createFail) {
-                newCredentialCallback(credentialData)
-            }
             if (Array.isArray(credentialData)) {
                 credentialData = credentialData[0]
             }
@@ -1343,6 +1337,11 @@ export function CredentialsForm(
                         type: 'success',
                         autoClose: true,
                     })
+
+                    if (newCredentialCallback) {
+                        newCredentialCallback(credentialData)
+                    }
+
                     if (handleModalToggle) {
                         handleModalToggle()
                     } else {
@@ -1398,7 +1397,6 @@ export function CredentialsForm(
                 }
             }}
             isModalWizard={!!handleModalToggle}
-            setCreateFail={setCreateFail}
         />
     )
 }
