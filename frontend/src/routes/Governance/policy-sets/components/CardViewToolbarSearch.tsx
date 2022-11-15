@@ -226,6 +226,7 @@ export default function CardViewToolbarSearch(props: {
             textInputGroupRef &&
             !textInputGroupRef?.current?.contains(event.target)
         ) {
+            clearSelectedKey()
             setMenuIsOpen(false)
         }
     }
