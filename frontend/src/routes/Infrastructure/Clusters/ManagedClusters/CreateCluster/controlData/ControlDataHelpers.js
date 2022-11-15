@@ -198,6 +198,12 @@ export const setAvailableTemplates = (control, templates) => {
     control.available = templates.map((template) => template.metadata.name)
 }
 
+export const onChangeImage = (control, controlData) => {
+    const networkDefault = getControlByID(controlData, 'networkType')
+    const { active, saveActive } = infrastructure
+    active = 'OVNKubernetes'
+}
+
 const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
