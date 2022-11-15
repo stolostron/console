@@ -55,6 +55,7 @@ type SubmarinerConfigDefaults = {
     gateways: number
     awsInstanceType: string
     azureInstanceType: string
+    openStackInstanceType: string
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
@@ -64,4 +65,5 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     gateways: 1,
     awsInstanceType: 'c5d.large',
     azureInstanceType: 'Standard_F4s_v2',
+    openStackInstanceType: 'PnTAE.CPU_4_Memory_8192_Disk_50',
 }
