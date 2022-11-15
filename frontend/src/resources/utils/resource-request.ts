@@ -130,7 +130,7 @@ export async function reconcileResources(
                 if (existing) {
                     const patch = jsonpatch.compare(existing, resource)
                     if (patch.length) {
-                        patchResource(existing, patch)
+                        await patchResource(existing, patch)
                     }
                 }
             }
@@ -235,7 +235,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
             }
             const patch = jsonpatch.compare(existingResource, resource)
             if (patch.length) {
-                patchResource(existingResource, patch)
+                await patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource

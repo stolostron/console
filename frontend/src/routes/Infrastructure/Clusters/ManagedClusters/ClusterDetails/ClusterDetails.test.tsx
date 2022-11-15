@@ -1045,7 +1045,7 @@ describe('ClusterDetails', () => {
     })
 
     test('overview page opens logs', async () => {
-        const nocks: Scope[] = [await nockListHiveProvisionJobs()]
+        const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
         await clickByText('View logs', 1)
         await waitForNocks(nocks)
