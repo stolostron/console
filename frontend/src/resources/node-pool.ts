@@ -19,6 +19,7 @@ export interface NodePool extends IResource {
     metadata: Metadata
     spec: {
         clusterName: string
+        management: any
         platform: {
             aws?: {
                 instanceProfile: string
@@ -26,6 +27,10 @@ export interface NodePool extends IResource {
                 rootVolume: {
                     size: number
                     type: string
+                }
+                securityGroups: any[]
+                subnet: {
+                    id: string
                 }
             }
             type: string

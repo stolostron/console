@@ -296,6 +296,29 @@ export const mockAWSHostedCluster: HostedClusterK8sResource = {
         pullSecret: { name: 'local-cluster-pull-secret' },
         release: { image: 'quay.io/openshift-release-dev/ocp-release:4.10.15-x86_64' },
         sshKey: { name: 'feng-hypershift-test-ssh-key' },
+        platform: {
+            aws: {
+                cloudProviderConfig: {
+                    subnet: {
+                        id: 'subnet-048b18b8c0a7db89a',
+                    },
+                    vpc: 'vpc-0810759aa5a7598de',
+                    zone: 'us-west-2a',
+                },
+                controlPlaneOperatorCreds: {},
+                endpointAccess: 'Public',
+                kubeCloudControllerCreds: {},
+                nodePoolManagementCreds: {},
+                region: 'us-west-2',
+                resourceTags: [
+                    {
+                        key: 'kubernetes.io/cluster/feng-hs-scale-74zxh',
+                        value: 'owned',
+                    },
+                ],
+            },
+            type: 'AWS',
+        },
     },
     status: {
         conditions: [

@@ -3,7 +3,7 @@ import * as React from 'react'
 import { ExpandableSectionToggle, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
-import { NodePoolK8sResource, ClusterImageSetK8sResource, ConfigMapK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { NodePoolK8sResource, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 import NodePoolsTable from './NodePoolsTable'
@@ -57,18 +57,7 @@ export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunctio
 
 type NodePoolsProgressProps = {
     nodePools: NodePoolK8sResource[]
-    onRemoveNodePool: (nodePool: NodePoolK8sResource) => Promise<unknown>
-    onUpdateNodePool: (
-        nodePool: NodePoolK8sResource,
-        nodePoolPatches: {
-            op: string
-            value: unknown
-            path: string
-        }[]
-    ) => Promise<void>
-    onAddNodePool: (nodePool: NodePoolK8sResource) => Promise<void>
     clusterImages: ClusterImageSetK8sResource[]
-    supportedVersionsCM?: ConfigMapK8sResource
 }
 
 const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
