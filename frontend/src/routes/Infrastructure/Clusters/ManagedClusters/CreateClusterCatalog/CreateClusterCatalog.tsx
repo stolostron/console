@@ -80,6 +80,7 @@ export function CreateClusterCatalog() {
                         ),
                     },
                 ],
+                labels: getCredentialLabels(Provider.hostinventory),
                 onClick: clusterImageSets.length ? nextStep(NavigationPath.createControlPlane) : undefined,
                 alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
                 alertVariant: 'info',
