@@ -33,7 +33,7 @@ import {
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
 import { clickByTestId, typeByTestId, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
-import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -299,6 +299,7 @@ describe('Create Subscription Application page', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('cancel create should redirect to the correct link', async () => {

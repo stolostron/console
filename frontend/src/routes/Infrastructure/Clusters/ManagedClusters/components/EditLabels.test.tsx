@@ -3,7 +3,7 @@
 import { IResource, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { mockBadRequestStatus, nockPatch } from '../../../../../lib/nock-util'
+import { mockBadRequestStatus, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { EditLabels } from './EditLabels'
 
 const resource: IResource = {
@@ -13,6 +13,7 @@ const resource: IResource = {
 }
 
 describe('EditLabels', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('can add and remove labels', async () => {
         const { getByTestId, getByText } = render(<EditLabels resource={resource} close={() => {}} />)
         expect(getByText('abc=123')).toBeInTheDocument()

@@ -18,6 +18,7 @@ import {
     nockArgoGitPathTree,
     nockCreate,
     nockGet,
+    nockIgnoreApiPaths,
 } from '../../../lib/nock-util'
 import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -258,6 +259,7 @@ const placementHelm: Placement = {
 }
 
 describe('Create Argo Application Set', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     const AddApplicationSet = () => {
         return (
             <RecoilRoot

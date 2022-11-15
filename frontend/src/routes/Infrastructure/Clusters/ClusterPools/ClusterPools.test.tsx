@@ -17,7 +17,14 @@ import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
-import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockPatch } from '../../../../lib/nock-util'
+import {
+    nockCreate,
+    nockDelete,
+    nockGet,
+    nockIgnoreApiPaths,
+    nockIgnoreRBAC,
+    nockPatch,
+} from '../../../../lib/nock-util'
 import {
     clickBulkAction,
     clickByLabel,
@@ -249,6 +256,7 @@ const mockClusterClaimPending: ClusterClaim = {
 describe('ClusterPools page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

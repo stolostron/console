@@ -13,7 +13,7 @@ import {
     policiesState,
     policySetsState,
 } from '../../../atoms'
-import { nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicySet } from './EditPolicySet'
 import {
@@ -86,6 +86,7 @@ const placementRulePatch = [
 describe('Edit Policy Set Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('should render edit policy page', async () => {

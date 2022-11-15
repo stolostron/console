@@ -2,6 +2,7 @@
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 import { join } from 'path'
+import { APIResourceNames, getApiPaths } from '../lib/api-resource-list'
 import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
@@ -21,7 +22,10 @@ export interface ResourceList<Resource extends IResource> {
     items?: Resource[]
 }
 
-export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+let apiResourceList: APIResourceNames = {}
+let pendingPromise: Promise<string> | undefined
+
+export function fallbackPlural(resourceDefinition: IResourceDefinition) {
     if (resourceDefinition.kind.endsWith('s')) {
         return resourceDefinition.kind.toLowerCase()
     }
@@ -29,6 +33,41 @@ export function getResourcePlural(resourceDefinition: IResourceDefinition) {
     return resourceDefinition.kind?.toLowerCase().endsWith('y')
         ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
         : resourceDefinition.kind?.toLowerCase() + 's'
+}
+
+function getPluralFromCache(resourceDefinition: IResourceDefinition) {
+    return apiResourceList[resourceDefinition.apiVersion]?.[resourceDefinition.kind]?.pluralName
+}
+
+function getApiResourceList() {
+    return getApiPaths().promise
+}
+
+export async function getResourcePlural(resourceDefinition: IResourceDefinition): Promise<string> {
+    let plural = getPluralFromCache(resourceDefinition)
+    if (plural) {
+        return plural
+    }
+
+    if (pendingPromise) {
+        const queuedAsyncResult = pendingPromise.then(() => {
+            plural = getPluralFromCache(resourceDefinition)
+            if (plural) {
+                return plural
+            }
+            return fallbackPlural(resourceDefinition)
+        })
+        return queuedAsyncResult
+    } else {
+        const asyncResult = getApiResourceList().then((list) => {
+            apiResourceList = list
+            pendingPromise = undefined
+            plural = getPluralFromCache(resourceDefinition)
+            return plural ? plural : fallbackPlural(resourceDefinition)
+        })
+        pendingPromise = asyncResult
+        return asyncResult
+    }
 }
 
 export function getApiVersionResourceGroup(apiVersion: string) {
@@ -55,12 +94,12 @@ export function getResourceNamespace(resource: Partial<IResource>) {
     return resource.metadata?.namespace
 }
 
-export function getResourceApiPath(options: {
+export async function getResourceApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { namespace?: string }
-}): string {
+}) {
     const { apiVersion } = options
 
     let path: string
@@ -77,24 +116,73 @@ export function getResourceApiPath(options: {
 
     if (options.plural) {
         path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
     } else if (options.kind) {
-        path = join(path, getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind }))
+        const pluralName = await getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
     }
 
     return path.replace(/\\/g, '/')
 }
 
-export function getResourceNameApiPath(options: {
+export async function getResourceNameApiPath(options: {
     apiVersion: string
     kind?: string
     plural?: string
     metadata?: { name?: string; namespace?: string }
-}): string {
-    let path = getResourceApiPath(options)
+}) {
+    let path = await getResourceApiPath(options)
 
     const name = options.metadata?.name
     if (name) {
         path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}
+
+export function getResourceNameApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    let path = getResourceApiPathTestHelper(options)
+
+    const name = options.metadata?.name
+    if (name) {
+        path = join(path, name)
+    }
+
+    return path.replace(/\\/g, '/')
+}
+
+export function getResourceApiPathTestHelper(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}) {
+    const { apiVersion } = options
+
+    let path: string
+    if (apiVersion?.includes('/')) {
+        path = join('/apis', apiVersion)
+    } else {
+        path = join('/api', apiVersion)
+    }
+
+    const namespace = options.metadata?.namespace
+    if (namespace) {
+        path = join(path, 'namespaces', namespace)
+    }
+
+    if (options.plural) {
+        path = join(path, options.plural)
+        return path.replace(/\\/g, '/')
+    } else if (options.kind) {
+        const pluralName = fallbackPlural({ apiVersion: options.apiVersion, kind: options.kind })
+        path = join(path, pluralName)
     }
 
     return path.replace(/\\/g, '/')

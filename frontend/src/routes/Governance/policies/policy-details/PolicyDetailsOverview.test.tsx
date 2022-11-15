@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementDecisionsState, placementsState, policySetsState } from '../../../../atoms'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 
@@ -19,6 +19,7 @@ import {
 describe('Policy Details Results', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render Policy Details Results Page content correctly', async () => {
         render(

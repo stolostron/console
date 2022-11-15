@@ -6,8 +6,8 @@ import nock from 'nock'
 import {
     AnsibleTowerJobTemplateList,
     ClusterRoleBinding,
-    getResourceApiPath,
-    getResourceNameApiPath,
+    getResourceApiPathTestHelper,
+    getResourceNameApiPathTestHelper,
     IResource,
     ResourceAttributes,
     SelfSubjectAccessReview,
@@ -16,6 +16,7 @@ import {
     StatusApiVersion,
     StatusKind,
 } from '../resources'
+import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import StackTrace from 'stacktrace-js'
 import { Url } from 'url'
@@ -46,9 +47,8 @@ export function nockGet<Resource extends IResource>(
     statusCode = 200,
     polling = true
 ) {
-    const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceNameApiPath(resource)
-    )
+    const resourcePath = getResourceNameApiPathTestHelper(resource)
+    const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourcePath)
     const finalNockScope = nockScope.reply(statusCode, response ?? resource, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -87,8 +87,9 @@ export function nockGetTextPlain(response: string, statusCode = 200, polling = t
 }
 
 export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
+    const resourcePath = getResourceNameApiPathTestHelper(resource)
     return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourcePath)
         .optionally()
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
@@ -103,9 +104,12 @@ export function nockList<Resource extends IResource>(
     labels?: string[],
     query?: object
 ) {
-    let nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind, metadata: resource.metadata })
-    )
+    const resourceApiPaths = getResourceApiPathTestHelper({
+        apiVersion: resource.apiVersion,
+        kind: resource.kind,
+        metadata: resource.metadata,
+    })
+    let nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPaths)
 
     if (labels) {
         nockScope = nockScope.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -138,10 +142,9 @@ export function nockClusterList<Resource extends IResource>(
     labels?: string[],
     polling = true
 ) {
+    const resourceApiPath = getResourceApiPathTestHelper({ apiVersion: resource.apiVersion, kind: resource.kind })
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
-    )
+    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -170,10 +173,9 @@ export function nockNamespacedList<Resource extends IResource>(
     labels?: string[],
     polling = true
 ) {
+    const resourceApiPath = getResourceApiPathTestHelper(resource)
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath(resource)
-    )
+    let networkMock = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(resourceApiPath)
 
     if (labels) {
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
@@ -222,11 +224,7 @@ export function nockCreate(
     params?: any
 ) {
     const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .post(`${getResourceApiPath(resource)}${getNockParams(params)}`, (body) => {
-            // if (!isEqual(body, resource)) {
-            //     console.log(body)
-            //     console.log(resource)
-            // }
+        .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
             return isEqual(body, resource)
         })
         .reply(statusCode, response ?? resource, {
@@ -245,14 +243,14 @@ export function nockPatch(
     params?: any
 ) {
     return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(`${getResourceNameApiPath(resource)}${getNockParams(params)}`)
+        .options(`${getResourceNameApiPathTestHelper(resource)}${getNockParams(params)}`)
         .optionally()
         .reply(200, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(`${getResourceNameApiPath(resource)}${getNockParams(params)}`, (body) => isEqual(body, data))
+        .patch(`${getResourceNameApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => isEqual(body, data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
@@ -334,6 +332,15 @@ export function nockAnsibleTower(
         })
 }
 
+export function nockIgnoreApiPaths() {
+    const scope = nocked(process.env.JEST_DEFAULT_HOST as string)
+        .persist()
+        .get('/apiPaths')
+        .optionally()
+        .reply(200, mockApiPathList)
+    return scope
+}
+
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
     const url = new URL(repositoryUrl)
     return nocked('https://api.github.com')
@@ -361,15 +368,16 @@ export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPaths
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
+    const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
     return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourceNameApiPath)
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
+        .put(resourceNameApiPath, (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
@@ -377,17 +385,18 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
         })
 }
 
-export function nockDelete(resource: IResource, response?: IResource) {
+export function nockDelete(resource: IResource, response?: IResource, statusCode?: number) {
+    const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
     return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        .options(getResourceNameApiPath(resource))
+        .options(resourceNameApiPath)
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .delete(getResourceNameApiPath(resource))
-        .reply(response ? 200 : 204, response, {
+        .delete(resourceNameApiPath)
+        .reply(statusCode ? statusCode : response ? 200 : 204, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
@@ -453,4 +462,82 @@ export const mockNotFoundStatus = {
     status: 'Failure',
     message: 'Not Found.',
     code: 404,
+}
+
+const mockApiPathList: APIResourceNames = {
+    'cluster.open-cluster-management.io/v1': {
+        ManagedCluster: {
+            pluralName: 'managedclusters',
+        },
+    },
+    'hive.openshift.io/v1': {
+        ClusterDeployment: {
+            pluralName: 'clusterdeployments',
+        },
+        SyncSet: {
+            pluralName: 'syncsets',
+        },
+        ClusterClaim: {
+            pluralName: 'clusterclaims',
+        },
+        ClusterPool: {
+            pluralName: 'clusterpools',
+        },
+        ClusterImageSet: {
+            pluralName: 'clusterimagesets',
+        },
+        HiveConfig: {
+            pluralName: 'hiveconfigs',
+        },
+        ClusterState: {
+            pluralName: 'clusterstates',
+        },
+        ClusterProvision: {
+            pluralName: 'clusterprovisions',
+        },
+        MachinePool: {
+            pluralName: 'machinepools',
+        },
+    },
+    'cluster.open-cluster-management.io/v1beta1': {
+        Placement: {
+            pluralName: 'placements',
+        },
+        ClusterCurator: {
+            pluralName: 'clustercurators',
+        },
+        ManagedClusterSet: {
+            pluralName: 'managedclustersets',
+        },
+    },
+    v1: {
+        Binding: {
+            pluralName: 'bindings',
+        },
+        ConfigMap: {
+            pluralName: 'configmaps',
+        },
+        Secret: {
+            pluralName: 'secrets',
+        },
+    },
+    'authorization.k8s.io/v1': {
+        LocalSubjectAccessReview: {
+            pluralName: 'localsubjectaccessreviews',
+        },
+        SelfSubjectAccessReview: {
+            pluralName: 'selfsubjectaccessreviews',
+        },
+        SelfSubjectRulesReview: {
+            pluralName: 'selfsubjectrulesreviews',
+        },
+        SubjectAccessReview: {
+            pluralName: 'subjectaccessreviews',
+        },
+    },
+    'app.k8s.io/v1beta1': {
+        Application: {
+            pluralName: 'applications',
+        },
+    },
 }

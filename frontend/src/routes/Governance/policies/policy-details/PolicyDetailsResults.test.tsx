@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy, mockPendingPolicy } from '../../governance.sharedMocks'
@@ -11,6 +11,7 @@ import { mockPolicy, mockPendingPolicy } from '../../governance.sharedMocks'
 describe('Policy Details Results', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render Policy Details Results Page content correctly', async () => {
         render(
@@ -41,6 +42,7 @@ describe('Policy Details Results', () => {
 describe('Policy Details Results with pending status', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     test('Should render Policy Details Results Page content correctly for pending status', async () => {
         render(

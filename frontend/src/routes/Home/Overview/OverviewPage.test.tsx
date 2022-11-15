@@ -9,7 +9,7 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterInfosState, managedClustersState, policiesState, policyreportState } from '../../../atoms'
-import { nockCreate, nockGet } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
     ManagedCluster,
@@ -393,6 +393,7 @@ const mockPolicyReports: PolicyReport[] = [
 ]
 
 it('should render overview page in empty state', async () => {
+    const apiPathNock = nockIgnoreApiPaths()
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const getManageedClusterAccessRequeset = nockCreate(
         mockGetSelfSubjectAccessRequest,
@@ -413,7 +414,7 @@ it('should render overview page in empty state', async () => {
     await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
+    await waitForNocks([getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
 })
 
 it('should render overview page in error state', async () => {
@@ -454,6 +455,7 @@ it('should render overview page in error state', async () => {
 })
 
 it('should render overview page with expected data', async () => {
+    nockIgnoreApiPaths()
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const mocks = [
         {

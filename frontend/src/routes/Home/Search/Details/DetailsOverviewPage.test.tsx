@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import DetailsOverviewPage, {
     LablesGroup,
     OwnerReferences,
@@ -16,6 +16,7 @@ import DetailsOverviewPage, {
 describe('DetailsOverviewPage', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     it('Should correctly return ResourceSearchLink', async () => {

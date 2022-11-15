@@ -15,7 +15,7 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
-import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import { PluginContext } from '../../lib/PluginContext'
@@ -47,6 +47,7 @@ import { PluginDataContext } from '../../lib/PluginDataContext'
 describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
         render(

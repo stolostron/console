@@ -38,7 +38,7 @@ import {
     settingsState,
     subscriptionOperatorsState,
 } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByTestId,
@@ -573,6 +573,7 @@ describe('CreateCluster AWS', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can create AWS cluster without ansible template', async () => {
@@ -877,6 +878,7 @@ describe('CreateCluster on premise', () => {
 
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test(

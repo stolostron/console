@@ -42,7 +42,13 @@ import {
     secretsState,
     subscriptionOperatorsState,
 } from '../../../../../atoms'
-import { mockBadRequestStatus, nockCreate, nockGet, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import {
+    mockBadRequestStatus,
+    nockCreate,
+    nockGet,
+    nockIgnoreApiPaths,
+    nockIgnoreRBAC,
+} from '../../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickBySelector,
@@ -404,6 +410,7 @@ describe('ImportCluster', () => {
     beforeEach(() => {
         window.sessionStorage.clear()
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can create resources and generate the import command', async () => {
@@ -639,6 +646,7 @@ Object.defineProperty(window, 'sessionStorage', {
 describe('Import Discovered Cluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
     window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
     const Component = () => {

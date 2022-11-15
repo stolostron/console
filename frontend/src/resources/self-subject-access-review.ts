@@ -40,15 +40,18 @@ export type ResourceAttributes = {
     subresource?: string
 }
 
-export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
-    return createResource<SelfSubjectAccessReview>({
-        apiVersion: SelfSubjectAccessReviewApiVersion,
-        kind: SelfSubjectAccessReviewKind,
-        metadata: {},
-        spec: {
-            resourceAttributes,
-        },
-    })
+export function createSubjectAccessReview(resourceAttributes: Promise<ResourceAttributes> | ResourceAttributes) {
+    const resources = Promise.resolve(resourceAttributes).then(
+        (resourceAttributes): SelfSubjectAccessReview => ({
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        })
+    )
+    return createResource<SelfSubjectAccessReview>(resources)
 }
 
 export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {

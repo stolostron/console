@@ -43,7 +43,7 @@ import {
     subscriptionsState,
 } from '../../../atoms'
 import moment from 'moment'
-import { nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom'
@@ -613,6 +613,7 @@ describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockIgnoreApiPaths()
         const props: any = {
             name: 'application-0',
             namespace: 'namespace-0',

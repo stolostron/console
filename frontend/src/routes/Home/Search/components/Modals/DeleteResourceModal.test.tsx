@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { nockCreate, nockGet, nockSearch } from '../../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { SelfSubjectAccessReview } from '../../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
@@ -40,8 +40,16 @@ const deleteResourceSelfSubjectAccessResponse: SelfSubjectAccessReview = {
         allowed: true,
     },
 }
-
 const deleteResourceRequest = {
+    apiVersion: 'action.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterAction',
+    metadata: {
+        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
+        namespace: 'local-cluster',
+    },
+}
+
+const mcaDeleteResourceRequest = {
     apiVersion: 'action.open-cluster-management.io/v1beta1',
     kind: 'ManagedClusterAction',
     metadata: {
@@ -152,7 +160,7 @@ const mockSearchQuery = {
             },
         ],
     },
-    query: 'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}\n',
+    query: 'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}',
 }
 
 const mockSearchResponse = {
@@ -183,12 +191,17 @@ const mockSearchResponse = {
 }
 
 describe('DeleteResourceModal', () => {
+    beforeEach(() => {
+        nockIgnoreApiPaths()
+    })
+
     it('should call the delete resource mutation with a successful response', async () => {
         const deleteResourceSelfSubjectAccessNock = nockCreate(
             deleteResourceSelfSubjectAccessRequest,
             deleteResourceSelfSubjectAccessResponse
         )
-        const deleteResourceNock = nockCreate(deleteResourceRequest, deleteResourceResponse)
+        const nockCreateMcaDeleteAction = nockCreate(mcaDeleteResourceRequest, deleteResourceResponse)
+        const nockDeleteReq = nockDelete(deleteResourceRequest)
         const getSuccessfulActionNock = nockGet(getMCAResponse)
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
@@ -217,16 +230,14 @@ describe('DeleteResourceModal', () => {
             expect(submitButton).toBeTruthy()
             userEvent.click(submitButton)
 
-            // Wait for delete resource requesets to finish
-            await waitForNocks([deleteResourceNock])
-
-            // Mimic the polling requests
-            await waitForNocks([getSuccessfulActionNock])
+            // Wait for delete resource requesets to finish, Mimic the polling requests
+            await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
 
             await wait() // Test that the component has rendered correctly
+
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
     })

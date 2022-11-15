@@ -6,7 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockGet } from '../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
 import DetailsPage from './DetailsPage'
 
@@ -84,6 +84,7 @@ const getResourceResponse = {
 }
 
 describe('DetailsPage', () => {
+    nockIgnoreApiPaths()
     it('should render details page correctly', async () => {
         const deleteResourceNock = nockGet(getResourceRequest, getResourceResponse)
         render(

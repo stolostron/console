@@ -114,7 +114,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         if (namespaces.length) {
             const fetchAuthorizedNamespaces = async () => {
                 const authorizedNamespaces = await getAuthorizedNamespaces(
-                    [rbacCreate(SubscriptionDefinition)],
+                    [await rbacCreate(SubscriptionDefinition)],
                     namespaces
                 )
                 return {

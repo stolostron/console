@@ -28,6 +28,7 @@ import {
     nockDelete,
     nockGet,
     nockIgnoreRBAC,
+    nockIgnoreApiPaths,
     nockList,
     nockNamespacedList,
     nockPatch,
@@ -77,7 +78,6 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-    SelfSubjectAccessReview,
 } from '../../../../../resources'
 import {
     MultiClusterEngine,
@@ -780,35 +780,6 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     },
 }
 
-const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: clusterName,
-            resource: 'secrets',
-            verb: 'get',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
-const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: clusterName,
-            resource: 'secrets',
-            verb: 'get',
-            group: '',
-        },
-    },
-}
 const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     {
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
@@ -1063,6 +1034,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
 describe('ClusterDetails', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 
@@ -1164,6 +1136,7 @@ const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment}
 describe('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('overview page renders AI empty details', async () => {
@@ -1196,6 +1169,7 @@ describe('ClusterDetails for On Premise', () => {
 describe('Automation Details', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(<Component />)
     })
 
@@ -1218,8 +1192,11 @@ describe('Automation Details', () => {
 })
 
 describe('ClusterDetails with not found', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
     test('page renders error state to return to cluster page', async () => {
-        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -1240,7 +1217,6 @@ describe('ClusterDetails with not found', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([nock])
         await waitForText('Not found')
         userEvent.click(
             screen.getByRole('button', {
@@ -1250,7 +1226,6 @@ describe('ClusterDetails with not found', () => {
         expect(window.location.pathname).toEqual('/')
     })
     test('page renders error state, should have option to import', async () => {
-        nockIgnoreRBAC()
         nockGet(mockSecret)
         render(
             <RecoilRoot

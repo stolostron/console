@@ -12,6 +12,7 @@ import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
+import { apiPaths } from './routes/apiPaths'
 import { authenticated } from './routes/authenticated'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
@@ -33,6 +34,7 @@ router.all(`/api`, proxy)
 router.all(`/api/*`, proxy)
 router.all(`/apis`, proxy)
 router.all(`/apis/*`, proxy)
+router.all(`/apiPaths`, apiPaths)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
 router.get(`/login`, login)

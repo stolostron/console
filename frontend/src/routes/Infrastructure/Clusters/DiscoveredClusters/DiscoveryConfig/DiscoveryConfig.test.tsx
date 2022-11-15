@@ -5,7 +5,14 @@ import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace, nockDelete } from '../../../../../lib/nock-util'
+import {
+    nockCreate,
+    nockIgnoreRBAC,
+    nockGet,
+    nockReplace,
+    nockDelete,
+    nockIgnoreApiPaths,
+} from '../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../DiscoveredClusters'
@@ -65,6 +72,9 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
+    beforeEach(() => {
+        nockIgnoreApiPaths()
+    })
     it('Create Minimal DiscoveryConfig', async () => {
         const discoveryConfigCreateNock = nockCreate(
             discoveryConfigCreateSelfSubjectAccessRequest,
@@ -182,7 +192,6 @@ describe('discovery config page', () => {
 
     it('Delete DiscoveryConfig', async () => {
         const nocks = [nockGet(discoveryConfig, discoveryConfig)]
-
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
 

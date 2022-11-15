@@ -18,7 +18,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
-import { nockCreate, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { clickByLabel, clickByText, waitForNock, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
@@ -126,6 +126,7 @@ const Component = (props: { cluster: Cluster }) => (
 describe('ClusterActionDropdown', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
     })
 
     test('can import detached clusters', async () => {
@@ -205,14 +206,14 @@ describe('ClusterActionDropdown', () => {
         cluster.status = ClusterStatus.hibernating
         render(<Component cluster={cluster} />)
         const rbacNocks: Scope[] = [
-            nockRBAC(rbacPatchManagedCluster()),
-            nockRBAC(rbacPatchClusterDeployment()),
-            nockRBAC(rbacDeleteManagedCluster()),
-            nockRBAC(rbacDeleteClusterDeployment()),
-            nockRBAC(rbacPatchClusterCurator()),
-            nockRBAC(rbacCreateClusterCurator()),
-            nockRBAC(rbacPatchSecret()),
-            nockRBAC(rbacCreateSecret()),
+            nockRBAC(await rbacPatchManagedCluster()),
+            nockRBAC(await rbacPatchClusterDeployment()),
+            nockRBAC(await rbacDeleteManagedCluster()),
+            nockRBAC(await rbacDeleteClusterDeployment()),
+            nockRBAC(await rbacPatchClusterCurator()),
+            nockRBAC(await rbacCreateClusterCurator()),
+            nockRBAC(await rbacPatchSecret()),
+            nockRBAC(await rbacCreateSecret()),
         ]
         await clickByLabel('Actions')
         await waitForNocks(rbacNocks)

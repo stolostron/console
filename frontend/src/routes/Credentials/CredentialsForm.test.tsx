@@ -12,7 +12,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
-import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
     clearByTestId,
     clickByPlaceholderText,
@@ -69,7 +69,10 @@ export function createProviderConnection(
 }
 
 describe('add credentials page', () => {
-    beforeEach(() => nockIgnoreRBAC())
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+    })
 
     const Component = (props: { credentialsType: CredentialsType }) => {
         return (

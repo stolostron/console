@@ -19,7 +19,7 @@ import {
     nodePoolsState,
     policyreportState,
 } from '../../../../../../atoms'
-import { nockGet, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { ClusterContext } from '../ClusterDetails'
@@ -107,6 +107,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -153,6 +154,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockGet(kubeConfigSecret)
         nockGet(kubeAdminPassSecret)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -199,6 +201,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
         nockSearch(mockSearchQuery, mockSearchResponse)
         nockGet(kubeConfigSecret)
         nockGet(kubeAdminPassSecret)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -243,6 +246,9 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockGet(kubeConfigSecret)
+        nockGet(kubeAdminPassSecret)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -287,6 +293,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -331,6 +338,7 @@ describe('ClusterOverview with regional hub cluster information', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -377,6 +385,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
         mockRegionalHubCluster.isHostedCluster = true
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

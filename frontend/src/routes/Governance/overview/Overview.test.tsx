@@ -5,8 +5,10 @@ import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
 import GovernanceOverview from './Overview'
 import { mockEmptyPolicy, mockPolicyNoStatus, mockPolicy } from '../governance.sharedMocks'
+import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 describe('Overview Page', () => {
+    beforeEach(() => nockIgnoreApiPaths())
     test('Should render empty Overview page with create policy button correctly', async () => {
         const { queryAllByText } = await render(
             <RecoilRoot
