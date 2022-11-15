@@ -5,6 +5,9 @@ import React from 'react'
 import ControlPanelComboBox from './ControlPanelComboBox'
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 const propsPlain = {
     controlId: 'masterType',
@@ -45,7 +48,7 @@ const propsPlain = {
         isInitialized: true,
     },
     handleControlChange: jest.fn(),
-    i18n: jest.fn(),
+    i18n: t,
 }
 
 const propsMulti = {
@@ -77,12 +80,14 @@ const propsMulti = {
         info: '',
     },
     handleControlChange: jest.fn(),
-    i18n: jest.fn(),
+    i18n: t,
 }
 
 describe('ControlPanelComboBox component', () => {
     it('basic combo', async () => {
         render(<ControlPanelComboBox {...propsPlain} />)
+
+        screen.logTestingPlaygroundURL()
 
         const input = screen.getByRole('combobox', {
             name: /listbox input field/i,

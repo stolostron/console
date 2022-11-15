@@ -41,7 +41,7 @@ class ControlPanelTextInput extends React.Component {
                     style={{ display: '' }}
                     ref={this.setControlRef.bind(this, control)}
                 >
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         <TextInput
                             id={controlId}
                             isDisabled={disabled}

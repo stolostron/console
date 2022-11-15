@@ -28,6 +28,7 @@ class ControlPanelWizard extends React.Component {
             isEditing,
             creationStatus,
             backButtonOverride,
+            i18n,
         } = this.props
         let { steps } = this.props
         steps.forEach((step) => {
@@ -70,6 +71,7 @@ class ControlPanelWizard extends React.Component {
                     comment={comment}
                     startStep={lastReviewInx}
                     renderNotifications={renderNotifications.bind(this)}
+                    i18n={i18n}
                 />
             )
         }
@@ -128,14 +130,14 @@ class ControlPanelWizard extends React.Component {
         if (lastType !== 'review') {
             steps.push({
                 id: 'review',
-                name: 'Review and create',
-                control: { nextButtonLabel: isEditing ? 'Save' : 'Create' },
+                name: i18n('Review and create'),
+                control: { nextButtonLabel: isEditing ? i18n('Save') : i18n('Create') },
                 component: (
                     <div className={controlClasses}>
                         <Stack hasGutter>
                             <StackItem>
                                 <Title headingLevel="h2" size="2xl">
-                                    Review
+                                    {i18n('Review')}
                                 </Title>
                             </StackItem>
                             <StackItem>{renderReview(this.props.steps.slice(lastReviewInx), lastReviewInx)}</StackItem>
@@ -182,7 +184,7 @@ class ControlPanelWizard extends React.Component {
                             const promises = validateControls.map((control) => control.validate())
                             this.setState({
                                 isProcessing: true,
-                                processingLabel: 'Validating...',
+                                processingLabel: i18n('Validating...'),
                             })
                             Promise.allSettled(promises).then((results) => {
                                 this.setState({
@@ -257,20 +259,20 @@ class ControlPanelWizard extends React.Component {
                                     isLoading={isWorking}
                                     isDisabled={isDisabled}
                                     variant="primary"
-                                    spinnerAriaValueText={isWorking ? 'Processing' : undefined}
+                                    spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                                     onClick={!isWorking ? validateNextStep.bind(null, activeStep, onNext) : noop}
                                 >
-                                    {processingLabel || activeStep.control.nextButtonLabel || 'Next'}
+                                    {processingLabel || i18n(activeStep.control.nextButtonLabel) || i18n('Next')}
                                 </Button>
                                 <Button
                                     variant="secondary"
                                     onClick={activeStep.index === 0 && backButtonOverride ? backButtonOverride : onBack}
                                     isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
                                 >
-                                    Back
+                                    {i18n('Back')}
                                 </Button>
                                 <Button variant="link" onClick={onClose}>
-                                    Cancel
+                                    {i18n('Cancel')}
                                 </Button>
                             </React.Fragment>
                         )
@@ -279,15 +281,14 @@ class ControlPanelWizard extends React.Component {
             </WizardFooter>
         )
 
-        const title = 'Create wizard'
         let startAtStep = get(steps[0], 'control.startAtStep')
         startAtStep = steps.findIndex(({ id }) => id === startAtStep) + 1
         if (startAtStep < 1) startAtStep = 1
         return (
             <Wizard
                 ref={setWizardRef}
-                navAriaLabel={`${title} steps`}
-                mainAriaLabel={`${title} content`}
+                navAriaLabel={i18n('Create wizard steps')}
+                mainAriaLabel={i18n('Create wizard content')}
                 steps={steps}
                 height={'100%'}
                 onNext={onMove}

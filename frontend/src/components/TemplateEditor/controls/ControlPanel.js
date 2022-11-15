@@ -198,9 +198,11 @@ class ControlPanel extends React.Component {
             isEditing,
             creationStatus,
             backButtonOverride,
+            i18n,
         } = this.props
         return (
             <ControlPanelWizard
+                i18n={i18n}
                 steps={steps}
                 controlData={controlData}
                 controlClasses={controlClasses}

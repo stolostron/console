@@ -5,6 +5,9 @@ import React from 'react'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 const props = {
     controlId: 'workerType',
@@ -66,7 +69,7 @@ const props = {
         },
     },
     handleChange: jest.fn(),
-    i18n: jest.fn(),
+    i18n: t,
 }
 
 describe('ControlPanelTreeSelect component', () => {

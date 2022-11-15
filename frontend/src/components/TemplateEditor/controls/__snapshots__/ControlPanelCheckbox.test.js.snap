@@ -14,7 +14,6 @@ exports[`ControlPanelCheckbox component renders as expected 1`] = `
       >
         <input
           aria-invalid="false"
-          aria-label="creation.app.name"
           class="pf-c-check__input"
           data-ouia-component-id="OUIA-Generated-Checkbox-1"
           data-ouia-component-type="PF4/Checkbox"
@@ -44,7 +43,6 @@ exports[`ControlPanelCheckbox component renders as expected 1`] = `
             </label>
              
             <button
-              aria-label="More info"
               class="pf-c-form__group-label-help"
               id="controlId-label-help-button"
             >

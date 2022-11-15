@@ -25,7 +25,6 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
           </label>
            
           <button
-            aria-label="More info"
             class="pf-c-form__group-label-help"
             id="controlId-label-help-button"
           >
