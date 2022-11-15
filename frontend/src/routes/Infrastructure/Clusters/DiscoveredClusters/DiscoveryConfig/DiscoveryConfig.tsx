@@ -388,7 +388,7 @@ export function DiscoveryConfigPageContent(props: {
                         credentialsType={Provider.redhatcloud}
                         handleModalToggle={handleModalToggle}
                         hideYaml={true}
-                        control={setNewSecret}
+                        newCredentialCallback={setNewSecret}
                     />
                 </Modal>
             </Fragment>

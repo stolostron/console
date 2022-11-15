@@ -155,11 +155,12 @@ export function CredentialsForm(
         isViewing: boolean
         handleModalToggle?: () => void
         hideYaml?: boolean
-        control?: any
+        newCredentialCallback?: any
     } & ProviderConnectionOrCredentialsType
 ) {
     const { t } = useTranslation()
-    const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, control } = props
+    const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback } =
+        props
     const credentialsType =
         props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
     const toastContext = useContext(AcmToastContext)
@@ -1314,9 +1315,6 @@ export function CredentialsForm(
         ],
         submit: () => {
             let credentialData = formData?.customData ?? stateToData()
-            if (control) {
-                control(credentialData)
-            }
             if (Array.isArray(credentialData)) {
                 credentialData = credentialData[0]
             }
@@ -1346,6 +1344,11 @@ export function CredentialsForm(
                         type: 'success',
                         autoClose: true,
                     })
+
+                    if (newCredentialCallback) {
+                        newCredentialCallback(credentialData)
+                    }
+
                     if (handleModalToggle) {
                         handleModalToggle()
                     } else {

@@ -76,8 +76,8 @@ import {
     TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
-import { TFunction } from 'i18next'
 import { Fragment, ReactNode, useRef, useState } from 'react'
+import { TFunction } from 'i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
 import { AcmButton, AcmPageHeader } from '../ui-components'
@@ -126,6 +126,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml, isModalWizard } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
+
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')

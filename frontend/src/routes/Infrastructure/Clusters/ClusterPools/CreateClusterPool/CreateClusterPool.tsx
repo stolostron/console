@@ -275,7 +275,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                     credentialsType={infrastructureType}
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
-                    control={setNewSecret}
+                    newCredentialCallback={setNewSecret}
                 />
             </Modal>
             <TemplateEditor

@@ -147,7 +147,7 @@ export default function CreateSubscriptionApplicationPage() {
                                 credentialsType={Provider.ansible}
                                 handleModalToggle={handleModalToggle}
                                 hideYaml={true}
-                                control={setNewSecret}
+                                newCredentialCallback={setNewSecret}
                             />
                         </Modal>
                         {CreateSubscriptionApplication(
