@@ -78,7 +78,6 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-    SelfSubjectAccessReview,
 } from '../../../../../resources'
 import {
     MultiClusterEngine,
@@ -781,35 +780,6 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     },
 }
 
-const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: clusterName,
-            resource: 'secrets',
-            verb: 'get',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
-const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: clusterName,
-            resource: 'secrets',
-            verb: 'get',
-            group: '',
-        },
-    },
-}
 const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     {
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
