@@ -189,7 +189,7 @@ export const mapSingleApplication = (application) => {
         //this code moves all these items under the related section
         const kind = _.get(item, 'kind')
         const cluster = _.get(item, 'cluster')
-        const label = _.get(item, 'label')
+        const label = _.get(item, 'label', '')
 
         // We still need app objects for Argo app of apps
         if (kind === 'application' && label.indexOf('app.kubernetes.io/instance=') === -1) {

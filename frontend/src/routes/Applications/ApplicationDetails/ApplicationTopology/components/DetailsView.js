@@ -30,7 +30,8 @@ const DetailsViewDecorator = ({ shape, className }) => {
     return (
         <div className="detailsIconContainer">
             <svg width="58px" height="58px" viewBox="0 0 58 58">
-                <use href={`#diagramShapes_${shape}`} className={`${className} detailsIcon`} />
+                <circle cx="29" cy="29" r="25" fill="#fff" stroke="#a7a7a7" strokeWidth="1" />
+                <use href={`#nodeIcon_${shape}`} className={`${className} detailsIcon`} />
             </svg>
         </div>
     )
@@ -109,7 +110,7 @@ class DetailsView extends Component {
                     {isLogURL && t('View logs in Search details')}
                     {!isLogURL && t('View YAML in Search details')}
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                        <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                        <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                     </svg>
                 </span>
                 <div className="spacer" />
@@ -280,7 +281,7 @@ class DetailsView extends Component {
                 {(labelKey || labelValue) && statusIcon ? (
                     <span className="label sectionLabel">
                         <svg width="10px" height="10px" fill={iconFill} style={{ marginRight: '8px' }}>
-                            <use href={`#diagramIcons_${statusIcon}`} className="label-icon" />
+                            <use href={`#nodeStatusIcon_${statusIcon}`} className="label-icon" />
                         </svg>
                         <span>{label} </span>
                     </span>
@@ -347,11 +348,11 @@ class DetailsView extends Component {
                     {showLaunchOutIcon &&
                         (isExternal ? (
                             <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                                <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                                <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                             </svg>
                         ) : (
                             <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                                <use href="#diagramIcons_open-new-tab" className="label-icon" />
+                                <use href="#drawerShapes_open-new-tab" className="label-icon" />
                             </svg>
                         ))}
                 </span>
