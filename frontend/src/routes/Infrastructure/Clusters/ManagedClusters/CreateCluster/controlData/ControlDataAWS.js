@@ -21,6 +21,7 @@ import {
     architectureData,
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
+    onImageChange,
 } from './ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -722,6 +723,7 @@ const controlDataAWS = [
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
         },
+        onSelect: onImageChange,
     },
     //Always Hidden
     {

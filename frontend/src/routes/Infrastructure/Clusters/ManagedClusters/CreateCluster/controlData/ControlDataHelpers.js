@@ -294,6 +294,18 @@ export function getOSTNetworkingControlData() {
     return networkData
 }
 
+export const onImageChange = (control, controlData) => {
+    const networkDefault = getControlByID(controlData, 'networkType')
+    const { setActive } = networkDefault
+    const { active: version } = control
+
+    if (versionGreater(version, 4, 11)) {
+        setActive('OVNKubernetes')
+    } else {
+        setActive('OpenShiftSDN')
+    }
+}
+
 export const clusterDetailsControlData = [
     {
         name: 'creation.ocp.name',
@@ -402,7 +414,7 @@ export const networkingControlData = [
         name: 'creation.ocp.cluster.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.network.type',
         type: 'singleselect',
-        active: 'OpenShiftSDN',
+        active: 'OVNKubernetes',
         available: ['OpenShiftSDN', 'OVNKubernetes'],
         validation: {
             notification: 'creation.ocp.cluster.valid.key',

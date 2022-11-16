@@ -17,6 +17,7 @@ import {
     architectureData,
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
+    onImageChange,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -316,6 +317,7 @@ const controlDataGCP = [
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
         },
+        onSelect: onImageChange,
     },
     //Always Hidden
     {
