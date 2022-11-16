@@ -35,7 +35,7 @@ class ControlPanelFormGroup extends React.Component {
                                 <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
                                     <button
                                         id={`${controlId}-label-help-button`}
-                                        aria-label={i18n && i18n('More info')}
+                                        aria-label={i18n('More info')}
                                         onClick={(e) => e.preventDefault()}
                                         className="pf-c-form__group-label-help"
                                     >

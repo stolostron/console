@@ -25,6 +25,7 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
           </label>
            
           <button
+            aria-label="More info"
             class="pf-c-form__group-label-help"
             id="controlId-label-help-button"
           >
@@ -53,6 +54,7 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
             data-ouia-safe="true"
             data-testid="text-controlId"
             id="controlId"
+            placeholder="Enter creation.app.name"
             spellcheck="false"
             type="text"
             value=""

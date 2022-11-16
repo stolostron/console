@@ -25,6 +25,7 @@ exports[`ControlPanelSingleSelect component renders as expected 1`] = `
           </label>
            
           <button
+            aria-label="More info"
             class="pf-c-form__group-label-help"
             id="controlId-label-help-button"
           >
@@ -65,7 +66,7 @@ exports[`ControlPanelSingleSelect component renders as expected 1`] = `
                     autocomplete="off"
                     class="pf-c-form-control pf-c-select__toggle-typeahead"
                     id="pf-select-toggle-id-0-select-typeahead"
-                    placeholder=""
+                    placeholder="None"
                     type="text"
                     value=""
                   />

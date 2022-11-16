@@ -10,7 +10,9 @@ exports[`ControlPanelPrompt component renders as expected 1`] = `
       id="add-provider-connection"
       role="button"
       tabindex="0"
-    />
+    >
+      Add credential
+    </div>
   </div>
 </DocumentFragment>
 `;

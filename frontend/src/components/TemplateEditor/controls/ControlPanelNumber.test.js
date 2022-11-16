@@ -6,6 +6,10 @@ import ControlPanelNumber from './ControlPanelNumber'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import i18n from 'i18next'
+
+const t = i18n.t.bind(i18n)
+
 export const control = {
     name: 'creation.app.name',
     tooltip: 'tooltip.creation.app.name',
@@ -20,7 +24,7 @@ describe('ControlPanelNumber component', () => {
     it('renders as expected', () => {
         const Component = () => {
             return (
-                <ControlPanelNumber key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={fn} />
+                <ControlPanelNumber key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
             )
         }
         const { getByTestId, asFragment, rerender } = render(<Component />)

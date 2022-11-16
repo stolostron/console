@@ -65,7 +65,7 @@ class ControlPanelSingleSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-singleselect" ref={this.setControlRef.bind(this, control)}>
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         {isLoading || isRefetching ? (
                             <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
                                 <Spinner size="md" />
