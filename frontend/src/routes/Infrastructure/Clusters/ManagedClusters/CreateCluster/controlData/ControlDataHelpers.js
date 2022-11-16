@@ -198,12 +198,6 @@ export const setAvailableTemplates = (control, templates) => {
     control.available = templates.map((template) => template.metadata.name)
 }
 
-export const onChangeImage = (control, controlData) => {
-    const networkDefault = getControlByID(controlData, 'networkType')
-    const { active, saveActive } = infrastructure
-    active = 'OVNKubernetes'
-}
-
 const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
@@ -298,6 +292,18 @@ export function getOSTNetworkingControlData() {
     const modifiedData = networkData.find((object) => object.id == 'networkType')
     modifiedData.available.push('Kuryr')
     return networkData
+}
+
+export const onImageChange = (control, controlData) => {
+    const networkDefault = getControlByID(controlData, 'networkType')
+    const { setActive } = networkDefault
+    const { active: version } = control
+
+    if (versionGreater(version, 4, 11)) {
+        setActive('OVNKubernetes')
+    } else {
+        setActive('OpenShiftSDN')
+    }
 }
 
 export const clusterDetailsControlData = [
