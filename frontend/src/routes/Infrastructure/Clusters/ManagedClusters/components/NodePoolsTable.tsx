@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
+import { ButtonVariant, Stack, StackItem, Text } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
-import { NodePool } from '../../../../../resources'
+import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
+import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
+import { NodePool, NodePoolDefinition } from '../../../../../resources'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -14,6 +14,8 @@ import { AddNodePoolModal } from './AddNodePoolModal'
 import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
 import { HypershiftCloudPlatformType } from './NodePoolForm'
+import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 
 type NodePoolsTableProps = {
     nodePools: NodePool[]
@@ -24,7 +26,10 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     const { t } = useTranslation()
     const { cluster, hostedCluster } = useContext(ClusterContext)
     const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
-    const toggleAddNodepoolModal = () => toggleOpenAddNodepoolModal(!openAddNodepoolModal)
+    const toggleAddNodepoolModal = useCallback(
+        () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
+        [openAddNodepoolModal]
+    )
     const [manageNodepoolModalProps, setManageNodepoolModalProps] = useState<
         IManageNodePoolNodesModalProps | { open: false }
     >({
@@ -35,6 +40,11 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     >({
         open: false,
     })
+    const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
+    const [canDeleteNodepool, setCanDeleteNodepool] = useState<boolean>(false)
+    const [canPatchNodepool, setCanPatchNodepool] = useState<boolean>(false)
+    const { namespacesState } = useSharedAtoms()
+    const [namespaces] = useRecoilState(namespacesState)
 
     const getNodepoolStatus = useCallback((nodepool: NodePool) => {
         const conditions = nodepool.status?.conditions || []
@@ -192,6 +202,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                             nodepool,
                         })
                     },
+                    isDisabled: !canPatchNodepool,
                 })
             }
 
@@ -208,12 +219,46 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                         nodepoolCount: nodePools.length,
                     })
                 },
+                isDisabled: !canDeleteNodepool,
             })
 
             return actions
         },
-        [getNodepoolStatus, hostedCluster, nodePools.length, t]
+        [getNodepoolStatus, hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
     )
+
+    useEffect(() => {
+        checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
+    }, [namespaces])
+    useEffect(() => {
+        checkPermission(rbacDelete(NodePoolDefinition), setCanDeleteNodepool, namespaces)
+    }, [namespaces])
+    useEffect(() => {
+        checkPermission(rbacPatch(NodePoolDefinition), setCanPatchNodepool, namespaces)
+    }, [namespaces])
+
+    const addNodepoolButton = useMemo(
+        () => (
+            <AcmButton
+                id="addNodepoolEmptyState"
+                children={t('Add nodepool')}
+                variant={ButtonVariant.primary}
+                onClick={() => toggleAddNodepoolModal()}
+                tooltip={
+                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
+                        ? t(
+                              'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
+                          )
+                        : t('rbac.unauthorized')
+                }
+                isDisabled={
+                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS && !canCreateNodepool
+                }
+            />
+        ),
+        [toggleAddNodepoolModal, hostedCluster?.spec?.platform?.type, t, canCreateNodepool]
+    )
+
     return (
         <>
             <RemoveNodePoolModal {...removeNodepoolModalProps} />
@@ -238,7 +283,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 id: 'addNodepool',
                                 title: t('Add nodepool'),
                                 click: () => toggleAddNodepoolModal(),
-                                isDisabled: hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS,
+                                isDisabled:
+                                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS &&
+                                    !canCreateNodepool,
                                 tooltip:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                                         ? t(
@@ -249,6 +296,21 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                             },
                         ]}
                         rowActionResolver={rowActionResolver}
+                        emptyState={
+                            <AcmEmptyState
+                                key="nodepoolTableEmptyState"
+                                title={t("You don't have any node pools")}
+                                message={
+                                    <Text>
+                                        <Trans
+                                            i18nKey="Click <bold>Add node pool</bold> to create your resource."
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    </Text>
+                                }
+                                action={<>{addNodepoolButton}</>}
+                            />
+                        }
                     />
                 </StackItem>
             </Stack>
