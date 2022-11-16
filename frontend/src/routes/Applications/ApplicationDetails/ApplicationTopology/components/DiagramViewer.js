@@ -231,7 +231,7 @@ class DiagramViewer extends Component {
                     >
                         {hasSpinners && (
                             <svg width="0" height="0" ref={this.setSpinnerSymbol}>
-                                <symbol className="spinner" viewBox="0 0 40 40" id="diagramIcons_spinner">
+                                <symbol className="spinner" viewBox="0 0 40 40" id="drawerShapes_spinner">
                                     <circle cx="20" cy="20" r="18" fill="white"></circle>
                                     <circle className="swirly" cx="20" cy="20" r="18"></circle>
                                 </symbol>

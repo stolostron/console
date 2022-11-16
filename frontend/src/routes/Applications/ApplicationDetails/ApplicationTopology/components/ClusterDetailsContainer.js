@@ -283,7 +283,7 @@ class ClusterDetailsContainer extends Component {
                     >
                         {t('Open cluster console')}
                         <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                            <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                            <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                         </svg>
                     </span>
                 </div>
@@ -366,7 +366,7 @@ class ClusterDetailsContainer extends Component {
         const iconFill = fillMap.get(icon)
         return (
             <svg width="12px" height="12px" fill={iconFill}>
-                <use href={`#diagramIcons_${icon}`} className="label-icon" />
+                <use href={`#drawerShapes_${icon}`} className="label-icon" />
             </svg>
         )
     }
