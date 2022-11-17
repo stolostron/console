@@ -133,7 +133,6 @@ export function HypershiftUpgradeModal(props: {
     )
 
     useEffect(() => {
-        setPatchErrors([])
         if (availableUpdateKeys.length === 0) {
             setControlPlaneCheckboxDisabled(true)
             setControlPlaneChecked(false)
@@ -156,6 +155,8 @@ export function HypershiftUpgradeModal(props: {
         let isOverallNodepoolVersionSet = false
         const availableUpdateVersion = availableUpdateKeys[0] || props.controlPlane.distribution?.ocp?.version
         if (Object.keys(nodepoolsChecked).length === 0) {
+            const npsChecked: any = {}
+            const npsDisabled: any = {}
             props.nodepools.forEach((np, i) => {
                 if (i === 0) {
                     initialNodepoolVer = np.status?.version
@@ -167,33 +168,23 @@ export function HypershiftUpgradeModal(props: {
                     }
                 }
                 if ((np.status?.version || '') < (availableUpdateVersion || '')) {
-                    nodepoolsChecked[np.metadata.name || ''] = true
+                    npsChecked[np.metadata.name || ''] = true
                 } else {
-                    nodepoolsDisabled[np.metadata.name || ''] = true
+                    npsDisabled[np.metadata.name || ''] = true
                     setNodepoolGroupDisabled(true)
                     setNodepoolGroupChecked(null)
                 }
             })
 
-            setNodepoolsChecked({ ...nodepoolsChecked })
-            setNodepoolsDisabled({ ...nodepoolsDisabled })
+            setNodepoolsChecked({ ...npsChecked })
+            setNodepoolsDisabled({ ...npsDisabled })
         }
 
         if (!isOverallNodepoolVersionSet && !overallNodepoolVersion) {
             setOverallNodepoolVersion(initialNodepoolVer)
         }
-    }, [
-        controlPlaneNewVersion,
-        nodepoolGroupChecked,
-        availableUpdateKeys,
-        props.nodepools,
-        nodepoolsChecked,
-        checkNodepoolErrors,
-        checkNodepoolsDisabled,
-        overallNodepoolVersion,
-        props.controlPlane.distribution?.ocp?.version,
-        nodepoolsDisabled,
-    ])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.open])
 
     const isNodepoolChecked = (name: string | undefined) => {
         if (!name) {
