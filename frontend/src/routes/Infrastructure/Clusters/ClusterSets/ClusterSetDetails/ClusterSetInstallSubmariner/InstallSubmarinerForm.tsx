@@ -447,6 +447,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 metadata: {
                     name: defaultBrokerName,
                     namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                    labels: {
+                        'cluster.open-cluster-management.io/backup': 'submariner',
+                    },
                 },
                 spec: {
                     globalnetEnabled: false,
@@ -460,6 +463,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 metadata: {
                     name: defaultBrokerName,
                     namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                    labels: {
+                        'cluster.open-cluster-management.io/backup': 'submariner',
+                    },
                 },
                 spec: {
                     globalnetEnabled,
