@@ -12,10 +12,11 @@ class ControlPanelFormGroup extends React.Component {
         control: PropTypes.object,
         controlId: PropTypes.string,
         showTip: PropTypes.bool,
+        i18n: PropTypes.func,
     }
 
     render() {
-        const { controlId, control, showTip, children } = this.props
+        const { controlId, control, showTip, children, i18n } = this.props
         const { name, exception, opaque, tooltip, tip, validation = {}, icon, info } = control
         return (
             <React.Fragment>
@@ -34,7 +35,7 @@ class ControlPanelFormGroup extends React.Component {
                                 <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
                                     <button
                                         id={`${controlId}-label-help-button`}
-                                        aria-label="More info"
+                                        aria-label={i18n('More info')}
                                         onClick={(e) => e.preventDefault()}
                                         className="pf-c-form__group-label-help"
                                     >

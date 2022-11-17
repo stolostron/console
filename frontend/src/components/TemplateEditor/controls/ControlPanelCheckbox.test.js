@@ -6,6 +6,10 @@ import ControlPanelCheckbox from './ControlPanelCheckbox'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import i18n from 'i18next'
+
+const t = i18n.t.bind(i18n)
+
 export const control = {
     active: false,
     name: 'creation.app.name',
@@ -26,7 +30,7 @@ describe('ControlPanelCheckbox component', () => {
                     control={control}
                     controlId={'controlId'}
                     handleChange={fn}
-                    i18n={fn}
+                    i18n={t}
                 />
             )
         }

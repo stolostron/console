@@ -173,7 +173,7 @@ class ControlPanelComboBox extends React.Component {
             input: true,
             disabled: disabled,
         })
-        const aria = isOpen ? 'Close menu' : 'Open menu'
+        const aria = isOpen ? i18n('Close menu') : i18n('Open menu')
         const validated = exception ? 'error' : undefined
         let value = typeof searchText === 'string' ? searchText : active || ''
         const isCustom = userData.includes(value)
@@ -183,7 +183,7 @@ class ControlPanelComboBox extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-combobox">
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         {isLoading || isRefetching ? (
                             <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
                                 <Spinner size="md" />
@@ -191,7 +191,12 @@ class ControlPanelComboBox extends React.Component {
                             </div>
                         ) : (
                             <div id={`${controlId}-group`} ref={this.setControlRef}>
-                                <div role="listbox" aria-label="Choose an item" tabIndex="0" className="tf--list-box">
+                                <div
+                                    role="listbox"
+                                    aria-label={i18n('Choose an item')}
+                                    tabIndex="0"
+                                    className="tf--list-box"
+                                >
                                     <div
                                         role="button"
                                         className=""
@@ -207,7 +212,7 @@ class ControlPanelComboBox extends React.Component {
                                         <div className={inputClasses}>
                                             <input
                                                 className="pf-c-combo-control pf-c-form-control"
-                                                aria-label="ListBox input field"
+                                                aria-label={i18n('ListBox input field')}
                                                 spellCheck="false"
                                                 role="combobox"
                                                 disabled={disabled}
@@ -257,7 +262,7 @@ class ControlPanelComboBox extends React.Component {
                                                 className="tf--list-box__selection"
                                                 tabIndex="0"
                                                 style={{ color: '#6a6e73' }}
-                                                title="Clear selected item"
+                                                title={i18n('Clear selected item')}
                                                 ref={this.setClearRef}
                                                 onClick={this.clickClear.bind(this)}
                                             >
@@ -282,7 +287,7 @@ class ControlPanelComboBox extends React.Component {
                                                     alt={aria}
                                                     aria-label={aria}
                                                 >
-                                                    <title>Close menu</title>
+                                                    <title>{i18n('Close menu')}</title>
                                                     <path d="M0 0l5 4.998L10 0z" />
                                                 </svg>
                                             </div>

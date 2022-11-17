@@ -498,7 +498,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                 <TemplateEditor
                                     wizardClassName={classes.wizardBody}
                                     type={'cluster'}
-                                    title={'Cluster YAML'}
+                                    title={t('Cluster YAML')}
                                     monacoEditor={<MonacoEditor />}
                                     controlData={controlData}
                                     template={template}
