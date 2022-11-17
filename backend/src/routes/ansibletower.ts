@@ -5,7 +5,8 @@ import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, respondBadRequest } from '../lib/respond'
+import { notFound, respondBadRequest, unauthorized } from '../lib/respond'
+import { getToken } from '../lib/token'
 
 interface AnsibleCredential {
     towerHost: string
@@ -13,6 +14,9 @@ interface AnsibleCredential {
 }
 
 export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): void {
+    const token = getToken(req)
+    if (!token) return unauthorized(req, res)
+
     const chucks: string[] = []
     let ansibleCredential: AnsibleCredential
 
