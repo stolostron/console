@@ -6,8 +6,10 @@ import { getResource } from '../../../../../resources'
 import { AcmExpandableCard } from '../../../../../ui-components'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 const HypershiftClusterDetails: React.FC = () => {
+    const { t } = useTranslation()
     const { hostedCluster } = useContext(ClusterContext)
     const { waitForAll } = useSharedRecoil()
     const { agentMachinesState, clusterImageSetsState, configMapsState, nodePoolsState } = useSharedAtoms()
@@ -24,7 +26,7 @@ const HypershiftClusterDetails: React.FC = () => {
     return (
         <>
             <div style={{ marginBottom: '24px' }}>
-                <AcmExpandableCard title="Cluster installation progress" id="hypershift-progress">
+                <AcmExpandableCard title={t('Control plane status')} id="hypershift-progress">
                     <HypershiftClusterInstallProgress
                         hostedCluster={hostedCluster}
                         fetchSecret={(name, namespace) =>

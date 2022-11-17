@@ -99,7 +99,7 @@ export function DistributionField(props: {
         if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
             for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
                 if (
-                    props.cluster?.hypershift?.nodePools[i].status.version <
+                    props.cluster?.hypershift?.nodePools[i].status?.version <
                     (props.cluster.distribution?.ocp?.version || '')
                 ) {
                     updateAvailable = true
