@@ -275,7 +275,7 @@ const addCodeSnippetsTemplateData = (mainTemplateData, replacements, controlMap)
                 // add predefined snippets
                 const choices = Array.isArray(active) ? active : [active]
                 choices.forEach((key, idx) => {
-                    const { replacements: _replacements } = availableMap[key] || {}
+                    const { replacements: _replacements } = availableMap[key] || { replacements: {} }
 
                     Object.entries(_replacements).forEach(([_id, partial = {}]) => {
                         const { template: _template, encode, newTab } = partial
