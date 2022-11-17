@@ -21,10 +21,16 @@ const defaultComponentFactory: ComponentFactory = (
     //const defaultComponentFactory: ComponentFactory = (kind: ModelKind): ComponentType<BaseEdge> | undefined => {
     switch (kind) {
         case ModelKind.graph:
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore: Unreachable code error
             return withPanZoom()(GraphComponent)
         case ModelKind.node:
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore: Unreachable code error
             return withDragNode(nodeDragSourceSpec('node', true, true))(withSelection()(StyledNode))
         case ModelKind.edge:
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore: Unreachable code error
             return DefaultEdge
         default:
             return undefined
