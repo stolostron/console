@@ -269,6 +269,8 @@ describe('generateTopology', () => {
                             namespace: 'app1',
                         },
                     },
+                    resourceCount: 1,
+                    resources: undefined,
                 },
                 type: 'service',
                 uid: 'member--member--deployable--member--clusters----service--app1--nodejs-sample',

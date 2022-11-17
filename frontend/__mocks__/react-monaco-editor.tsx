@@ -3,6 +3,10 @@
 
 import React from 'react'
 
+class Range {
+    constructor(startLineNumber?: number, startColumn?: number, endLineNumber?: number, endColumn?: number) {}
+}
+
 let mockEditor: {
     layout: () => void
     focus: () => void
@@ -26,7 +30,7 @@ let mockEditor: {
         ) => { range: { startColumn: number; startLineNumber: number; endColumn: number; endLineNumber: number } }[]
     }
 }
-let mockMonaco: { editor: { setModelLanguage: () => void }; Range: () => void }
+let mockMonaco: { editor: { setModelLanguage: () => void }; Range: Range }
 let mockChangeModelCallback: () => void
 
 const MonacoEditor = (props: {
@@ -56,7 +60,7 @@ const MonacoEditor = (props: {
                 }[]
             }
         },
-        monaco: { editor: { setModelLanguage: () => void }; Range: () => void }
+        monaco: { editor: { setModelLanguage: () => void }; Range: Range }
     ) => void
     wrapperClassName: any
 }) => {
@@ -94,7 +98,7 @@ const MonacoEditor = (props: {
         }
         mockMonaco = {
             editor: { setModelLanguage: () => {} },
-            Range: () => {},
+            Range: Range,
         }
         props.editorDidMount(mockEditor, mockMonaco)
     }

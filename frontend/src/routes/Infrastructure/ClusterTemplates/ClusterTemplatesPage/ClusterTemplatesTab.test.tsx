@@ -13,7 +13,7 @@ import clusterTemplateMock1 from '../mocks/clusterTemplateExample.json';
 
 const clusterTemplatesListMock: ClusterTemplate[] = [clusterTemplateMock1];
 
-const clusterTemplateModelMock = {
+export const clusterTemplateModelMock = {
   kind: 'ClusterTemplate',
   namespaced: false,
   verbs: ['delete', 'deletecollection', 'get', 'list', 'patch', 'create', 'update', 'watch'],
