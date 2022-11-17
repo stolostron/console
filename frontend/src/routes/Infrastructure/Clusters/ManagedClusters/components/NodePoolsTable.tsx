@@ -252,7 +252,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                         : t('rbac.unauthorized')
                 }
                 isDisabled={
-                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS && !canCreateNodepool
+                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS || !canCreateNodepool
                 }
             />
         ),
@@ -284,7 +284,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 title: t('Add nodepool'),
                                 click: () => toggleAddNodepoolModal(),
                                 isDisabled:
-                                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS &&
+                                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
                                     !canCreateNodepool,
                                 tooltip:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
