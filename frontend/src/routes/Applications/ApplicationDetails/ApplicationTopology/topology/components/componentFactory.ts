@@ -8,11 +8,32 @@ import {
     ComponentFactory,
     withDragNode,
     DefaultEdge,
-    //    withContextMenu,
     nodeDragSourceSpec,
     withSelection,
 } from '@patternfly/react-topology'
 import StyledNode from './StyledNode'
+
+//export type ComponentFactory = (kind: ModelKind, type: string) => ComponentType<{ element: GraphElement }> | undefined;
+
+const defaultComponentFactory: ComponentFactory = (
+    kind: ModelKind
+): ComponentType<{ element: GraphElement }> | undefined => {
+    //const defaultComponentFactory: ComponentFactory = (kind: ModelKind): ComponentType<BaseEdge> | undefined => {
+    switch (kind) {
+        case ModelKind.graph:
+            return withPanZoom()(GraphComponent)
+        case ModelKind.node:
+            return withDragNode(nodeDragSourceSpec('node', true, true))(withSelection()(StyledNode))
+        case ModelKind.edge:
+            return DefaultEdge
+        default:
+            return undefined
+    }
+}
+
+export default defaultComponentFactory
+
+//return withDragNode({ canCancel: false })(withSelection()(withContextMenu(() => defaultMenu)(Node)))
 
 // const contextMenuItem = (label: string, i: number): React.ReactElement => {
 //     if (label === '-') {
@@ -46,19 +67,3 @@ import StyledNode from './StyledNode'
 //     'Fourth',
 //     'Sub Menu-> Child1, Child2, Child3, -, Child4'
 // )
-
-const defaultComponentFactory: ComponentFactory = (kind: ModelKind): ComponentType<{ element: GraphElement }> => {
-    switch (kind) {
-        case ModelKind.graph:
-            return withPanZoom()(GraphComponent)
-        case ModelKind.node:
-            //return withDragNode({ canCancel: false })(withSelection()(withContextMenu(() => defaultMenu)(Node)))
-            return withDragNode(nodeDragSourceSpec('node', true, true))(withSelection()(StyledNode))
-        case ModelKind.edge:
-            return DefaultEdge
-        default:
-            return undefined
-    }
-}
-
-export default defaultComponentFactory
