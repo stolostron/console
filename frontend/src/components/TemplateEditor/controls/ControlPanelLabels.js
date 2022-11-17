@@ -38,7 +38,7 @@ class ControlPanelLabels extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-labels">
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         <div className="creation-view-controls-labels-container">
                             {formatted.length !== 0 && (
                                 <div className="creation-view-controls-labels-tag-container">

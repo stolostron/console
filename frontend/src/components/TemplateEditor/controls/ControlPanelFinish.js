@@ -18,6 +18,7 @@ class ControlPanelFinish extends React.Component {
         details: PropTypes.array,
         renderNotifications: PropTypes.func,
         startStep: PropTypes.number,
+        i18n: PropTypes.func,
     }
 
     constructor(props) {
@@ -25,13 +26,13 @@ class ControlPanelFinish extends React.Component {
     }
 
     render() {
-        const { details, comment, renderNotifications } = this.props
+        const { details, comment, renderNotifications, i18n } = this.props
 
         return (
             <React.Fragment>
                 <div>
                     {this.renderDetails(details)}
-                    {comment && <Alert variant="warning" isInline title={comment} />}
+                    {comment && <Alert variant="warning" isInline title={i18n(comment)} />}
                     {renderNotifications()}
                 </div>
             </React.Fragment>

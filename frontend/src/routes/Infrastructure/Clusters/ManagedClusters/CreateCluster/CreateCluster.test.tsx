@@ -732,20 +732,22 @@ describe('CreateCluster AWS', () => {
 
         // connection should be pre-selected
 
-        // step 2 -- the name and imageset
+        // step 1 -- the name and imageset
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 3 -- nodes
+        // step 2 -- nodes
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 3 -- the network
+        await clickByText('Next')
+
+        // step 4 -- proxy
         await clickByText('Next')
 
         // private configuration
-        await clickByText('Next')
         await clickByTestId('hasPrivateConfig')
         await typeByText('Hosted zone', 'aws-hosted-zone.com')
         await typeByPlaceholderText('Enter AMI ID', 'ami-0876eacb38191e91f')

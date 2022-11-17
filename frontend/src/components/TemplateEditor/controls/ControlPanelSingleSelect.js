@@ -65,7 +65,7 @@ class ControlPanelSingleSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-singleselect" ref={this.setControlRef.bind(this, control)}>
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         {isLoading || isRefetching ? (
                             <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
                                 <Spinner size="md" />
@@ -118,7 +118,7 @@ class ControlPanelSingleSelect extends React.Component {
                                         onKeyPress={this.clickRefresh.bind(this)}
                                     >
                                         <svg fillRule="evenodd" height="12" role="img" viewBox="0 0 12 12" width="12">
-                                            <title>Refresh</title>
+                                            <title>{i18n('Refresh')}</title>
                                             <path
                                                 d="M8.33703191,2.28461538 L6.50516317,0.553494162 L7.02821674,3.11581538e-14 L9.9,2.71384343 L7.02748392,5.41285697 L6.50601674,4.85786795 L8.43419451,3.04615385 L4.95,3.04615385 C2.63677657,3.04615385 0.761538462,4.92139195 0.761538462,7.23461538 C0.761538462,9.54783882 2.63677657,11.4230769 4.95,11.4230769 C7.26322343,11.4230769 9.13846154,9.54783882 9.13846154,7.23461538 L9.9,7.23461538 C9.9,9.9684249 7.68380951,12.1846154 4.95,12.1846154 C2.21619049,12.1846154 0,9.9684249 0,7.23461538 C-1.77635684e-15,4.50080587 2.21619049,2.28461538 4.95,2.28461538 L8.33703191,2.28461538 Z"
                                                 id="restart"

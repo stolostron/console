@@ -6,6 +6,10 @@ import ControlPanelLabels from './ControlPanelLabels'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import i18n from 'i18next'
+
+const t = i18n.t.bind(i18n)
+
 export const control = {
     name: 'creation.app.name',
     tooltip: 'tooltip.creation.app.name',
@@ -14,21 +18,12 @@ export const control = {
     type: 'labels',
 }
 const fn = jest.fn()
-const i18n = (key) => {
-    return key
-}
 
 describe('ControlPanelLabels component', () => {
     it('renders as expected', () => {
         const Component = () => {
             return (
-                <ControlPanelLabels
-                    key={'key'}
-                    control={control}
-                    controlId={'controlId'}
-                    handleChange={fn}
-                    i18n={i18n}
-                />
+                <ControlPanelLabels key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
             )
         }
         const { getByTestId, asFragment, container } = render(<Component />)

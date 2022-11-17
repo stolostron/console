@@ -10,6 +10,7 @@ class ControlPanelNumber extends React.Component {
         control: PropTypes.object,
         controlId: PropTypes.string,
         handleChange: PropTypes.func,
+        i18n: PropTypes.func,
     }
 
     constructor(props) {
@@ -22,7 +23,7 @@ class ControlPanelNumber extends React.Component {
     }
 
     render() {
-        const { controlId, control, handleChange } = this.props
+        const { controlId, control, handleChange, i18n } = this.props
         const { exception } = control
 
         const onSet = (value) => {
@@ -42,14 +43,14 @@ class ControlPanelNumber extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-number" ref={this.setControlRef.bind(this, control)}>
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         <div className="pf-c-number-input">
                             <div className="pf-c-input-group">
                                 <button
                                     className="pf-c-button pf-m-control"
                                     style={{ lineHeight: '16px' }}
                                     type="button"
-                                    aria-label="Minus"
+                                    aria-label={i18n('Minus')}
                                     id={`down-${controlId}`}
                                     data-testid={`down-${controlId}`}
                                     onClick={() => {
@@ -74,7 +75,7 @@ class ControlPanelNumber extends React.Component {
                                     onChange={(e) => {
                                         onSet(e.target.value)
                                     }}
-                                    aria-label="Number input"
+                                    aria-label={i18n('Number input')}
                                     id={controlId}
                                     data-testid={`number-${controlId}`}
                                 />
@@ -82,7 +83,7 @@ class ControlPanelNumber extends React.Component {
                                     className="pf-c-button pf-m-control"
                                     style={{ lineHeight: '16px' }}
                                     type="button"
-                                    aria-label="Plus"
+                                    aria-label={i18n('Plus')}
                                     id={`up-${controlId}`}
                                     data-testid={`up-${controlId}`}
                                     onClick={() => {

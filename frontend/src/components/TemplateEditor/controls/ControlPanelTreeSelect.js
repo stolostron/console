@@ -14,6 +14,7 @@ class ControlPanelTreeSelect extends React.Component {
         control: PropTypes.object,
         controlId: PropTypes.string,
         handleChange: PropTypes.func,
+        i18n: PropTypes.func,
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -203,7 +204,7 @@ class ControlPanelTreeSelect extends React.Component {
     }
 
     render() {
-        const { controlId, control } = this.props
+        const { controlId, control, i18n } = this.props
         const { name, availableMap = {}, exception, disabled } = control
         const { isOpen, active, currentAvailable, indexes, searchText } = this.state
         const currentActive = availableMap[active] ? `${active} - ${availableMap[active]}` : active
@@ -213,7 +214,7 @@ class ControlPanelTreeSelect extends React.Component {
             'tf--list-box__menu-icon--open': isOpen,
         })
 
-        const aria = isOpen ? 'Close menu' : 'Open menu'
+        const aria = isOpen ? i18n('Close menu') : i18n('Open menu')
         const key = `${controlId}-${name}-${currentAvailable
             .map(({ branch, instance }) => {
                 return branch || instance
@@ -228,9 +229,14 @@ class ControlPanelTreeSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-treeselect">
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
                         <div id={controlId}>
-                            <div role="listbox" aria-label="Choose an item" tabIndex="0" className="tf--list-box">
+                            <div
+                                role="listbox"
+                                aria-label={i18n('Choose an item')}
+                                tabIndex="0"
+                                className="tf--list-box"
+                            >
                                 <div
                                     role="button"
                                     className={inputClasses}
@@ -245,7 +251,7 @@ class ControlPanelTreeSelect extends React.Component {
                                 >
                                     <input
                                         className="pf-c-combo-control"
-                                        aria-label="ListBox input field"
+                                        aria-label={i18n('ListBox input field')}
                                         ref={this.setInputRef}
                                         spellCheck="false"
                                         role="combobox"
@@ -289,7 +295,7 @@ class ControlPanelTreeSelect extends React.Component {
                                             className="tf--list-box__selection"
                                             tabIndex="0"
                                             style={{ color: '#6a6e73' }}
-                                            title="Clear selected item"
+                                            title={i18n('Clear selected item')}
                                             ref={this.setClearRef}
                                             onClick={this.clickClear.bind(this)}
                                         >
@@ -314,7 +320,7 @@ class ControlPanelTreeSelect extends React.Component {
                                                 alt={aria}
                                                 aria-label={aria}
                                             >
-                                                <title>Close menu</title>
+                                                <title>{i18n('Close menu')}</title>
                                                 <path d="M0 0l5 4.998L10 0z" />
                                             </svg>
                                         </div>

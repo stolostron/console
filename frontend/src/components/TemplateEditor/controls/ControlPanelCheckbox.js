@@ -11,6 +11,7 @@ class ControlPanelCheckbox extends React.Component {
         control: PropTypes.object,
         controlId: PropTypes.string,
         handleChange: PropTypes.func,
+        i18n: PropTypes.func,
     }
 
     constructor(props) {
@@ -23,7 +24,7 @@ class ControlPanelCheckbox extends React.Component {
     }
 
     render() {
-        const { controlId, control, handleChange } = this.props
+        const { controlId, control, handleChange, i18n } = this.props
         const { name, active, type, tip, disabled = false } = control
 
         const onChange = () => {
@@ -41,14 +42,14 @@ class ControlPanelCheckbox extends React.Component {
                 >
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Input
-                            aria-label={name}
+                            aria-label={i18n(name)}
                             id={controlId}
                             isChecked={typeof active === 'boolean' ? active : active === 'true'}
                             isDisabled={disabled}
                             onChange={onChange}
                             data-testid={`checkbox-${controlId}`}
                         />
-                        <ControlPanelFormGroup controlId={controlId} showTip={false} control={control} />
+                        <ControlPanelFormGroup i18n={i18n} controlId={controlId} showTip={false} control={control} />
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 'normal' }}>{tip}</div>
                 </div>

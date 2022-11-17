@@ -5,6 +5,9 @@ import React from 'react'
 import ControlPanelComboBox from './ControlPanelComboBox'
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import i18n from 'i18next'
+
+const t = i18n.t.bind(i18n)
 
 const propsPlain = {
     controlId: 'masterType',
@@ -45,7 +48,7 @@ const propsPlain = {
         isInitialized: true,
     },
     handleControlChange: jest.fn(),
-    i18n: jest.fn(),
+    i18n: t,
 }
 
 const propsMulti = {
@@ -77,7 +80,7 @@ const propsMulti = {
         info: '',
     },
     handleControlChange: jest.fn(),
-    i18n: jest.fn(),
+    i18n: t,
 }
 
 describe('ControlPanelComboBox component', () => {
