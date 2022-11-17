@@ -1197,6 +1197,7 @@ function TableColumnFilters<T>(props: {
                         if (!cachedFilters.includes(selection)) {
                             cachedFilters.push(selection)
                         }
+                        localStorage.setItem('cachedFilters', JSON.stringify(cachedFilters))
                     }
                     break
                 }
@@ -1232,6 +1233,7 @@ function TableColumnFilters<T>(props: {
                     cachedFilters.splice(cachedFilters.indexOf(id.key), 1)
                 }
             }
+            localStorage.setItem('cachedFilters', JSON.stringify(cachedFilters))
             break
         }
         setToolbarFilterIds((toolbarFilterIds) => {
@@ -1247,6 +1249,7 @@ function TableColumnFilters<T>(props: {
     }, [])
 
     const onDeleteGroup = useCallback((filter: string) => {
+        localStorage.setItem('cachedFilters', '[]')
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
             delete updatedFilters[filter]

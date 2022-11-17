@@ -74,8 +74,6 @@ const labelArr: string[] = [
 
 const cachedFilters = JSON.parse(localStorage.getItem('cachedFilters') || '[]')
 
-localStorage.setItem('cachedFilters', JSON.stringify(cachedFilters))
-
 const initialFilters = { 'table.filter.type.acm.application.label': cachedFilters }
 
 type IApplicationResource = IResource | OCPAppResource
