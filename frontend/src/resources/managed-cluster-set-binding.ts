@@ -2,8 +2,8 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
-export const ManagedClusterSetBindingApiVersion = 'cluster.open-cluster-management.io/v1beta1'
-export type ManagedClusterSetBindingApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
+export const ManagedClusterSetBindingApiVersion = 'cluster.open-cluster-management.io/v1beta2'
+export type ManagedClusterSetBindingApiVersionType = 'cluster.open-cluster-management.io/v1beta2'
 
 export const ManagedClusterSetBindingKind = 'ManagedClusterSetBinding'
 export type ManagedClusterSetBindingKindType = 'ManagedClusterSetBinding'
