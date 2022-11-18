@@ -36,6 +36,7 @@ import {
     validatePrivateSshKey,
     validatePublicSshKey,
     validateRequiredPrefix,
+    validateVCenterServer,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
@@ -791,6 +792,7 @@ export function CredentialsForm(
                         ),
                         value: vCenter,
                         onChange: setVcenter,
+                        validation: (value) => validateVCenterServer(value, t),
                         isRequired: true,
                     },
                     {
