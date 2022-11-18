@@ -12,6 +12,7 @@ import {
     validateBaseDnsName,
     validateImageMirror,
     validateCloudsYaml,
+    validateVCenterServer,
 } from './validation'
 
 const t = (key: string) => key
@@ -225,6 +226,21 @@ describe('validation', () => {
                 expect(validateCloudsYaml(value, value2, t)).toBeTruthy()
             } else {
                 expect(validateCloudsYaml(value, value2, t)).toBeUndefined()
+            }
+        })
+    })
+    describe('validateVCenterServer', () => {
+        test.each([
+            ['should allow an IPv4 address', '22.22.22.22', true],
+            ['should allow an IPv6 address', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', true],
+            ['should allow a full-qualified host name', 'example.com', true],
+            ['should not allow an unqualified host name', 'example', false],
+            ['should not allow a URL', 'https://vcenter.example.com', false],
+        ])('%s', (_name, value, isValid) => {
+            if (!isValid) {
+                expect(validateVCenterServer(value, t)).toBeTruthy()
+            } else {
+                expect(validateVCenterServer(value, t)).toBeUndefined()
             }
         })
     })
