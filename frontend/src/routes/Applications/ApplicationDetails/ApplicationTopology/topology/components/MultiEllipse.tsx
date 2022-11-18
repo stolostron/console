@@ -13,8 +13,6 @@ const MultiEllipse: React.FunctionComponent<MultiEllipseProps> = ({
     filter,
     dndDropRef,
 }) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore: Unreachable code error
     useAnchor(EllipseAnchor)
     return (
         <g>
