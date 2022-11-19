@@ -182,6 +182,71 @@ const mockNodepools: NodePool[] = [
     },
 ]
 
+const mockNodepoolsNoStatus: NodePool[] = [
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-1',
+            namespace: 'clusters',
+        },
+        spec: {
+            management: {},
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+    },
+    {
+        apiVersion: 'hypershift.openshift.io/v1alpha1',
+        kind: 'NodePool',
+        metadata: {
+            name: 'feng-hypershift-test-2',
+            namespace: 'clusters',
+        },
+        spec: {
+            management: {},
+            clusterName: '',
+            platform: {
+                aws: {
+                    instanceProfile: '',
+                    instanceType: '',
+                    rootVolume: {
+                        size: 1,
+                        type: '',
+                    },
+                    securityGroups: [],
+                    subnet: {
+                        id: '',
+                    },
+                },
+                type: '',
+            },
+            release: {
+                image: '',
+            },
+            replicas: 1,
+        },
+    },
+]
+
 const availableUpdates0: Record<string, string> = {
     '4.12.0': 'quay.io/openshift-release-dev/ocp-release:4.12.0-ec.4-x86_64',
 }
@@ -214,6 +279,81 @@ const mockCluster: Cluster = {
             desiredVersion: '4.11.12',
             upgradeFailed: false,
         },
+        isManagedOpenShift: false,
+    },
+    labels: { abc: '123' },
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: true,
+    isHostedCluster: true,
+    isHypershift: true,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isRegionalHubCluster: false,
+}
+
+const mockClusterNoDistribution: Cluster = {
+    name: 'hypershift-cluster1',
+    displayName: 'hypershift-cluster1',
+    namespace: 'clusters',
+    uid: 'hypershift-cluster1-uid',
+    provider: undefined,
+    status: ClusterStatus.ready,
+    labels: { abc: '123' },
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: true,
+    isHostedCluster: true,
+    isHypershift: true,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isRegionalHubCluster: false,
+}
+
+const mockClusterNoOCP: Cluster = {
+    name: 'hypershift-cluster1',
+    displayName: 'hypershift-cluster1',
+    namespace: 'clusters',
+    uid: 'hypershift-cluster1-uid',
+    provider: undefined,
+    status: ClusterStatus.ready,
+    distribution: {
         isManagedOpenShift: false,
     },
     labels: { abc: '123' },
@@ -1389,6 +1529,30 @@ describe('HypershiftUpgradeModal', () => {
         expect(queryAllByText('hypershift-cluster1').length).toBe(1)
     })
 
+    it('should render upgrade modal no available updates and no distribution', async () => {
+        const { queryAllByText } = await renderHypershiftUpgradeModal(
+            mockClusterNoDistribution,
+            mockClusterNoDistribution.hypershift?.nodePools as NodePool[],
+            {},
+            undefined,
+            undefined,
+            undefined
+        )
+        expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    })
+
+    it('should render upgrade modal no available updates and no ocp', async () => {
+        const { queryAllByText } = await renderHypershiftUpgradeModal(
+            mockClusterNoOCP,
+            mockClusterNoOCP.hypershift?.nodePools as NodePool[],
+            {},
+            undefined,
+            undefined,
+            undefined
+        )
+        expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    })
+
     it('should render upgrade modal no available updates same version', async () => {
         const { queryAllByText } = await renderHypershiftUpgradeModal(
             mockCluster,
@@ -1405,6 +1569,18 @@ describe('HypershiftUpgradeModal', () => {
         const { queryAllByText } = await renderHypershiftUpgradeModal(
             mockCluster,
             mockCluster.hypershift?.nodePools as NodePool[],
+            availableUpdates2,
+            undefined,
+            undefined,
+            undefined
+        )
+        expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    })
+
+    it('should render upgrade modal nodepool no status', async () => {
+        const { queryAllByText } = await renderHypershiftUpgradeModal(
+            mockCluster,
+            mockNodepoolsNoStatus,
             availableUpdates2,
             undefined,
             undefined,
