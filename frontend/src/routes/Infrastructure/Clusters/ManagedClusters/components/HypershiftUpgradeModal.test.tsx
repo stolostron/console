@@ -310,6 +310,51 @@ const mockCluster: Cluster = {
     isRegionalHubCluster: false,
 }
 
+const mockClusterHigherVersion: Cluster = {
+    name: 'hypershift-cluster1',
+    displayName: 'hypershift-cluster1',
+    namespace: 'clusters',
+    uid: 'hypershift-cluster1-uid',
+    provider: undefined,
+    status: ClusterStatus.ready,
+    distribution: {
+        ocp: {
+            version: '4.11.15',
+            availableUpdates: [],
+            desiredVersion: '4.11.12',
+            upgradeFailed: false,
+        },
+        isManagedOpenShift: false,
+    },
+    labels: { abc: '123' },
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: true,
+    isHostedCluster: true,
+    isHypershift: true,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isRegionalHubCluster: false,
+}
+
 const mockClusterNoDistribution: Cluster = {
     name: 'hypershift-cluster1',
     displayName: 'hypershift-cluster1',
@@ -1515,6 +1560,20 @@ describe('HypershiftUpgradeModal', () => {
             undefined
         )
         expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    })
+
+    it('should render upgrade modal control plane higher patch version', async () => {
+        const { queryAllByText } = await renderHypershiftUpgradeModal(
+            mockClusterHigherVersion,
+            mockClusterHigherVersion.hypershift?.nodePools as NodePool[],
+            availableUpdates0,
+            undefined,
+            undefined,
+            undefined
+        )
+        expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+        expect(screen.getByTestId('controlplane-checkbox')).toBeTruthy()
+        userEvent.click(screen.getByTestId('controlplane-checkbox'))
     })
 
     it('should render upgrade modal no available updates', async () => {
