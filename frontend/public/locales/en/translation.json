@@ -1552,7 +1552,7 @@
     "import": "Import",
     "Import": "Import",
     "Import cluster YAML": "Import cluster YAML",
-    "Import hosted control plane cluster...": "Import hosted control plane cluster...",
+    "Importing hosted control plane cluster...": "Importing hosted control plane cluster...",
     "import.auto.config.label": "Kubeconfig",
     "import.auto.config.prompt": "Copy and paste your kubeconfig content",
     "import.cluster.yaml": "import.cluster.yaml",
