@@ -103,7 +103,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     const columns = useMemo<IAcmTableColumn<NodePool>[]>(
         () => [
             {
-                header: t('Nodepool'),
+                header: t('Node pool'),
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 cell: 'metadata.name',
@@ -191,7 +191,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             if (getNodepoolStatus(nodepool) !== 'Pending') {
                 actions.push({
                     id: 'manageNodepool',
-                    title: t('Manage nodepool'),
+                    title: t('Manage node pool'),
                     click: () => {
                         setManageNodepoolModalProps({
                             open: true,
@@ -208,7 +208,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
             actions.push({
                 id: 'removeNodepool',
-                title: t('Remove nodepool'),
+                title: t('Remove node pool'),
                 click: () => {
                     setRemoveNodepoolModalProps({
                         open: true,
@@ -281,7 +281,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                         tableActionButtons={[
                             {
                                 id: 'addNodepool',
-                                title: t('Add nodepool'),
+                                title: t('Add node pool'),
                                 click: () => toggleAddNodepoolModal(),
                                 isDisabled:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
@@ -289,7 +289,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 tooltip:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                                         ? t(
-                                              'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
+                                              'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : t('rbac.unauthorized'),
                                 variant: ButtonVariant.primary,
