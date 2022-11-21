@@ -98,44 +98,48 @@ export function HypershiftUpgradeModal(props: {
     const checkNodepoolErrors = useCallback(
         (version?: string) => {
             const currentCPVersion = version || controlPlaneNewVersion
+            const npErrors: any = {}
             props.nodepools.forEach((np) => {
                 if (isTwoVersionsGreater(currentCPVersion, np.status?.version)) {
-                    nodepoolErrors[np.metadata.name || ''] = true
+                    npErrors[np.metadata.name || ''] = true
                 } else {
-                    nodepoolErrors[np.metadata.name || ''] = false
+                    npErrors[np.metadata.name || ''] = false
                 }
             })
-            setNodepoolErrors({ ...nodepoolErrors })
+            setNodepoolErrors({ ...npErrors })
         },
-        [controlPlaneNewVersion, nodepoolErrors, props.nodepools]
+        [controlPlaneNewVersion, props.nodepools]
     )
 
     const checkNodepoolsDisabled = useCallback(
         (version?: string) => {
             const cpVersion = version || controlPlaneNewVersion
+            const npsDisabled: any = {}
             props.nodepools.forEach((np) => {
                 if (isTwoVersionsGreater(cpVersion, np.status?.version) || cpVersion === np.status?.version) {
-                    nodepoolsDisabled[np.metadata.name || ''] = true
+                    npsDisabled[np.metadata.name || ''] = true
                 } else {
-                    nodepoolsDisabled[np.metadata.name || ''] = false
+                    npsDisabled[np.metadata.name || ''] = false
                 }
             })
 
-            if (countTrue(nodepoolsDisabled) > 0) {
+            if (countTrue(npsDisabled) > 0) {
                 setNodepoolGroupDisabled(true)
             } else {
                 setNodepoolGroupDisabled(false)
             }
 
-            setNodepoolsDisabled({ ...nodepoolsDisabled })
+            setNodepoolsDisabled({ ...npsDisabled })
         },
-        [controlPlaneNewVersion, nodepoolsDisabled, props.nodepools]
+        [controlPlaneNewVersion, props.nodepools]
     )
 
     useEffect(() => {
+        setPatchErrors([])
         if (availableUpdateKeys.length === 0) {
             setControlPlaneCheckboxDisabled(true)
             setControlPlaneChecked(false)
+            checkNodepoolErrors(props.controlPlane.distribution?.ocp?.version)
         }
 
         if (!controlPlaneNewVersion && availableUpdateKeys.length > 0) {
@@ -167,14 +171,31 @@ export function HypershiftUpgradeModal(props: {
                         isOverallNodepoolVersionSet = true
                     }
                 }
-                if ((np.status?.version || '') < (availableUpdateVersion || '')) {
+                if (isVersionGreater(availableUpdateVersion, np.status?.version)) {
                     npsChecked[np.metadata.name || ''] = true
+                    if (isTwoVersionsGreater(availableUpdateVersion, np.status?.version)) {
+                        npsDisabled[np.metadata.name || ''] = true
+                    }
                 } else {
                     npsDisabled[np.metadata.name || ''] = true
-                    setNodepoolGroupDisabled(true)
-                    setNodepoolGroupChecked(null)
                 }
             })
+
+            const npsCheckCount = countTrue(npsChecked)
+            if (npsCheckCount === props.nodepools.length) {
+                setNodepoolGroupChecked(true)
+            } else if (npsCheckCount < props.nodepools.length) {
+                setNodepoolGroupChecked(null)
+            } else if (npsCheckCount === 0) {
+                setNodepoolGroupChecked(false)
+            }
+
+            const npsDisabledCount = countTrue(npsDisabled)
+            if (npsDisabledCount > 0) {
+                setNodepoolGroupDisabled(true)
+            } else {
+                setNodepoolGroupDisabled(false)
+            }
 
             setNodepoolsChecked({ ...npsChecked })
             setNodepoolsDisabled({ ...npsDisabled })
@@ -266,6 +287,26 @@ export function HypershiftUpgradeModal(props: {
         return false
     }
 
+    const isVersionGreater = (cpVersion: string | undefined, npVersion: string | undefined) => {
+        if (!cpVersion || !npVersion) {
+            return false
+        }
+        const cpVersionParts = cpVersion.split('.')
+        const npVersionParts = npVersion.split('.')
+
+        if (cpVersionParts[0] > npVersionParts[0]) {
+            return true
+        }
+        if (Number(cpVersionParts[1]) > Number(npVersionParts[1])) {
+            return true
+        }
+        if (Number(cpVersionParts[2]) > Number(npVersionParts[2])) {
+            return true
+        }
+
+        return false
+    }
+
     const handleNodepoolsChecked = (name: string) => {
         if (nodepoolsChecked[name] != undefined) {
             nodepoolsChecked[name] = !nodepoolsChecked[name]
@@ -284,7 +325,9 @@ export function HypershiftUpgradeModal(props: {
         }
         setNodepoolsChecked({ ...nodepoolsChecked })
 
-        checkNodepoolErrors()
+        checkNodepoolErrors(
+            controlPlaneChecked ? controlPlaneNewVersion : props.controlPlane.distribution?.ocp?.version
+        )
     }
 
     const setAllNodepoolsCheckState = (checked: boolean) => {
@@ -304,32 +347,50 @@ export function HypershiftUpgradeModal(props: {
     // Check if nodepools version will be greater than control plane version after upgrade
     const handleControlPlaneChecked = () => {
         setControlPlaneChecked(!controlPlaneChecked)
-
+        const npErrors: any = {}
         if (!controlPlaneChecked === false) {
             if (nodepoolGroupChecked || countTrue(nodepoolsChecked) > 0) {
-                if ((controlPlaneNewVersion || '') > (props.controlPlane.distribution?.ocp?.version || '')) {
-                    setControlPlaneError(true)
-                    setNodepoolErrors({})
-                    //uncheck nodepools if same version as control plane
+                if (isVersionGreater(controlPlaneNewVersion, props.controlPlane.distribution?.ocp?.version)) {
+                    let cpError = true
 
+                    //uncheck nodepools if same version as control plane
+                    const npsDisabled: any = {}
+                    const npsChecked: any = {}
                     props.nodepools.forEach((np) => {
-                        if ((np.status?.version || '') < (props.controlPlane.distribution?.ocp?.version || '')) {
-                            nodepoolsChecked[np.metadata.name || ''] = true
-                            setControlPlaneError(false)
-                        } else {
-                            nodepoolsChecked[np.metadata.name || ''] = false
+                        if (isVersionGreater(props.controlPlane.distribution?.ocp?.version, np.status?.version)) {
+                            npsChecked[np.metadata.name || ''] = true
+                            cpError = false
+
+                            if (
+                                isTwoVersionsGreater(props.controlPlane.distribution?.ocp?.version, np.status?.version)
+                            ) {
+                                npsDisabled[np.metadata.name || ''] = true
+                                npErrors[np.metadata.name || ''] = true
+                            }
+                        } else if (
+                            (np.status?.version || '') === (props.controlPlane.distribution?.ocp?.version || '')
+                        ) {
+                            npsChecked[np.metadata.name || ''] = false
+                            npsDisabled[np.metadata.name || ''] = true
                         }
                     })
-                    setNodepoolsChecked({ ...nodepoolsChecked })
-                    const npChecked = countTrue(nodepoolsChecked)
-                    if (npChecked === 0) {
+                    setNodepoolsDisabled(npsDisabled)
+                    setNodepoolsChecked({ ...npsChecked })
+                    setNodepoolErrors({ ...npErrors })
+                    const npsCheckedCount = countTrue(npsChecked)
+                    if (npsCheckedCount === 0) {
                         setNodepoolGroupChecked(false)
-                    } else if (npChecked < props.nodepools.length) {
+                    } else if (npsCheckedCount < props.nodepools.length) {
                         setNodepoolGroupChecked(null)
+                    } else if (npsCheckedCount === props.nodepools.length) {
+                        setNodepoolGroupChecked(true)
                     }
 
-                    setNodepoolGroupDisabled(true)
-                    setAllNodepoolsDisableState(true)
+                    const npDisableCount = countTrue(npsDisabled)
+                    if (npDisableCount > 0) {
+                        setNodepoolGroupDisabled(true)
+                    }
+                    setControlPlaneError(cpError)
                 }
             }
         }
@@ -686,9 +747,7 @@ export function HypershiftUpgradeModal(props: {
                                                     np,
                                                     controlPlaneChecked
                                                         ? props.availableUpdates[controlPlaneNewVersion || '']
-                                                        : props.availableUpdates[
-                                                              props.controlPlane.distribution?.ocp?.version || ''
-                                                          ]
+                                                        : props.controlPlane.distribution?.ocp?.desired?.image
                                                 )
                                             )
                                         }
@@ -696,15 +755,10 @@ export function HypershiftUpgradeModal(props: {
 
                                     const requestResult = resultsSettled(resultArr)
                                     const promiseResults = await requestResult.promise
-                                    promiseResults.forEach((promiseResult, index) => {
+                                    promiseResults.forEach((promiseResult) => {
                                         if (promiseResult.status === 'rejected') {
                                             errors.push({
-                                                name:
-                                                    index === 0
-                                                        ? props.controlPlane.name
-                                                        : props.nodepools[index - 1].metadata.name,
-                                                type: index === 0 ? 'HostedCluster' : 'NodePool',
-                                                msg: promiseResult.reason,
+                                                msg: `${promiseResult.reason.code} ${promiseResult.reason.name} ${promiseResult.reason.message}`,
                                             })
                                         }
                                     })
@@ -730,18 +784,6 @@ export function HypershiftUpgradeModal(props: {
                             plural=""
                             items={patchErrors}
                             columns={[
-                                {
-                                    header: t('Name'),
-                                    cell: (error) => {
-                                        return error.name
-                                    },
-                                },
-                                {
-                                    header: t('Type'),
-                                    cell: (error) => {
-                                        return error.type
-                                    },
-                                },
                                 {
                                     header: t('Error'),
                                     cell: (error) => {
