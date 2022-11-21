@@ -101,6 +101,7 @@ export default function DetailsPage() {
             const previousSearchState = location.state.fromSearch ?? ''
             return `${NavigationPath.search}${previousSearchState}`
         } else {
+            /* istanbul ignore next */
             return NavigationPath.search
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

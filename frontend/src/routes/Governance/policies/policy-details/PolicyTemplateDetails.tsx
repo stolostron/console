@@ -93,6 +93,7 @@ export function PolicyTemplateDetails(props: {
     }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
 
     // Hook to get the height of the template details section so both details and editor sections are the same height
+    /* istanbul ignore next */
     useEffect(() => {
         const detailsElementHeight = document.getElementById('template-details-section')?.offsetHeight
         if (detailsElementHeight && detailsElementHeight > 250) {

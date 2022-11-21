@@ -210,7 +210,6 @@ export function EditorActionBar(props: {
                                     setUpdateError,
                                     setUpdateSuccess
                                 )
-                                setUpdateError('')
                             }}
                         >
                             {t('Save')}
@@ -302,6 +301,7 @@ export default function YAMLPage(props: {
         const editorActionBarHeight = document.getElementById('yaml-editor-action-wrapper')?.offsetHeight ?? 53
         editorHeight = editorHeight - editorHeaderHeight - editorActionBarHeight
         const globalHeader = document.getElementsByClassName('co-global-notification')
+        /* istanbul ignore if */
         if (globalHeader.length > 0) {
             editorHeight = editorHeight - globalHeader.length * 33
         }

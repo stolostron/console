@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -31,6 +32,20 @@ describe('YAMLPage', () => {
         // Test that the component has rendered correctly with editor header
         await waitFor(() => expect(screen.queryByText('local-cluster')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('test-namespace')).toBeTruthy())
+    })
+
+    it('Renders YAML page header correctly for non-namespaced resource', async () => {
+        render(
+            <RecoilRoot>
+                <Router history={createBrowserHistory()}>
+                    <EditorHeaderBar cluster={'local-cluster'} namespace={''} />
+                </Router>
+            </RecoilRoot>
+        )
+
+        // Test that the component has rendered correctly with editor header
+        await waitFor(() => expect(screen.queryByText('local-cluster')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('Resource is not namespaced')).toBeTruthy())
     })
 
     it('Renders YAML page action bar correctly', async () => {
@@ -118,7 +133,7 @@ describe('YAMLPage', () => {
         }
     })
 
-    it('Renders YAML Page correctly & update resource', async () => {
+    it('Renders YAML Page correctly', async () => {
         render(
             <RecoilRoot>
                 <Router history={createBrowserHistory()}>
@@ -146,5 +161,46 @@ describe('YAMLPage', () => {
         // Test that the component has rendered correctly
         await waitFor(() => expect(screen.queryByText('local-cluster')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Save')).toBeTruthy())
+    })
+
+    jest.mock('file-saver', () => {
+        return {
+            saveAs: jest.fn((_blob: Blob, filename) => {
+                return filename
+            }),
+        }
+    })
+    global.URL.createObjectURL = jest.fn()
+    it('Renders YAML Page correctly & downloads yaml', async () => {
+        render(
+            <RecoilRoot>
+                <Router history={createBrowserHistory()}>
+                    <YAMLPage
+                        resource={{
+                            kind: 'Pod',
+                            apiVersion: 'v1',
+                            metadata: {
+                                name: 'test-pod',
+                                namespace: 'test-namespace',
+                            },
+                        }}
+                        loading={false}
+                        error={''}
+                        name={'test-pod'}
+                        namespace={'test-namespace'}
+                        cluster={'local-cluster'}
+                        kind={'Pod'}
+                        apiversion={'v1'}
+                    />
+                </Router>
+            </RecoilRoot>
+        )
+
+        // Test that the component has rendered correctly
+        await waitFor(() => expect(screen.queryByText('local-cluster')).toBeTruthy())
+
+        const downloadBtn = screen.getByText('Download')
+        await waitFor(() => expect(downloadBtn).toBeTruthy())
+        userEvent.click(downloadBtn)
     })
 })
