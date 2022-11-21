@@ -39,7 +39,7 @@ import './style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
 // Template Data
-import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
+import { useControlData } from './CreateApplication/Subscription/controlData/ControlData'
 import createTemplate from './CreateApplication/Subscription/templates/template.hbs'
 import gitTemplate from './CreateApplication/Subscription/templates/templateGit.hbs'
 import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
@@ -427,13 +427,15 @@ export function CreateSubscriptionApplication(
 
     const isFetchControl = editApplication ? fetchControl : true
 
+    const translatedControlData = useControlData(isLocalCluster, handleModalToggle)
+
     return (
         isFetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
                 monacoEditor={<MonacoEditor />}
-                controlData={getControlData(isLocalCluster, handleModalToggle)}
+                controlData={translatedControlData}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}
