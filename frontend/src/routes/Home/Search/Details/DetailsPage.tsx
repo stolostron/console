@@ -98,7 +98,7 @@ export default function DetailsPage() {
         const prevLocState = location.state
         if (prevLocState && prevLocState.from === NavigationPath.search) {
             // If we came to resources page from search - return to search with previous search filters
-            const previousSearchState = location.state.fromSearch ?? ''
+            const previousSearchState = location.state.fromSearch ?? /* istanbul ignore next */ ''
             return `${NavigationPath.search}${previousSearchState}`
         } else {
             /* istanbul ignore next */
