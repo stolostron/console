@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -51,12 +50,6 @@ export default function DetailsPage() {
     const [containers, setContainers] = useState<string[]>()
     const [resourceError, setResourceError] = useState('')
     const { cluster, kind, apiversion, namespace, name } = getResourceData()
-    let resourceUrlParams = ''
-    resourceUrlParams = `${resourceUrlParams}${cluster !== '' ? `cluster=${cluster}` : ''}`
-    resourceUrlParams = `${resourceUrlParams}${kind !== '' ? `&kind=${kind}` : ''}`
-    resourceUrlParams = `${resourceUrlParams}${apiversion !== '' ? `&apiversion=${apiversion}` : ''}`
-    resourceUrlParams = `${resourceUrlParams}${namespace !== '' ? `&namespace=${namespace}` : ''}`
-    resourceUrlParams = `${resourceUrlParams}${name !== '' ? `&name=${name}` : ''}`
 
     useEffect(() => {
         if (cluster === 'local-cluster') {
@@ -66,8 +59,6 @@ export default function DetailsPage() {
                 metadata: { namespace, name },
             })
                 .promise.then((response) => {
-                    // NOTE: removing managedfields from editor
-                    delete response.metadata?.managedFields
                     setResource(response)
                 })
                 .catch((err) => {
@@ -80,8 +71,6 @@ export default function DetailsPage() {
                     if (viewResponse?.message) {
                         setResourceError(viewResponse.message)
                     } else {
-                        // NOTE: removing managedfields from editor
-                        delete viewResponse?.result.metadata?.managedFields
                         setResource(viewResponse?.result)
                     }
                 })
@@ -99,23 +88,23 @@ export default function DetailsPage() {
     const location: {
         pathname: string
         state: {
+            from: string
             search: string
             fromSearch: string
         }
     } = useLocation()
 
-    let breadcrumbLink = ''
-    const prevLocState = window.history?.state?.state
-    if (prevLocState && prevLocState.from === NavigationPath.search) {
-        breadcrumbLink = NavigationPath.search
-        // If we came to resources page from search - return to search with previous search filters
-        const previousSearchState = location.state.fromSearch
-        if (previousSearchState) {
-            breadcrumbLink = `${NavigationPath.search}/${previousSearchState}`
+    const breadcrumbLink: string = useMemo(() => {
+        const prevLocState = location.state
+        if (prevLocState && prevLocState.from === NavigationPath.search) {
+            // If we came to resources page from search - return to search with previous search filters
+            const previousSearchState = location.state.fromSearch ?? ''
+            return `${NavigationPath.search}${previousSearchState}`
+        } else {
+            return NavigationPath.search
         }
-    } else {
-        breadcrumbLink = NavigationPath.search
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
         <AcmPage
@@ -131,29 +120,14 @@ export default function DetailsPage() {
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
-                                <Link
-                                    replace
-                                    to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
-                                >
-                                    Details
-                                </Link>
+                                <Link to={`${NavigationPath.resources}${window.location.search}`}>Details</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
-                                <Link
-                                    replace
-                                    to={`${NavigationPath.resourceYAML}?${encodeURIComponent(resourceUrlParams)}`}
-                                >
-                                    YAML
-                                </Link>
+                                <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>YAML</Link>
                             </AcmSecondaryNavItem>
                             {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
                                 <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                                    <Link
-                                        replace
-                                        to={`${NavigationPath.resourceLogs}?${encodeURIComponent(resourceUrlParams)}`}
-                                    >
-                                        Logs
-                                    </Link>
+                                    <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>Logs</Link>
                                 </AcmSecondaryNavItem>
                             )}
                         </AcmSecondaryNav>

@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
-import { PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
+import { DownloadIcon } from '@patternfly/react-icons'
+import { saveAs } from 'file-saver'
+import { History } from 'history'
 import jsYaml from 'js-yaml'
-import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
-import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
-import { fireManagedClusterView } from '../../../../resources/managedclusterview'
+import { fireManagedClusterAction, fireManagedClusterView } from '../../../../resources'
 import { getResource } from '../../../../resources/utils/resource-request'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '../../../../ui-components'
+import { AcmLoadingPage } from '../../../../ui-components'
 
 const useStyles = makeStyles({
     headerContainer: {
@@ -45,6 +47,218 @@ const useStyles = makeStyles({
     },
 })
 
+/* istanbul ignore next */
+function loadResource(
+    cluster: string,
+    kind: string,
+    apiversion: string,
+    name: string,
+    namespace: string,
+    setResourceYaml: Dispatch<SetStateAction<string>>,
+    setUpdateError: Dispatch<SetStateAction<string>>
+) {
+    if (cluster === 'local-cluster') {
+        getResource({
+            apiVersion: apiversion,
+            kind,
+            metadata: { namespace, name },
+        })
+            .promise.then((response: any) => {
+                setResourceYaml(jsYaml.dump(response, { indent: 2 }))
+            })
+            .catch((err) => {
+                console.error('Error getting resource: ', err)
+                setUpdateError(`Error getting new resource YAML: ${err.message}`)
+            })
+    } else {
+        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+            .then((viewResponse: any) => {
+                if (viewResponse?.message) {
+                    setUpdateError(`Error getting new resource YAML: ${viewResponse.message}`)
+                } else {
+                    setResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
+                }
+            })
+            .catch((err) => {
+                console.error('Error getting resource: ', err)
+                setUpdateError(`Error getting new resource YAML: ${err}`)
+            })
+    }
+}
+
+/* istanbul ignore next */
+function updateResource(
+    cluster: string,
+    kind: string,
+    apiversion: string,
+    name: string,
+    namespace: string,
+    resourceYaml: string,
+    setResourceYaml: Dispatch<SetStateAction<string>>,
+    setUpdateError: Dispatch<SetStateAction<string>>,
+    setUpdateSuccess: Dispatch<SetStateAction<boolean>>
+) {
+    fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
+        .then((actionResponse) => {
+            if (actionResponse.actionDone === 'ActionDone') {
+                loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError)
+                setUpdateSuccess(true)
+            } else {
+                setUpdateError(actionResponse.message)
+            }
+        })
+        .catch((err) => {
+            console.error('Error updating resource: ', err)
+            setUpdateError(err)
+        })
+}
+
+/* istanbul ignore next */
+function onCancel(history: History<unknown>) {
+    // OCP returns to previous page
+    // We could instead revert any changes and remain on the page || if no changes then go back to previous page?
+    history.goBack()
+}
+
+/* istanbul ignore next */
+function downloadYaml(name: string, resource: string) {
+    const blob = new Blob([resource], { type: 'text/yaml;charset=utf-8' })
+    saveAs(blob, `${name}.yaml`)
+}
+
+export function EditorHeaderBar(props: { cluster: string; namespace: string }) {
+    const { cluster, namespace } = props
+    const { t } = useTranslation()
+    const classes = useStyles()
+
+    return (
+        <div id={'yaml-editor-header-wrapper'} className={classes.headerContainer}>
+            {/* No translation - this is a kube resource field */}
+            <p className={classes.textTitle}>{'Cluster:'}</p>
+            <p className={classes.textContent}>{cluster}</p>
+            <div className={classes.spacer} />
+            {/* No translation - this is a kube resource field */}
+            <p className={classes.textTitle}>{'Namespace:'}</p>
+            <p className={classes.textContent}>{namespace !== '' ? namespace : t('Resource is not namespaced')}</p>
+        </div>
+    )
+}
+
+export function EditorActionBar(props: {
+    cluster: string
+    kind: string
+    apiversion: string
+    name: string
+    namespace: string
+    resourceYaml: string
+    setResourceYaml: Dispatch<SetStateAction<string>>
+    handleResize: () => void
+}) {
+    const { cluster, kind, apiversion, name, namespace, resourceYaml, setResourceYaml, handleResize } = props
+    const { t } = useTranslation()
+    const history = useHistory()
+    const [updateSuccess, setUpdateSuccess] = useState<boolean>(false)
+    const [updateError, setUpdateError] = useState<string>('')
+
+    useEffect(() => {
+        // If there is an alert message to show -> resize the editor height to fit Alert component.
+        handleResize()
+    }, [handleResize, updateSuccess, updateError])
+
+    return (
+        <div
+            id={'yaml-editor-action-wrapper'}
+            style={{
+                borderTop: 'var(--pf-global--BorderWidth--sm) solid var(--pf-global--BorderColor--100)',
+            }}
+        >
+            {(updateError !== '' || updateSuccess) && (
+                <div id={'editor-alert-container'} style={{ paddingTop: '1rem' }}>
+                    {updateSuccess && <Alert variant={'success'} isInline={true} title={`${name} has been updated.`} />}
+                    {/* TODO - info alert if resourceVersion is updated */}
+                    {updateError !== '' && (
+                        <Alert
+                            variant={'danger'}
+                            isInline={true}
+                            title={`${t('Error occurred while updating resource:')} ${name}`}
+                        >
+                            {updateError}
+                        </Alert>
+                    )}
+                </div>
+            )}
+            <ActionList
+                style={{
+                    justifyContent: 'space-between',
+                    paddingTop: '20px',
+                }}
+            >
+                <ActionListGroup>
+                    <ActionListItem>
+                        <Button
+                            variant="primary"
+                            id="update-resource-button"
+                            onClick={() => {
+                                updateResource(
+                                    cluster,
+                                    kind,
+                                    apiversion,
+                                    name,
+                                    namespace,
+                                    resourceYaml,
+                                    setResourceYaml,
+                                    setUpdateError,
+                                    setUpdateSuccess
+                                )
+                                setUpdateError('')
+                            }}
+                        >
+                            {t('Save')}
+                        </Button>
+                    </ActionListItem>
+                    <ActionListItem>
+                        <Button
+                            variant="secondary"
+                            id="reload-resource-button"
+                            onClick={() => {
+                                loadResource(
+                                    cluster,
+                                    kind,
+                                    apiversion,
+                                    name,
+                                    namespace,
+                                    setResourceYaml,
+                                    setUpdateError
+                                )
+                                setUpdateError('')
+                                setUpdateSuccess(false)
+                            }}
+                        >
+                            {t('Reload')}
+                        </Button>
+                    </ActionListItem>
+                    <ActionListItem>
+                        <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(history)}>
+                            {t('Cancel')}
+                        </Button>
+                    </ActionListItem>
+                </ActionListGroup>
+                <ActionListGroup>
+                    <ActionListItem>
+                        <Button
+                            variant="secondary"
+                            id="download-resource-button"
+                            onClick={() => downloadYaml(name, resourceYaml)}
+                        >
+                            <DownloadIcon /> {t('public~Download')}
+                        </Button>
+                    </ActionListItem>
+                </ActionListGroup>
+            </ActionList>
+        </div>
+    )
+}
+
 export default function YAMLPage(props: {
     resource: any
     loading: boolean
@@ -57,13 +271,10 @@ export default function YAMLPage(props: {
 }) {
     const { resource, loading, error, name, namespace, cluster, kind, apiversion } = props
     const { t } = useTranslation()
-    const [editMode, setEditMode] = useState<boolean>(false)
-    const [userCanEdit, setUserCanEdit] = useState<boolean | undefined>(undefined)
-    const [editedResourceYaml, setEditedResourceYaml] = useState<string>('')
-    const [updateResourceError, setUpdateResourceError] = useState<string | undefined>(undefined)
-    const [defaultScrollToLine, setDefaultScrollToLine] = useState<number>(1)
-    const [editorHeight, setEditorHeight] = useState('500px')
-    const classes = useStyles()
+    const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
+    const [resourceYaml, setResourceYaml] = useState<string>('')
+    const [defaultScrollToLine, setDefaultScrollToLine] = useState<number | undefined>()
+    const [editorHeight, setEditorHeight] = useState(window.innerHeight - 370)
     const location: {
         pathname: string
         state: {
@@ -81,21 +292,30 @@ export default function YAMLPage(props: {
 
     useEffect(() => {
         if (resource) {
-            setEditedResourceYaml(jsYaml.dump(resource, { indent: 2 }))
+            setResourceYaml(jsYaml.dump(resource, { indent: 2 }))
         }
     }, [resource])
 
-    useEffect(() => {
-        function handleResize() {
-            setEditorHeight(`${(window.innerHeight - 275) * 0.95}px`)
+    function handleResize() {
+        let editorHeight = window.innerHeight - 260
+        const editorHeaderHeight = document.getElementById('yaml-editor-header-wrapper')?.offsetHeight ?? 53
+        const editorActionBarHeight = document.getElementById('yaml-editor-action-wrapper')?.offsetHeight ?? 53
+        editorHeight = editorHeight - editorHeaderHeight - editorActionBarHeight
+        const globalHeader = document.getElementsByClassName('co-global-notification')
+        if (globalHeader.length > 0) {
+            editorHeight = editorHeight - globalHeader.length * 33
         }
+        setEditorHeight(editorHeight)
+    }
+
+    useEffect(() => {
         handleResize()
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
     useEffect(() => {
-        if (!editedResourceYaml) {
+        if (!resourceYaml) {
             return
         }
         const canUpdateResource = canUser(
@@ -113,70 +333,17 @@ export default function YAMLPage(props: {
         )
 
         canUpdateResource.promise
-            .then((result) => setUserCanEdit(result.status?.allowed!))
+            .then((result) => setUserCanEdit(result.status?.allowed! ?? false))
             .catch((err) => console.error(err))
         return () => canUpdateResource.abort()
-    }, [apiversion, cluster, editedResourceYaml, kind, name, namespace])
-
-    function fireUpdateResource() {
-        fireManagedClusterAction(
-            'Update',
-            cluster,
-            kind,
-            apiversion,
-            name,
-            namespace,
-            jsYaml.loadAll(editedResourceYaml)[0]
-        )
-            .then((actionResponse) => {
-                if (actionResponse.actionDone === 'ActionDone') {
-                    if (cluster === 'local-cluster') {
-                        getResource({
-                            apiVersion: apiversion,
-                            kind,
-                            metadata: { namespace, name },
-                        })
-                            .promise.then((response: any) => {
-                                setEditedResourceYaml(jsYaml.dump(response, { indent: 2 }))
-                            })
-                            .catch((err) => {
-                                console.error('Error getting resource: ', err)
-                                setUpdateResourceError(`Error getting new resource YAML: ${err.message}`)
-                            })
-                    } else {
-                        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-                            .then((viewResponse: any) => {
-                                if (viewResponse?.message) {
-                                    setUpdateResourceError(`Error getting new resource YAML: ${viewResponse.message}`)
-                                } else {
-                                    setEditedResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
-                                }
-                            })
-                            .catch((err) => {
-                                console.error('Error getting resource: ', err)
-                                setUpdateResourceError(`Error getting new resource YAML: ${err}`)
-                            })
-                    }
-                } else {
-                    setUpdateResourceError(actionResponse.message)
-                }
-            })
-            .catch((err) => {
-                console.error('Error updating resource: ', err)
-                setUpdateResourceError(err)
-            })
-    }
+    }, [apiversion, cluster, resourceYaml, kind, name, namespace])
 
     if (error) {
         return (
             <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={`${t('Error querying for resource:')} ${name}`}
-                    subtitle={error}
-                />
+                <Alert variant={'danger'} isInline={true} title={`${t('Error querying for resource:')} ${name}`}>
+                    {error}
+                </Alert>
             </PageSection>
         )
     } else if (loading) {
@@ -186,61 +353,34 @@ export default function YAMLPage(props: {
             </PageSection>
         )
     }
-    let tooltipMessage = t('Enable resource editing')
-    if (!userCanEdit) {
-        tooltipMessage = t('You are not allowed to edit this resource')
-    } else if (editMode) {
-        tooltipMessage = t('Cancel Edits')
-    }
+
     return (
-        <PageSection>
-            {updateResourceError && (
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={`${t('Error occurred while updating resource:')} ${name}`}
-                    subtitle={updateResourceError}
-                />
-            )}
-            <div className={classes.headerContainer}>
-                {/* No translation - this is a kube resource */}
-                <p className={classes.textTitle}>{'Cluster:'}</p>
-                <p className={classes.textContent}>{cluster}</p>
-                <div className={classes.spacer} />
-                {/* No translation - this is a kube resource */}
-                <p className={classes.textTitle}>{'Namespace:'}</p>
-                <p className={classes.textContent}>{namespace.length > 0 ? namespace : 'Resource is not namespaced'}</p>
-                <div className={classes.editButtonContainer}>
-                    <p className={classes.editButtonLabel}>{editMode ? t('Editing mode') : t('Read only mode')}</p>
-                    <AcmButton
-                        variant={'primary'}
-                        isDisabled={!userCanEdit}
-                        onClick={() => {
-                            setEditMode(!editMode)
-                        }}
-                        tooltip={tooltipMessage}
-                    >
-                        {editMode ? t('Cancel') : t('Edit')}
-                    </AcmButton>
-                    {editMode && (
-                        <AcmButton
-                            className={classes.saveButton}
-                            variant={'primary'}
-                            onClick={() => fireUpdateResource()}
-                        >
-                            {t('Save')}
-                        </AcmButton>
-                    )}
-                </div>
-            </div>
+        <PageSection
+            style={{
+                position: 'relative',
+                display: 'flex',
+                height: '100%',
+                flex: 1,
+                flexDirection: 'column',
+            }}
+        >
+            <EditorHeaderBar cluster={cluster} namespace={namespace} />
             <YamlEditor
-                resourceYAML={editedResourceYaml}
-                editMode={editMode}
-                setEditedResourceYaml={setEditedResourceYaml}
-                width={'100%'}
-                height={editorHeight}
+                resourceYAML={resourceYaml}
+                readOnly={!userCanEdit}
+                setResourceYaml={setResourceYaml}
                 defaultScrollToLine={defaultScrollToLine}
+                height={editorHeight}
+            />
+            <EditorActionBar
+                cluster={cluster}
+                kind={kind}
+                apiversion={apiversion}
+                name={name}
+                namespace={namespace}
+                resourceYaml={resourceYaml}
+                setResourceYaml={setResourceYaml}
+                handleResize={handleResize}
             />
         </PageSection>
     )

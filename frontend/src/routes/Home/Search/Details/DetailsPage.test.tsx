@@ -17,7 +17,11 @@ jest.mock('react-router-dom', () => {
         ...originalModule,
         useLocation: () => ({
             pathname: '/multicloud/home/search/resources',
-            search: '?cluster=testCluster&kind=pods&apiversion=v1&namespace=testNamespace&name=testPod',
+            search: '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod',
+            state: {
+                from: '/multicloud/home/search',
+                fromSearch: '?filters={%22textsearch%22:%22kind%3APod%22}',
+            },
         }),
         useHistory: () => ({
             push: jest.fn(),
@@ -27,57 +31,58 @@ jest.mock('react-router-dom', () => {
 Object.defineProperty(window, 'location', {
     value: {
         pathname: '/multicloud/home/search/resources',
-        search: '?cluster=testCluster&kind=pods&apiversion=v1&namespace=testNamespace&name=testPod',
+        search: '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod',
+        state: {
+            from: '/multicloud/home/search',
+            fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',
+        },
     },
 })
-jest.mock('./YAMLPage', () => {
-    // TODO replace with actual YAML Page when Monaco editor is imported correctly
-    return function YAMLPage() {
-        return <div />
-    }
-})
 
-const getResourceRequest = {
-    apiVersion: 'view.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterView',
+const mockLocalClusterPod = {
+    kind: 'Pod',
+    apiVersion: 'v1',
     metadata: {
-        name: 'afd0d7d61f43f99d50d6e5a0ed365f202b0e4699',
-        namespace: 'testCluster',
-        labels: {
-            viewName: 'afd0d7d61f43f99d50d6e5a0ed365f202b0e4699',
-        },
+        name: 'testLocalPod',
+        namespace: 'testNamespace',
+        resourceVersion: '100702',
+        creationTimestamp: '2022-11-18T11:33:56Z',
     },
     spec: {
-        scope: {
-            name: 'testPod',
-            resource: 'v1',
-        },
-    },
-}
-
-const getResourceResponse = {
-    apiVersion: 'view.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterView',
-    metadata: {
-        name: 'afd0d7d61f43f99d50d6e5a0ed365f202b0e4699',
-        namespace: 'testCluster',
-        labels: {
-            viewName: 'afd0d7d61f43f99d50d6e5a0ed365f202b0e4699',
-        },
-    },
-    spec: {
-        scope: {
-            name: 'testPod',
-            resource: 'v1',
-        },
+        restartPolicy: 'Always',
+        terminationGracePeriodSeconds: 30,
+        dnsPolicy: 'ClusterFirst',
+        nodeSelector: { 'kubernetes.io/os': 'linux' },
+        containers: [
+            {
+                name: 'testContainer',
+                resources: { requests: { cpu: '10m', memory: '50Mi' } },
+                livenessProbe: {
+                    initialDelaySeconds: 10,
+                    timeoutSeconds: 5,
+                    periodSeconds: 10,
+                    successThreshold: 1,
+                    failureThreshold: 3,
+                },
+                readinessProbe: {
+                    initialDelaySeconds: 5,
+                    timeoutSeconds: 5,
+                    periodSeconds: 10,
+                    successThreshold: 1,
+                    failureThreshold: 3,
+                },
+            },
+        ],
     },
     status: {
+        phase: 'Running',
         conditions: [
+            { type: 'Ready', status: 'True', lastProbeTime: null, lastTransitionTime: '2022-11-18T11:34:09Z' },
             {
-                message: 'Watching resources successfully',
-                reason: 'GetResourceProcessing',
+                type: 'ContainersReady',
                 status: 'True',
-                type: 'Processing',
+                lastProbeTime: null,
+                lastTransitionTime: '2022-11-18T11:34:09Z',
             },
         ],
     },
@@ -85,8 +90,8 @@ const getResourceResponse = {
 
 describe('DetailsPage', () => {
     nockIgnoreApiPaths()
-    it('should render details page correctly', async () => {
-        const deleteResourceNock = nockGet(getResourceRequest, getResourceResponse)
+
+    it('should render local-cluster resource details correctly', async () => {
         render(
             <RecoilRoot>
                 <Router history={createBrowserHistory()}>
@@ -96,9 +101,12 @@ describe('DetailsPage', () => {
         )
 
         // Wait for delete resource requests to finish
-        await waitForNocks([deleteResourceNock])
+        await waitForNocks([nockGet(mockLocalClusterPod)])
 
         // Test that the component has rendered correctly with data
-        await waitFor(() => expect(screen.queryByText('testPod')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('testLocalPod')).toBeTruthy())
+
+        // Wait for the details page to be loaded
+        await waitFor(() => expect(screen.queryByText('Pod details')).toBeTruthy())
     })
 })

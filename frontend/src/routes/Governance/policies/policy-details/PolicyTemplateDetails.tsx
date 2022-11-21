@@ -40,6 +40,7 @@ export function PolicyTemplateDetails(props: {
     const [relatedObjects, setRelatedObjects] = useState<any>()
     const [templateError, setTemplateError] = useState<string>()
     const [isExpanded, setIsExpanded] = useState<boolean>(true)
+    const [editorHeight, setEditorHeight] = useState<number>(250)
     const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
 
     let templateClusterName = clusterName
@@ -90,6 +91,14 @@ export function PolicyTemplateDetails(props: {
                 setTemplateError(err)
             })
     }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
+
+    // Hook to get the height of the template details section so both details and editor sections are the same height
+    useEffect(() => {
+        const detailsElementHeight = document.getElementById('template-details-section')?.offsetHeight
+        if (detailsElementHeight && detailsElementHeight > 250) {
+            setEditorHeight(detailsElementHeight)
+        }
+    }, [])
 
     const descriptionItems = [
         {
@@ -247,7 +256,11 @@ export function PolicyTemplateDetails(props: {
             <PageSection style={{ paddingBottom: '0' }}>
                 <Grid hasGutter>
                     <GridItem span={6}>
-                        <AcmDescriptionList title={t('Template details')} leftItems={descriptionItems} />
+                        <AcmDescriptionList
+                            id={'template-details-section'}
+                            title={t('Template details')}
+                            leftItems={descriptionItems}
+                        />
                     </GridItem>
                     <GridItem span={6}>
                         <Card isExpanded={isExpanded}>
@@ -257,9 +270,8 @@ export function PolicyTemplateDetails(props: {
                             <CardExpandableContent>
                                 <YamlEditor
                                     resourceYAML={jsYaml.dump(template, { indent: 2 })}
-                                    editMode={false}
-                                    width={'100%'}
-                                    height={'500px'}
+                                    readOnly={true}
+                                    height={editorHeight}
                                 />
                             </CardExpandableContent>
                         </Card>
