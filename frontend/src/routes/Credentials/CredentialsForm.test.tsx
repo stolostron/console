@@ -208,7 +208,7 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'vmw',
             {
-                vCenter: 'vCenter',
+                vCenter: 'vcenter.example.com',
                 username: 'username',
                 password: 'password',
                 cacertificate: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
@@ -229,7 +229,7 @@ describe('add credentials page', () => {
         await clickByText('Next')
 
         // credentials
-        await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
+        await typeByTestId('vCenter', `ftp://${providerConnection.stringData?.vCenter!}`)
         await typeByTestId('username', providerConnection.stringData?.username!)
         await typeByTestId('password', providerConnection.stringData?.password!)
         await typeByTestId('cacertificate', providerConnection.stringData?.cacertificate!)
@@ -244,12 +244,17 @@ describe('add credentials page', () => {
         await clickByText('Next')
 
         // Confirm validation messages appear
+        await waitForText(
+            "The value must be a fully-qualified host name or IP address. Do not include the 'ftp://' URL scheme."
+        )
         await waitForText(`The path must begin with '/${providerConnection.stringData?.datacenter}/vm/'`)
         await waitForText(
             `The path must begin with '/${providerConnection.stringData?.datacenter}/host/${providerConnection.stringData?.cluster}/Resources/'`
         )
 
-        // Fix folder and resource pool and continue
+        // Fix vCenter server, folder, and resource pool and continue
+        await clearByTestId('vCenter')
+        await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
         await clearByTestId('vsphereFolder')
         await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
         await clearByTestId('vsphereResourcePool')

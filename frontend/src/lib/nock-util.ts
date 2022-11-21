@@ -506,6 +506,8 @@ const mockApiPathList: APIResourceNames = {
         ClusterCurator: {
             pluralName: 'clustercurators',
         },
+    },
+    'cluster.open-cluster-management.io/v1beta2': {
         ManagedClusterSet: {
             pluralName: 'managedclustersets',
         },

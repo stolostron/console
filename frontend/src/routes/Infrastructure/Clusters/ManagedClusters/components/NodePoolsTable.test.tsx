@@ -1,10 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
+import { namespacesState } from '../../../../../atoms'
+import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForText } from '../../../../../lib/test-util'
-import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
+import {
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+} from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 
@@ -265,6 +274,12 @@ const mockClusterImageSet0: ClusterImageSet = {
     },
 }
 
+const mockNamespaces: Namespace[] = ['clusters'].map((name) => ({
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name },
+}))
+
 describe('NodePoolsTable', () => {
     const nodePools: any = [
         {
@@ -374,9 +389,16 @@ describe('NodePoolsTable', () => {
             },
         },
     ]
-    beforeEach(() => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
+
         render(
-            <RecoilRoot>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(namespacesState, mockNamespaces)
+                }}
+            >
                 <ClusterContext.Provider
                     value={{
                         hostedCluster: mockHostedCluster0,
@@ -388,11 +410,16 @@ describe('NodePoolsTable', () => {
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
+
+        await waitForText(nodePools[0].metadata.name)
     })
 
     it('should render NodePoolsTable', async () => {
         await waitForText(nodePools[0].metadata.name)
         expect(screen.getByTestId('addNodepool')).toBeTruthy()
+        await waitFor(() => expect(screen.getByTestId('addNodepool')).toHaveAttribute('aria-disabled', 'false'), {
+            timeout: 5000,
+        })
         userEvent.click(screen.getByTestId('addNodepool'))
         expect(screen.queryAllByText('Nodepool name').length).toBe(1)
         userEvent.click(screen.getByTestId('cancel-nodepool-form'))
@@ -454,6 +481,8 @@ describe('NodePoolsTable no status', () => {
         },
     ]
     beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot>
                 <ClusterContext.Provider
@@ -522,6 +551,8 @@ describe('NodePoolsTable no conditions', () => {
         },
     ]
     beforeEach(() => {
+        nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot>
                 <ClusterContext.Provider

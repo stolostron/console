@@ -339,3 +339,17 @@ export function validateRequiredPrefix(value: string, requiredPrefix: string) {
     }
     return undefined
 }
+
+export function validateVCenterServer(value: string, t: TFunction) {
+    if (!validator.isFQDN(value) && !validator.isIP(value)) {
+        if (value && value.indexOf('://') > 0) {
+            const scheme = value.split('://')[0]
+            return t(
+                "The value must be a fully-qualified host name or IP address. Do not include the '{{scheme}}://' URL scheme.",
+                { scheme }
+            )
+        } else {
+            return t('The value must be a fully-qualified host name or IP address.')
+        }
+    }
+}

@@ -1102,6 +1102,10 @@ export function getClusterStatus(
     } else if (!clusterJoined) {
         mcStatus = ClusterStatus.pendingimport
 
+        if (hostedCluster) {
+            mcStatus = ClusterStatus.importing
+        }
+
         // check for respective csrs awaiting approval
         if (certificateSigningRequests && certificateSigningRequests.length) {
             const clusterCsrs =

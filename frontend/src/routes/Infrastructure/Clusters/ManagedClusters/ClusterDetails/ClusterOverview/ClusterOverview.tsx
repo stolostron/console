@@ -405,6 +405,10 @@ export function ClusterOverviewPageContent(props: {
         details = <HypershiftClusterDetails />
     }
 
+    if (cluster?.isHypershift && cluster?.provider !== Provider.hostinventory) {
+        // import hosted cluster
+        details = <></>
+    }
     return (
         <AcmPageContent id="overview">
             <PageSection>
