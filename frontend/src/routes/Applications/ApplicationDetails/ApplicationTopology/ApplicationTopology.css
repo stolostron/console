@@ -20,3 +20,7 @@
     font-weight: bold;
     font-size: 14px;
 }
+
+.pf-c-toolbar {
+    padding-bottom: 0;
+}

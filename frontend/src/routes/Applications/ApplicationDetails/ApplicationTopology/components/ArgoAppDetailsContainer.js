@@ -275,11 +275,11 @@ class ArgoAppDetailsContainer extends Component {
                 {resource.action === 'open_argo_editor' ? t('Launch Argo editor') : t('View resource YAML')}
                 {isExternal ? (
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                        <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                        <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                     </svg>
                 ) : (
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                        <use href="#diagramIcons_open-new-tab" className="label-icon" />
+                        <use href="#drawerShapes_open-new-tab" className="label-icon" />
                     </svg>
                 )}
             </span>
@@ -309,7 +309,7 @@ class ArgoAppDetailsContainer extends Component {
         const iconFill = fillMap.get(icon)
         return (
             <svg width="12px" height="12px" fill={iconFill}>
-                <use href={`#diagramIcons_${icon}`} className="label-icon" />
+                <use href={`#drawerShapes_${icon}`} className="label-icon" />
             </svg>
         )
     }
@@ -325,7 +325,7 @@ class ArgoAppDetailsContainer extends Component {
                 <div className="sectionContent borderLeft">
                     <span className="label sectionLabel">
                         <svg width="13px" height="13px" fill="#F0AB00" style={{ marginRight: '8px' }}>
-                            <use href="#diagramIcons_warning" className="label-icon" />
+                            <use href="#drawerShapes_warning" className="label-icon" />
                         </svg>
                         <span>{t('Health status')}: </span>
                     </span>

@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 /* eslint no-param-reassign: "error" */
 import _ from 'lodash'
+import { groupBy } from 'lodash'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 
 const localClusterName = 'local-cluster'
@@ -170,4 +171,24 @@ export const getApplicationData = (nodes) => {
 
 export const getAppSetArgoCluster = (search, clusters) => {
     return clusters.find((cluster) => cluster.name === search || cluster.url === search)
+}
+
+export const processMultiples = (resources) => {
+    if (resources.length > 5) {
+        const groupByKind = groupBy(resources, 'kind')
+        return Object.entries(groupByKind).map(([kind, _resources]) => {
+            if (_resources.length === 1) {
+                return _resources[0]
+            } else {
+                return {
+                    kind,
+                    name: '',
+                    namespace: '',
+                    resources: _resources,
+                    resourceCount: _resources.length,
+                }
+            }
+        })
+    }
+    return resources
 }
