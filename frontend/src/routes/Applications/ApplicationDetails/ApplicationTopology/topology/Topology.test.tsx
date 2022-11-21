@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+//import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { Topology, TopologyProps } from './Topology'
@@ -36,11 +37,12 @@ describe('Topology tests', () => {
             })
         ).toBeInTheDocument()
 
-        expect(
+        userEvent.click(
             screen.getByRole('button', {
-                name: /zoom in/i,
+                name: /how to read topology/i,
             })
-        ).toBeInTheDocument()
+        )
+        expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
 
         //     1 make sure channel changer in doc
         //     2 make sure sub2 shape is not in doc
@@ -57,8 +59,8 @@ describe('Topology tests', () => {
         //     name: /zoom in/i
         //   })
 
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        screen.logTestingPlaygroundURL()
+        //await new Promise((resolve) => setTimeout(resolve, 1500))
+        //screen.logTestingPlaygroundURL()
 
         //userEvent.click(playground)
         //userEvent.type(playground, 'input')
@@ -1210,7 +1212,6 @@ const subProps: TopologyProps = {
 //    expect(mockFilternodes).toHaveBeenCalledTimes(0)
 //    expect(mockGetconnectedlayoutoptions).toHaveBeenCalledTimes(0)
 //    expect(mockGetunconnectedlayoutoptions).toHaveBeenCalledTimes(0)
-//    expect(mockSetdrawercontent).toHaveBeenCalledTimes(0)
 
 // console.log(mockProcessactionlink.mock.calls.length)
 // console.log(mockDispatchaction.mock.calls.length)
@@ -1228,4 +1229,3 @@ const subProps: TopologyProps = {
 // console.log(mockFilternodes.mock.calls.length)
 // console.log(mockGetconnectedlayoutoptions.mock.calls.length)
 // console.log(mockGetunconnectedlayoutoptions.mock.calls.length)
-// console.log(mockSetdrawercontent.mock.calls.length)
