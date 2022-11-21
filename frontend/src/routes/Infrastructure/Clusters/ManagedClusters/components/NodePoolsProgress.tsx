@@ -73,7 +73,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                         onToggle={setExpanded}
                         className="nodepool-progress-item__header"
                     >
-                        {t('Cluster nodepools')}
+                        {t('Cluster node pools')}
                     </ExpandableSectionToggle>
                 </StackItem>
                 {isExpanded && (
