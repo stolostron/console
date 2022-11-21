@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* istanbul ignore file */
 import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'
 import { debounce } from 'lodash'
@@ -82,8 +81,8 @@ export default function YAMLEditor(props: {
         }
     }, [resourceYAML, defaultScrollToLine, hasManagedFieldsFolded])
 
+    /* istanbul ignore next */
     function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
-        /* istanbul ignore if */
         if (process.env.NODE_ENV !== 'test') {
             monaco.editor.defineTheme('console', {
                 base: 'vs-dark',

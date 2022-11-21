@@ -32,7 +32,7 @@ describe('YamlEditor', () => {
                 <Router history={createBrowserHistory()}>
                     <YAMLEditor
                         resourceYAML={
-                            'kind: Pod\napiVersion: v1\nmetadata:\n  name: test-pod\n  namespace: test-namespace'
+                            'kind: Pod\napiVersion: v1\nmetadata:\n  name: test-pod\n  namespace: test-namespace\n  managedFields:\n    - manager: unknown'
                         }
                         readOnly={false}
                         height={250} // in pixels - to be convested to string in memo hook
