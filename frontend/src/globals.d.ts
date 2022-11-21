@@ -6,7 +6,7 @@ export declare global {
         //
         propShot: (props: any, max?: number) => void
         coilShot: (recoil: any, stateName: string, max?: number) => void
-        funcShot: (ret: any, max?: number) => void
+        funcShot: (args: any, ret: any, max?: number) => void
         //
         nockShot: () => void
         getNockShot: (

@@ -30,8 +30,10 @@ import DetailsView from '../components/DetailsView'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import ChannelControl from '../components/ChannelControl'
 
-interface TopologyProps {
+export interface TopologyProps {
     elements: {
+        activeChannel?: string
+        channels?: string[]
         nodes: any[]
         links: any[]
     }
@@ -119,7 +121,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     const channelChanger = (
         <Split>
             <SplitItem>
-                {channelControl.activeChannel && (
+                {channelControl?.allChannels?.length > 1 && (
                     <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
                 )}
             </SplitItem>

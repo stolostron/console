@@ -3,6 +3,7 @@ import { Graph, ColaLayout, LayoutNode, NodeModel, ColaLayoutOptions, LayoutOpti
 import get from 'lodash/get'
 import chunk from 'lodash/chunk'
 import uniqBy from 'lodash/uniqBy'
+import cloneDeep from 'lodash/cloneDeep'
 
 export interface TreeLayoutOptions {
     xSpacer: number
@@ -100,9 +101,10 @@ class TreeLayout extends ColaLayout {
 
 export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, options: TreeLayoutOptions) {
     const nodeOffsetMap: NodeOffsetMapType = {}
+    const _elements = cloneDeep(elements)
     let layout = 'TreeLayout'
-    if (elements.nodes.length) {
-        const metrics: MetricsType = groupNodesByConnections(elements)
+    if (_elements.nodes.length) {
+        const metrics: MetricsType = groupNodesByConnections(_elements)
         addRootsLeavesToConnectedGroups(metrics)
         sortConnectedGroupsIntoRows(metrics, options)
         const placeLast = addOffsetsToNodeMap(metrics, nodeOffsetMap, options)
@@ -464,12 +466,21 @@ function placePairedNodes(
     options: TreeLayoutOptions
 ) {
     const { allNodeMap } = metrics
-    placeLast.forEach((child) => {
-        const childLayout = allNodeMap[child.id]
-        if (childLayout?.incoming.length > 0) {
-            const { dx, dy } = nodeOffsetMap[childLayout?.incoming[0].id]
-            nodeOffsetMap[child.id] = { dx: dx + options.xSpacer + options.nodeWidth, dy: dy + 20 }
-        }
+    const deltas = placeLast
+        .filter(({ id }) => allNodeMap[id]?.incoming.length > 0)
+        .map(({ id }) => {
+            return {
+                id,
+                delta: nodeOffsetMap[allNodeMap[id]?.incoming[0].id],
+            }
+        })
+    deltas.sort((a, b) => {
+        return a.delta.dx - b.delta.dx
+    })
+    deltas.forEach(({ id, delta }, inx) => {
+        const { dx, dy } = delta
+        const sign = deltas.length > 1 && inx === 0 ? -1 : 1
+        nodeOffsetMap[id] = { dx: dx + sign * (options.xSpacer + options.nodeWidth), dy: dy + 20 }
     })
 }
 
