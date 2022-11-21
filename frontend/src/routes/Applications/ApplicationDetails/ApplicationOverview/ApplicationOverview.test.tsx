@@ -202,8 +202,6 @@ const mockArgoApplication1: ArgoApplication = {
 
 const mockApplicationDataSubscription: ApplicationDataType = {
     refreshTime: 1646925212170,
-    activeChannel: 'demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20',
-    allChannels: ['demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20'],
     appData: {
         isArgoApp: false,
         relatedKinds: [
@@ -315,8 +313,6 @@ const mockApplicationDataSubscription: ApplicationDataType = {
 
 const mockApplicationDataArgo: ApplicationDataType = {
     refreshTime: 1648135176039,
-    activeChannel: undefined,
-    allChannels: undefined,
     appData: {
         relatedKinds: ['applicationset', 'placement', 'cluster', 'service', 'deployment', 'replicaset', 'pod', 'route'],
         subscription: null,

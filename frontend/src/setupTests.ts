@@ -69,8 +69,8 @@ async function setupBeforeAll(): Promise<void> {
 }
 
 let missingNocks: { method: any; path: any; requestBodyBuffers: any[] }[]
-let consoleWarnings: any[]
-let consoleErrors: any[]
+let consoleWarnings: any[] = []
+let consoleErrors: any[] = []
 
 expect.extend({
     hasNoMissingNocks() {

@@ -81,8 +81,6 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
 
 export type ApplicationDataType = {
     refreshTime: number
-    activeChannel: string | undefined
-    allChannels: [string] | undefined
     application: any
     appData: any
     topology: any
@@ -122,6 +120,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
     const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
+    const [allChannels, setAllChannels] = useState<string[]>([])
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
@@ -400,12 +399,12 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         if (!lastRefreshRef?.current?.resourceStatuses) {
                             setApplicationData({
                                 refreshTime: Date.now(),
-                                activeChannel: application ? application.activeChannel : '',
-                                allChannels: application ? application.channels : [],
                                 application,
                                 topology,
                                 appData,
                             })
+                            setActiveChannel(application ? application.activeChannel : '')
+                            setAllChannels(application ? application.channels : [])
                         }
 
                         // from then on, only refresh topology with new statuses
@@ -420,13 +419,13 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         })
                         setApplicationData({
                             refreshTime: Date.now(),
-                            activeChannel: application.activeChannel,
-                            allChannels: application.channels,
                             application,
                             topology: topologyWithRelated,
                             appData: appDataWithStatuses,
                             statuses: resourceStatuses,
                         })
+                        setActiveChannel(application.activeChannel)
+                        setAllChannels(application.channels)
                         lastRefreshRef.current = { application, resourceStatuses, relatedResources }
                     }
                 })()
@@ -535,7 +534,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                             <Route exact path={NavigationPath.applicationTopology}>
                                 <ApplicationTopologyPageContent
                                     applicationData={applicationData}
-                                    setActiveChannel={setActiveChannel}
+                                    channelControl={{
+                                        allChannels,
+                                        activeChannel,
+                                        setActiveChannel,
+                                    }}
                                 />
                             </Route>
                             <Route exact path={NavigationPath.applicationDetails}>

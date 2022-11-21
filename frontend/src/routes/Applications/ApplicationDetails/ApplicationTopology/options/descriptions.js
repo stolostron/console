@@ -12,7 +12,7 @@
 'use strict'
 import _ from 'lodash'
 
-import { getWrappedNodeLabel } from '../../../../../components/Topology/helpers/utilities'
+import { getWrappedNodeLabel } from './utilities'
 
 export const getNodeDescription = (node) => {
     const { layout = {} } = node
