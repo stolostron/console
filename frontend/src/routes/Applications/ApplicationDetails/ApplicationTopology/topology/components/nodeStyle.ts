@@ -72,7 +72,7 @@ function getSecondaryLabel(node: { name: any }) {
     if (get(node, 'type', '') !== 'cluster' || get(node, 'specs.clusterNames', []).length === 1) {
         label = node?.name ?? ''
         if (label.length > MAX_LABEL_WIDTH) {
-            label = label.substr(0, MAX_LABEL_WIDTH / 3) + '..' + label.substr((-MAX_LABEL_WIDTH * 2) / 3)
+            label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
         }
     }
     return label
@@ -80,9 +80,7 @@ function getSecondaryLabel(node: { name: any }) {
 
 const getStatus = (node: {
     type: any
-    specs?:
-        | { clusterStatus: { hasWarning: any; hasFailure: any; isDisabled: any; hasViolations: any; isOffline: any } }
-        | undefined
+    specs?: { clusterStatus: { hasWarning: any; hasFailure: any; isDisabled: any; hasViolations: any; isOffline: any } }
 }) => {
     const { type, specs } = node
 
@@ -135,20 +133,3 @@ const getStatus = (node: {
 
     return { status, statusIcon, isDisabled: disabled }
 }
-
-// export const getType = (type: string | undefined) => {
-//     return capitalize(startCase(type))
-// }
-
-// export const getNodeLabel = (node: { type: string | undefined }) => {
-//     let label = getType(node.type)
-
-//     if (label === 'Cluster') {
-//         const nbOfClusters = _.get(node, 'specs.clusterNames', []).length
-//         if (nbOfClusters > 1) {
-//             label = `${nbOfClusters} Clusters`
-//         }
-//     }
-
-//     return label
-// }

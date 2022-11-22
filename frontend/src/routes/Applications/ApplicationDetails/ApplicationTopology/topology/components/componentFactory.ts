@@ -16,7 +16,6 @@ import StyledNode from './StyledNode'
 const defaultComponentFactory: ComponentFactory = (
     kind: ModelKind
 ): ComponentType<{ element: GraphElement }> | undefined => {
-    //const defaultComponentFactory: ComponentFactory = (kind: ModelKind): ComponentType<BaseEdge> | undefined => {
     switch (kind) {
         case ModelKind.graph:
             return withPanZoom()(GraphComponent)

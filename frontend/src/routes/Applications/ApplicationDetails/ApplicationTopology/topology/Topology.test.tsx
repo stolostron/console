@@ -44,6 +44,11 @@ describe('Topology tests', () => {
         )
         expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
 
+        //userEvent.click(screen.getByRole('button', { name: /test3\-subscription\-1/i }))
+
+        await new Promise((resolve) => setTimeout(resolve, 5500))
+        screen.logTestingPlaygroundURL()
+
         //     1 make sure channel changer in doc
         //     2 make sure sub2 shape is not in doc
         //     3 change channel
@@ -58,9 +63,6 @@ describe('Topology tests', () => {
         // screen.getByRole('button', {
         //     name: /zoom in/i
         //   })
-
-        //await new Promise((resolve) => setTimeout(resolve, 1500))
-        //screen.logTestingPlaygroundURL()
 
         //userEvent.click(playground)
         //userEvent.type(playground, 'input')

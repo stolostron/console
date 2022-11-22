@@ -7,8 +7,8 @@ import ReactDOMServer from 'react-dom/server'
 
 function attrsFunction(selection, map) {
     return selection.each(function (d, i, ns) {
-        var x = map.apply(selection, arguments)
-        for (var name in x) {
+        const x = map.apply(selection, arguments)
+        for (const name in x) {
             if (Object.prototype.hasOwnProperty.call(x, name)) {
                 ns[i].setAttribute(name, x[name])
             }
@@ -75,8 +75,8 @@ export function kubeNaming(type) {
 
 // Make nice carriage return for long titles
 export function titleBeautify(maxStringLength, resourceName) {
-    const rx_regex = /[A-Z][a-z']+(?: [A-Z][a-z]+)*/g
-    var wordsList = resourceName.match(rx_regex)
+    const regex = /[A-Z][a-z']+(?: [A-Z][a-z]+)*/g
+    const wordsList = resourceName.match(regex)
     if (wordsList && Math.max(0, maxStringLength) / resourceName.length > 0) {
         for (let idx = wordsList.length - 1; idx > 0; idx--) {
             if (wordsList.slice(0, idx).join('').length <= maxStringLength) {

@@ -19,7 +19,7 @@ export type ArgoAppDetailsContainerData = {
     startIdx: number
     argoAppSearchToggle: boolean
     expandSectionToggleMap: Set<number>
-    selected?: undefined
+    selected?: any
     selectedArgoAppList: []
     isLoading: boolean
 }
@@ -30,8 +30,8 @@ export type ClusterDetailsContainerData = {
     clusterSearchToggle: boolean
     isSelectOpen: boolean
     expandSectionToggleMap: any
-    clusterID?: string | undefined
-    selected?: undefined
+    clusterID?: string
+    selected?: any
     selectedClusterList: any[]
 }
 
