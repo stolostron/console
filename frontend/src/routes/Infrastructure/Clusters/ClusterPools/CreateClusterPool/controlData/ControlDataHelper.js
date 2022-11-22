@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { keyBy } from 'lodash'
+import { getNumericValidator } from '../../../../../../components/TemplateEditor'
 
 const lessThanEqualSize = (active, _controlData, templateObjectMap, i18n) => {
     const runningCount = active
@@ -20,6 +21,27 @@ export const fixupControlsForClusterPool = (controlData, t) => {
 
     let inx = controlData.findIndex(({ id }) => id === 'additional')
     controlData.splice(inx, 1)
+
+    // Only allow 1 worker pool, and warn if default size is not used
+    delete map['workerPools'].prompts.addPrompt
+    delete map['workerPools'].prompts.deletePrompt
+    inx = map['workerPools'].controlData.findIndex(({ id }) => id === 'computeNodeCount')
+    map['workerPools'].controlData.splice(inx, 1, {
+        name: 'creation.ocp.compute.node.count',
+        tooltip: 'tooltip.creation.ocp.compute.node.count',
+        id: 'computeNodeCount',
+        type: 'number',
+        initial: '3',
+        validation: getNumericValidator(t),
+        cacheUserValueKey: 'create.cluster.compute.node.count',
+        info: (control, controlData, t) => {
+            return control.active !== '3'
+                ? t(
+                      'The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.'
+                  )
+                : undefined
+        },
+    })
 
     inx = controlData.findIndex(({ id }) => id === 'name')
     controlData.splice(

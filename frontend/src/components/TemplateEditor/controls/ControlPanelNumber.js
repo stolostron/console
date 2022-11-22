@@ -23,7 +23,7 @@ class ControlPanelNumber extends React.Component {
     }
 
     render() {
-        const { controlId, control, handleChange, i18n } = this.props
+        const { controlId, control, controlData, handleChange, i18n } = this.props
         const { exception } = control
 
         const onSet = (value) => {
@@ -43,7 +43,12 @@ class ControlPanelNumber extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-number" ref={this.setControlRef.bind(this, control)}>
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <div className="pf-c-number-input">
                             <div className="pf-c-input-group">
                                 <button

@@ -30,7 +30,7 @@ class ControlPanelLabels extends React.Component {
     }
 
     render() {
-        const { controlId, i18n, control } = this.props
+        const { controlId, i18n, control, controlData } = this.props
         const { active = [], exception } = control
         const formatted = active.map(({ key, value: v }) => `${key}=${v}`)
         const { value } = this.state
@@ -38,7 +38,12 @@ class ControlPanelLabels extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-labels">
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <div className="creation-view-controls-labels-container">
                             {formatted.length !== 0 && (
                                 <div className="creation-view-controls-labels-tag-container">

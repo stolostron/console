@@ -28,7 +28,7 @@ class ControlPanelMultiSelect extends React.Component {
 
     render() {
         const { open } = this.state
-        const { controlId, i18n, control, handleChange } = this.props
+        const { controlId, i18n, control, controlData, handleChange } = this.props
         const { available = [], availableMap, exception, disabled, isLoading, isFailed } = control
         let { active, placeholder = '' } = control
         if (!active) {
@@ -92,7 +92,12 @@ class ControlPanelMultiSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-singleselect" ref={this.setControlRef.bind(this, control)}>
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         {isLoading ? (
                             <div className="creation-view-controls-singleselect-loading">
                                 <Spinner size="md" />
