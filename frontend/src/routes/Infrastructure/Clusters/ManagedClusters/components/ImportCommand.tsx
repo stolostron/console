@@ -116,13 +116,15 @@ export function ImportCommand(props: ImportCommandProps) {
                                     title={t('import.command.311.title')}
                                     variant={AlertVariant.info}
                                     style={{ marginTop: '16px' }}
+                                    actionLinks={
+                                        <AcmInlineCopy
+                                            text={props.v1Beta1ImportCommand!}
+                                            displayText={t('import.command.311.copyText')}
+                                            id="3.11-copy"
+                                        />
+                                    }
                                 >
                                     <div>{t('import.command.311.description')}</div>
-                                    <AcmInlineCopy
-                                        text={props.v1Beta1ImportCommand!}
-                                        displayText={t('import.command.311.copyText')}
-                                        id="3.11-copy"
-                                    />
                                 </Alert>
                             </CardBody>
                             <CardTitle>{t('import.command.configurecluster')}</CardTitle>
