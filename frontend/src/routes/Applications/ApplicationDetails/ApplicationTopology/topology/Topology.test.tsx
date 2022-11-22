@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+//import userEvent from '@testing-library/user-event'
 
 import { Topology, TopologyProps } from './Topology'
 const mockProcessactionlink = jest.fn()
@@ -29,7 +29,22 @@ describe('Topology tests', () => {
     })
 
     test('app subscription topology', async () => {
+        jest.spyOn(window.screen, 'width', 'get').mockReturnValue(1000)
+        jest.spyOn(window.screen, 'height', 'get').mockReturnValue(1000)
         render(<Topology {...subProps} />)
+
+        // Object.defineProperty(window, 'innerHeight', {
+        //     writable: true,
+        //     configurable: true,
+        //     value: 150,
+        // })
+        // Object.defineProperty(window, 'innerWidth', {
+        //     writable: true,
+        //     configurable: true,
+        //     value: 150,
+        // })
+
+        // window.dispatchEvent(new Event('resize'))
 
         expect(
             screen.getByRole('button', {
