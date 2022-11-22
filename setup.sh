@@ -26,12 +26,12 @@ echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
 FRONTEND_URL=https://localhost:3000
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
-INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}'`
+INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}' || true`
 INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0].spec.targetNamespace}'`
 
 SA=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE_MCE console-mce -o jsonpath='{.metadata.name}')
 SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE_MCE -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name")
-SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="jsonpath={.data.token}" | base64 -d -`
+SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="jsonpath={.data.token}" | base64 -d`
 
 echo TOKEN=$SA_TOKEN >> ./backend/.env
 
