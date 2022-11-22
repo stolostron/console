@@ -1,8 +1,0 @@
-arrowParens: always
-printWidth: 100
-singleQuote: true
-trailingComma: all
-tabWidth: 2
-semi: true
-jsxSingleQuote: false
-proseWrap: always
