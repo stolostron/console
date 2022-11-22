@@ -37,16 +37,16 @@ describe('Topology tests', () => {
             })
         ).toBeInTheDocument()
 
-        userEvent.click(
-            screen.getByRole('button', {
-                name: /how to read topology/i,
-            })
-        )
-        expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
+        // userEvent.click(
+        //     screen.getByRole('button', {
+        //         name: /how to read topology/i,
+        //     })
+        // )
+        // expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
 
         //userEvent.click(screen.getByRole('button', { name: /test3\-subscription\-1/i }))
 
-        await new Promise((resolve) => setTimeout(resolve, 5500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
         screen.logTestingPlaygroundURL()
 
         //     1 make sure channel changer in doc
