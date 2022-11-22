@@ -44,7 +44,7 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
         <AcmModal
             titleIconVariant="warning"
             variant={ModalVariant.medium}
-            title={t('Permanently remove nodepool {{name}}?', { name: props.nodepool.metadata.name })}
+            title={t('Permanently remove node pool {{name}}?', { name: props.nodepool.metadata.name })}
             isOpen={true}
             onClose={props.close}
         >
@@ -56,9 +56,9 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
                                 isInline
                                 noClose
                                 variant="info"
-                                title={t('Removing last nodepool')}
+                                title={t('Removing last node pool')}
                                 message={t(
-                                    'Platform specific data for the add nodepool form will no longer automatically populate after the last nodepool is removed.'
+                                    'Platform specific data for the add node pool form will no longer automatically populate after the last node pool is removed.'
                                 )}
                             />
                         </div>

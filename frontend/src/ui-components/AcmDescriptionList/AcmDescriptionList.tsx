@@ -29,13 +29,14 @@ export type ListItems = {
 }
 
 export function AcmDescriptionList(props: {
+    id?: string
     title: string
     leftItems: ListItems[]
     rightItems?: ListItems[] | undefined
 }) {
     const classes = useStyles()
     return (
-        <AcmExpandableCard title={props.title}>
+        <AcmExpandableCard id={props.id} title={props.title}>
             <Grid sm={12} md={props.rightItems ? 6 : 12}>
                 <GridItem className={classes.leftCol}>
                     <List items={props.leftItems} />
