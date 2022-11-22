@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
-//import userEvent from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event'
 
 import { Topology, TopologyProps } from './Topology'
 const mockProcessactionlink = jest.fn()
@@ -29,22 +29,7 @@ describe('Topology tests', () => {
     })
 
     test('app subscription topology', async () => {
-        jest.spyOn(window.screen, 'width', 'get').mockReturnValue(1000)
-        jest.spyOn(window.screen, 'height', 'get').mockReturnValue(1000)
-        render(<Topology {...subProps} />)
-
-        // Object.defineProperty(window, 'innerHeight', {
-        //     writable: true,
-        //     configurable: true,
-        //     value: 150,
-        // })
-        // Object.defineProperty(window, 'innerWidth', {
-        //     writable: true,
-        //     configurable: true,
-        //     value: 150,
-        // })
-
-        // window.dispatchEvent(new Event('resize'))
+        const { container } = render(<Topology {...subProps} />)
 
         expect(
             screen.getByRole('button', {
@@ -52,17 +37,35 @@ describe('Topology tests', () => {
             })
         ).toBeInTheDocument()
 
-        // userEvent.click(
-        //     screen.getByRole('button', {
-        //         name: /how to read topology/i,
-        //     })
-        // )
-        // expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /how to read topology/i,
+            })
+        )
+        expect(mockSetdrawercontent).toHaveBeenCalledTimes(1)
 
-        //userEvent.click(screen.getByRole('button', { name: /test3\-subscription\-1/i }))
+        userEvent.click(
+            screen.getByRole('button', {
+                name: /all subscriptions/i,
+            })
+        )
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        screen.logTestingPlaygroundURL()
+        userEvent.click(screen.getByText(/test-subscription-2/i))
+        expect(
+            screen.getByRole('button', {
+                name: /test-subscription-2/i,
+            })
+        ).toBeInTheDocument()
+
+        const svgEl = container.querySelector(
+            "[data-id='member--subscription--test--test-subscription-1']"
+        ) as HTMLImageElement
+
+        expect(svgEl).toBeInTheDocument()
+        //       userEvent.click(svgEl)
+
+        // await new Promise((resolve) => setTimeout(resolve, 500))
+        // screen.logTestingPlaygroundURL()
 
         //     1 make sure channel changer in doc
         //     2 make sure sub2 shape is not in doc
