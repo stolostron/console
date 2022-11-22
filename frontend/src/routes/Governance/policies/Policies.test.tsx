@@ -109,6 +109,7 @@ describe('Add Policy to policy set', () => {
         let isClosed = false
         const tableItem: PolicyTableItem = {
             policy: mockPolicy[2],
+            isExternal: false,
             source: 'Local',
         }
         render(

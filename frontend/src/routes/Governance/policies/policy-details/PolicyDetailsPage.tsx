@@ -16,7 +16,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '../../../../ui-components'
-import { getPolicyDetailSourceLabel, getSource, resolveExternalStatus, resolveSource } from '../../common/util'
+import { getPolicyDetailSourceLabel, resolveExternalStatus } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { PolicyTableItem } from '../Policies'
@@ -55,16 +55,13 @@ export function PolicyDetailsPage() {
 
     const tableItem: PolicyTableItem = useMemo(() => {
         const isExternal = resolveExternalStatus(selectedPolicy)
-        let source: string | JSX.Element = 'Local'
-        if (isExternal) {
-            const policySource = resolveSource(selectedPolicy, helmReleases, channels, subscriptions)
-            source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
-        }
+        const source: string | JSX.Element = isExternal ? 'Local' : 'Managed Externally'
+
         return {
             policy: selectedPolicy,
             source,
         }
-    }, [selectedPolicy, helmReleases, channels, subscriptions, t])
+    }, [selectedPolicy])
 
     if (!selectedPolicy) {
         return (
