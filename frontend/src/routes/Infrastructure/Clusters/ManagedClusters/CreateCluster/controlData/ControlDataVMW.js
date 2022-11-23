@@ -277,7 +277,7 @@ const controlDataVMW = [
         title: 'Networks',
     },
     {
-        id: 'networkType',
+        id: 'networkName',
         name: 'creation.ocp.cluster.vmw.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
         placeholder: 'creation.ocp.cluster.vmw.network.type',

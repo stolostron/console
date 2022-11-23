@@ -302,13 +302,15 @@ export function getOSTNetworkingControlData() {
 
 export const onImageChange = (control, controlData) => {
     const networkDefault = getControlByID(controlData, 'networkType')
-    const { setActive } = networkDefault
-    const { active: version } = control
+    if (networkDefault) {
+        const { setActive } = networkDefault
+        const { active: version } = control
 
-    if (versionGreater(version, 4, 11)) {
-        setActive('OVNKubernetes')
-    } else {
-        setActive('OpenShiftSDN')
+        if (versionGreater(version, 4, 11)) {
+            setActive('OVNKubernetes')
+        } else {
+            setActive('OpenShiftSDN')
+        }
     }
 }
 
