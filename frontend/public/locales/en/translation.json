@@ -2754,6 +2754,8 @@
     "template.preUpgrade.label": "Preupgrade Ansible job templates",
     "template.templates.title": "Ansible job templates",
     "template.title": "Automation",
+    "Job template": "Job template",
+    "Workflow template": "Workflow template",
     "Templates": "Templates",
     "Templates published": "Templates published",
     "Tenant ID": "Tenant ID",

@@ -459,28 +459,32 @@ export function listNamespacedResources<Resource extends IResource>(
     }
 }
 
-async function getAnsibleJobs(
+async function getAnsibleTemplates(
     backendURLPath: string,
     ansibleHostUrl: string,
     token: string,
     abortController: AbortController
 ) {
-    let jobUrl: any = ansibleHostUrl + '/api/v2/job_templates/'
-
+    const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
+    const ansibleApiPath = '/api/v2/'
     let ansibleJobs: any[] = []
+    let jobUrl: any = ansibleHostUrl + ansibleApiPath + ansibleResourcePaths.shift()
+
     while (jobUrl) {
         const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-        ansibleJobs = ansibleJobs.concat(result!.data.results)
+        result!.data.results && ansibleJobs.push(...result!.data.results)
         const { next } = result.data
         if (next) {
             jobUrl = ansibleHostUrl + next
+        } else if (ansibleResourcePaths.length) {
+            jobUrl = ansibleHostUrl + ansibleApiPath + ansibleResourcePaths.shift()
         } else {
             jobUrl = undefined
         }
     }
     return {
-        results: ansibleJobs?.map((ansibleJob: { name: any }) => {
-            return { name: ansibleJob.name }
+        results: ansibleJobs?.map((ansibleJob: { name: string; type: string }) => {
+            return { name: ansibleJob.name, type: ansibleJob.type }
         }),
     }
 }
@@ -493,7 +497,7 @@ export function listAnsibleTowerJobs(
     const backendURLPath = getBackendUrl() + '/ansibletower'
     const abortController = new AbortController()
     return {
-        promise: getAnsibleJobs(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+        promise: getAnsibleTemplates(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
             return item as AnsibleTowerJobTemplateList
         }),
         abort: () => abortController.abort(),

@@ -86,4 +86,5 @@ export interface AnsibleTowerJobTemplateList {
 }
 export interface AnsibleTowerJobTemplate {
     name?: string
+    type?: string
 }

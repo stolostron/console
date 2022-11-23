@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { makeStyles } from '@material-ui/styles'
 import {
     ActionGroup,
     Button,
@@ -8,6 +9,7 @@ import {
     FlexItem,
     Modal,
     ModalVariant,
+    Radio,
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
@@ -120,6 +122,7 @@ export function AnsibleAutomationsForm(props: {
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
     const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
+    const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
     const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
     const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
@@ -168,12 +171,20 @@ export function AnsibleAutomationsForm(props: {
     useEffect(() => {
         if (ansibleSelection) {
             const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+            const jobList: string[] = []
+            const workflowList: string[] = []
             listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
                 .promise.then((response) => {
                     if (response) {
-                        let templateList: string[] = []
-                        if (response?.results) templateList = response.results!.map((job) => job.name!)
-                        setAnsibleTowerJobTemplateList(templateList)
+                        response.results!.forEach((template) => {
+                            if (template.type === 'job_template') {
+                                jobList.push(template.name!)
+                            } else if (template.type === 'workflow_job_template') {
+                                workflowList.push(template.name!)
+                            }
+                        })
+                        setAnsibleTowerJobTemplateList(jobList)
+                        setAnsibleTowerWorkflowTemplateList(workflowList)
                         setAnsibleTowerAuthError('')
                     }
                 })
@@ -570,6 +581,7 @@ export function AnsibleAutomationsForm(props: {
                 setAnsibleJob={updateAnsibleJob}
                 ansibleCredentials={ansibleCredentials}
                 ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
+                ansibleTowerWorkflowTemplateList={AnsibleTowerWorkflowTemplateList}
                 ansibleJobList={editAnsibleJobList?.jobs}
             />
         </Fragment>
@@ -580,13 +592,29 @@ function EditAnsibleJobModal(props: {
     ansibleSelection?: string
     ansibleCredentials: ProviderConnection[]
     ansibleTowerTemplateList: string[] | undefined
+    ansibleTowerWorkflowTemplateList: string[] | undefined
     ansibleJob?: ClusterCuratorAnsibleJob
     ansibleJobList?: ClusterCuratorAnsibleJob[]
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
     const { t } = useTranslation()
+    const useStyles = makeStyles({
+        radio: {
+            paddingRight: '10px',
+        },
+    })
+    const classes = useStyles()
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
+    const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
+
+    const newJobSelection = (jobName: string | undefined) => {
+        if (ansibleJob) {
+            const copy = { ...ansibleJob }
+            copy.name = jobName as string
+            setAnsibleJob(copy)
+        }
+    }
     return (
         <AcmModal
             variant={ModalVariant.medium}
@@ -595,6 +623,30 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
+                <span style={{ display: 'inline-flex' }}>
+                    <Radio
+                        name={'job-template'}
+                        id={'job-template'}
+                        label={t('Job template')}
+                        isChecked={filterForJobTemplates}
+                        className={classes.radio}
+                        onChange={() => {
+                            setFilterForJobTemplates(true)
+                            newJobSelection('')
+                        }}
+                    />
+                    <Radio
+                        name={'workflow-template'}
+                        id={'workflow-template'}
+                        label={t('Workflow template')}
+                        isChecked={!filterForJobTemplates}
+                        onChange={() => {
+                            setFilterForJobTemplates(false)
+                            newJobSelection('')
+                        }}
+                    />
+                </span>
+
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
@@ -602,11 +654,7 @@ function EditAnsibleJobModal(props: {
                     id="job-name"
                     value={ansibleJob?.name}
                     onChange={(name) => {
-                        if (ansibleJob) {
-                            const copy = { ...ansibleJob }
-                            copy.name = name as string
-                            setAnsibleJob(copy)
-                        }
+                        newJobSelection(name)
                     }}
                     variant={SelectVariant.typeahead}
                     placeholder={t('template.modal.name.placeholder')}
@@ -619,8 +667,16 @@ function EditAnsibleJobModal(props: {
                     }}
                     isRequired
                 >
-                    {props.ansibleTowerTemplateList
-                        ? props.ansibleTowerTemplateList?.map((name) => (
+                    {filterForJobTemplates
+                        ? props.ansibleTowerTemplateList
+                            ? props.ansibleTowerTemplateList?.map((name) => (
+                                  <SelectOption key={name} value={name}>
+                                      {name}
+                                  </SelectOption>
+                              ))
+                            : undefined
+                        : props.ansibleTowerWorkflowTemplateList
+                        ? props.ansibleTowerWorkflowTemplateList?.map((name) => (
                               <SelectOption key={name} value={name}>
                                   {name}
                               </SelectOption>
