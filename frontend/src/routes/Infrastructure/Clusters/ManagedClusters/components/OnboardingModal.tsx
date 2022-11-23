@@ -3,7 +3,7 @@
 import { Card, CardBody, Grid, GridItem, ModalVariant, TextVariants, Text } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmExpandableSection, AcmModal } from '../../../../../ui-components'
 import MainIcon from './OnboardingModalIcon.svg'
 import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -91,8 +91,10 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 <GridItem span={9}>
                     <div>
                         <span style={{ color: '#393F44', fontSize: '24px' }}>
-                            {t('Managing clusters')}{' '}
-                            <span className="pf-u-font-weight-bold">{t('just got easier')}</span>
+                            <Trans
+                                i18nKey="Managing clusters <bold>just got easier</bold>"
+                                components={{ bold: <span className="pf-u-font-weight-bold" /> }}
+                            />
                         </span>
                     </div>
                     <div style={{ color: '#6A6E73', fontSize: '14px', paddingTop: '8px' }}>
