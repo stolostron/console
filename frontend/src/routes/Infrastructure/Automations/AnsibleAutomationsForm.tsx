@@ -608,7 +608,15 @@ function EditAnsibleJobModal(props: {
     const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
-    const newJobSelection = (jobName: string | undefined) => {
+    const newTemplateSelection = (jobName: string | undefined) => {
+        if (ansibleJob) {
+            ansibleJob.type = filterForJobTemplates ? 'Job' : 'Workflow'
+            const copy = { ...ansibleJob }
+            copy.name = jobName as string
+            setAnsibleJob(copy)
+        }
+    }
+    const newTemplateTypeSelection = (jobName: string | undefined) => {
         if (ansibleJob) {
             const copy = { ...ansibleJob }
             copy.name = jobName as string
@@ -631,8 +639,8 @@ function EditAnsibleJobModal(props: {
                         isChecked={filterForJobTemplates}
                         className={classes.radio}
                         onChange={() => {
+                            newTemplateTypeSelection('')
                             setFilterForJobTemplates(true)
-                            newJobSelection('')
                         }}
                     />
                     <Radio
@@ -641,8 +649,8 @@ function EditAnsibleJobModal(props: {
                         label={t('Workflow template')}
                         isChecked={!filterForJobTemplates}
                         onChange={() => {
+                            newTemplateTypeSelection('')
                             setFilterForJobTemplates(false)
-                            newJobSelection('')
                         }}
                     />
                 </span>
@@ -654,7 +662,7 @@ function EditAnsibleJobModal(props: {
                     id="job-name"
                     value={ansibleJob?.name}
                     onChange={(name) => {
-                        newJobSelection(name)
+                        newTemplateSelection(name)
                     }}
                     variant={SelectVariant.typeahead}
                     placeholder={t('template.modal.name.placeholder')}
