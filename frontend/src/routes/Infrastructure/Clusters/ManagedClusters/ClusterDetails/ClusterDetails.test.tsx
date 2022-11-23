@@ -7,10 +7,13 @@ import { Scope } from 'nock/types'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
+import cloneDeep from 'lodash/cloneDeep'
 import {
     agentClusterInstallsState,
     certificateSigningRequestsState,
+    clusterClaimsState,
     clusterCuratorsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
@@ -51,6 +54,9 @@ import {
     AgentClusterInstallGroup,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
+    ClusterClaim,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
@@ -244,6 +250,10 @@ const mockClusterDeployment: ClusterDeployment = {
         },
     },
 }
+
+const mockClusterDeploymentDiffNs = cloneDeep(mockClusterDeployment)
+mockClusterDeploymentDiffNs.metadata.name = 'diffname'
+mockClusterDeploymentDiffNs.metadata.namespace = 'diffns'
 
 const mockAIClusterDeployment: ClusterDeployment = _.cloneDeep(mockClusterDeployment)
 mockAIClusterDeployment.metadata.labels = {
@@ -999,6 +1009,28 @@ const createManagedcluster1: ManagedCluster = {
 
 const mockHostedClusters = [mockHostedCluster1]
 
+const mockClusterClaimClusterDeployment: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        name: 'cd-namespace',
+        namespace: 'cd-namespace',
+    },
+}
+
+const mockClusterClaim: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        name: 'clusterClaimName',
+        namespace: 'clusterClaimNs',
+    },
+    spec: {
+        clusterPoolName: 'foo-pool',
+        namespace: 'cd-namespace',
+    },
+}
+
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
         { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
@@ -1021,9 +1053,17 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
             snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
             snapshot.set(clusterCuratorsState, [mockClusterCurator])
             snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
+            snapshot.set(clusterClaimsState, [mockClusterClaim])
         }}
     >
-        <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
+        <MemoryRouter
+            initialEntries={[
+                generatePath(NavigationPath.clusterDetails, {
+                    name: clusterDeployment.metadata.name!,
+                    namespace: clusterDeployment.metadata.namespace!,
+                }),
+            ]}
+        >
             <Switch>
                 <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
             </Switch>
@@ -1131,6 +1171,19 @@ describe('ClusterDetails', () => {
     })
 })
 
+describe('ClusterDetails - different name to namespace', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        render(<Component clusterDeployment={mockClusterDeploymentDiffNs} />)
+    })
+
+    test('overview page renders', async () => {
+        await waitForText(mockClusterDeploymentDiffNs.metadata.name!, true)
+        await waitForText('Overview')
+        await waitForText('Details')
+    })
+})
+
 const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
 
 describe('ClusterDetails for On Premise', () => {
@@ -1163,6 +1216,16 @@ describe('ClusterDetails for On Premise', () => {
         await waitForText('Host inventory')
 
         // screen.debug(undefined, -1)
+    })
+})
+
+describe('ClusterDetails - ClusterClaim', () => {
+    test('overview page renders for ClusterClaim', async () => {
+        nockIgnoreRBAC()
+        render(<Component clusterDeployment={mockClusterClaimClusterDeployment} />)
+        await waitForText(mockClusterClaimClusterDeployment.metadata.name!, true)
+        await waitForText('Overview')
+        await waitForText('Details')
     })
 })
 
@@ -1242,7 +1305,12 @@ describe('ClusterDetails with not found', () => {
                 }}
             >
                 <MemoryRouter
-                    initialEntries={[NavigationPath.clusterDetails.replace(':id', mockHostedCluster1.metadata.name)]}
+                    initialEntries={[
+                        generatePath(NavigationPath.clusterDetails, {
+                            name: mockHostedCluster1.metadata.name,
+                            namespace: mockHostedCluster1.metadata.namespace,
+                        }),
+                    ]}
                 >
                     <Switch>
                         <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
