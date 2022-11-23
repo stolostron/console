@@ -353,3 +353,16 @@ export function validateVCenterServer(value: string, t: TFunction) {
         }
     }
 }
+
+export function validateCidr(value: string, t: TFunction) {
+    if (value == '') {
+        return undefined
+    }
+    const regexp = new RegExp(
+        /^(([0-9])|([1-9][0-9])|(1([0-9]{2}))|(2[0-4][0-9])|(25[0-5]))((\.(([0-9])|([1-9][0-9])|(1([0-9]{2}))|(2[0-4][0-9])|(25[0-5]))){3})\/(([0-9])|([12][0-9])|(3[0-2]))$/
+    )
+    if (value.match(regexp)) {
+        return undefined
+    }
+    return t('Value must be a valid IPv4 CIDR.')
+}
