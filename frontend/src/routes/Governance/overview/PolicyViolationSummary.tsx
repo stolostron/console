@@ -7,10 +7,11 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 
 export function PolicyViolationsCard(props: { policyViolationSummary: ViolationSummary }) {
+    const { t } = useTranslation()
     return (
         <ViolationsCard
-            title="Policy violations"
-            description="Overview of policy violations"
+            title={t('Policy violations')}
+            description={t('Overview of policy violations')}
             noncompliant={props.policyViolationSummary.noncompliant}
             compliant={props.policyViolationSummary.compliant}
             pending={props.policyViolationSummary.pending}
@@ -83,7 +84,7 @@ export function ViolationsCard(props: {
                                 : undefined,
                     },
                     {
-                        key: 'without violations',
+                        key: t('without violations', { count: props.compliant }),
                         value: props.compliant,
                         link:
                             props.compliant > 0

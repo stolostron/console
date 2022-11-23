@@ -8,10 +8,11 @@ import { NavigationPath } from '../../../NavigationPath'
 
 export function PolicySetViolationsCard() {
     const violations = usePolicySetViolations()
+    const { t } = useTranslation()
     return (
         <ViolationsCard
-            title="Policy set violations"
-            description="Overview of policy set violations"
+            title={t('Policy set violations')}
+            description={t('Overview of policy set violations')}
             noncompliant={violations.noncompliant}
             compliant={violations.compliant}
             unknown={violations.unknown}
@@ -69,7 +70,7 @@ export function ViolationsCard(props: {
                         link: props.noncompliant > 0 ? `${NavigationPath.policySets}?violation=violation` : undefined,
                     },
                     {
-                        key: 'without violations',
+                        key: t('without violations', { count: props.compliant }),
                         value: props.compliant,
                         link: props.compliant > 0 ? `${NavigationPath.policySets}?violation=no-violation` : undefined,
                     },

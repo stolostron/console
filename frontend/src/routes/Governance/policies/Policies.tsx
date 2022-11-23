@@ -571,7 +571,7 @@ export default function PoliciesPage() {
         () => [
             {
                 id: 'violations',
-                label: 'Cluster violations',
+                label: t('Cluster violations'),
                 options: [
                     {
                         label: t('Without violations'),
