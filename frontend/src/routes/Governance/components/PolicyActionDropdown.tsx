@@ -104,7 +104,7 @@ export function PolicyActionDropdown(props: {
                         close: () => {
                             setModalProps({ open: false })
                         },
-                        hasExternalResources: item.source !== 'Local',
+                        hasExternalResources: item.isExternal,
                     })
                 },
                 rbac: item.policy.spec.disabled
@@ -142,7 +142,7 @@ export function PolicyActionDropdown(props: {
                         close: () => {
                             setModalProps({ open: false })
                         },
-                        hasExternalResources: item.source !== 'Local',
+                        hasExternalResources: item.isExternal,
                     })
                 },
                 rbac: item.policy.spec.disabled
@@ -181,7 +181,7 @@ export function PolicyActionDropdown(props: {
                         close: () => {
                             setModalProps({ open: false })
                         },
-                        hasExternalResources: item.source !== 'Local',
+                        hasExternalResources: item.isExternal,
                     })
                 },
                 rbac:
@@ -220,7 +220,7 @@ export function PolicyActionDropdown(props: {
                         close: () => {
                             setModalProps({ open: false })
                         },
-                        hasExternalResources: item.source !== 'Local',
+                        hasExternalResources: item.isExternal,
                     })
                 },
                 rbac:

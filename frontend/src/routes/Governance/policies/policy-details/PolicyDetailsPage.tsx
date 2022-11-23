@@ -55,11 +55,11 @@ export function PolicyDetailsPage() {
 
     const tableItem: PolicyTableItem = useMemo(() => {
         const isExternal = resolveExternalStatus(selectedPolicy)
-        const source: string | JSX.Element = isExternal ? 'Local' : 'Managed Externally'
 
         return {
             policy: selectedPolicy,
-            source,
+            isExternal,
+            source: '',
         }
     }, [selectedPolicy])
 

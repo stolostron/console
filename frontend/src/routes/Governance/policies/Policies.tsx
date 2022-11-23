@@ -62,6 +62,7 @@ import {
 
 export interface PolicyTableItem {
     policy: Policy
+    isExternal: boolean
     source: string | JSX.Element
 }
 
@@ -89,13 +90,14 @@ export default function PoliciesPage() {
     const tableItems: PolicyTableItem[] = useMemo(() => {
         return policies.map((policy) => {
             const isExternal = resolveExternalStatus(policy)
-            let source: string | JSX.Element = 'Local'
+            let source: string | JSX.Element = t('Local')
             if (isExternal) {
                 const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-                source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
+                source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
             }
             return {
                 policy,
+                isExternal,
                 source,
             }
         })
@@ -414,10 +416,7 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
-                                hasExternalResources:
-                                    [...item].filter((item) => {
-                                        return item.source !== 'Local'
-                                    }).length > 0,
+                                hasExternalResources: item.some((item) => item.isExternal),
                             })
                         },
                         isDisabled: !canPatchPolicy,
@@ -453,10 +452,7 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
-                                hasExternalResources:
-                                    [...item].filter((item) => {
-                                        return item.source !== 'Local'
-                                    }).length > 0,
+                                hasExternalResources: item.some((item) => item.isExternal),
                             })
                         },
                         isDisabled: !canPatchPolicy,
@@ -503,10 +499,7 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
-                                hasExternalResources:
-                                    [...item].filter((item) => {
-                                        return item.source !== 'Local'
-                                    }).length > 0,
+                                hasExternalResources: item.some((item) => item.isExternal),
                             })
                         },
                         isDisabled: !canPatchPolicy,
@@ -1055,7 +1048,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                         label={t('policy.modal.delete.associatedResources.placement')}
                     />
                 </StackItem>
-                {props.item.source !== 'Local' ? (
+                {props.item.isExternal ? (
                     <StackItem>
                         <AcmAlert
                             variant="warning"
