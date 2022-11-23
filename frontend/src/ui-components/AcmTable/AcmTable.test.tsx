@@ -937,6 +937,9 @@ describe('AcmTable', () => {
             />
         )
 
+        // clear existing filters
+        userEvent.click(getAllByText('Clear all filters')[1])
+
         // Test deleting chip group
         expect(getByText('Filter')).toBeInTheDocument()
         userEvent.click(getByText('Filter'))

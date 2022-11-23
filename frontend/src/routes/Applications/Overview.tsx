@@ -1049,7 +1049,6 @@ export default function ApplicationsOverview() {
                 items={tableItems}
                 filters={filters}
                 customTableAction={appCreationButton}
-                initialFilters={localStorage[filterId] && JSON.parse(localStorage[filterId])}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
