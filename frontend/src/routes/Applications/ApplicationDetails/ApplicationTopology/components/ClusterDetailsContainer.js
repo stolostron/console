@@ -343,13 +343,14 @@ class ClusterDetailsContainer extends React.Component {
     }
 
     mapClusterStatusToIcon = (status) => {
+        const statusLowerCase = status.toLowerCase()
         let icon = 'checkmark'
 
-        if (status.toLowerCase() === 'pendingimport' || status.toLowerCase() === 'detaching') {
+        if (statusLowerCase === 'pendingimport' || statusLowerCase === 'detaching') {
             icon = 'pending'
-        } else if (status.toLowerCase() === 'notaccepted') {
+        } else if (statusLowerCase === 'notaccepted' || statusLowerCase === 'degraded') {
             icon = 'warning'
-        } else if (status.toLowerCase() === 'offline') {
+        } else if (statusLowerCase === 'offline') {
             icon = 'failure'
         }
 
