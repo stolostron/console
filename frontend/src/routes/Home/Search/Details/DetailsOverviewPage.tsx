@@ -405,21 +405,16 @@ export default function DetailsOverviewPage(props: {
                                     </FlexItem>
                                     {canEditResource && (
                                         <FlexItem>
-                                            <Button
-                                                data-test="edit-label"
-                                                type="button"
-                                                isInline
-                                                onClick={() => {
-                                                    history.push(
-                                                        `${NavigationPath.resourceYAML}${window.location.search}`,
-                                                        { scrollToLine: labelsLineNumber }
-                                                    )
+                                            <Link
+                                                to={{
+                                                    pathname: NavigationPath.resourceYAML,
+                                                    search: window.location.search,
+                                                    state: { scrollToLine: labelsLineNumber },
                                                 }}
-                                                variant="link"
                                             >
                                                 {t('Edit')}
                                                 <PencilAltIcon style={{ marginLeft: '.5rem' }} />
-                                            </Button>
+                                            </Link>
                                         </FlexItem>
                                     )}
                                 </Flex>
@@ -453,23 +448,18 @@ export default function DetailsOverviewPage(props: {
                                     <DescriptionListTerm>{'Tolerations'}</DescriptionListTerm>
                                     <DescriptionListDescription>
                                         {canEditResource ? (
-                                            <Button
-                                                data-test="edit-tolerations"
-                                                type="button"
-                                                isInline
-                                                onClick={() => {
-                                                    history.push(
-                                                        `${NavigationPath.resourceYAML}${window.location.search}`,
-                                                        { scrollToLine: tolerationsLineNumber }
-                                                    )
+                                            <Link
+                                                to={{
+                                                    pathname: NavigationPath.resourceYAML,
+                                                    search: window.location.search,
+                                                    state: { scrollToLine: tolerationsLineNumber },
                                                 }}
-                                                variant="link"
                                             >
                                                 {t('tolerations.count', {
                                                     count: resourceTolerationsCount,
                                                 })}
                                                 <PencilAltIcon style={{ marginLeft: '.5rem' }} />
-                                            </Button>
+                                            </Link>
                                         ) : (
                                             t('tolerations.count', {
                                                 count: resourceTolerationsCount,
@@ -483,23 +473,18 @@ export default function DetailsOverviewPage(props: {
                                 <DescriptionListTerm>{'Annotations'}</DescriptionListTerm>
                                 <DescriptionListDescription>
                                     {canEditResource ? (
-                                        <Button
-                                            data-test="edit-annotations"
-                                            type="button"
-                                            isInline
-                                            onClick={() => {
-                                                history.push(
-                                                    `${NavigationPath.resourceYAML}${window.location.search}`,
-                                                    { scrollToLine: annotationsLineNumber }
-                                                )
+                                        <Link
+                                            to={{
+                                                pathname: NavigationPath.resourceYAML,
+                                                search: window.location.search,
+                                                state: { scrollToLine: annotationsLineNumber },
                                             }}
-                                            variant="link"
                                         >
                                             {t('annotations.count', {
                                                 count: Object.keys(resource.metadata?.annotations ?? {}).length,
                                             })}
                                             <PencilAltIcon style={{ marginLeft: '.5rem' }} />
-                                        </Button>
+                                        </Link>
                                     ) : (
                                         t('annotations.count', {
                                             count: Object.keys(resource.metadata?.annotations ?? {}).length,

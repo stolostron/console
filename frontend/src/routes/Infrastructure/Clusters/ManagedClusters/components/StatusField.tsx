@@ -4,7 +4,7 @@ import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../..
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -169,9 +169,7 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.degraded:
             hasAction = true
             Action = () => (
-                <Link to={`${NavigationPath.clusterSettings.replace(':id', props.cluster?.name!)}`}>
-                    {t('view.addons')}
-                </Link>
+                <Link to={getClusterNavPath(NavigationPath.clusterSettings, props.cluster)}>{t('view.addons')}</Link>
             )
             break
         case ClusterStatus.draft:

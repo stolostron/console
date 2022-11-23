@@ -22,7 +22,7 @@ export function AddNodePoolModal(props: {
     }
 
     return (
-        <AcmModal variant={ModalVariant.medium} title={t('Add nodepool')} isOpen={true} onClose={props.close}>
+        <AcmModal variant={ModalVariant.medium} title={t('Add node pool')} isOpen={true} onClose={props.close}>
             <NodePoolForm
                 hostedCluster={props.hostedCluster}
                 nodepool={props.nodepool}

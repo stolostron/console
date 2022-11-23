@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Page } from '@patternfly/react-core'
+import { matchPath, generatePath } from 'react-router'
 import {
     AgentClusterInstallK8sResource,
     AgentK8sResource,
@@ -13,7 +14,7 @@ import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import {
     Addon,
     Cluster,
@@ -21,7 +22,6 @@ import {
     ClusterDeployment,
     ClusterStatus,
     getCluster,
-    getIsHostedCluster,
     mapAddons,
     ResourceError,
     SecretDefinition,
@@ -69,7 +69,11 @@ export const ClusterContext = createContext<{
     selectedHostedCluster: undefined,
 })
 
-export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
+export default function ClusterDetailsPage({
+    match: {
+        params: { name, namespace },
+    },
+}: RouteComponentProps<{ namespace: string; name: string }>) {
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
@@ -122,19 +126,23 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         ])
     )
 
-    const managedCluster = managedClusters.find((mc) => mc.metadata.name === match.params.id)
+    const managedCluster = managedClusters.find((mc) => mc.metadata.name === name)
     const clusterDeployment = clusterDeployments.find(
-        (cd) => cd.metadata.name === match.params.id && cd.metadata.namespace === match.params.id
+        (cd) => cd.metadata.name === name && cd.metadata.namespace === namespace
     )
     const managedClusterInfo = managedClusterInfos.find(
-        (mci) => mci.metadata.name === match.params.id && mci.metadata.namespace === match.params.id
+        (mci) => mci.metadata.name === name && mci.metadata.namespace === name
     )
-    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === match.params.id)
+    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === name)
     const addons = mapAddons(clusterManagementAddons, clusterAddons)
 
-    const clusterClaim = clusterClaims.find((cc) => cc.spec?.namespace === clusterDeployment?.metadata?.name)
+    const clusterClaim = clusterClaims.find(
+        (cc) =>
+            cc.spec?.namespace === clusterDeployment?.metadata?.name &&
+            cc.spec?.namespace === clusterDeployment?.metadata?.namespace
+    )
 
-    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === match.params.id)
+    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === namespace)
 
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) =>
@@ -143,13 +151,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             clusterDeployment?.metadata.namespace === aci.metadata.namespace
     )
 
-    const hostedCluster = hostedClusters.find((hc) => {
-        if (getIsHostedCluster(managedCluster)) {
-            // hypershift clusters with same name in different namespaces will not work with this
-            return hc.metadata.name === match.params.id
-        }
-        return hc.metadata.name === match.params.id && hc.metadata.namespace === match.params.id
-    })
+    const hostedCluster = hostedClusters.find((hc) => hc.metadata.name === name && hc.metadata.namespace === namespace)
     const infraEnvAIFlow = infraEnvs.find(
         (ie: InfraEnvK8sResource) =>
             ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
@@ -159,9 +161,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
     const clusters = useAllClusters()
-    const selectedHostedCluster = clusters.find((c) => c.name === match.params.id)
+    const selectedHostedCluster = clusters.find((c) => c.name === name && c.namespace === namespace)
     const selectedHostedClusterResource: HostedClusterK8sResource = hostedClusters.find(
-        (hc) => hc.metadata.name === match.params.id
+        (hc) => hc.metadata.name === name && hc.metadata.namespace === namespace
     )
 
     const cluster = getCluster(
@@ -182,12 +184,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
     useEffect(() => {
-        const canGetSecret = canUser('get', SecretDefinition, match.params.id)
+        const canGetSecret = canUser('get', SecretDefinition, namespace)
         canGetSecret.promise
             .then((result) => setCanGetSecret(result.status?.allowed!))
             .catch((err) => console.error(err))
         return () => canGetSecret.abort()
-    }, [match.params.id])
+    }, [namespace])
 
     if (
         (prevCluster?.isHive && prevCluster?.status === ClusterStatus.destroying) ||
@@ -242,6 +244,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             <ClusterActionDropdown key={'ClusterActionDropdown-cluster-action'} cluster={cluster!} isKebab={false} />
         )
     }
+
     return (
         <ClusterContext.Provider
             value={{
@@ -277,43 +280,57 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                             <AcmSecondaryNav>
                                 <AcmSecondaryNavItem
                                     isActive={
-                                        location.pathname ===
-                                        NavigationPath.clusterOverview.replace(':id', match.params.id)
+                                        !!matchPath(location.pathname, {
+                                            path: NavigationPath.clusterOverview,
+                                            exact: true,
+                                            strict: false,
+                                        })
                                     }
                                 >
-                                    <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
+                                    <Link to={generatePath(NavigationPath.clusterOverview, { name, namespace })}>
                                         {t('tab.overview')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 <AcmSecondaryNavItem
                                     isActive={
-                                        location.pathname ===
-                                        NavigationPath.clusterNodes.replace(':id', match.params.id)
+                                        !!matchPath(location.pathname, {
+                                            path: NavigationPath.clusterNodes,
+                                            exact: true,
+                                            strict: false,
+                                        })
                                     }
                                 >
-                                    <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>
+                                    <Link to={generatePath(NavigationPath.clusterNodes, { name, namespace })}>
                                         {t('tab.nodes')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 {showMachinePoolTab && (
                                     <AcmSecondaryNavItem
                                         isActive={
-                                            location.pathname ===
-                                            NavigationPath.clusterMachinePools.replace(':id', match.params.id)
+                                            !!matchPath(location.pathname, {
+                                                path: NavigationPath.clusterMachinePools,
+                                                exact: true,
+                                                strict: false,
+                                            })
                                         }
                                     >
-                                        <Link to={NavigationPath.clusterMachinePools.replace(':id', match.params.id)}>
+                                        <Link
+                                            to={generatePath(NavigationPath.clusterMachinePools, { name, namespace })}
+                                        >
                                             {t('tab.machinepools')}
                                         </Link>
                                     </AcmSecondaryNavItem>
                                 )}
                                 <AcmSecondaryNavItem
                                     isActive={
-                                        location.pathname ===
-                                        NavigationPath.clusterSettings.replace(':id', match.params.id)
+                                        !!matchPath(location.pathname, {
+                                            path: NavigationPath.clusterSettings,
+                                            exact: true,
+                                            strict: false,
+                                        })
                                     }
                                 >
-                                    <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
+                                    <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>
                                         {t('tab.addons')}
                                     </Link>
                                 </AcmSecondaryNavItem>
@@ -343,7 +360,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                             <ClustersSettingsPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterDetails}>
-                            <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
+                            <Redirect to={getClusterNavPath(NavigationPath.clusterOverview, cluster)} />
                         </Route>
                     </Switch>
                 </Suspense>

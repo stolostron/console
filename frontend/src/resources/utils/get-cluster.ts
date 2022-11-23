@@ -279,9 +279,9 @@ export function getCluster(
             hostedCluster?.metadata?.name ??
             selectedHostedCluster?.name,
         namespace:
-            managedCluster?.metadata.name ??
             clusterDeployment?.metadata.namespace ??
-            managedClusterInfo?.metadata.namespace,
+            managedClusterInfo?.metadata.namespace ??
+            hostedCluster?.metadata.namespace,
         uid:
             managedCluster?.metadata.uid ??
             clusterDeployment?.metadata.uid ??

@@ -25,7 +25,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
     addonPathKey,
     addonTextKey,
@@ -200,6 +200,7 @@ export function ClustersTable(props: {
     }, [])
 
     const clusterNameColumn = useClusterNameColumn()
+    const clusterNamespaceColumn = useClusterNamespaceColumn()
     const clusterStatusColumn = useClusterStatusColumn()
     const clusterProviderColumn = useClusterProviderColumn()
     const clusterControlPlaneColumn = useClusterControlPlaneColumn()
@@ -216,6 +217,7 @@ export function ClustersTable(props: {
     const columns = useMemo<IAcmTableColumn<Cluster>[]>(
         () => [
             clusterNameColumn,
+            clusterNamespaceColumn,
             clusterStatusColumn,
             clusterProviderColumn,
             clusterControlPlaneColumn,
@@ -233,6 +235,7 @@ export function ClustersTable(props: {
         ],
         [
             clusterNameColumn,
+            clusterNamespaceColumn,
             clusterStatusColumn,
             clusterProviderColumn,
             clusterControlPlaneColumn,
@@ -476,9 +479,7 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
         cell: (cluster) => (
             <>
                 <span style={{ whiteSpace: 'nowrap' }}>
-                    <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                        {cluster.displayName}
-                    </Link>
+                    <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
                 </span>
                 {cluster.hive.clusterClaimName && (
                     <TextContent>
@@ -487,6 +488,15 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
                 )}
             </>
         ),
+    }
+}
+
+export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.namespace'),
+        sort: 'namespace',
+        cell: (cluster) => cluster.namespace || '-',
     }
 }
 

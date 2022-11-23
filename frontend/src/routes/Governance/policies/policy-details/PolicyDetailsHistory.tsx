@@ -2,12 +2,12 @@
 
 import { PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 
 interface HistoryTableData {
     message: string
@@ -113,24 +113,22 @@ export function PolicyDetailsHistory(props: {
     )
 
     return (
-        <div>
-            <PageSection>
-                <Title headingLevel="h3">{clusterName}</Title>
-                <Title headingLevel="h4">{t(`Template: ${templateName}`)}</Title>
-                <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
-                    <AcmTable
-                        items={statusItems}
-                        columns={columns}
-                        keyFn={(item) => `${item.message}.${item.timestamp}`}
-                        initialSort={{
-                            index: 2,
-                            direction: 'desc',
-                        }}
-                        fuseThreshold={0}
-                        plural={t('clusters')}
-                    />
-                </AcmTablePaginationContextProvider>
-            </PageSection>
-        </div>
+        <PageSection>
+            <Title headingLevel="h3">{clusterName}</Title>
+            <Title headingLevel="h4">{t(`Template: ${templateName}`)}</Title>
+            <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+                <AcmTable
+                    items={statusItems}
+                    columns={columns}
+                    keyFn={(item) => `${item.message}.${item.timestamp}`}
+                    initialSort={{
+                        index: 2,
+                        direction: 'desc',
+                    }}
+                    fuseThreshold={0}
+                    plural={t('clusters')}
+                />
+            </AcmTablePaginationContextProvider>
+        </PageSection>
     )
 }

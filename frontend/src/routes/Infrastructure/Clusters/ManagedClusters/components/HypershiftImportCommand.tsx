@@ -80,7 +80,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         createResource(managedClusterResource as IResource)
             .promise.then(() => {
                 toastContext.addAlert({
-                    title: t('Import hosted control plane cluster...'),
+                    title: t('Importing hosted control plane cluster...'),
                     type: 'success',
                     autoClose: true,
                 })
