@@ -1408,7 +1408,6 @@
     "Error occurred while contacting the search service.": "Error occurred while contacting the search service.",
     "Error occurred while deleting PolicySet": "Error occurred while deleting PolicySet",
     "Error occurred while updating resource: {{name}}": "Error occurred while updating resource: {{name}}",
-    "Error occurred while updating resource: {{resource}}": "Error occurred while updating resource: {{resource}}",
     "Error querying for resource:": "Error querying for resource:",
     "Error querying related resources": "Error querying related resources",
     "Error querying resource logs:": "Error querying resource logs:",
