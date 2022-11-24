@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@material-ui/styles'
-import { Hint } from '@patternfly/react-core'
+import { Alert, AlertVariant, Button, Hint, HintBody, HintFooter } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { useSharedAtoms, useRecoilValue } from '../shared-recoil'
 import { useTranslation } from '../lib/acm-i18next'
-import { getOperatorError } from '../lib/error-output'
 import { isAnsibleOperatorInstalled } from '../resources'
+import { Link } from 'react-router-dom'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
-export function AutomationProviderHint() {
+export function AutomationProviderHint(props: { component: 'hint' | 'alert'; className?: string }) {
+    const { component, className } = props
     const { subscriptionOperatorsState } = useSharedAtoms()
     const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
 
@@ -18,15 +19,35 @@ export function AutomationProviderHint() {
         [subscriptionOperators]
     )
 
-    const useStyles = makeStyles({
-        hint: {
-            margin: '16px 0px 24px 0px',
-            fontSize: 'smaller',
-        },
-    })
-    const classes = useStyles()
+    const title = t('Operator required')
+    const message = t('The Ansible Automation Platform Operator is required to use automation templates.')
+    const link = (
+        <Link to={'/operatorhub/all-namespaces?keyword=ansible+automation+platform'} target={'_blank'}>
+            <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
+                {t('Install the operator')}
+            </Button>
+        </Link>
+    )
 
     return (
-        <>{!isOperatorInstalled && <Hint className={classes.hint}>{getOperatorError(isOperatorInstalled, t)}</Hint>}</>
+        <>
+            {!isOperatorInstalled &&
+                (component === 'hint' ? (
+                    <Hint className={className}>
+                        <HintBody>{message}</HintBody>
+                        <HintFooter>{link}</HintFooter>
+                    </Hint>
+                ) : (
+                    <Alert
+                        className={className}
+                        isInline
+                        title={title}
+                        actionLinks={link}
+                        variant={AlertVariant.danger}
+                    >
+                        {message}
+                    </Alert>
+                ))}
+        </>
     )
 }

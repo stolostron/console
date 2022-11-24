@@ -51,7 +51,7 @@ describe('Create Policy Automation Wizard', () => {
 
         // template information
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        waitForNotText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
         await waitForText('Create policy automation')
 
         // select ansible credential
@@ -85,7 +85,7 @@ describe('Create Policy Automation Wizard', () => {
     test('render warning when Ansible operator is not installed', async () => {
         render(<CreatePolicyAutomationTest configMaps={[mockOpenShiftConsoleConfigMap]} />)
         window.open = jest.fn()
-        waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        waitForText('The Ansible Automation Platform Operator is required to use automation templates.')
         screen
             .getByRole('button', {
                 name: /operatorhub/i,

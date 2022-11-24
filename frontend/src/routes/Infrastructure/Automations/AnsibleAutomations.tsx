@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { ButtonVariant, Hint, PageSection, TextContent } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlertContext,
@@ -12,34 +12,21 @@ import {
     AcmPageHeader,
     AcmTable,
 } from '../../../ui-components'
-import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
-import { getOperatorError } from '../../../lib/error-output'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    ClusterCurator,
-    deleteResource,
-    getTemplateJobsNum,
-    LinkAnsibleCredential,
-    isAnsibleOperatorInstalled,
-} from '../../../resources'
+import { ClusterCurator, deleteResource, getTemplateJobsNum, LinkAnsibleCredential } from '../../../resources'
+import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 
 export default function AnsibleAutomationsPage() {
     const alertContext = useContext(AcmAlertContext)
-    const { subscriptionOperatorsState } = useSharedAtoms()
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
-
-    const isOperatorInstalled = useMemo(
-        () => isAnsibleOperatorInstalled(subscriptionOperators),
-        [subscriptionOperators]
-    )
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -53,24 +40,11 @@ export default function AnsibleAutomationsPage() {
     })
     const classes = useStyles()
 
-    // function launchToOperatorInstall() {
-
-    //     if (openShiftConsoleUrl) {
-    //         const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
-    //         response.then((job) => {
-    //             const podName = job?.metadata.name
-    //             podName &&
-    //                 window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
-    //         })
-    //     }
-    // }
     return (
         <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
-                    {!isOperatorInstalled && (
-                        <Hint className={classes.hint}>{getOperatorError(isOperatorInstalled, t)}</Hint>
-                    )}
+                    <AutomationProviderHint component="hint" className={classes.hint} />
                     <AnsibleJobTemplateTable />
                 </PageSection>
             </AcmPageContent>
