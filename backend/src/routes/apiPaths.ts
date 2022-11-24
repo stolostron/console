@@ -39,32 +39,33 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
     try {
         const authResponse = await isAuthenticated(token)
         if (authResponse.status === constants.HTTP_STATUS_OK) {
-            const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken).then(
-                async (response: APIPathResponse) => {
-                    let apiResourceLists = []
-                    if (response?.paths) {
-                        apiResourceLists = await Promise.all(
-                            response?.paths
-                                .filter((path) => {
-                                    const pathArray = path.substring(1).split('/')
-                                    return (
-                                        pathArray.length &&
-                                        ((pathArray[0] === 'api' && pathArray.length === 2) ||
-                                            (pathArray[0] === 'apis' && pathArray.length === 3))
-                                    )
-                                })
-                                .map(async (path) => {
-                                    return jsonRequest<APIResourcePathResponse>(
-                                        process.env.CLUSTER_API_URL + path,
-                                        serviceAccountToken
-                                    )
-                                })
-                        )
-                        // return apiResourceLists
-                        return buildPathObject(apiResourceLists)
-                    }
-                }
-            )
+            const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken)
+                .then(async (response: APIPathResponse) => {
+                    const apiResourceLists = await Promise.all(
+                        response.paths
+                            .filter((path) => {
+                                const pathArray = path.substring(1).split('/')
+                                return (
+                                    pathArray.length &&
+                                    ((pathArray[0] === 'api' && pathArray.length === 2) ||
+                                        (pathArray[0] === 'apis' && pathArray.length === 3))
+                                )
+                            })
+                            .map(async (path) => {
+                                return jsonRequest<APIResourcePathResponse>(
+                                    process.env.CLUSTER_API_URL + path,
+                                    serviceAccountToken
+                                )
+                            })
+                    )
+                    // return apiResourceLists
+                    return buildPathObject(apiResourceLists)
+                })
+                .catch((err) => {
+                    logger.error(err)
+                    console.log(err)
+                    throw err
+                })
 
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(paths))
@@ -76,6 +77,7 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
         logger.error(err)
         console.log(err)
         respondInternalServerError(req, res)
+        throw err
     }
 }
 
