@@ -134,7 +134,6 @@ describe('Applications Page', () => {
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
-        const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
         expect(screen.getAllByText('Discovered')).toBeTruthy()
 
@@ -149,11 +148,9 @@ describe('Applications Page', () => {
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
-        expect(argoCheckBox).toBeNull()
-        const applicationType = screen.queryByText(ApplicationKind)
+        const argoAppSetCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
+        expect(argoAppSetCheckBox).toBeNull()
         expect(applicationType).toBeNull()
-        const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
         expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
 
@@ -170,9 +167,7 @@ describe('Applications Page', () => {
         userEvent.click(screen.getByText('Filter'))
         const ocpCheckBox = screen.queryByTestId('openshiftapps')
         expect(ocpCheckBox).toBeNull()
-        const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
-        const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
 
         // clear openshift filter
