@@ -1205,7 +1205,7 @@ function TableColumnFilters<T>(props: {
                 if (filter.options.find((option) => option.value === selection)) {
                     filterId = filter.id
                     const filterCache = JSON.parse(localStorage.getItem(filterId) as string)
-                    const filterCacheValue = get(filterCache, filterId, [])
+                    const filterCacheValue = get(filterCache, filterId) || []
 
                     if (!filterCacheValue.includes(selection)) {
                         filterCacheValue.push(selection)
