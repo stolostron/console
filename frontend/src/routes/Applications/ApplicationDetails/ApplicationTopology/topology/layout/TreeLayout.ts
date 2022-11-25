@@ -107,10 +107,11 @@ export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, o
         const metrics: MetricsType = groupNodesByConnections(_elements)
         addRootsLeavesToConnectedGroups(metrics)
         sortConnectedGroupsIntoRows(metrics, options)
-        const placeLast = addOffsetsToNodeMap(metrics, nodeOffsetMap, options)
-        centerParentNodesWithTheirChilden(metrics, nodeOffsetMap)
+        const placeLast = filterLastPlaced(metrics, options)
+        setRowY(metrics, nodeOffsetMap, options)
+        setRowX(metrics, nodeOffsetMap, options)
         placePairedNodes(metrics, nodeOffsetMap, placeLast, options)
-        if (placeLast.length > 0) {
+        if (placeLast.length > 1) {
             layout = 'ColaTreeLayout'
         }
     }
@@ -309,7 +310,11 @@ function sortConnectedGroupsIntoRows(metrics: MetricsType, options: TreeLayoutOp
         } while (groupIds.length)
     })
 }
-
+// group nodes that have or don't have children--we want to center them in the group
+// then with each of these groups sort them by what parent they have--so nodes fall under their parent
+// then sort the nodes in each of these groups alphabetically or whatever is defined in 'sortRowsBy'
+// then insert the nodes with children into the middle of the nodes w/o children
+// then recombine all the nodes back into one row
 function sortRowIntoRelatedNodes(data: { newRow: RowType; sortRowsBy: string[] | undefined; maxColumns: number }) {
     const { newRow, sortRowsBy, maxColumns } = data
     const { incomingRow } = newRow
@@ -390,71 +395,111 @@ function sortRowIntoRelatedNodes(data: { newRow: RowType; sortRowsBy: string[] |
     return { newRow }
 }
 
-///// assume center of group is at 0,0 then offset nodes from the center
-// place paired nodes last
-function addOffsetsToNodeMap(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType, options: TreeLayoutOptions) {
+// filter out nodes that are placed last
+function filterLastPlaced(metrics: MetricsType, options: TreeLayoutOptions) {
     const placeLast: any[] = []
-    const { connected } = metrics
-    const { xSpacer = 60, ySpacer = 60, nodeWidth = 65, nodeHeight = 65 } = options
-    connected.forEach((group) => {
-        const { rows, columns } = group
-        group.height = rows.length * nodeHeight + (rows.length - 1) * ySpacer
-        group.width = columns * nodeWidth + (columns - 1) * xSpacer
-        let dy = -group.height / 2
-        rows.forEach(({ row }) => {
-            // filter out nodes that are placed last
-            if (options?.placeWith) {
-                row = row.filter((n) => {
-                    if (options.placeWith && n.type === options.placeWith.childType) {
+    if (options?.placeWith) {
+        const { connected } = metrics
+        connected.forEach((group) => {
+            group.rows = group.rows.map((row) => {
+                row.row = row.row.filter((n) => {
+                    const isPlaceType = (n: { type: string | undefined }) => n.type === options.placeWith?.childType
+                    n.incoming = n.incoming.filter((n) => !isPlaceType(n))
+                    n.outgoing = n.outgoing.filter((n) => !isPlaceType(n))
+                    if (isPlaceType(n)) {
                         placeLast.push(n)
                         return false
                     }
                     return true
                 })
-            }
+                row.incomingRow
+                return row
+            })
+        })
+    }
+    return placeLast
+}
 
+// set the dy on the nodes in each row
+function setRowY(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType, options: TreeLayoutOptions) {
+    const { connected } = metrics
+    const { ySpacer = 60, nodeHeight = 65 } = options
+    connected.forEach((group) => {
+        const { rows } = group
+        group.height = rows.length * nodeHeight + (rows.length - 1) * ySpacer
+        let dy = -group.height / 2
+        rows.forEach(({ row }) => {
+            row.forEach(({ id }) => {
+                nodeOffsetMap[id] = { dx: 0, dy }
+            })
+            dy += nodeHeight + ySpacer
+        })
+    })
+}
+
+// start setting dx on widest row
+// centerParentNodesWithTheirChilden will set dx above that row
+function setRowX(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType, options: TreeLayoutOptions) {
+    const { connected } = metrics
+    const { xSpacer = 60, nodeWidth = 65 } = options
+    connected.forEach((group) => {
+        let widestRow = 0
+        let widestRowWidth = 0
+        const rowsToPlace: RowType[] = []
+        const { rows, columns } = group
+        group.width = columns * nodeWidth + (columns - 1) * xSpacer
+
+        // find widest row
+        rows.forEach((row, inx) => {
+            rowsToPlace.push(row)
+            const rowWidth = row.row.length * nodeWidth + (row.row.length - 1) * xSpacer
+            if (rowWidth > widestRowWidth) {
+                widestRowWidth = rowWidth
+                widestRow = inx
+            }
+        })
+
+        // spread out widest row and its children
+        let centerChildren = false
+        rowsToPlace.slice(widestRow).forEach(({ row }) => {
             const rowWidth = row.length * nodeWidth + (row.length - 1) * xSpacer
             const left = -rowWidth / 2
             row.forEach(({ id, incoming }, inx) => {
                 let dx = left + (nodeWidth + xSpacer) * inx
                 // if this node has only one incoming, and that incoming only has this one outgoing, line up nodes
-                if (incoming.length === 1) {
+                if (incoming.length === 1 && centerChildren) {
                     if (incoming[0].outgoing.length === 1) {
                         ;({ dx } = nodeOffsetMap[incoming[0].id])
                     }
                 }
-                nodeOffsetMap[id] = { dx, dy }
+                nodeOffsetMap[id].dx = dx
+                centerChildren = true
             })
-            dy += nodeHeight + ySpacer
         })
-    })
-    return placeLast
-}
 
-// center parent over its children if there are more children then parents
-function centerParentNodesWithTheirChilden(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType) {
-    const { connected } = metrics
-    connected.forEach((group) => {
-        const { rows } = group
-        rows.reverse().forEach(({ row, incomingRow }) => {
-            if (incomingRow && row.length > 1 && row.length >= incomingRow?.row.length) {
-                incomingRow?.row.forEach(({ id, outgoing }) => {
-                    if (outgoing.length) {
-                        const mixDX = Math.min(
-                            ...outgoing.map(({ id }) => {
-                                return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : Infinity
-                            })
-                        )
-                        const maxDX = Math.max(
-                            ...outgoing.map(({ id }) => {
-                                return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : -Infinity
-                            })
-                        )
-                        nodeOffsetMap[id].dx = mixDX + (maxDX - mixDX) / 2
-                    }
+        // for rows above widest row, center them over their children
+        if (widestRow) {
+            rowsToPlace
+                .slice(0, widestRow)
+                .reverse()
+                .forEach((row) => {
+                    row.row.forEach(({ id, outgoing }) => {
+                        if (outgoing.length) {
+                            const minDX = Math.min(
+                                ...outgoing.map(({ id }) => {
+                                    return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : Infinity
+                                })
+                            )
+                            const maxDX = Math.max(
+                                ...outgoing.map(({ id }) => {
+                                    return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : -Infinity
+                                })
+                            )
+                            nodeOffsetMap[id].dx = minDX + (maxDX - minDX) / 2
+                        }
+                    })
                 })
-            }
-        })
+        }
     })
 }
 
@@ -485,36 +530,3 @@ function placePairedNodes(
 }
 
 export { TreeLayout }
-
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// protected getConstraints(nodes: ColaNode[], groups: ColaGroup[], edges: ColaLink[]): any[] {
-//     return []
-// }
-// protected createLayoutNode(node: Node, nodeDistance: number, index: number) {
-//     super.createLayoutNode()
-//     return new ColaNode(node, nodeDistance, index)
-// }
-// protected createLayoutLink(edge: Edge, source: LayoutNode, target: LayoutNode): LayoutLink {
-//     return new ColaLink(edge, source, target)
-// }
-// protected createLayoutGroup(node: Node, padding: number, index: number) {
-//     return new ColaGroup(node, padding, index)
-// }
-// protected getFauxEdges(): LayoutLink[] {
-//     return []
-// }
-// protected setupLayout(graph: Graph, nodes: LayoutNode[], edges: LayoutLink[], groups: LayoutGroup[]): void {
-//     const { width, height } = graph.getBounds()
-//     this.d3Cola.size([width, height])
-//     // Get any custom constraints
-//     this.d3Cola.constraints(this.getConstraints(nodes as ColaNode[], groups as ColaGroup[], edges))
-//     this.d3Cola.nodes(nodes)
-//     this.d3Cola.links(edges)
-//     this.d3Cola.groups(groups)
-// }
-
-// TODO find bridges between big groupings
-//   if this is a row of 1 node and that node has >1 outgoing and each has >1 outgoing
-//           and rows.length >3
-//           make a clone as the root of a new group and start over
-//            add secondary line between them

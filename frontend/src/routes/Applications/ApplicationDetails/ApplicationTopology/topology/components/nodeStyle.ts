@@ -86,7 +86,7 @@ const getStatus = (node: {
 
     // status icon
     let status
-    let statusIcon = statusToIconMap['pending']
+    let statusIcon = statusToIconMap['spinner']
     let disabled = false
     if (type === 'cluster') {
         // determine icon
