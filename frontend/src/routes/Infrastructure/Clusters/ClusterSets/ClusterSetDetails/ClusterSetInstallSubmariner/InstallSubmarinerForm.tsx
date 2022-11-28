@@ -462,9 +462,13 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             }
             resources.push(broker)
         } else if (!isGlobalnetAlreadyConfigured || !selectedClusters || !selectedClusters.length) {
-            const brokerGlobalNetCIDR = brokerGlobalnetCIDR
+            let brokerGlobalNetCIDR = brokerGlobalnetCIDR
                 ? brokerGlobalnetCIDR
                 : submarinerConfigDefault.brokerGlobalnetCIDR
+
+            if (!globalnetEnabled) {
+                brokerGlobalNetCIDR = ''
+            }
 
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
@@ -630,7 +634,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         label: t('Globalnet CIDR Range'),
                         value: brokerGlobalnetCIDR ?? '',
                         isDisabled: isGlobalnetAlreadyConfigured || !globalnetEnabled,
-                        labelHelp: t('The globalnet CIDR to be used. The default is 242.0.0.0/8'),
+                        isHidden: isGlobalnetAlreadyConfigured && !globalnetEnabled,
+                        labelHelp: t(
+                            'The Globalnet CIDR to be used within the clusterset pool. The default is 242.0.0.0/8'
+                        ),
                         onChange: (value: string) => {
                             setBrokerGlobalNetCIDR(value)
                         },
@@ -973,7 +980,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('Globalnet CIDR'),
                                     placeholder: t('Enter Globalnet CIDR'),
                                     labelHelp: t(
-                                        'The Globalnet CIDR to be used for the  managed cluster (If left blank CIDR will be allocated from clusterset pool).'
+                                        'The Globalnet CIDR to be used for the managed cluster (If left blank, a CIDR will be allocated from clusterset pool).'
                                     ),
                                     value: globalNetCIDRs[clusterName] ?? '',
                                     isHidden: !globalnetEnabled,
