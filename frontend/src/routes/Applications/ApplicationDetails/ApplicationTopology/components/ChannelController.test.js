@@ -89,7 +89,7 @@ describe('ChannelController components 1', () => {
         await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
     })
     it('default', () => {
-        expect(screen.getByText(/Subscriptions/)).toBeTruthy()
+        expect(screen.getByText(/all subscriptions/i)).toBeTruthy()
     })
 })
 
@@ -143,9 +143,9 @@ describe('ChannelController components 3', () => {
     })
 
     it('ChannelController components 3', () => {
-        userEvent.click(container.querySelector(`button[id="comboChannel"]`))
-        expect(screen.getByText(/blue-nginx-subscription/)).toBeTruthy()
-        userEvent.click(screen.getByText(/blue-nginx-subscription/))
+        userEvent.click(screen.getByText(/blue-nginx-subscription/i))
+        userEvent.click(screen.getByText(/ingress-nginx-subscription-blue/i))
+        expect(screen.getByText(/ingress-nginx-subscription-blue/i)).toBeTruthy()
     })
 })
 
@@ -160,8 +160,8 @@ describe('ChannelController components 4', () => {
     })
 
     it('ChannelController components 4', () => {
-        userEvent.click(container.querySelector(`button[id="comboChannel"]`))
-        expect(screen.getByText(/helloworld-demo-subscription-1/)).toBeTruthy()
-        userEvent.click(screen.getByText(/helloworld-demo-subscription-1/))
+        userEvent.click(screen.getByText(/helloworld-demo-subscription-1/i))
+        userEvent.click(screen.getByText(/helloworld\-demo\-subscription\-2/i))
+        expect(screen.getByText(/helloworld\-demo\-subscription\-2/i)).toBeTruthy()
     })
 })
