@@ -46,6 +46,22 @@ export const addAjvKeywords = (ajv: Ajv) => {
         },
     })
     ajv.addKeyword({
+        keyword: 'validateDep',
+        schemaType: 'boolean',
+        validate: (_schema: null, data: any) => {
+            if (data['namespace']) {
+                if (
+                    (data['kind'] && data['kind'] === 'ConfigurationPolicy') ||
+                    data['kind'] == 'IamPolicy' ||
+                    data['kind'] == 'CertificatePolicy'
+                ) {
+                    return false
+                }
+            }
+            return true
+        },
+    })
+    ajv.addKeyword({
         keyword: 'validateLabel',
         schemaType: 'boolean',
         validate: (_schema: null, data: any) => {
@@ -125,7 +141,7 @@ export function validate(
     })
 }
 
-function validateResource(
+export function validateResource(
     validator: any,
     mappings: { [name: string]: any[] },
     prefix: string[],
@@ -210,6 +226,16 @@ function validateResource(
                             errorMsg.linePos.end.col = mapping.$gv.end.col
                             errorMsg.isWarning = false
                             break
+                        // validateDep
+                        case 'validateDep':
+                            errorMsg.message =
+                                'Dependencies on ConfigurationPolicies, IamPolicies, and CertificatePolicies cannot contain a namespace'
+                            errorMsg.linePos.start.line = mapping.$gv.start.line
+                            errorMsg.linePos.end.line = mapping.$gv.end.line
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            errorMsg.isWarning = false
+                            break
                         // validateLabel
                         case 'validateLabel':
                             errorMsg.message =
@@ -225,8 +251,10 @@ function validateResource(
                                     return `"${val}"`
                                 })
                                 .join(', ')}`
-                            errorMsg.linePos.start.col = mapping.$gv.start.col
-                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            if (mapping.$gv) {
+                                errorMsg.linePos.start.col = mapping.$gv.start.col
+                                errorMsg.linePos.end.col = mapping.$gv.end.col
+                            }
                             break
                         case 'type':
                             errorMsg.message = message

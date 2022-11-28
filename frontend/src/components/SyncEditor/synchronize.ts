@@ -72,7 +72,13 @@ export const crossReference = (paths: { [name: string]: any }) => {
             const references: { [name: string]: any[] } = {}
             const set = { value: values[0], references }
             Object.values(paths).forEach((path: { $v: string; $p: any[] }) => {
-                if (typeof path.$v === 'string' && path.$v.length && path.$v.startsWith(values[0])) {
+                if (
+                    typeof path.$v === 'string' &&
+                    path.$v.length &&
+                    path.$v.startsWith(values[0]) &&
+                    !path.$p.includes('dependencies') &&
+                    !path.$p.includes('extraDependencies')
+                ) {
                     references[JSON.stringify(path.$p)] = path.$p
                 }
             })
