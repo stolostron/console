@@ -180,7 +180,7 @@ export function EditorActionBar(props: {
                         <Alert
                             variant={'danger'}
                             isInline={true}
-                            title={`${t('Error occurred while updating resource:')} ${name}`}
+                            title={t('Error occurred while updating resource: {{name}}', { name })}
                         >
                             {updateError}
                         </Alert>
@@ -247,9 +247,10 @@ export function EditorActionBar(props: {
                         <Button
                             variant="secondary"
                             id="download-resource-button"
+                            icon={<DownloadIcon />}
                             onClick={() => downloadYaml(name, resourceYaml)}
                         >
-                            <DownloadIcon /> {t('public~Download')}
+                            {t('Download')}
                         </Button>
                     </ActionListItem>
                 </ActionListGroup>
