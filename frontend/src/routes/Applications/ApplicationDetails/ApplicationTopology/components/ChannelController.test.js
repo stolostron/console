@@ -161,7 +161,7 @@ describe('ChannelController components 4', () => {
 
     it('ChannelController components 4', () => {
         userEvent.click(screen.getByText(/helloworld-demo-subscription-1/i))
-        userEvent.click(screen.getByText(/helloworld\-demo\-subscription\-2/i))
-        expect(screen.getByText(/helloworld\-demo\-subscription\-2/i)).toBeTruthy()
+        userEvent.click(screen.getByText(/helloworld-demo-subscription-2/i))
+        expect(screen.getByText(/helloworld-demo-subscription-2/i)).toBeTruthy()
     })
 })
