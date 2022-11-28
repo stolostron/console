@@ -364,9 +364,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         })
     }
 
-    // Will render initialFilter
-    // If no initial filter, it will render the cachedFilter will user has made the selection
-    const initialFilters = props.initialFilters || cachedFilter || {}
+    // If selected filter, will render filter cache
+    // Otherwise, load the initialFilter if defined
+    const initialFilters = Object.keys(cachedFilter).length ? cachedFilter : props.initialFilters || {}
 
     const { t } = useTranslation()
 
