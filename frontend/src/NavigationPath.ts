@@ -15,7 +15,12 @@ export const getClusterNavPath = (
         | NavigationPath.clusterMachinePools
         | NavigationPath.clusterNodes,
     cluster: Cluster
-) => generatePath(navPath, { name: cluster.name, namespace: cluster.namespace || '~managed-cluster' })
+) =>
+    generatePath(navPath, {
+        name: cluster.name,
+        namespace:
+            (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) || '~managed-cluster',
+    })
 
 export enum NavigationPath {
     // Console

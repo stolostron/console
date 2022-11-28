@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ExpandableSection } from '@patternfly/react-core'
-import { ReactNode, useState, useEffect } from 'react'
+import { ReactNode, useState, useEffect, CSSProperties } from 'react'
 
 export function AcmExpandableSection(props: {
     label: string
@@ -9,6 +9,7 @@ export function AcmExpandableSection(props: {
     summary?: string
     expanded?: boolean
     hidden?: boolean
+    style?: CSSProperties
 }) {
     const [expanded, setExpanded] = useState(props.expanded === true)
     useEffect(() => {
@@ -26,6 +27,7 @@ export function AcmExpandableSection(props: {
                 setExpanded(!expanded)
             }}
             isExpanded={expanded}
+            {...props}
         >
             <div style={{ paddingLeft: '24px' }}>{props.children}</div>
         </ExpandableSection>

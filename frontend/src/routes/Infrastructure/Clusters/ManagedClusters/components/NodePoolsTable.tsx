@@ -245,23 +245,21 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         (nodepool: NodePool) => {
             const actions: IAcmRowAction<any>[] = []
 
-            if (getNodepoolStatus(nodepool) !== 'Pending') {
-                actions.push({
-                    id: 'manageNodepool',
-                    title: t('Manage node pool'),
-                    click: () => {
-                        setManageNodepoolModalProps({
-                            open: true,
-                            close: () => {
-                                setManageNodepoolModalProps({ open: false })
-                            },
-                            hostedCluster,
-                            nodepool,
-                        })
-                    },
-                    isDisabled: !canPatchNodepool,
-                })
-            }
+            actions.push({
+                id: 'manageNodepool',
+                title: t('Manage node pool'),
+                click: () => {
+                    setManageNodepoolModalProps({
+                        open: true,
+                        close: () => {
+                            setManageNodepoolModalProps({ open: false })
+                        },
+                        hostedCluster,
+                        nodepool,
+                    })
+                },
+                isDisabled: !canPatchNodepool,
+            })
 
             actions.push({
                 id: 'removeNodepool',
@@ -281,7 +279,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
             return actions
         },
-        [getNodepoolStatus, hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
+        [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
     )
 
     useEffect(() => {
