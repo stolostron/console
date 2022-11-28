@@ -23,6 +23,7 @@ const defaultComponentFactory: ComponentFactory = (
             return withDragNode(nodeDragSourceSpec('node', true, true))(withSelection()(StyledNode))
         case ModelKind.edge:
             return DefaultEdge
+        /* istanbul ignore next */
         default:
             return undefined
     }

@@ -26,8 +26,10 @@ export const getNodeStyle = (
     const label = getLabel(type)
     const secondaryLabel = getSecondaryLabel(d)
     const { status, statusIcon, isDisabled } = getStatus(d)
+    /* istanbul ignore next */
     const shape = typeToIconMap[type]?.shape || 'customresource'
 
+    /* istanbul ignore next */
     const { dx, dy } = offset || { dx: 0, dy: 0 }
     return {
         dx,
@@ -50,7 +52,7 @@ export const getNodeStyle = (
 }
 
 function getLabel(type: string | undefined) {
-    if (type !== undefined) {
+    /* istanbul ignore else */ if (type !== undefined) {
         const label = capitalize(type)
             .replace('Ocpa', 'OCP A')
             .replace('stream', 'Stream')
@@ -69,6 +71,7 @@ function getLabel(type: string | undefined) {
 
 function getSecondaryLabel(node: { name: any }) {
     let label = ''
+    /* istanbul ignore if */
     if (get(node, 'type', '') !== 'cluster' || get(node, 'specs.clusterNames', []).length === 1) {
         label = node?.name ?? ''
         if (label.length > MAX_LABEL_WIDTH) {
@@ -90,7 +93,7 @@ const getStatus = (node: {
     let disabled = false
     if (type === 'cluster') {
         // determine icon
-        if (specs?.clusterStatus) {
+        if (/* istanbul ignore next */ specs?.clusterStatus) {
             const { hasWarning, hasFailure, isDisabled, hasViolations, isOffline } = specs.clusterStatus
             status = NodeStatus.success
             if (hasFailure || hasViolations || isOffline) {
@@ -127,6 +130,7 @@ const getStatus = (node: {
             status = NodeStatus.default
             statusIcon = statusToIconMap['spinner']
             break
+        /* istanbul ignore next */
         default:
             break
     }

@@ -48,8 +48,6 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
     showLabel,
     dragging,
     regrouping,
-    onShowCreateConnector,
-    onHideCreateConnector,
     ...rest
 }) => {
     const data = element.getData()
@@ -65,12 +63,6 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
         })
         return newData
     }, [data])
-
-    React.useEffect(() => {
-        if (detailsLevel === ScaleDetailsLevel.low) {
-            onHideCreateConnector && onHideCreateConnector()
-        }
-    }, [detailsLevel, onHideCreateConnector])
 
     const LabelIcon = passedData.labelIcon
     const { width, height } = element.getDimensions()
@@ -95,15 +87,13 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
                     showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
                     onContextMenu={data.showContextMenu ? onContextMenu : undefined}
                     contextMenuOpen={contextMenuOpen}
-                    onShowCreateConnector={detailsLevel !== ScaleDetailsLevel.low ? onShowCreateConnector : undefined}
-                    onHideCreateConnector={onHideCreateConnector}
                     labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
                     attachments={
                         detailsLevel !== ScaleDetailsLevel.low &&
                         renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
                     }
                 >
-                    {detailsLevel !== ScaleDetailsLevel.low && (
+                    {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
                         <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
                     )}
                 </DefaultNode>

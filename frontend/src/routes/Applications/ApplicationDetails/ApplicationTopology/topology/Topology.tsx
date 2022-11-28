@@ -29,6 +29,7 @@ import LegendView from '../components/LegendView'
 import DetailsView from '../components/DetailsView'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import ChannelControl from '../components/ChannelControl'
+import noop from 'lodash/noop'
 
 export interface TopologyProps {
     elements: {
@@ -62,6 +63,7 @@ export interface TopologyProps {
         closeDrawer: boolean
     ) => void
     canUpdateStatuses?: boolean
+    disableRenderConstraint?: boolean
     processActionLink?: (resource: any, toggleLoading: boolean) => void
 }
 
@@ -148,9 +150,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
                                     false
                                 )
                             }}
-                            onKeyPress={() => {
-                                // noop function
-                            }}
+                            onKeyPress={noop}
                             role="button"
                         >
                             {t('How to read topology')}
@@ -203,6 +203,8 @@ export const Topology = (props: TopologyProps) => {
         controller.registerComponentFactory(componentFactory)
     }
     controller.fromModel(getLayoutModel(props.elements))
+    controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
+
     return (
         <VisualizationProvider controller={controller}>
             <NodeIcons />

@@ -35,9 +35,13 @@ class ChannelControl extends Component {
         this.state = {
             currentChannel: {},
         }
-        const { activeChannel, allChannels } = props.channelControl
+    }
+
+    componentDidMount() {
+        // Initialize channel control variables for topology refresh state
+        const { activeChannel, allChannels } = this.props.channelControl
         if (allChannels.length > 1) {
-            this.state.currentChannel = this.fetchCurrentChannel(activeChannel, allChannels)
+            this.fetchCurrentChannel(activeChannel, allChannels)
         }
     }
 
@@ -153,7 +157,10 @@ class ChannelControl extends Component {
         if (!activeChannel) {
             currentChannel = displayChannels[selectedIdx + 1]
         }
-        return currentChannel || displayChannels[selectedIdx]
+
+        this.setState({
+            currentChannel: currentChannel || displayChannels[selectedIdx],
+        })
     }
 
     getChannelSubscription = (channel) => {

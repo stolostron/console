@@ -88,7 +88,7 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
     const expectCallTimes: string[] = []
 
     Array.from(funcSet).forEach((name) => {
-        mockFunctions.push(`const mock${name} = jest.fn()`)
+        mockFunctions.push(`//const mock${name} = jest.fn()`)
         actualCallTimes.push(`//    console.log(mock${name}.mock.calls.length)`)
         expectCallTimes.push(`//    expect(mock${name}).toHaveBeenCalledTimes(0)`)
     })
@@ -165,7 +165,7 @@ window.funcShot = (args, ret) => {
         const snippets = []
         const { snapshot: argShot } = getSnapshot(args, false, 1000)
         const { snapshot: retShot } = getSnapshot(ret, false, 1000)
-        snippets.push(`import * as ${apiName}API from './${fileName}'\n`)
+        snippets.push(`//import * as ${apiName}API from './${fileName}'\n`)
         snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
         snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}') as jest.Mock<any>`)
         snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
