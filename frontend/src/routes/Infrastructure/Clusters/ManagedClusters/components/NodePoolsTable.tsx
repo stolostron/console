@@ -100,10 +100,12 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     }, [])
 
     // Need to dynamically add columns when we add support for other clouds ie. Azure
-    const columns = useMemo<IAcmTableColumn<NodePool>[]>(
-        () => [
+    const columns = useMemo<IAcmTableColumn<NodePool>[]>(() => {
+        const npColumns = []
+
+        npColumns.push(
             {
-                header: t('Nodepool'),
+                header: t('Node pool'),
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 cell: 'metadata.name',
@@ -112,26 +114,80 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 header: t('Status'),
                 sort: 'transformed.status',
                 search: 'transformed.status',
-                cell: (nodepool) => renderNodepoolStatus(nodepool),
+                cell: (nodepool: NodePool) => renderNodepoolStatus(nodepool),
             },
             {
                 header: t('table.distribution'),
                 sort: 'status.version',
                 search: 'status.version',
-                cell: (nodepool) => <DistributionField cluster={cluster} nodepool={nodepool} />,
-            },
-            {
-                header: t('Subnet'),
-                sort: 'spec.platform.aws.subnet.id',
-                search: 'spec.platform.aws.subnet.id',
-                cell: 'spec.platform.aws.subnet.id',
-            },
-            {
-                header: t('Instance type'),
-                sort: 'spec.platform.aws.instanceType',
-                search: 'spec.platform.aws.instanceType',
-                cell: 'spec.platform.aws.instanceType',
-            },
+                cell: (nodepool: NodePool) => <DistributionField cluster={cluster} nodepool={nodepool} />,
+            }
+        )
+        if (hostedCluster?.spec?.platform?.type === HypershiftCloudPlatformType.AWS) {
+            npColumns.push(
+                {
+                    header: t('Subnet'),
+                    sort: 'spec.platform.aws.subnet.id',
+                    search: 'spec.platform.aws.subnet.id',
+                    cell: 'spec.platform.aws.subnet.id',
+                },
+                {
+                    header: t('Instance type'),
+                    sort: 'spec.platform.aws.instanceType',
+                    search: 'spec.platform.aws.instanceType',
+                    cell: 'spec.platform.aws.instanceType',
+                }
+            )
+        }
+        if (hostedCluster?.spec?.platform?.type === HypershiftCloudPlatformType.Azure) {
+            npColumns.push(
+                {
+                    header: t('Disk storage account type'),
+                    sort: 'spec.platform.azure.diskStorageAccountType',
+                    search: 'spec.platform.azure.diskStorageAccountType',
+                    cell: 'spec.platform.azure.diskStorageAccountType',
+                },
+                {
+                    header: t('VM size'),
+                    sort: 'spec.platform.azure.vmsize',
+                    search: 'spec.platform.azure.vmsize',
+                    cell: 'spec.platform.azure.vmsize',
+                }
+            )
+        }
+        if (hostedCluster?.spec?.platform?.type === HypershiftCloudPlatformType.PowerVS) {
+            npColumns.push(
+                {
+                    header: t('Processor type'),
+                    sort: 'spec.platform.powervs.processorType',
+                    search: 'spec.platform.powervs.processorType',
+                    cell: 'spec.platform.powervs.processorType',
+                },
+                {
+                    header: t('System type'),
+                    sort: 'spec.platform.powervs.systemType',
+                    search: 'spec.platform.powervs.systemType',
+                    cell: 'spec.platform.powervs.systemType',
+                }
+            )
+        }
+        if (hostedCluster?.spec?.platform?.type === HypershiftCloudPlatformType.KubeVirt) {
+            npColumns.push(
+                {
+                    header: t('Root volume'),
+                    sort: 'spec.platform.kubevirt.rootVolume',
+                    search: 'spec.platform.kubevirt.rootVolume',
+                    cell: 'spec.platform.kubevirt.rootVolume',
+                },
+                {
+                    header: t('Compute'),
+                    sort: 'spec.platform.kubevirt.compute',
+                    search: 'spec.platform.kubevirt.compute',
+                    cell: 'spec.platform.kubevirt.compute',
+                }
+            )
+        }
+        npColumns.push(
             {
                 header: t('Nodes'),
                 sort: 'spec.replicas',
@@ -142,7 +198,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 header: t('Health check'),
                 sort: 'spec.management.autoRepair',
                 search: 'spec.management.autoRepair',
-                cell: (nodepool) => renderHealthCheck(nodepool),
+                cell: (nodepool: NodePool) => renderHealthCheck(nodepool),
             },
             {
                 header: t('Upgrade type'),
@@ -154,11 +210,12 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 header: t('Autoscaling'),
                 sort: 'transformed.autoscaling',
                 search: 'transformed.autoscaling',
-                cell: (nodepool) => getAutoscaling(nodepool),
-            },
-        ],
-        [renderNodepoolStatus, renderHealthCheck, getAutoscaling, t, cluster]
-    )
+                cell: (nodepool: NodePool) => getAutoscaling(nodepool),
+            }
+        )
+
+        return npColumns
+    }, [renderNodepoolStatus, renderHealthCheck, getAutoscaling, t, cluster, hostedCluster?.spec?.platform?.type])
 
     const keyFn = useCallback(
         (nodepool: NodePool) => nodepool.metadata.uid ?? `${nodepool.metadata.namespace}/${nodepool.metadata.name}`,
@@ -191,7 +248,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             if (getNodepoolStatus(nodepool) !== 'Pending') {
                 actions.push({
                     id: 'manageNodepool',
-                    title: t('Manage nodepool'),
+                    title: t('Manage node pool'),
                     click: () => {
                         setManageNodepoolModalProps({
                             open: true,
@@ -208,7 +265,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
             actions.push({
                 id: 'removeNodepool',
-                title: t('Remove nodepool'),
+                title: t('Remove node pool'),
                 click: () => {
                     setRemoveNodepoolModalProps({
                         open: true,
@@ -241,13 +298,13 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         () => (
             <AcmButton
                 id="addNodepoolEmptyState"
-                children={t('Add nodepool')}
+                children={t('Add node pool')}
                 variant={ButtonVariant.primary}
                 onClick={() => toggleAddNodepoolModal()}
                 tooltip={
                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                         ? t(
-                              'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
+                              'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                           )
                         : t('rbac.unauthorized')
                 }
@@ -281,7 +338,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                         tableActionButtons={[
                             {
                                 id: 'addNodepool',
-                                title: t('Add nodepool'),
+                                title: t('Add node pool'),
                                 click: () => toggleAddNodepoolModal(),
                                 isDisabled:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
@@ -289,7 +346,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 tooltip:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                                         ? t(
-                                              'Add nodepool is only supported for AWS. Use the HyperShift CLI to add additional nodepools.'
+                                              'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : t('rbac.unauthorized'),
                                 variant: ButtonVariant.primary,

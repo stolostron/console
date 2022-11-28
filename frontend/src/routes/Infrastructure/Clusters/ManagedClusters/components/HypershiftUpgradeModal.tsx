@@ -567,7 +567,7 @@ export function HypershiftUpgradeModal(props: {
                                                         variant="info"
                                                         title={t('Version compatibility')}
                                                         message={t(
-                                                            'Nodepools must be upgraded to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
+                                                            'Node pools must be upgraded to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
                                                         )}
                                                     />
                                                 </Td>
@@ -582,7 +582,7 @@ export function HypershiftUpgradeModal(props: {
                                                         variant="info"
                                                         title={t('Version compatibility')}
                                                         message={t(
-                                                            'Nodepools cannot be upgraded to a later version than the control plane. If you wish to upgrade the nodepool(s), you must select to upgrade your control plane first.'
+                                                            'Node pools cannot be upgraded to a later version than the control plane. If you wish to upgrade the node pool(s), you must select to upgrade your control plane first.'
                                                         )}
                                                     />
                                                 </Td>
@@ -598,14 +598,14 @@ export function HypershiftUpgradeModal(props: {
                                                     onToggle={() => setNodepoolsExpanded(!nodepoolsExpanded)}
                                                     expanded={nodepoolsExpanded}
                                                     checked={nodepoolGroupChecked}
-                                                    label={t('Cluster nodepools')}
+                                                    label={t('Cluster node pools')}
                                                     onCheck={() => handleNodepoolGroupChecked()}
                                                     isDisabled={nodepoolGroupDisabled}
                                                     expandable={true}
                                                     id="nodepoolgroup"
                                                 >
                                                     <TableComposable
-                                                        aria-label={t('Hypershift upgrade nodepools table')}
+                                                        aria-label={t('Hypershift upgrade node pools table')}
                                                         borders={false}
                                                         variant="compact"
                                                     >

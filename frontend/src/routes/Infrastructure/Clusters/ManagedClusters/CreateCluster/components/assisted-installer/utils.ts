@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo, useState, useEffect } from 'react'
+import { generatePath } from 'react-router'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 
@@ -352,8 +353,8 @@ export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
         },
     ]).promise
 
-export const getClusterDeploymentLink = ({ name }: { name: string }) =>
-    NavigationPath.clusterDetails.replace(':id', name)
+export const getClusterDeploymentLink = ({ name, namespace }: { name: string; namespace: string }) =>
+    generatePath(NavigationPath.clusterDetails, { name, namespace })
 
 export const fetchSecret = (namespace: string, name: string) =>
     getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise

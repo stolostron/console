@@ -24,7 +24,7 @@ export function ManageNodePoolNodesModal(props: IManageNodePoolNodesModalProps |
     }
 
     return (
-        <AcmModal variant={ModalVariant.medium} title={t('Manage nodepool')} isOpen={true} onClose={props.close}>
+        <AcmModal variant={ModalVariant.medium} title={t('Manage node pool')} isOpen={true} onClose={props.close}>
             <NodePoolForm
                 hostedCluster={props.hostedCluster}
                 nodepool={props.nodepool}

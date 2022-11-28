@@ -98,8 +98,8 @@ export function NodePoolForm(props: {
             edit: (
                 <AcmTextInput
                     id="nodepool-name"
-                    label={t('Nodepool name')}
-                    labelHelp={t('The name for the nodepool.')}
+                    label={t('Node pool name')}
+                    labelHelp={t('The name for the node pool.')}
                     onChange={setName}
                     value={name}
                     isRequired
@@ -166,7 +166,7 @@ export function NodePoolForm(props: {
                 <AcmTextInput
                     id="nodepool-instanceprofile"
                     label={t('Instance profile')}
-                    labelHelp={t('The instance profile for the nodepool.')}
+                    labelHelp={t('The instance profile for the node pool.')}
                     onChange={setAwsInstanceProfile}
                     isRequired
                     value={awsInstanceProfile}
@@ -180,7 +180,7 @@ export function NodePoolForm(props: {
                 <AcmTextInput
                     id="nodepool-instancetype"
                     label={t('Instance type')}
-                    labelHelp={t('The instance type for the nodepool.')}
+                    labelHelp={t('The instance type for the node pool.')}
                     onChange={setAwsInstanceType}
                     isRequired
                     value={awsInstanceType}
@@ -194,7 +194,7 @@ export function NodePoolForm(props: {
                 <AcmNumberInput
                     id="nodepool-rootvolumesize"
                     label={t('Root volume size')}
-                    labelHelp={t('The root volume size for the nodepool.')}
+                    labelHelp={t('The root volume size for the node pool.')}
                     onChange={(e: React.FormEvent<HTMLInputElement>) =>
                         setAwsRootVolumeSize(Number((e.target as HTMLInputElement).value))
                     }
@@ -212,7 +212,7 @@ export function NodePoolForm(props: {
                 <AcmTextInput
                     id="nodepool-rootvolumetype"
                     label={t('Root volume type')}
-                    labelHelp={t('The root volume type for the nodepool.')}
+                    labelHelp={t('The root volume type for the node pool.')}
                     onChange={setAwsRootVolumeType}
                     isRequired
                     value={awsRootVolumeType}
@@ -239,7 +239,7 @@ export function NodePoolForm(props: {
                 <AcmTextInput
                     id="nodepool-subnetid"
                     label={t('Subnet ID')}
-                    labelHelp={t('The subnet ID for the nodepool.')}
+                    labelHelp={t('The subnet ID for the node pool.')}
                     onChange={setAwsSubnetID}
                     isRequired
                     value={awsSubnetID}
