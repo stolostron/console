@@ -61,6 +61,7 @@ describe('YAMLPage', () => {
                         resourceYaml={''}
                         setResourceYaml={() => {}}
                         handleResize={() => {}}
+                        setResourceVersion={() => {}}
                     />
                 </Router>
             </RecoilRoot>
@@ -86,6 +87,7 @@ describe('YAMLPage', () => {
                         cluster={'local-cluster'}
                         kind={'Pod'}
                         apiversion={'v1'}
+                        setResourceVersion={() => {}}
                     />
                 </Router>
             </RecoilRoot>
@@ -107,6 +109,7 @@ describe('YAMLPage', () => {
                         namespace={'test-namespace'}
                         cluster={'local-cluster'}
                         kind={'Pod'}
+                        setResourceVersion={() => {}}
                         apiversion={'v1'}
                     />
                 </Router>
@@ -153,6 +156,7 @@ describe('YAMLPage', () => {
                         cluster={'local-cluster'}
                         kind={'Pod'}
                         apiversion={'v1'}
+                        setResourceVersion={() => {}}
                     />
                 </Router>
             </RecoilRoot>
@@ -191,6 +195,7 @@ describe('YAMLPage', () => {
                         cluster={'local-cluster'}
                         kind={'Pod'}
                         apiversion={'v1'}
+                        setResourceVersion={() => {}}
                     />
                 </Router>
             </RecoilRoot>
