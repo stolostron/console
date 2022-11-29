@@ -39,7 +39,7 @@ import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const { getClusterProperties } = CIM
 
@@ -335,7 +335,10 @@ export function ClusterOverviewPageContent(props: {
         clusterDeployment &&
         agentClusterInstall
     ) {
-        const aiClusterProperties = getClusterProperties(clusterDeployment, agentClusterInstall)
+        const aiClusterProperties = getClusterProperties(
+            clusterDeployment as ClusterDeploymentK8sResource,
+            agentClusterInstall
+        )
 
         leftItems = [
             ...leftItems,
@@ -419,7 +422,7 @@ export function ClusterOverviewPageContent(props: {
                 )}
                 <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
-                {cluster?.isHypershift && !cluster?.isHostedCluster ? (
+                {cluster?.isHypershift && !cluster?.isHostedCluster && props.selectedHostedClusterResource ? (
                     <HypershiftImportCommand selectedHostedClusterResource={props.selectedHostedClusterResource} />
                 ) : (
                     <ImportCommandContainer />

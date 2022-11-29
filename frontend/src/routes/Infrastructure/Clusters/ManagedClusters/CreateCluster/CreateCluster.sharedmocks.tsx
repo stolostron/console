@@ -23,7 +23,6 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
         annotations: {
             'agentBareMetal-agentSelector/autoSelect': 'true',
         },
-        labels: null,
         name: clusterName,
         namespace: clusterName,
     },
@@ -38,9 +37,7 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
         clusterName,
         platform: {
             agentBareMetal: {
-                agentSelector: {
-                    matchLabels: null,
-                },
+                agentSelector: {},
             },
         },
         pullSecretRef: {

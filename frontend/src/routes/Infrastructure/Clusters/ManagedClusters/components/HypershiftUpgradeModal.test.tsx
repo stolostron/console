@@ -2,14 +2,19 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { AgentK8sResource, AgentMachineK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import {
+    AgentK8sResource,
+    AgentMachineK8sResource,
+    HostedClusterK8sResource,
+    NodePoolK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { Cluster, ClusterStatus, NodePool } from '../../../../../resources'
 import { Provider } from '../../../../../ui-components'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 
-const mockNodepools: NodePool[] = [
+const mockNodepools: NodePoolK8sResource[] = [
     {
         apiVersion: 'hypershift.openshift.io/v1alpha1',
         kind: 'NodePool',
@@ -18,7 +23,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -52,7 +57,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -86,7 +91,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -120,7 +125,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -154,7 +159,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -530,6 +535,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T20:34:08Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'False',
                             type: 'AutoscalingEnabled',
                         },
@@ -537,6 +543,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T20:34:08Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'True',
                             type: 'UpdateManagementEnabled',
                         },
@@ -552,6 +559,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T21:08:24Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'True',
                             type: 'ValidMachineConfig',
                         },
@@ -559,6 +567,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T21:08:24Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'True',
                             type: 'ValidTunedConfig',
                         },
@@ -574,6 +583,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T21:08:24Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'False',
                             type: 'AutorepairEnabled',
                         },
@@ -581,6 +591,7 @@ const mockBMCluster: Cluster = {
                             lastTransitionTime: '2022-10-24T21:21:41Z',
                             observedGeneration: 3,
                             reason: 'AsExpected',
+                            message: '',
                             status: 'True',
                             type: 'Ready',
                         },
@@ -595,7 +606,7 @@ const mockBMCluster: Cluster = {
     },
 }
 
-const mockAgent0 = {
+const mockAgent0: AgentK8sResource = {
     apiVersion: 'agent-install.openshift.io/v1beta1',
     kind: 'Agent',
     metadata: {
@@ -627,7 +638,7 @@ const mockAgent0 = {
             namespace: 'feng-test-feng-test',
         },
         machineConfigPool: 'ignition',
-        role: '',
+        role: 'auto-assign',
     },
     status: {
         conditions: [
@@ -689,7 +700,6 @@ const mockAgent0 = {
             },
             cpu: {
                 architecture: 'x86_64',
-                clockMegahertz: 1000,
                 count: 20,
                 flags: [
                     'fpu',
@@ -844,7 +854,7 @@ const mockAgent0 = {
                     name: 'sdb',
                     wwn: '0x62cea7f0b3a0e100293c068b03bc3b95',
                     ioPerf: {},
-                    byID: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068b03bc3b95',
+                    byId: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068b03bc3b95',
                     hctl: '1:2:0:0',
                     installationEligibility: {
                         eligible: true,
@@ -863,7 +873,7 @@ const mockAgent0 = {
                     name: 'sdc',
                     wwn: '0x62cea7f0b3a0e100293c068c03c2c225',
                     ioPerf: {},
-                    byID: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068c03c2c225',
+                    byId: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068c03c2c225',
                     hctl: '1:2:1:0',
                     installationEligibility: {
                         eligible: true,
@@ -882,7 +892,7 @@ const mockAgent0 = {
                     name: 'sdd',
                     wwn: '0x62cea7f0b3a0e100293c068c03c87007',
                     ioPerf: {},
-                    byID: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068c03c87007',
+                    byId: '/dev/disk/by-id/wwn-0x62cea7f0b3a0e100293c068c03c87007',
                     hctl: '1:2:2:0',
                     installationEligibility: {
                         eligible: true,
@@ -906,9 +916,9 @@ const mockAgent0 = {
                     name: 'eno1',
                     mtu: 1500,
                     product: '0x1521',
-                    biosDevName: 'em1',
-                    ipV6Addresses: [],
-                    ipV4Addresses: [],
+                    biosdevname: 'em1',
+                    ipv6Addresses: [],
+                    ipv4Addresses: [],
                     hasCarrier: true,
                     speedMbps: 1000,
                 },
@@ -919,9 +929,9 @@ const mockAgent0 = {
                     name: 'eno2',
                     mtu: 1500,
                     product: '0x1521',
-                    biosDevName: 'em2',
-                    ipV6Addresses: [],
-                    ipV4Addresses: ['172.31.8.52/24'],
+                    biosdevname: 'em2',
+                    ipv6Addresses: [],
+                    ipv4Addresses: ['172.31.8.52/24'],
                     hasCarrier: true,
                     speedMbps: 1000,
                 },
@@ -932,9 +942,9 @@ const mockAgent0 = {
                     name: 'eno3',
                     mtu: 1500,
                     product: '0x1521',
-                    biosDevName: 'em3',
-                    ipV6Addresses: [],
-                    ipV4Addresses: [],
+                    biosdevname: 'em3',
+                    ipv6Addresses: [],
+                    ipv4Addresses: [],
                     speedMbps: -1,
                 },
                 {
@@ -944,13 +954,13 @@ const mockAgent0 = {
                     name: 'eno4',
                     mtu: 1500,
                     product: '0x1521',
-                    biosDevName: 'em4',
-                    ipV6Addresses: [],
-                    ipV4Addresses: [],
+                    biosdevname: 'em4',
+                    ipv6Addresses: [],
+                    ipv4Addresses: [],
                     speedMbps: -1,
                 },
             ],
-            bmcV6Address: '::/0',
+            bmcV6address: '::/0',
             bmcAddress: '10.1.157.58',
         },
         ntpSources: [
@@ -1124,11 +1134,6 @@ const mockAgent0 = {
                     status: 'success',
                 },
                 {
-                    id: 'time-synced-between-host-and-service',
-                    message: 'Host clock is synchronized with service',
-                    status: 'success',
-                },
-                {
                     id: 'container-images-available',
                     message:
                         'All required container images were either pulled successfully or no attempt was made to pull them',
@@ -1293,7 +1298,7 @@ const mockAgentMachine0 = {
     },
 }
 
-const mockHostedCluster0 = {
+const mockHostedCluster0: HostedClusterK8sResource = {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
     kind: 'HostedCluster',
     metadata: {
@@ -1507,7 +1512,7 @@ const mockHostedCluster0 = {
             },
             history: [
                 {
-                    completionTime: null,
+                    completionTime: '',
                     image: 'quay.io/openshift-release-dev/ocp-release:4.11.9-x86_64',
                     startedTime: '2022-10-24T20:34:08Z',
                     state: 'Partial',

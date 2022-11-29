@@ -249,14 +249,15 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 id: 'manageNodepool',
                 title: t('Manage node pool'),
                 click: () => {
-                    setManageNodepoolModalProps({
-                        open: true,
-                        close: () => {
-                            setManageNodepoolModalProps({ open: false })
-                        },
-                        hostedCluster,
-                        nodepool,
-                    })
+                    !!hostedCluster &&
+                        setManageNodepoolModalProps({
+                            open: true,
+                            close: () => {
+                                setManageNodepoolModalProps({ open: false })
+                            },
+                            hostedCluster,
+                            nodepool,
+                        })
                 },
                 isDisabled: !canPatchNodepool,
             })
@@ -321,7 +322,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             <AddNodePoolModal
                 open={openAddNodepoolModal}
                 close={toggleAddNodepoolModal}
-                hostedCluster={hostedCluster}
+                hostedCluster={hostedCluster!}
                 refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
                 clusterImages={clusterImages}
             />
