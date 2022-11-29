@@ -51,8 +51,9 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
     ...rest
 }) => {
     const data = element.getData()
-    const detailsLevel = useDetailsLevel()
     const [hover, hoverRef] = useHover()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const detailsLevel = typeof useDetailsLevel === 'function' ? useDetailsLevel() : ScaleDetailsLevel.high
 
     const passedData = React.useMemo(() => {
         const newData = { ...data }
