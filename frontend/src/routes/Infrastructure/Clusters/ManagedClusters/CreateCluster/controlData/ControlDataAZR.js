@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useMemo } from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
-    clusterDetailsControlData,
-    networkingControlData,
-    automationControlData,
-    proxyControlData,
+    useClusterDetailsControlData,
+    useNetworkingControlData,
+    useAutomationControlData,
+    useProxyControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
@@ -14,7 +15,7 @@ import {
     onChangeSNO,
     onChangeConnection,
     addSnoText,
-    architectureData,
+    useArchitectureData,
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     onImageChange,
@@ -23,6 +24,7 @@ import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -440,22 +442,288 @@ const ApplicationCreationPage = [
     },
 ]
 
-export const getControlDataAZR = (
+const useControlDataAZR = (
     handleModalToggle,
     includeAutomation = true,
     includeSno = false,
     includeKlusterletAddonConfig = true
 ) => {
-    const controlData = [...controlDataAZR]
-    if (includeSno) {
-        addSnoText(controlData)
-    }
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-    insertToggleModalFunction(handleModalToggle, controlData)
-    if (includeAutomation) {
-        return [...controlData, ...automationControlData]
-    }
-    return controlData
+    const clusterDetailsControlData = useClusterDetailsControlData()
+    const automationControlData = useAutomationControlData()
+    const networkingControlData = useNetworkingControlData()
+    const proxyControlData = useProxyControlData()
+    const architectureData = useArchitectureData()
+
+    const { t } = useTranslation()
+
+    return useMemo(() => {
+        const controlData = [
+            ///////////////////////  connection  /////////////////////////////////////
+            {
+                id: 'detailStep',
+                type: 'step',
+                title: t('Cluster details'),
+            },
+            {
+                id: 'infrastructure',
+                name: t('Infrastructure'),
+                active: 'Azure',
+                type: 'reviewinfo',
+            },
+            {
+                name: t('creation.ocp.cloud.connection'),
+                tooltip: t('tooltip.creation.ocp.cloud.connection'),
+                id: 'connection',
+                type: 'singleselect',
+                onSelect: setRegions,
+                placeholder: t('creation.ocp.cloud.select.connection'),
+                providerId: 'azr',
+                validation: {
+                    notification: t('creation.ocp.cluster.must.select.connection'),
+                    required: true,
+                },
+                available: [],
+                footer: <CreateCredentialModal />,
+            },
+            ...clusterDetailsControlData,
+            ///////////////////////  imageset  /////////////////////////////////////
+            {
+                name: t('cluster.create.ocp.image'),
+                tooltip: t('tooltip.cluster.create.ocp.image'),
+                id: 'imageSet',
+                type: 'combobox',
+                simplified: getSimplifiedImageName,
+                placeholder: t('creation.ocp.cloud.select.ocp.image'),
+                fetchAvailable: LOAD_OCP_IMAGES('azr'),
+                validation: {
+                    notification: t('creation.ocp.cluster.must.select.ocp.image'),
+                    required: true,
+                },
+                onSelect: onImageChange,
+            },
+            //Always Hidden
+            {
+                id: 'singleNodeFeatureFlag',
+                type: 'checkbox',
+                active: false,
+                hidden: true,
+            },
+            {
+                name: t('cluster.create.ocp.singleNode'),
+                tooltip: t('tooltip.cluster.create.ocp.singleNode'),
+                id: 'singleNode',
+                type: 'checkbox',
+                active: false,
+                hidden: isHidden_lt_OCP48,
+                onSelect: onChangeSNO,
+                icon: <DevPreviewLabel />,
+            },
+            {
+                name: t('creation.ocp.addition.labels'),
+                id: 'additional',
+                type: 'labels',
+                active: [],
+                tip: t(
+                    'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
+                ),
+            },
+            {
+                id: 'infrastructure',
+                active: ['Azure'],
+                type: 'hidden',
+                hasReplacements: true,
+                availableMap: {
+                    Azure: {
+                        replacements: {
+                            'install-config': { template: installConfig, encode: true, newTab: true },
+                        },
+                    },
+                },
+            },
+
+            ////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////  node(machine) pools  /////////////////////////////////////
+            {
+                id: 'nodePoolsStep',
+                type: 'step',
+                title: t('Node pools'),
+            },
+            {
+                id: 'nodes',
+                type: 'title',
+                info: t('creation.ocp.cluster.node.pool.info'),
+            },
+            ///////////////////////  region  /////////////////////////////////////
+            {
+                name: t('creation.ocp.region'),
+                tooltip: t('tooltip.creation.ocp.azr.region'),
+                id: 'region',
+                type: 'combobox',
+                active: 'centralus',
+                available: regions,
+                validation: VALIDATE_ALPHANUMERIC,
+                cacheUserValueKey: 'create.cluster.region',
+                reverse: 'ClusterDeployment[0].metadata.labels.region',
+            },
+            ///////////////////////  architecture  /////////////////////////////////////
+            ...architectureData,
+            ///////////////////////  control plane pool  /////////////////////////////////////
+            {
+                id: 'masterPool',
+                type: 'group',
+                onlyOne: true, // no prompts
+                controlData: [
+                    {
+                        id: 'masterPool',
+                        type: 'section',
+                        collapsable: true,
+                        collapsed: true,
+                        subtitle: t('creation.ocp.node.controlplane.pool.title'),
+                        info: t('creation.ocp.node.controlplane.pool.info'),
+                    },
+                    ///////////////////////  instance type  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.instance.type'),
+                        tooltip: t('tooltip.creation.ocp.azr.instance.type'),
+                        learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
+                        id: 'masterType',
+                        type: 'combobox',
+                        available: masterInstanceTypes,
+                        active: 'Standard_D4s_v3',
+                        validation: {
+                            constraint: '[A-Za-z0-9_]+',
+                            notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                            required: false,
+                        },
+                        cacheUserValueKey: 'create.cluster.master.type',
+                    },
+                    ///////////////////////  root volume  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.root.storage'),
+                        tooltip: t('tooltip.creation.ocp.azr.root.storage'),
+                        id: 'masterRootStorage',
+                        type: 'combobox',
+                        active: '128',
+                        available: ['128', '256', '512', '1024', '2048'],
+                        validation: VALIDATE_NUMERIC,
+                        cacheUserValueKey: 'create.cluster.master.root.storage',
+                    },
+                ],
+            },
+            ///////////////////////  worker pools  /////////////////////////////////////
+            {
+                id: 'workerPools',
+                type: 'group',
+                hidden: isHidden_SNO,
+                prompts: {
+                    nameId: 'workerName',
+                    baseName: 'worker',
+                    addPrompt: t('creation.ocp.cluster.add.node.pool'),
+                    deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                },
+                controlData: [
+                    {
+                        id: 'workerPool',
+                        type: 'section',
+                        collapsable: true,
+                        collapsed: true,
+                        subtitle: getWorkerName,
+                        info: t('creation.ocp.node.worker.pool.info'),
+                    },
+                    ///////////////////////  pool name  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.pool.name'),
+                        tooltip: t('tooltip.creation.ocp.pool.name'),
+                        placeholder: t('creation.ocp.pool.placeholder'),
+                        id: 'workerName',
+                        type: 'text',
+                        active: 'worker',
+                        validation: {
+                            constraint: '[A-Za-z0-9-_]+',
+                            notification: t('creation.ocp.cluster.valid.alphanumeric'),
+                            required: true,
+                        },
+                    },
+                    ///////////////////////  zone  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.zones'),
+                        tooltip: t('tooltip.creation.ocp.worker.zones'),
+                        id: 'workerZones',
+                        type: 'multiselect',
+                        active: ['1', '2', '3'],
+                        available: ['1', '2', '3'],
+                        cacheUserValueKey: 'create.cluster.aws.worker.zones',
+                        validation: VALIDATE_ALPHANUMERIC,
+                        multiselect: true,
+                    },
+                    ///////////////////////  instance type  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.instance.type'),
+                        tooltip: t('tooltip.creation.ocp.azr.instance.type'),
+                        learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
+                        id: 'workerType',
+                        type: 'treeselect',
+                        available: ApplicationCreationPage,
+                        active: 'Standard_D2s_v3',
+                        validation: {
+                            constraint: '[A-Za-z0-9_]+',
+                            notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                            required: false,
+                        },
+                        cacheUserValueKey: 'create.cluster.worker.type',
+                    },
+                    ///////////////////////  compute node count  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.compute.node.count'),
+                        tooltip: t('tooltip.creation.ocp.compute.node.count'),
+                        id: 'computeNodeCount',
+                        type: 'number',
+                        initial: '3',
+                        validation: VALIDATE_NUMERIC,
+                        cacheUserValueKey: 'create.cluster.compute.node.count',
+                    },
+                    ///////////////////////  storage  /////////////////////////////////////
+                    {
+                        name: t('creation.ocp.root.storage'),
+                        tooltip: t('tooltip.creation.ocp.azr.root.storage'),
+                        id: 'workerStorage',
+                        type: 'combobox',
+                        active: '128',
+                        available: ['128', '256', '512', '1024', '2048'],
+                        validation: VALIDATE_NUMERIC,
+                        cacheUserValueKey: 'create.cluster.persistent.storage',
+                    },
+                ],
+            },
+            {
+                id: 'networkStep',
+                type: 'step',
+                title: 'Networking',
+            },
+            ...networkingControlData,
+            ...proxyControlData,
+        ]
+        if (includeSno) {
+            addSnoText(controlData, t)
+        }
+        appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+        insertToggleModalFunction(handleModalToggle, controlData)
+        if (includeAutomation) {
+            return [...controlData, ...automationControlData]
+        }
+        return controlData
+    }, [
+        t,
+        handleModalToggle,
+        includeAutomation,
+        includeSno,
+        includeKlusterletAddonConfig,
+        clusterDetailsControlData,
+        automationControlData,
+        networkingControlData,
+        proxyControlData,
+        architectureData,
+    ])
 }
 
 const setRegions = (control, controlData) => {
@@ -477,249 +745,4 @@ const setRegions = (control, controlData) => {
     onChangeConnection(control, controlData)
 }
 
-const controlDataAZR = [
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
-        id: 'infrastructure',
-        name: 'Infrastructure',
-        active: 'Azure',
-        type: 'reviewinfo',
-    },
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        onSelect: setRegions,
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'azr',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        footer: <CreateCredentialModal />,
-    },
-    ...clusterDetailsControlData,
-    ///////////////////////  imageset  /////////////////////////////////////
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('azr'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-        onSelect: onImageChange,
-    },
-    //Always Hidden
-    {
-        id: 'singleNodeFeatureFlag',
-        type: 'checkbox',
-        active: false,
-        hidden: true,
-    },
-    {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-        id: 'singleNode',
-        type: 'checkbox',
-        active: false,
-        hidden: isHidden_lt_OCP48,
-        onSelect: onChangeSNO,
-        icon: <DevPreviewLabel />,
-    },
-    {
-        name: 'creation.ocp.addition.labels',
-        id: 'additional',
-        type: 'labels',
-        active: [],
-        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
-    },
-    {
-        id: 'infrastructure',
-        active: ['Azure'],
-        type: 'hidden',
-        hasReplacements: true,
-        availableMap: {
-            Azure: {
-                replacements: {
-                    'install-config': { template: installConfig, encode: true, newTab: true },
-                },
-            },
-        },
-    },
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  node(machine) pools  /////////////////////////////////////
-    {
-        id: 'nodePoolsStep',
-        type: 'step',
-        title: 'Node pools',
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    ///////////////////////  region  /////////////////////////////////////
-    {
-        name: 'creation.ocp.region',
-        tooltip: 'tooltip.creation.ocp.azr.region',
-        id: 'region',
-        type: 'combobox',
-        active: 'centralus',
-        available: regions,
-        validation: VALIDATE_ALPHANUMERIC,
-        cacheUserValueKey: 'create.cluster.region',
-        reverse: 'ClusterDeployment[0].metadata.labels.region',
-    },
-    ///////////////////////  architecture  /////////////////////////////////////
-    ...architectureData,
-    ///////////////////////  control plane pool  /////////////////////////////////////
-    {
-        id: 'masterPool',
-        type: 'group',
-        onlyOne: true, // no prompts
-        controlData: [
-            {
-                id: 'masterPool',
-                type: 'section',
-                collapsable: true,
-                collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
-            },
-            ///////////////////////  instance type  /////////////////////////////////////
-            {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.azr.instance.type',
-                learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
-                id: 'masterType',
-                type: 'combobox',
-                available: masterInstanceTypes,
-                active: 'Standard_D4s_v3',
-                validation: {
-                    constraint: '[A-Za-z0-9_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
-                    required: false,
-                },
-                cacheUserValueKey: 'create.cluster.master.type',
-            },
-            ///////////////////////  root volume  /////////////////////////////////////
-            {
-                name: 'creation.ocp.root.storage',
-                tooltip: 'tooltip.creation.ocp.azr.root.storage',
-                id: 'masterRootStorage',
-                type: 'combobox',
-                active: '128',
-                available: ['128', '256', '512', '1024', '2048'],
-                validation: VALIDATE_NUMERIC,
-                cacheUserValueKey: 'create.cluster.master.root.storage',
-            },
-        ],
-    },
-    ///////////////////////  worker pools  /////////////////////////////////////
-    {
-        id: 'workerPools',
-        type: 'group',
-        hidden: isHidden_SNO,
-        prompts: {
-            nameId: 'workerName',
-            baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
-        },
-        controlData: [
-            {
-                id: 'workerPool',
-                type: 'section',
-                collapsable: true,
-                collapsed: true,
-                subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
-            },
-            ///////////////////////  pool name  /////////////////////////////////////
-            {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
-                id: 'workerName',
-                type: 'text',
-                active: 'worker',
-                validation: {
-                    constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
-                    required: true,
-                },
-            },
-            ///////////////////////  zone  /////////////////////////////////////
-            {
-                name: 'creation.ocp.zones',
-                tooltip: 'tooltip.creation.ocp.worker.zones',
-                id: 'workerZones',
-                type: 'multiselect',
-                active: ['1', '2', '3'],
-                available: ['1', '2', '3'],
-                cacheUserValueKey: 'create.cluster.aws.worker.zones',
-                validation: VALIDATE_ALPHANUMERIC,
-                multiselect: true,
-            },
-            ///////////////////////  instance type  /////////////////////////////////////
-            {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.azr.instance.type',
-                learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
-                id: 'workerType',
-                type: 'treeselect',
-                available: ApplicationCreationPage,
-                active: 'Standard_D2s_v3',
-                validation: {
-                    constraint: '[A-Za-z0-9_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
-                    required: false,
-                },
-                cacheUserValueKey: 'create.cluster.worker.type',
-            },
-            ///////////////////////  compute node count  /////////////////////////////////////
-            {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
-                id: 'computeNodeCount',
-                type: 'number',
-                initial: '3',
-                validation: VALIDATE_NUMERIC,
-                cacheUserValueKey: 'create.cluster.compute.node.count',
-            },
-            ///////////////////////  storage  /////////////////////////////////////
-            {
-                name: 'creation.ocp.root.storage',
-                tooltip: 'tooltip.creation.ocp.azr.root.storage',
-                id: 'workerStorage',
-                type: 'combobox',
-                active: '128',
-                available: ['128', '256', '512', '1024', '2048'],
-                validation: VALIDATE_NUMERIC,
-                cacheUserValueKey: 'create.cluster.persistent.storage',
-            },
-        ],
-    },
-    {
-        id: 'networkStep',
-        type: 'step',
-        title: 'Networking',
-    },
-    ...networkingControlData,
-    ...proxyControlData,
-]
-
-export default getControlDataAZR
+export default useControlDataAZR

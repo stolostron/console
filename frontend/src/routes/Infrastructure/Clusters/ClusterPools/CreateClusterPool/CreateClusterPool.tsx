@@ -21,7 +21,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
+// import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import {
     setAvailableConnections,
     arrayItemHasKey,
@@ -35,7 +35,7 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
 import { Secret } from '../../../../../resources'
-import getControlDataAWS from './controlData/ControlDataAWS'
+import useControlDataAWS from '../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
 import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
@@ -181,15 +181,18 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
     //compile template
     const template = Handlebars.compile(hiveTemplate)
 
+    const controlDataAWS = useControlDataAWS(
+        false,
+        handleModalToggle,
+        false,
+        settings.awsPrivateWizardStep === 'enabled',
+        settings.singleNodeOpenshift === 'enabled'
+    )
+
     let controlData: any[]
     switch (infrastructureType) {
         case Provider.aws:
-            controlData = getControlDataAWS(
-                handleModalToggle,
-                false,
-                settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled'
-            )
+            controlData = controlDataAWS
             break
         case Provider.gcp:
             controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
@@ -282,7 +285,8 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 type={'ClusterPool'}
                 title={'ClusterPool YAML'}
                 monacoEditor={<MonacoEditor />}
-                controlData={fixupControlsForClusterPool(controlData)}
+                // controlData={fixupControlsForClusterPool(controlData)}
+                controlData={controlData}
                 template={template}
                 portals={Portals}
                 createControl={{

@@ -546,6 +546,16 @@ const subscriptionOperator: SubscriptionOperator = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) => key,
+    }),
+    withTranslation: () => (Component: any) => {
+        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
+        return Component
+    },
+}))
+
 describe('CreateCluster AWS', () => {
     const Component = (props: { subscriptions?: SubscriptionOperator[] }) => {
         return (

@@ -369,23 +369,16 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         }
     }, [infrastructureType, isInfraEnvAvailable, t])
 
-    // cluster set dropdown won't update without this
-    if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
-        return null
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
     }
 
-    let controlData: any[]
     const breadcrumbs = [
         { text: t('Clusters'), to: NavigationPath.clusters },
         { text: t('Infrastructure'), to: NavigationPath.createCluster },
     ]
 
-    const backButtonOverride = back(NavigationPath.clusters)
-
-    const handleModalToggle = () => {
-        setIsModalOpen(!isModalOpen)
-    }
-
+    let controlData: any[]
     switch (infrastructureType) {
         case Provider.aws:
             breadcrumbs.push(controlPlaneBreadCrumbAWS)
@@ -394,7 +387,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 true,
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                t
             )
             break
         case Provider.gcp:
@@ -402,7 +396,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                t
             )
             break
         case Provider.azure:
@@ -410,7 +405,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                t
             )
             break
         case Provider.vmware:
@@ -418,7 +414,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                t
             )
             break
         case Provider.openstack:
@@ -426,30 +423,38 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 handleModalToggle,
                 true,
                 settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                t
             )
             break
         case Provider.redhatvirtualization:
-            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
+            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable, t)
             break
         case HostInventoryInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
+            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable, t)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
+            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable, t)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(handleModalToggle, isACMAvailable)
+            controlData = getControlDataAI(handleModalToggle, isACMAvailable, t)
             breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
             break
     }
 
+    const backButtonOverride = back(NavigationPath.clusters)
+
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
+
+    // cluster set dropdown won't update without this
+    if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
+        return null
+    }
 
     return (
         <AcmPage
