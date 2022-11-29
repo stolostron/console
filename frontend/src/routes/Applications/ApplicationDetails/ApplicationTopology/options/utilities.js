@@ -5,54 +5,6 @@ import _ from 'lodash'
 import { Fragment } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
-function attrsFunction(selection, map) {
-    return selection.each(function (d, i, ns) {
-        const x = map.apply(selection, arguments)
-        for (const name in x) {
-            if (Object.prototype.hasOwnProperty.call(x, name)) {
-                ns[i].setAttribute(name, x[name])
-            }
-        }
-    })
-}
-
-function attrsObject(selection, map) {
-    for (const name in map) {
-        if (Object.prototype.hasOwnProperty.call(map, name)) {
-            selection.attr(name, map[name])
-        }
-    }
-    return selection
-}
-
-export function attrs(selection, map, s) {
-    return (typeof map === 'function' ? attrsFunction : attrsObject)(selection, map, s)
-}
-
-function stylesFunction(selection, map) {
-    return selection.each(function (d, i, ns) {
-        const x = map.apply(selection, arguments)
-        for (const name in x) {
-            if (Object.prototype.hasOwnProperty.call(x, name)) {
-                ns[i].style[name] = x[name]
-            }
-        }
-    })
-}
-
-function stylesObject(selection, map, priority) {
-    for (const name in map) {
-        if (Object.prototype.hasOwnProperty.call(map, name)) {
-            selection.style(name, map[name], priority)
-        }
-    }
-    return selection
-}
-
-export function styles(selection, map, priority) {
-    return (typeof map === 'function' ? stylesFunction : stylesObject)(selection, map, priority == null ? '' : priority)
-}
-
 // Convert types to OpenShift/Kube entities
 export function kubeNaming(type) {
     if (type === undefined) {

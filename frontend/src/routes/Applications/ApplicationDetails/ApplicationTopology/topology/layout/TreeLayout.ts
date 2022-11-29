@@ -479,26 +479,24 @@ function setRowX(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType, options
 
         // for rows above widest row, center them over their children
         if (widestRow) {
-            rowsToPlace
-                .slice(0, widestRow)
-                .reverse()
-                .forEach((row) => {
-                    row.row.forEach(({ id, outgoing }) => {
-                        if (outgoing.length) {
-                            const minDX = Math.min(
-                                ...outgoing.map(({ id }) => {
-                                    return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : Infinity
-                                })
-                            )
-                            const maxDX = Math.max(
-                                ...outgoing.map(({ id }) => {
-                                    return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : -Infinity
-                                })
-                            )
-                            nodeOffsetMap[id].dx = minDX + (maxDX - minDX) / 2
-                        }
-                    })
+            const childrenToParentRows = rowsToPlace.slice(0, widestRow).reverse()
+            childrenToParentRows.forEach((row) => {
+                row.row.forEach(({ id, outgoing }) => {
+                    if (outgoing.length) {
+                        const minDX = Math.min(
+                            ...outgoing.map(({ id }) => {
+                                return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : Infinity
+                            })
+                        )
+                        const maxDX = Math.max(
+                            ...outgoing.map(({ id }) => {
+                                return nodeOffsetMap[id] ? nodeOffsetMap[id].dx : -Infinity
+                            })
+                        )
+                        nodeOffsetMap[id].dx = minDX + (maxDX - minDX) / 2
+                    }
                 })
+            })
         }
     })
 }
