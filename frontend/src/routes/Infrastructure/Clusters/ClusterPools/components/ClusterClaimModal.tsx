@@ -28,7 +28,7 @@ import {
 } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 export type ClusterClaimModalProps = {
@@ -216,8 +216,15 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         key="view-cluster"
                         variant="primary"
                         role="link"
+                        isDisabled={!clusterClaim?.spec?.namespace}
                         onClick={() =>
-                            history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
+                            clusterClaim?.spec?.namespace &&
+                            history.push(
+                                generatePath(NavigationPath.clusterOverview, {
+                                    name: clusterClaim?.spec?.namespace,
+                                    namespace: clusterClaim?.spec?.namespace,
+                                })
+                            )
                         }
                     >
                         {t('clusterClaim.modal.viewCluster')}

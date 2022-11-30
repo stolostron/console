@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { CIM } from 'openshift-assisted-ui-lib'
 import {
     AnsibleJob,
     AnsibleJobApiVersion,
@@ -24,7 +25,6 @@ import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../..
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -313,7 +313,7 @@ const ansibleJob: AnsibleJob = {
     },
 }
 
-const mockNodepools: NodePool[] = [
+const mockNodepools: CIM.NodePoolK8sResource[] = [
     {
         apiVersion: 'hypershift.openshift.io/v1alpha1',
         kind: 'NodePool',
@@ -322,7 +322,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -356,7 +356,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -390,7 +390,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -424,7 +424,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -458,7 +458,7 @@ const mockNodepools: NodePool[] = [
             namespace: 'clusters',
         },
         spec: {
-            management: {},
+            management: { upgradeType: 'Replace' },
             clusterName: '',
             platform: {
                 aws: {
@@ -667,7 +667,7 @@ describe('DistributionField hypershift clusters', () => {
         hasUpgrade = false,
         clusterCurator?: ClusterCurator,
         nodepool?: NodePool,
-        hostedCluster?: HostedClusterK8sResource,
+        hostedCluster?: CIM.HostedClusterK8sResource,
         setClusterImageSet = true
     ) => {
         nockIgnoreRBAC()
@@ -927,7 +927,7 @@ describe('DistributionField hypershift clusters', () => {
             true,
             false,
             undefined,
-            mockNodepools[0],
+            mockNodepools[0] as NodePool,
             undefined,
             false
         )
@@ -940,7 +940,7 @@ describe('DistributionField hypershift clusters', () => {
             true,
             false,
             undefined,
-            mockNodepools[0],
+            mockNodepools[0] as NodePool,
             undefined,
             false
         )

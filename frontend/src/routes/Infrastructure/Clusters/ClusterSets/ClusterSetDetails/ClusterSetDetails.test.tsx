@@ -293,6 +293,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -594,6 +595,7 @@ const mockManagedClusterRosaSubmarinerConfig: SubmarinerConfig = {
     spec: {
         gatewayConfig: {},
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         loadBalancerEnable: true,
@@ -610,6 +612,7 @@ const mockManagedClusterAroSubmarinerConfig: SubmarinerConfig = {
     spec: {
         gatewayConfig: {},
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         loadBalancerEnable: true,
@@ -631,6 +634,7 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: true,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -654,6 +658,7 @@ const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -677,6 +682,7 @@ const mockManagedClusterOpenstackSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -786,6 +792,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfigAzure: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -833,6 +840,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfigOpenstack: SubmarinerConfig
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -971,7 +979,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText('Details')
 
         await clickByText('Cluster list')
-        await waitForText(clusterSetCluster.metadata.name!)
+        await waitForText(clusterSetCluster.metadata.name!, true)
 
         await clickByText('Cluster pools')
     })
@@ -1018,6 +1026,7 @@ describe('ClusterSetDetails page', () => {
         await waitForTestId('credential-secret')
         await waitForNotTestId('awsAccessKeyID')
         await waitForNotTestId('awsSecretAccessKeyID')
+        await clickByLabel('Disconnected cluster')
         await clickByText('Next')
 
         // mockManagedClusterNoCredentials

@@ -41,7 +41,7 @@ const fetchSecret: CIM.FetchSecret = (name, namespace) =>
             name,
             namespace,
         },
-    }).promise
+    }).promise as Promise<CIM.SecretK8sResource>
 
 const fetchEvents = async (url: string) => {
     const abortController = new AbortController()
@@ -58,9 +58,9 @@ const AIClusterDetails: React.FC = () => {
     const cdName = clusterDeployment?.metadata?.name
     const cdNamespace = clusterDeployment?.metadata?.namespace
 
-    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
-        { open: false }
-    )
+    const [bulkModalProps, setBulkModalProps] = useState<
+        IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    >({ open: false })
 
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
 
@@ -86,7 +86,11 @@ const AIClusterDetails: React.FC = () => {
             : []
 
         const cluster = cdName
-            ? getAICluster({ clusterDeployment, agentClusterInstall, agents: clusterAgents })
+            ? getAICluster({
+                  clusterDeployment: clusterDeployment as CIM.ClusterDeploymentK8sResource,
+                  agentClusterInstall,
+                  agents: clusterAgents,
+              })
             : undefined
 
         return [clusterAgents, cluster]
@@ -124,7 +128,7 @@ const AIClusterDetails: React.FC = () => {
                             <Stack hasGutter>
                                 <StackItem>
                                     <ClusterDeploymentProgress
-                                        clusterDeployment={clusterDeployment}
+                                        clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
                                         onFetchEvents={onFetchEvents}
@@ -134,17 +138,22 @@ const AIClusterDetails: React.FC = () => {
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
                                     <StackItem>
                                         <ClusterDeploymentCredentials
-                                            clusterDeployment={clusterDeployment}
+                                            clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
                                             agentClusterInstall={agentClusterInstall}
                                             agents={clusterAgents}
                                             fetchSecret={fetchSecret}
-                                            consoleUrl={getConsoleUrl(clusterDeployment, agentClusterInstall) || 'N/A'}
+                                            consoleUrl={
+                                                getConsoleUrl(
+                                                    clusterDeployment as CIM.ClusterDeploymentK8sResource,
+                                                    agentClusterInstall
+                                                ) || 'N/A'
+                                            }
                                         />
                                     </StackItem>
                                 )}
                                 <StackItem>
                                     <ClusterDeploymentKubeconfigDownload
-                                        clusterDeployment={clusterDeployment}
+                                        clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
                                         agentClusterInstall={agentClusterInstall}
                                         fetchSecret={fetchSecret}
                                     />
@@ -172,7 +181,7 @@ const AIClusterDetails: React.FC = () => {
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
                                     <StackItem>
                                         <ClusterInstallationError
-                                            clusterDeployment={clusterDeployment}
+                                            clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
                                             agentClusterInstall={agentClusterInstall}
                                         />
                                     </StackItem>
@@ -184,15 +193,17 @@ const AIClusterDetails: React.FC = () => {
             )}
             <div style={{ marginBottom: '24px' }}>
                 <AcmExpandableCard title="Cluster hosts" id="aihosts">
-                    <>
-                        <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
-                        <AgentTable
-                            agents={clusterAgents}
-                            className="agents-table"
-                            onUnbindHost={onUnbindHost}
-                            agentClusterInstall={agentClusterInstall}
-                        />
-                    </>
+                    {!!agentClusterInstall && (
+                        <>
+                            <BulkActionModel<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
+                            <AgentTable
+                                agents={clusterAgents}
+                                className="agents-table"
+                                onUnbindHost={onUnbindHost}
+                                agentClusterInstall={agentClusterInstall}
+                            />
+                        </>
+                    )}
                 </AcmExpandableCard>
             </div>
         </>

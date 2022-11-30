@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { clusterCuratorsState, managedClustersState, secretsState, settingsState } from './atoms'
+import {
+    clusterCuratorsState,
+    managedClustersState,
+    secretsState,
+    settingsState,
+    subscriptionOperatorsState,
+} from './atoms'
 import { Curation } from './resources/cluster-curator'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { selector } from 'recoil'
@@ -71,6 +77,18 @@ export const validClusterCuratorTemplatesValue = selector({
                                 secret.metadata.namespace === curatorTemplate.metadata.namespace
                         ))
             )
+        )
+    },
+})
+
+export const ansibleOperatorSubscriptionsValue = selector({
+    key: 'ansibleOperatorSubscriptions',
+    get: ({ get }) => {
+        const subscriptionOperators = get(subscriptionOperatorsState)
+        return subscriptionOperators.filter(
+            (op) =>
+                op.metadata.name === 'ansible-automation-platform-operator' &&
+                op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
         )
     },
 })

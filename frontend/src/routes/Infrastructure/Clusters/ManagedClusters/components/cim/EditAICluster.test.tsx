@@ -29,6 +29,7 @@ import {
     managedClusterMock,
     klusterletMock,
 } from './EditAICluster.sharedmocks'
+import { ClusterDeployment } from '../../../../../../resources'
 
 const Component = () => {
     return (
@@ -37,7 +38,7 @@ const Component = () => {
                 snapshot.set(clusterImageSetsState, [mockClusterImageSet])
                 snapshot.set(agentsState, mockAgents)
                 snapshot.set(configMapsState, [mockConfigMapAI])
-                snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI])
+                snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI as ClusterDeployment])
                 snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
                 snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
             }}

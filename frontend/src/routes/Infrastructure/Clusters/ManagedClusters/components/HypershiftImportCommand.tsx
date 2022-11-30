@@ -47,8 +47,8 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
 
     function importHostedControlPlaneCluster() {
-        const hdName = selectedHostedClusterResource.metadata.name
-        const hdNamespace = selectedHostedClusterResource.metadata.namespace
+        const hdName = selectedHostedClusterResource.metadata?.name
+        const hdNamespace = selectedHostedClusterResource.metadata?.namespace
         const managedClusterResource: ManagedCluster = {
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
@@ -61,7 +61,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                 labels: {
                     cloud: 'auto-detect',
                     'cluster.open-cluster-management.io/clusterset': 'default',
-                    name: hdName,
+                    name: hdName || '',
                     vendor: 'OpenShift',
                 },
                 name: hdName,
@@ -94,7 +94,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                 })
             })
 
-        patchResource(selectedHostedClusterResource, [
+        patchResource(selectedHostedClusterResource as IResource, [
             { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
         ])
     }

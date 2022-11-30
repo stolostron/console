@@ -122,6 +122,9 @@ spec:
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
   sshAuthorizedKey: '{{{ai.sshPublicKey}}}'
+  {{#if ai.cpuArchitecture}}
+  cpuArchitecture: {{{ai.cpuArchitecture}}}
+  {{/if}}
 status:
   agentLabelSelector:
     matchLabels:

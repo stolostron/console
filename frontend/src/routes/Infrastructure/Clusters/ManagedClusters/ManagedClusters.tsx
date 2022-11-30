@@ -25,7 +25,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
+import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
     addonPathKey,
     addonTextKey,
@@ -50,6 +50,12 @@ import { useAllClusters } from './components/useAllClusters'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
+import { OnboardingModal } from './components/OnboardingModal'
+
+const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
+    setOpen(false)
+    localStorage.setItem(acmCardID, 'hide')
+}
 
 export default function ManagedClusters() {
     const { t } = useTranslation()
@@ -64,10 +70,33 @@ export default function ManagedClusters() {
         }
     })
 
+    const onBoardingModalID = `${window.location.href}/clusteronboardingmodal`
+    //localStorage.getItem(onBoardingModalID) ?? localStorage.setItem(onBoardingModalID, 'show')
+
+    const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
+        localStorage.getItem(onBoardingModalID) ? localStorage.getItem(onBoardingModalID) === 'show' : true
+    )
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
-    usePageContext(clusters.length > 0, PageActions)
+    const OnBoardingModalLink = useCallback(() => {
+        return (
+            <Text
+                component={TextVariants.a}
+                isVisitedLink
+                style={{
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                }}
+                onClick={() => setOpenOnboardingModal(true)}
+            >
+                {t('Get started with Multicluster Hub')}
+            </Text>
+        )
+    }, [t])
+
+    usePageContext(clusters.length > 0, PageActions, OnBoardingModalLink)
 
     const history = useHistory()
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
@@ -82,6 +111,10 @@ export default function ManagedClusters() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
+                <OnboardingModal
+                    open={openOnboardingModal}
+                    close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)}
+                />
                 <Stack hasGutter={true}>
                     <StackItem>
                         <ClustersTable
@@ -167,6 +200,7 @@ export function ClustersTable(props: {
     }, [])
 
     const clusterNameColumn = useClusterNameColumn()
+    const clusterNamespaceColumn = useClusterNamespaceColumn()
     const clusterStatusColumn = useClusterStatusColumn()
     const clusterProviderColumn = useClusterProviderColumn()
     const clusterControlPlaneColumn = useClusterControlPlaneColumn()
@@ -183,6 +217,7 @@ export function ClustersTable(props: {
     const columns = useMemo<IAcmTableColumn<Cluster>[]>(
         () => [
             clusterNameColumn,
+            clusterNamespaceColumn,
             clusterStatusColumn,
             clusterProviderColumn,
             clusterControlPlaneColumn,
@@ -200,6 +235,7 @@ export function ClustersTable(props: {
         ],
         [
             clusterNameColumn,
+            clusterNamespaceColumn,
             clusterStatusColumn,
             clusterProviderColumn,
             clusterControlPlaneColumn,
@@ -443,9 +479,7 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
         cell: (cluster) => (
             <>
                 <span style={{ whiteSpace: 'nowrap' }}>
-                    <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                        {cluster.displayName}
-                    </Link>
+                    <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
                 </span>
                 {cluster.hive.clusterClaimName && (
                     <TextContent>
@@ -454,6 +488,15 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
                 )}
             </>
         ),
+    }
+}
+
+export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.namespace'),
+        sort: 'namespace',
+        cell: (cluster) => cluster.namespace || '-',
     }
 }
 
@@ -518,7 +561,7 @@ export function useClusterDistributionColumn(
                 cluster={cluster}
                 clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
                 hostedCluster={hostedClusters.find(
-                    (hc) => cluster.namespace === hc.metadata.namespace && cluster.name === hc.metadata.name
+                    (hc) => cluster.namespace === hc.metadata?.namespace && cluster.name === hc.metadata?.name
                 )}
             />
         ),

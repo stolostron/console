@@ -22,7 +22,7 @@ export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
                     kind: 'Secret',
                     metadata: {
                         name: hypershiftKubeconfig,
-                        namespace: hostedCluster?.metadata.namespace,
+                        namespace: hostedCluster?.metadata?.namespace,
                     },
                 }).promise
                 const kubeconfigString = atob((kubeconfig as any).data?.kubeconfig)
@@ -32,7 +32,7 @@ export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
             }
         }
         hypershiftKubeconfig && fetchKubeconfig()
-    }, [hypershiftKubeconfig, hostedCluster?.metadata.namespace])
+    }, [hypershiftKubeconfig, hostedCluster?.metadata?.namespace])
 
     return [hypershiftKubeAPI, error]
 }

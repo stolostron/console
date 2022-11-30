@@ -196,6 +196,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [clouds, setOpenstackClouds] = useState<Record<string, string | undefined>>({})
 
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
+    const [airGappedDeployments, setAirGappedDeployments] = useState<Record<string, boolean>>({})
     const [nattEnables, setNattEnables] = useState<Record<string, boolean>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
@@ -294,6 +295,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                         },
                         IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
+                        airGappedDeployment:
+                            airGappedDeployments[cluster.displayName!] ?? submarinerConfigDefault.airGappedDeployment,
                         NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
                         cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
                     },
@@ -431,6 +434,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         },
                     },
                     IPSecNATTPort: 0,
+                    airGappedDeployments: false,
                     NATTEnable: false,
                     cableDriver: '',
                     credentialsSecret: {
@@ -913,6 +917,23 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         const copy = { ...openStackInstanceTypes }
                                         copy[clusterName] = value
                                         setOpenStackInstanceTypes(copy)
+                                    },
+                                },
+                                {
+                                    id: 'isAirGappedDeployment',
+                                    type: 'Checkbox',
+                                    label: t('Disconnected cluster'),
+                                    labelHelp: t(
+                                        'Enable this option to instruct Submariner not to access any external servers for public IP resolution.'
+                                    ),
+                                    value:
+                                        airGappedDeployments[clusterName] !== undefined
+                                            ? airGappedDeployments[clusterName]
+                                            : submarinerConfigDefault.airGappedDeployment,
+                                    onChange: (value: boolean) => {
+                                        const copy = { ...airGappedDeployments }
+                                        copy[clusterName] = value
+                                        setAirGappedDeployments(copy)
                                     },
                                 },
                                 {

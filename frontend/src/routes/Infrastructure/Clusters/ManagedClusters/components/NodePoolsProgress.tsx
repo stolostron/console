@@ -8,6 +8,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 import NodePoolsTable from './NodePoolsTable'
 import './HypershiftClusterInstallProgress.css'
+import { NodePool } from '../../../../../resources/node-pool'
 
 export type NodePoolStatus = {
     type: 'error' | 'pending' | 'ok' | 'warning'
@@ -78,7 +79,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                 </StackItem>
                 {isExpanded && (
                     <StackItem className="nodepool-progress-item__body">
-                        <NodePoolsTable nodePools={nodePools} {...rest} />
+                        <NodePoolsTable nodePools={nodePools as NodePool[]} {...rest} />
                     </StackItem>
                 )}
             </Stack>
