@@ -48,7 +48,7 @@ export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig
             mustValidate: true,
             encodeValues: ['pullSecret'],
             additionalProps: {
-                promptSshPublicKey: false,
+                promptSshPublicKey: true,
             },
         },
         ...automationControlData(t),
@@ -76,9 +76,6 @@ export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig
             disabled: true,
         },
     ]
-
-    const aiStep = getControlDataAI(t).find((data) => data.id === 'ai')
-    aiStep.additionalProps.promptSshPublicKey = true
 
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     insertToggleModalFunction(handleModalToggle, controlData)
