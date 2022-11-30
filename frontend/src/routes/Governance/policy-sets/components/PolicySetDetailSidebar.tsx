@@ -75,7 +75,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                     <ChartLegend
                         data={legendData}
                         labelComponent={<ChartLabel />}
-                        colorScale={['var(--pf-global--success-color--100)', 'var(--pf-global--danger-color--100)']}
+                        colorScale={['#BBB', 'var(--pf-global--danger-color--100)']}
                     />
                 }
                 labels={({ datum }) => `${datum.x}: ${datum.y}`}

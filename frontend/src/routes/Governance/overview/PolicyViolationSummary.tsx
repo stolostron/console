@@ -96,11 +96,7 @@ export function ViolationsCard(props: {
                         link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
                     },
                 ]}
-                colorScale={[
-                    'var(--pf-global--danger-color--100)',
-                    'var(--pf-global--success-color--100)',
-                    'var(--pf-global--warning-color--100)',
-                ]}
+                colorScale={['var(--pf-global--danger-color--100)', '#BBB', 'var(--pf-global--warning-color--100)']}
             />
         </Card>
     )

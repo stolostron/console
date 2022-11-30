@@ -493,10 +493,7 @@ export default function OverviewPage() {
                                     description={t('Overview of policy violation status')}
                                     loading={!complianceData}
                                     data={complianceData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
+                                    colorScale={['var(--pf-global--danger-color--100)', '#BBB']}
                                 />
                                 {!searchError ? (
                                     <AcmDonutChart
@@ -506,8 +503,8 @@ export default function OverviewPage() {
                                         data={podData}
                                         colorScale={[
                                             'var(--pf-global--danger-color--100)',
-                                            'var(--pf-global--info-color--100)',
-                                            'var(--pf-global--success-color--100)',
+                                            'var(--pf-global--warning-color--100)',
+                                            '#BBB',
                                         ]}
                                     />
                                 ) : undefined}
@@ -516,10 +513,7 @@ export default function OverviewPage() {
                                     description={t('Overview of cluster status')}
                                     loading={!clusterData}
                                     data={clusterData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
+                                    colorScale={['var(--pf-global--danger-color--100)', '#BBB']}
                                 />
                                 <AcmDonutChart
                                     title={t('Cluster issues')}
@@ -536,8 +530,8 @@ export default function OverviewPage() {
                                     colorScale={[
                                         'var(--pf-global--danger-color--100)',
                                         'var(--pf-global--palette--orange-300)',
-                                        'var(--pf-global--palette--orange-200)',
                                         'var(--pf-global--warning-color--100)',
+                                        'var(--pf-global--info-color--100)',
                                     ]}
                                 />
                             </AcmMasonry>
