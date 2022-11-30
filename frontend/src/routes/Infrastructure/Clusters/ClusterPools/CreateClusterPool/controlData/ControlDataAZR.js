@@ -81,16 +81,17 @@ const govRegions = ['usgovvirginia', 'usgovtexas']
 
 //  List vm sizes in a location/region
 //    az vm list-sizes --location eastus --output table
-const masterInstanceTypes = [
-    { value: 'Standard_D2s_v3', description: '2 vCPU, 8 GiB RAM - General Purpose' },
-    { value: 'Standard_D4s_v3', description: '4 vCPU, 16 GiB RAM - General Purpose' },
-    { value: 'Standard_D8s_v3', description: '8 vCPU, 32 GiB RAM - General Purpose' },
-    { value: 'Standard_D16s_v3', description: '16 vCPU, 64 GiB RAM - General Purpose' },
-    { value: 'Standard_D32s_v3', description: '32 vCPU, 128 GiB RAM - General Purpose' },
-    { value: 'Standard_D48s_v3', description: '48 vCPU, 192 GiB RAM - General Purpose' },
-    { value: 'Standard_D64s_v3', description: '64 vCPU, 256 GiB RAM - General Purpose' },
-]
-
+const masterInstanceTypes = (t) => {
+    return [
+        { value: 'Standard_D2s_v3', description: t('2 vCPU, 8 GiB RAM - General Purpose') },
+        { value: 'Standard_D4s_v3', description: t('4 vCPU, 16 GiB RAM - General Purpose') },
+        { value: 'Standard_D8s_v3', description: t('8 vCPU, 32 GiB RAM - General Purpose') },
+        { value: 'Standard_D16s_v3', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
+        { value: 'Standard_D32s_v3', description: t('32 vCPU, 128 GiB RAM - General Purpose') },
+        { value: 'Standard_D48s_v3', description: t('48 vCPU, 192 GiB RAM - General Purpose') },
+        { value: 'Standard_D64s_v3', description: t('64 vCPU, 256 GiB RAM - General Purpose') },
+    ]
+}
 const ApplicationCreationPage = (t) => {
     return [
         {
@@ -117,7 +118,7 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_B2s', description: t('2 vCPU, 4 GiB - General Purpose') },
                         { value: 'Standard_B2ms', description: t(gp2Cpu8Gib) },
                         { value: 'Standard_B4ms', description: t(gp4Cpu8Gib) },
-                        { value: 'Standard_B8ms', description: t('8  vCPU, 32 GiB - General Purpose') },
+                        { value: 'Standard_B8ms', description: t('8 vCPU, 32 GiB - General Purpose') },
                         { value: 'Standard_B12ms', description: t('12 vCPU, 48 GiB - General Purpose') },
                         { value: 'Standard_B16ms', description: t(gp16Cpu8Gib) },
                         { value: 'Standard_B20ms', description: t('20 vCPU, 80 GiB - General Purpose') },
@@ -129,16 +130,16 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_DC1s_v2', description: t('1 vCPU, 4 GiB - General Purpose') },
                         { value: 'Standard_DC2s_v2', description: t(gp2Cpu8Gib) },
                         { value: 'Standard_DC4s_v2', description: t('4 vCPU, 16 GiB - General Purpose') },
-                        { value: 'Standard_DC8_v2', description: t('8  vCPU, 32 GiB - General Purpose') },
+                        { value: 'Standard_DC8_v2', description: t('8 vCPU, 32 GiB - General Purpose') },
                         { value: 'Standard_D1_v2', description: t('1 vCPU, 3.5 GiB - General Purpose') },
                         { value: 'Standard_D2_v2', description: t('2 vCPU, 7 GiB - General Purpose') },
                         { value: 'Standard_D3_v2', description: t('4 vCPU, 14 GiB - General Purpose') },
                         { value: 'Standard_D4_v2', description: t('8 vCPU, 28 GiB - General Purpose') },
                         { value: 'Standard_D5_v2', description: t('16 vCPU, 56 GiB - General Purpose') },
-                        { value: 'Standard_DS1_v2', description: t('1  vCPU, 3.5 GiB - General Purpose') },
-                        { value: 'Standard_DS2_v2', description: t('2  vCPU, 7 GiB - General Purpose') },
-                        { value: 'Standard_DS3_v2', description: t('4  vCPU, 14 GiB - General Purpose') },
-                        { value: 'Standard_DS4_v2', description: t('8  vCPU, 28 GiB - General Purpose') },
+                        { value: 'Standard_DS1_v2', description: t('1 vCPU, 3.5 GiB - General Purpose') },
+                        { value: 'Standard_DS2_v2', description: t('2 vCPU, 7 GiB - General Purpose') },
+                        { value: 'Standard_DS3_v2', description: t('4 vCPU, 14 GiB - General Purpose') },
+                        { value: 'Standard_DS4_v2', description: t('8 vCPU, 28 GiB - General Purpose') },
                         { value: 'Standard_DS5_v2', description: t('16 vCPU, 56 GiB - General Purpose') },
                     ],
                 },
@@ -213,7 +214,7 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_D12_v2', description: t('4 vCPU, 28 GiB - Memory Optimized') },
                         { value: 'Standard_D13_v2', description: t('8 vCPU, 56 GiB - Memory Optimized') },
                         { value: 'Standard_D14_v2', description: t('16 vCPU, 112 GiB - Memory Optimized') },
-                        { value: 'Standard_D15_v2', description: t('1  vCPU, 20 GiB - Memory Optimized') },
+                        { value: 'Standard_D15_v2', description: t('1 vCPU, 20 GiB - Memory Optimized') },
                         { value: 'Standard_DS11_v2', description: t('3 vCPU, 2 GiB - Memory Optimized') },
                         { value: 'Standard_DS12_v2', description: t('3 vCPU, 4 GiB - Memory Optimized') },
                         { value: 'Standard_DS13_v2', description: t('3 vCPU, 8 GiB - Memory Optimized') },
@@ -275,12 +276,12 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_M32ls', description: t('32 vCPU, 256 GiB - Memory Optimized') },
                         { value: 'Standard_M32ms', description: t('32 vCPU, 875 GiB - Memory Optimized') },
                         { value: 'Standard_M64s', description: t('64 vCPU, 1024 GiB - Memory Optimized') },
-                        { value: 'Standard_M64ls', description: t('64  vCPU, 512 GiB - Memory Optimized') },
-                        { value: 'Standard_M64ms', description: t('64  vCPU, 1792 GiB - Memory Optimized') },
+                        { value: 'Standard_M64ls', description: t('64 vCPU, 512 GiB - Memory Optimized') },
+                        { value: 'Standard_M64ms', description: t('64 vCPU, 1792 GiB - Memory Optimized') },
                         { value: 'Standard_M128s', description: t('128 vCPU, 2048 GiB - Memory Optimized') },
                         { value: 'Standard_M128ms', description: t('128 vCPU, 3892 GiB - Memory Optimized') },
                         { value: 'Standard_M64', description: t('64 vCPU, 1024 GiB - Memory Optimized') },
-                        { value: 'Standard_M64m', description: t('64  vCPU, 1792 GiB - Memory Optimized') },
+                        { value: 'Standard_M64m', description: t('64 vCPU, 1792 GiB - Memory Optimized') },
                         { value: 'Standard_M128', description: t('128 vCPU, 2048 GiB - Memory Optimized') },
                         { value: 'Standard_M128m', description: t('128 vCPU, 3892 GiB - Memory Optimized') },
                     ],
@@ -592,7 +593,7 @@ export const getControlDataAZR = (handleModalToggle, includeAutomation = true, i
                     learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
                     id: 'masterType',
                     type: 'combobox',
-                    available: masterInstanceTypes,
+                    available: masterInstanceTypes(t),
                     active: 'Standard_D4s_v3',
                     validation: {
                         constraint: '[A-Za-z0-9_]+',
@@ -702,7 +703,7 @@ export const getControlDataAZR = (handleModalToggle, includeAutomation = true, i
         {
             id: 'networkStep',
             type: 'step',
-            title: 'Networking',
+            title: t('Networking'),
         },
         ...networkingControlData(t),
         ...proxyControlData(t),
