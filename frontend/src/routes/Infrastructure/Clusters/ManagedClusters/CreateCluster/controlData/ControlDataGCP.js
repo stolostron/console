@@ -456,7 +456,7 @@ export const getControlDataGCP = (
                     learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                     id: 'workerType',
                     type: 'treeselect',
-                    available: GCPworkerInstanceTypes,
+                    available: GCPworkerInstanceTypes(t),
                     active: 'n1-standard-4',
                     validation: {
                         constraint: '[A-Za-z0-9-]+',

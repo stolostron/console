@@ -118,300 +118,16 @@ const updateWorkerZones = (control, controlData) => {
     typeZones.active = []
 }
 
-const getControlDataAWS = (
-    handleModalToggle,
-    includeAutomation,
-    includeAwsPrivate,
-    includeSno,
-    includeKlusterletAddonConfig = true,
-    t
-) => {
-    const controlData = [
-        ////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////  connection  /////////////////////////////////////
-        {
-            id: 'detailStep',
-            type: 'step',
-            title: t('Cluster details'),
-        },
-        {
-            id: 'infrastructure',
-            name: t('Infrastructure'),
-            active: 'AWS',
-            type: 'reviewinfo',
-        },
-        {
-            name: t('creation.ocp.cloud.connection'),
-            tooltip: t('tooltip.creation.ocp.cloud.connection'),
-            id: 'connection',
-            type: 'singleselect',
-            placeholder: t('creation.ocp.cloud.select.connection'),
-            validation: {
-                notification: t('creation.ocp.cluster.must.select.connection'),
-                required: true,
-            },
-            available: [],
-            providerId: 'aws',
-            footer: <CreateCredentialModal />,
-            onSelect: onChangeConnection,
-        },
-        ...clusterDetailsControlData(t),
-        ////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////  imageset  /////////////////////////////////////
-        {
-            name: t('cluster.create.ocp.image'),
-            tooltip: t('tooltip.cluster.create.ocp.image'),
-            id: 'imageSet',
-            type: 'combobox',
-            simplified: getSimplifiedImageName,
-            placeholder: t('creation.ocp.cloud.select.ocp.image'),
-            fetchAvailable: LOAD_OCP_IMAGES('aws', t),
-            validation: {
-                notification: t('creation.ocp.cluster.must.select.ocp.image'),
-                required: true,
-            },
-            onSelect: onImageChange,
-        },
-        //Always Hidden
-        {
-            id: 'singleNodeFeatureFlag',
-            type: 'checkbox',
-            active: false,
-            hidden: true,
-        },
-        {
-            name: t('cluster.create.ocp.singleNode'),
-            tooltip: t('tooltip.cluster.create.ocp.singleNode'),
-            id: 'singleNode',
-            type: 'checkbox',
-            active: false,
-            hidden: isHidden_lt_OCP48,
-            onSelect: onChangeSNO,
-            icon: <DevPreviewLabel />,
-        },
-        {
-            name: t('creation.ocp.addition.labels'),
-            id: 'additional',
-            type: 'labels',
-            active: [],
-            tip: t(
-                'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
-            ),
-        },
-        {
-            id: 'infrastructure',
-            active: ['AWS'],
-            type: 'hidden',
-            hasReplacements: true,
-            availableMap: {
-                AWS: {
-                    replacements: {
-                        'install-config': { template: installConfig, encode: true, newTab: true },
-                    },
-                },
-            },
-        },
-
-        ////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////  node(machine) pools  /////////////////////////////////////
-        {
-            id: 'nodePoolsStep',
-            type: 'step',
-            title: t('Node pools'),
-        },
-        {
-            id: 'nodes',
-            type: 'title',
-            info: t('creation.ocp.cluster.node.pool.info'),
-        },
-        ///////////////////////  region  /////////////////////////////////////
-        {
-            name: t('creation.ocp.region'),
-            tooltip: t('tooltip.creation.ocp.aws.region'),
-            id: 'region',
-            type: 'combobox',
-            active: 'us-east-1',
-            available: Object.keys(awsRegions),
-            validation: VALIDATE_ALPHANUMERIC,
-            cacheUserValueKey: 'create.cluster.region',
-            onSelect: setAWSZones,
-            reverse: 'ClusterDeployment[0].metadata.labels.region',
-        },
-        ///////////////////////  architecture  /////////////////////////////////////
-        ...architectureData(t),
-        ///////////////////////  control plane pool  /////////////////////////////////////
-        {
-            id: 'masterPool',
-            type: 'group',
-            onlyOne: true, // no prompts
-            controlData: [
-                {
-                    id: 'masterPool',
-                    type: 'section',
-                    collapsable: true,
-                    collapsed: true,
-                    subtitle: t('creation.ocp.node.controlplane.pool.title'),
-                    info: t('creation.ocp.node.controlplane.pool.info'),
-                },
-                ///////////////////////  zone  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.zones'),
-                    tooltip: t('tooltip.creation.ocp.controlplane.zones'),
-                    id: 'masterZones',
-                    type: 'multiselect',
-                    available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
-                    placeholder: t('creation.ocp.add.zones'),
-                    cacheUserValueKey: 'create.cluster.aws.master.zones',
-                    validation: VALIDATE_ALPHANUMERIC,
-                    multiselect: true,
-                },
-                ///////////////////////  instance type  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.instance.type'),
-                    tooltip: t('tooltip.creation.ocp.aws.instance.type'),
-                    learnMore: 'https://aws.amazon.com/ec2/instance-types/',
-                    id: 'masterType',
-                    type: 'combobox',
-                    available: AWSmasterInstanceTypes,
-                    active: 'm5.xlarge',
-                    validation: {
-                        constraint: '[A-Za-z0-9.]+',
-                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
-                        required: false,
-                    },
-                    cacheUserValueKey: 'create.cluster.master.type',
-                },
-                ///////////////////////  root volume  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.root.storage'),
-                    tooltip: t('tooltip.creation.ocp.aws.root.storage'),
-                    id: 'masterRootStorage',
-                    type: 'combobox',
-                    active: '100',
-                    available: ['100', '300', '500', '800', '1000', '1200'],
-                    validation: VALIDATE_NUMERIC,
-                    cacheUserValueKey: 'create.cluster.master.root.storage',
-                },
-            ],
-        },
-        ///////////////////////  worker pools  /////////////////////////////////////
-        {
-            id: 'workerPools',
-            type: 'group',
-            hidden: isHidden_SNO,
-            prompts: {
-                nameId: 'workerName',
-                baseName: 'worker',
-                addPrompt: t('creation.ocp.cluster.add.node.pool'),
-                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
-            },
-            onChange: updateWorkerZones,
-            controlData: [
-                {
-                    id: 'workerPool',
-                    type: 'section',
-                    collapsable: true,
-                    collapsed: true,
-                    subtitle: getWorkerName,
-                    info: t('creation.ocp.node.worker.pool.info'),
-                },
-                ///////////////////////  pool name  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.pool.name'),
-                    tooltip: t('tooltip.creation.ocp.pool.name'),
-                    placeholder: t('creation.ocp.pool.placeholder'),
-                    id: 'workerName',
-                    type: 'text',
-                    active: 'worker',
-                    validation: VALIDATE_ALPHANUMERIC,
-                },
-                ///////////////////////  zone  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.zones'),
-                    tooltip: t('tooltip.creation.ocp.worker.zones'),
-                    id: 'workerZones',
-                    type: 'multiselect',
-                    available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
-                    placeholder: t('creation.ocp.add.zones'),
-                    cacheUserValueKey: 'create.cluster.aws.worker.zones',
-                    validation: VALIDATE_ALPHANUMERIC,
-                    multiselect: true,
-                },
-                ///////////////////////  instance type  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.instance.type'),
-                    tooltip: t('tooltip.creation.ocp.aws.instance.type'),
-                    learnMore: 'https://aws.amazon.com/ec2/instance-types/',
-                    id: 'workerType',
-                    type: 'treeselect',
-                    available: AWSworkerInstanceTypes(t),
-                    active: 'm5.xlarge',
-                    validation: {
-                        constraint: '[A-Za-z0-9.]+',
-                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
-                        required: false,
-                    },
-                    cacheUserValueKey: 'create.cluster.worker.type',
-                },
-                ///////////////////////  compute node count  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.compute.node.count'),
-                    tooltip: t('tooltip.creation.ocp.compute.node.count'),
-                    id: 'computeNodeCount',
-                    type: 'number',
-                    initial: '3',
-                    validation: VALIDATE_NUMERIC,
-                    cacheUserValueKey: 'create.cluster.compute.node.count',
-                },
-                ///////////////////////  storage  /////////////////////////////////////
-                {
-                    name: t('creation.ocp.root.storage'),
-                    tooltip: t('tooltip.creation.ocp.aws.root.storage'),
-                    id: 'workerStorage',
-                    type: 'combobox',
-                    active: '100',
-                    available: ['100', '300', '500', '800', '1000', '1200'],
-                    validation: VALIDATE_NUMERIC,
-                    cacheUserValueKey: 'create.cluster.persistent.storage',
-                },
-            ],
-        },
-        {
-            id: 'networkStep',
-            type: 'step',
-            title: t('Networking'),
-        },
-        ...networkingControlData(t),
-        ...proxyControlData(t),
+const AWSmasterInstanceTypes = (t) => {
+    return [
+        { value: 'm5.large', description: t(gp2Cpu8Gib) },
+        { value: 'm5.xlarge', description: t(gp4Cpu16Gib) },
+        { value: 'm5.2xlarge', description: t(gp8Cpu32Gib) },
+        { value: 'm5.4xlarge', description: t('16 vCPU, 64  GiB RAM - General Purpose') },
+        { value: 'm5.10xlarge', description: t(gp40Cpu160Gib) },
+        { value: 'm5.16xlarge', description: t(gp64Cpu256Gib) },
     ]
-    if (includeSno) {
-        addSnoText(controlData, t)
-    }
-
-    if (includeAwsPrivate) {
-        controlData.push(...awsPrivateControlData)
-        const regionObject = controlData.find((object) => object.id === 'region')
-        if (regionObject && regionObject.available) {
-            awsRegions = { ...awsRegions, ...awsGovRegions }
-            regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
-        }
-    }
-    if (includeAutomation) {
-        controlData.push(...automationControlData(t))
-    }
-    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-    insertToggleModalFunction(handleModalToggle, controlData)
-    return controlData
 }
-
-const AWSmasterInstanceTypes = [
-    { value: 'm5.large', description: gp2Cpu8Gib },
-    { value: 'm5.xlarge', description: gp4Cpu16Gib },
-    { value: 'm5.2xlarge', description: gp8Cpu32Gib },
-    { value: 'm5.4xlarge', description: '16 vCPU, 64  GiB RAM - General Purpose' },
-    { value: 'm5.10xlarge', description: gp40Cpu160Gib },
-    { value: 'm5.16xlarge', description: gp64Cpu256Gib },
-]
 
 const onChangeAWSPrivate = (control, controlData) => {
     const awsPrivateFields = []
@@ -1087,6 +803,292 @@ const awsPrivateControlData = (t) => {
             ],
         },
     ]
+    return controlData
+}
+
+const getControlDataAWS = (
+    handleModalToggle,
+    includeAutomation,
+    includeAwsPrivate,
+    includeSno,
+    includeKlusterletAddonConfig = true,
+    t
+) => {
+    const controlData = [
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  connection  /////////////////////////////////////
+        {
+            id: 'detailStep',
+            type: 'step',
+            title: t('Cluster details'),
+        },
+        {
+            id: 'infrastructure',
+            name: t('Infrastructure'),
+            active: 'AWS',
+            type: 'reviewinfo',
+        },
+        {
+            name: t('creation.ocp.cloud.connection'),
+            tooltip: t('tooltip.creation.ocp.cloud.connection'),
+            id: 'connection',
+            type: 'singleselect',
+            placeholder: t('creation.ocp.cloud.select.connection'),
+            validation: {
+                notification: t('creation.ocp.cluster.must.select.connection'),
+                required: true,
+            },
+            available: [],
+            providerId: 'aws',
+            footer: <CreateCredentialModal />,
+            onSelect: onChangeConnection,
+        },
+        ...clusterDetailsControlData(t),
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  imageset  /////////////////////////////////////
+        {
+            name: t('cluster.create.ocp.image'),
+            tooltip: t('tooltip.cluster.create.ocp.image'),
+            id: 'imageSet',
+            type: 'combobox',
+            simplified: getSimplifiedImageName,
+            placeholder: t('creation.ocp.cloud.select.ocp.image'),
+            fetchAvailable: LOAD_OCP_IMAGES('aws', t),
+            validation: {
+                notification: t('creation.ocp.cluster.must.select.ocp.image'),
+                required: true,
+            },
+            onSelect: onImageChange,
+        },
+        //Always Hidden
+        {
+            id: 'singleNodeFeatureFlag',
+            type: 'checkbox',
+            active: false,
+            hidden: true,
+        },
+        {
+            name: t('cluster.create.ocp.singleNode'),
+            tooltip: t('tooltip.cluster.create.ocp.singleNode'),
+            id: 'singleNode',
+            type: 'checkbox',
+            active: false,
+            hidden: isHidden_lt_OCP48,
+            onSelect: onChangeSNO,
+            icon: <DevPreviewLabel />,
+        },
+        {
+            name: t('creation.ocp.addition.labels'),
+            id: 'additional',
+            type: 'labels',
+            active: [],
+            tip: t(
+                'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
+            ),
+        },
+        {
+            id: 'infrastructure',
+            active: ['AWS'],
+            type: 'hidden',
+            hasReplacements: true,
+            availableMap: {
+                AWS: {
+                    replacements: {
+                        'install-config': { template: installConfig, encode: true, newTab: true },
+                    },
+                },
+            },
+        },
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  node(machine) pools  /////////////////////////////////////
+        {
+            id: 'nodePoolsStep',
+            type: 'step',
+            title: t('Node pools'),
+        },
+        {
+            id: 'nodes',
+            type: 'title',
+            info: t('creation.ocp.cluster.node.pool.info'),
+        },
+        ///////////////////////  region  /////////////////////////////////////
+        {
+            name: t('creation.ocp.region'),
+            tooltip: t('tooltip.creation.ocp.aws.region'),
+            id: 'region',
+            type: 'combobox',
+            active: 'us-east-1',
+            available: Object.keys(awsRegions),
+            validation: VALIDATE_ALPHANUMERIC,
+            cacheUserValueKey: 'create.cluster.region',
+            onSelect: setAWSZones,
+            reverse: 'ClusterDeployment[0].metadata.labels.region',
+        },
+        ///////////////////////  architecture  /////////////////////////////////////
+        ...architectureData(t),
+        ///////////////////////  control plane pool  /////////////////////////////////////
+        {
+            id: 'masterPool',
+            type: 'group',
+            onlyOne: true, // no prompts
+            controlData: [
+                {
+                    id: 'masterPool',
+                    type: 'section',
+                    collapsable: true,
+                    collapsed: true,
+                    subtitle: t('creation.ocp.node.controlplane.pool.title'),
+                    info: t('creation.ocp.node.controlplane.pool.info'),
+                },
+                ///////////////////////  zone  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.zones'),
+                    tooltip: t('tooltip.creation.ocp.controlplane.zones'),
+                    id: 'masterZones',
+                    type: 'multiselect',
+                    available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
+                    placeholder: t('creation.ocp.add.zones'),
+                    cacheUserValueKey: 'create.cluster.aws.master.zones',
+                    validation: VALIDATE_ALPHANUMERIC,
+                    multiselect: true,
+                },
+                ///////////////////////  instance type  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.instance.type'),
+                    tooltip: t('tooltip.creation.ocp.aws.instance.type'),
+                    learnMore: 'https://aws.amazon.com/ec2/instance-types/',
+                    id: 'masterType',
+                    type: 'combobox',
+                    available: AWSmasterInstanceTypes(t),
+                    active: 'm5.xlarge',
+                    validation: {
+                        constraint: '[A-Za-z0-9.]+',
+                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                        required: false,
+                    },
+                    cacheUserValueKey: 'create.cluster.master.type',
+                },
+                ///////////////////////  root volume  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.root.storage'),
+                    tooltip: t('tooltip.creation.ocp.aws.root.storage'),
+                    id: 'masterRootStorage',
+                    type: 'combobox',
+                    active: '100',
+                    available: ['100', '300', '500', '800', '1000', '1200'],
+                    validation: VALIDATE_NUMERIC,
+                    cacheUserValueKey: 'create.cluster.master.root.storage',
+                },
+            ],
+        },
+        ///////////////////////  worker pools  /////////////////////////////////////
+        {
+            id: 'workerPools',
+            type: 'group',
+            hidden: isHidden_SNO,
+            prompts: {
+                nameId: 'workerName',
+                baseName: 'worker',
+                addPrompt: t('creation.ocp.cluster.add.node.pool'),
+                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+            },
+            onChange: updateWorkerZones,
+            controlData: [
+                {
+                    id: 'workerPool',
+                    type: 'section',
+                    collapsable: true,
+                    collapsed: true,
+                    subtitle: getWorkerName,
+                    info: t('creation.ocp.node.worker.pool.info'),
+                },
+                ///////////////////////  pool name  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.pool.name'),
+                    tooltip: t('tooltip.creation.ocp.pool.name'),
+                    placeholder: t('creation.ocp.pool.placeholder'),
+                    id: 'workerName',
+                    type: 'text',
+                    active: 'worker',
+                    validation: VALIDATE_ALPHANUMERIC,
+                },
+                ///////////////////////  zone  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.zones'),
+                    tooltip: t('tooltip.creation.ocp.worker.zones'),
+                    id: 'workerZones',
+                    type: 'multiselect',
+                    available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
+                    placeholder: t('creation.ocp.add.zones'),
+                    cacheUserValueKey: 'create.cluster.aws.worker.zones',
+                    validation: VALIDATE_ALPHANUMERIC,
+                    multiselect: true,
+                },
+                ///////////////////////  instance type  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.instance.type'),
+                    tooltip: t('tooltip.creation.ocp.aws.instance.type'),
+                    learnMore: 'https://aws.amazon.com/ec2/instance-types/',
+                    id: 'workerType',
+                    type: 'treeselect',
+                    available: AWSworkerInstanceTypes(t),
+                    active: 'm5.xlarge',
+                    validation: {
+                        constraint: '[A-Za-z0-9.]+',
+                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                        required: false,
+                    },
+                    cacheUserValueKey: 'create.cluster.worker.type',
+                },
+                ///////////////////////  compute node count  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.compute.node.count'),
+                    tooltip: t('tooltip.creation.ocp.compute.node.count'),
+                    id: 'computeNodeCount',
+                    type: 'number',
+                    initial: '3',
+                    validation: VALIDATE_NUMERIC,
+                    cacheUserValueKey: 'create.cluster.compute.node.count',
+                },
+                ///////////////////////  storage  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.root.storage'),
+                    tooltip: t('tooltip.creation.ocp.aws.root.storage'),
+                    id: 'workerStorage',
+                    type: 'combobox',
+                    active: '100',
+                    available: ['100', '300', '500', '800', '1000', '1200'],
+                    validation: VALIDATE_NUMERIC,
+                    cacheUserValueKey: 'create.cluster.persistent.storage',
+                },
+            ],
+        },
+        {
+            id: 'networkStep',
+            type: 'step',
+            title: t('Networking'),
+        },
+        ...networkingControlData(t),
+        ...proxyControlData(t),
+    ]
+    if (includeSno) {
+        addSnoText(controlData, t)
+    }
+
+    if (includeAwsPrivate) {
+        controlData.push(...awsPrivateControlData(t))
+        const regionObject = controlData.find((object) => object.id === 'region')
+        if (regionObject && regionObject.available) {
+            awsRegions = { ...awsRegions, ...awsGovRegions }
+            regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
+        }
+    }
+    if (includeAutomation) {
+        controlData.push(...automationControlData(t))
+    }
+    appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+    insertToggleModalFunction(handleModalToggle, controlData)
     return controlData
 }
 

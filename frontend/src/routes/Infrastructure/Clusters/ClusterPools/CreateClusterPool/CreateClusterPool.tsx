@@ -174,7 +174,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
 
     // setup translation
     const { t } = useTranslation()
-    const i18n = (key: any, arg: any) => {
+    const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
 
