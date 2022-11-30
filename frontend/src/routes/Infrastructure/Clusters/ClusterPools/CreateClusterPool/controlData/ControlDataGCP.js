@@ -253,230 +253,230 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (handleModalToggle, includeAutomation = true, includeSno = false) => {
-    const controlData = [...controlDataGCP]
+export const getControlDataGCP = (handleModalToggle, includeAutomation = true, includeSno = false, t) => {
+    const controlData = [
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  connection  /////////////////////////////////////
+        {
+            id: 'detailStep',
+            type: 'step',
+            title: t('Cluster details'),
+        },
+        {
+            id: 'infrastructure',
+            name: t('Infrastructure'),
+            active: 'GCP',
+            type: 'reviewinfo',
+        },
+        {
+            name: t('creation.ocp.cloud.connection'),
+            tooltip: t('tooltip.creation.ocp.cloud.connection'),
+            id: 'connection',
+            type: 'singleselect',
+            placeholder: t('creation.ocp.cloud.select.connection'),
+            providerId: 'gcp',
+            validation: {
+                notification: t('creation.ocp.cluster.must.select.connection'),
+                required: true,
+            },
+            available: [],
+            onSelect: onChangeConnection,
+            footer: <CreateCredentialModal />,
+        },
+        ...clusterPoolDetailsControlData(t),
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  imageset  /////////////////////////////////////
+        {
+            name: t('cluster.create.ocp.image'),
+            tooltip: t('tooltip.cluster.create.ocp.image'),
+            id: 'imageSet',
+            type: 'combobox',
+            simplified: getSimplifiedImageName,
+            placeholder: t('creation.ocp.cloud.select.ocp.image'),
+            fetchAvailable: LOAD_OCP_IMAGES('gcp', t),
+            validation: {
+                notification: t('creation.ocp.cluster.must.select.ocp.image'),
+                required: true,
+            },
+            onSelect: onImageChange,
+        },
+        //Always Hidden
+        {
+            id: 'singleNodeFeatureFlag',
+            type: 'checkbox',
+            active: false,
+            hidden: true,
+        },
+        {
+            name: t('cluster.create.ocp.singleNode'),
+            tooltip: t('tooltip.cluster.create.ocp.singleNode'),
+            id: 'singleNode',
+            type: 'checkbox',
+            active: false,
+            hidden: isHidden_lt_OCP48,
+            onSelect: onChangeSNO,
+            icon: <DevPreviewLabel />,
+        },
+        {
+            name: t('creation.ocp.addition.labels'),
+            id: 'additional',
+            type: 'labels',
+            active: [],
+            tip: t(
+                'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
+            ),
+        },
+        {
+            id: 'infrastructure',
+            active: ['GCP'],
+            type: 'hidden',
+            hasReplacements: true,
+            availableMap: {
+                GCP: {
+                    replacements: {
+                        'install-config': { template: installConfig, encode: true, newTab: true },
+                    },
+                },
+            },
+        },
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  node(machine) pools  /////////////////////////////////////
+        {
+            id: 'nodePoolsStep',
+            type: 'step',
+            title: t('Node pools'),
+        },
+        {
+            id: 'nodes',
+            type: 'title',
+            info: t('creation.ocp.cluster.node.pool.info'),
+        },
+        ///////////////////////  region  /////////////////////////////////////
+        {
+            name: t('creation.ocp.region'),
+            tooltip: t('tooltip.creation.ocp.gcp.region'),
+            id: 'region',
+            type: 'combobox',
+            active: 'us-east1',
+            available: GCPregions,
+            validation: VALIDATE_ALPHANUMERIC,
+            cacheUserValueKey: 'create.cluster.region',
+            reverse: 'ClusterDeployment[0].metadata.labels.region',
+        },
+        ///////////////////////  architecture  /////////////////////////////////////
+        ...architectureData(t),
+        ///////////////////////  control plane pool  /////////////////////////////////////
+        {
+            id: 'masterPool',
+            type: 'group',
+            onlyOne: true, // no prompts
+            controlData: [
+                {
+                    id: 'masterPool',
+                    type: 'section',
+                    collapsable: true,
+                    collapsed: true,
+                    subtitle: t('creation.ocp.node.controlplane.pool.title'),
+                    info: t('creation.ocp.node.controlplane.pool.info'),
+                },
+                ///////////////////////  instance type  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.instance.type'),
+                    tooltip: t('tooltip.creation.ocp.gcp.instance.type'),
+                    learnMore: 'https://cloud.google.com/compute/docs/machine-types',
+                    id: 'masterType',
+                    type: 'combobox',
+                    available: GCPmasterInstanceTypes,
+                    active: 'n1-standard-4',
+                    validation: {
+                        constraint: '[A-Za-z0-9-]+',
+                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                        required: false,
+                    },
+                },
+            ],
+        },
+        ///////////////////////  worker pools  /////////////////////////////////////
+        {
+            id: 'workerPools',
+            type: 'group',
+            hidden: isHidden_SNO,
+            prompts: {
+                nameId: 'workerName',
+                baseName: 'worker',
+                addPrompt: t('creation.ocp.cluster.add.node.pool'),
+                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+            },
+            controlData: [
+                {
+                    id: 'workerPool',
+                    type: 'section',
+                    collapsable: true,
+                    collapsed: true,
+                    subtitle: getWorkerName,
+                    info: t('creation.ocp.node.worker.pool.info'),
+                },
+                ///////////////////////  pool name  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.pool.name'),
+                    tooltip: t('tooltip.creation.ocp.pool.name'),
+                    placeholder: t('creation.ocp.pool.placeholder'),
+                    id: 'workerName',
+                    type: 'text',
+                    active: 'worker',
+                    validation: {
+                        constraint: '[A-Za-z0-9-_]+',
+                        notification: t('creation.ocp.cluster.valid.alphanumeric'),
+                        required: true,
+                    },
+                },
+                ///////////////////////  instance type  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.instance.type'),
+                    tooltip: t('tooltip.creation.ocp.gcp.instance.type'),
+                    learnMore: 'https://cloud.google.com/compute/docs/machine-types',
+                    id: 'workerType',
+                    type: 'treeselect',
+                    available: GCPworkerInstanceTypes,
+                    active: 'n1-standard-4',
+                    validation: {
+                        constraint: '[A-Za-z0-9-]+',
+                        notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
+                        required: false,
+                    },
+                    cacheUserValueKey: 'create.cluster.worker.type',
+                },
+                ///////////////////////  compute node count  /////////////////////////////////////
+                {
+                    name: t('creation.ocp.compute.node.count'),
+                    tooltip: t('tooltip.creation.ocp.compute.node.count'),
+                    id: 'computeNodeCount',
+                    type: 'number',
+                    initial: '3',
+                    validation: VALIDATE_NUMERIC,
+                    cacheUserValueKey: 'create.cluster.compute.node.count',
+                },
+            ],
+        },
+        {
+            id: 'networkStep',
+            type: 'step',
+            title: t('Networking'),
+        },
+        ...networkingControlData(t),
+        ...proxyControlData(t),
+    ]
     if (includeSno) {
-        addSnoText(controlData)
+        addSnoText(controlData, t)
     }
     if (includeAutomation) {
-        return [...controlData, ...automationControlData]
+        return [...controlData, ...automationControlData(t)]
     }
     if (handleModalToggle) {
         insertToggleModalFunction(handleModalToggle, controlData)
     }
     return controlData
 }
-
-const controlDataGCP = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        id: 'detailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
-        id: 'infrastructure',
-        name: 'Infrastructure',
-        active: 'GCP',
-        type: 'reviewinfo',
-    },
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'gcp',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        onSelect: onChangeConnection,
-        footer: <CreateCredentialModal />,
-    },
-    ...clusterPoolDetailsControlData,
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('gcp'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-        onSelect: onImageChange,
-    },
-    //Always Hidden
-    {
-        id: 'singleNodeFeatureFlag',
-        type: 'checkbox',
-        active: false,
-        hidden: true,
-    },
-    {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-        id: 'singleNode',
-        type: 'checkbox',
-        active: false,
-        hidden: isHidden_lt_OCP48,
-        onSelect: onChangeSNO,
-        icon: <DevPreviewLabel />,
-    },
-    {
-        name: 'creation.ocp.addition.labels',
-        id: 'additional',
-        type: 'labels',
-        active: [],
-        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
-    },
-    {
-        id: 'infrastructure',
-        active: ['GCP'],
-        type: 'hidden',
-        hasReplacements: true,
-        availableMap: {
-            GCP: {
-                replacements: {
-                    'install-config': { template: installConfig, encode: true, newTab: true },
-                },
-            },
-        },
-    },
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  node(machine) pools  /////////////////////////////////////
-    {
-        id: 'nodePoolsStep',
-        type: 'step',
-        title: 'Node pools',
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    ///////////////////////  region  /////////////////////////////////////
-    {
-        name: 'creation.ocp.region',
-        tooltip: 'tooltip.creation.ocp.gcp.region',
-        id: 'region',
-        type: 'combobox',
-        active: 'us-east1',
-        available: GCPregions,
-        validation: VALIDATE_ALPHANUMERIC,
-        cacheUserValueKey: 'create.cluster.region',
-        reverse: 'ClusterDeployment[0].metadata.labels.region',
-    },
-    ///////////////////////  architecture  /////////////////////////////////////
-    ...architectureData,
-    ///////////////////////  control plane pool  /////////////////////////////////////
-    {
-        id: 'masterPool',
-        type: 'group',
-        onlyOne: true, // no prompts
-        controlData: [
-            {
-                id: 'masterPool',
-                type: 'section',
-                collapsable: true,
-                collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
-            },
-            ///////////////////////  instance type  /////////////////////////////////////
-            {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.gcp.instance.type',
-                learnMore: 'https://cloud.google.com/compute/docs/machine-types',
-                id: 'masterType',
-                type: 'combobox',
-                available: GCPmasterInstanceTypes,
-                active: 'n1-standard-4',
-                validation: {
-                    constraint: '[A-Za-z0-9-]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
-                    required: false,
-                },
-            },
-        ],
-    },
-    ///////////////////////  worker pools  /////////////////////////////////////
-    {
-        id: 'workerPools',
-        type: 'group',
-        hidden: isHidden_SNO,
-        prompts: {
-            nameId: 'workerName',
-            baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
-        },
-        controlData: [
-            {
-                id: 'workerPool',
-                type: 'section',
-                collapsable: true,
-                collapsed: true,
-                subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
-            },
-            ///////////////////////  pool name  /////////////////////////////////////
-            {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
-                id: 'workerName',
-                type: 'text',
-                active: 'worker',
-                validation: {
-                    constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
-                    required: true,
-                },
-            },
-            ///////////////////////  instance type  /////////////////////////////////////
-            {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.gcp.instance.type',
-                learnMore: 'https://cloud.google.com/compute/docs/machine-types',
-                id: 'workerType',
-                type: 'treeselect',
-                available: GCPworkerInstanceTypes,
-                active: 'n1-standard-4',
-                validation: {
-                    constraint: '[A-Za-z0-9-]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
-                    required: false,
-                },
-                cacheUserValueKey: 'create.cluster.worker.type',
-            },
-            ///////////////////////  compute node count  /////////////////////////////////////
-            {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
-                id: 'computeNodeCount',
-                type: 'number',
-                initial: '3',
-                validation: VALIDATE_NUMERIC,
-                cacheUserValueKey: 'create.cluster.compute.node.count',
-            },
-        ],
-    },
-    {
-        id: 'networkStep',
-        type: 'step',
-        title: 'Networking',
-    },
-    ...networkingControlData,
-    ...proxyControlData,
-]
 
 export default getControlDataGCP

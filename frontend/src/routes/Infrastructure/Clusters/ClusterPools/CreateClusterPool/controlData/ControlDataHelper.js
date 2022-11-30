@@ -12,7 +12,6 @@ const lessThanEqualSize = (active, templateObjectMap, i18n) => {
 
 export const fixupControlsForClusterPool = (controlData) => {
     const map = keyBy(controlData, 'id')
-    map['detailStep'].title = 'Cluster pool details'
     map['name'].name = 'clusterPool.creation.ocp.name'
     map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
     map['name'].reverse = 'ClusterPool[0].metadata.name'

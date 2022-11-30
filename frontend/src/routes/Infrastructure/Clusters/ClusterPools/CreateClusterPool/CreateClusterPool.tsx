@@ -35,10 +35,11 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../components/GetProjects'
 import { Secret } from '../../../../../resources'
-import useControlDataAWS from '../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
+import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
 import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
+import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -181,24 +182,21 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
     //compile template
     const template = Handlebars.compile(hiveTemplate)
 
-    const controlDataAWS = useControlDataAWS(
-        false,
-        handleModalToggle,
-        false,
-        settings.awsPrivateWizardStep === 'enabled',
-        settings.singleNodeOpenshift === 'enabled'
-    )
-
     let controlData: any[]
     switch (infrastructureType) {
         case Provider.aws:
-            controlData = controlDataAWS
+            controlData = getControlDataAWS(
+                handleModalToggle,
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled',
+                t
+            )
             break
         case Provider.gcp:
-            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled', t)
             break
         case Provider.azure:
-            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled', t)
             break
     }
 
@@ -285,8 +283,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 type={'ClusterPool'}
                 title={'ClusterPool YAML'}
                 monacoEditor={<MonacoEditor />}
-                // controlData={fixupControlsForClusterPool(controlData)}
-                controlData={controlData}
+                controlData={fixupControlsForClusterPool(controlData)}
                 template={template}
                 portals={Portals}
                 createControl={{

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo } from 'react'
 import {
     getValue,
     VALIDATE_CIDR,
@@ -20,7 +19,6 @@ import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../.
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 export const CREATE_AUTOMATION_TEMPLATE = {
     prompt: 'creation.ocp.cloud.add.template',
@@ -30,13 +28,13 @@ export const CREATE_AUTOMATION_TEMPLATE = {
     id: 'add-automation-template',
     icon: <ExternalLinkAltIcon />,
 }
-export const LOAD_OCP_IMAGES = (provider) => {
+export const LOAD_OCP_IMAGES = (provider, t) => {
     return {
         query: () => {
             return listClusterImageSets().promise
         },
-        emptyDesc: 'creation.ocp.cloud.no.ocp.images',
-        loadingDesc: 'creation.ocp.cloud.loading.ocp.images',
+        emptyDesc: t('creation.ocp.cloud.no.ocp.images'),
+        loadingDesc: t('creation.ocp.cloud.loading.ocp.images'),
         setAvailable: setAvailableOCPImages.bind(null, provider),
         setAvailableMap: setAvailableOCPMap.bind(null),
     }
@@ -288,9 +286,9 @@ export const onChangeDisconnect = (control, controlData) => {
         }
     })
 }
-export function getOSTNetworkingControlData() {
+export function getOSTNetworkingControlData(t) {
     // Kuryr should only be available for Openstack
-    const networkData = _.cloneDeep(networkingControlData)
+    const networkData = _.cloneDeep(networkingControlData(t))
     const modifiedData = networkData.find((object) => object.id == 'networkType')
     modifiedData.available.push('Kuryr')
     return networkData
@@ -310,471 +308,244 @@ export const onImageChange = (control, controlData) => {
     }
 }
 
-export const useClusterDetailsControlData = () => {
-    const { t } = useTranslation()
-    return useMemo(
-        () => [
-            {
-                name: t('creation.ocp.name'),
-                tooltip: t('tooltip.creation.ocp.name'),
-                placeholder: t('creation.ocp.name.placeholder'),
-                id: 'name',
-                type: 'text',
-                validation: {
-                    constraint: VALID_DNS_LABEL,
-                    notification: t('import.form.invalid.dns.label'),
-                    required: true,
-                },
-                reverse: 'ClusterDeployment[0].metadata.name',
+export const clusterDetailsControlData = (t) => {
+    return [
+        {
+            name: t('creation.ocp.name'),
+            tooltip: t('tooltip.creation.ocp.name'),
+            placeholder: t('creation.ocp.name.placeholder'),
+            id: 'name',
+            type: 'text',
+            validation: {
+                constraint: VALID_DNS_LABEL,
+                notification: t('import.form.invalid.dns.label'),
+                required: true,
             },
-            {
-                name: t('creation.ocp.clusterSet'),
-                tooltip: t('tooltip.creation.ocp.clusterSet'),
-                id: 'clusterSet',
-                type: 'singleselect',
-                placeholder: t('placeholder.creation.ocp.clusterSet'),
-                validation: {
-                    required: false,
-                },
-                available: [],
+            reverse: 'ClusterDeployment[0].metadata.name',
+        },
+        {
+            name: t('creation.ocp.clusterSet'),
+            tooltip: t('tooltip.creation.ocp.clusterSet'),
+            id: 'clusterSet',
+            type: 'singleselect',
+            placeholder: t('placeholder.creation.ocp.clusterSet'),
+            validation: {
+                required: false,
             },
-            {
-                name: t('creation.ocp.baseDomain'),
-                tooltip: t('tooltip.creation.ocp.baseDomain'),
-                placeholder: t('placeholder.creation.ocp.baseDomain'),
-                id: 'baseDomain',
-                type: 'text',
-                validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-                tip: t(
-                    'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
-                ),
-            },
-            {
-                name: t('cluster.create.ocp.fips'),
-                id: 'fips',
-                type: 'checkbox',
-                active: false,
-                tip: t(
-                    'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
-                ),
-            },
-            {
-                id: 'showSecrets',
-                type: 'hidden',
-                active: false,
-            },
-            {
-                active: 1,
-                id: 'installAttemptsLimit',
-                type: 'hidden',
-            },
-        ],
-        [t]
-    )
+            available: [],
+        },
+        {
+            name: t('creation.ocp.baseDomain'),
+            tooltip: t('tooltip.creation.ocp.baseDomain'),
+            placeholder: t('placeholder.creation.ocp.baseDomain'),
+            id: 'baseDomain',
+            type: 'text',
+            validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+            tip: t(
+                'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
+            ),
+        },
+        {
+            name: t('cluster.create.ocp.fips'),
+            id: 'fips',
+            type: 'checkbox',
+            active: false,
+            tip: t(
+                'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
+            ),
+        },
+        {
+            id: 'showSecrets',
+            type: 'hidden',
+            active: false,
+        },
+        {
+            active: 1,
+            id: 'installAttemptsLimit',
+            type: 'hidden',
+        },
+    ]
 }
 
-export const useClusterPoolDetailsControlData = () => {
-    const { t } = useTranslation()
-    const lessThanEqualSize = (active, templateObjectMap, i18n) => {
-        const runningCount = active
-        const size = templateObjectMap['<<main>>'].ClusterPool[0].$raw.spec.size
-        if (runningCount > size) {
-            return i18n('clusterPool.creation.validation.runningCount.lessThanOrEqualSize')
-        }
-    }
-    return useMemo(
-        () => [
-            {
-                name: t('clusterPool.creation.ocp.name'),
-                tooltip: t('clusterPool.tooltip.creation.ocp.name'),
-                placeholder: t('clusterPool.creation.ocp.name.placeholder'),
-                id: 'name',
-                type: 'text',
-                validation: {
-                    constraint: VALID_DNS_LABEL,
-                    notification: t('import.form.invalid.dns.label'),
-                    required: true,
-                },
-                reverse: 'ClusterPool[0].metadata.name',
+export const clusterPoolDetailsControlData = (t) => {
+    return [
+        {
+            name: t('creation.ocp.name'),
+            tooltip: t('tooltip.creation.ocp.name'),
+            placeholder: t('creation.ocp.name.placeholder'),
+            id: 'name',
+            type: 'text',
+            validation: {
+                constraint: VALID_DNS_LABEL,
+                notification: t('import.form.invalid.dns.label'),
+                required: true,
             },
-            {
-                name: 'clusterPool.creation.ocp.namespace',
-                tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
-                id: 'namespace',
-                type: 'combobox',
-                placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
-                validation: {
-                    required: true,
-                },
-                available: [],
+            reverse: 'ClusterPool[0].metadata.name',
+        },
+        {
+            name: t('creation.ocp.clusterSet'),
+            tooltip: t('tooltip.creation.ocp.clusterSet'),
+            id: 'clusterSet',
+            type: 'singleselect',
+            placeholder: t('placeholder.creation.ocp.clusterSet'),
+            validation: {
+                required: false,
             },
-            {
-                name: 'clusterPool.creation.ocp.size',
-                tooltip: 'clusterPool.tooltip.creation.ocp.size',
-                id: 'size',
-                type: 'number',
-                initial: '1',
-                validation: {
-                    required: true,
-                },
-                // cacheUserValueKey: 'create.cluster.compute.node.count',
-            },
-            {
-                name: 'clusterPool.creation.ocp.runningCount',
-                tooltip: 'clusterPool.tooltip.creation.ocp.runningCount',
-                id: 'runningCount',
-                type: 'number',
-                initial: '0',
-                validation: {
-                    required: true,
-                    contextTester: lessThanEqualSize,
-                },
-            },
-            {
-                name: t('creation.ocp.clusterSet'),
-                tooltip: t('tooltip.creation.ocp.clusterSet'),
-                id: 'clusterSet',
-                type: 'singleselect',
-                placeholder: t('placeholder.creation.ocp.clusterSet'),
-                validation: {
-                    required: false,
-                },
-                available: [],
-            },
-            {
-                name: t('creation.ocp.baseDomain'),
-                tooltip: t('tooltip.creation.ocp.baseDomain'),
-                placeholder: t('placeholder.creation.ocp.baseDomain'),
-                id: 'baseDomain',
-                type: 'text',
-                validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-                tip: t(
-                    'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
-                ),
-            },
-            {
-                name: t('cluster.create.ocp.fips'),
-                id: 'fips',
-                type: 'checkbox',
-                active: false,
-                tip: t(
-                    'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
-                ),
-            },
-        ],
-        [t]
-    )
+            available: [],
+        },
+        {
+            name: t('creation.ocp.baseDomain'),
+            tooltip: t('tooltip.creation.ocp.baseDomain'),
+            placeholder: t('placeholder.creation.ocp.baseDomain'),
+            id: 'baseDomain',
+            type: 'text',
+            validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+            tip: t(
+                'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
+            ),
+        },
+        {
+            name: t('cluster.create.ocp.fips'),
+            id: 'fips',
+            type: 'checkbox',
+            active: false,
+            tip: t(
+                'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
+            ),
+        },
+    ]
 }
 
-// vvvvv TO REMOVE ONCE CLUSTERPOOL DUPE IS FIXED  vvvvv
-export const clusterPoolDetailsControlData = [
-    {
-        name: 'creation.ocp.name',
-        tooltip: 'tooltip.creation.ocp.name',
-        placeholder: 'creation.ocp.name.placeholder',
-        id: 'name',
-        type: 'text',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
+export const networkingControlData = (t) => {
+    return [
+        ///////////////////////  networking  /////////////////////////////////////
+        {
+            id: 'networkInfo',
+            type: 'title',
+            info: t('Configure network access for your cluster. One network is created by default.'),
         },
-        reverse: 'ClusterPool[0].metadata.name',
-    },
-    {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
-        id: 'clusterSet',
-        type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
-        validation: {
-            required: false,
+        {
+            id: 'networkType',
+            name: t('creation.ocp.cluster.network.type'),
+            tooltip: t('tooltip.creation.ocp.cluster.network.type'),
+            type: 'singleselect',
+            active: 'OVNKubernetes',
+            available: ['OpenShiftSDN', 'OVNKubernetes'],
+            validation: {
+                notification: t('creation.ocp.cluster.valid.key'),
+                required: true,
+            },
         },
-        available: [],
-    },
-    {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
-    },
-    {
-        name: 'cluster.create.ocp.fips',
-        id: 'fips',
-        type: 'checkbox',
-        active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
-    },
-]
-
-export const useNetworkingControlData = () => {
-    const { t } = useTranslation()
-    return useMemo(
-        () => [
-            ///////////////////////  networking  /////////////////////////////////////
-            {
-                id: 'networkInfo',
-                type: 'title',
-                info: t('Configure network access for your cluster. One network is created by default.'),
+        {
+            id: 'networks',
+            type: 'group',
+            prompts: {
+                addPrompt: t('creation.ocp.cluster.add.network'),
+                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
             },
-            {
-                id: 'networkType',
-                name: t('creation.ocp.cluster.network.type'),
-                tooltip: t('tooltip.creation.ocp.cluster.network.type'),
-                type: 'singleselect',
-                active: 'OVNKubernetes',
-                available: ['OpenShiftSDN', 'OVNKubernetes'],
-                validation: {
-                    notification: t('creation.ocp.cluster.valid.key'),
-                    required: true,
+            controlData: [
+                {
+                    id: 'networkGroup',
+                    type: 'section',
+                    collapsable: true,
+                    subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
+                    info: t('creation.ocp.node.network.info'),
                 },
-            },
-            {
-                id: 'networks',
-                type: 'group',
-                prompts: {
-                    addPrompt: t('creation.ocp.cluster.add.network'),
-                    deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                {
+                    id: 'clusterNetwork',
+                    type: 'text',
+                    name: t('creation.ocp.cluster.network'),
+                    tooltip: t('tooltip.creation.ocp.cluster.network'),
+                    placeholder: t('creation.ocp.cluster.network.placeholder'),
+                    active: '10.128.0.0/14',
+                    validation: VALIDATE_CIDR,
                 },
-                controlData: [
-                    {
-                        id: 'networkGroup',
-                        type: 'section',
-                        collapsable: true,
-                        subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
-                        info: t('creation.ocp.node.network.info'),
-                    },
-                    {
-                        id: 'clusterNetwork',
-                        type: 'text',
-                        name: t('creation.ocp.cluster.network'),
-                        tooltip: t('tooltip.creation.ocp.cluster.network'),
-                        placeholder: t('creation.ocp.cluster.network.placeholder'),
-                        active: '10.128.0.0/14',
-                        validation: VALIDATE_CIDR,
-                    },
-                    {
-                        id: 'hostPrefix',
-                        type: 'text',
-                        name: t('creation.ocp.cluster.network.host.prefix'),
-                        tooltip: t('tooltip.creation.ocp.cluster.network.host.prefix'),
-                        placeholder: t('creation.ocp.cluster.network.host.prefix.placeholder'),
-                        active: '23',
-                        validation: VALIDATE_NUMERIC,
-                    },
-                    {
-                        id: 'serviceNetwork',
-                        type: 'text',
-                        name: t('creation.ocp.service.network'),
-                        tooltip: t('tooltip.creation.ocp.service.network'),
-                        placeholder: t('creation.ocp.service.network.placeholder'),
-                        active: '172.30.0.0/16',
-                        validation: VALIDATE_CIDR,
-                    },
-                    {
-                        id: 'machineCIDR',
-                        type: 'text',
-                        name: t('creation.ocp.machine.cidr'),
-                        tooltip: t('tooltip.creation.ocp.machine.cidr'),
-                        placeholder: t('creation.ocp.machine.cidr.placeholder'),
-                        active: '10.0.0.0/16',
-                        validation: VALIDATE_CIDR,
-                    },
-                ],
-            },
-        ],
-        [t]
-    )
+                {
+                    id: 'hostPrefix',
+                    type: 'text',
+                    name: t('creation.ocp.cluster.network.host.prefix'),
+                    tooltip: t('tooltip.creation.ocp.cluster.network.host.prefix'),
+                    placeholder: t('creation.ocp.cluster.network.host.prefix.placeholder'),
+                    active: '23',
+                    validation: VALIDATE_NUMERIC,
+                },
+                {
+                    id: 'serviceNetwork',
+                    type: 'text',
+                    name: t('creation.ocp.service.network'),
+                    tooltip: t('tooltip.creation.ocp.service.network'),
+                    placeholder: t('creation.ocp.service.network.placeholder'),
+                    active: '172.30.0.0/16',
+                    validation: VALIDATE_CIDR,
+                },
+                {
+                    id: 'machineCIDR',
+                    type: 'text',
+                    name: t('creation.ocp.machine.cidr'),
+                    tooltip: t('tooltip.creation.ocp.machine.cidr'),
+                    placeholder: t('creation.ocp.machine.cidr.placeholder'),
+                    active: '10.0.0.0/16',
+                    validation: VALIDATE_CIDR,
+                },
+            ],
+        },
+    ]
 }
 
-// vvvvv TO REMOVE ONCE CLUSTERPOOL DUPE IS FIXED vvvvv
-export const networkingControlData = [
-    ///////////////////////  networking  /////////////////////////////////////
-    {
-        id: 'networkInfo',
-        type: 'title',
-        info: 'Configure network access for your cluster. One network is created by default.',
-    },
-    {
-        id: 'networkType',
-        name: 'creation.ocp.cluster.network.type',
-        tooltip: 'tooltip.creation.ocp.cluster.network.type',
-        type: 'singleselect',
-        active: 'OVNKubernetes',
-        available: ['OpenShiftSDN', 'OVNKubernetes'],
-        validation: {
-            notification: 'creation.ocp.cluster.valid.key',
-            required: true,
+export const proxyControlData = (t) => {
+    return [
+        {
+            id: 'proxyStep',
+            type: 'step',
+            title: t('Proxy'),
         },
-    },
-    {
-        id: 'networks',
-        type: 'group',
-        prompts: {
-            addPrompt: 'creation.ocp.cluster.add.network',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+        {
+            id: 'proxyInfo',
+            type: 'title',
+            info: t(
+                'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.'
+            ),
         },
-        controlData: [
-            {
-                id: 'networkGroup',
-                type: 'section',
-                collapsable: true,
-                subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
-                info: 'creation.ocp.node.network.info',
-            },
-            {
-                id: 'clusterNetwork',
-                type: 'text',
-                name: 'creation.ocp.cluster.network',
-                tooltip: 'tooltip.creation.ocp.cluster.network',
-                placeholder: 'creation.ocp.cluster.network.placeholder',
-                active: '10.128.0.0/14',
-                validation: VALIDATE_CIDR,
-            },
-            {
-                id: 'hostPrefix',
-                type: 'text',
-                name: 'creation.ocp.cluster.network.host.prefix',
-                tooltip: 'tooltip.creation.ocp.cluster.network.host.prefix',
-                placeholder: 'creation.ocp.cluster.network.host.prefix.placeholder',
-                active: '23',
-                validation: VALIDATE_NUMERIC,
-            },
-            {
-                id: 'serviceNetwork',
-                type: 'text',
-                name: 'creation.ocp.service.network',
-                tooltip: 'tooltip.creation.ocp.service.network',
-                placeholder: 'creation.ocp.service.network.placeholder',
-                active: '172.30.0.0/16',
-                validation: VALIDATE_CIDR,
-            },
-            {
-                id: 'machineCIDR',
-                type: 'text',
-                name: 'creation.ocp.machine.cidr',
-                tooltip: 'tooltip.creation.ocp.machine.cidr',
-                placeholder: 'creation.ocp.machine.cidr.placeholder',
-                active: '10.0.0.0/16',
-                validation: VALIDATE_CIDR,
-            },
-        ],
-    },
-]
-
-export const useProxyControlData = () => {
-    const { t } = useTranslation()
-    return useMemo(
-        () => [
-            {
-                id: 'proxyStep',
-                type: 'step',
-                title: t('Proxy'),
-            },
-            {
-                id: 'proxyInfo',
-                type: 'title',
-                info: t(
-                    'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.'
-                ),
-            },
-            {
-                name: t('Use proxy'),
-                id: 'hasProxy',
-                type: 'checkbox',
-                active: false,
-                onSelect: onChangeProxy,
-            },
-            {
-                id: 'httpProxy',
-                type: 'text',
-                name: t('HTTP proxy'),
-                disabled: true,
-                tip: t('Requires this format: http://<username>:<pswd>@<ip>:<port>'),
-                validation: VALIDATE_URL,
-            },
-            {
-                id: 'httpsProxy',
-                type: 'text',
-                name: t('HTTPS proxy'),
-                tip: t('Requires this format: https://<username>:<pswd>@<ip>:<port>'),
-                disabled: true,
-                validation: VALIDATE_URL,
-            },
-            {
-                active: [],
-                id: 'noProxy',
-                type: 'values',
-                name: t('No proxy'),
-                disabled: true,
-                tip: 'noProxyTip',
-            },
-            {
-                id: 'additionalTrustBundle',
-                type: 'textarea',
-                name: t('Additional trust bundle'),
-                disabled: true,
-                placeholder: t('-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----'),
-            },
-        ],
-        [t]
-    )
+        {
+            name: t('Use proxy'),
+            id: 'hasProxy',
+            type: 'checkbox',
+            active: false,
+            onSelect: onChangeProxy,
+        },
+        {
+            id: 'httpProxy',
+            type: 'text',
+            name: t('HTTP proxy'),
+            disabled: true,
+            tip: t('Requires this format: http://<username>:<pswd>@<ip>:<port>'),
+            validation: VALIDATE_URL,
+        },
+        {
+            id: 'httpsProxy',
+            type: 'text',
+            name: t('HTTPS proxy'),
+            tip: t('Requires this format: https://<username>:<pswd>@<ip>:<port>'),
+            disabled: true,
+            validation: VALIDATE_URL,
+        },
+        {
+            active: [],
+            id: 'noProxy',
+            type: 'values',
+            name: t('No proxy'),
+            disabled: true,
+            tip: 'noProxyTip',
+        },
+        {
+            id: 'additionalTrustBundle',
+            type: 'textarea',
+            name: t('Additional trust bundle'),
+            disabled: true,
+            placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        },
+    ]
 }
-
-// vvvvv TO REMOVE ONCE CLUSTERPOOL DUPE IS FIXED vvvvv
-export const proxyControlData = [
-    {
-        id: 'proxyStep',
-        type: 'step',
-        title: 'Proxy',
-    },
-    {
-        id: 'proxyInfo',
-        type: 'title',
-        info: 'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.',
-    },
-    {
-        name: 'Use proxy',
-        id: 'hasProxy',
-        type: 'checkbox',
-        active: false,
-        onSelect: onChangeProxy,
-    },
-    {
-        id: 'httpProxy',
-        type: 'text',
-        name: 'HTTP proxy',
-        disabled: true,
-        tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
-        validation: VALIDATE_URL,
-    },
-    {
-        id: 'httpsProxy',
-        type: 'text',
-        name: 'HTTPS proxy',
-        tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
-        disabled: true,
-        validation: VALIDATE_URL,
-    },
-    {
-        active: [],
-        id: 'noProxy',
-        type: 'values',
-        name: 'No proxy',
-        disabled: true,
-        tip: 'noProxyTip',
-    },
-    {
-        id: 'additionalTrustBundle',
-        type: 'textarea',
-        name: 'Additional trust bundle',
-        disabled: true,
-        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
-    },
-]
 
 export const onChangeAutomationTemplate = (control, controlData) => {
     const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
@@ -823,191 +594,95 @@ const reverseClusterCuratorSpec = (control, templateObject) => {
     }
 }
 
-export const useAutomationControlData = () => {
-    const { t } = useTranslation()
-    return useMemo(
-        () => [
-            ///////////////////////  automation  /////////////////////////////////////
-            {
-                id: 'automationStep',
-                type: 'step',
-                title: t('template.clusterCreate.title'),
-            },
-            {
-                id: 'chooseTemplate',
-                type: 'title',
-                info: t('template.clusterCreate.info'),
-            },
-            {
-                type: 'custom',
-                id: 'automationProviderHint',
-                component: <AutomationProviderHint />,
-            },
-            {
-                name: t('template.clusterCreate.name'),
-                id: 'templateName',
-                type: 'combobox',
-                tooltip: t('template.clusterCreate.tooltip'),
-                placeholder: t('template.clusterCreate.select.placeholder'),
-                onSelect: onChangeAutomationTemplate,
-                validation: {
-                    required: false,
-                },
-                prompts: CREATE_AUTOMATION_TEMPLATE,
-            },
-            {
-                type: 'custom',
-                id: 'curatorLinkOut',
-                component: <TemplateLinkOutControl />,
-            },
-            {
-                type: 'custom',
-                id: 'curatorSummary',
-                component: <TemplateSummaryControl />,
-            },
-            {
-                id: 'clusterCuratorSpec',
-                type: 'hidden',
-                active: '',
-                reverse: reverseClusterCuratorSpec,
-            },
-            {
-                id: 'supportedCurations',
-                type: 'values',
-                hidden: true,
-                active: [],
-            },
-            {
-                id: 'toweraccess-install',
-                type: 'hidden',
-                active: '',
-            },
-            {
-                id: 'toweraccess-upgrade',
-                type: 'hidden',
-                active: '',
-            },
-            {
-                id: 'toweraccess-scale',
-                type: 'hidden',
-                active: '',
-            },
-            {
-                id: 'toweraccess-destroy',
-                type: 'hidden',
-                active: '',
-            },
-        ],
-        [t]
-    )
-}
-
-// vvvvv TO REMOVE ONCE CLUSTERPOOL DUPE IS FIXED vvvvv
-export const automationControlData = [
-    ///////////////////////  automation  /////////////////////////////////////
-    {
-        id: 'automationStep',
-        type: 'step',
-        title: 'template.clusterCreate.title',
-    },
-    {
-        id: 'chooseTemplate',
-        type: 'title',
-        info: 'template.clusterCreate.info',
-    },
-    {
-        type: 'custom',
-        id: 'automationProviderHint',
-        component: <AutomationProviderHint component="hint" className="creation-view-controls-hint" />,
-    },
-    {
-        name: 'template.clusterCreate.name',
-        id: 'templateName',
-        type: 'combobox',
-        tooltip: 'template.clusterCreate.tooltip',
-        placeholder: 'template.clusterCreate.select.placeholder',
-        onSelect: onChangeAutomationTemplate,
-        validation: {
-            required: false,
+export const automationControlData = (t) => {
+    return [
+        ///////////////////////  automation  /////////////////////////////////////
+        {
+            id: 'automationStep',
+            type: 'step',
+            title: t('template.clusterCreate.title'),
         },
-        prompts: CREATE_AUTOMATION_TEMPLATE,
-    },
-    {
-        type: 'custom',
-        id: 'curatorLinkOut',
-        component: <TemplateLinkOutControl />,
-    },
-    {
-        type: 'custom',
-        id: 'curatorSummary',
-        component: <TemplateSummaryControl />,
-    },
-    {
-        id: 'clusterCuratorSpec',
-        type: 'hidden',
-        active: '',
-        reverse: reverseClusterCuratorSpec,
-    },
-    {
-        id: 'supportedCurations',
-        type: 'values',
-        hidden: true,
-        active: [],
-    },
-    {
-        id: 'toweraccess-install',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-upgrade',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-scale',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-destroy',
-        type: 'hidden',
-        active: '',
-    },
-]
-
-export const useArchitectureData = () => {
-    const { t } = useTranslation()
-    return useMemo(
-        () => [
-            {
-                name: t('CPU architecture'),
-                placeholder: t('Enter CPU architecture'),
-                tooltip: t('tooltip.architecture'),
-                id: 'architecture',
-                type: 'combobox',
-                available: ['amd64'],
-                validation: VALIDATE_ALPHANUMERIC,
-                cacheUserValueKey: 'create.cluster.architecture',
+        {
+            id: 'chooseTemplate',
+            type: 'title',
+            info: t('template.clusterCreate.info'),
+        },
+        {
+            type: 'custom',
+            id: 'automationProviderHint',
+            component: <AutomationProviderHint />,
+        },
+        {
+            name: t('template.clusterCreate.name'),
+            id: 'templateName',
+            type: 'combobox',
+            tooltip: t('template.clusterCreate.tooltip'),
+            placeholder: t('template.clusterCreate.select.placeholder'),
+            onSelect: onChangeAutomationTemplate,
+            validation: {
+                required: false,
             },
-        ],
-        [t]
-    )
+            prompts: CREATE_AUTOMATION_TEMPLATE,
+        },
+        {
+            type: 'custom',
+            id: 'curatorLinkOut',
+            component: <TemplateLinkOutControl />,
+        },
+        {
+            type: 'custom',
+            id: 'curatorSummary',
+            component: <TemplateSummaryControl />,
+        },
+        {
+            id: 'clusterCuratorSpec',
+            type: 'hidden',
+            active: '',
+            reverse: reverseClusterCuratorSpec,
+        },
+        {
+            id: 'supportedCurations',
+            type: 'values',
+            hidden: true,
+            active: [],
+        },
+        {
+            id: 'toweraccess-install',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-upgrade',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-scale',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-destroy',
+            type: 'hidden',
+            active: '',
+        },
+    ]
 }
 
-// vvvvv TO REMOVE ONCE CLUSTERPOOL DUPE IS FIXED vvvvv
-export const architectureData = [
-    {
-        name: 'CPU architecture',
-        placeholder: 'Enter CPU architecture',
-        tooltip: 'tooltip.architecture',
-        id: 'architecture',
-        type: 'combobox',
-        available: ['amd64'],
-        validation: VALIDATE_ALPHANUMERIC,
-        cacheUserValueKey: 'create.cluster.architecture',
-    },
-]
+export const architectureData = (t) => {
+    return [
+        {
+            name: t('CPU architecture'),
+            placeholder: t('Enter CPU architecture'),
+            tooltip: t('tooltip.architecture'),
+            id: 'architecture',
+            type: 'combobox',
+            available: ['amd64'],
+            validation: VALIDATE_ALPHANUMERIC,
+            cacheUserValueKey: 'create.cluster.architecture',
+        },
+    ]
+}
 
 const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {

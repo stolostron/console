@@ -369,16 +369,17 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         }
     }, [infrastructureType, isInfraEnvAvailable, t])
 
-    const handleModalToggle = () => {
-        setIsModalOpen(!isModalOpen)
-    }
-
+    let controlData: any[]
     const breadcrumbs = [
         { text: t('Clusters'), to: NavigationPath.clusters },
         { text: t('Infrastructure'), to: NavigationPath.createCluster },
     ]
 
-    let controlData: any[]
+    const backButtonOverride = back(NavigationPath.clusters)
+
+    const handleModalToggle = () => {
+        setIsModalOpen(!isModalOpen)
+    }
     switch (infrastructureType) {
         case Provider.aws:
             breadcrumbs.push(controlPlaneBreadCrumbAWS)
@@ -446,8 +447,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
             breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
             break
     }
-
-    const backButtonOverride = back(NavigationPath.clusters)
 
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
 

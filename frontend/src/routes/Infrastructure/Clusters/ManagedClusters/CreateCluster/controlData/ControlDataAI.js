@@ -4,83 +4,82 @@ import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFunction } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig = true) => {
-    const controlData = [...controlDataAI]
+export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig = true, t) => {
+    const controlData = [
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  AI form  /////////////////////////////////////
+        {
+            id: 'aiDetailStep',
+            type: 'step',
+            title: t('Cluster details'),
+        },
+        {
+            id: 'infrastructure',
+            name: t('Infrastructure'),
+            active: 'Host inventory',
+            type: 'reviewinfo',
+        },
+        {
+            id: 'controlplane',
+            name: t('Control plane type'),
+            active: 'Standalone',
+            type: 'reviewinfo',
+        },
+        /////////////////////// ACM Credentials  /////////////////////////////////////
+        {
+            name: t('creation.ocp.cloud.connection'),
+            tooltip: t('tooltip.creation.ocp.cloud.connection'),
+            id: 'connection',
+            type: 'singleselect',
+            placeholder: t('creation.ocp.cloud.select.connection'),
+            providerId: ['hybrid', 'hostinventory'],
+            validation: {
+                notification: t('creation.ocp.cluster.must.select.connection'),
+                required: false,
+            },
+            available: [],
+            footer: <CreateCredentialModal />,
+        },
+        {
+            id: 'ai',
+            type: 'custom',
+            component: <DetailsForm />,
+            providerId: 'ai',
+            mustValidate: true,
+            encodeValues: ['pullSecret'],
+            additionalProps: {
+                promptSshPublicKey: false,
+            },
+        },
+        ...automationControlData(t),
+        {
+            id: 'reviewSave',
+            type: 'review',
+            title: t('Review and save'),
+            nextButtonLabel: t('Save'),
+            comment: t(
+                'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
+            ),
+            disableEditorOnSuccess: true,
+            disablePreviousControlsOnSuccess: true,
+        },
+        {
+            id: 'aiHostsStep',
+            type: 'step',
+            title: t('Hosts'),
+            disabled: true,
+        },
+        {
+            id: 'aiNetworkStep',
+            type: 'step',
+            title: t('Networking'),
+            disabled: true,
+        },
+    ]
     appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
     insertToggleModalFunction(handleModalToggle, controlData)
     return controlData
 }
-
-export const controlDataAI = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
-    {
-        id: 'aiDetailStep',
-        type: 'step',
-        title: 'Cluster details',
-    },
-    {
-        id: 'infrastructure',
-        name: 'Infrastructure',
-        active: 'Host inventory',
-        type: 'reviewinfo',
-    },
-    {
-        id: 'controlplane',
-        name: 'Control plane type',
-        active: 'Standalone',
-        type: 'reviewinfo',
-    },
-    /////////////////////// ACM Credentials  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: ['hybrid', 'hostinventory'],
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: false,
-        },
-        available: [],
-        footer: <CreateCredentialModal />,
-    },
-    {
-        id: 'ai',
-        type: 'custom',
-        component: <DetailsForm />,
-        providerId: 'ai',
-        mustValidate: true,
-        encodeValues: ['pullSecret'],
-        additionalProps: {
-            promptSshPublicKey: false,
-        },
-    },
-    ...automationControlData,
-    {
-        id: 'reviewSave',
-        type: 'review',
-        title: 'Review and save',
-        nextButtonLabel: 'Save',
-        comment:
-            'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.',
-        disableEditorOnSuccess: true,
-        disablePreviousControlsOnSuccess: true,
-    },
-    {
-        id: 'aiHostsStep',
-        type: 'step',
-        title: 'Hosts',
-        disabled: true,
-    },
-    {
-        id: 'aiNetworkStep',
-        type: 'step',
-        title: 'Networking',
-        disabled: true,
-    },
-]
 
 const aiStep = getControlDataAI().find((data) => data.id === 'ai')
 aiStep.additionalProps.promptSshPublicKey = true
