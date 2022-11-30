@@ -3,21 +3,29 @@
 'use strict'
 
 import { getControlDataAZR } from './ControlDataAZR'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key) => i18next.t(key),
+    }),
+}))
 
 describe('getControlDataAZR', () => {
     it('get control data for Azure - default', () => {
-        getControlDataAZR()
+        getControlDataAZR(t)
     })
 
     it('get control data for Azure - no automation', () => {
-        getControlDataAZR(false, false, true)
+        getControlDataAZR(false, false, true, t)
     })
 
     it('get control data for Azure - include sno cluster', () => {
-        getControlDataAZR(true, true, true)
+        getControlDataAZR(true, true, true, t)
     })
 
     it('get control data for Azure - no klusterletaddon', () => {
-        getControlDataAZR(true, true, true)
+        getControlDataAZR(true, true, true, t)
     })
 })

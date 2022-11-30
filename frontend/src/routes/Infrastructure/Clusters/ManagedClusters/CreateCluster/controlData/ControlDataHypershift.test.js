@@ -4,13 +4,21 @@
 
 import { Warning } from '../Warning'
 import { getControlDataHypershift } from './ControlDataHypershift'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key) => i18next.t(key),
+    }),
+}))
 
 describe('getControlDataHypershift', () => {
     it('get control data for Hypershift - default', () => {
-        getControlDataHypershift()
+        getControlDataHypershift(t)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataHypershift(false, <Warning />)
+        getControlDataHypershift(false, <Warning />, t)
     })
 })

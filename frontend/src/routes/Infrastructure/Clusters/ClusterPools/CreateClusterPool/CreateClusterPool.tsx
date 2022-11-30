@@ -21,7 +21,6 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-// import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import {
     setAvailableConnections,
     arrayItemHasKey,
@@ -283,7 +282,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 type={'ClusterPool'}
                 title={'ClusterPool YAML'}
                 monacoEditor={<MonacoEditor />}
-                controlData={fixupControlsForClusterPool(controlData)}
+                controlData={fixupControlsForClusterPool(controlData, t)}
                 template={template}
                 portals={Portals}
                 createControl={{
