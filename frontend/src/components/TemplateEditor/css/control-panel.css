@@ -885,3 +885,8 @@
     transition: none;
     transform: none;
 }
+
+.creation-view-controls-hint {
+    margin: 16px 0px 24px 0px;
+    font-size: smaller;
+}

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
+import set from 'lodash/set'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -8,6 +9,7 @@ import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import { IResource } from '../../../../resources/resource'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
 import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
@@ -16,7 +18,7 @@ const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
 
 // This will be changed after MGMT-7255
 const mockInfraEnvRegeneratedISO = cloneDeep(mockInfraEnv1)
-mockInfraEnvRegeneratedISO.status.createdTime = '2021-11-10T14:03:16Z'
+set(mockInfraEnvRegeneratedISO, 'status.createdTime', '2021-11-10T14:03:16Z')
 
 const mockNMStateConfigInfraEnv = cloneDeep(mockNMStateConfig)
 mockNMStateConfigInfraEnv.metadata.name = infraEnvName
@@ -48,7 +50,7 @@ const Component = () => {
 describe('Infrastructure Environment Details page', () => {
     beforeEach(() => nockIgnoreApiPaths())
     test('can render', async () => {
-        const initialNocks = [nockGet(mockPullSecret)]
+        const initialNocks = [nockGet(mockPullSecret as IResource)]
         render(<Component />)
         await waitForText('ai:Environment details')
         await waitForNocks(initialNocks)

@@ -7,6 +7,7 @@ import {
     ClusterImageSet,
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
+    IResource,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -535,8 +536,8 @@ const subscriptionOperator: SubscriptionOperator = {
                 reason: 'AllCatalogSourcesHealthy',
                 lastTransitionTime: '',
                 message: '',
-                type: '',
-                status: '',
+                type: 'CatalogSourcesUnhealthy',
+                status: 'False',
             },
         ],
     },
@@ -610,7 +611,7 @@ describe('CreateCluster AWS', () => {
         await clickByText('Next')
 
         // choose ansible template
-        await waitForText('Install the Operator through the following link:')
+        await waitForText('Install the operator')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
@@ -685,7 +686,7 @@ describe('CreateCluster AWS', () => {
 
         // ansible template
         await waitForText('Ansible Automation Template')
-        await waitForNotText('Install the Operator through the following link:')
+        await waitForNotText('Install the operator')
         await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')
@@ -886,7 +887,7 @@ describe('CreateCluster on premise', () => {
     test(
         'can create On Premise cluster',
         async () => {
-            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
+            const initialNocks: Scope[] = [nockList(clusterImageSet as IResource, mockClusterImageSet as IResource[])]
             render(<Component />)
 
             // Create On Premise cluster
@@ -934,9 +935,9 @@ describe('CreateCluster on premise', () => {
             // Let's save it
             const createNocks = [
                 nockCreate(mockClusterProject, mockClusterProjectResponse),
-                nockCreate(mockClusterDeploymentAI),
+                nockCreate(mockClusterDeploymentAI as IResource),
                 nockCreate(mockManagedClusterAI),
-                nockCreate(mockAgentClusterInstall),
+                nockCreate(mockAgentClusterInstall as IResource),
                 nockCreate(mockPullSecretAI),
                 nockCreate(mockKlusterletAddonConfigAI),
             ]

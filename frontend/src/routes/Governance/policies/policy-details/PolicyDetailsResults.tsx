@@ -4,8 +4,8 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -86,7 +86,10 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 cell: (item: resultsTableData) => (
                     <Link
                         to={{
-                            pathname: NavigationPath.clusterOverview.replace(':id', item.clusterNamespace),
+                            pathname: generatePath(NavigationPath.clusterOverview, {
+                                name: item.cluster,
+                                namespace: item.clusterNamespace || '~managed-cluster',
+                            }),
                         }}
                     >
                         {item.clusterNamespace}

@@ -14,16 +14,16 @@ import {
     SelectVariant,
 } from '@patternfly/react-core'
 import _ from 'lodash'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
+import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { GetProjects } from '../../../components/GetProjects'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { getOperatorError } from '../../../lib/error-output'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -34,7 +34,6 @@ import {
     createResource,
     getClusterCurator,
     IResource,
-    isAnsibleOperatorInstalled,
     listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
@@ -110,7 +109,7 @@ export function AnsibleAutomationsForm(props: {
     const { t } = useTranslation()
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
-    const { settingsState, subscriptionOperatorsState } = useSharedAtoms()
+    const { settingsState } = useSharedAtoms()
     const [settings] = useRecoilState(settingsState)
 
     const history = useHistory()
@@ -148,12 +147,6 @@ export function AnsibleAutomationsForm(props: {
     )
     const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
         clusterCurator?.spec?.destroy?.posthook ?? []
-    )
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
-
-    const isOperatorInstalled = useMemo(
-        () => isAnsibleOperatorInstalled(subscriptionOperators),
-        [subscriptionOperators]
     )
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
@@ -573,7 +566,7 @@ export function AnsibleAutomationsForm(props: {
                 schema={schema}
                 immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
-                operatorError={getOperatorError(isOperatorInstalled, t)}
+                globalWizardAlert={<AutomationProviderHint component="alert" />}
             />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}

@@ -53,14 +53,14 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     )
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
 
-    const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
+    const infraNMStates = useMemo(() => getInfraEnvNMStates(nmStateConfigs, infraEnv), [nmStateConfigs, infraEnv])
 
     const infraAgents = useMemo(
         () =>
             agents.filter(
                 (a) =>
-                    a.metadata.namespace === infraEnv?.metadata?.namespace &&
-                    isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+                    a.metadata?.namespace === infraEnv?.metadata?.namespace &&
+                    isMatch(a.metadata?.labels || {}, infraEnv?.status?.agentLabelSelector?.matchLabels || {})
             ),
         [agents, infraEnv]
     )
@@ -69,8 +69,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         () =>
             bareMetalHosts.filter(
                 (bmh) =>
-                    bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
-                    bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
+                    bmh.metadata?.namespace === infraEnv?.metadata?.namespace &&
+                    bmh.metadata?.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
             ),
         [bareMetalHosts, infraEnv?.metadata?.namespace, infraEnv?.metadata?.name]
     )
@@ -101,9 +101,9 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                     <AcmPageHeader
                         breadcrumb={[
                             { text: t('infraenvs'), to: NavigationPath.infraEnvironments },
-                            { text: infraEnv.metadata.name, to: '' },
+                            { text: infraEnv?.metadata?.name || '', to: '' },
                         ]}
-                        title={infraEnv.metadata.name}
+                        title={infraEnv.metadata?.name || ''}
                         navigation={
                             <AcmSecondaryNav>
                                 <AcmSecondaryNavItem
@@ -146,7 +146,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                         }
                         actions={
                             <Dropdown
-                                id={`${infraEnv.metadata.name}-actions`}
+                                id={`${infraEnv.metadata?.name}-actions`}
                                 toggle={
                                     <DropdownToggle id="dropdown-basic" onToggle={setIsKebabOpen} isPrimary>
                                         {t('Add hosts')}
@@ -214,6 +214,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                 infraAgents={infraAgents}
                                 bareMetalHosts={infraBMHs}
                                 infraNMStates={infraNMStates}
+                                infrastructure={infrastructures[0]}
                             />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>

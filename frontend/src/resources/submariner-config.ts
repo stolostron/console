@@ -25,6 +25,7 @@ export interface SubmarinerConfig extends IResource {
     metadata: Metadata
     spec: {
         IPSecNATTPort?: number
+        airGappedDeployment?: boolean
         NATTEnable?: boolean
         cableDriver?: CableDriver
         credentialsSecret?: {
@@ -51,6 +52,7 @@ export interface SubmarinerConfig extends IResource {
 
 type SubmarinerConfigDefaults = {
     nattPort: number
+    airGappedDeployment: boolean
     nattEnable: boolean
     cableDriver: CableDriver
     gateways: number
@@ -62,6 +64,7 @@ type SubmarinerConfigDefaults = {
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     nattPort: 4500,
+    airGappedDeployment: false,
     nattEnable: true,
     cableDriver: CableDriver.libreswan,
     gateways: 1,

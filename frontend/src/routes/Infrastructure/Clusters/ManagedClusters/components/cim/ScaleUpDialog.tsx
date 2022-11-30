@@ -5,6 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { patchResource } from '../../../../../../resources/utils/resource-request'
 import { useClusterDeployment, onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
+import { IResource } from '../../../../../../resources'
 
 const { ScaleUpModal } = CIM
 
@@ -28,7 +29,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
             if (!name || !namespace) throw new Error(`The cluster deployment ${clusterName} does not exist.`)
 
             const promises = agentsToAdd.map((agent) => {
-                return patchResource(agent, [
+                return patchResource(agent as IResource, [
                     {
                         op: agent.spec?.clusterDeploymentName ? 'replace' : 'add',
                         path: '/spec/clusterDeploymentName',

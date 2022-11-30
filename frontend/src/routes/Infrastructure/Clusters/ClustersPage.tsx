@@ -18,17 +18,22 @@ export const PageContext = createContext<{
     setActions: () => {},
 })
 
-export const usePageContext = (showActions: boolean, Component: ElementType) => {
+export const usePageContext = (showActions: boolean, Component: ElementType, CustomAction?: ElementType) => {
     const { setActions } = useContext(PageContext)
 
     useEffect(() => {
         if (showActions) {
-            setActions(<Component />)
+            setActions(
+                <Fragment>
+                    {CustomAction && <CustomAction />}
+                    <Component />
+                </Fragment>
+            )
         } else {
-            setActions(null)
+            setActions(CustomAction ? <CustomAction /> : null)
         }
         return () => setActions(null)
-    }, [showActions, setActions, Component])
+    }, [showActions, setActions, Component, CustomAction])
 
     return Component
 }

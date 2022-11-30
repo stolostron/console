@@ -63,7 +63,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
-    const supportedVersionCM = getSupportedCM(configMaps)
+    const supportedVersionCM = getSupportedCM(configMaps as CIM.ConfigMapK8sResource[])
 
     useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -180,7 +180,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         <HostedClusterDetailsStep
             formRef={formRef}
             onValuesChanged={onValuesChanged}
-            clusterImages={clusterImages}
+            clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}
             usedClusterNames={usedClusterNames}
             extensionAfter={extensionAfter}
             supportedVersionsCM={supportedVersionCM}

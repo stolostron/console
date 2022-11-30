@@ -2,13 +2,15 @@
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { getLatest } from './utils/utils'
-import { SubscriptionOperator } from '.'
 
 export const AnsibleJobApiVersion = 'tower.ansible.com/v1alpha1'
 export type AnsibleJobApiVersionType = 'tower.ansible.com/v1alpha1'
 
 export const AnsibleJobKind = 'AnsibleJob'
 export type AnsibleJobKindType = 'AnsibleJob'
+
+export type AnsibleJobTemplateType = 'Job' | 'Workflow'
+export type AnsibleApiJobTemplateType = 'job_template' | 'workflow_job_template'
 
 export const AnsibleJobDefinition: IResourceDefinition = {
     apiVersion: AnsibleJobApiVersion,
@@ -68,23 +70,12 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
     }
 }
 
-export function isAnsibleOperatorInstalled(subscriptionOperators: SubscriptionOperator[]) {
-    const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
-        const conditions = op.status?.conditions[0]
-        return (
-            op.metadata.name === 'ansible-automation-platform-operator' &&
-            conditions?.reason === 'AllCatalogSourcesHealthy'
-        )
-    })
-    return ansibleOp.length > 0
-}
-
 export interface AnsibleTowerJobTemplateList {
     count?: number
     next?: string
     results: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
-    name: string
-    type?: string
+    name?: string
+    type?: AnsibleApiJobTemplateType
 }

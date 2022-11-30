@@ -4,7 +4,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockIgnoreRBAC, nockAnsibleTower, nockCreate, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { clickByText, waitForCalled, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
+import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicyAutomation } from './CreatePolicyAutomation'
 import {
@@ -14,7 +14,7 @@ import {
     mockTemplateList,
     mockSubscriptionOperator,
     mockPolicyAutomation,
-    mockAnsibleCredentialWorkFlow,
+    mockAnsibleCredentialWorkflow,
     mockTemplateWorkflowList,
 } from '../governance.sharedMocks'
 import { ConfigMap, SubscriptionOperator } from '../../../resources'
@@ -53,8 +53,8 @@ describe('Create Policy Automation Wizard', () => {
 
         // template information
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        nockAnsibleTower(mockAnsibleCredentialWorkFlow, mockTemplateWorkflowList)
-        waitForNotText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+        waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
         await waitForText('Create policy automation')
 
         // select ansible credential
@@ -87,14 +87,12 @@ describe('Create Policy Automation Wizard', () => {
 
     test('render warning when Ansible operator is not installed', async () => {
         render(<CreatePolicyAutomationTest configMaps={[mockOpenShiftConsoleConfigMap]} />)
-        window.open = jest.fn()
-        waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        waitForText('The Ansible Automation Platform Operator is required to use automation templates.')
         screen
             .getByRole('button', {
-                name: /operatorhub/i,
+                name: /Install the operator/i,
             })
             .click()
-        await waitForCalled(window.open as jest.Mock)
     })
 
     test('can cancel policy automation creation', () => {

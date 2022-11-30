@@ -532,7 +532,7 @@ export const mockAnsibleCredential = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
     token: 'abcd',
 }
-export const mockAnsibleCredentialWorkFlow = {
+export const mockAnsibleCredentialWorkflow = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
     token: 'abcd',
 }
@@ -624,8 +624,8 @@ export const mockSubscriptionOperator: SubscriptionOperator = {
                 reason: 'AllCatalogSourcesHealthy',
                 lastTransitionTime: '',
                 message: '',
-                type: '',
-                status: '',
+                type: 'CatalogSourcesUnhealthy',
+                status: 'False',
             },
         ],
     },

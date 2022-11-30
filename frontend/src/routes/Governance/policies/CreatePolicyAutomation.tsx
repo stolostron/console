@@ -8,13 +8,7 @@ import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    listAnsibleTowerJobs,
-    PolicyAutomationApiVersion,
-    PolicyAutomationKind,
-    Secret,
-    SubscriptionOperator,
-} from '../../../resources'
+import { listAnsibleTowerJobs, PolicyAutomationApiVersion, PolicyAutomationKind, Secret } from '../../../resources'
 import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
 
@@ -43,28 +37,16 @@ export function CreatePolicyAutomation() {
     const { t } = useTranslation()
     const params = useParams<{ namespace: string; name: string }>()
     const { name, namespace } = params
-    const { configMapsState, secretsState, subscriptionOperatorsState, usePolicies } = useSharedAtoms()
+    const { configMapsState, secretsState, usePolicies } = useSharedAtoms()
     const history = useHistory()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
     const [configMaps] = useRecoilState(configMapsState)
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const toast = useContext(AcmToastContext)
     const currentPolicy = useMemo(
         () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
         [policies, name, namespace]
     )
-
-    const isOperatorInstalled = useMemo(() => {
-        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
-            const conditions = op.status?.conditions[0]
-            return (
-                op.metadata.name === 'ansible-automation-platform-operator' &&
-                conditions?.reason === 'AllCatalogSourcesHealthy'
-            )
-        })
-        return ansibleOp.length > 0
-    }, [subscriptionOperators])
 
     const credentials = useMemo(
         () =>
@@ -84,7 +66,6 @@ export function CreatePolicyAutomation() {
             yamlEditor={getWizardSyncEditor}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
-            isAnsibleOperatorInstalled={isOperatorInstalled}
             configMaps={configMaps}
             resource={{
                 kind: PolicyAutomationKind,

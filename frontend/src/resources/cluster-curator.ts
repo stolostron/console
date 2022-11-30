@@ -4,6 +4,7 @@ import { createResource, getResource, listResources, replaceResource } from './u
 import { IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 import { set } from 'lodash'
+import { AnsibleJobTemplateType } from './ansible-job'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
 export type ClusterCuratorApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
@@ -12,7 +13,6 @@ export const ClusterCuratorKind = 'ClusterCurator'
 export type ClusterCuratorKindType = 'ClusterCurator'
 
 export type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
-export type TemplateType = 'Job' | 'Workflow'
 
 export const ClusterCuratorDefinition: IResourceDefinition = {
     apiVersion: ClusterCuratorApiVersion,
@@ -56,8 +56,8 @@ export interface ClusterCurator {
 
 export interface ClusterCuratorAnsibleJob {
     name: string
+    type?: AnsibleJobTemplateType
     extra_vars?: Record<string, string>
-    type?: TemplateType
 }
 
 export function createClusterCurator(clusterCurator: ClusterCurator) {

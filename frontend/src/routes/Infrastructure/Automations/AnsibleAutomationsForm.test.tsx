@@ -104,7 +104,7 @@ const mockAnsibleCredential = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
     token: 'abcd',
 }
-const mockAnsibleCredentialWorkFlow = {
+const mockAnsibleCredentialWorkflow = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
     token: 'abcd',
 }
@@ -152,8 +152,8 @@ const mockSubscriptionOperator: SubscriptionOperator = {
                 reason: 'AllCatalogSourcesHealthy',
                 lastTransitionTime: '',
                 message: '',
-                type: '',
-                status: '',
+                type: 'CatalogSourcesUnhealthy',
+                status: 'False',
             },
         ],
     },
@@ -171,7 +171,7 @@ describe('add ansible job template page', () => {
 
         // template information
         const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkFlow, mockTemplateWorkflowList)
+        const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
         await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
         await clickByPlaceholderText('Select an existing Ansible credential')
         // Should show the modal wizard
@@ -225,11 +225,11 @@ describe('add ansible job template page', () => {
 
     it('should render warning when Ansible operator is not installed', async () => {
         render(<AddAnsibleTemplateTest />)
-        waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        waitForText('The Ansible Automation Platform Operator is required to use automation templates.')
     })
 
     it('should not render warning when Ansible operator is installed', async () => {
         render(<AddAnsibleTemplateTest subscriptions={[mockSubscriptionOperator]} />)
-        waitForNotText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+        waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
     })
 })
