@@ -608,14 +608,15 @@ function EditAnsibleJobModal(props: {
         if (ansibleJob) {
             const copy = { ...ansibleJob }
             copy.name = jobName as string
+            copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
             setAnsibleJob(copy)
         }
     }
-    const newTemplateTypeSelection = () => {
+
+    const clearTemplateName = () => {
         if (ansibleJob) {
             const copy = { ...ansibleJob }
             copy.name = ''
-            copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
             setAnsibleJob(copy)
         }
     }
@@ -636,8 +637,8 @@ function EditAnsibleJobModal(props: {
                                 label={t('Job template')}
                                 isChecked={filterForJobTemplates}
                                 onChange={() => {
-                                    newTemplateTypeSelection()
                                     setFilterForJobTemplates(true)
+                                    clearTemplateName()
                                 }}
                             />
                         </SplitItem>
@@ -648,8 +649,8 @@ function EditAnsibleJobModal(props: {
                                 label={t('Workflow template')}
                                 isChecked={!filterForJobTemplates}
                                 onChange={() => {
-                                    newTemplateTypeSelection()
                                     setFilterForJobTemplates(false)
+                                    clearTemplateName()
                                 }}
                             />
                         </SplitItem>

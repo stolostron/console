@@ -86,13 +86,16 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-install', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-install', extra_vars: {} }],
+            prehook: [{ name: 'test-job-pre-install', extra_vars: {}, type: 'Job' }],
+            posthook: [
+                { name: 'test-job-post-install', extra_vars: {}, type: 'Job' },
+                { name: 'test-job-pre-install-ii', extra_vars: {}, type: 'Workflow' },
+            ],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-upgrade', extra_vars: {} }],
+            prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {}, type: 'Job' }],
+            posthook: [{ name: 'test-job-post-upgrade', extra_vars: {}, type: 'Job' }],
         },
     },
 }
@@ -101,20 +104,37 @@ const mockAnsibleCredential = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
     token: 'abcd',
 }
+const mockAnsibleCredentialWorkFlow = {
+    towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
+    token: 'abcd',
+}
 
 const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
             name: 'test-job-pre-install',
+            type: 'job_template',
         },
         {
             name: 'test-job-post-install',
+            type: 'job_template',
         },
         {
             name: 'test-job-pre-upgrade',
+            type: 'job_template',
         },
         {
             name: 'test-job-post-upgrade',
+            type: 'job_template',
+        },
+    ],
+}
+
+const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
+    results: [
+        {
+            name: 'test-job-pre-install-ii',
+            type: 'workflow_job_template',
         },
     ],
 }
@@ -150,7 +170,8 @@ describe('add ansible job template page', () => {
         render(<AddAnsibleTemplateTest />)
 
         // template information
-        nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+        const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+        const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkFlow, mockTemplateWorkflowList)
         await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
         await clickByPlaceholderText('Select an existing Ansible credential')
         // Should show the modal wizard
@@ -162,8 +183,10 @@ describe('add ansible job template page', () => {
         await clickByPlaceholderText('Select an existing Ansible credential')
         await clickByText(mockSecret.metadata.name!)
         await clickByText('Next')
+        await waitForNock(ansibleJobNock)
+        await waitForNock(ansibleWorkflowNock)
 
-        // install templates
+        // install job templates
         await clickByText('Add an Ansible job template', 0)
         await clickByPlaceholderText('Enter or select Ansible job template name', 0)
         await clickByText(mockTemplateList.results![0].name!, 0)
@@ -172,10 +195,19 @@ describe('add ansible job template page', () => {
         await clickByPlaceholderText('Enter or select Ansible job template name', 0)
         await clickByText(mockTemplateList.results![1].name!, 0)
         await clickByText('Save')
+
+        // install workflow templates
+        await clickByText('Add an Ansible job template', 1)
+        await clickByText('Workflow template')
+        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
+        await clickByText('Save')
+
         await clickByText('Next')
 
         // upgrade templates
         await clickByText('Add an Ansible job template', 0)
+        await clickByText('Job template')
         await clickByPlaceholderText('Enter or select Ansible job template name', 0)
         await clickByText(mockTemplateList.results![2].name!, 0)
         await clickByText('Save')
