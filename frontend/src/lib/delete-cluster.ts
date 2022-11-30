@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import {
     Cluster,
     ClusterClaimApiVersion,
@@ -84,7 +83,7 @@ export function detachCluster(cluster: Cluster) {
                     name: cluster.name,
                     namespace: cluster.hypershift?.hostingNamespace,
                 },
-            } as HostedClusterK8sResource,
+            },
             [
                 // ~1 jsonpatch spec escape /
                 {
