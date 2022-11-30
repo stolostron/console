@@ -69,7 +69,7 @@ export const getControlDataOST = (
             onSelect: onChangeConnection,
             footer: <CreateCredentialModal />,
         },
-        ...clusterDetailsControlData,
+        ...clusterDetailsControlData(t),
         ////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////  imageset  /////////////////////////////////////
         {
