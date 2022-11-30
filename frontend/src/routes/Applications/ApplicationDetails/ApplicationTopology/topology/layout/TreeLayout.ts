@@ -77,8 +77,8 @@ class TreeLayout extends ColaLayout {
         const { width, height } = graph.getBounds()
         const cx = width / 2
         const cy = height / 2
-        const { nodeHeight, ySpacer } = this.treeOptions
-        this.d3Cola.flowLayout('y', nodeHeight + ySpacer)
+        //const { nodeHeight, ySpacer } = this.treeOptions
+        //this.d3Cola.flowLayout('y', nodeHeight + ySpacer)
 
         nodes.forEach((node: LayoutNode) => {
             const { dx = 0, dy = 0 } = node.element.getData()
@@ -89,11 +89,11 @@ class TreeLayout extends ColaLayout {
         graph.fit(80)
     }
 
-    protected startColaLayout(initialRun: boolean, addingNodes: boolean): void {
-        if (this.treeOptions.useCola) {
-            super.startColaLayout(initialRun, addingNodes)
-        }
-    }
+    // protected startColaLayout(initialRun: boolean, addingNodes: boolean): void {
+    //     if (this.treeOptions.useCola) {
+    //         //super.startColaLayout(initialRun, addingNodes)
+    //     }
+    // }
 }
 
 ////////////////////////////////////////////////////////////////////////

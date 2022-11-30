@@ -1,27 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import {
-    Decorator,
-    DEFAULT_DECORATOR_RADIUS,
     DEFAULT_LAYER,
-    DefaultNode,
-    getDefaultShapeDecoratorCenter,
     Layer,
     Node,
     observer,
-    ScaleDetailsLevel,
-    ShapeProps,
     TOP_LAYER,
-    TopologyQuadrant,
     useHover,
     WithContextMenuProps,
     WithCreateConnectorProps,
     WithDragNodeProps,
     WithSelectionProps,
-    Ellipse,
 } from '@patternfly/react-topology'
 
-import useDetailsLevel from '@patternfly/react-topology/dist/esm/hooks/useDetailsLevel'
+// topology 4.85
+import Ellipse from './future/Ellipse'
+import DefaultNode from './future/DefaultNode'
+import Decorator from './future/Decorator'
+import { getDefaultShapeDecoratorCenter, ShapeProps } from './future/shapeUtils'
+import { TopologyQuadrant } from './future/types'
+const DEFAULT_DECORATOR_RADIUS = 12
 
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon'
 
@@ -45,15 +43,12 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
     element,
     onContextMenu,
     contextMenuOpen,
-    showLabel,
     dragging,
     regrouping,
     ...rest
 }) => {
     const data = element.getData()
     const [hover, hoverRef] = useHover()
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const detailsLevel = typeof useDetailsLevel === 'function' ? useDetailsLevel() : ScaleDetailsLevel.high
 
     const passedData = React.useMemo(() => {
         const newData = { ...data }
@@ -76,27 +71,18 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
             >
                 <DefaultNode
                     element={element}
-                    scaleLabel={detailsLevel !== ScaleDetailsLevel.high}
-                    scaleNode={hover && detailsLevel === ScaleDetailsLevel.low}
+                    nodeStatus={data.status}
                     {...rest}
                     {...passedData}
                     getCustomShape={() => (passedData?.specs?.resourceCount > 1 ? MultiEllipse : Ellipse)}
                     dragging={dragging}
                     regrouping={regrouping}
-                    showLabel={hover || (detailsLevel === ScaleDetailsLevel.high && showLabel)}
-                    showStatusBackground={!hover && detailsLevel === ScaleDetailsLevel.low}
-                    showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
                     onContextMenu={data.showContextMenu ? onContextMenu : undefined}
                     contextMenuOpen={contextMenuOpen}
                     labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
-                    attachments={
-                        detailsLevel !== ScaleDetailsLevel.low &&
-                        renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
-                    }
+                    attachments={renderDecorators(element, passedData, rest.getShapeDecoratorCenter)}
                 >
-                    {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
-                        <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
-                    )}
+                    <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
                 </DefaultNode>
             </g>
         </Layer>

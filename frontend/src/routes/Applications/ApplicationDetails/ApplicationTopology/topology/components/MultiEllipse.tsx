@@ -2,7 +2,9 @@
 import { css } from '@patternfly/react-styles'
 import styles from '@patternfly/react-styles/css/components/Topology/topology-components'
 import * as React from 'react'
-import { useAnchor, EllipseAnchor, ShapeProps } from '@patternfly/react-topology'
+import { useAnchor, EllipseAnchor } from '@patternfly/react-topology'
+
+import { ShapeProps } from './future/shapeUtils'
 
 type MultiEllipseProps = ShapeProps
 
@@ -13,6 +15,8 @@ const MultiEllipse: React.FunctionComponent<MultiEllipseProps> = ({
     filter,
     dndDropRef,
 }) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore: Unreachable code error
     useAnchor(EllipseAnchor)
     return (
         <g>

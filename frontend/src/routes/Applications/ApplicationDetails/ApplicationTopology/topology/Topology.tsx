@@ -203,7 +203,7 @@ export const Topology = (props: TopologyProps) => {
         controller.registerComponentFactory(componentFactory)
     }
     controller.fromModel(getLayoutModel(props.elements))
-    controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
+    // 4.86 controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
 
     return (
         <VisualizationProvider controller={controller}>
