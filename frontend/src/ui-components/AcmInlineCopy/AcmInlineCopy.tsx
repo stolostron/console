@@ -7,8 +7,14 @@ import { AcmButton } from '../AcmButton/AcmButton'
 import { onCopy } from '../utils'
 import { useTranslation } from '../../lib/acm-i18next'
 
-export function AcmInlineCopy(props: { text: string; id: string; displayText?: string }) {
+export function AcmInlineCopy(props: {
+    text: string
+    id: string
+    displayText?: string
+    iconPosition?: 'right' | 'left' | undefined
+}) {
     const [copied, setCopied] = useState<boolean>(false)
+    const { iconPosition } = props
     const { t } = useTranslation()
     useEffect(() => {
         /* istanbul ignore if */
@@ -23,7 +29,7 @@ export function AcmInlineCopy(props: { text: string; id: string; displayText?: s
                     id={props.id}
                     variant={ButtonVariant.link}
                     icon={<CopyIcon />}
-                    iconPosition="right"
+                    iconPosition={iconPosition ? iconPosition : 'right'}
                     isInline
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick={(event: any) => {

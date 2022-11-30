@@ -40,6 +40,7 @@ export const DOC_LINKS = {
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/multicluster_engine/index#cluster-overview`,
     CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/multicluster_engine/index#disconnected-vm`,
     CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/multicluster_engine/index#disconnected-openstack`,
+    HOSTED_CONTROL_PLANES: `${DOC_BASE_PATH}/multicluster_engine/multicluster_engine_overview#hosted-control-planes-configure`,
     INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/multicluster_engine/index#creating-an-infrastructure-environment`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/multicluster_engine/index#discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/multicluster_engine/index#scaling-managed`,

@@ -48,7 +48,7 @@ export function CreateDiscoverHost() {
     const breadcrumbs = [
         { label: t('Clusters'), to: NavigationPath.clusters },
         { label: t('Infrastructure'), to: NavigationPath.createCluster },
-        { label: t('Control plane type'), to: NavigationPath.createControlPlane },
+        { label: t('Control plane type'), to: NavigationPath.createBMControlPlane },
         { label: t('Hosts') },
     ]
 
@@ -63,7 +63,7 @@ export function CreateDiscoverHost() {
                 items={cards}
                 itemKeyFn={keyFn}
                 itemToCardFn={(card) => card}
-                onBack={back(NavigationPath.createControlPlane)}
+                onBack={back(NavigationPath.createBMControlPlane)}
                 onCancel={cancel(NavigationPath.clusters)}
             />
         </Fragment>

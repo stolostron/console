@@ -53,11 +53,19 @@ export function CreateClusterCatalog() {
             onClick: nextStep(getTypedCreateClusterPath(provider)),
         })
         const newCards: ICatalogCard[] = [
-            getProviderCard(
-                'aws',
-                Provider.aws,
-                t('A Red Hat OpenShift cluster that is running in your AWS subscription.')
-            ),
+            {
+                id: 'aws',
+                icon: <AcmIcon icon={AcmIconVariant.aws} />,
+                title: t('Amazon Web Services'),
+                items: [
+                    {
+                        type: CatalogCardItemType.Description,
+                        description: t('A Red Hat OpenShift cluster that is running in your AWS subscription.'),
+                    },
+                ],
+                labels: getCredentialLabels(Provider.aws),
+                onClick: nextStep(NavigationPath.createAWSControlPlane),
+            },
             // getProviderCard(
             //     'alibaba',
             //     Provider.alibaba,
@@ -81,7 +89,7 @@ export function CreateClusterCatalog() {
                     },
                 ],
                 labels: getCredentialLabels(Provider.hostinventory),
-                onClick: clusterImageSets.length ? nextStep(NavigationPath.createControlPlane) : undefined,
+                onClick: clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined,
                 alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
                 alertVariant: 'info',
                 alertContent: (

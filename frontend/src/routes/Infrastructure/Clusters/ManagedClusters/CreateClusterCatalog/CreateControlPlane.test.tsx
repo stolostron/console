@@ -10,8 +10,8 @@ describe('CreateControlPlane', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createControlPlane]}>
-                    <Route path={NavigationPath.createControlPlane}>
+                <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
+                    <Route path={NavigationPath.createBMControlPlane}>
                         <CreateControlPlane />
                     </Route>
                 </MemoryRouter>

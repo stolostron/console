@@ -35,7 +35,7 @@ export function AcmCodeSnippet(props: {
                 position={TooltipPosition.auto}
                 id={`copy-button-${props.id}`}
                 textId={`text-input-${props.id}`}
-                aria-label={t('Copy buton')}
+                aria-label={t('Copy button')}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onClick={(event: any) => {
                     setCopied(true)

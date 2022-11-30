@@ -38,9 +38,11 @@ export enum NavigationPath {
     // Infrastructure - Clusters - Managed Clusters
     clusters = '/multicloud/infrastructure/clusters',
     managedClusters = '/multicloud/infrastructure/clusters/managed',
-    createControlPlane = '/multicloud/infrastructure/clusters/create/control-plane',
+    createAWSControlPlane = '/multicloud/infrastructure/clusters/create/aws/control-plane',
+    createBMControlPlane = '/multicloud/infrastructure/clusters/create/hostinventory/control-plane',
     createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
     createCluster = '/multicloud/infrastructure/clusters/create',
+    createAWSCLI = '/multicloud/infrastructure/clusters/create/aws/cli',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:namespace/:name',
     clusterOverview = '/multicloud/infrastructure/clusters/details/:namespace/:name/overview',
