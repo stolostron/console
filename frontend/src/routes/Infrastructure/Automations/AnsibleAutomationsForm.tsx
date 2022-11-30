@@ -633,7 +633,7 @@ function EditAnsibleJobModal(props: {
                     <Radio
                         name={'workflow-template'}
                         id={'workflow-template'}
-                        label={t('Workflow template')}
+                        label={t('Workflow job template')}
                         isChecked={!filterForJobTemplates}
                         onChange={() => {
                             setFilterForJobTemplates(false)

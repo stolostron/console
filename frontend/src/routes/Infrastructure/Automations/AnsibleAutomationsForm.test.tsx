@@ -198,7 +198,7 @@ describe('add ansible job template page', () => {
 
         // install workflow templates
         await clickByText('Add a job template or workflow job template', 1)
-        await clickByText('Workflow template')
+        await clickByText('Workflow job template')
         await clickByPlaceholderText('Search or select a workflow job template name', 0)
         await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
         await clickByText('Save')
