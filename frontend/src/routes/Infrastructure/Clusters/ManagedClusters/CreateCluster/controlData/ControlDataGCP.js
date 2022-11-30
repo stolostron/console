@@ -50,209 +50,219 @@ const GCPregions = [
     'us-west2',
 ]
 
-const GCPmasterInstanceTypes = [
-    { value: 'n1-standard-4', description: 'n1-standard-4 4 vCPU - General Purpose' },
-    { value: 'n1-standard-8', description: 'n1-standard-8 8 vCPU - General Purpose' },
-    { value: 'n1-standard-16', description: 'n1-standard-16 16 vCPU - General Purpose' },
-    { value: 'n1-standard-32', description: 'n1-standard-32 32 vCPU - General Purpose' },
-    { value: 'n1-standard-64', description: 'n1-standard-64 64 vCPU - General Purpose' },
-    { value: 'n1-standard-96', description: 'n1-standard-96 96 vCPU - General Purpose' },
-]
+const GCPmasterInstanceTypes = (t) => {
+    return [
+        { value: 'n1-standard-4', description: t('n1-standard-4 4 vCPU - General Purpose') },
+        { value: 'n1-standard-8', description: t('n1-standard-8 8 vCPU - General Purpose') },
+        { value: 'n1-standard-16', description: t('n1-standard-16 16 vCPU - General Purpose') },
+        { value: 'n1-standard-32', description: t('n1-standard-32 32 vCPU - General Purpose') },
+        { value: 'n1-standard-64', description: t('n1-standard-64 64 vCPU - General Purpose') },
+        { value: 'n1-standard-96', description: t('n1-standard-96 96 vCPU - General Purpose') },
+    ]
+}
 
-const GCPworkerInstanceTypes = [
-    {
-        label: 'General Purpose',
-        children: [
-            {
-                label: 'E2 machine types',
-                children: [
-                    {
-                        label: 'E2 standard machine types',
-                        children: [
-                            { value: 'e2-standard-2', description: '2 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'e2-standard-4', description: '4 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'e2-standard-8', description: '8 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'e2-standard-16', description: '16 vCPU, 64 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'E2 high-memory machine types',
-                        children: [
-                            { value: 'e2-highmem-2', description: '2 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'e2-highmem-4', description: '4 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'e2-highmem-8', description: '8 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'e2-highmem-16', description: '16 vCPU, 128 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'E2 high-CPU machine types',
-                        children: [
-                            { value: 'e2-highcpu-2', description: '2 vCPU, 2 GiB RAM - General Purpose' },
-                            { value: 'e2-highcpu-4', description: '4 vCPU, 4 GiB RAM - General Purpose' },
-                            { value: 'e2-highcpu-8', description: '8 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'e2-highcpu-16', description: '16 vCPU, 16 GiB RAM - General Purpose' },
-                        ],
-                    },
-                ],
-            },
+const GCPworkerInstanceTypes = (t) => {
+    return [
+        {
+            label: t('General Purpose'),
+            children: [
+                {
+                    label: t('E2 machine types'),
+                    children: [
+                        {
+                            label: t('E2 standard machine types'),
+                            children: [
+                                { value: 'e2-standard-2', description: t('2 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'e2-standard-4', description: t('4 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'e2-standard-8', description: t('8 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'e2-standard-16', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: 'E2 high-memory machine types',
+                            children: [
+                                { value: 'e2-highmem-2', description: t('2 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'e2-highmem-4', description: t('4 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'e2-highmem-8', description: t('8 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'e2-highmem-16', description: t('16 vCPU, 128 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: 'E2 high-CPU machine types',
+                            children: [
+                                { value: 'e2-highcpu-2', description: t('2 vCPU, 2 GiB RAM - General Purpose') },
+                                { value: 'e2-highcpu-4', description: t('4 vCPU, 4 GiB RAM - General Purpose') },
+                                { value: 'e2-highcpu-8', description: t('8 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'e2-highcpu-16', description: t('16 vCPU, 16 GiB RAM - General Purpose') },
+                            ],
+                        },
+                    ],
+                },
 
-            {
-                label: 'N2 machine types',
-                children: [
-                    {
-                        label: 'N2 standard machine types',
-                        children: [
-                            { value: 'n2-standard-2', description: '2 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-4', description: '4 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-8', description: '8 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-16', description: '16 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-32', description: '32 vCPU, 128 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-48', description: '48 vCPU, 192 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-64', description: '64 vCPU, 256 GiB RAM - General Purpose' },
-                            { value: 'n2-standard-80', description: '80 vCPU, 320 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N2 high-memory machine types',
-                        children: [
-                            { value: 'n2-highmem-2', description: '2 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-4', description: '4 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-8', description: '8 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-16', description: '16 vCPU, 128 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-32', description: '32 vCPU, 256 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-48', description: '48 vCPU, 384 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-64', description: '64 vCPU, 512 GiB RAM - General Purpose' },
-                            { value: 'n2-highmem-80', description: '80 vCPU, 640 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N2 high-CPU machine types',
-                        children: [
-                            { value: 'n2-highcpu-2', description: '2 vCPU, 2 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-4', description: '4 vCPU, 4 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-8', description: '8 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-16', description: '16 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-32', description: '32 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-48', description: '48 vCPU, 48 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-64', description: '64 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2-highcpu-80', description: '80 vCPU, 80 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N2D standard machine types with SSD',
-                        children: [
-                            { value: 'n2d-standard-2', description: '2 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-4', description: '4 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-8', description: '8 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-16', description: '16 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-32', description: '32 vCPU, 128 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-48', description: '48 vCPU, 192 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-64', description: '64 vCPU, 256 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-80', description: '80 vCPU, 320 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-96', description: '96 vCPU, 384 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-128', description: '128 vCPU, 512 GiB RAM - General Purpose' },
-                            { value: 'n2d-standard-224', description: '224 vCPU, 896 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N2D high-memory machine types with SSD',
-                        children: [
-                            { value: 'n2d-highmem-2', description: '2 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-4', description: '4 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-8', description: '8 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-16', description: '16 vCPU, 128 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-32', description: '32 vCPU, 256 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-48', description: '48 vCPU, 384 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-64', description: '64 vCPU, 512 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-80', description: '80 vCPU, 640 GiB RAM - General Purpose' },
-                            { value: 'n2d-highmem-96', description: '96 vCPU, 768 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N2D high-CPU machine types with SSD',
-                        children: [
-                            { value: 'n2d-highcpu-2', description: '2 vCPU, 2 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-4', description: '4 vCPU, 4 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-8', description: '8 vCPU, 8 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-16', description: '16 vCPU, 16 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-32', description: '32 vCPU, 32 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-48', description: '48 vCPU, 48 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-64', description: '64 vCPU, 64 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-80', description: '80 vCPU, 80 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-96', description: '96 vCPU, 96 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-128', description: '128 vCPU, 128 GiB RAM - General Purpose' },
-                            { value: 'n2d-highcpu-224', description: '224 vCPU, 224 GiB RAM - General Purpose' },
-                        ],
-                    },
-                ],
-            },
+                {
+                    label: t('N2 machine types'),
+                    children: [
+                        {
+                            label: t('N2 standard machine types'),
+                            children: [
+                                { value: 'n2-standard-2', description: t('2 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-4', description: t('4 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-8', description: t('8 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-16', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-32', description: t('32 vCPU, 128 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-48', description: t('48 vCPU, 192 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-64', description: t('64 vCPU, 256 GiB RAM - General Purpose') },
+                                { value: 'n2-standard-80', description: t('80 vCPU, 320 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N2 high-memory machine types'),
+                            children: [
+                                { value: 'n2-highmem-2', description: t('2 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-4', description: t('4 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-8', description: t('8 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-16', description: t('16 vCPU, 128 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-32', description: t('32 vCPU, 256 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-48', description: t('48 vCPU, 384 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-64', description: t('64 vCPU, 512 GiB RAM - General Purpose') },
+                                { value: 'n2-highmem-80', description: t('80 vCPU, 640 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N2 high-CPU machine types'),
+                            children: [
+                                { value: 'n2-highcpu-2', description: t('2 vCPU, 2 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-4', description: t('4 vCPU, 4 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-8', description: t('8 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-16', description: t('16 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-32', description: t('32 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-48', description: t('48 vCPU, 48 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-64', description: t('64 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2-highcpu-80', description: t('80 vCPU, 80 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N2D standard machine types with SSD'),
+                            children: [
+                                { value: 'n2d-standard-2', description: t('2 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-4', description: t('4 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-8', description: t('8 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-16', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-32', description: t('32 vCPU, 128 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-48', description: t('48 vCPU, 192 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-64', description: t('64 vCPU, 256 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-80', description: t('80 vCPU, 320 GiB RAM - General Purpose') },
+                                { value: 'n2d-standard-96', description: t('96 vCPU, 384 GiB RAM - General Purpose') },
+                                {
+                                    value: 'n2d-standard-128',
+                                    description: t('128 vCPU, 512 GiB RAM - General Purpose'),
+                                },
+                                {
+                                    value: 'n2d-standard-224',
+                                    description: t('224 vCPU, 896 GiB RAM - General Purpose'),
+                                },
+                            ],
+                        },
+                        {
+                            label: t('N2D high-memory machine types with SSD'),
+                            children: [
+                                { value: 'n2d-highmem-2', description: t('2 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-4', description: t('4 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-8', description: t('8 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-16', description: t('16 vCPU, 128 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-32', description: t('32 vCPU, 256 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-48', description: t('48 vCPU, 384 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-64', description: t('64 vCPU, 512 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-80', description: t('80 vCPU, 640 GiB RAM - General Purpose') },
+                                { value: 'n2d-highmem-96', description: t('96 vCPU, 768 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N2D high-CPU machine types with SSD'),
+                            children: [
+                                { value: 'n2d-highcpu-2', description: t('2 vCPU, 2 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-4', description: t('4 vCPU, 4 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-8', description: t('8 vCPU, 8 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-16', description: t('16 vCPU, 16 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-32', description: t('32 vCPU, 32 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-48', description: t('48 vCPU, 48 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-64', description: t('64 vCPU, 64 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-80', description: t('80 vCPU, 80 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-96', description: t('96 vCPU, 96 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-128', description: t('128 vCPU, 128 GiB RAM - General Purpose') },
+                                { value: 'n2d-highcpu-224', description: t('224 vCPU, 224 GiB RAM - General Purpose') },
+                            ],
+                        },
+                    ],
+                },
 
-            {
-                label: 'N1 machine types',
-                children: [
-                    {
-                        label: 'N1 standard machine types',
-                        children: [
-                            { value: 'n1-standard-1', description: '1 vCPU, 3.75 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-2', description: '2 vCPU, 7.50 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-4', description: '4 vCPU, 15 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-8', description: '8 vCPU, 30 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-16', description: '16 vCPU, 60 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-32', description: '32 vCPU, 120 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-64', description: '64 vCPU, 240 GiB RAM - General Purpose' },
-                            { value: 'n1-standard-96', description: '96 vCPU, 360 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N1 high-memory machine types',
-                        children: [
-                            { value: 'n1-highmem-2', description: '2 vCPU, 13 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-4', description: '4 vCPU, 26 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-8', description: '8 vCPU, 52 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-16', description: '16 vCPU, 104 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-32', description: '32 vCPU, 208 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-64', description: '64 vCPU, 416 GiB RAM - General Purpose' },
-                            { value: 'n1-highmem-96', description: '96 vCPU, 624 GiB RAM - General Purpose' },
-                        ],
-                    },
-                    {
-                        label: 'N1 high-CPU machine types',
-                        children: [
-                            { value: 'n1-highcpu-2', description: '2 vCPU, 1.80 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-4', description: '4 vCPU, 3.60 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-8', description: '8 vCPU, 7.20 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-16', description: '16 vCPU, 14.4 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-32', description: '32 vCPU, 28.8 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-64', description: '64 vCPU, 57.6 GiB RAM - General Purpose' },
-                            { value: 'n1-highcpu-96', description: '96 vCPU, 86.4 GiB RAM - General Purpose' },
-                        ],
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        label: 'Compute Optimized',
-        children: [
-            { value: 'c2-standard-4', description: '4 vCPU, 16 GiB RAM - Compute Optimized' },
-            { value: 'c2-standard-8', description: '8 vCPU, 32 GiB RAM - Compute Optimized' },
-            { value: 'c2-standard-16', description: '16 vCPU, 64 GiB RAM - Compute Optimized' },
-            { value: 'c2-standard-30', description: '30 vCPU, 120 GiB RAM - Compute Optimized' },
-            { value: 'c2-standard-60', description: '60 vCPU, 240 GiB RAM - Compute Optimized' },
-        ],
-    },
-    {
-        label: 'Memory Optimized',
-        children: [
-            { value: 'm2-ultramem-2084', description: '208 vCPU, 5888 GiB RAM - Memory Optimized' },
-            { value: 'm2-ultramem-4164', description: '416 vCPU, 11,776 GiB RAM - Memory Optimized' },
-            { value: 'm1-ultramem-40', description: '40 vCPU, 961 GiB RAM - Memory Optimized' },
-            { value: 'm1-ultramem-80', description: '80 vCPU, 1922 GiB RAM - Memory Optimized' },
-            { value: 'm1-ultramem-160', description: '160 vCPU, 3844 GiB RAM - Memory Optimized' },
-            { value: 'm1-megamem-96', description: '96 vCPU, 1433.6 GiB RAM - Memory Optimized' },
-        ],
-    },
-]
+                {
+                    label: t('N1 machine types'),
+                    children: [
+                        {
+                            label: t('N1 standard machine types'),
+                            children: [
+                                { value: 'n1-standard-1', description: t('1 vCPU, 3.75 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-2', description: t('2 vCPU, 7.50 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-4', description: t('4 vCPU, 15 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-8', description: t('8 vCPU, 30 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-16', description: t('16 vCPU, 60 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-32', description: t('32 vCPU, 120 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-64', description: t('64 vCPU, 240 GiB RAM - General Purpose') },
+                                { value: 'n1-standard-96', description: t('96 vCPU, 360 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N1 high-memory machine types'),
+                            children: [
+                                { value: 'n1-highmem-2', description: t('2 vCPU, 13 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-4', description: t('4 vCPU, 26 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-8', description: t('8 vCPU, 52 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-16', description: t('16 vCPU, 104 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-32', description: t('32 vCPU, 208 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-64', description: t('64 vCPU, 416 GiB RAM - General Purpose') },
+                                { value: 'n1-highmem-96', description: t('96 vCPU, 624 GiB RAM - General Purpose') },
+                            ],
+                        },
+                        {
+                            label: t('N1 high-CPU machine types'),
+                            children: [
+                                { value: 'n1-highcpu-2', description: t('2 vCPU, 1.80 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-4', description: t('4 vCPU, 3.60 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-8', description: t('8 vCPU, 7.20 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-16', description: t('16 vCPU, 14.4 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-32', description: t('32 vCPU, 28.8 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-64', description: t('64 vCPU, 57.6 GiB RAM - General Purpose') },
+                                { value: 'n1-highcpu-96', description: t('96 vCPU, 86.4 GiB RAM - General Purpose') },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            label: t('Compute Optimized'),
+            children: [
+                { value: 'c2-standard-4', description: t('4 vCPU, 16 GiB RAM - Compute Optimized') },
+                { value: 'c2-standard-8', description: t('8 vCPU, 32 GiB RAM - Compute Optimized') },
+                { value: 'c2-standard-16', description: t('16 vCPU, 64 GiB RAM - Compute Optimized') },
+                { value: 'c2-standard-30', description: t('30 vCPU, 120 GiB RAM - Compute Optimized') },
+                { value: 'c2-standard-60', description: t('60 vCPU, 240 GiB RAM - Compute Optimized') },
+            ],
+        },
+        {
+            label: t('Memory Optimized'),
+            children: [
+                { value: 'm2-ultramem-2084', description: t('208 vCPU, 5888 GiB RAM - Memory Optimized') },
+                { value: 'm2-ultramem-4164', description: t('416 vCPU, 11,776 GiB RAM - Memory Optimized') },
+                { value: 'm1-ultramem-40', description: t('40 vCPU, 961 GiB RAM - Memory Optimized') },
+                { value: 'm1-ultramem-80', description: t('80 vCPU, 1922 GiB RAM - Memory Optimized') },
+                { value: 'm1-ultramem-160', description: t('160 vCPU, 3844 GiB RAM - Memory Optimized') },
+                { value: 'm1-megamem-96', description: t('96 vCPU, 1433.6 GiB RAM - Memory Optimized') },
+            ],
+        },
+    ]
+}
 
 export const getControlDataGCP = (
     handleModalToggle,
@@ -395,7 +405,7 @@ export const getControlDataGCP = (
                     learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                     id: 'masterType',
                     type: 'combobox',
-                    available: GCPmasterInstanceTypes,
+                    available: GCPmasterInstanceTypes(t),
                     active: 'n1-standard-4',
                     validation: {
                         constraint: '[A-Za-z0-9-]+',

@@ -294,7 +294,7 @@ export const getControlDataOST = (
             active: [],
             validation: VALIDATE_IP_OPTIONAL,
         },
-        ...getOSTNetworkingControlData(),
+        ...getOSTNetworkingControlData(t),
         ...proxyControlData(t),
         ///////////////////////  openstack  /////////////////////////////////////
         {
