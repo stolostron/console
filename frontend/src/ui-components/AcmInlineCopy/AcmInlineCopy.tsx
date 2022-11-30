@@ -11,7 +11,7 @@ export function AcmInlineCopy(props: {
     text: string
     id: string
     displayText?: string
-    iconPosition?: 'right' | 'left' | undefined
+    iconPosition?: 'right' | 'left'
 }) {
     const [copied, setCopied] = useState<boolean>(false)
     const { iconPosition } = props

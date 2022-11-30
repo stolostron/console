@@ -46,8 +46,16 @@ export function CreateAWSControlPlane() {
                     },
                 ],
                 onClick: nextStep(NavigationPath.createAWSCLI),
-                badge: t('Technology preview'),
-                badgeColor: CatalogColor.orange,
+                badgeList: [
+                    {
+                        badge: t('Technology preview'),
+                        badgeColor: CatalogColor.orange,
+                    },
+                    {
+                        badge: t('CLI Creation'),
+                        badgeColor: CatalogColor.orange,
+                    },
+                ],
             },
             {
                 id: 'standalone',
@@ -69,7 +77,10 @@ export function CreateAWSControlPlane() {
                                     'Increases resilienency with closely interconnected control plane and worker nodes.'
                                 ),
                             },
-                            { text: t('Provides customized control plane cluster configuration.') },
+                            {
+                                text: t('Provides customized control plane cluster configuration.'),
+                                subTitles: [t('Standard'), t('Single node OpenShift'), t('Three-node cluster')],
+                            },
                         ],
                     },
                 ],
