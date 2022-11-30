@@ -955,7 +955,10 @@ const mockClusterCurator: ClusterCurator = {
         install: {
             towerAuthSecret: 'ansible-credential-i',
             prehook: [],
-            posthook: [{ name: 'posthook-1' }, { name: 'posthook-2' }],
+            posthook: [
+                { name: 'posthook-1', type: 'Job' },
+                { name: 'posthook-2', type: 'Job' },
+            ],
         },
         upgrade: {
             towerAuthSecret: 'ansible-credential-i',
@@ -1187,7 +1190,6 @@ describe('Automation Details', () => {
         await waitForText('posthook-1')
 
         await waitForText('Upgrade')
-        await waitForText('None selected', true)
     })
 })
 
