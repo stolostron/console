@@ -12,8 +12,6 @@ import {
     Radio,
     SelectOption,
     SelectVariant,
-    Split,
-    SplitItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
