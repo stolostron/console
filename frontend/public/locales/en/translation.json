@@ -452,7 +452,6 @@
     "application.app.k8s.io/v1beta1": "application.app.k8s.io/v1beta1",
     "application.argoproj.io/v1alpha1": "application.argoproj.io/v1alpha1",
     "application.create.yaml": "Application YAML",
-    "Application[0].metadata.namespace": "Application[0].metadata.namespace",
     "Applications": "Applications",
     "ApplicationSet": "ApplicationSet",
     "applicationset.argoproj.io/v1alpha1": "applicationset.argoproj.io/v1alpha1",

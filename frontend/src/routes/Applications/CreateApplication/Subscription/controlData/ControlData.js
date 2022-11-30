@@ -102,7 +102,7 @@ export const useControlData = (isLocalCluster, handleModalToggle) => {
                     notification: t('import.form.invalid.dns.label'),
                     required: true,
                 },
-                reverse: t('Application[0].metadata.namespace'),
+                reverse: 'Application[0].metadata.namespace',
             },
             {
                 id: 'userDefinedNamespace',
