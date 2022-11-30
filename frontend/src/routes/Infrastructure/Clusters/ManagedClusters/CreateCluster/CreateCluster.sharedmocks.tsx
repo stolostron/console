@@ -22,6 +22,7 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
     metadata: {
         annotations: {
             'agentBareMetal-agentSelector/autoSelect': 'true',
+            'agentBareMetal-cpuArchitecture': 'x86_64',
         },
         name: clusterName,
         namespace: clusterName,

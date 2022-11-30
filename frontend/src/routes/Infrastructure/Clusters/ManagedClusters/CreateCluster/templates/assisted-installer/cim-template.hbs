@@ -7,8 +7,8 @@ metadata:
     {{#if ai.cpuArchitecture}}
     agentBareMetal-cpuArchitecture: {{{ai.cpuArchitecture}}}
     {{/if}}
-  labels:
   {{#if ai.managedClusterSet}}
+  labels:
     "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'
   {{/if}}
   name: '{{{ai.name}}}'
@@ -23,8 +23,7 @@ spec:
   clusterName: '{{{ai.name}}}'
   platform:
     agentBareMetal:
-      agentSelector:
-        matchLabels:
+      agentSelector: {}
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
 
