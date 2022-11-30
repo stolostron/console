@@ -375,20 +375,21 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         {showSubCards && !disableBtn
                             ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
                             : ''}
-                        <Button
-                            className="toggle-subs-btn"
-                            variant="secondary"
-                            isDisabled={disableBtn}
-                            data-test-subscription-details={!disableBtn}
-                            onClick={() => setShowSubCards(!showSubCards)}
-                        >
-                            {renderData(
-                                subsList,
-                                (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
-                                    ` (${subsList?.length})`,
-                                '70%'
-                            )}
-                        </Button>
+                        <div className="toggle-subs-btn">
+                            <Button
+                                variant="secondary"
+                                isDisabled={disableBtn}
+                                data-test-subscription-details={!disableBtn}
+                                onClick={() => setShowSubCards(!showSubCards)}
+                            >
+                                {renderData(
+                                    subsList,
+                                    (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
+                                        ` (${subsList?.length})`,
+                                    '70%'
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </PageSection>
