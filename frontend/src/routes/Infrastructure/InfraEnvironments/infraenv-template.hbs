@@ -36,6 +36,9 @@ spec:
     noProxy: '{{{ ai.noProxy }}}'
     {{/if}}
   {{/if}}
+  {{#if ai.cpuArchitecture}}
+  cpuArchitecture: {{{ai.cpuArchitecture}}}
+  {{/if}}
 status:
   agentLabelSelector:
     matchLabels:

@@ -22,19 +22,66 @@ const resultOK = {
 
 describe('NodePoolsProgress getNodePoolStatus no status', () => {
     it('should call getNodePoolStatus no status', async () => {
-        expect(getNodePoolStatus({}, t)).toEqual(resultPending)
+        expect(
+            getNodePoolStatus(
+                {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
+                },
+                t
+            )
+        ).toEqual(resultPending)
     })
 })
 
 describe('NodePoolsProgress getNodePoolStatus no conditions', () => {
     it('should call getNodePoolStatus no conditions', async () => {
-        expect(getNodePoolStatus({ status: {} }, t)).toEqual(resultPending)
+        expect(
+            getNodePoolStatus(
+                {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
+                    status: {},
+                },
+                t
+            )
+        ).toEqual(resultPending)
     })
 })
 
 describe('NodePoolsProgress getNodePoolStatus conditions empty array', () => {
     it('should call getNodePoolStatus empty array', async () => {
-        expect(getNodePoolStatus({ status: { conditions: [] } }, t)).toEqual(resultPending)
+        expect(
+            getNodePoolStatus(
+                {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
+                    status: { conditions: [] },
+                },
+                t
+            )
+        ).toEqual(resultPending)
     })
 })
 
@@ -43,12 +90,22 @@ describe('NodePoolsProgress getNodePoolStatus no Ready condition', () => {
         expect(
             getNodePoolStatus(
                 {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
                     status: {
                         conditions: [
                             {
                                 lastTransitionTime: '2022-08-31T18:55:05Z',
                                 observedGeneration: 3,
                                 reason: 'AsExpected',
+                                message: '',
                                 status: 'False',
                                 type: 'AutoscalingEnabled',
                             },
@@ -66,12 +123,22 @@ describe('NodePoolsProgress getNodePoolStatus Ready false', () => {
         expect(
             getNodePoolStatus(
                 {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
                     status: {
                         conditions: [
                             {
                                 lastTransitionTime: '2022-08-31T18:55:05Z',
                                 observedGeneration: 3,
                                 reason: 'AsExpected',
+                                message: '',
                                 status: 'False',
                                 type: 'Ready',
                             },
@@ -89,12 +156,22 @@ describe('NodePoolsProgress getNodePoolStatus Ready true', () => {
         expect(
             getNodePoolStatus(
                 {
+                    spec: {
+                        clusterName: 'myNodePool',
+                        replicas: 1,
+                        management: { upgradeType: 'InPlace' },
+                        platform: { type: 'Agent' },
+                        release: {
+                            image: 'somerandomimage',
+                        },
+                    },
                     status: {
                         conditions: [
                             {
                                 lastTransitionTime: '2022-08-31T18:55:05Z',
                                 observedGeneration: 3,
                                 reason: 'AsExpected',
+                                message: '',
                                 status: 'True',
                                 type: 'Ready',
                             },

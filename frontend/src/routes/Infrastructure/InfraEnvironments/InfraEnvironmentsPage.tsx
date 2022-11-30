@@ -43,12 +43,13 @@ import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { HostInventoryBanner } from './HostInventoryBanner'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
+import { IResource } from '../../../resources/resource'
 
 const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
     infraEnvs.forEach((infraEnv) => {
         const infraAgents = agents.filter((a) =>
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
         )
         if (infraAgents.length == 0) isDisabled = false
     })
@@ -62,11 +63,13 @@ const deleteInfraEnv = (
 ) => {
     //1st: We prevent deleting action if there are any agents assigned to infraenv
     const infraAgents = agents.filter((a) =>
-        isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+        isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
     )
     const resources = [infraEnv]
     // Check all infraenv with same pull secret. If we don't found more infraenv we delete pull secret.
-    const pullSecrets = infraEnvs.filter((a) => isMatch(a.spec?.pullSecretRef, infraEnv.spec?.pullSecretRef))
+    const pullSecrets = infraEnvs.filter((a) =>
+        isMatch(a.spec?.pullSecretRef || {}, infraEnv.spec?.pullSecretRef || {})
+    )
     if (pullSecrets.length == 1) {
         if (infraEnv.spec?.pullSecretRef?.name && infraAgents.length == 0) {
             resources.push({
@@ -74,12 +77,12 @@ const deleteInfraEnv = (
                 kind: 'Secret',
                 metadata: {
                     name: infraEnv.spec.pullSecretRef.name,
-                    namespace: infraEnv.metadata.namespace,
+                    namespace: infraEnv.metadata?.namespace,
                 },
             })
         }
     }
-    const deleteResourcesResult = deleteResources(resources)
+    const deleteResourcesResult = deleteResources(resources as IResource[])
 
     return {
         promise: new Promise((resolve, reject) => {
@@ -143,7 +146,7 @@ const InfraEnvironmentsPage: React.FC = () => {
     )
 }
 
-const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid
+const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!
 
 type InfraEnvsTableProps = {
     infraEnvs: InfraEnvK8sResource[]
@@ -155,8 +158,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
     const history = useHistory()
     const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
-            .replace(':namespace', infraEnv.metadata.namespace as string)
-            .replace(':name', infraEnv.metadata.name as string)
+            .replace(':namespace', infraEnv.metadata?.namespace as string)
+            .replace(':name', infraEnv.metadata?.name as string)
 
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<InfraEnvK8sResource> | { open: false }>({
         open: false,
@@ -172,7 +175,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
 
     infraEnvs.forEach((infraEnv) => {
         const infraAgents = agents.filter((a) =>
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
         )
         const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
         const warningAgents = infraAgents.filter((a) =>
@@ -185,7 +188,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
             ].includes(getAgentStatus(a).status.key)
         )
 
-        infraAgentsFiltered[infraEnv.metadata.uid] = {
+        infraAgentsFiltered[infraEnv.metadata?.uid!] = {
             infraAgents,
             errorAgents,
             warningAgents,
@@ -209,7 +212,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 {
                     header: t('infraEnv.tableHeader.hosts'),
                     cell: (infraEnv) => {
-                        const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                        const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                         const HostsStatusGroupCell = (
                             <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -246,9 +249,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     },
                 },
             ],
-            keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid as string,
+            keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!,
             actionFn: (infraEnv: InfraEnvK8sResource) => {
-                const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                const { infraAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
                 if (infraAgents.length) {
                     return {
                         promise: Promise.resolve(),
@@ -286,7 +289,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 search: 'metadata.name',
                                 cell: (infraEnv) => (
                                     <span style={{ whiteSpace: 'nowrap' }}>
-                                        <Link to={getDetailsLink(infraEnv)}>{infraEnv.metadata.name}</Link>
+                                        <Link to={getDetailsLink(infraEnv)}>{infraEnv.metadata?.name}</Link>
                                     </span>
                                 ),
                             },
@@ -298,7 +301,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             {
                                 header: t('infraEnv.tableHeader.labels'),
                                 cell: (infraEnv) => {
-                                    if (infraEnv.metadata.labels) {
+                                    if (infraEnv.metadata?.labels) {
                                         const labelKeys = Object.keys(infraEnv.metadata.labels)
                                         const collapse =
                                             [
@@ -333,7 +336,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 header: t('infraEnv.tableHeader.hosts'),
                                 cell: (infraEnv) => {
                                     const { infraAgents, errorAgents, warningAgents } =
-                                        infraAgentsFiltered[infraEnv.metadata.uid]
+                                        infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                                     return (
                                         <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -383,7 +386,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 header: '',
                                 cellTransforms: [fitContent],
                                 cell: (infraEnv) => {
-                                    const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                                    const { infraAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                                     const actions = []
                                     if (infraAgents.length > 0) {
@@ -420,8 +423,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                             sort: 'metadata.namespace',
                                                         },
                                                     ],
-                                                    keyFn: (infraEnv: InfraEnvK8sResource) =>
-                                                        infraEnv.metadata.uid as string,
+                                                    keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!,
                                                     actionFn: (infraEnv: InfraEnvK8sResource) => {
                                                         return deleteInfraEnv(infraEnv, infraEnvs, agents)
                                                     },
@@ -432,16 +434,16 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                     icon: 'warning',
                                                 })
                                             },
-                                            rbac: [rbacDelete(infraEnv)],
+                                            rbac: [rbacDelete(infraEnv as IResource)],
                                         })
                                     }
 
                                     return (
                                         <RbacDropdown<InfraEnvK8sResource>
-                                            id={`${infraEnv.metadata.name}-actions`}
+                                            id={`${infraEnv?.metadata?.name!}-actions`}
                                             item={infraEnv}
                                             isKebab={true}
-                                            text={`${infraEnv.metadata.name}-actions`}
+                                            text={`${infraEnv?.metadata?.name!}-actions`}
                                             actions={actions}
                                         />
                                     )

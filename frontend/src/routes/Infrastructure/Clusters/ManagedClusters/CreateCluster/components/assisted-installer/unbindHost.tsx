@@ -5,7 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { Alert, AlertVariant } from '@patternfly/react-core'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
-import { patchResource } from '../../../../../../../resources'
+import { IResource, patchResource } from '../../../../../../../resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 import { agentNameSortFunc, getAgentName, setProvisionRequirements } from './utils'
 
@@ -13,17 +13,24 @@ import './unbindHost.css'
 
 const { getInfraEnvNameOfAgent, getClusterNameOfAgent } = CIM
 
+const getClusterNameFromAgentOrBMH = (resource?: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) => {
+    return (
+        getClusterNameOfAgent(resource as CIM.AgentK8sResource) ||
+        (resource as CIM.BareMetalHostK8sResource).spec?.consumerRef?.name
+    )
+}
+
 export const getUnbindHostAction =
     (agent?: CIM.AgentK8sResource, agentClusterInstall?: CIM.AgentClusterInstallK8sResource) => () => {
         if (agent?.spec?.clusterDeploymentName?.name) {
             if (agentClusterInstall) {
                 const masterCount = undefined /* Only workers can be removed */
-                const workerCount = (agentClusterInstall.spec.provisionRequirements.workerAgents || 1) - 1
+                const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
                 // TODO(mlibra): include following promise in the returned one to handle errors
                 setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
             }
 
-            return patchResource(agent, [
+            return patchResource(agent as IResource, [
                 {
                     op: 'replace',
                     path: '/spec/clusterDeploymentName',
@@ -65,13 +72,15 @@ const agentInfraSortFunc = (
 const agentClusterSortFunc = (
     a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,
     b: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource
-) => (getClusterNameOfAgent(a) || '').localeCompare(getClusterNameOfAgent(b) || '')
+) => (getClusterNameFromAgentOrBMH(a) || '').localeCompare(getClusterNameFromAgentOrBMH(b) || '')
 
-export const useOnUnbindHost = (
-    toggleDialog: (props: IBulkActionModelProps | { open: false }) => void,
+export function useOnUnbindHost(
+    toggleDialog: (
+        props: IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    ) => void,
     clusterName?: string,
     agentClusterInstall?: CIM.AgentClusterInstallK8sResource
-) => {
+) {
     const { t } = useTranslation()
 
     const columns = [
@@ -90,7 +99,7 @@ export const useOnUnbindHost = (
     if (!clusterName) {
         columns.splice(1, 0, {
             header: t('cluster'),
-            cell: getClusterNameOfAgent,
+            cell: getClusterNameFromAgentOrBMH,
             sort: agentClusterSortFunc,
         })
     }
@@ -104,7 +113,7 @@ export const useOnUnbindHost = (
                     : t('host.action.title.unbind'),
                 action: t('unbind'),
                 processing: t('unbinding'),
-                resources: [agent, bmh].filter(Boolean),
+                resources: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
                 description: <Description agent={agent} bmh={bmh} />,
                 columns,
                 keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) =>

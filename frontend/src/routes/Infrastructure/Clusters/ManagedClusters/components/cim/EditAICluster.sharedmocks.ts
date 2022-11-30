@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cloneDeep } from 'lodash'
+import set from 'lodash/set'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../../resources'
 
@@ -41,7 +43,6 @@ export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
                 type: 'ImageCreated',
             },
         ],
-        debugInfo: {},
         createdTime: '2021-11-10T13:00:00Z',
         isoDownloadURL: 'https://my.funny.download.url',
     },
@@ -65,7 +66,6 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
         annotations: {
             'agentBareMetal-agentSelector/autoSelect': 'true',
         },
-        labels: null,
         name: clusterName,
         namespace: clusterName,
     },
@@ -80,9 +80,7 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
         clusterName,
         platform: {
             agentBareMetal: {
-                agentSelector: {
-                    matchLabels: null,
-                },
+                agentSelector: {},
             },
         },
         pullSecretRef: {
@@ -120,7 +118,7 @@ export const mockConfigMapAI: ConfigMap = {
     data: {},
 }
 
-export const mockAgent = {
+export const mockAgent: AgentK8sResource = {
     apiVersion: 'agent-install.openshift.io/v1beta1',
     kind: 'Agent',
     metadata: {
@@ -138,7 +136,7 @@ export const mockAgent = {
             namespace: clusterName,
         },
         hostname: 'host',
-        role: '',
+        role: 'auto-assign',
     },
     status: {
         conditions: [],
@@ -153,9 +151,9 @@ export const mockAgent = {
     },
 }
 
-export const mockAgents = Array.from({ length: 5 }, (_val, index) => {
+export const mockAgents: AgentK8sResource[] = Array.from({ length: 5 }, (_val, index) => {
     const mockedAgent = cloneDeep(mockAgent)
-    mockedAgent.metadata.name = `${mockedAgent.metadata.name}${index}`
+    set(mockedAgent, 'metadata.name', `${mockedAgent.metadata?.name}${index}`)
     mockedAgent.spec.hostname = `${mockedAgent.spec.hostname}-${index}`
     return mockedAgent
 })

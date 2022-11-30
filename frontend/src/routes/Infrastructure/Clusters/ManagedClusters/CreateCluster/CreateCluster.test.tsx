@@ -7,6 +7,7 @@ import {
     ClusterImageSet,
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
+    IResource,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -886,7 +887,7 @@ describe('CreateCluster on premise', () => {
     test(
         'can create On Premise cluster',
         async () => {
-            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
+            const initialNocks: Scope[] = [nockList(clusterImageSet as IResource, mockClusterImageSet as IResource[])]
             render(<Component />)
 
             // Create On Premise cluster
@@ -934,9 +935,9 @@ describe('CreateCluster on premise', () => {
             // Let's save it
             const createNocks = [
                 nockCreate(mockClusterProject, mockClusterProjectResponse),
-                nockCreate(mockClusterDeploymentAI),
+                nockCreate(mockClusterDeploymentAI as IResource),
                 nockCreate(mockManagedClusterAI),
-                nockCreate(mockAgentClusterInstall),
+                nockCreate(mockAgentClusterInstall as IResource),
                 nockCreate(mockPullSecretAI),
                 nockCreate(mockKlusterletAddonConfigAI),
             ]
