@@ -38,10 +38,10 @@ export function CreateAWSControlPlane() {
                         items: [
                             {
                                 text: t(
-                                    'Reduces costs by efficiently reusing an OpenShift cluster yo host multiple control planes.'
+                                    'Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'
                                 ),
                             },
-                            { text: t('Quickly Provisions clusters.') },
+                            { text: t('Quickly provisions clusters.') },
                         ],
                     },
                 ],
