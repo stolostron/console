@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, CardTitle, Divider, Page, Text, TextVariants } from '@patternfly/react-core'
+import { Card, List, ListItem, Page, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { AcmInlineCopy } from '../../../../../../../../ui-components'
+import './css/HypershiftAWSCLI.css'
 
 export function HypershiftAWSCLI() {
     const { t } = useTranslation()
@@ -38,49 +39,64 @@ export function HypershiftAWSCLI() {
                     </>
                 }
             />
-            <Card style={{ margin: '2em' }}>
-                <CardTitle style={{ fontSize: '1.2em' }}>{t('Prerequisite')}</CardTitle>
-                <CardBody>
-                    {t('Enable hosted control plane feature for AWS. Download and install hosted control plane CLI.')}
-                    <br />
-                    <Text component={TextVariants.a} href={DOC_LINKS.HOSTED_CONTROL_PLANES} target="_blank">
-                        {t('Follow documentation for more information.')}
-                    </Text>
-                </CardBody>
-                <Divider component="div" />
-                <CardTitle style={{ fontSize: '1.2em' }}>{t('AWS Credentials')}</CardTitle>
-                <CardBody>
-                    {t('Use existing AWS credentials, or create new AWS credentials.')}
-                    <br />
-                    <Text component={TextVariants.a} href={`${NavigationPath.addCredentials}?type=aws`} target="_blank">
-                        {t('Click here for Credentials wizard.')}
-                    </Text>
-                </CardBody>
-                <Divider component="div" />
-                <CardTitle style={{ fontSize: '1.2em' }}>{t('Hosted control plane command')}</CardTitle>
-                <CardTitle>{t('Copy command')}</CardTitle>
-                <CardBody>
-                    {' '}
-                    {t('Log in to OpenShift Container Platform by using the oc login command.')}
-                    <br />
-                    <AcmInlineCopy
-                        text={copyCommand}
-                        displayText={t('Copy this template')}
-                        id="copy-template"
-                        iconPosition="left"
-                    />{' '}
-                    {t('to create the hosted control plane command.')}
-                </CardBody>
-                <CardTitle>{t('Replace variables')}</CardTitle>
-                <CardBody>
-                    {t('Replace the template variables.')}
-                    <br />
-                    {t('*Note')}: {/* command, no translation needed */}
-                    <span style={{ border: '1px solid #dfe3e6', padding: '0.2em' }}>
-                        --secret-screds $SECRET_CREDS
-                    </span>{' '}
-                    {t('will be replaced with your AWS credentials from step 1.')}
-                </CardBody>
+            <Card style={{ margin: '2em', padding: '2em' }}>
+                <List isPlain isBordered iconSize="large">
+                    <ListItem icon={<span className="ocm-icons">1</span>}>
+                        <TextContent>
+                            <Text component={TextVariants.h2}>{t('Prerequisite')}</Text>
+                            <Text component={TextVariants.p}>
+                                {t(
+                                    'Enable hosted control plane feature for AWS. Download and install hosted control plane CLI.'
+                                )}
+                            </Text>
+                            <Text component={TextVariants.a} href={DOC_LINKS.HOSTED_CONTROL_PLANES} target="_blank">
+                                {t('Follow documentation for more information.')}
+                            </Text>
+                        </TextContent>
+                    </ListItem>
+                    <ListItem icon={<span className="ocm-icons">2</span>}>
+                        <TextContent>
+                            <Text component={TextVariants.h2}>{t('AWS Credentials')}</Text>
+                            <Text component={TextVariants.p}>
+                                {t('Use existing AWS credentials, or create new AWS credentials.')}
+                            </Text>
+                            <Text
+                                component={TextVariants.a}
+                                href={`${NavigationPath.addCredentials}?type=aws`}
+                                target="_blank"
+                            >
+                                {t('Click here for Credentials wizard.')}
+                            </Text>
+                        </TextContent>
+                    </ListItem>
+                    <ListItem icon={<span className="ocm-icons">3</span>}>
+                        <TextContent>
+                            <Text component={TextVariants.h2}>{t('Hosted control plane command')}</Text>
+                            <Text component={TextVariants.h4}>{t('Copy command')}</Text>
+                            <Text component={TextVariants.p}>
+                                {t('Log in to OpenShift Container Platform by using the oc login command.')}
+                            </Text>
+                            <Text component={TextVariants.p}>
+                                <AcmInlineCopy
+                                    text={copyCommand}
+                                    displayText={t('Copy this template')}
+                                    id="copy-template"
+                                    iconPosition="left"
+                                />{' '}
+                                {t('to create the hosted control plane command.')}
+                            </Text>
+                            <Text component={TextVariants.h4}>{t('Replace variables')}</Text>
+                            <Text component={TextVariants.p}>{t('Replace the template variables.')}</Text>
+                            <Text component={TextVariants.p}>
+                                {t('*Note')}: {/* command, no translation needed */}
+                                <span style={{ border: '1px solid #dfe3e6', padding: '0.2em' }}>
+                                    --secret-screds $SECRET_CREDS
+                                </span>{' '}
+                                {t('will be replaced with your AWS credentials from step 1.')}
+                            </Text>
+                        </TextContent>
+                    </ListItem>
+                </List>
             </Card>
         </Page>
     )
