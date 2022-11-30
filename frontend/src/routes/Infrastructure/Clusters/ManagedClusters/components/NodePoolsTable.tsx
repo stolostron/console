@@ -245,11 +245,11 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         (nodepool: NodePool) => {
             const actions: IAcmRowAction<any>[] = []
 
-            if (getNodepoolStatus(nodepool) !== 'Pending') {
-                actions.push({
-                    id: 'manageNodepool',
-                    title: t('Manage node pool'),
-                    click: () => {
+            actions.push({
+                id: 'manageNodepool',
+                title: t('Manage node pool'),
+                click: () => {
+                    !!hostedCluster &&
                         setManageNodepoolModalProps({
                             open: true,
                             close: () => {
@@ -258,10 +258,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                             hostedCluster,
                             nodepool,
                         })
-                    },
-                    isDisabled: !canPatchNodepool,
-                })
-            }
+                },
+                isDisabled: !canPatchNodepool,
+            })
 
             actions.push({
                 id: 'removeNodepool',
@@ -281,7 +280,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
             return actions
         },
-        [getNodepoolStatus, hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
+        [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
     )
 
     useEffect(() => {
@@ -323,7 +322,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             <AddNodePoolModal
                 open={openAddNodepoolModal}
                 close={toggleAddNodepoolModal}
-                hostedCluster={hostedCluster}
+                hostedCluster={hostedCluster!}
                 refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
                 clusterImages={clusterImages}
             />

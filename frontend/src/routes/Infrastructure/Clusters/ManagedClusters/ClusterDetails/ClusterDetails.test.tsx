@@ -69,6 +69,7 @@ import {
     ClusterProvisionKind,
     HostedClusterApiVersion,
     HostedClusterKind,
+    IResource,
     ManagedCluster,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
@@ -897,8 +898,18 @@ const mockHostedCluster1: HostedClusterK8sResource = {
         namespace: clusterName,
     },
     spec: {
+        services: [],
         dns: {
             baseDomain: 'test.com',
+        },
+        pullSecret: { name: 'local-cluster-pull-secret' },
+        release: { image: 'quay.io/openshift-release-dev/ocp-release:4.10.15-x86_64' },
+        sshKey: { name: 'feng-hypershift-test-ssh-key' },
+        platform: {
+            agent: {
+                agentNamespace: clusterName,
+            },
+            type: 'Agent',
         },
     },
 }
@@ -1307,8 +1318,8 @@ describe('ClusterDetails with not found', () => {
                 <MemoryRouter
                     initialEntries={[
                         generatePath(NavigationPath.clusterDetails, {
-                            name: mockHostedCluster1.metadata.name,
-                            namespace: mockHostedCluster1.metadata.namespace,
+                            name: mockHostedCluster1.metadata?.name!,
+                            namespace: mockHostedCluster1.metadata?.namespace!,
                         }),
                     ]}
                 >
@@ -1319,7 +1330,7 @@ describe('ClusterDetails with not found', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockHostedCluster1.metadata.name, true)
+        await waitForText(mockHostedCluster1.metadata?.name!, true)
         await waitFor(() =>
             expect(
                 screen.getByRole('button', {
@@ -1330,7 +1341,7 @@ describe('ClusterDetails with not found', () => {
 
         const mockImportHostedCluster = [
             nockCreate(createManagedcluster1, createManagedcluster1),
-            nockPatch(mockHostedCluster1, [
+            nockPatch(mockHostedCluster1 as IResource, [
                 {
                     op: 'replace',
                     path: '/metadata/annotations',

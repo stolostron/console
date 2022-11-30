@@ -3,7 +3,6 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
-    Hint,
     SelectOption,
     Split,
     SplitItem,
@@ -34,7 +33,6 @@ import {
     createClusterCurator,
     createProject,
     createResource,
-    isAnsibleOperatorInstalled,
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
@@ -69,9 +67,9 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { getOperatorError } from '../../../../../lib/error-output'
 import { makeStyles } from '@material-ui/styles'
-import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
 
 const acmSchema = [...schema, ...kac]
 
@@ -202,7 +200,6 @@ function reducer(state: State, action: Action): State {
 
 export default function ImportClusterPage() {
     const { t } = useTranslation()
-    const { subscriptionOperatorsState } = useSharedAtoms()
     const toastContext = useContext(AcmToastContext)
     const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
@@ -215,11 +212,6 @@ export default function ImportClusterPage() {
     const [submitButtonText, setSubmitButtonText] = useState<string>()
     const [submittingButtonText, setSubmittingButtonText] = useState<string>()
     const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
-    const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
-    const isOperatorInstalled = useMemo(
-        () => isAnsibleOperatorInstalled(subscriptionOperators),
-        [subscriptionOperators]
-    )
 
     const useStyles = makeStyles({
         description: {
@@ -521,7 +513,7 @@ export default function ImportClusterPage() {
                         description={
                             <>
                                 <div className={classes.description}>{t('template.clusterImport.info')}</div>
-                                {!isOperatorInstalled && <Hint>{getOperatorError(isOperatorInstalled, t)}</Hint>}
+                                <AutomationProviderHint component="hint" />
                             </>
                         }
                         autohide={false}

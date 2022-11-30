@@ -6,7 +6,6 @@ import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -58,7 +57,6 @@ import {
     getCredentialsTypeForClusterInfrastructureType,
 } from '../ClusterInfrastructureType'
 
-const { isAIFlowInfraEnv } = CIM
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -174,7 +172,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
-            const matchedAgentClusterInstall = agentClusterInstalls.find((mc) => mc.metadata.name === clusterName)
+            const matchedAgentClusterInstall = agentClusterInstalls.find((mc) => mc.metadata?.name === clusterName)
 
             if (matchedManagedCluster || matchedAgentClusterInstall) {
                 setCreationStatus({
@@ -320,7 +318,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                 const map = keyBy(createResources, 'kind')
                                 const clusterName = get(map, 'ClusterDeployment.metadata.name')
                                 const clusterNamespace = get(map, 'ClusterDeployment.metadata.namespace')
-                                const isAssistedFlow = isAIFlowInfraEnv(map.InfraEnv)
+                                const isAssistedFlow = map.InfraEnv
                                 createResource(
                                     resourceJSON,
                                     true,

@@ -262,11 +262,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
     return clusterImages ? (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-            <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
+            <ACMFeatureSupportLevelProvider clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}>
                 <ACMClusterDeploymentDetailsStep
                     formRef={formRef}
                     onValuesChanged={onValuesChanged}
-                    clusterImages={clusterImages}
+                    clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}
                     usedClusterNames={usedClusterNames}
                     extensionAfter={extensionAfter}
                 />

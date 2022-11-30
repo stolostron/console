@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import i18next from 'i18next'
 const t = i18next.t.bind(i18next)
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => i18next.t(key),
-    }),
-}))
 import { generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
 
 describe('ACMDataForm', () => {
