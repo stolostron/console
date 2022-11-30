@@ -104,7 +104,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
-    const controlPlaneBreadCrumb = { text: t('Control plane type'), to: NavigationPath.createControlPlane }
+    const controlPlaneBreadCrumbBM = { text: t('Control plane type'), to: NavigationPath.createBMControlPlane }
+    const controlPlaneBreadCrumbAWS = { text: t('Control plane type'), to: NavigationPath.createAWSControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
 
     const settings = useRecoilValue(settingsState)
@@ -387,6 +388,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
     switch (infrastructureType) {
         case Provider.aws:
+            breadcrumbs.push(controlPlaneBreadCrumbAWS)
             controlData = getControlDataAWS(
                 handleModalToggle,
                 true,
@@ -433,17 +435,17 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         case HostInventoryInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
             controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
-            breadcrumbs.push(controlPlaneBreadCrumb)
+            breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
             controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
-            breadcrumbs.push(controlPlaneBreadCrumb)
+            breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
             controlData = getControlDataAI(handleModalToggle, isACMAvailable)
-            breadcrumbs.push(controlPlaneBreadCrumb, hostsBreadCrumb)
+            breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
             break
     }
 
