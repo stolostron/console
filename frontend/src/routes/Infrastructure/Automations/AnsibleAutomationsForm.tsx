@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@material-ui/styles'
+import { FormGroup } from '@material-ui/core'
 import {
     ActionGroup,
     Button,
@@ -12,6 +12,8 @@ import {
     Radio,
     SelectOption,
     SelectVariant,
+    Split,
+    SplitItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -598,28 +600,22 @@ function EditAnsibleJobModal(props: {
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
     const { t } = useTranslation()
-    const useStyles = makeStyles({
-        radio: {
-            paddingRight: '10px',
-        },
-    })
-    const classes = useStyles()
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
     const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
     const newTemplateSelection = (jobName: string | undefined) => {
         if (ansibleJob) {
-            ansibleJob.type = filterForJobTemplates ? 'Job' : 'Workflow'
             const copy = { ...ansibleJob }
             copy.name = jobName as string
             setAnsibleJob(copy)
         }
     }
-    const newTemplateTypeSelection = (jobName: string | undefined) => {
+    const newTemplateTypeSelection = () => {
         if (ansibleJob) {
             const copy = { ...ansibleJob }
-            copy.name = jobName as string
+            copy.name = ''
+            copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
             setAnsibleJob(copy)
         }
     }
@@ -631,30 +627,34 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
-                <span style={{ display: 'inline-flex' }}>
-                    <Radio
-                        name={'job-template'}
-                        id={'job-template'}
-                        label={t('Job template')}
-                        isChecked={filterForJobTemplates}
-                        className={classes.radio}
-                        onChange={() => {
-                            newTemplateTypeSelection('')
-                            setFilterForJobTemplates(true)
-                        }}
-                    />
-                    <Radio
-                        name={'workflow-template'}
-                        id={'workflow-template'}
-                        label={t('Workflow template')}
-                        isChecked={!filterForJobTemplates}
-                        onChange={() => {
-                            newTemplateTypeSelection('')
-                            setFilterForJobTemplates(false)
-                        }}
-                    />
-                </span>
-
+                <FormGroup>
+                    <Split hasGutter>
+                        <SplitItem>
+                            <Radio
+                                name={'job-template'}
+                                id={'job-template'}
+                                label={t('Job template')}
+                                isChecked={filterForJobTemplates}
+                                onChange={() => {
+                                    newTemplateTypeSelection()
+                                    setFilterForJobTemplates(true)
+                                }}
+                            />
+                        </SplitItem>
+                        <SplitItem>
+                            <Radio
+                                name={'workflow-template'}
+                                id={'workflow-template'}
+                                label={t('Workflow template')}
+                                isChecked={!filterForJobTemplates}
+                                onChange={() => {
+                                    newTemplateTypeSelection()
+                                    setFilterForJobTemplates(false)
+                                }}
+                            />
+                        </SplitItem>
+                    </Split>
+                </FormGroup>
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"

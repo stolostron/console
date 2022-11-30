@@ -12,6 +12,7 @@ export const ClusterCuratorKind = 'ClusterCurator'
 export type ClusterCuratorKindType = 'ClusterCurator'
 
 export type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
+export type TemplateType = 'Job' | 'Workflow'
 
 export const ClusterCuratorDefinition: IResourceDefinition = {
     apiVersion: ClusterCuratorApiVersion,
@@ -56,7 +57,7 @@ export interface ClusterCurator {
 export interface ClusterCuratorAnsibleJob {
     name: string
     extra_vars?: Record<string, string>
-    type?: string
+    type?: TemplateType
 }
 
 export function createClusterCurator(clusterCurator: ClusterCurator) {

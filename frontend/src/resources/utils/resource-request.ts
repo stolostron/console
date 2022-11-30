@@ -468,20 +468,21 @@ async function getAnsibleTemplates(
     const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
     const ansibleApiPath = '/api/v2/'
     let ansibleJobs: any[] = []
-    let jobUrl: any = ansibleHostUrl + ansibleApiPath + ansibleResourcePaths.shift()
 
-    while (jobUrl) {
-        const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-        result!.data.results && ansibleJobs.push(...result!.data.results)
-        const { next } = result.data
-        if (next) {
-            jobUrl = ansibleHostUrl + next
-        } else if (ansibleResourcePaths.length) {
-            jobUrl = ansibleHostUrl + ansibleApiPath + ansibleResourcePaths.shift()
-        } else {
-            jobUrl = undefined
+    for (const path of ansibleResourcePaths) {
+        let jobUrl: any = ansibleHostUrl + ansibleApiPath + path
+        while (jobUrl) {
+            const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
+            result!.data.results && ansibleJobs.push(...result!.data.results)
+            const { next } = result.data
+            if (next) {
+                jobUrl = ansibleHostUrl + next
+            } else {
+                jobUrl = undefined
+            }
         }
     }
+
     return {
         results: ansibleJobs?.map((ansibleJob: { name: string; type: string }) => {
             return { name: ansibleJob.name, type: ansibleJob.type }
