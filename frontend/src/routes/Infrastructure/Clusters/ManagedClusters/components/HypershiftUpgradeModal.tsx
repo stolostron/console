@@ -2,7 +2,12 @@
 
 import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { AgentK8sResource, AgentMachineK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import {
+    AgentK8sResource,
+    AgentMachineK8sResource,
+    HostedClusterK8sResource,
+    NodePoolK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -10,6 +15,7 @@ import {
     HostedClusterApiVersion,
     HostedClusterKind,
     IRequestResult,
+    IResource,
     NodePool,
     NodePoolApiVersion,
     NodePoolKind,
@@ -439,7 +445,7 @@ export function HypershiftUpgradeModal(props: {
             } as NodePool
         }
 
-        const patchResult = patchResource(resourceYAML, patchYAML)
+        const patchResult = patchResource(resourceYAML as IResource, patchYAML)
         return {
             promise: new Promise((resolve, reject) => {
                 patchResult.promise
@@ -647,10 +653,10 @@ export function HypershiftUpgradeModal(props: {
                                                                             >
                                                                                 {props.controlPlane.hypershift?.agent &&
                                                                                     getNodepoolAgents(
-                                                                                        np,
+                                                                                        np as NodePoolK8sResource,
                                                                                         props.agents,
                                                                                         props.agentMachines,
-                                                                                        props.hostedCluster
+                                                                                        props.hostedCluster!
                                                                                     ).map((agent) => {
                                                                                         const hostName =
                                                                                             agent.spec.hostname ||

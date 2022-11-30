@@ -40,7 +40,7 @@ export const deleteHypershiftCluster = (cluster: Cluster) => {
         resources.push({
             apiVersion: NodePoolApiVersion,
             kind: NodePoolKind,
-            metadata: { name: np.metadata.name, namespace: cluster.namespace! },
+            metadata: { name: np.metadata?.name, namespace: cluster.namespace! },
         })
     })
 

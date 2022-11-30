@@ -3,11 +3,11 @@
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
+import { ClusterDeploymentWizardStepsType, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
-import { patchResource } from '../../../../../../resources'
+import { IResource, patchResource } from '../../../../../../resources'
 import {
     fetchSecret,
     getClusterDeploymentLink,
@@ -21,12 +21,12 @@ import {
     onSaveNetworking,
     useClusterDeployment,
     useAgentClusterInstall,
-    useInfraEnv,
     fetchInfraEnv,
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
     useOnDeleteHost,
     useAssistedServiceConfigMap,
+    useClusterDeploymentInfraEnv,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -58,26 +58,29 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const { t } = useTranslation()
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
-    const { agentsState, clusterImageSetsState, nmStateConfigsState } = useSharedAtoms()
+    const { agentsState, clusterImageSetsState, nmStateConfigsState, infrastructuresState } = useSharedAtoms()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const { waitForAll } = useSharedRecoil()
-    const [clusterImageSets, agents, nmStateConfigs] = useRecoilValue(
-        waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState])
+    const [clusterImageSets, agents, nmStateConfigs, infrastructures] = useRecoilValue(
+        waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState, infrastructuresState])
     )
     const aiConfigMap = useAssistedServiceConfigMap()
 
     const clusterDeployment = useClusterDeployment({ name, namespace })
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
-    const infraEnv = useInfraEnv({ name, namespace })
+    const infraEnv = useClusterDeploymentInfraEnv(
+        clusterDeployment?.metadata?.name!,
+        clusterDeployment?.metadata?.namespace!
+    )
 
-    const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
+    const infraNMStates = useMemo(() => getInfraEnvNMStates(nmStateConfigs, infraEnv), [nmStateConfigs, infraEnv])
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
     const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
 
-    const onSaveDetails = (values: any) => {
-        return patchResource(agentClusterInstall, [
+    const onSaveDetails = (values: CIM.ClusterDeploymentDetailsValues) => {
+        return patchResource(agentClusterInstall as IResource, [
             {
                 op: 'replace',
                 path: '/spec/imageSetRef/name',
@@ -96,9 +99,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         [agents, infraEnv]
     )
 
-    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
-        { open: false }
-    )
+    const [bulkModalProps, setBulkModalProps] = useState<
+        IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    >({ open: false })
     const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
 
     const hostActions = {
@@ -106,23 +109,23 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             setEditAgent(agent)
         },
         onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
-            return patchResource(agent, [
+            return patchResource(agent as IResource, [
                 {
                     op: 'replace',
                     path: '/spec/role',
                     value: role,
                 },
-            ]).promise
+            ]).promise as Promise<CIM.AgentK8sResource>
         },
         onDeleteHost,
         onSetInstallationDiskId: (agent: CIM.AgentK8sResource, diskId: string) => {
-            return patchResource(agent, [
+            return patchResource(agent as IResource, [
                 {
                     op: 'replace',
                     path: '/spec/installation_disk_id',
                     value: diskId,
                 },
-            ]).promise
+            ]).promise as Promise<CIM.AgentK8sResource>
         },
     }
 
@@ -130,10 +133,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         const patch = async () => {
             if (agentClusterInstall) {
                 try {
-                    if (!agentClusterInstall.spec.holdInstallation) {
-                        await patchResource(agentClusterInstall, [
+                    if (!agentClusterInstall.spec?.holdInstallation) {
+                        await patchResource(agentClusterInstall as IResource, [
                             {
-                                op: agentClusterInstall.spec.holdInstallation === false ? 'replace' : 'add',
+                                op: agentClusterInstall.spec?.holdInstallation === false ? 'replace' : 'add',
                                 path: '/spec/holdInstallation',
                                 value: true,
                             },
@@ -151,11 +154,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     ])
 
     const onFinish = async () => {
-        await patchResource(agentClusterInstall, [
+        const res = await patchResource(agentClusterInstall as IResource, [
             // effectively, the property gets deleted instead of holding "false" value by that change
             {
                 op:
-                    agentClusterInstall.spec?.holdInstallation || agentClusterInstall.spec?.holdInstallation === false
+                    agentClusterInstall?.spec?.holdInstallation || agentClusterInstall?.spec?.holdInstallation === false
                         ? 'replace'
                         : 'add',
                 path: '/spec/holdInstallation',
@@ -164,6 +167,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ]).promise
 
         history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
+        return res as CIM.AgentClusterInstallK8sResource
     }
 
     return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
@@ -176,7 +180,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                     breadcrumb={[
                         { text: t('Clusters'), to: NavigationPath.clusters },
                         {
-                            text: clusterDeployment?.metadata?.name,
+                            text: clusterDeployment?.metadata?.name!,
                             to: generatePath(NavigationPath.clusterDetails, { name, namespace }),
                         },
                         {
@@ -204,11 +208,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             <AcmErrorBoundary>
                 <AcmPageContent id="edit-cluster">
                     <PageSection variant="light" type="wizard" isFilled>
-                        <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
+                        <BulkActionModel<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
                         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
                             <ClusterDeploymentWizard
                                 className="cluster-deployment-wizard"
-                                clusterImages={clusterImageSets}
+                                clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
                                 clusterDeployment={clusterDeployment}
                                 agentClusterInstall={agentClusterInstall}
                                 agents={agents}
@@ -222,9 +226,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 onApproveAgent={onApproveAgent}
                                 onSaveAgent={onSaveAgent}
                                 onSaveBMH={onSaveBMH}
-                                onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
+                                onCreateBMH={
+                                    infraEnv ? getOnCreateBMH(infraEnv) : undefined
+                                } /* AI Flow specific. Not called for CIM. */
                                 onSaveISOParams={
-                                    getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */
+                                    infraEnv
+                                        ? getOnSaveISOParams(infraEnv)
+                                        : undefined /* AI Flow specific. Not called for CIM. */
                                 }
                                 onSaveHostsDiscovery={() =>
                                     onDiscoveryHostsNext({
@@ -244,7 +252,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                     (searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined
                                 }
                                 fetchInfraEnv={fetchInfraEnv}
-                                isBMPlatform={isBMPlatform(infraEnv)}
+                                isBMPlatform={isBMPlatform(infrastructures[0])}
                                 isPreviewOpen={isPreviewOpen}
                                 setPreviewOpen={setPreviewOpen}
                                 fetchManagedClusters={fetchManagedClusters}

@@ -2,12 +2,12 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForText } from '../../../../../lib/test-util'
 import {
-    ClusterImageSet,
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
     Namespace,
@@ -17,7 +17,7 @@ import {
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 
-const mockHostedCluster0 = {
+const mockHostedCluster0: CIM.HostedClusterK8sResource = {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
     kind: 'HostedCluster',
     metadata: {
@@ -250,7 +250,7 @@ const mockHostedCluster0 = {
             },
             history: [
                 {
-                    completionTime: null,
+                    completionTime: '',
                     image: 'quay.io/openshift-release-dev/ocp-release:4.11.9-x86_64',
                     startedTime: '2022-10-24T20:34:08Z',
                     state: 'Partial',
@@ -263,7 +263,7 @@ const mockHostedCluster0 = {
     },
 }
 
-const mockHostedCluster1 = {
+const mockHostedCluster1: CIM.HostedClusterK8sResource = {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
     kind: 'HostedCluster',
     metadata: {
@@ -346,9 +346,11 @@ const mockHostedCluster1 = {
             name: 'jnp-az1-pull-secret',
         },
         issuerURL: 'https://kubernetes.default.svc',
-        sshKey: {},
         autoscaling: {},
         olmCatalogPlacement: 'management',
+        sshKey: {
+            name: 'mykey',
+        },
         services: [
             {
                 service: 'APIServer',
@@ -509,14 +511,14 @@ const mockHostedCluster1 = {
     },
 }
 
-const mockHostedCluster2 = {
+const mockHostedCluster2: CIM.HostedClusterK8sResource = {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
     kind: 'HostedCluster',
     metadata: {
         annotations: {
             'hypershift.openshift.io/control-plane-operator-image': 'quay.io/dravicha/hypershift:7sep_2',
         },
-        creationTimestamp: null,
+        creationTimestamp: '',
         name: 'hyp-ovn-1',
         namespace: 'clusters',
     },
@@ -644,11 +646,11 @@ const mockHostedCluster2 = {
         },
     },
     status: {
-        conditions: null,
+        conditions: [],
     },
 }
 
-const mockClusterImageSet0: ClusterImageSet = {
+const mockClusterImageSet0: CIM.ClusterImageSetK8sResource = {
     apiVersion: ClusterImageSetApiVersion,
     kind: ClusterImageSetKind,
     metadata: {

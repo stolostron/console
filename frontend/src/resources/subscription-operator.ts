@@ -26,5 +26,6 @@ export interface SubscriptionOperator extends IResource {
             status: string
             type: string
         }[]
+        installedCSV?: string
     }
 }

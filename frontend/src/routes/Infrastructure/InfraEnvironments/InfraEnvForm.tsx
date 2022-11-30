@@ -87,7 +87,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata.name), [infraEnvironments])
+    const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata?.name!), [infraEnvironments])
     return (
         <>
             <PageSection variant="light" isFilled>

@@ -561,7 +561,7 @@ export function useClusterDistributionColumn(
                 cluster={cluster}
                 clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
                 hostedCluster={hostedClusters.find(
-                    (hc) => cluster.namespace === hc.metadata.namespace && cluster.name === hc.metadata.name
+                    (hc) => cluster.namespace === hc.metadata?.namespace && cluster.name === hc.metadata?.name
                 )}
             />
         ),

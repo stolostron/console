@@ -19,6 +19,10 @@ const hostedCluster: HostedClusterK8sResource = {
         namespace: 'clusters',
     },
     spec: {
+        services: [],
+        platform: {
+            type: 'AWS',
+        },
         autoscaling: {},
         clusterID: '49b5fce0-6556-4bec-aa04-81072382c860',
         controllerAvailabilityPolicy: 'SingleReplica',
@@ -27,7 +31,9 @@ const hostedCluster: HostedClusterK8sResource = {
             privateZoneID: 'Z05280312TKV05LK210UX',
             publicZoneID: 'Z2KFHRPLWG1H9H',
         },
-        etcd: {},
+        etcd: {
+            managementType: 'Managed',
+        },
         fips: false,
         infraID: 'feng-hypershift-test-mjhpv',
         infrastructureAvailabilityPolicy: 'SingleReplica',
@@ -114,7 +120,11 @@ const hostedCluster2: HostedClusterK8sResource = {
         namespace: 'clusters',
     },
     spec: {
+        services: [],
         autoscaling: {},
+        platform: {
+            type: 'AWS',
+        },
         clusterID: '49b5fce0-6556-4bec-aa04-81072382c860',
         controllerAvailabilityPolicy: 'SingleReplica',
         dns: {
@@ -122,7 +132,9 @@ const hostedCluster2: HostedClusterK8sResource = {
             privateZoneID: 'Z05280312TKV05LK210UX',
             publicZoneID: 'Z2KFHRPLWG1H9H',
         },
-        etcd: {},
+        etcd: {
+            managementType: 'Managed',
+        },
         fips: false,
         infraID: 'feng-hypershift-test-mjhpv',
         infrastructureAvailabilityPolicy: 'SingleReplica',

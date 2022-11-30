@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, AlertVariant, Button, ButtonVariant } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Alert, Button, ButtonVariant } from '@patternfly/react-core'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import {
     WizDetailsHidden,
@@ -20,6 +19,7 @@ import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPo
 import { ConfigMap } from '../../resources'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
+import { AutomationProviderHint } from '../../components/AutomationProviderHint'
 
 export function PolicyAutomationWizard(props: {
     title: string
@@ -34,7 +34,6 @@ export function PolicyAutomationWizard(props: {
     onSubmit: WizardSubmit
     onCancel: WizardCancel
     getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
-    isAnsibleOperatorInstalled: boolean
 }) {
     const ansibleCredentials = useMemo(
         () =>
@@ -50,38 +49,6 @@ export function PolicyAutomationWizard(props: {
     const [jobNames, setJobNames] = useState<string[]>()
     const [alert, setAlert] = useState<{ title: string; message: string }>()
     const { t } = useTranslation()
-
-    function getOperatorError() {
-        const openShiftConsoleConfig = props.configMaps?.find(
-            (configmap) => configmap.metadata?.name === 'console-public'
-        )
-        const openShiftConsoleUrl: string = openShiftConsoleConfig?.data?.consoleURL
-        return (
-            <div>
-                {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
-                {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
-                    <div>
-                        {t('Install the Operator through the following link: ')}
-                        <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() =>
-                                window.open(
-                                    openShiftConsoleUrl +
-                                        '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                )
-                            }
-                        >
-                            OperatorHub
-                            <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                        </Button>
-                    </div>
-                ) : (
-                    t('Install the Operator through operator hub.')
-                )}
-            </div>
-        )
-    }
 
     useEffect(() => {
         if (props.editMode === EditMode.Edit) {
@@ -131,9 +98,12 @@ export function PolicyAutomationWizard(props: {
             }
         >
             <Step label="Automation" id="automation-step">
-                {!props.isAnsibleOperatorInstalled && (
-                    <Alert isInline title={getOperatorError()} variant={AlertVariant.danger} />
-                )}
+                <AutomationProviderHint
+                    component="alert"
+                    workflowSupportRequired={
+                        false /* TODO: remove workflowSupportRequired attribute once GRC supports workflow templates */
+                    }
+                />
                 <Section label={t('Policy automation')}>
                     {alert && (
                         <WizDetailsHidden>

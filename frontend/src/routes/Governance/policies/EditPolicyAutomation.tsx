@@ -9,7 +9,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { listAnsibleTowerJobs, PolicyAutomation, Secret, SubscriptionOperator } from '../../../resources'
+import { listAnsibleTowerJobs, PolicyAutomation, Secret } from '../../../resources'
 import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
 
@@ -40,29 +40,16 @@ export function EditPolicyAutomation() {
     const params = useParams<{ namespace: string; name: string }>()
     const { name, namespace } = params
     const history = useHistory()
-    const { configMapsState, policyAutomationState, secretsState, subscriptionOperatorsState, usePolicies } =
-        useSharedAtoms()
+    const { configMapsState, policyAutomationState, secretsState, usePolicies } = useSharedAtoms()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
     const [configMaps] = useRecoilState(configMapsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const toast = useContext(AcmToastContext)
     const currentPolicy = useMemo(
         () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
         [policies, name, namespace]
     )
-
-    const isOperatorInstalled = useMemo(() => {
-        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
-            const conditions = op.status?.conditions[0]
-            return (
-                op.metadata.name === 'ansible-automation-platform-operator' &&
-                conditions?.reason === 'AllCatalogSourcesHealthy'
-            )
-        })
-        return ansibleOp.length > 0
-    }, [subscriptionOperators])
 
     const currentPolicyAutomation = policyAutomations.find((policyAutomation: PolicyAutomation) => {
         return (
@@ -95,7 +82,6 @@ export function EditPolicyAutomation() {
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
             resource={currentPolicyAutomation}
             onCancel={() => history.push(NavigationPath.policies)}
-            isAnsibleOperatorInstalled={isOperatorInstalled}
             configMaps={configMaps}
             onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t, currentPolicyAutomation)}
             getAnsibleJobsCallback={async (credential: any) => {

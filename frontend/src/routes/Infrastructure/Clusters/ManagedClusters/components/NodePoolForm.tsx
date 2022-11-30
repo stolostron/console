@@ -90,7 +90,7 @@ export function NodePoolForm(props: {
     const nodepoolCommonProperties = {
         nodepoolNamespace: {
             key: t('Namespace'),
-            value: props.hostedCluster.metadata.namespace,
+            value: props.hostedCluster.metadata?.namespace,
         },
         nodepoolName: {
             key: t('Name'),
@@ -373,13 +373,13 @@ export function NodePoolForm(props: {
             kind: NodePoolKind,
             metadata: {
                 name,
-                namespace: props.hostedCluster.metadata.namespace,
+                namespace: props.hostedCluster.metadata?.namespace,
                 labels: {
-                    'hypershift.openshift.io/auto-created-for-infra': props.hostedCluster.spec.infraID,
+                    'hypershift.openshift.io/auto-created-for-infra': props.hostedCluster.spec.infraID || '',
                 },
             },
             spec: {
-                clusterName: props.hostedCluster.metadata.name,
+                clusterName: props.hostedCluster.metadata?.name || '',
                 management: {
                     autoRepair: false,
                     replace: {
@@ -394,9 +394,10 @@ export function NodePoolForm(props: {
                 platform,
                 release: {
                     image: useHCImage
-                        ? props.hostedCluster.spec.release.image
-                        : props.clusterImages?.find((image) => image.spec.releaseImage.includes(selectedImage)).spec
-                              .releaseImage,
+                        ? props.hostedCluster.spec?.release.image || ''
+                        : props.clusterImages?.find(
+                              (image) => !!selectedImage && image.spec?.releaseImage.includes(selectedImage)
+                          )?.spec?.releaseImage || '',
                 },
                 replicas,
             },
