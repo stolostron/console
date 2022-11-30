@@ -187,32 +187,32 @@ describe('add ansible job template page', () => {
         await waitForNock(ansibleWorkflowNock)
 
         // install job templates
-        await clickByText('Add an Ansible job template', 0)
-        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByText('Add a job template or workflow job template', 0)
+        await clickByPlaceholderText('Search or select a job template name', 0)
         await clickByText(mockTemplateList.results![0].name!, 0)
         await clickByText('Save')
-        await clickByText('Add an Ansible job template', 1)
-        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByText('Add a job template or workflow job template', 1)
+        await clickByPlaceholderText('Search or select a job template name', 0)
         await clickByText(mockTemplateList.results![1].name!, 0)
         await clickByText('Save')
 
         // install workflow templates
-        await clickByText('Add an Ansible job template', 1)
+        await clickByText('Add a job template or workflow job template', 1)
         await clickByText('Workflow template')
-        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByPlaceholderText('Search or select a workflow job template name', 0)
         await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
         await clickByText('Save')
 
         await clickByText('Next')
 
         // upgrade templates
-        await clickByText('Add an Ansible job template', 0)
+        await clickByText('Add a job template or workflow job template', 0)
         await clickByText('Job template')
-        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByPlaceholderText('Search or select a job template name', 0)
         await clickByText(mockTemplateList.results![2].name!, 0)
         await clickByText('Save')
-        await clickByText('Add an Ansible job template', 1)
-        await clickByPlaceholderText('Enter or select Ansible job template name', 0)
+        await clickByText('Add a job template or workflow job template', 1)
+        await clickByPlaceholderText('Search or select a job template name', 0)
         await clickByText(mockTemplateList.results![3].name!, 0)
         await clickByText('Save')
         await clickByText('Next')

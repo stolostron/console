@@ -532,6 +532,19 @@ export const mockAnsibleCredential = {
     towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
     token: 'abcd',
 }
+export const mockAnsibleCredentialWorkFlow = {
+    towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
+    token: 'abcd',
+}
+
+export const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
+    results: [
+        {
+            name: 'test-job-pre-install-ii',
+            type: 'workflow_job_template',
+        },
+    ],
+}
 
 export const mockAnsibleJob: AnsibleJob = {
     apiVersion: AnsibleJobApiVersion,
@@ -581,15 +594,19 @@ export const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
             name: 'test-job-pre-install',
+            type: 'job_template',
         },
         {
             name: 'test-job-post-install',
+            type: 'job_template',
         },
         {
             name: 'test-job-pre-upgrade',
+            type: 'job_template',
         },
         {
             name: 'test-job-post-upgrade',
+            type: 'job_template',
         },
     ],
 }

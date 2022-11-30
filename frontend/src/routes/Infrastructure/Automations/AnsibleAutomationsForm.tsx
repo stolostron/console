@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FormGroup } from '@material-ui/core'
+import { FormGroup } from '@patternfly/react-core'
 import {
     ActionGroup,
     Button,
@@ -628,45 +628,45 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
-                <FormGroup>
-                    <Split hasGutter>
-                        <SplitItem>
-                            <Radio
-                                name={'job-template'}
-                                id={'job-template'}
-                                label={t('Job template')}
-                                isChecked={filterForJobTemplates}
-                                onChange={() => {
-                                    setFilterForJobTemplates(true)
-                                    clearTemplateName()
-                                }}
-                            />
-                        </SplitItem>
-                        <SplitItem>
-                            <Radio
-                                name={'workflow-template'}
-                                id={'workflow-template'}
-                                label={t('Workflow template')}
-                                isChecked={!filterForJobTemplates}
-                                onChange={() => {
-                                    setFilterForJobTemplates(false)
-                                    clearTemplateName()
-                                }}
-                            />
-                        </SplitItem>
-                    </Split>
+                <FormGroup fieldId="radio" isInline>
+                    <Radio
+                        name={'job-template'}
+                        id={'job-template'}
+                        label={t('Job template')}
+                        isChecked={filterForJobTemplates}
+                        onChange={() => {
+                            setFilterForJobTemplates(true)
+                            clearTemplateName()
+                        }}
+                    />
+                    <Radio
+                        name={'workflow-template'}
+                        id={'workflow-template'}
+                        label={t('Workflow template')}
+                        isChecked={!filterForJobTemplates}
+                        onChange={() => {
+                            setFilterForJobTemplates(false)
+                            clearTemplateName()
+                        }}
+                    />
                 </FormGroup>
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
-                    label={t('template.modal.name.label')}
+                    label={t(
+                        filterForJobTemplates ? 'template.modal.name.label' : 'template.workflow.modal.name.label'
+                    )}
                     id="job-name"
                     value={ansibleJob?.name}
                     onChange={(name) => {
                         newTemplateSelection(name)
                     }}
                     variant={SelectVariant.typeahead}
-                    placeholder={t('template.modal.name.placeholder')}
+                    placeholder={t(
+                        filterForJobTemplates
+                            ? 'template.modal.name.placeholder'
+                            : 'template.workflow.modal.name.placeholder'
+                    )}
                     validation={(name) => {
                         const selectedJobs = _.map(props.ansibleJobList, 'name')
                         if (name && selectedJobs.includes(name)) {

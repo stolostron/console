@@ -7,7 +7,7 @@ import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKin
 import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
-import { AnsibleTowerJobTemplateList } from '../ansible-job'
+import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
@@ -467,10 +467,10 @@ async function getAnsibleTemplates(
 ) {
     const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
     const ansibleApiPath = '/api/v2/'
-    let ansibleJobs: any[] = []
+    let ansibleJobs: AnsibleTowerJobTemplate[] = []
 
     for (const path of ansibleResourcePaths) {
-        let jobUrl: any = ansibleHostUrl + ansibleApiPath + path
+        let jobUrl: string = ansibleHostUrl + ansibleApiPath + path
         while (jobUrl) {
             const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
             result!.data.results && ansibleJobs.push(...result!.data.results)
@@ -478,14 +478,14 @@ async function getAnsibleTemplates(
             if (next) {
                 jobUrl = ansibleHostUrl + next
             } else {
-                jobUrl = undefined
+                jobUrl = ''
             }
         }
     }
 
     return {
-        results: ansibleJobs?.map((ansibleJob: { name: string; type: string }) => {
-            return { name: ansibleJob.name, type: ansibleJob.type }
+        results: ansibleJobs?.map((ansibleJob: { name: string; type?: string }) => {
+            return { name: ansibleJob.name, type: ansibleJob.type! }
         }),
     }
 }

@@ -82,9 +82,9 @@ export function isAnsibleOperatorInstalled(subscriptionOperators: SubscriptionOp
 export interface AnsibleTowerJobTemplateList {
     count?: number
     next?: string
-    results?: Array<AnsibleTowerJobTemplate>
+    results: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
-    name?: string
+    name: string
     type?: string
 }
