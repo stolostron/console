@@ -189,6 +189,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
             }
             viewToolbar={viewToolbar}
         >
+            test
             <VisualizationSurface state={{ selectedIds }} />
         </TopologyView>
     )
