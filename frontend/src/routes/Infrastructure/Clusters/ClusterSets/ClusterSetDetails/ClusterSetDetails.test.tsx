@@ -27,6 +27,7 @@ import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
+    clearByTestId,
     clickByLabel,
     clickByPlaceholderText,
     clickByText,
@@ -59,6 +60,9 @@ import {
     SubmarinerConfigApiVersion,
     submarinerConfigDefault,
     SubmarinerConfigKind,
+    Broker,
+    BrokerKind,
+    BrokerApiVersion,
 } from '../../../../../resources'
 import {
     mockClusterDeployments,
@@ -250,6 +254,21 @@ const mockManagedClusterInfoNoCredentials: ManagedClusterInfo = {
     },
 }
 
+const mockBroker: Broker = {
+    apiVersion: BrokerApiVersion,
+    kind: BrokerKind,
+    metadata: {
+        name: 'submariner-broker',
+        labels: {
+            'cluster.open-cluster-management.io/backup': 'submariner',
+        },
+    },
+    spec: {
+        globalnetEnabled: true,
+        globalnetCIDRRange: '243.0.0.0/16',
+    },
+}
+
 const mockManagedClusterNoCredentialsSecret: Secret = {
     apiVersion: SecretApiVersion,
     kind: SecretKind,
@@ -293,11 +312,13 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterNoCredentialsSecret.metadata.name!,
         },
+        globalCIDR: '244.0.0.0/8',
     },
 }
 
@@ -594,9 +615,11 @@ const mockManagedClusterRosaSubmarinerConfig: SubmarinerConfig = {
     spec: {
         gatewayConfig: {},
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         loadBalancerEnable: true,
+        globalCIDR: '',
     },
 }
 
@@ -610,9 +633,11 @@ const mockManagedClusterAroSubmarinerConfig: SubmarinerConfig = {
     spec: {
         gatewayConfig: {},
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         loadBalancerEnable: true,
+        globalCIDR: '',
     },
 }
 
@@ -631,11 +656,13 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: true,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterExtraSecret.metadata.name!,
         },
+        globalCIDR: '',
     },
 }
 
@@ -654,11 +681,13 @@ const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterAzureSecret.metadata.name!,
         },
+        globalCIDR: '',
     },
 }
 
@@ -677,11 +706,13 @@ const mockManagedClusterOpenstackSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterOpenstackSecret.metadata.name!,
         },
+        globalCIDR: '',
     },
 }
 
@@ -786,11 +817,13 @@ const mockManagedClusterNoCredentialsSubmarinerConfigAzure: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: 'managed-cluster-no-credentials-azure-azr-creds',
         },
+        globalCIDR: '',
     },
 }
 
@@ -833,11 +866,13 @@ const mockManagedClusterNoCredentialsSubmarinerConfigOpenstack: SubmarinerConfig
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
         NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterNoCredentialsSecretOpenstack.metadata.name!,
         },
+        globalCIDR: '',
     },
 }
 
@@ -1012,18 +1047,26 @@ describe('ClusterSetDetails page', () => {
         await clickByText(mockManagedClusterNoCredentialsOpenstack!.metadata.name!)
         await clickByText(mockManagedClusterRosa!.metadata.name!)
         await clickByText(mockManagedClusterAro!.metadata.name!)
+        await clickByLabel('Enable Globalnet')
+        await typeByTestId('broker-globalnet-cidr', '243.0.0.333/16')
+        await clickByText('Next')
+        await waitForNotTestId('credential-secret')
+        await clearByTestId('broker-globalnet-cidr')
+        await typeByTestId('broker-globalnet-cidr', '243.0.0.0/16')
         await clickByText('Next')
 
         // mockManagedClusterExtra
         await waitForTestId('credential-secret')
         await waitForNotTestId('awsAccessKeyID')
         await waitForNotTestId('awsSecretAccessKeyID')
+        await clickByLabel('Disconnected cluster')
         await clickByText('Next')
 
         // mockManagedClusterNoCredentials
         await waitForNotTestId('credential-secret')
         await typeByTestId('awsAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_access_key_id)
         await typeByTestId('awsSecretAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_secret_access_key)
+        await typeByTestId('global-net-cidr', mockManagedClusterNoCredentialsSubmarinerConfig.spec?.globalCIDR!)
 
         await clickByText('Next')
 
@@ -1105,6 +1148,9 @@ describe('ClusterSetDetails page', () => {
         const nockSCAro = nockCreate(mockManagedClusterAroSubmarinerConfig)
         await clickByText('Next')
 
+        // mockBroker
+        const nockBroker = nockCreate(mockBroker)
+
         await clickByText('Install')
         await waitForNocks([
             nockMCAExtra,
@@ -1126,6 +1172,7 @@ describe('ClusterSetDetails page', () => {
             nockSCRosa,
             nockMCAAro,
             nockSCAro,
+            nockBroker,
         ])
     })
     test('can uninstall submariner add-ons', async () => {

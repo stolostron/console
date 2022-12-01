@@ -11,7 +11,7 @@ import { RbacButton } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { validateJSON, validateCloudsYaml } from '../../../../../../lib/validation'
+import { validateJSON, validateCloudsYaml, validateCidr } from '../../../../../../lib/validation'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import {
     Broker,
@@ -177,7 +177,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [fetchSecrets, setFetchSecrets] = useState<boolean>(true)
 
     const [globalnetEnabled, setGlobalnetEnabled] = useState<boolean>(false)
-    const [isGlobalnetAlreadyConfigured, setIsGlobalnetAlreadyConfigured] = useState<boolean>(true)
+    const [isGlobalnetAlreadyConfigured, setIsGlobalnetAlreadyConfigured] = useState<boolean>(false)
+    const [brokerGlobalnetCIDR, setBrokerGlobalNetCIDR] = useState<string>()
 
     const [awsAccessKeyIDs, setAwsAccessKeyIDs] = useState<Record<string, string | undefined>>({})
     const [awsSecretAccessKeyIDs, setAwsSecretAccessKeyIDs] = useState<Record<string, string | undefined>>({})
@@ -196,12 +197,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [clouds, setOpenstackClouds] = useState<Record<string, string | undefined>>({})
 
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
+    const [airGappedDeployments, setAirGappedDeployments] = useState<Record<string, boolean>>({})
     const [nattEnables, setNattEnables] = useState<Record<string, boolean>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
     const [azInstanceTypes, setAzInstanceTypes] = useState<Record<string, string>>({})
     const [openStackInstanceTypes, setOpenStackInstanceTypes] = useState<Record<string, string>>({})
+    const [globalNetCIDRs, setglobalNetCIDRs] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
 
@@ -250,6 +253,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 .promise.then((broker) => {
                     setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
                     setIsGlobalnetAlreadyConfigured(true)
+                    setBrokerGlobalNetCIDR(broker?.spec?.globalnetCIDRRange)
                 })
                 .catch(() => {
                     setIsGlobalnetAlreadyConfigured(false)
@@ -294,8 +298,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                         },
                         IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
+                        airGappedDeployment:
+                            airGappedDeployments[cluster.displayName!] ?? submarinerConfigDefault.airGappedDeployment,
                         NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
                         cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
+                        globalCIDR: globalNetCIDRs[cluster.displayName!] ?? '',
                     },
                 }
 
@@ -431,11 +438,13 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         },
                     },
                     IPSecNATTPort: 0,
+                    airGappedDeployments: false,
                     NATTEnable: false,
                     cableDriver: '',
                     credentialsSecret: {
                         name: '',
                     },
+                    globalnetCIDR: '',
                 },
             })
         }
@@ -457,6 +466,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             }
             resources.push(broker)
         } else if (!isGlobalnetAlreadyConfigured || !selectedClusters || !selectedClusters.length) {
+            let brokerGlobalNetCIDR = brokerGlobalnetCIDR
+                ? brokerGlobalnetCIDR
+                : submarinerConfigDefault.brokerGlobalnetCIDR
+
+            if (!globalnetEnabled) {
+                brokerGlobalNetCIDR = ''
+            }
+
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
@@ -469,6 +486,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 },
                 spec: {
                     globalnetEnabled,
+                    globalnetCIDRRange: brokerGlobalNetCIDR,
                 },
             }
             resources.push(broker)
@@ -612,6 +630,22 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
                         },
+                    },
+                    {
+                        id: 'broker-globalnet-cidr',
+                        type: 'Text',
+                        title: t('Globalnet CIDR'),
+                        label: t('Globalnet CIDR Range'),
+                        value: brokerGlobalnetCIDR ?? '',
+                        isDisabled: isGlobalnetAlreadyConfigured || !globalnetEnabled,
+                        isHidden: isGlobalnetAlreadyConfigured && !globalnetEnabled,
+                        labelHelp: t(
+                            'The Globalnet CIDR to be used within the clusterset pool. The default is 242.0.0.0/8'
+                        ),
+                        onChange: (value: string) => {
+                            setBrokerGlobalNetCIDR(value)
+                        },
+                        validation: (value) => validateCidr(value, t),
                     },
                 ],
             },
@@ -916,6 +950,23 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     },
                                 },
                                 {
+                                    id: 'isAirGappedDeployment',
+                                    type: 'Checkbox',
+                                    label: t('Disconnected cluster'),
+                                    labelHelp: t(
+                                        'Enable this option to instruct Submariner not to access any external servers for public IP resolution.'
+                                    ),
+                                    value:
+                                        airGappedDeployments[clusterName] !== undefined
+                                            ? airGappedDeployments[clusterName]
+                                            : submarinerConfigDefault.airGappedDeployment,
+                                    onChange: (value: boolean) => {
+                                        const copy = { ...airGappedDeployments }
+                                        copy[clusterName] = value
+                                        setAirGappedDeployments(copy)
+                                    },
+                                },
+                                {
                                     id: 'natt-port',
                                     type: 'TextNumber',
                                     label: t('submariner.install.form.nattport'),
@@ -943,6 +994,23 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         copy[clusterName] = value
                                         setNattEnables(copy)
                                     },
+                                },
+                                {
+                                    id: 'global-net-cidr',
+                                    type: 'Text',
+                                    label: t('Globalnet CIDR'),
+                                    placeholder: t('Enter Globalnet CIDR'),
+                                    labelHelp: t(
+                                        'The Globalnet CIDR to be used for the managed cluster (If left blank, a CIDR will be allocated from clusterset pool).'
+                                    ),
+                                    value: globalNetCIDRs[clusterName] ?? '',
+                                    isHidden: !globalnetEnabled,
+                                    onChange: (value) => {
+                                        const copy = { ...globalNetCIDRs }
+                                        copy[clusterName] = value
+                                        setglobalNetCIDRs(copy)
+                                    },
+                                    validation: (value) => validateCidr(value, t),
                                 },
                                 {
                                     id: 'gateways',

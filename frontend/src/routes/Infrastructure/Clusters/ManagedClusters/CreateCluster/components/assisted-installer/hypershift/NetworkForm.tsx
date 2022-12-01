@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from 'openshift-assisted-ui-lib/cim'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 import isMatch from 'lodash/isMatch'
@@ -120,14 +121,14 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
         return summary
     }
 
-    const { matchingAgents, count } = nodePools?.reduce<{ matchingAgents: string[]; count: number }>(
+    const { matchingAgents, count } = nodePools?.reduce<{ matchingAgents: CIM.AgentK8sResource[]; count: number }>(
         (acc, nodePool) => {
             const labels = nodePool.agentLabels.reduce((acc, curr) => {
                 acc[curr.key] = curr.value
                 return acc
             }, {} as { [key: string]: string })
             const mAgents = agents.filter(
-                (a) => a.metadata.namespace === infraEnvNamespace && isMatch(a.metadata.labels || {}, labels)
+                (a) => a.metadata?.namespace === infraEnvNamespace && isMatch(a.metadata?.labels || {}, labels)
             )
             acc.matchingAgents.push(...mAgents)
             acc.count += nodePool.count

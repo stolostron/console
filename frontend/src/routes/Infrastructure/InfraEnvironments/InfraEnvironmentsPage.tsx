@@ -10,7 +10,7 @@ import {
     StackItem,
     TextContent,
 } from '@patternfly/react-core'
-import { InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { CogIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { global_palette_blue_300 as blueInfoColor } from '@patternfly/react-tokens/dist/js/global_palette_blue_300'
 import {
@@ -30,6 +30,18 @@ import {
     InfraEnvK8sResource,
     AGENT_LOCATION_LABEL_KEY,
     getAgentStatus,
+    isCIMConfigured,
+    isStorageConfigured,
+    CimConfigurationModal,
+    AgentServiceConfigK8sResource,
+    CimStorageMissingAlert,
+    CimConfigProgressAlert,
+    getCurrentClusterVersion,
+    getMajorMinorVersion,
+    CreateResourceFuncType,
+    GetResourceFuncType,
+    ListResourcesFuncType,
+    PatchResourceFuncType,
 } from 'openshift-assisted-ui-lib/cim'
 import { useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
@@ -37,18 +49,24 @@ import { BulkActionModel, IBulkActionModelProps } from '../../../components/Bulk
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
+import { DOC_LINKS, OCP_DOC_BASE_PATH, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
-import { HostInventoryBanner } from './HostInventoryBanner'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
+import { IResource } from '../../../resources/resource'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { createResource, getResource, listResources, patchResource } from '../../../resources'
+
+// Will change perspective, still in the OCP Console app
+const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
+const assistedServiceDeploymentUrl = '/k8s/ns/multicluster-engine/deployments/assisted-service'
 
 const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
     infraEnvs.forEach((infraEnv) => {
         const infraAgents = agents.filter((a) =>
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
         )
         if (infraAgents.length == 0) isDisabled = false
     })
@@ -62,11 +80,13 @@ const deleteInfraEnv = (
 ) => {
     //1st: We prevent deleting action if there are any agents assigned to infraenv
     const infraAgents = agents.filter((a) =>
-        isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+        isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
     )
     const resources = [infraEnv]
     // Check all infraenv with same pull secret. If we don't found more infraenv we delete pull secret.
-    const pullSecrets = infraEnvs.filter((a) => isMatch(a.spec?.pullSecretRef, infraEnv.spec?.pullSecretRef))
+    const pullSecrets = infraEnvs.filter((a) =>
+        isMatch(a.spec?.pullSecretRef || {}, infraEnv.spec?.pullSecretRef || {})
+    )
     if (pullSecrets.length == 1) {
         if (infraEnv.spec?.pullSecretRef?.name && infraAgents.length == 0) {
             resources.push({
@@ -74,12 +94,12 @@ const deleteInfraEnv = (
                 kind: 'Secret',
                 metadata: {
                     name: infraEnv.spec.pullSecretRef.name,
-                    namespace: infraEnv.metadata.namespace,
+                    namespace: infraEnv.metadata?.namespace,
                 },
             })
         }
     }
-    const deleteResourcesResult = deleteResources(resources)
+    const deleteResourcesResult = deleteResources(resources as IResource[])
 
     return {
         promise: new Promise((resolve, reject) => {
@@ -102,11 +122,38 @@ const deleteInfraEnv = (
     }
 }
 
+const k8sPrimitives: {
+    createResource: CreateResourceFuncType
+    getResource: GetResourceFuncType
+    listResources: ListResourcesFuncType
+    patchResource: PatchResourceFuncType
+} = {
+    createResource: (res) => createResource(res).promise,
+    getResource: (res) => getResource(res).promise,
+    listResources: (...params) => listResources(...params).promise,
+    patchResource: (...params) => patchResource(...params).promise,
+}
+
 const InfraEnvironmentsPage: React.FC = () => {
-    const { agentsState, infraEnvironmentsState } = useSharedAtoms()
+    const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
+        useSharedAtoms()
     const { waitForAll } = useSharedRecoil()
-    const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
+    const [infraEnvs, agents, infrastructures, agentServiceConfigs, storageClasses] = useRecoilValue(
+        waitForAll([
+            infraEnvironmentsState,
+            agentsState,
+            infrastructuresState,
+            agentServiceConfigsState,
+            storageClassState,
+        ])
+    )
+
+    const [isCimConfigurationModalOpen, setIsCimConfigurationModalOpen] = useState(false)
     const { t } = useTranslation()
+
+    const platform: string = infrastructures?.[0]?.status?.platform || 'None'
+    const agentServiceConfig = agentServiceConfigs?.[0]
+    const isStorage = isStorageConfigured({ storageClasses: storageClasses as K8sResourceCommon[] | undefined })
 
     return (
         <AcmPage
@@ -131,32 +178,66 @@ const InfraEnvironmentsPage: React.FC = () => {
                             </Popover>
                         </>
                     }
+                    actions={
+                        <Button
+                            isDisabled={!isStorage}
+                            variant={ButtonVariant.link}
+                            onClick={() => setIsCimConfigurationModalOpen(true)}
+                        >
+                            <CogIcon />
+                            &nbsp;{t('Configure host inventory settings')}
+                        </Button>
+                    }
                 />
             }
         >
             <AcmPageContent id="infra-environments">
                 <PageSection>
-                    <InfraEnvsTable infraEnvs={infraEnvs} agents={agents} />
+                    <InfraEnvsTable
+                        infraEnvs={infraEnvs}
+                        agents={agents}
+                        agentServiceConfig={agentServiceConfig}
+                        isStorage={isStorage}
+                    />
                 </PageSection>
             </AcmPageContent>
+
+            {isCimConfigurationModalOpen && (
+                <CimConfigurationModal
+                    {...k8sPrimitives}
+                    isOpen
+                    onClose={() => setIsCimConfigurationModalOpen(false)}
+                    agentServiceConfig={agentServiceConfig}
+                    platform={platform}
+                    docDisconnectedUrl={DOC_LINKS.CIM_CONFIG_DISONNECTED}
+                    docConfigUrl={DOC_LINKS.CIM_CONFIG}
+                    docConfigAwsUrl={DOC_LINKS.CIM_CONFIG_AWS}
+                />
+            )}
         </AcmPage>
     )
 }
 
-const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid
+const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!
 
 type InfraEnvsTableProps = {
     infraEnvs: InfraEnvK8sResource[]
     agents: AgentK8sResource[]
+    agentServiceConfig?: AgentServiceConfigK8sResource
+    isStorage: boolean
 }
 
-const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
+const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agentServiceConfig, isStorage }) => {
     const { t } = useTranslation()
     const history = useHistory()
     const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
-            .replace(':namespace', infraEnv.metadata.namespace as string)
-            .replace(':name', infraEnv.metadata.name as string)
+            .replace(':namespace', infraEnv.metadata?.namespace as string)
+            .replace(':name', infraEnv.metadata?.name as string)
+
+    const { clusterVersionState } = useSharedAtoms()
+    const { waitForAll } = useSharedRecoil()
+    const [clusterVersions] = useRecoilValue(waitForAll([clusterVersionState]))
 
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<InfraEnvK8sResource> | { open: false }>({
         open: false,
@@ -172,7 +253,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
 
     infraEnvs.forEach((infraEnv) => {
         const infraAgents = agents.filter((a) =>
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
         )
         const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
         const warningAgents = infraAgents.filter((a) =>
@@ -185,7 +266,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
             ].includes(getAgentStatus(a).status.key)
         )
 
-        infraAgentsFiltered[infraEnv.metadata.uid] = {
+        infraAgentsFiltered[infraEnv.metadata?.uid!] = {
             infraAgents,
             errorAgents,
             warningAgents,
@@ -209,7 +290,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 {
                     header: t('infraEnv.tableHeader.hosts'),
                     cell: (infraEnv) => {
-                        const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                        const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                         const HostsStatusGroupCell = (
                             <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -246,9 +327,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     },
                 },
             ],
-            keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata.uid as string,
+            keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!,
             actionFn: (infraEnv: InfraEnvK8sResource) => {
-                const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                const { infraAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
                 if (infraAgents.length) {
                     return {
                         promise: Promise.resolve(),
@@ -268,11 +349,25 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
         })
     }
 
+    const clusterVersion = clusterVersions?.[0]
+    const isCIMWorking = isStorage && isCIMConfigured({ agentServiceConfig })
+
+    const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
+    const docStorageUrl = `${OCP_DOC_BASE_PATH}/${ocpVersion}/post_installation_configuration/storage-configuration.html`
+
     return (
         <>
             <BulkActionModel<InfraEnvK8sResource> {...modalProps} />
             <Stack hasGutter>
-                <HostInventoryBanner />
+                {!isStorage && (
+                    <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={storageOperatorUrl} />
+                )}
+                {isStorage && (
+                    <CimConfigProgressAlert
+                        agentServiceConfig={agentServiceConfig}
+                        assistedServiceDeploymentUrl={assistedServiceDeploymentUrl}
+                    />
+                )}
                 <StackItem>
                     <AcmTable<InfraEnvK8sResource>
                         items={infraEnvs}
@@ -286,7 +381,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 search: 'metadata.name',
                                 cell: (infraEnv) => (
                                     <span style={{ whiteSpace: 'nowrap' }}>
-                                        <Link to={getDetailsLink(infraEnv)}>{infraEnv.metadata.name}</Link>
+                                        <Link to={getDetailsLink(infraEnv)}>{infraEnv.metadata?.name}</Link>
                                     </span>
                                 ),
                             },
@@ -298,7 +393,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             {
                                 header: t('infraEnv.tableHeader.labels'),
                                 cell: (infraEnv) => {
-                                    if (infraEnv.metadata.labels) {
+                                    if (infraEnv.metadata?.labels) {
                                         const labelKeys = Object.keys(infraEnv.metadata.labels)
                                         const collapse =
                                             [
@@ -333,7 +428,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 header: t('infraEnv.tableHeader.hosts'),
                                 cell: (infraEnv) => {
                                     const { infraAgents, errorAgents, warningAgents } =
-                                        infraAgentsFiltered[infraEnv.metadata.uid]
+                                        infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                                     return (
                                         <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -383,7 +478,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 header: '',
                                 cellTransforms: [fitContent],
                                 cell: (infraEnv) => {
-                                    const { infraAgents } = infraAgentsFiltered[infraEnv.metadata.uid]
+                                    const { infraAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
 
                                     const actions = []
                                     if (infraAgents.length > 0) {
@@ -420,8 +515,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                             sort: 'metadata.namespace',
                                                         },
                                                     ],
-                                                    keyFn: (infraEnv: InfraEnvK8sResource) =>
-                                                        infraEnv.metadata.uid as string,
+                                                    keyFn: (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!,
                                                     actionFn: (infraEnv: InfraEnvK8sResource) => {
                                                         return deleteInfraEnv(infraEnv, infraEnvs, agents)
                                                     },
@@ -432,16 +526,16 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                     icon: 'warning',
                                                 })
                                             },
-                                            rbac: [rbacDelete(infraEnv)],
+                                            rbac: [rbacDelete(infraEnv as IResource)],
                                         })
                                     }
 
                                     return (
                                         <RbacDropdown<InfraEnvK8sResource>
-                                            id={`${infraEnv.metadata.name}-actions`}
+                                            id={`${infraEnv?.metadata?.name!}-actions`}
                                             item={infraEnv}
                                             isKebab={true}
-                                            text={`${infraEnv.metadata.name}-actions`}
+                                            text={`${infraEnv?.metadata?.name!}-actions`}
                                             actions={actions}
                                         />
                                     )
@@ -467,16 +561,27 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         emptyState={
                             <AcmEmptyState
                                 key="ieEmptyState"
-                                title={t(`Let's create your first infrastructure environment`)}
+                                title={t("Let's create your first infrastructure environment")}
                                 message={t(
                                     'Managing hosts with infrastructure environments makes it easy to set settings across multiple hosts.'
                                 )}
                                 action={
                                     <div>
                                         <AcmButton
-                                            component={Link}
                                             variant="primary"
-                                            to={NavigationPath.createInfraEnv}
+                                            onClick={() => {
+                                                history.push(NavigationPath.createInfraEnv)
+                                            }}
+                                            isDisabled={!isCIMWorking}
+                                            tooltip={
+                                                !isCIMWorking ? (
+                                                    <>
+                                                        {t(
+                                                            'To create an infrastructure environment, you must configure the host inventory settings.'
+                                                        )}
+                                                    </>
+                                                ) : undefined
+                                            }
                                         >
                                             {t('Create infrastructure environment')}
                                         </AcmButton>

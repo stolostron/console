@@ -370,7 +370,13 @@ const mockHostedCluster0: HostedClusterK8sResource = {
         dns: {
             baseDomain: 'dev06.red-chesterfield.com',
         },
+        release: {
+            image: 'randomimage',
+        },
+        services: [],
         platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
     },
 }
 
@@ -383,9 +389,15 @@ const mockHostedCluster1: HostedClusterK8sResource = {
     },
     spec: {
         dns: {
-            baseDomain: 'dev06.red-chesterfield.com',
+            baseDomain: 'dev07.red-chesterfield.com',
         },
+        release: {
+            image: 'randomimage',
+        },
+        services: [],
         platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
     },
 }
 

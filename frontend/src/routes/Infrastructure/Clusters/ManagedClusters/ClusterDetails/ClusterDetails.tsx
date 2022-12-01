@@ -126,14 +126,14 @@ export default function ClusterDetailsPage({
         ])
     )
 
-    const managedCluster = managedClusters.find((mc) => mc.metadata.name === name)
+    const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
     const clusterDeployment = clusterDeployments.find(
-        (cd) => cd.metadata.name === name && cd.metadata.namespace === namespace
+        (cd) => cd.metadata?.name === name && cd.metadata?.namespace === namespace
     )
     const managedClusterInfo = managedClusterInfos.find(
-        (mci) => mci.metadata.name === name && mci.metadata.namespace === name
+        (mci) => mci.metadata?.name === name && mci.metadata?.namespace === name
     )
-    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === name)
+    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata?.namespace === name)
     const addons = mapAddons(clusterManagementAddons, clusterAddons)
 
     const clusterClaim = clusterClaims.find(
@@ -142,28 +142,30 @@ export default function ClusterDetailsPage({
             cc.spec?.namespace === clusterDeployment?.metadata?.namespace
     )
 
-    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === namespace)
+    const clusterCurator = clusterCurators.find((cc) => cc.metadata?.namespace === namespace)
 
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) =>
-            aci.metadata.name === clusterDeployment?.spec?.clusterInstallRef?.name &&
+            aci.metadata?.name === clusterDeployment?.spec?.clusterInstallRef?.name &&
             clusterDeployment?.spec?.clusterInstallRef?.kind === 'AgentClusterInstall' &&
-            clusterDeployment?.metadata.namespace === aci.metadata.namespace
+            clusterDeployment?.metadata?.namespace === aci.metadata?.namespace
     )
 
-    const hostedCluster = hostedClusters.find((hc) => hc.metadata.name === name && hc.metadata.namespace === namespace)
+    const hostedCluster = hostedClusters.find(
+        (hc) => hc.metadata?.name === name && hc.metadata?.namespace === namespace
+    )
     const infraEnvAIFlow = infraEnvs.find(
         (ie: InfraEnvK8sResource) =>
-            ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
-            ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata.namespace
+            ie.spec?.clusterRef?.name === clusterDeployment?.metadata?.name &&
+            ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata?.namespace
     )
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
     const clusters = useAllClusters()
     const selectedHostedCluster = clusters.find((c) => c.name === name && c.namespace === namespace)
-    const selectedHostedClusterResource: HostedClusterK8sResource = hostedClusters.find(
-        (hc) => hc.metadata.name === name && hc.metadata.namespace === namespace
+    const selectedHostedClusterResource = hostedClusters.find(
+        (hc) => hc.metadata?.name === name && hc.metadata?.namespace === namespace
     )
 
     const cluster = getCluster(
@@ -176,7 +178,7 @@ export default function ClusterDetailsPage({
         clusterCurator,
         agentClusterInstall,
         hostedCluster,
-        selectedHostedCluster,
+        selectedHostedClusterResource,
         nodePools
     )
     const prevCluster = usePrevious(cluster)
@@ -257,7 +259,7 @@ export default function ClusterDetailsPage({
                 // infraEnv,
                 infraEnvAIFlow,
                 hostedCluster,
-                selectedHostedCluster,
+                selectedHostedCluster: selectedHostedClusterResource,
             }}
         >
             <AcmPage

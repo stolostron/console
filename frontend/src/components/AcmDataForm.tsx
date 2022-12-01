@@ -103,7 +103,7 @@ export interface AcmDataFormProps {
     mode?: 'form' | 'wizard' | 'details'
     isHorizontal?: boolean
     edit?: () => void
-    operatorError?: ReactNode
+    globalWizardAlert?: ReactNode
     hideYaml?: boolean
     isModalWizard?: boolean
 }
@@ -123,7 +123,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
     const { t } = useTranslation()
 
-    const { editorTitle, schema, secrets, immutables, formData, operatorError, hideYaml, isModalWizard } = props
+    const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
 
@@ -228,7 +228,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                     showFormErrors={showFormErrors}
                                     setShowFormErrors={setShowFormErrors}
                                     isHorizontal={isHorizontal}
-                                    operatorError={operatorError}
+                                    globalWizardAlert={globalWizardAlert}
                                     isModalWizard={isModalWizard}
                                 />
                             </PageSection>
@@ -316,12 +316,19 @@ export function AcmDataForm(
         stateChanges: SyncDiffType
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
-        operatorError?: ReactNode
+        globalWizardAlert?: ReactNode
         isModalWizard?: boolean
     }
 ): JSX.Element {
-    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors, isModalWizard } =
-        props
+    const {
+        formData,
+        stateChanges,
+        isHorizontal,
+        globalWizardAlert,
+        showFormErrors,
+        setShowFormErrors,
+        isModalWizard,
+    } = props
     switch (props.mode) {
         case 'wizard':
             return (
@@ -331,7 +338,7 @@ export function AcmDataForm(
                     isHorizontal={isHorizontal ?? false}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
-                    operatorError={operatorError}
+                    globalWizardAlert={globalWizardAlert}
                     isModalWizard={isModalWizard}
                 />
             )
@@ -468,14 +475,21 @@ export function AcmDataFormWizard(props: {
     formData: FormData
     stateChanges: SyncDiffType
     isHorizontal: boolean
-    operatorError?: ReactNode
+    globalWizardAlert?: ReactNode
     showFormErrors: boolean
     isModalWizard?: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
     const { t } = useTranslation()
-    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors, isModalWizard } =
-        props
+    const {
+        formData,
+        stateChanges,
+        isHorizontal,
+        globalWizardAlert,
+        showFormErrors,
+        setShowFormErrors,
+        isModalWizard,
+    } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
@@ -499,11 +513,7 @@ export function AcmDataFormWizard(props: {
             ),
             component: section.type === 'Section' && (
                 <Form isHorizontal={isHorizontal}>
-                    {operatorError && (
-                        <AlertGroup>
-                            <Alert isInline variant="danger" title={operatorError} />
-                        </AlertGroup>
-                    )}
+                    {globalWizardAlert && <AlertGroup>{globalWizardAlert}</AlertGroup>}
                     {(showFormErrors || showSectionErrors[section.title]) && hasError && (
                         <AlertGroup>
                             {sectionHasRequiredErrors(section) ? (

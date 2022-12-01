@@ -8,6 +8,8 @@ import {
     AgentClusterInstallKind,
     AgentKind,
     AgentKindVersion,
+    AgentServiceConfigKind,
+    AgentServiceConfigKindVersion,
     AgentMachineApiVersion,
     AgentMachineKind,
     AnsibleJobApiVersion,
@@ -38,6 +40,8 @@ import {
     ClusterPoolKind,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
+    ClusterVersionApiVersion,
+    ClusterVersionKind,
     ConfigMapApiVersion,
     ConfigMapKind,
     CustomResourceDefinitionApiVersion,
@@ -97,6 +101,8 @@ import {
     PolicySetKind,
     SecretApiVersion,
     SecretKind,
+    StorageClassApiVersion,
+    StorageClassKind,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
     SubscriptionApiVersion,
@@ -113,6 +119,7 @@ import { tokenExpired } from '../logout'
 import {
     agentClusterInstallsState,
     agentsState,
+    agentServiceConfigsState,
     ansibleJobState,
     appProjectsState,
     applicationSetsState,
@@ -129,6 +136,7 @@ import {
     clusterManagementAddonsState,
     clusterPoolsState,
     clusterProvisionsState,
+    clusterVersionState,
     configMapsState,
     customResourceDefinitionsState,
     discoveredClusterState,
@@ -157,6 +165,7 @@ import {
     policyreportState,
     secretsState,
     settingsState,
+    storageClassState,
     submarinerConfigsState,
     subscriptionsState,
     subscriptionOperatorsState,
@@ -175,6 +184,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
     const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
     const setAgents = useSetRecoilState(agentsState)
+    const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
     const setAnsibleJobs = useSetRecoilState(ansibleJobState)
     const setAppProjectsState = useSetRecoilState(appProjectsState)
     const setApplicationSetsState = useSetRecoilState(applicationSetsState)
@@ -189,6 +199,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setClusterDeployments = useSetRecoilState(clusterDeploymentsState)
     const setClusterImageSets = useSetRecoilState(clusterImageSetsState)
     const setClusterManagementAddons = useSetRecoilState(clusterManagementAddonsState)
+    const setClusterVerions = useSetRecoilState(clusterVersionState)
     const setClusterPools = useSetRecoilState(clusterPoolsState)
     const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
     const setConfigMaps = useSetRecoilState(configMapsState)
@@ -223,6 +234,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setSubscriptionsState = useSetRecoilState(subscriptionsState)
     const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
     const setSubscriptionReportsState = useSetRecoilState(subscriptionReportsState)
+    const setStorageClassState = useSetRecoilState(storageClassState)
     const setUserPreferencesState = useSetRecoilState(userPreferencesState)
     const setHostedClustersState = useSetRecoilState(hostedClustersState)
     const setNodePoolsState = useSetRecoilState(nodePoolsState)
@@ -236,6 +248,7 @@ export function LoadData(props: { children?: ReactNode }) {
             setters[groupVersion][kind] = setter
         }
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
+        addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
         addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
@@ -260,6 +273,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ClusterManagementAddOnApiVersion, ClusterManagementAddOnKind, setClusterManagementAddons)
         addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
         addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
+        addSetter(ClusterVersionApiVersion, ClusterVersionKind, setClusterVerions)
         addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
@@ -282,6 +296,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
+        addSetter(StorageClassApiVersion, StorageClassKind, setStorageClassState)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
         addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
@@ -292,6 +307,7 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [
         setAgentClusterInstalls,
         setAgents,
+        setAgentServiceConfigs,
         setAnsibleJobs,
         setAppProjectsState,
         setApplicationSetsState,
@@ -308,6 +324,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setClusterManagementAddons,
         setClusterPools,
         setClusterProvisions,
+        setClusterVerions,
         setConfigMaps,
         setDiscoveredClusters,
         setDiscoveryConfigs,
@@ -334,6 +351,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setPolicyReports,
         setPolicySetsState,
         setSecrets,
+        setStorageClassState,
         setSubmarinerConfigs,
         setSubscriptionReportsState,
         setSubscriptionsState,

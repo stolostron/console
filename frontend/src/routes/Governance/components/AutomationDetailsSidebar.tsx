@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-    Alert,
-    AlertVariant,
     Button,
     ButtonVariant,
     DescriptionList,
@@ -18,19 +16,12 @@ import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
-import { getOperatorError } from '../../../lib/error-output'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    AnsibleJob,
-    deleteResource,
-    isAnsibleOperatorInstalled,
-    Policy,
-    PolicyAutomation,
-    Secret,
-} from '../../../resources'
+import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
 import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
+import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 
 export interface JobTableData {
     name: string
@@ -49,9 +40,8 @@ export function AutomationDetailsSidebar(props: {
     const { policyAutomationMatch, policy, onClose } = props
     const { t } = useTranslation()
     const history = useHistory()
-    const { ansibleJobState, secretsState, subscriptionOperatorsState } = useSharedAtoms()
+    const { ansibleJobState, secretsState } = useSharedAtoms()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const [secrets] = useRecoilState(secretsState)
     const govData = useGovernanceData([policy])
     const clusterRiskScore =
@@ -64,11 +54,6 @@ export function AutomationDetailsSidebar(props: {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyAutomation> | { open: false }>({
         open: false,
     })
-
-    const isOperatorInstalled = useMemo(
-        () => isAnsibleOperatorInstalled(subscriptionOperators),
-        [subscriptionOperators]
-    )
 
     const credential = useMemo(
         () =>
@@ -193,9 +178,12 @@ export function AutomationDetailsSidebar(props: {
     return (
         <div>
             <BulkActionModel<PolicyAutomation> {...modalProps} />
-            {!isOperatorInstalled && (
-                <Alert isInline title={getOperatorError(isOperatorInstalled, t)} variant={AlertVariant.danger} />
-            )}
+            <AutomationProviderHint
+                component="alert"
+                workflowSupportRequired={
+                    false /* TODO: remove workflowSupportRequired attribute once GRC supports workflow templates */
+                }
+            />
             <Stack hasGutter>
                 <DescriptionList>
                     <DescriptionListGroup>
