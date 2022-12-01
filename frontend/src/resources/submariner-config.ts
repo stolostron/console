@@ -46,6 +46,7 @@ export interface SubmarinerConfig extends IResource {
             }
             gateways?: number
         }
+        globalCIDR?: string
         loadBalancerEnable?: boolean
     }
 }
@@ -60,6 +61,7 @@ type SubmarinerConfigDefaults = {
     azureInstanceType: string
     openStackInstanceType: string
     loadBalancerEnable: boolean
+    brokerGlobalnetCIDR: string
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
@@ -72,4 +74,5 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     azureInstanceType: 'Standard_F4s_v2',
     openStackInstanceType: 'PnTAE.CPU_4_Memory_8192_Disk_50',
     loadBalancerEnable: false,
+    brokerGlobalnetCIDR: '242.0.0.0/8', //NOSONAR
 }

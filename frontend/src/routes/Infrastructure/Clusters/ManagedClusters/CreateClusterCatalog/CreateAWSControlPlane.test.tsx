@@ -4,15 +4,15 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { CreateControlPlane } from './CreateControlPlane'
+import { CreateAWSControlPlane } from './CreateAWSControlPlane'
 
 describe('CreateControlPlane', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
-                    <Route path={NavigationPath.createBMControlPlane}>
-                        <CreateControlPlane />
+                <MemoryRouter initialEntries={[NavigationPath.createAWSControlPlane]}>
+                    <Route path={NavigationPath.createAWSControlPlane}>
+                        <CreateAWSControlPlane />
                     </Route>
                 </MemoryRouter>
             </RecoilRoot>

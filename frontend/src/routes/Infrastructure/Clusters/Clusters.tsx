@@ -10,13 +10,18 @@ import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import { CreateClusterPage } from './ManagedClusters/CreateClusterPage'
 import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
+import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
 import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
+import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
 
 export default function Clusters() {
     return (
         <Switch>
-            <Route exact path={NavigationPath.createControlPlane} component={CreateControlPlane} />
+            <Route exact path={NavigationPath.createBMControlPlane} component={CreateControlPlane} />
+            <Route exact path={NavigationPath.createAWSControlPlane} component={CreateAWSControlPlane} />
+            <Route exact path={NavigationPath.createAWSCLI} component={HypershiftAWSCLI} />
+
             <Route exact path={NavigationPath.createDiscoverHost} component={CreateDiscoverHost} />
             <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
             <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
