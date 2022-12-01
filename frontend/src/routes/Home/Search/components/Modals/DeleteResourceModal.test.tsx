@@ -228,6 +228,7 @@ describe('DeleteResourceModal', () => {
             // find the button and simulate a click
             const submitButton = screen.getByText('Delete')
             expect(submitButton).toBeTruthy()
+            expect(submitButton).not.toBeDisabled()
             userEvent.click(submitButton)
 
             // Wait for delete resource requesets to finish, Mimic the polling requests

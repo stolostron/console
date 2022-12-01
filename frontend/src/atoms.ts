@@ -2,6 +2,7 @@
 import {
     AgentClusterInstallK8sResource,
     AgentK8sResource,
+    AgentServiceConfigK8sResource,
     AgentMachineK8sResource,
     BareMetalHostK8sResource,
     HostedClusterK8sResource,
@@ -9,6 +10,8 @@ import {
     InfrastructureK8sResource,
     NMStateK8sResource,
     NodePoolK8sResource,
+    ClusterVersionK8sResource,
+    StorageClassK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -72,6 +75,7 @@ export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
 
 export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()
+export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const appProjectsState = AtomArray<IResource>()
 export const applicationSetsState = AtomArray<ApplicationSet>()
@@ -88,6 +92,7 @@ export const clusterImageSetsState = AtomArray<ClusterImageSet>()
 export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
 export const clusterPoolsState = AtomArray<ClusterPool>()
 export const clusterProvisionsState = AtomArray<ClusterProvision>()
+export const clusterVersionState = AtomArray<ClusterVersionK8sResource>()
 export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
@@ -114,6 +119,7 @@ export const placementRulesState = AtomArray<PlacementRule>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
+export const storageClassState = AtomArray<StorageClassK8sResource>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
