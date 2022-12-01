@@ -612,12 +612,12 @@ describe('CreateCluster AWS', () => {
 
         // choose ansible template
         await waitForText('Install the operator')
-        await clickByPlaceholderText('Select an Ansible job template')
+        await clickByPlaceholderText('Select an automation template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
         // check template summary
         await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
-        await waitForText('Preinstall automation template names')
+        await waitForText('Preinstall Ansible template names')
         await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
         // clear template
@@ -685,9 +685,9 @@ describe('CreateCluster AWS', () => {
         await clickByText('Next')
 
         // ansible template
-        await waitForText('Ansible Automation Template')
+        await waitForText('Automation template')
         await waitForNotText('Install the operator')
-        await clickByPlaceholderText('Select an Ansible job template')
+        await clickByPlaceholderText('Select an automation template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')
 
@@ -922,7 +922,7 @@ describe('CreateCluster on premise', () => {
             await clickByText('Next')
             // The test is flaky here
             await new Promise((resolve) => setTimeout(resolve, 500))
-            await waitForText('Ansible Automation Template')
+            await waitForText('Automation template')
 
             // skip Automation to the Review and Save step
             await clickByText('Next')
