@@ -486,7 +486,7 @@ describe('ImportCluster', () => {
 
         // check automation summary
         await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
-        await waitForText('Preinstall Ansible template names')
+        await waitForText('Preinstall Ansible templates')
         await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
         // Advance to Review step and submit the form
