@@ -473,7 +473,7 @@ async function getAnsibleTemplates(
         let jobUrl: string = ansibleHostUrl + ansibleApiPath + path
         while (jobUrl) {
             const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-            result!.data.results && ansibleJobs.push(...result!.data.results)
+            result.data.results && ansibleJobs.push(...result.data.results)
             const { next } = result.data
             if (next) {
                 jobUrl = ansibleHostUrl + next

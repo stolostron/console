@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FormGroup } from '@patternfly/react-core'
 import {
     ActionGroup,
     Button,
@@ -7,6 +6,7 @@ import {
     ChipGroup,
     Flex,
     FlexItem,
+    FormGroup,
     Modal,
     ModalVariant,
     Radio,
@@ -169,11 +169,11 @@ export function AnsibleAutomationsForm(props: {
             listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
                 .promise.then((response) => {
                     if (response) {
-                        response.results!.forEach((template) => {
-                            if (template.type === 'job_template') {
-                                jobList.push(template.name!)
-                            } else if (template.type === 'workflow_job_template') {
-                                workflowList.push(template.name!)
+                        response.results.forEach((template) => {
+                            if (template.type === 'job_template' && template.name) {
+                                jobList.push(template.name)
+                            } else if (template.type === 'workflow_job_template' && template.name) {
+                                workflowList.push(template.name)
                             }
                         })
                         setAnsibleTowerJobTemplateList(jobList)
