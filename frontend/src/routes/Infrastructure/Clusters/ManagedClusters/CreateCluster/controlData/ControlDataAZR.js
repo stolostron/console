@@ -26,10 +26,10 @@ import { CreateCredentialModal } from '../../../../../../components/CreateCreden
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
-const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
-const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
-const gp8Cpu8Gib = '8 vCPU, 32 GiB - General Purpose'
-const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
+const gp2Cpu8Gib = (t) => t('2 vCPU, 8 GiB - General Purpose')
+const gp4Cpu8Gib = (t) => t('4 vCPU, 16 GiB - General Purpose')
+const gp8Cpu8Gib = (t) => t('8 vCPU, 32 GiB - General Purpose')
+const gp16Cpu8Gib = (t) => t('16 vCPU, 64 GiB - General Purpose')
 
 // The list of regions can be obtained by running the following commands:
 //   - Recommended regions:
@@ -118,11 +118,11 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_B1s', description: t('1 vCPU, 1 GiB - General Purpose') },
                         { value: 'Standard_B1ms  ', description: t('1 vCPU, 2 GiB - General Purpose') },
                         { value: 'Standard_B2s', description: t('2 vCPU, 4 GiB - General Purpose') },
-                        { value: 'Standard_B2ms', description: t(gp2Cpu8Gib) },
-                        { value: 'Standard_B4ms', description: t(gp4Cpu8Gib) },
+                        { value: 'Standard_B2ms', description: gp2Cpu8Gib(t) },
+                        { value: 'Standard_B4ms', description: gp4Cpu8Gib(t) },
                         { value: 'Standard_B8ms', description: t('8 vCPU, 32 GiB - General Purpose') },
                         { value: 'Standard_B12ms', description: t('12 vCPU, 48 GiB - General Purpose') },
-                        { value: 'Standard_B16ms', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_B16ms', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_B20ms', description: t('20 vCPU, 80 GiB - General Purpose') },
                     ],
                 },
@@ -130,7 +130,7 @@ const ApplicationCreationPage = (t) => {
                     label: t('Dv2-series'),
                     children: [
                         { value: 'Standard_DC1s_v2', description: t('1 vCPU, 4 GiB - General Purpose') },
-                        { value: 'Standard_DC2s_v2', description: t(gp2Cpu8Gib) },
+                        { value: 'Standard_DC2s_v2', description: gp2Cpu8Gib(t) },
                         { value: 'Standard_DC4s_v2', description: t('4 vCPU, 16 GiB - General Purpose') },
                         { value: 'Standard_DC8_v2', description: t('8 vCPU, 32 GiB - General Purpose') },
                         { value: 'Standard_D1_v2', description: t('1 vCPU, 3.5 GiB - General Purpose') },
@@ -148,17 +148,17 @@ const ApplicationCreationPage = (t) => {
                 {
                     label: t('Dv3-series'),
                     children: [
-                        { value: 'Standard_D2_v3', description: t(gp2Cpu8Gib) },
-                        { value: 'Standard_D4_v3', description: t(gp4Cpu8Gib) },
-                        { value: 'Standard_D8_v3', description: t(gp8Cpu8Gib) },
-                        { value: 'Standard_D16_v3', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_D2_v3', description: gp2Cpu8Gib(t) },
+                        { value: 'Standard_D4_v3', description: gp4Cpu8Gib(t) },
+                        { value: 'Standard_D8_v3', description: gp8Cpu8Gib(t) },
+                        { value: 'Standard_D16_v3', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_D32_v3', description: t('32 vCPU, 128 GiB - General Purpose') },
                         { value: 'Standard_D48_v3', description: t('48 vCPU, 192 GiB - General Purpose') },
                         { value: 'Standard_D64_v3', description: t('64 vCPU, 256 GiB - General Purpose') },
-                        { value: 'Standard_D2s_v3', description: t(gp2Cpu8Gib) },
-                        { value: 'Standard_D4s_v3', description: t(gp4Cpu8Gib) },
-                        { value: 'Standard_D8s_v3', description: t(gp8Cpu8Gib) },
-                        { value: 'Standard_D16s_v3', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_D2s_v3', description: gp2Cpu8Gib(t) },
+                        { value: 'Standard_D4s_v3', description: gp4Cpu8Gib(t) },
+                        { value: 'Standard_D8s_v3', description: gp8Cpu8Gib(t) },
+                        { value: 'Standard_D16s_v3', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_D32s_v3', description: t('32 vCPU, 128 GiB - General Purpose') },
                         { value: 'Standard_D48s_v3', description: t('48 vCPU, 192 GiB - General Purpose') },
                         { value: 'Standard_D64s_v3', description: t('64 vCPU, 256 GiB - General Purpose') },
@@ -170,15 +170,15 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_D2a_v4', description: t('8 vCPU, 50 GiB - General Purpose') },
                         { value: 'Standard_D4a_v4', description: t('16 vCPU, 100 GiB - General Purpose') },
                         { value: 'Standard_D8a_v4', description: t('32 vCPU, 200 GiB - General Purpose') },
-                        { value: 'Standard_D16a_v4', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_D16a_v4', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_D32a_v4', description: t('32 vCPU, 128 GiB - General Purpose') },
                         { value: 'Standard_D48a_v4', description: t('48 vCPU, 192 GiB - General Purpose') },
                         { value: 'Standard_D64a_v4', description: t('64 vCPU, 256 GiB - General Purpose') },
                         { value: 'Standard_D96a_v4', description: t('96 vCPU, 384 GiB - General Purpose') },
-                        { value: 'Standard_D2as_v4', description: t(gp2Cpu8Gib) },
-                        { value: 'Standard_D4as_v4', description: t(gp4Cpu8Gib) },
-                        { value: 'Standard_D8as_v4', description: t(gp8Cpu8Gib) },
-                        { value: 'Standard_D16as_v4', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_D2as_v4', description: gp2Cpu8Gib(t) },
+                        { value: 'Standard_D4as_v4', description: gp4Cpu8Gib(t) },
+                        { value: 'Standard_D8as_v4', description: gp8Cpu8Gib(t) },
+                        { value: 'Standard_D16as_v4', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_D32as_v4', description: t('32 vCPU, 128 GiB - General Purpose') },
                         { value: 'Standard_D48as_v4', description: t('48 vCPU, 192 GiB - General Purpose') },
                         { value: 'Standard_D64as_v4', description: t('64 vCPU, 256 GiB - General Purpose') },
@@ -186,7 +186,7 @@ const ApplicationCreationPage = (t) => {
                         { value: 'Standard_D2d_v42', description: t('8 vCPU, 75 GiB - General Purpose') },
                         { value: 'Standard_D4d_v44', description: t('16 vCPU, 150 GiB - General Purpose') },
                         { value: 'Standard_D8d_v48', description: t('32 vCPU, 300 GiB - General Purpose') },
-                        { value: 'Standard_D16d_v4', description: t(gp16Cpu8Gib) },
+                        { value: 'Standard_D16d_v4', description: gp16Cpu8Gib(t) },
                         { value: 'Standard_D32d_v4', description: t('32 vCPU, 128 GiB - General Purpose') },
                         { value: 'Standard_D48d_v4', description: t('48 vCPU, 192 GiB - General Purpose') },
                         { value: 'Standard_D64d_v4', description: t('64 vCPU, 256 GiB - General Purpose') },
