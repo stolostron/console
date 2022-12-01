@@ -171,7 +171,7 @@ export function AnsibleAutomationsForm(props: {
                     }
                 })
                 .catch(() => {
-                    setAnsibleTowerAuthError('validate.ansible.host')
+                    setAnsibleTowerAuthError(t('validate.ansible.host'))
                     setAnsibleTowerJobTemplateList([])
                 })
         }
@@ -302,7 +302,7 @@ export function AnsibleAutomationsForm(props: {
                         footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
                         isDisabled: isEditing,
                         validation: () => {
-                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
+                            if (AnsibleTowerAuthError) return AnsibleTowerAuthError
                         },
                     },
                 ],

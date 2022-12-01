@@ -71,7 +71,7 @@ class ControlPanelValues extends React.Component {
     }
 
     handleChange(value = '') {
-        const { control, i18n } = this.props
+        const { control } = this.props
         const { validation } = control
         if (value.endsWith(',')) {
             this.createValue()
@@ -81,7 +81,7 @@ class ControlPanelValues extends React.Component {
                 invalid = !validation.tester.test(value)
                 let invalidText = ''
                 if (invalid) {
-                    invalidText = i18n(validation.notification)
+                    invalidText = validation.notification
                 }
                 control.exception = invalidText
             }

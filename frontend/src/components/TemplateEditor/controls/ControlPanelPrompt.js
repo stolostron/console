@@ -24,8 +24,6 @@ class ControlPanelPrompt extends React.Component {
     renderLink(control) {
         const { prompts } = control
         const { prompt, url, icon, id } = prompts
-        const { i18n } = this.props
-        const text = i18n(prompt)
 
         const createPopupWindow = () => {
             window.open(`${window.location.origin}${url}`, `${id}`)
@@ -42,7 +40,7 @@ class ControlPanelPrompt extends React.Component {
                         onClick={createPopupWindow}
                         onKeyPress={createPopupWindow}
                     >
-                        {text}
+                        {prompt}
                         {icon}
                     </div>
                 </div>

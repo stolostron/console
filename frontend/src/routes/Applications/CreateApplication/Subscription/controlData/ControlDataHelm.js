@@ -42,7 +42,7 @@ const helmReleaseChannelData = (isLocalCluster, t) => {
             placeholder: t('app.enter.select.helmrepo.url'),
             available: [],
             validation: VALIDATE_URL,
-            fetchAvailable: loadExistingChannels('helmrepo'),
+            fetchAvailable: loadExistingChannels('helmrepo', t),
             reverse: 'Channel[0].spec.pathname',
             onSelect: updateChannelControls,
             simplified: channelSimplified,

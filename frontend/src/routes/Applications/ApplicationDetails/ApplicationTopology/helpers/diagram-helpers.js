@@ -627,14 +627,14 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     return details
 }
 
-export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
+export const addNodeServiceLocationForCluster = (node, typeObject, details, t) => {
     if (node && typeObject && typeObject.clusterIP && typeObject.port) {
         let port = R.split(':', typeObject.port)[0] // take care of 80:etc format
         port = R.split('/', port)[0] //now remove any 80/TCP
 
         const location = `${typeObject.clusterIP}:${port}`
         details.push({
-            labelKey: 'Location',
+            labelKey: t('Location'),
             value: location,
         })
     }

@@ -15,16 +15,17 @@ import _ from 'lodash'
 import { getGitChannelBranches, getGitChannelPaths, listChannels } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
+import { t } from 'i18next'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
 const specPathname = 'spec.pathname'
 
-export const loadExistingChannels = (type) => {
+export const loadExistingChannels = (type, t) => {
     return {
         query: () => {
             return listChannels().promise
         },
-        loadingDesc: 'creation.app.loading.channels',
+        loadingDesc: t('creation.app.loading.channels'),
         setAvailable: setAvailableChannelSpecs.bind(null, type),
     }
 }

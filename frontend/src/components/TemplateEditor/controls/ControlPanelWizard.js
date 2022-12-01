@@ -262,7 +262,7 @@ class ControlPanelWizard extends React.Component {
                                     spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                                     onClick={!isWorking ? validateNextStep.bind(null, activeStep, onNext) : noop}
                                 >
-                                    {processingLabel || i18n(activeStep.control.nextButtonLabel) || i18n('Next')}
+                                    {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
                                 </Button>
                                 <Button
                                     variant="secondary"

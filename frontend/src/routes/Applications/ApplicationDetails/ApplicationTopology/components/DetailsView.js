@@ -147,7 +147,7 @@ class DetailsView extends Component {
                     {filteredNode && (
                         <div style={{ margin: '0 0 20px 10px' }}>
                             <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
-                                {t(`< Back to all ${resourceType}s`)}
+                                {t('< Back to all {{resourceType}} resources', { resourceType })}
                             </Button>
                         </div>
                     )}

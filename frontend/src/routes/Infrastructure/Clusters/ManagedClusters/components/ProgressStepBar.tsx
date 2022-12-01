@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
+import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -112,7 +112,7 @@ export function ProgressStepBar() {
             {
                 statusType: prehookStatus,
                 statusText: t('status.prehook.text'),
-                statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
+                statusSubtitle: prehooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
                 // will render link when prehook job url is defined or when there are no job hooks setup
                 link: {
                     linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
@@ -130,7 +130,7 @@ export function ProgressStepBar() {
             {
                 statusType: creatingStatus,
                 statusText: t('status.install.text'),
-                statusSubtitle: t(`status.subtitle.${creatingStatus}`),
+                statusSubtitle: getStatusLabel(creatingStatus, t),
                 ...(provisionStatus.includes(cluster?.status!) && {
                     link: {
                         linkName: t('status.link.logs'),
@@ -141,12 +141,12 @@ export function ProgressStepBar() {
             {
                 statusType: importStatus,
                 statusText: t('status.import.text'),
-                statusSubtitle: t(`status.subtitle.${importStatus}`),
+                statusSubtitle: getStatusLabel(importStatus, t),
             },
             {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
-                statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
+                statusSubtitle: posthooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
                 ...(posthooks &&
                     latestJobs.posthook?.status?.ansibleJobResult?.url && {
                         link: {

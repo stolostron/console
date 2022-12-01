@@ -101,9 +101,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
     // setup translation
     const { t } = useTranslation()
-    const i18n = (key: string, arg: any) => {
-        return t(key, arg)
-    }
     const controlPlaneBreadCrumbBM = { text: t('Control plane type'), to: NavigationPath.createBMControlPlane }
     const controlPlaneBreadCrumbAWS = { text: t('Control plane type'), to: NavigationPath.createAWSControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
@@ -525,7 +522,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                         backButtonOverride,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
-                                    i18n={i18n}
+                                    i18n={t}
                                     onControlInitialize={onControlInitialize}
                                     onControlChange={onControlChange}
                                     ref={templateEditorRef}

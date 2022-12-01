@@ -42,7 +42,7 @@ class ControlPanelCheckbox extends React.Component {
                 >
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Input
-                            aria-label={i18n(name)}
+                            aria-label={name}
                             id={controlId}
                             isChecked={typeof active === 'boolean' ? active : active === 'true'}
                             isDisabled={disabled}

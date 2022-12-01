@@ -21,27 +21,6 @@ const IP_ADDRESS_TESTER = {
     },
 }
 
-const getCIDRContextTexter = (cidrFieldKey, sourcePath) => {
-    const { tabId, path } = sourcePath
-    return (value, templateObjectMap, i18n) => {
-        if (!IP_ADDRESS_TESTER.test(value)) {
-            return i18n('creation.ocp.cluster.valid.ip')
-        }
-        const cidrString = get(templateObjectMap[tabId], path) || ''
-        const cidr = new IPCIDR(cidrString.toString())
-        if (cidr.isValid() && !cidr.contains(value)) {
-            const cidrFieldName = i18n(cidrFieldKey)
-            return i18n('creation.ocp.cluster.valid.cidr.membership', [cidrFieldName, cidrString])
-        }
-        return null
-    }
-}
-
-const MACHINE_CIDR_CONTEXT_TESTER = getCIDRContextTexter('creation.ocp.machine.cidr', {
-    tabId: 'install-config',
-    path: 'unknown[0].$synced.networking.$v.machineCIDR.$v',
-})
-
 export const VALIDATE_IP = {
     tester: IP_ADDRESS_TESTER,
     notification: 'creation.ocp.cluster.valid.ip',
@@ -93,17 +72,6 @@ export const VALIDATE_URL_OPTIONAL = {
         },
     },
     notification: 'creation.invalid.url',
-    required: false,
-}
-
-export const VALIDATE_IP_AGAINST_MACHINE_CIDR = {
-    contextTester: MACHINE_CIDR_CONTEXT_TESTER,
-    notification: 'creation.ocp.cluster.valid.ip',
-    required: true,
-}
-
-export const VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL = {
-    contextTester: MACHINE_CIDR_CONTEXT_TESTER,
     required: false,
 }
 
@@ -185,7 +153,6 @@ export const VALIDATE_BASE_DNS_NAME_REQUIRED = {
     contextTester: (value, templateObjectMap, i18n) => {
         return BASE_DNS_NAME_VALIDATOR(value, i18n)
     },
-    notification: 'creation.ocp.cluster.missing.input',
     required: true,
 }
 

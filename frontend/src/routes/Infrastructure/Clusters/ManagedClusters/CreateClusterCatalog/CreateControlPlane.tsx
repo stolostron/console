@@ -10,6 +10,7 @@ import {
     PageHeader,
     PatternFlyColor,
 } from '@stolostron/react-data-view'
+import { TFunction } from 'i18next'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -17,7 +18,8 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
-const clusterTypeTooltips = 'Required operator: Red Hat Advanced Cluster Management or multicluster engine'
+const clusterTypeTooltips = (t: TFunction) =>
+    t('Required operator: Red Hat Advanced Cluster Management or multicluster engine')
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
@@ -96,11 +98,11 @@ export function CreateControlPlane() {
                         items: [
                             {
                                 text: t('Multicluster Hub'),
-                                help: t(clusterTypeTooltips),
+                                help: clusterTypeTooltips(t),
                             },
                             {
                                 text: t('Hosting service cluster'),
-                                help: t(clusterTypeTooltips),
+                                help: clusterTypeTooltips(t),
                             },
                             { text: t('Dedicated control plane') },
                         ],

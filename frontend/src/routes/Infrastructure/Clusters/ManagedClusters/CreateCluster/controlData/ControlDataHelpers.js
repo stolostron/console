@@ -20,14 +20,14 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const CREATE_AUTOMATION_TEMPLATE = {
-    prompt: 'creation.ocp.cloud.add.template',
+const createAutomationTemplate = (t) => ({
+    prompt: t('creation.ocp.cloud.add.template'),
     type: 'link',
     url: NavigationPath.addAnsibleAutomation,
     positionBottomRight: true,
     id: 'add-automation-template',
     icon: <ExternalLinkAltIcon />,
-}
+})
 export const LOAD_OCP_IMAGES = (provider, t) => {
     return {
         query: () => {
@@ -59,12 +59,14 @@ export const getSimplifiedImageName = (image) => {
     }
 }
 
-export const numberedControlNameFunction = (key) => (control, controlData, i18n) => {
+export const numberedControlNameFunction = (i18nFunc) => (control, controlData, i18n) => {
     const { grpNum } = control
-    return i18n(key, [grpNum + 1])
+    return i18nFunc(i18n, [grpNum + 1])
 }
 
-export const getWorkerName = numberedControlNameFunction('creation.ocp.node.worker.pool.title')
+export const getWorkerName = numberedControlNameFunction((i18n, num) =>
+    i18n('creation.ocp.node.worker.pool.title', num)
+)
 
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
@@ -448,7 +450,7 @@ export const networkingControlData = (t) => {
                     id: 'networkGroup',
                     type: 'section',
                     collapsable: true,
-                    subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
+                    subtitle: numberedControlNameFunction((i18n, num) => i18n('creation.ocp.node.network.title', num)),
                     info: t('creation.ocp.node.network.info'),
                 },
                 {
@@ -622,7 +624,7 @@ export const automationControlData = (t) => {
             validation: {
                 required: false,
             },
-            prompts: CREATE_AUTOMATION_TEMPLATE,
+            prompts: createAutomationTemplate(t),
         },
         {
             type: 'custom',

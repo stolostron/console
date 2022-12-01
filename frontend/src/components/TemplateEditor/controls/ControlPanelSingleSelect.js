@@ -44,11 +44,11 @@ class ControlPanelSingleSelect extends React.Component {
         let { placeholder = '' } = control
         if (!placeholder) {
             if (isLoading) {
-                placeholder = i18n(get(control, 'fetchAvailable.loadingDesc', 'resource.loading'))
+                placeholder = get(control, 'fetchAvailable.loadingDesc', i18n('resource.loading'))
             } else if (isFailed) {
                 placeholder = i18n('resource.error')
             } else if (available.length === 0) {
-                placeholder = i18n(get(control, 'fetchAvailable.emptyDesc', 'resource.none'))
+                placeholder = get(control, 'fetchAvailable.emptyDesc', i18n('resource.none'))
             }
         }
         const setOpen = (open) => {

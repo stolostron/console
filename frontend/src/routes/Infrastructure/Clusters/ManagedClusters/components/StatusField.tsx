@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
+import { Cluster, ClusterStatus, getClusterStatusLabel, getLatestAnsibleJob } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -201,7 +201,7 @@ export function StatusField(props: { cluster: Cluster }) {
     return (
         <AcmInlineStatus
             type={type}
-            status={t(`status.${props.cluster?.status}`)}
+            status={getClusterStatusLabel(props.cluster?.status, t)}
             popover={{
                 maxWidth: '448px',
                 bodyContent: (

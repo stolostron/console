@@ -26,13 +26,13 @@ class ControlPanelFinish extends React.Component {
     }
 
     render() {
-        const { details, comment, renderNotifications, i18n } = this.props
+        const { details, comment, renderNotifications } = this.props
 
         return (
             <React.Fragment>
                 <div>
                     {this.renderDetails(details)}
-                    {comment && <Alert variant="warning" isInline title={i18n(comment)} />}
+                    {comment && <Alert variant="warning" isInline title={comment} />}
                     {renderNotifications()}
                 </div>
             </React.Fragment>
