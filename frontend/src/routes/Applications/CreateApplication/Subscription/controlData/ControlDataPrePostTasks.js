@@ -15,37 +15,39 @@ import { getSharedSubscriptionWarning } from './utils'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
-const getControlDataPrePostTasks = (handleModalToggle) => {
+const getControlDataPrePostTasks = (handleModalToggle, t) => {
     insertToggleModalFunction(handleModalToggle, prePostTasks)
-    return [...prePostTasks]
+    return [...prePostTasks(t)]
 }
 
-const prePostTasks = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  pre/post jobs  /////////////////////////////////////
-    {
-        id: 'perPostSection',
-        type: 'section',
-        title: 'creation.app.section.prePost',
-        subgroup: true,
-        collapsable: true,
-        collapsed: true,
-        info: getSharedSubscriptionWarning,
-        editing: { collapsed: true, editMode: true }, // if editing existing app, collapse this field initially
-    },
-    {
-        name: 'creation.app.ansible.credential.name',
-        tooltip: 'tooltip.creation.app.ansibleSecretName',
-        id: 'connection',
-        type: 'singleselect',
-        providerId: 'ans',
-        active: '',
-        placeholder: 'app.enter.select.ansibleSecretName',
-        available: [],
-        reverse: 'Subscription[0].spec.hooksecretref.name',
-        validation: {},
-        footer: <CreateCredentialModal />,
-    },
-]
+const prePostTasks = (t) => {
+    return [
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  pre/post jobs  /////////////////////////////////////
+        {
+            id: 'perPostSection',
+            type: 'section',
+            title: t('creation.app.section.prePost'),
+            subgroup: true,
+            collapsable: true,
+            collapsed: true,
+            info: getSharedSubscriptionWarning,
+            editing: { collapsed: true, editMode: true }, // if editing existing app, collapse this field initially
+        },
+        {
+            name: t('creation.app.ansible.credential.name'),
+            tooltip: t('tooltip.creation.app.ansibleSecretName'),
+            id: 'connection',
+            type: 'singleselect',
+            providerId: 'ans',
+            active: '',
+            placeholder: t('app.enter.select.ansibleSecretName'),
+            available: [],
+            reverse: 'Subscription[0].spec.hooksecretref.name',
+            validation: {},
+            footer: <CreateCredentialModal />,
+        },
+    ]
+}
 
 export default getControlDataPrePostTasks
