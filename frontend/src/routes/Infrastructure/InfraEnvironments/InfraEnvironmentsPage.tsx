@@ -569,7 +569,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                                     <div>
                                         <AcmButton
                                             variant="primary"
-                                            to={NavigationPath.createInfraEnv}
+                                            onClick={() => {
+                                                history.push(NavigationPath.createInfraEnv)
+                                            }}
                                             isDisabled={!isCIMWorking}
                                             tooltip={
                                                 !isCIMWorking ? (
