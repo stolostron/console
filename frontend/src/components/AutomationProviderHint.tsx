@@ -36,7 +36,7 @@ export function AutomationProviderHint(props: {
     const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
     const showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
     const showUpgradePrompt =
-        ansibleOperators.length &&
+        !!ansibleOperators.length &&
         workflowSupportRequired &&
         !showInstallPrompt &&
         !ansibleOperators.some((operator) => {
@@ -67,24 +67,24 @@ export function AutomationProviderHint(props: {
 
     return (
         <>
-            {showInstallPrompt || showUpgradePrompt ? (
-                component === 'hint' ? (
-                    <Hint className={className}>
-                        <HintBody>{message}</HintBody>
-                        <HintFooter>{link}</HintFooter>
-                    </Hint>
-                ) : (
-                    <Alert
-                        className={className}
-                        isInline
-                        title={title}
-                        actionLinks={link}
-                        variant={AlertVariant.danger}
-                    >
-                        {message}
-                    </Alert>
-                )
-            ) : null}
+            {showInstallPrompt ||
+                (showUpgradePrompt &&
+                    (component === 'hint' ? (
+                        <Hint className={className}>
+                            <HintBody>{message}</HintBody>
+                            <HintFooter>{link}</HintFooter>
+                        </Hint>
+                    ) : (
+                        <Alert
+                            className={className}
+                            isInline
+                            title={title}
+                            actionLinks={link}
+                            variant={AlertVariant.danger}
+                        >
+                            {message}
+                        </Alert>
+                    )))}
         </>
     )
 }
