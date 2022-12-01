@@ -248,7 +248,7 @@ const ApplicationCreationPage = (t) => {
                 {
                     label: t('Eav4-series'),
                     children: [
-                        { value: 'Standard_E2a_v4', description: t('16 vCPU, 50  GiB - Memory Optimized') },
+                        { value: 'Standard_E2a_v4', description: t('16 vCPU, 50 GiB - Memory Optimized') },
                         { value: 'Standard_E4a_v4', description: t('32 vCPU, 100 GiB - Memory Optimized') },
                         { value: 'Standard_E8a_v4', description: t('64 vCPU, 200 GiB - Memory Optimized') },
                         { value: 'Standard_E16a_v4', description: t('16 vCPU, 128 GiB - Memory Optimized') },
@@ -316,51 +316,51 @@ const ApplicationCreationPage = (t) => {
                     children: [
                         {
                             value: 'Standard_NC6',
-                            description: t('6 vCPU, 56 GiB, 12 GPUs, 24 GPU GiB- GPU Accelerated Compute'),
+                            description: t('6 vCPU, 56 GiB, 12 GPUs, 24 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC12',
-                            description: t('12 vCPU, 112 GiB, 24 GPUs, 48 GPU GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 112 GiB, 24 GPUs, 48 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24',
-                            description: t('24 vCPU, 224 GiB, 4 GPUs, 48 GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 224 GiB, 4 GPUs, 48 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24r',
-                            description: t('24 vCPU, 224 GiB, 4 GPUs, 48 GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 224 GiB, 4 GPUs, 48 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC6s_v2',
-                            description: t('6 vCPU, 112 GiB, 16 GPUs, 12 GPU GiB- GPU Accelerated Compute'),
+                            description: t('6 vCPU, 112 GiB, 16 GPUs, 12 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC12s_v2',
-                            description: t('12 vCPU, 224 GiB, 2 GPUs, 32 GPU GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 224 GiB, 2 GPUs, 32 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24s_v2',
-                            description: t('24 vCPU, 448 GiB, 4 GPUs, 64 GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, 4 GPUs, 64 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24rs_v2',
-                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC6s_v3',
-                            description: t('6 vCPU, 112 GiB, 16 GPUs, 12 GPU GiB- GPU Accelerated Compute'),
+                            description: t('6 vCPU, 112 GiB, 16 GPUs, 12 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC12s_v3',
-                            description: t('12 vCPU, 224 GiB, 2 GPUs, 32 GPU GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 224 GiB, 2 GPUs, 32 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24s_v3',
-                            description: t('24 vCPU, 448 GiB, 4 GPUs, 64 GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, 4 GPUs, 64 GPU GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NC24rs_v3',
-                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB - GPU Accelerated Compute'),
                         },
                     ],
                 },
@@ -369,19 +369,19 @@ const ApplicationCreationPage = (t) => {
                     children: [
                         {
                             value: 'Standard_ND6s',
-                            description: t('6 vCPU, 112 GiB, GPUs,24 GPU 12GiB- GPU Accelerated Compute'),
+                            description: t('6 vCPU, 112 GiB, GPUs,24 GPU 12GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_ND12s',
-                            description: t('12 vCPU, 224 GiB, GPUs,48 GPU 24GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 224 GiB, GPUs,48 GPU 24GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_ND24s',
-                            description: t('24 vCPU, 448 GiB, GPUs,96 GPU 32GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, GPUs,96 GPU 32GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_ND24rs',
-                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 448 GiB, GPUs, GPU GiB - GPU Accelerated Compute'),
                         },
                     ],
                 },
@@ -390,39 +390,39 @@ const ApplicationCreationPage = (t) => {
                     children: [
                         {
                             value: 'Standard_NV6',
-                            description: t('6 vCPU, 56 GiB, GPUs, 8 GPU 24GiB- GPU Accelerated Compute'),
+                            description: t('6 vCPU, 56 GiB, GPUs, 8 GPU 24GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV12',
-                            description: t('12 vCPU, 112 GiB, GPUs,16 GPU 48GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 112 GiB, GPUs,16 GPU 48GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV24',
-                            description: t('24 vCPU, 224 GiB, GPUs,4 GPU 32GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 224 GiB, GPUs,4 GPU 32GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV12s_v3',
-                            description: t('12 vCPU, 112 GiB, GPUs,8 GPU 12GiB- GPU Accelerated Compute'),
+                            description: t('12 vCPU, 112 GiB, GPUs,8 GPU 12GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV24s_v3',
-                            description: t('24 vCPU, 224 GiB, GPUs,16 GPU 24GiB- GPU Accelerated Compute'),
+                            description: t('24 vCPU, 224 GiB, GPUs,16 GPU 24GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV48s_v3',
-                            description: t('48 vCPU, 448 GiB, GPUs,4 GPU 32GiB- GPU Accelerated Compute'),
+                            description: t('48 vCPU, 448 GiB, GPUs,4 GPU 32GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV4as_v4',
-                            description: t('4 vCPU, 14 GiB, GPUs,2 GPU 4 GiB- GPU Accelerated Compute'),
+                            description: t('4 vCPU, 14 GiB, GPUs,2 GPU 4 GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV8as_v4',
-                            description: t('8 vCPU, 28  GiB, GPUs,4  GPU 8 GiB- GPU Accelerated Compute'),
+                            description: t('8 vCPU, 28 GiB, GPUs,4  GPU 8 GiB - GPU Accelerated Compute'),
                         },
                         {
                             value: 'Standard_NV16as_v4',
-                            description: t('16 vCPU, 56 GiB, GPUs,8  GPU 16 GiB- GPU Accelerated Compute'),
+                            description: t('16 vCPU, 56 GiB, GPUs,8  GPU 16 GiB - GPU Accelerated Compute'),
                         },
                     ],
                 },

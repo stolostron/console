@@ -123,7 +123,7 @@ const AWSmasterInstanceTypes = (t) => {
         { value: 'm5.large', description: t(gp2Cpu8Gib) },
         { value: 'm5.xlarge', description: t(gp4Cpu16Gib) },
         { value: 'm5.2xlarge', description: t(gp8Cpu32Gib) },
-        { value: 'm5.4xlarge', description: t('16 vCPU, 64  GiB RAM - General Purpose') },
+        { value: 'm5.4xlarge', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
         { value: 'm5.10xlarge', description: t(gp40Cpu160Gib) },
         { value: 'm5.16xlarge', description: t(gp64Cpu256Gib) },
     ]
@@ -186,7 +186,7 @@ export const AWSworkerInstanceTypes = (t) => {
                             children: [
                                 { value: 'm5.xlarge', description: t(gp4Cpu16Gib) },
                                 { value: 'm5.2xlarge', description: gp8Cpu32Gib },
-                                { value: 'm5.4xlarge', description: t('16 vCPU, 64  GiB RAM - General Purpose') },
+                                { value: 'm5.4xlarge', description: t('16 vCPU, 64 GiB RAM - General Purpose') },
                                 { value: 'm5.8xlarge', description: t('32 vCPU, 128 GiB RAM - General Purpose') },
                                 { value: 'm5.12xlarge', description: t('48 vCPU, 192 GiB RAM - General Purpose') },
                                 { value: 'm5.16xlarge', description: t(gp64Cpu256Gib) },
@@ -226,7 +226,7 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         { value: 'a1.medium', description: t('1 vCPU, 2 GiB RAM - Network Optimized') },
                         { value: 'a1.large', description: t('2 vCPU, 4 GiB RAM - Network Optimized') },
-                        { value: 'a1.xlarge', description: t('4 vCPU, 8  GiB RAM - Network Optimized') },
+                        { value: 'a1.xlarge', description: t('4 vCPU, 8 GiB RAM - Network Optimized') },
                         { value: 'a1.2xlarge', description: t('8 vCPU, 16 GiB RAM - Network Optimized') },
                         { value: 'a1.4xlarge', description: t('16 vCPU, 32 GiB RAM - Network Optimized') },
                         { value: 'a1.metal', description: t('16 vCPU, 32 GiB RAM - Network Optimized') },
@@ -241,7 +241,7 @@ export const AWSworkerInstanceTypes = (t) => {
                                 { value: 't2.nano', description: t('1 vCPU, 0.5 GiB RAM - General Purpose') },
                                 { value: 't2.micro', description: t('1 vCPU, 1 GiB RAM - General Purpose') },
                                 { value: 't2.small', description: t('1 vCPU, 2 GiB RAM - General Purpose') },
-                                { value: 't2.medium', description: t('2 vCPU, 4  GiB RAM - General Purpose') },
+                                { value: 't2.medium', description: t('2 vCPU, 4 GiB RAM - General Purpose') },
                                 { value: 't2.large', description: t(gp2Cpu8Gib) },
                                 { value: 't2.xlarge', description: t(gp4Cpu16Gib) },
                                 { value: 't2.2xlarge', description: t(gp8Cpu32Gib) },
@@ -252,7 +252,7 @@ export const AWSworkerInstanceTypes = (t) => {
                             children: [
                                 { value: 't3.nano', description: t('2 vCPU, 0.5 GiB RAM - Burstable CPU') },
                                 { value: 't3.micro', description: t('2 vCPU, 1 GiB RAM - Burstable CPU') },
-                                { value: 't3.small', description: t('2 vCPU, 2  GiB RAM - Burstable CPU') },
+                                { value: 't3.small', description: t('2 vCPU, 2 GiB RAM - Burstable CPU') },
                                 { value: 't3.medium', description: t('2 vCPU, 4 GiB RAM - Burstable CPU') },
                                 { value: 't3.large', description: t('2 vCPU, 8 GiB RAM - Burstable CPU') },
                                 { value: 't3.xlarge', description: t('4 vCPU, 16 GiB RAM - Burstable CPU') },
@@ -267,7 +267,7 @@ export const AWSworkerInstanceTypes = (t) => {
                                 { value: 't3a.small', description: t('2 vCPU, 2 GiB RAM - General Purpose') },
                                 { value: 't3a.medium', description: t('2 vCPU, 4 GiB RAM - General Purpose') },
                                 { value: 't3a.large', description: t(gp2Cpu8Gib) },
-                                { value: 't3a.xlarge', description: t('4 vCPU, 16  GiB RAM - General Purpose') },
+                                { value: 't3a.xlarge', description: t('4 vCPU, 16 GiB RAM - General Purpose') },
                                 { value: 't3a.2xlarge', description: t(gp8Cpu32Gib) },
                             ],
                         },
@@ -325,11 +325,11 @@ export const AWSworkerInstanceTypes = (t) => {
                     label: t('C5 - Intel processors, compute optimized'),
                     children: [
                         { value: 'c5.large', description: t('2 vCPU, 4 GiB RAM - Compute Optimized') },
-                        { value: 'c5.xlarge', description: t('4, 8 GiB RAM - Compute Optimized') },
-                        { value: 'c5.2xlarge', description: t('8 vCPU, 16  GiB RAM - Compute Optimized') },
+                        { value: 'c5.xlarge', description: t('4 vCPU, 8 GiB RAM - Compute Optimized') },
+                        { value: 'c5.2xlarge', description: t('8 vCPU, 16 GiB RAM - Compute Optimized') },
                         { value: 'c5.4xlarge', description: t('16 vCPU, 32 GiB RAM - Compute Optimized') },
                         { value: 'c5.9xlarge', description: t('36 vCPU, 72 GiB RAM - Compute Optimized') },
-                        { value: 'c5.12xlarge', description: t('48 vCPU, 96  GiB RAM - Compute Optimized') },
+                        { value: 'c5.12xlarge', description: t('48 vCPU, 96 GiB RAM - Compute Optimized') },
                         { value: 'c5.18xlarge', description: t('72 vCPU, 144 GiB RAM - Compute Optimized') },
                         { value: 'c5.24xlarge', description: t(co96Cpu192Gib) },
                         { value: 'c5.metal', description: t(co96Cpu192Gib) },
@@ -338,10 +338,10 @@ export const AWSworkerInstanceTypes = (t) => {
                 {
                     label: t('C5a - AMD processors, compute optimized'),
                     children: [
-                        { value: 'c5a.large', description: t('2 vCPU, 4  GiB RAM - Compute Optimized') },
+                        { value: 'c5a.large', description: t('2 vCPU, 4 GiB RAM - Compute Optimized') },
                         { value: 'c5a.xlarge', description: t('4 vCPU, 8 GiB RAM - Compute Optimized') },
                         { value: 'c5a.2xlarge', description: t('8 vCPU, 16 GiB RAM - Compute Optimized') },
-                        { value: 'c5a.4xlarge', description: t('16 vCPU, 32  GiB RAM - Compute Optimized') },
+                        { value: 'c5a.4xlarge', description: t('16 vCPU, 32 GiB RAM - Compute Optimized') },
                         { value: 'c5a.8xlarge', description: t('32 vCPU, 64 GiB RAM - Compute Optimized') },
                         { value: 'c5a.12xlarge', description: t('48 vCPU, 96 GiB RAM - Compute Optimized') },
                         { value: 'c5a.16xlarge', description: t('64 vCPU, 128 GiB RAM - Compute Optimized') },
@@ -351,11 +351,11 @@ export const AWSworkerInstanceTypes = (t) => {
                 {
                     label: t('C5d - Intel processors with SSD'),
                     children: [
-                        { value: 'c5d.large', description: t('2, 4 GiB RAM - Compute Optimized') },
+                        { value: 'c5d.large', description: t('2 vCPU, 4 GiB RAM - Compute Optimized') },
                         { value: 'c5d.xlarge', description: t('4 vCPU, 8 GiB RAM - Compute Optimized') },
-                        { value: 'c5d.2xlarge', description: t('8, 16  GiB RAM - Compute Optimized') },
-                        { value: 'c5d.4xlarge', description: t('16 vCPU, 32  GiB RAM - Compute Optimized') },
-                        { value: 'c5d.9xlarge', description: t('36 vCPU, 72  GiB RAM - Compute Optimized') },
+                        { value: 'c5d.2xlarge', description: t('8 vCPU, 16 GiB RAM - Compute Optimized') },
+                        { value: 'c5d.4xlarge', description: t('16 vCPU, 32 GiB RAM - Compute Optimized') },
+                        { value: 'c5d.9xlarge', description: t('36 vCPU, 72 GiB RAM - Compute Optimized') },
                         { value: 'c5d.12xlarge', description: t('48 vCPU, 96 GiB RAM - Compute Optimized') },
                         { value: 'c5d.18xlarge', description: t('72 vCPU, 144 GiB RAM - Compute Optimized') },
                         { value: 'c5d.24xlarge', description: t(co96Cpu192Gib) },
@@ -363,12 +363,12 @@ export const AWSworkerInstanceTypes = (t) => {
                     ],
                 },
                 {
-                    label: t('C5n  - Intel processors, optimized network'),
+                    label: t('C5n - Intel processors, optimized network'),
                     children: [
                         { value: 'c5n.large', description: t('2 vCPU, 5.25 GiB RAM - Compute Optimized') },
                         { value: 'c5n.xlarge', description: t('4 vCPU, 10.5 GiB RAM - Compute Optimized') },
                         { value: 'c5n.2xlarge', description: t('8 vCPU, 21 GiB RAM - Compute Optimized') },
-                        { value: 'c5n.4xlarge', description: t('16 vCPU, 42  GiB RAM - Compute Optimized') },
+                        { value: 'c5n.4xlarge', description: t('16 vCPU, 42 GiB RAM - Compute Optimized') },
                         { value: 'c5n.9xlarge', description: t('36 vCPU, 96 GiB RAM - Compute Optimized') },
                         { value: 'c5n.18xlarge', description: t('72 vCPU, 192 GiB RAM - Compute Optimized') },
                         { value: 'c5n.metal', description: t('72 vCPU, 192 GiB RAM - Compute Optimized') },
@@ -379,7 +379,7 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         { value: 'c4.large', description: t('2 vCPU, 3.75GiB RAM - Compute Optimized') },
                         { value: 'c4.xlarge', description: t('4 vCPU, 7.5 GiB RAM - Compute Optimized') },
-                        { value: 'c4.2xlarge', description: t('8 vCPU, 15  GiB RAM - Compute Optimized') },
+                        { value: 'c4.2xlarge', description: t('8 vCPU, 15 GiB RAM - Compute Optimized') },
                         { value: 'c4.4xlarge', description: t('16 vCPU, 30 GiB RAM - Compute Optimized') },
                         { value: 'c4.8xlarge', description: t('36 vCPU, 60GiB RAM - Compute Optimized') },
                     ],
@@ -396,7 +396,7 @@ export const AWSworkerInstanceTypes = (t) => {
                             label: t('R4 - Optimized for memory-intensive applications'),
                             children: [
                                 { value: 'r4.large', description: t('2 vCPU, 15.25 GiB RAM - Memory Optimized') },
-                                { value: 'r4.xlarge', description: t('4, 30.5 GiB RAM - Memory Optimized') },
+                                { value: 'r4.xlarge', description: t('4 vCPU, 30.5 GiB RAM - Memory Optimized') },
                                 { value: 'r4.2xlarge', description: t('8 vCPU, 61 GiB RAM - Memory Optimized') },
                                 { value: 'r4.4xlarge', description: t('16 vCPU, 122 GiB RAM - Memory Optimized') },
                                 { value: 'r4.8xlarge', description: t('32 vCPU, 244 GiB RAM - Memory Optimized') },
@@ -407,7 +407,7 @@ export const AWSworkerInstanceTypes = (t) => {
                             label: t('R5 - 5% additional memory per vCPU over R4'),
                             children: [
                                 { value: 'r5.large', description: t(mo2Cpu16Gib) },
-                                { value: 'r5.xlarge', description: t('4, 32 GiB RAM - Memory Optimized') },
+                                { value: 'r5.xlarge', description: t('4 vCPU, 32 GiB RAM - Memory Optimized') },
                                 { value: 'r5.2xlarge', description: t(mo8Cpu64Gib) },
                                 { value: 'r5.4xlarge', description: t('16 vCPU, 128GiB RAM - Memory Optimized') },
                                 { value: 'r5.8xlarge', description: t('32 vCPU, 256GiB RAM - Memory Optimized') },
@@ -420,9 +420,9 @@ export const AWSworkerInstanceTypes = (t) => {
                         {
                             label: t('R5a - AMD processors'),
                             children: [
-                                { value: 'r5a.large', description: t('2, 16 GiB RAM - Memory Optimized') },
+                                { value: 'r5a.large', description: t('2 vCPU, 16 GiB RAM - Memory Optimized') },
                                 { value: 'r5a.xlarge', description: t(mo4Cpu64Gib) },
-                                { value: 'r5a.2xlarge', description: t('8, 64 GiB RAM - Memory Optimized') },
+                                { value: 'r5a.2xlarge', description: t('8 vCPU, 64 GiB RAM - Memory Optimized') },
                                 { value: 'r5a.4xlarge', description: t(mo16Cpu64Gib) },
                                 { value: 'r5a.8xlarge', description: t(mo32Cpu64Gib) },
                                 { value: 'r5a.12xlarge', description: t(mo48Cpu64Gib) },
@@ -496,9 +496,9 @@ export const AWSworkerInstanceTypes = (t) => {
                         {
                             label: t('R5d - With SSD'),
                             children: [
-                                { value: 'r5d.large', description: t('2, 16  GiB RAM - Memory Optimized') },
-                                { value: 'r5d.xlarge', description: t('4 vCPU, 32  GiB RAM - Memory Optimized') },
-                                { value: 'r5d.2xlarge', description: t('8, 64  GiB RAM - Memory Optimized') },
+                                { value: 'r5d.large', description: t('2 vCPU, 16 GiB RAM - Memory Optimized') },
+                                { value: 'r5d.xlarge', description: t('4 vCPU, 32 GiB RAM - Memory Optimized') },
+                                { value: 'r5d.2xlarge', description: t('8 vCPU, 64 GiB RAM - Memory Optimized') },
                                 { value: 'r5d.4xlarge', description: t(mo16Cpu64Gib) },
                                 { value: 'r5d.8xlarge', description: t(mo32Cpu64Gib) },
                                 { value: 'r5d.12xlarge', description: t(mo48Cpu64Gib) },
@@ -511,7 +511,7 @@ export const AWSworkerInstanceTypes = (t) => {
                             label: t('R5dn - With SSD, network optimized'),
                             children: [
                                 { value: 'r5dn.large', description: t(mo2Cpu16Gib) },
-                                { value: 'r5dn.xlarge', description: t('4, 32 GiB RAM - Memory Optimized') },
+                                { value: 'r5dn.xlarge', description: t('4 vCPU, 32 GiB RAM - Memory Optimized') },
                                 { value: 'r5dn.2xlarge', description: t(mo8Cpu64Gib) },
                                 { value: 'r5dn.4xlarge', description: t(mo16Cpu64Gib) },
                                 { value: 'r5dn.8xlarge', description: t(mo32Cpu64Gib) },
@@ -523,9 +523,9 @@ export const AWSworkerInstanceTypes = (t) => {
                         {
                             label: t('R5ad - With SSD, AMD processors'),
                             children: [
-                                { value: 'r5ad.large', description: t('2 vCPU, 16  GiB RAM - Memory Optimized') },
-                                { value: 'r5ad.xlarge', description: t('4, 32  GiB RAM - Memory Optimized') },
-                                { value: 'r5ad.2xlarge', description: t('8 vCPU, 64  GiB RAM - Memory Optimized') },
+                                { value: 'r5ad.large', description: t('2 vCPU, 16 GiB RAM - Memory Optimized') },
+                                { value: 'r5ad.xlarge', description: t('4 vCPU, 32 GiB RAM - Memory Optimized') },
+                                { value: 'r5ad.2xlarge', description: t('8 vCPU, 64 GiB RAM - Memory Optimized') },
                                 { value: 'r5ad.4xlarge', description: t(mo16Cpu64Gib) },
                                 { value: 'r5ad.12xlarge', description: t(mo48Cpu64Gib) },
                                 { value: 'r5ad.24xlarge', description: t(mo96Cpu64Gib) },
@@ -534,9 +534,9 @@ export const AWSworkerInstanceTypes = (t) => {
                         {
                             label: t('Z1d - With SSD, fastest processor'),
                             children: [
-                                { value: 'z1d.large', description: t('2, 16 GiB RAM - Memory Optimized') },
+                                { value: 'z1d.large', description: t('2 vCPU, 16 GiB RAM - Memory Optimized') },
                                 { value: 'z1d.xlarge', description: t(mo4Cpu64Gib) },
-                                { value: 'z1d.2xlarge', description: t('8, 64 GiB RAM - Memory Optimized') },
+                                { value: 'z1d.2xlarge', description: t('8 vCPU, 64 GiB RAM - Memory Optimized') },
                                 { value: 'z1d.3xlarge', description: t('12 vCPU, 96 GiB RAM - Memory Optimized') },
                                 { value: 'z1d.6xlarge', description: t('24 vCPU, 192 GiB RAM - Memory Optimized') },
                                 { value: 'z1d.12xlarge', description: t(mo48Cpu64Gib) },
@@ -555,19 +555,19 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         {
                             value: 'p3.2xlarge',
-                            description: t('1 GPUs, 8 vCPU, 61 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 8 vCPU, 61 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'p3.8xlarge',
-                            description: t('4 GPUs, 32 vCPU, 244 GiB, 64 GPU GiB- Accelerated Computing'),
+                            description: t('4 GPUs, 32 vCPU, 244 GiB, 64 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'p3.16xlarge',
-                            description: t('8 GPUs, 64 vCPU, 488 GiB, 128 GPU GiB- Accelerated Computing'),
+                            description: t('8 GPUs, 64 vCPU, 488 GiB, 128 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'p3dn.24xlarge',
-                            description: t('8 GPUs, 96 vCPU, 768 GiB, 256 GPU GiB- Accelerated Computing'),
+                            description: t('8 GPUs, 96 vCPU, 768 GiB, 256 GPU GiB - Accelerated Computing'),
                         },
                     ],
                 },
@@ -576,15 +576,15 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         {
                             value: 'p2.xlarge',
-                            description: t('1  GPUs, 4 vCPU, 61 GiB, 12 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 4 vCPU, 61 GiB, 12 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'p2.8xlarge',
-                            description: t('8 GPUs, 32 vCPU, 488 GiB, 96 GPU GiB- Accelerated Computing'),
+                            description: t('8 GPUs, 32 vCPU, 488 GiB, 96 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'p2.16xlarge',
-                            description: t('16 GPUs, 64 vCPU, 732 GiB, 192 GPU GiB- Accelerated Computing'),
+                            description: t('16 GPUs, 64 vCPU, 732 GiB, 192 GPU GiB - Accelerated Computing'),
                         },
                     ],
                 },
@@ -593,31 +593,31 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         {
                             value: 'g4dn.xlarge',
-                            description: t('1 GPUs, 4 vCPU, 16 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 4 vCPU, 16 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.2xlarge',
-                            description: t('1 GPUs, 8 vCPU, 32 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 8 vCPU, 32 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.4xlarge',
-                            description: t('1 GPUs, 16 vCPU, 64 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 16 vCPU, 64 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.8xlarge',
-                            description: t('1 GPUs, 32 vCPU, 128 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 32 vCPU, 128 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.16xlarge',
-                            description: t('1 GPUs, 64 vCPU, 256 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 64 vCPU, 256 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.12xlarge',
-                            description: t('4 GPUs, 48 vCPU, 192 GiB, 64 GPU GiB- Accelerated Computing'),
+                            description: t('4 GPUs, 48 vCPU, 192 GiB, 64 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g4dn.metal',
-                            description: t('8 GPUs, 96 vCPU, 384 GiB, 128 GPU GiB- Accelerated Computing'),
+                            description: t('8 GPUs, 96 vCPU, 384 GiB, 128 GPU GiB - Accelerated Computing'),
                         },
                     ],
                 },
@@ -626,19 +626,19 @@ export const AWSworkerInstanceTypes = (t) => {
                     children: [
                         {
                             value: 'g3s.xlarge',
-                            description: t('1 GPUs, 4 vCPU, 30.5 GiB, 8 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 4 vCPU, 30.5 GiB, 8 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g3.4xlarge',
-                            description: t('1 GPUs, 16 vCPU, 122 GiB, 8 GPU GiB- Accelerated Computing'),
+                            description: t('1 GPUs, 16 vCPU, 122 GiB, 8 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g3.8xlarge',
-                            description: t('2 GPUs, 32 vCPU, 244 GiB, 16 GPU GiB- Accelerated Computing'),
+                            description: t('2 GPUs, 32 vCPU, 244 GiB, 16 GPU GiB - Accelerated Computing'),
                         },
                         {
                             value: 'g3.16xlarge',
-                            description: t('4 GPUs, 64 vCPU, 488 GiB, 32 GPU GiB- Accelerated Computing'),
+                            description: t('4 GPUs, 64 vCPU, 488 GiB, 32 GPU GiB - Accelerated Computing'),
                         },
                     ],
                 },
@@ -651,8 +651,8 @@ export const AWSworkerInstanceTypes = (t) => {
                     label: t('I3 - High Frequency Intel Xeon Processors'),
                     children: [
                         { value: 'i3.large', description: t('2 vCPU, 15.25 GiB RAM - Storage Optimized') },
-                        { value: 'i3.xlarge', description: t('4, 30.5 GiB RAM - Storage Optimized') },
-                        { value: 'i3.2xlarge', description: t('8 vCPU, 61  GiB RAM - Storage Optimized') },
+                        { value: 'i3.xlarge', description: t('4 vCPU, 30.5 GiB RAM - Storage Optimized') },
+                        { value: 'i3.2xlarge', description: t('8 vCPU, 61 GiB RAM - Storage Optimized') },
                         { value: 'i3.4xlarge', description: t('16 vCPU, 122 GiB RAM - Storage Optimized') },
                         { value: 'i3.8xlarge', description: t('32 vCPU, 244 GiB RAM - Storage Optimized') },
                         { value: 'i3.16xlarge', description: t('64 vCPU, 488 GiB RAM - Storage Optimized') },
@@ -662,9 +662,9 @@ export const AWSworkerInstanceTypes = (t) => {
                 {
                     label: t('I3en - Non-Volatile Memory Express SSD instance storage'),
                     children: [
-                        { value: 'i3en.large', description: t('2 vCPU, 16  GiB RAM - Storage Optimized') },
-                        { value: 'i3en.xlarge', description: t('4, 32  GiB RAM - Storage Optimized') },
-                        { value: 'i3en.2xlarge', description: t('8 vCPU, 64  GiB RAM - Storage Optimized') },
+                        { value: 'i3en.large', description: t('2 vCPU, 16 GiB RAM - Storage Optimized') },
+                        { value: 'i3en.xlarge', description: t('4 vCPU, 32 GiB RAM - Storage Optimized') },
+                        { value: 'i3en.2xlarge', description: t('8 vCPU, 64 GiB RAM - Storage Optimized') },
                         { value: 'i3en.3xlarge', description: t('12 vCPU, 96 GiB RAM - Storage Optimized') },
                         { value: 'i3en.6xlarge', description: t('24 vCPU, 192 GiB RAM - Storage Optimized') },
                         { value: 'i3en.12xlarge', description: t('48 vCPU, 384 GiB RAM - Storage Optimized') },
@@ -684,7 +684,7 @@ export const AWSworkerInstanceTypes = (t) => {
                 {
                     label: t('H1 - 16 TB of HDD-based local storage'),
                     children: [
-                        { value: 'h1.2xlarge', description: t('8 vCPU, 32  GiB RAM - Storage Optimized') },
+                        { value: 'h1.2xlarge', description: t('8 vCPU, 32 GiB RAM - Storage Optimized') },
                         { value: 'h1.4xlarge', description: t('16 vCPU, 64 GiB RAM - Storage Optimized') },
                         { value: 'h1.8xlarge', description: t('32 vCPU, 128 GiB RAM - Storage Optimized') },
                         { value: 'h1.16xlarge', description: t('64 vCPU, 256 GiB RAM - Storage Optimized') },
@@ -806,7 +806,7 @@ const awsPrivateControlData = (t) => {
     return controlData
 }
 
-const getControlDataAWS = (
+export const getControlDataAWS = (
     handleModalToggle,
     includeAutomation,
     includeAwsPrivate,
