@@ -467,7 +467,7 @@ async function getAnsibleTemplates(
 ) {
     const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
     const ansibleApiPath = '/api/v2/'
-    let ansibleJobs: AnsibleTowerJobTemplate[] = []
+    const ansibleJobs: AnsibleTowerJobTemplate[] = []
 
     for (const path of ansibleResourcePaths) {
         let jobUrl: string = ansibleHostUrl + ansibleApiPath + path
