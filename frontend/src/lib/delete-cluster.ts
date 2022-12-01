@@ -7,9 +7,12 @@ import {
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
     deleteResource,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     IResource,
     ManagedClusterApiVersion,
     ManagedClusterKind,
+    patchResource,
     ResourceError,
     ResourceErrorCode,
 } from '../resources'
@@ -69,10 +72,35 @@ export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound 
     }
 }
 
-export function detachCluster(clusterName: string) {
+export function detachCluster(cluster: Cluster) {
+    if (cluster.isHypershift && !cluster.hypershift?.agent) {
+        // remove annotations
+        patchResource(
+            {
+                apiVersion: HostedClusterApiVersion,
+                kind: HostedClusterKind,
+                metadata: {
+                    name: cluster.name,
+                    namespace: cluster.hypershift?.hostingNamespace,
+                },
+            },
+            [
+                // ~1 jsonpatch spec escape /
+                {
+                    op: 'remove',
+                    path: '/metadata/annotations/cluster.open-cluster-management.io~1hypershiftdeployment',
+                },
+                {
+                    op: 'remove',
+                    path: '/metadata/annotations/cluster.open-cluster-management.io~1managedcluster-name',
+                },
+            ]
+        )
+    }
+
     return deleteResource({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
-        metadata: { name: clusterName },
+        metadata: { name: cluster.name },
     })
 }

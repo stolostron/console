@@ -63,7 +63,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     }}
                 >
                     <div>
-                        <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=add-healthchecks`}>
+                        <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}>
                             {t('Getting Started with on-premise host inventory')}
                         </Link>
                     </div>
@@ -78,7 +78,8 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                                 display: 'inline-block',
                             }}
                         >
-                            {t('Learn more about Advanced Cluster Management')} <ExternalLinkAltIcon />
+                            {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}{' '}
+                            <ExternalLinkAltIcon />
                         </Text>
                     </div>
                 </AcmExpandableSection>
@@ -103,7 +104,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                         )}
                     </div>
                     <div style={{ color: '#151515', fontSize: '16px', paddingTop: '48px' }}>
-                        {t('What do you want to do next?')}
+                        {t('How would you like to create your cluster?')}
                     </div>
                 </GridItem>
             </Grid>
@@ -112,7 +113,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 {cards.map((card) => (
                     <GridItem key={card.id} span={4}>
                         <Link key={card.id} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
-                            <Card id={card.id} key={card.id} isHoverable isFlat>
+                            <Card id={card.id} key={card.id} isSelectable isFlat>
                                 <CardBody style={{ minHeight: '160px', borderColor: '#D2D2D2', color: '#151515' }}>
                                     <div
                                         style={{

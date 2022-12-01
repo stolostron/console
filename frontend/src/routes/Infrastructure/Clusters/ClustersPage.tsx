@@ -10,6 +10,7 @@ import ClusterPoolsPage from './ClusterPools/ClusterPools'
 import ClusterSetsPage from './ClusterSets/ClusterSets'
 import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
 import ManagedClusters from './ManagedClusters/ManagedClusters'
+import { Flex, FlexItem } from '@patternfly/react-core'
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
     setActions: (actions: null | ReactNode) => void
@@ -25,8 +26,16 @@ export const usePageContext = (showActions: boolean, Component: ElementType, Cus
         if (showActions) {
             setActions(
                 <Fragment>
-                    {CustomAction && <CustomAction />}
-                    <Component />
+                    <Flex>
+                        {CustomAction && (
+                            <FlexItem>
+                                <CustomAction />
+                            </FlexItem>
+                        )}
+                        <FlexItem>
+                            <Component />
+                        </FlexItem>
+                    </Flex>
                 </Fragment>
             )
         } else {
