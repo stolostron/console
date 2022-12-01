@@ -31,6 +31,10 @@ import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../App
 import ChannelControl from '../components/ChannelControl'
 import noop from 'lodash/noop'
 
+import './components/future/topology-components.css'
+import './components/future/topology-controlbar.css'
+import './components/future/topology-view.css'
+
 export interface TopologyProps {
     elements: {
         activeChannel?: string
@@ -189,7 +193,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
             }
             viewToolbar={viewToolbar}
         >
-            test
             <VisualizationSurface state={{ selectedIds }} />
         </TopologyView>
     )
