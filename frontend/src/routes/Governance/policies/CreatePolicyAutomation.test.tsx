@@ -14,6 +14,8 @@ import {
     mockTemplateList,
     mockSubscriptionOperator,
     mockPolicyAutomation,
+    mockAnsibleCredentialWorkflow,
+    mockTemplateWorkflowList,
 } from '../governance.sharedMocks'
 import { ConfigMap, SubscriptionOperator } from '../../../resources'
 import { mockOpenShiftConsoleConfigMap } from '../../../lib/test-metadata'
@@ -51,6 +53,7 @@ describe('Create Policy Automation Wizard', () => {
 
         // template information
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+        nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
         waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
         await waitForText('Create policy automation')
 

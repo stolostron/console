@@ -439,7 +439,7 @@ describe('ImportCluster', () => {
         // Advance to Automation step; choose automation template then clear
         await clickByText('Next')
         await waitForText('Install the operator')
-        await clickByText('Select an Ansible job template')
+        await clickByText('Select an automation template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickBySelector(container, '#templateName-label button[aria-label="Clear all"]')
 
@@ -479,14 +479,14 @@ describe('ImportCluster', () => {
 
         // Advance to Automation step
         await clickByText('Next')
-        await waitForText('Ansible Automation Template')
+        await waitForText('Automation template')
         await waitForNotText('Install the operator')
-        await clickByText('Select an Ansible job template')
+        await clickByText('Select an automation template')
         await clickByText(mockClusterCurators[0].metadata.name!)
 
         // check automation summary
         await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
-        await waitForText('Preinstall Ansible job templates')
+        await waitForText('Preinstall Ansible templates')
         await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
         // Advance to Review step and submit the form

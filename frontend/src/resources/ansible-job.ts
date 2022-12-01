@@ -10,6 +10,7 @@ export const AnsibleJobKind = 'AnsibleJob'
 export type AnsibleJobKindType = 'AnsibleJob'
 
 export type AnsibleJobTemplateType = 'Job' | 'Workflow'
+export type AnsibleApiJobTemplateType = 'job_template' | 'workflow_job_template'
 
 export const AnsibleJobDefinition: IResourceDefinition = {
     apiVersion: AnsibleJobApiVersion,
@@ -72,9 +73,9 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
 export interface AnsibleTowerJobTemplateList {
     count?: number
     next?: string
-    results?: Array<AnsibleTowerJobTemplate>
+    results: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
     name?: string
-    type?: AnsibleJobTemplateType
+    type?: AnsibleApiJobTemplateType
 }

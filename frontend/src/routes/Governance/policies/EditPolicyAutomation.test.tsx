@@ -9,11 +9,13 @@ import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicyAutomation } from './EditPolicyAutomation'
 import {
     mockAnsibleCredential,
+    mockAnsibleCredentialWorkflow,
     mockPolicy,
     mockPolicyAutomation,
     mockSecret,
     mockSubscriptionOperator,
     mockTemplateList,
+    mockTemplateWorkflowList,
 } from '../governance.sharedMocks'
 import { SubscriptionOperator } from '../../../resources'
 import { waitForNocks } from '../../../lib/test-util'
@@ -49,6 +51,7 @@ describe('Edit Policy Automation', () => {
     test('can edit policy automation', async () => {
         render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+        nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         expect(screen.getByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
