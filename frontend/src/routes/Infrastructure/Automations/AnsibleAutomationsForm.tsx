@@ -698,6 +698,10 @@ function EditAnsibleJobModal(props: {
                     buttonLabel=""
                     placeholder={t('template.modal.settings.placeholder')}
                 />
+                {!filterForJobTemplates && (
+                    <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />
+                )}
+
                 <ActionGroup>
                     <AcmSubmit
                         variant="primary"
