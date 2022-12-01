@@ -67,24 +67,23 @@ export function AutomationProviderHint(props: {
 
     return (
         <>
-            {showInstallPrompt ||
-                (showUpgradePrompt &&
-                    (component === 'hint' ? (
-                        <Hint className={className}>
-                            <HintBody>{message}</HintBody>
-                            <HintFooter>{link}</HintFooter>
-                        </Hint>
-                    ) : (
-                        <Alert
-                            className={className}
-                            isInline
-                            title={title}
-                            actionLinks={link}
-                            variant={AlertVariant.danger}
-                        >
-                            {message}
-                        </Alert>
-                    )))}
+            {(showInstallPrompt || showUpgradePrompt) &&
+                (component === 'hint' ? (
+                    <Hint className={className}>
+                        <HintBody>{message}</HintBody>
+                        <HintFooter>{link}</HintFooter>
+                    </Hint>
+                ) : (
+                    <Alert
+                        className={className}
+                        isInline
+                        title={title}
+                        actionLinks={link}
+                        variant={AlertVariant.danger}
+                    >
+                        {message}
+                    </Alert>
+                ))}
         </>
     )
 }
