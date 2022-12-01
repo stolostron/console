@@ -16,8 +16,9 @@ import { CreateCredentialModal } from '../../../../../components/CreateCredentia
 import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
 const getControlDataPrePostTasks = (handleModalToggle, t) => {
-    insertToggleModalFunction(handleModalToggle, prePostTasks)
-    return [...prePostTasks(t)]
+    const controlData = prePostTasks(t)
+    insertToggleModalFunction(handleModalToggle, controlData)
+    return controlData
 }
 
 const prePostTasks = (t) => {
