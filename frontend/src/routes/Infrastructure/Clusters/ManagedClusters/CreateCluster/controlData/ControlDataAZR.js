@@ -463,7 +463,7 @@ const setRegions = (control, controlData) => {
     onChangeConnection(control, controlData)
 }
 
-const getControlDataAZR = (
+export const getControlDataAZR = (
     handleModalToggle,
     includeAutomation = true,
     includeSno = false,

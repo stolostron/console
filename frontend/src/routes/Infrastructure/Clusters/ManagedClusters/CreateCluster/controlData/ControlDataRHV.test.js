@@ -6,22 +6,17 @@ import { getControlDataRHV } from './ControlDataRHV'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key) => i18next.t(key),
-    }),
-}))
 
 describe('getControlDataRHV', () => {
     it('get control data for RHV - default', () => {
-        getControlDataRHV(t)
+        getControlDataRHV(undefined, true, true, t)
     })
 
     it('get control data for RHV - no automation', () => {
-        getControlDataRHV(false, true, t)
+        getControlDataRHV(undefined, false, true, t)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataRHV(true, false, t)
+        getControlDataRHV(undefined, true, false, t)
     })
 })

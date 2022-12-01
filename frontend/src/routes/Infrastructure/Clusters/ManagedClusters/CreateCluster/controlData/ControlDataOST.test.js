@@ -6,26 +6,21 @@ import { getControlDataOST } from './ControlDataOST'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key) => i18next.t(key),
-    }),
-}))
 
 describe('getControlDataOST', () => {
     it('get control data for openstack - default', () => {
-        getControlDataOST(t)
+        getControlDataOST(undefined, true, false, true, t)
     })
 
     it('get control data for openstack - no automation', () => {
-        getControlDataOST(false, false, true, t)
+        getControlDataOST(undefined, false, false, true, t)
     })
 
     it('get control data for openstack - include sno cluster', () => {
-        getControlDataOST(true, true, true, t)
+        getControlDataOST(undefined, true, true, true, t)
     })
 
     it('get control data for openstack - no klusterletaddon', () => {
-        getControlDataOST(true, true, true, t)
+        getControlDataOST(undefined, true, true, false, t)
     })
 })
