@@ -24,7 +24,7 @@ class ChannelControl extends Component {
         channelControl: PropTypes.shape({
             allChannels: PropTypes.array,
             activeChannel: PropTypes.string,
-            changeTheChannel: PropTypes.func,
+            setActiveChannel: PropTypes.func,
         }),
         t: PropTypes.func,
         setDrawerContent: PropTypes.func,
@@ -38,40 +38,15 @@ class ChannelControl extends Component {
     }
 
     componentDidMount() {
-        this.syncHeight = this.syncHeight.bind(this)
-        window.addEventListener('resize', this.syncHeight)
-        this.syncHeight()
-
-        if (this.scrollIntoViewChn) {
-            setTimeout(() => {
-                this.scrollIntoViewChn.scrollIntoView(false)
-            }, 100)
-        }
-
         // Initialize channel control variables for topology refresh state
         const { activeChannel, allChannels } = this.props.channelControl
         if (allChannels.length > 1) {
-            this.fetchInitialData(activeChannel, allChannels)
+            this.fetchCurrentChannel(activeChannel, allChannels)
         }
     }
 
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.syncHeight)
-    }
-
-    // sync scrollbar height with diagram height
-    syncHeight() {
-        const div = document.getElementById('diagram-viewer-container-container')
-        if (div) {
-            this.setState({ diagramHeight: div.getBoundingClientRect().height })
-        }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return (
-            !_.isEqual(this.props.channelControl, nextProps.channelControl) ||
-            this.state.diagramHeight !== nextState.diagramHeight
-        )
+    shouldComponentUpdate(nextProps) {
+        return _.isEqual(this.props.channelControl, nextProps.channelControl)
     }
 
     handleSubscriptionChange = (e, displayChannels) => {
@@ -165,7 +140,7 @@ class ChannelControl extends Component {
         return [displayChannels, selectedIdx]
     }
 
-    fetchInitialData = (activeChannel, allChannels) => {
+    fetchCurrentChannel = (activeChannel, allChannels) => {
         // Update channel control variables for when refresh state is done
         const { fetchChannel } = this.state
         activeChannel = fetchChannel || activeChannel
@@ -200,12 +175,11 @@ class ChannelControl extends Component {
         const channelsLength = displayChannels.length
         const channelAllIndex = this.getChannelAllIndex(displayChannels)
         if (channelsLength !== -1) {
+            const num = channelsLength > 1 ? (channelAllIndex !== -1 ? channelsLength - 1 : channelsLength) : 1
             subscriptionShowInfo =
                 currentChannel.chn === '__ALL__/__ALL__//__ALL__/__ALL__'
-                    ? ''
-                    : this.props.t('(1 of {{0}})', [
-                          channelsLength > 1 ? (channelAllIndex !== -1 ? channelsLength - 1 : channelsLength) : 1,
-                      ])
+                    ? this.props.t('({{0}} of {{0}})', [num])
+                    : this.props.t('(1 of {{0}})', [num])
         }
         return subscriptionShowInfo
     }
@@ -335,12 +309,9 @@ class ChannelControl extends Component {
 
             return (
                 // show subscription names only when more than one
-                <div
-                    className="channel-controls-container"
-                    style={selectedSubscriptionIsPaged ? { height: '174px' } : { height: '125px' }}
-                >
+                <div className="channel-controls-container">
                     {showMainChannel && (
-                        <div className="channels">
+                        <>
                             <div className="subscription label">
                                 {t('Subscriptions')} {this.getSubscriptionCount(displayChannels, currentChannel)}
                                 <Tooltip
@@ -365,10 +336,10 @@ class ChannelControl extends Component {
                                     isPrimary={false}
                                 />
                             </div>
-                        </div>
+                        </>
                     )}
                     {selectedSubscriptionIsPaged && (
-                        <div className="pagination">
+                        <>
                             <div className="resourcePaging label">
                                 {t('Resource nodes')}
                                 <div className="show-subscription-pages-icon">
@@ -398,7 +369,7 @@ class ChannelControl extends Component {
                                     onPageInput={(e) => this.handlePagination(e, 'input', selectedSubscriptionPages)}
                                 />
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
             )
@@ -408,11 +379,11 @@ class ChannelControl extends Component {
 
     changeSubscriptionChannels(fetchChannel) {
         const { channelControl = {} } = this.props
-        const { changeTheChannel } = channelControl
+        const { setActiveChannel } = channelControl
 
-        if (changeTheChannel) {
+        if (setActiveChannel) {
             this.setState({ fetchChannel })
-            changeTheChannel(fetchChannel)
+            setActiveChannel(fetchChannel)
         }
     }
 }

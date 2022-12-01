@@ -763,7 +763,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const clearSearch = useCallback(() => {
         /* istanbul ignore if */
         if (process.env.NODE_ENV !== 'test') {
-            ;(setInternalSearchWithDebounce as ReturnType<typeof debounce>).clear()
+            ;(setInternalSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
         }
         setSearch('')
         setInternalSearch('')

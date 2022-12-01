@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep, groupBy } from 'lodash'
+import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
 
-import { createChildNode, addClusters } from './utils'
+import { createChildNode, addClusters, processMultiples } from './utils'
 
 const localClusterName = 'local-cluster'
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
@@ -251,22 +251,6 @@ const processReport = (report, clustersNames, clusterId, links, nodes, relatedRe
     processMultiples(others).forEach((resource) => {
         addSubscriptionDeployedResource(clusterId, clustersNames, resource, links, nodes)
     })
-}
-
-const processMultiples = (resources) => {
-    if (resources.length > 5) {
-        const groupByKind = groupBy(resources, 'kind')
-        return Object.entries(groupByKind).map(([kind, _resources]) => {
-            return {
-                kind,
-                name: '',
-                namespace: '',
-                resources: _resources,
-                resourceCount: _resources.length,
-            }
-        })
-    }
-    return resources
 }
 
 // Route, Ingress, StatefulSet
