@@ -22,7 +22,7 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -184,17 +184,25 @@ export default function PolicySetCard(props: {
                                     </DescriptionListTerm>
                                     {policySet.status?.compliant && (
                                         <DescriptionListDescription>
-                                            {policySet.status?.compliant === 'Compliant' ? (
+                                            {policySet.status?.compliant === 'Compliant' && (
                                                 <div>
                                                     <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
                                                     &nbsp;
                                                     {t('No violations')}
                                                 </div>
-                                            ) : (
+                                            )}
+                                            {policySet.status?.compliant === 'NonCompliant' && (
                                                 <div>
                                                     <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
                                                     &nbsp;
                                                     {t('Violations')}
+                                                </div>
+                                            )}
+                                            {policySet.status?.compliant === 'Pending' && (
+                                                <div>
+                                                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('Pending')}
                                                 </div>
                                             )}
                                         </DescriptionListDescription>

@@ -14,6 +14,7 @@ export function PolicySetViolationsCard() {
             description="Overview of policy set violations"
             noncompliant={violations.noncompliant}
             compliant={violations.compliant}
+            pending={violations.pending}
             unknown={violations.unknown}
         />
     )
@@ -25,6 +26,7 @@ function usePolicySetViolations() {
     const violations = useMemo(() => {
         let compliant = 0
         let noncompliant = 0
+        let pending = 0
         let unknown = 0
         for (const policySet of policySets) {
             switch (policySet.status?.compliant) {
@@ -34,12 +36,15 @@ function usePolicySetViolations() {
                 case 'NonCompliant':
                     noncompliant++
                     break
+                case 'Pending':
+                    pending++
+                    break
                 default:
                     unknown++
                     break
             }
         }
-        return { noncompliant, compliant, unknown }
+        return { noncompliant, compliant, pending, unknown }
     }, [policySets])
     return violations
 }
@@ -49,6 +54,7 @@ export function ViolationsCard(props: {
     description: string
     noncompliant: number
     compliant: number
+    pending: number
     unknown?: number
 }) {
     const { t } = useTranslation()
@@ -69,12 +75,17 @@ export function ViolationsCard(props: {
                         link: props.noncompliant > 0 ? `${NavigationPath.policySets}?violation=violation` : undefined,
                     },
                     {
+                        key: 'pending',
+                        value: props.pending,
+                        link: props.pending > 0 ? `${NavigationPath.policySets}?violation=pending` : undefined,
+                    },
+                    {
                         key: 'without violations',
                         value: props.compliant,
                         link: props.compliant > 0 ? `${NavigationPath.policySets}?violation=no-violation` : undefined,
                     },
                 ]}
-                colorScale={colorThemes.criticalSuccess}
+                colorScale={colorThemes.criticalLowSuccess}
             />
         </Card>
     )

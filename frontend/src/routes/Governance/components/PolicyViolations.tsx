@@ -39,6 +39,9 @@ export function PolicyViolationIcons2(props: {
     compliant: number
     compliantHref?: string
     compliantOnClick?: () => void
+    pending: number
+    pendingHref?: string
+    pendingOnClick?: () => void
     noncompliant: number
     violationHref?: string
     violationOnClick?: () => void
@@ -52,7 +55,10 @@ export function PolicyViolationIcons2(props: {
             compliant={props.compliant}
             compliantTooltip={t('policies.noviolations', { count: props.compliant })}
             compliantHref={props.compliantHref}
-            compliantOnClick={props.compliantOnClick}
+            pending={props.pending}
+            pendingTooltip={t('policies.pending', { count: props.pending })}
+            pendingHref={props.pendingHref}
+            pendingOnClick={props.pendingOnClick}
             violations={props.noncompliant}
             violationsTooltip={t('policy.violations', { count: props.noncompliant })}
             violationHref={props.violationHref}

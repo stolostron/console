@@ -32,9 +32,13 @@ import {
     usePolicySetClusterPolicyViolationsColumn,
 } from '../../overview/ClusterViolationSummary'
 
-function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCompliant: string[] }, t: TFunction) {
+function renderDonutChart(
+    clusterComplianceSummary: { compliant: string[]; nonCompliant: string[]; pending: string[] },
+    t: TFunction
+) {
     const clusterCompliantCount = clusterComplianceSummary.compliant.length
     const clusterNonCompliantCount = clusterComplianceSummary.nonCompliant.length
+    const clusterPendingCount = clusterComplianceSummary.pending.length
     const formattedData = [
         {
             key:
@@ -42,6 +46,10 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                     ? t('Cluster with policy violations')
                     : t('Clusters with policy violations'),
             value: clusterNonCompliantCount,
+        },
+        {
+            key: clusterPendingCount === 1 ? t('Cluster with pending policies') : t('Clusters with pending policies'),
+            value: clusterPendingCount,
         },
         {
             key:
@@ -58,9 +66,12 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
     }))
 
     const donutTitle =
-        clusterCompliantCount + clusterNonCompliantCount === 0
+        clusterCompliantCount + clusterNonCompliantCount + clusterPendingCount === 0
             ? '0%'
-            : `${((clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount)) * 100).toFixed(0)}%`
+            : `${(
+                  (clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount + clusterPendingCount)) *
+                  100
+              ).toFixed(0)}%`
 
     return (
         <div style={{ height: 230, marginTop: -16, marginBottom: -16 }}>
@@ -75,7 +86,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                     <ChartLegend
                         data={legendData}
                         labelComponent={<ChartLabel />}
-                        colorScale={colorThemes.criticalSuccess}
+                        colorScale={colorThemes.criticalLowSuccess}
                     />
                 }
                 labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -84,7 +95,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                 }}
                 title={donutTitle}
                 width={450}
-                colorScale={colorThemes.criticalSuccess}
+                colorScale={colorThemes.criticalLowSuccess}
             />
         </div>
     )
@@ -127,15 +138,18 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         const psClusterCompliance: {
             compliant: string[]
             nonCompliant: string[]
+            pending: string[]
             unknown: string[]
         } = {
             compliant: clusterCompliance.compliant,
             nonCompliant: clusterCompliance.nonCompliant,
+            pending: clusterCompliance.pending,
             unknown: clusterCompliance.unknown,
         }
         const psClusters: string[] = [
             ...psClusterCompliance.compliant,
             ...psClusterCompliance.nonCompliant,
+            ...psClusterCompliance.pending,
             ...psClusterCompliance.unknown,
         ]
 
@@ -275,14 +289,18 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                         policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const compliantCount =
                         policySetClusterContext?.filter((status) => status.compliant === 'Compliant').length ?? 0
+                    const pendingCount =
+                        policySetClusterContext?.filter((status) => status.compliant === 'Pending').length ?? 0
                     const unknownCount = policySetClusterContext?.filter((status) => !status.compliant).length ?? 0
-                    if (violationCount !== 0 || compliantCount !== 0 || unknownCount !== 0) {
+                    if (violationCount !== 0 || compliantCount !== 0 || pendingCount != 0 || unknownCount !== 0) {
                         return (
                             <ClusterPolicyViolationIcons2
                                 compliant={compliantCount}
                                 compliantHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
                                 noncompliant={violationCount}
                                 violationHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
+                                pending={pendingCount}
+                                pendingHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
                                 unknown={unknownCount}
                             />
                         )

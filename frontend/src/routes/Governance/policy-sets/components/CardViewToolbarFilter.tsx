@@ -92,6 +92,26 @@ export default function CardViewToolbarFilter(props: {
                 </div>
             </SelectOption>
             <SelectOption
+                key={'pending'}
+                inputId={'pending'}
+                value={'pending'}
+                isChecked={selectedFilters.indexOf('pending') > -1}
+            >
+                <div className={classes.filterOption}>
+                    {t('Pending')}
+                    <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                if (policySet.status && policySet.status.compliant) {
+                                    return policySet.status.compliant === 'Pending'
+                                }
+                                return false
+                            }).length
+                        }
+                    </Badge>
+                </div>
+            </SelectOption>
+            <SelectOption
                 key={'no-status'}
                 inputId={'no-status'}
                 value={'no-status'}
