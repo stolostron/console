@@ -74,7 +74,7 @@ import {
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { useTranslation } from '../../lib/acm-i18next'
-import { set } from 'lodash'
+import { each, set } from 'lodash'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -331,9 +331,11 @@ export interface AcmTableProps<T> {
     fuseThreshold?: number
     initialFilters?: { [key: string]: string[] }
     filters?: ITableFilter<T>[]
+    id?: string
 }
 export function AcmTable<T>(props: AcmTableProps<T>) {
     const {
+        id,
         items,
         columns,
         addSubRows,
@@ -353,20 +355,34 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
     const initialSort = props.initialSort || defaultSort
     const initialSearch = props.initialSearch || ''
-    const cachedFilter = {}
 
-    if (filters.length) {
-        filters.forEach((filter) => {
-            const existingFilter = localStorage[filter.id]
-            if (existingFilter) {
-                set(cachedFilter, filter.id, get(JSON.parse(existingFilter), filter.id))
-            }
-        })
+    let existingFilter: any = {}
+
+    const cachedFilter = id && localStorage[id]
+    if (cachedFilter) {
+        existingFilter = JSON.parse(cachedFilter)
+        if (existingFilter) {
+            const filterIds = filters.map((filter) => filter.id)
+            each(existingFilter, (val, key) => {
+                const filterObj = filters.find((filter) => filter.id === key) || {}
+                const optionsList = get(filterObj, 'options')?.map(
+                    (option: { label: string; value: string }) => option.value
+                )
+                if (!filterIds.includes(key)) {
+                    delete existingFilter[key]
+                } else {
+                    val.forEach((value: string) => {
+                        if (!optionsList.includes(value)) {
+                            val.splice(val.indexOf(value), 1)
+                        }
+                    })
+                }
+            })
+        }
     }
 
-    // If selected filter, will render filter cache
-    // Otherwise, load the initialFilter if defined
-    const initialFilters = Object.keys(cachedFilter).length ? cachedFilter : props.initialFilters || {}
+    // initialFilters takes precedence
+    const initialFilters = props.initialFilters || existingFilter || {}
 
     const { t } = useTranslation()
 
@@ -793,10 +809,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const clearSearchAndFilters = useCallback(() => {
         clearSearch()
         clearFilters()
-        filters.forEach((filter) => {
-            localStorage.removeItem(filter.id)
-        })
-    }, [clearSearch, clearFilters, filters])
+        if (id) {
+            localStorage.removeItem(id)
+        }
+    }, [clearSearch, clearFilters, id])
 
     const updateSearch = useCallback(
         (newSearch: string) => {
@@ -1039,6 +1055,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                         items={items}
                                         toolbarFilterIds={toolbarFilterIds}
                                         setToolbarFilterIds={setToolbarFilterIds}
+                                        id={id}
                                     />
                                 )}
                             </ToolbarGroup>
@@ -1185,10 +1202,11 @@ function TableColumnFilters<T>(props: {
         }>
     >
     items?: T[]
+    id: string
 }) {
     const [isOpen, setIsOpen] = useState(false)
     const classes = useStyles()
-    const { filters, toolbarFilterIds, setToolbarFilterIds, items } = props
+    const { filters, toolbarFilterIds, setToolbarFilterIds, items, id } = props
     const { t } = useTranslation()
 
     const onFilterSelect = useCallback(
@@ -1204,7 +1222,7 @@ function TableColumnFilters<T>(props: {
                 /* istanbul ignore next */
                 if (filter.options.find((option) => option.value === selection)) {
                     filterId = filter.id
-                    const filterCache = JSON.parse(localStorage.getItem(filterId) as string)
+                    const filterCache = JSON.parse(localStorage.getItem(id) as string)
                     const filterCacheValue = get(filterCache, filterId) || []
 
                     if (!filterCacheValue.includes(selection)) {
@@ -1212,12 +1230,17 @@ function TableColumnFilters<T>(props: {
                     }
 
                     if (filterCache) {
-                        localStorage.setItem(filterId, JSON.stringify(filterCache))
+                        const values = filterCache[filterId]
+                        if (!values) {
+                            filterCache[filterId] = [selection]
+                        }
+
+                        localStorage.setItem(id, JSON.stringify(filterCache))
                     } else {
                         const newFilterObj = {}
                         set(newFilterObj, filterId, filterCacheValue)
 
-                        localStorage.setItem(filterId, JSON.stringify(newFilterObj))
+                        localStorage.setItem(id, JSON.stringify(newFilterObj))
                     }
                 }
             }
@@ -1245,12 +1268,12 @@ function TableColumnFilters<T>(props: {
         [filters]
     )
 
-    const onDelete = useCallback((filter: string, id: ToolbarChip) => {
+    const onDelete = useCallback((filter: string, id: ToolbarChip, tableId: string) => {
         // remove filter
-        const filterCache = JSON.parse(localStorage.getItem(filter) as string)
+        const filterCache = JSON.parse(localStorage.getItem(tableId) as string)
         const filterCacheValue = get(filterCache, filter)
         filterCacheValue.splice(filterCacheValue.indexOf(id.key), 1)
-        localStorage.setItem(filter, JSON.stringify(filterCache))
+        localStorage.setItem(tableId, JSON.stringify(filterCache))
 
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
@@ -1265,8 +1288,11 @@ function TableColumnFilters<T>(props: {
     }, [])
 
     const onDeleteGroup = useCallback((filter: string) => {
-        // remove filter
-        localStorage.removeItem(filter)
+        if (id) {
+            const filterCache = JSON.parse(localStorage.getItem(id) as string)
+            delete filterCache[filter]
+            localStorage.setItem(id, JSON.stringify(filterCache))
+        }
 
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
@@ -1342,7 +1368,7 @@ function TableColumnFilters<T>(props: {
                             })}
                         deleteChip={(_category, chip) => {
                             chip = chip as ToolbarChip
-                            onDelete(current.id, chip)
+                            onDelete(current.id, chip, id)
                         }}
                         deleteChipGroup={() => onDeleteGroup(current.id)}
                         categoryName={current.label}

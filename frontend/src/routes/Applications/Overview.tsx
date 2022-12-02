@@ -1042,6 +1042,7 @@ export default function ApplicationsOverview() {
             <DeleteResourceModal {...modalProps} />
             {pluginModal}
             <AcmTable<IResource>
+                id="applicationTable"
                 key="data-table"
                 plural={t('Applications')}
                 columns={columns}
