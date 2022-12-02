@@ -261,6 +261,9 @@ export function AnsibleAutomationsForm(props: {
                         ))}
                     </ChipGroup>
                 )}
+                <FlexItem style={{ fontWeight: 'bold' }}>
+                    {ansibleJob.type === 'Job' ? t('Job template') : t('Workflow job template')}
+                </FlexItem>
             </Flex>,
         ]
     }
