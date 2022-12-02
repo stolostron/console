@@ -7,11 +7,13 @@ import {
     Flex,
     FlexItem,
     FormGroup,
+    Label,
     Modal,
     ModalVariant,
     Radio,
     SelectOption,
     SelectVariant,
+    Tooltip,
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
@@ -251,6 +253,11 @@ export function AnsibleAutomationsForm(props: {
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
         return [
             <Flex style={{ gap: '8px' }} key={ansibleJob.name}>
+                <FlexItem>
+                    <Tooltip content={ansibleJob.type === 'Job' ? t('Job template') : t('Workflow job template')}>
+                        <Label color="blue">{ansibleJob.type === 'Job' ? t('JT') : t('WJT')}</Label>
+                    </Tooltip>
+                </FlexItem>
                 <FlexItem>{ansibleJob.name}</FlexItem>
                 {ansibleJob.extra_vars && (
                     <ChipGroup>
@@ -261,9 +268,6 @@ export function AnsibleAutomationsForm(props: {
                         ))}
                     </ChipGroup>
                 )}
-                <FlexItem style={{ fontWeight: 'bold' }}>
-                    {ansibleJob.type === 'Job' ? t('Job template') : t('Workflow job template')}
-                </FlexItem>
             </Flex>,
         ]
     }
