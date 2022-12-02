@@ -50,6 +50,8 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         <AcmModal
             variant={ModalVariant.medium}
             title=" "
+            id="clustersOnboardingModal"
+            ouiaId="clustersOnboardingModal"
             isOpen={true}
             onClose={props.close}
             footer={
