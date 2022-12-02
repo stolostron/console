@@ -21,7 +21,6 @@ describe('OnboardingModal open', () => {
             'data-ouia-component-id',
             'clustersOnboardingModal'
         )
-        expect(screen.getByTestId('clustersOnboardingModal')).toHaveAttribute('data-testid', 'clustersOnboardingModal')
         expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
         expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
         expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)

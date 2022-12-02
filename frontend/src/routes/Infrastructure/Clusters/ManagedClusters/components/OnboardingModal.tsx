@@ -51,7 +51,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             variant={ModalVariant.medium}
             title=" "
             id="clustersOnboardingModal"
-            data-testid="clustersOnboardingModal"
             ouiaId="clustersOnboardingModal"
             isOpen={true}
             onClose={props.close}
