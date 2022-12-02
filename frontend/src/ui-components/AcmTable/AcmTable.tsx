@@ -1202,7 +1202,7 @@ function TableColumnFilters<T>(props: {
         }>
     >
     items?: T[]
-    id: string
+    id?: string
 }) {
     const [isOpen, setIsOpen] = useState(false)
     const classes = useStyles()
@@ -1222,25 +1222,27 @@ function TableColumnFilters<T>(props: {
                 /* istanbul ignore next */
                 if (filter.options.find((option) => option.value === selection)) {
                     filterId = filter.id
-                    const filterCache = JSON.parse(localStorage.getItem(id) as string)
-                    const filterCacheValue = get(filterCache, filterId) || []
+                    if (id) {
+                        const filterCache = JSON.parse(localStorage.getItem(id) as string)
+                        const filterCacheValue = get(filterCache, filterId) || []
 
-                    if (!filterCacheValue.includes(selection)) {
-                        filterCacheValue.push(selection)
-                    }
-
-                    if (filterCache) {
-                        const values = filterCache[filterId]
-                        if (!values) {
-                            filterCache[filterId] = [selection]
+                        if (!filterCacheValue.includes(selection)) {
+                            filterCacheValue.push(selection)
                         }
 
-                        localStorage.setItem(id, JSON.stringify(filterCache))
-                    } else {
-                        const newFilterObj = {}
-                        set(newFilterObj, filterId, filterCacheValue)
+                        if (filterCache) {
+                            const values = filterCache[filterId]
+                            if (!values) {
+                                filterCache[filterId] = [selection]
+                            }
 
-                        localStorage.setItem(id, JSON.stringify(newFilterObj))
+                            localStorage.setItem(id, JSON.stringify(filterCache))
+                        } else {
+                            const newFilterObj = {}
+                            set(newFilterObj, filterId, filterCacheValue)
+
+                            localStorage.setItem(id, JSON.stringify(newFilterObj))
+                        }
                     }
                 }
             }
