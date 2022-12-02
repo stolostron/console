@@ -2063,11 +2063,6 @@ export const portals = Object.freeze({
 
 export const controlData = [
     {
-        id: 'main',
-        type: 'section',
-        note: 'creation.view.required.mark',
-    },
-    {
         name: 'creation.app.name',
         tooltip: 'tooltip.creation.app.name',
         id: 'name',

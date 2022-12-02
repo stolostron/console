@@ -62,11 +62,6 @@ export const updateNSControls = (nsControl, globalControl) => {
 export const controlData = (isLocalCluster, handleModalToggle, t) => {
     return [
         {
-            id: 'main',
-            type: 'section',
-            note: t('creation.view.required.mark'),
-        },
-        {
             id: 'showSecrets',
             type: 'hidden',
             active: false,

@@ -1223,7 +1223,6 @@
     "creation.valid.alphanumeric": "Value must be alphanumeric.",
     "creation.valid.gitbranch": "Value must be valid Git branch.",
     "creation.valid.numeric": "Value must be integer.",
-    "creation.view.required.mark": "creation.view.required.mark",
     "creation.view.yaml": "Cluster YAML",
     "Credential name": "Credential name",
     "Credential type": "Credential type",
