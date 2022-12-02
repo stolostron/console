@@ -64,9 +64,7 @@ async function getArgoSource(application, appData) {
 async function getResourceStatuses(name, namespace, appData, topology, argoSource) {
     if (argoSource) {
         const { searchResult } = argoSource.data
-        const allApps = _.get(searchResult[0], 'items', []).filter(
-            (app) => app.applicationSet === appData.applicationSet
-        )
+        const allApps = _.get(searchResult[0], 'items', []).filter((app) => app.kind === 'Application')
         const targetNS = []
         const targetClusters = []
         const argoAppsLabelNames = []

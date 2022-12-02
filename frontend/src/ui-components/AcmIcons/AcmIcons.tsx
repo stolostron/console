@@ -21,6 +21,7 @@ import VMWareIcon from './VMWareIcon'
 import IBMLogoIcon from './IBMLogoIcon'
 import HybridIcon from './HybridIcon'
 import AlibabaIcon from './AlibabaIcon'
+import KubeVirtIcon from './KubeVirtIcon'
 
 export enum AcmIconVariant {
     template = 'template',
@@ -42,6 +43,7 @@ export enum AcmIconVariant {
     ansible = 'ansible',
     hybrid = 'hybrid',
     alibaba = 'alibaba',
+    kubevirt = 'kubevirt',
 }
 
 // https://www.patternfly.org/v4/guidelines/icons
@@ -86,6 +88,8 @@ export function AcmIcon(props: { icon: AcmIconVariant } & SVGIconProps) {
             return <HybridIcon {...props} />
         case AcmIconVariant.alibaba:
             return <AlibabaIcon {...props} />
+        case AcmIconVariant.kubevirt:
+            return <KubeVirtIcon {...props} />
         /* istanbul ignore next */
         default:
             return <Fragment />
