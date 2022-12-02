@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { waitForText } from '../../../../../lib/test-util'
 import { OnboardingModal } from './OnboardingModal'
-import '@testing-library/jest-dom'
+
 describe('OnboardingModal open', () => {
     beforeEach(async () => {
         render(
