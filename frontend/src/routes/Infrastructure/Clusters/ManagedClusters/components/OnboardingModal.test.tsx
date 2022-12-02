@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { waitForText } from '../../../../../lib/test-util'
 import { OnboardingModal } from './OnboardingModal'
-
+import '@testing-library/jest-dom'
 describe('OnboardingModal open', () => {
     beforeEach(async () => {
         render(
@@ -17,6 +17,11 @@ describe('OnboardingModal open', () => {
     })
 
     it('should render OnboardingModal', async () => {
+        expect(screen.getByTestId('clustersOnboardingModal')).toHaveAttribute(
+            'data-ouia-component-id',
+            'clustersOnboardingModal'
+        )
+        expect(screen.getByTestId('clustersOnboardingModal')).toHaveAttribute('data-testid', 'clustersOnboardingModal')
         expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
         expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
         expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)
