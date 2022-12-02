@@ -7,7 +7,7 @@ import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKin
 import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
-import { AnsibleTowerJobTemplateList } from '../ansible-job'
+import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
@@ -459,28 +459,33 @@ export function listNamespacedResources<Resource extends IResource>(
     }
 }
 
-async function getAnsibleJobs(
+async function getAnsibleTemplates(
     backendURLPath: string,
     ansibleHostUrl: string,
     token: string,
     abortController: AbortController
 ) {
-    let jobUrl: any = ansibleHostUrl + '/api/v2/job_templates/'
+    const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
+    const ansibleApiPath = '/api/v2/'
+    const ansibleJobs: AnsibleTowerJobTemplate[] = []
 
-    let ansibleJobs: any[] = []
-    while (jobUrl) {
-        const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-        ansibleJobs = ansibleJobs.concat(result!.data.results)
-        const { next } = result.data
-        if (next) {
-            jobUrl = ansibleHostUrl + next
-        } else {
-            jobUrl = undefined
+    for (const path of ansibleResourcePaths) {
+        let jobUrl: string = ansibleHostUrl + ansibleApiPath + path
+        while (jobUrl) {
+            const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
+            result.data.results && ansibleJobs.push(...result.data.results)
+            const { next } = result.data
+            if (next) {
+                jobUrl = ansibleHostUrl + next
+            } else {
+                jobUrl = ''
+            }
         }
     }
+
     return {
-        results: ansibleJobs?.map((ansibleJob: { name: any }) => {
-            return { name: ansibleJob.name }
+        results: ansibleJobs?.map((ansibleJob: { name?: string; type?: string }) => {
+            return { name: ansibleJob.name, type: ansibleJob.type! }
         }),
     }
 }
@@ -493,7 +498,7 @@ export function listAnsibleTowerJobs(
     const backendURLPath = getBackendUrl() + '/ansibletower'
     const abortController = new AbortController()
     return {
-        promise: getAnsibleJobs(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+        promise: getAnsibleTemplates(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
             return item as AnsibleTowerJobTemplateList
         }),
         abort: () => abortController.abort(),

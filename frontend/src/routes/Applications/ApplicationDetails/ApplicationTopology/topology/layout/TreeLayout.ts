@@ -412,7 +412,6 @@ function filterLastPlaced(metrics: MetricsType, options: TreeLayoutOptions) {
                     }
                     return true
                 })
-                row.incomingRow
                 return row
             })
         })
