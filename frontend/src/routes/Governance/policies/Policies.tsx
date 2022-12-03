@@ -873,7 +873,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
             if (err instanceof Error) {
                 setError(err.message)
             } else {
-                setError(t('Unknown error occured'))
+                setError(t('Unknown error occurred'))
             }
             setIsAdding(false)
         }
@@ -1013,7 +1013,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
             if (err instanceof Error) {
                 setError(err.message)
             } else {
-                setError(t('Unknown error occured'))
+                setError(t('Unknown error occurred'))
             }
             setIsDeleting(false)
         }

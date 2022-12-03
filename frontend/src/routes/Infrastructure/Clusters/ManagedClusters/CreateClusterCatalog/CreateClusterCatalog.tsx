@@ -55,8 +55,8 @@ export function CreateClusterCatalog() {
         const newCards: ICatalogCard[] = [
             {
                 id: 'aws',
-                icon: <AcmIcon icon={AcmIconVariant.aws} />,
-                title: t('Amazon Web Services'),
+                icon: <AcmIcon icon={ProviderIconMap[Provider.aws]} />,
+                title: ProviderLongTextMap[Provider.aws],
                 items: [
                     {
                         type: CatalogCardItemType.Description,

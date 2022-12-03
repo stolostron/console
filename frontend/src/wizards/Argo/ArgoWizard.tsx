@@ -614,7 +614,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
                         >
                             <Select
-                                label={t('Propogation policy')}
+                                label={t('Propagation policy')}
                                 options={[
                                     { label: t('foreground'), value: 'foreground' },
                                     { label: t('background'), value: 'background' },

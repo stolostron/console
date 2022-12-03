@@ -57,7 +57,7 @@ export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
                 break
             case ResourceErrorCode.InternalServerError:
                 title = t('Internal server error')
-                message = t('Unable to communicate with the server because of an unforseen error.')
+                message = t('Unable to communicate with the server because of an unexpected error.')
                 break
             case ResourceErrorCode.NetworkError:
                 title = t('Network error')
@@ -76,7 +76,7 @@ export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
                 message = t('The request was cancelled.')
                 break
             case ResourceErrorCode.ServiceUnavailable:
-                title = t('Service unavilable')
+                title = t('Service unavailable')
                 message = t('Unable to communicate with the server because the service is unavailable.')
                 break
             case ResourceErrorCode.Timeout:
