@@ -456,7 +456,7 @@ const setRegions = (control, controlData) => {
     onChangeConnection(control, controlData)
 }
 
-export const getControlDataAZR = (handleModalToggle, includeAutomation = true, includeSno = false, t) => {
+export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true, includeSno = false) => {
     const controlData = [
         ///////////////////////  connection  /////////////////////////////////////
         {

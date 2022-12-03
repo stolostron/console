@@ -185,17 +185,17 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
     switch (infrastructureType) {
         case Provider.aws:
             controlData = getControlDataAWS(
+                t,
                 handleModalToggle,
                 settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled',
-                t
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.gcp:
-            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled', t)
+            controlData = getControlDataGCP(t, handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
         case Provider.azure:
-            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled', t)
+            controlData = getControlDataAZR(t, handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
     }
 

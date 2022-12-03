@@ -787,7 +787,7 @@ export const awsPrivateControlData = (t) => {
     ]
 }
 
-export const getControlDataAWS = (handleModalToggle, includeAwsPrivate = true, includeSno = false, t) => {
+export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true, includeSno = false) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////  connection  /////////////////////////////////////

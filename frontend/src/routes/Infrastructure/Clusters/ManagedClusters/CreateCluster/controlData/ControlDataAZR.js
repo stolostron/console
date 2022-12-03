@@ -459,11 +459,11 @@ const setRegions = (control, controlData) => {
 }
 
 export const getControlDataAZR = (
+    t,
     handleModalToggle,
     includeAutomation = true,
-    includeSno = false,
     includeKlusterletAddonConfig = true,
-    t
+    includeSno = false
 ) => {
     const controlData = [
         ///////////////////////  connection  /////////////////////////////////////

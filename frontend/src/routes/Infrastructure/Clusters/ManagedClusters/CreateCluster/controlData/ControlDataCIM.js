@@ -9,7 +9,7 @@ import {
 } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataCIM = (handleModalToggle, warning, includeKlusterletAddonConfig = true, t) => {
+export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////  AI form  /////////////////////////////////////

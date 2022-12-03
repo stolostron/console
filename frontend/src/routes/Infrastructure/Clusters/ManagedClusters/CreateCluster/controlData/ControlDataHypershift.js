@@ -11,11 +11,11 @@ import {
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataHypershift = (
+    t,
     handleModalToggle,
     warning,
     includeAutomation = true,
-    includeKlusterletAddonConfig = true,
-    t
+    includeKlusterletAddonConfig = true
 ) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////

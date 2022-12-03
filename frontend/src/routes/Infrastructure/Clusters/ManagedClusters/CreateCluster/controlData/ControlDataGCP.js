@@ -265,11 +265,11 @@ const GCPworkerInstanceTypes = (t) => {
 }
 
 export const getControlDataGCP = (
+    t,
     handleModalToggle,
     includeAutomation = true,
-    includeSno = false,
     includeKlusterletAddonConfig = true,
-    t
+    includeSno = false
 ) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////

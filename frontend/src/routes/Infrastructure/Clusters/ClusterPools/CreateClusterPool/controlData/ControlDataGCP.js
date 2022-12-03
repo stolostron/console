@@ -263,7 +263,7 @@ const GCPworkerInstanceTypes = (t) => {
     ]
 }
 
-export const getControlDataGCP = (handleModalToggle, includeAutomation = true, includeSno = false, t) => {
+export const getControlDataGCP = (t, handleModalToggle, includeAutomation = true, includeSno = false) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////  connection  /////////////////////////////////////

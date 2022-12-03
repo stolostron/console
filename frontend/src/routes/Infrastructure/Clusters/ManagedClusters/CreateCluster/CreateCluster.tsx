@@ -384,66 +384,66 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         case Provider.aws:
             breadcrumbs.push(controlPlaneBreadCrumbAWS)
             controlData = getControlDataAWS(
+                t,
                 handleModalToggle,
                 true,
-                settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable,
-                t
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.gcp:
             controlData = getControlDataGCP(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable,
-                t
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.azure:
             controlData = getControlDataAZR(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable,
-                t
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.vmware:
             controlData = getControlDataVMW(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable,
-                t
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.openstack:
             controlData = getControlDataOST(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable,
-                t
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.redhatvirtualization:
-            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable, t)
+            controlData = getControlDataRHV(t, handleModalToggle, true, isACMAvailable)
             break
         case HostInventoryInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable, t)
+            controlData = getControlDataHypershift(t, handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable, t)
+            controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(handleModalToggle, isACMAvailable, t)
+            controlData = getControlDataAI(t, handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
             break
     }

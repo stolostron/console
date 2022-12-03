@@ -4,7 +4,7 @@ import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFunction } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataAI = (handleModalToggle, includeKlusterletAddonConfig = true, t) => {
+export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonConfig = true) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////  AI form  /////////////////////////////////////

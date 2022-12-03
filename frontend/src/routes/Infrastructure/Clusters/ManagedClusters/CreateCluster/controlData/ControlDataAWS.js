@@ -792,12 +792,12 @@ const awsPrivateControlData = (t) => {
 }
 
 export const getControlDataAWS = (
+    t,
     handleModalToggle,
     includeAutomation,
-    includeAwsPrivate,
-    includeSno,
     includeKlusterletAddonConfig = true,
-    t
+    includeAwsPrivate,
+    includeSno
 ) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
