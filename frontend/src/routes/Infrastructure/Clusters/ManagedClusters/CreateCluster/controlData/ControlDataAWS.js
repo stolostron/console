@@ -148,7 +148,7 @@ const onChangeAWSPrivate = (control, controlData) => {
 }
 
 export const AWSworkerInstanceTypes = (t) => {
-    const controlData = [
+    return [
         {
             label: t('General Purpose'),
             children: [
@@ -678,11 +678,10 @@ export const AWSworkerInstanceTypes = (t) => {
             ],
         },
     ]
-    return controlData
 }
 
 const awsPrivateControlData = (t) => {
-    const controlData = [
+    return [
         {
             id: 'privateAWS',
             type: 'step',
@@ -788,7 +787,6 @@ const awsPrivateControlData = (t) => {
             ],
         },
     ]
-    return controlData
 }
 
 export const getControlDataAWS = (
