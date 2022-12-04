@@ -1196,7 +1196,7 @@ export function CredentialsForm(
                         type: 'Text',
                         label: t('Ansible Tower token'),
                         placeholder: t('Enter the Ansible Tower token'),
-                        // labelHelp: t('credentialsForm.ansibleToken.labelHelp'), // TODO
+                        // labelHelp: /*t*/('credentialsForm.ansibleToken.labelHelp'), // TODO
                         value: ansibleToken,
                         onChange: setAnsibleToken,
                         isRequired: true,

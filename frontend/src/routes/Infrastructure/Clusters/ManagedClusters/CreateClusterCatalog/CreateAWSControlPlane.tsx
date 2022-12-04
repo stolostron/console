@@ -74,7 +74,7 @@ export function CreateAWSControlPlane() {
                         items: [
                             {
                                 text: t(
-                                    'Increases resilienency with closely interconnected control plane and worker nodes.'
+                                    'Increases resiliency with closely interconnected control plane and worker nodes.'
                                 ),
                             },
                             {
