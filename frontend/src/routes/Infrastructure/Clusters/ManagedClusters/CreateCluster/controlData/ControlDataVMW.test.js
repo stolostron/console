@@ -9,18 +9,18 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataVMW', () => {
     it('get control data for vsphere - default', () => {
-        getControlDataVMW(undefined, true, false, true, t)
+        getControlDataVMW(t, undefined, true, true, false)
     })
 
     it('get control data for vsphere - no automation', () => {
-        getControlDataVMW(undefined, false, false, true, t)
+        getControlDataVMW(t, undefined, false, true, false)
     })
 
     it('get control data for vsphere - include sno cluster', () => {
-        getControlDataVMW(undefined, true, true, true, t)
+        getControlDataVMW(t, undefined, true, true, true)
     })
 
     it('get control data for vsphere - no klusterletaddon', () => {
-        getControlDataVMW(undefined, true, true, false, t)
+        getControlDataVMW(t, undefined, true, false, true)
     })
 })

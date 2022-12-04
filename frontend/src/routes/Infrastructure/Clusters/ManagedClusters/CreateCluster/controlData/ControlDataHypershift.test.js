@@ -10,10 +10,10 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataHypershift', () => {
     it('get control data for Hypershift - default', () => {
-        getControlDataHypershift(undefined, undefined, true, true, t)
+        getControlDataHypershift(t, undefined, undefined, true, true)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataHypershift(undefined, <Warning />, true, false, t)
+        getControlDataHypershift(t, undefined, <Warning />, true, false)
     })
 })

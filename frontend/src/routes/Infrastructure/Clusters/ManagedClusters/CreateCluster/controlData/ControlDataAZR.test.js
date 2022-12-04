@@ -9,18 +9,18 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataAZR', () => {
     it('get control data for Azure - default', () => {
-        getControlDataAZR(undefined, true, false, true, t)
+        getControlDataAZR(t, undefined, true, true, false)
     })
 
     it('get control data for Azure - no automation', () => {
-        getControlDataAZR(undefined, false, false, true, t)
+        getControlDataAZR(t, undefined, false, true, false)
     })
 
     it('get control data for Azure - include sno cluster', () => {
-        getControlDataAZR(undefined, true, true, true, t)
+        getControlDataAZR(t, undefined, true, true, true)
     })
 
     it('get control data for Azure - no klusterletaddon', () => {
-        getControlDataAZR(undefined, true, true, false, t)
+        getControlDataAZR(t, undefined, true, false, true)
     })
 })

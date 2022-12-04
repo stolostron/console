@@ -8,22 +8,22 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataAWS', () => {
     it('get control data for AWS - default', () => {
-        getControlDataAWS(undefined, false, false, false, true, t)
+        getControlDataAWS(t, undefined, false, true, false, false)
     })
 
     it('get control data for AWS - no automation', () => {
-        getControlDataAWS(undefined, false, true, true, true, t)
+        getControlDataAWS(t, undefined, false, true, true, true)
     })
 
     it('get control data for AWS - include sno cluster', () => {
-        getControlDataAWS(undefined, true, true, true, true, t)
+        getControlDataAWS(t, undefined, true, true, true, true)
     })
 
     it('get control data for AWS - no klusterletaddon', () => {
-        getControlDataAWS(undefined, true, true, true, false, t)
+        getControlDataAWS(t, undefined, true, false, true, true)
     })
 
     it('get control data for AWS - no awsprivate', () => {
-        getControlDataAWS(undefined, true, false, true, true, t)
+        getControlDataAWS(t, undefined, true, true, false, true)
     })
 })

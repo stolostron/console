@@ -9,18 +9,18 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataGCP', () => {
     it('get control data for GCP - default', () => {
-        getControlDataGCP(undefined, true, false, true, t)
+        getControlDataGCP(t, undefined, true, true, false)
     })
 
     it('get control data for GCP - no automation', () => {
-        getControlDataGCP(undefined, false, false, true, t)
+        getControlDataGCP(t, undefined, false, true, false)
     })
 
     it('get control data for GCP - include sno cluster', () => {
-        getControlDataGCP(undefined, true, true, true, t)
+        getControlDataGCP(t, undefined, true, true, true)
     })
 
     it('get control data for GCP - no klusterletaddon', () => {
-        getControlDataGCP(undefined, true, true, false, t)
+        getControlDataGCP(t, undefined, true, false, true)
     })
 })
