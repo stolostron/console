@@ -384,9 +384,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 t,
                 handleModalToggle,
                 true,
-                isACMAvailable,
                 settings.awsPrivateWizardStep === 'enabled',
-                settings.singleNodeOpenshift === 'enabled'
+                settings.singleNodeOpenshift === 'enabled',
+                isACMAvailable
             )
             break
         case Provider.gcp:

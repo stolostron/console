@@ -8,7 +8,7 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataAWS', () => {
     it('get control data for AWS - default', () => {
-        getControlDataAWS(t, undefined, false, true, false, false)
+        getControlDataAWS(t, undefined, false, false, false, true)
     })
 
     it('get control data for AWS - no automation', () => {
@@ -20,10 +20,10 @@ describe('getControlDataAWS', () => {
     })
 
     it('get control data for AWS - no klusterletaddon', () => {
-        getControlDataAWS(t, undefined, true, false, true, true)
+        getControlDataAWS(t, undefined, true, true, true, false)
     })
 
     it('get control data for AWS - no awsprivate', () => {
-        getControlDataAWS(t, undefined, true, true, false, true)
+        getControlDataAWS(t, undefined, true, false, true, true)
     })
 })

@@ -793,9 +793,9 @@ export const getControlDataAWS = (
     t,
     handleModalToggle,
     includeAutomation,
-    includeKlusterletAddonConfig = true,
     includeAwsPrivate,
-    includeSno
+    includeSno,
+    includeKlusterletAddonConfig = true
 ) => {
     const controlData = [
         ////////////////////////////////////////////////////////////////////////////////////
