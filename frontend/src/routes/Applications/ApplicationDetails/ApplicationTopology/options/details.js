@@ -236,32 +236,36 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitBranchAnnotation], 'Git branch')
+        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitBranchAnnotation], t('Git branch'))
     )
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitPathAnnotation], 'Git path')
+        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitPathAnnotation], t('Git path'))
     )
 
     if (nodeAnnotations[gitTagAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitTagAnnotation], 'Git tag')
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitTagAnnotation], t('Git tag'))
         )
     }
 
     if (nodeAnnotations[gitCommitAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitCommitAnnotation], 'Git commit')
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitCommitAnnotation], t('Git commit'))
         )
     }
 
     if (nodeAnnotations[reconcileRateAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', reconcileRateAnnotation], 'Reconcile rate')
+            getNodePropery(
+                node,
+                ['specs', 'raw', 'metadata', 'annotations', reconcileRateAnnotation],
+                t('Reconcile rate')
+            )
         )
     }
 

@@ -565,11 +565,11 @@ export const addIngressNodeInfo = (node, details, t) => {
         //ingress - single service
         addPropertyToList(
             details,
-            getNodePropery(node, ['specs', 'raw', 'spec', 'backend', 'serviceName'], 'raw.spec.ingress.service')
+            getNodePropery(node, ['specs', 'raw', 'spec', 'backend', 'serviceName'], t('raw.spec.ingress.service'))
         )
         addPropertyToList(
             details,
-            getNodePropery(node, ['specs', 'raw', 'spec', 'backend', 'servicePort'], 'raw.spec.ingress.service.port')
+            getNodePropery(node, ['specs', 'raw', 'spec', 'backend', 'servicePort'], t('raw.spec.ingress.service.port'))
         )
 
         const rules = R.pathOr([], ['specs', 'raw', 'spec', 'rules'])(node)
