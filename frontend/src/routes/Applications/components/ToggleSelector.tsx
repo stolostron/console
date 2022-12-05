@@ -63,7 +63,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                         message={
                             selectedId === 'subscriptions' ? (
                                 <Trans
-                                    i18nKey={'advancedConfiguration.empty.subtitle'}
+                                    i18nKey="advancedConfiguration.empty.subtitle"
                                     components={{ italic: <em />, bold: <strong /> }}
                                 />
                             ) : null

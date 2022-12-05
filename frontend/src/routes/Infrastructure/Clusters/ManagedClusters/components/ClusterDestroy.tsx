@@ -23,6 +23,12 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
     const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     const { agentClusterInstall } = useContext(ClusterContext)
 
+    /*
+        t('detaching.inprogress.message')
+        t('detaching.success.message')
+        t('destroying.inprogress.message')
+        t('destroying.success.message')
+    */
     const { loadingTitle, successTitle } =
         props.cluster.status === ClusterStatus.detaching
             ? {

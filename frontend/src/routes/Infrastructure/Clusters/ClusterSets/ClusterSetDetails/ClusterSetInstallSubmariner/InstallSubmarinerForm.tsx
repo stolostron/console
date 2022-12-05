@@ -102,7 +102,7 @@ export function InstallSubmarinerFormPage() {
                         title={t('submariner.clusters.empty.title')}
                         message={
                             <Trans
-                                i18nKey={'submariner.clusters.empty.message'}
+                                i18nKey="submariner.clusters.empty.message"
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }

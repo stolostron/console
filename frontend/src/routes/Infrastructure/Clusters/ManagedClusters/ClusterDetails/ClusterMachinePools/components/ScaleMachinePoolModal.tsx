@@ -57,6 +57,13 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
         setReplicas(0)
     }
 
+    /*
+        t('machinePool.modal.scale.disable-autoscale.message')
+        t('machinePool.modal.scale.edit-autoscale.message')
+        t('machinePool.modal.scale.edit-manualscale.message')
+        t('machinePool.modal.scale.enable-autoscale.message')
+    */
+
     return (
         <AcmModal
             variant={ModalVariant.medium}

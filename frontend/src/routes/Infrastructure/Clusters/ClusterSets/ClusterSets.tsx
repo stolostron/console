@@ -342,7 +342,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         title={t('managed.clusterSets.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'managed.clusterSets.emptyStateMsg'}
+                                i18nKey="managed.clusterSets.emptyStateMsg"
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }

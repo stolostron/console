@@ -47,6 +47,10 @@ export function ScaleClusterAlert() {
         workerNodeCount !== undefined &&
         workerNodeCount !== totalDesiredReplicas
     ) {
+        /*
+            t('machinePool.alert.scaling.increase.message')
+            t('machinePool.alert.scaling.decrease.message')
+        */
         return (
             <AcmAlert
                 isInline
