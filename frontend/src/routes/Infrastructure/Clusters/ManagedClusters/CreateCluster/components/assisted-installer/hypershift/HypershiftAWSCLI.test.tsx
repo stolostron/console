@@ -21,7 +21,7 @@ describe('HypershiftAWSCLI', () => {
 
     test('should show all the steps', async () => {
         render(<Component />)
-        await waitForText('Prerequisites')
+        await waitForText('Prerequisite')
         await waitForText('Amazon Web Services (AWS) Credentials')
         await waitForText('Running the Hosted Control Plane command')
     })
