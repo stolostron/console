@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert } from '../../../../../ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Cluster, clusterDangerStatuses } from '../../../../../resources'
+import { Cluster, clusterDangerStatuses, getAlertTitle } from '../../../../../resources'
 
 export function ClusterStatusMessageAlert(props: {
     cluster: Cluster
@@ -20,7 +20,7 @@ export function ClusterStatusMessageAlert(props: {
                 isInline
                 noClose
                 variant={clusterDangerStatuses.includes(props.cluster.status) ? 'danger' : 'info'}
-                title={t(`status.${props.cluster.status}.alert.title`)}
+                title={getAlertTitle(props.cluster.status, t)}
                 message={
                     <>
                         <div>{props.cluster.statusMessage}</div>

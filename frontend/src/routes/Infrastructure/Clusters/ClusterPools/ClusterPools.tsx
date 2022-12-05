@@ -61,6 +61,7 @@ export default function ClusterPoolsPage() {
     const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
 
+    /* t('preview.clusterPools') */
     return (
         <AcmPageContent id="clusters">
             <PageSection>
@@ -126,7 +127,7 @@ export default function ClusterPoolsPage() {
                                     title={t('managed.clusterPools.emptyStateHeader')}
                                     message={
                                         <Trans
-                                            i18nKey={'managed.clusterPools.emptyStateMsg'}
+                                            i18nKey="managed.clusterPools.emptyStateMsg"
                                             components={{ bold: <strong />, p: <p /> }}
                                         />
                                     }
@@ -460,7 +461,7 @@ export function ClusterPoolsTable(props: {
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 icon: 'warning',
-                                confirmText: t('confirm').toLowerCase(),
+                                confirmText: t('confirm'),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },

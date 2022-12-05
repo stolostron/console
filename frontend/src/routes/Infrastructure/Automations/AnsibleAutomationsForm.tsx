@@ -182,11 +182,11 @@ export function AnsibleAutomationsForm(props: {
                     }
                 })
                 .catch(() => {
-                    setAnsibleTowerAuthError('validate.ansible.host')
+                    setAnsibleTowerAuthError(t('validate.ansible.host'))
                     setAnsibleTowerJobTemplateList([])
                 })
         }
-    }, [ansibleSelection, ansibleCredentials])
+    }, [ansibleSelection, ansibleCredentials, t])
 
     function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -313,7 +313,7 @@ export function AnsibleAutomationsForm(props: {
                         footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
                         isDisabled: isEditing,
                         validation: () => {
-                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
+                            if (AnsibleTowerAuthError) return AnsibleTowerAuthError
                         },
                     },
                 ],

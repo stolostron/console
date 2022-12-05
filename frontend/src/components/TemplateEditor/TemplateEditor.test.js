@@ -249,11 +249,6 @@ const props = {
     initialOpen: false,
     controlData: [
         {
-            id: 'main',
-            type: 'section',
-            note: 'creation.view.required.mark',
-        },
-        {
             id: 'showSecrets',
             type: 'hidden',
             active: false,

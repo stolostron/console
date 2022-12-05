@@ -51,7 +51,7 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
 ///////////////////////////////////////////////////////////////////////////////
 // initialze each control
 ///////////////////////////////////////////////////////////////////////////////
-const initialControl = (control, onControlInitialize, i18n) => {
+const initialControl = (control, onControlInitialize) => {
     const { type, isInitialized } = control
     if (!isInitialized) {
         control = Object.assign({}, control)
@@ -61,9 +61,6 @@ const initialControl = (control, onControlInitialize, i18n) => {
 
         // initialize user data if control's available choices were cached
         initializeControlUserData(control)
-
-        // convert i18n message keys to messages
-        initializeMsgs(control, i18n)
 
         // intialize choices available for a control
         initializeAvailableChoices(type, control)
@@ -100,69 +97,6 @@ const initializeControlUserData = (control) => {
         if (sessionObject) {
             control.userData = sessionObject
         }
-    }
-}
-
-const initializeMsgs = (control, i18n) => {
-    const { type, controlData, available } = control
-    const keys = [
-        'name',
-        'description',
-        'placeholder',
-        'title',
-        'subtitle',
-        'section',
-        'prompt',
-        'info',
-        'tooltip',
-        'tip',
-    ]
-    keys.forEach((key) => {
-        if (typeof control[key] === 'string' && control[key].indexOf('<') === -1) {
-            control[key] = i18n(control[key])
-        }
-    })
-    const properties = ['available', 'active']
-    properties.forEach((prop) => {
-        const values = get(control, prop)
-        if (Array.isArray(values)) {
-            values.forEach((item) => {
-                keys.forEach((key) => {
-                    if (item[key] && item[key].split('.').length > 2) {
-                        if (typeof item[key] === 'string') {
-                            item[key] = i18n(item[key])
-                        }
-                    }
-                })
-            })
-        }
-    })
-
-    // if table convert the controlData in that
-    if (type === 'table' && controlData) {
-        controlData.forEach((ctrl) => {
-            if (!ctrl.isInitialized) {
-                initializeMsgs(ctrl, i18n)
-                initializeValidation(ctrl)
-                ctrl.isInitialized = true
-            }
-        })
-    }
-
-    // if cards convert the data in that
-    if (type === 'cards' && available) {
-        available.forEach(({ change = {} }) => {
-            if (change.insertControlData) {
-                change.insertControlData.forEach((ctrl) => {
-                    if (!ctrl.isInitialized) {
-                        initializeControlActive(ctrl.type, ctrl)
-                        initializeMsgs(ctrl, i18n)
-                        initializeValidation(ctrl)
-                        ctrl.isInitialized = true
-                    }
-                })
-            }
-        })
     }
 }
 

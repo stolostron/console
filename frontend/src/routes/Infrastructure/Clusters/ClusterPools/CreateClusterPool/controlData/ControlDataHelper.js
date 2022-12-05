@@ -10,11 +10,11 @@ const lessThanEqualSize = (active, templateObjectMap, i18n) => {
     }
 }
 
-export const fixupControlsForClusterPool = (controlData) => {
+export const fixupControlsForClusterPool = (controlData, t) => {
     const map = keyBy(controlData, 'id')
-    map['detailStep'].title = 'Cluster pool details'
-    map['name'].name = 'clusterPool.creation.ocp.name'
-    map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
+    map['detailStep'].title = t('Cluster pool details')
+    map['name'].name = t('clusterPool.creation.ocp.name')
+    map['name'].tooltip = t('clusterPool.tooltip.creation.ocp.name')
     map['name'].reverse = 'ClusterPool[0].metadata.name'
     map['region'].reverse = 'ClusterPool[0].metadata.labels.region'
 
@@ -26,19 +26,19 @@ export const fixupControlsForClusterPool = (controlData) => {
         inx + 1,
         0,
         {
-            name: 'clusterPool.creation.ocp.namespace',
-            tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
+            name: t('clusterPool.creation.ocp.namespace'),
+            tooltip: t('clusterPool.tooltip.creation.ocp.namespace'),
             id: 'namespace',
             type: 'combobox',
-            placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
+            placeholder: t('clusterPool.placeholder.creation.ocp.namespace'),
             validation: {
                 required: true,
             },
             available: [],
         },
         {
-            name: 'clusterPool.creation.ocp.size',
-            tooltip: 'clusterPool.tooltip.creation.ocp.size',
+            name: t('clusterPool.creation.ocp.size'),
+            tooltip: t('clusterPool.tooltip.creation.ocp.size'),
             id: 'size',
             type: 'number',
             initial: '1',
@@ -48,8 +48,8 @@ export const fixupControlsForClusterPool = (controlData) => {
             // cacheUserValueKey: 'create.cluster.compute.node.count',
         },
         {
-            name: 'clusterPool.creation.ocp.runningCount',
-            tooltip: 'clusterPool.tooltip.creation.ocp.runningCount',
+            name: t('clusterPool.creation.ocp.runningCount'),
+            tooltip: t('clusterPool.tooltip.creation.ocp.runningCount'),
             id: 'runningCount',
             type: 'number',
             initial: '0',

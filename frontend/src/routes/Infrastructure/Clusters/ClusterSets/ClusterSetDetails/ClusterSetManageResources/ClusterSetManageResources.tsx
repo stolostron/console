@@ -169,7 +169,7 @@ export function ClusterSetManageResourcesContent() {
                 <div>{t('manageClusterSet.form.section.table.description')}</div>
                 <div>
                     <Trans
-                        i18nKey={'manageClusterSet.form.section.table.description.second'}
+                        i18nKey="manageClusterSet.form.section.table.description.second"
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>

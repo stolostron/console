@@ -1035,10 +1035,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
             variant={ModalVariant.small}
         >
             <Stack hasGutter>
-                <StackItem>
-                    {t(`Removing ${props.item.policy.metadata.name} is irreversible. Select any associated resources that need to be
-            deleted in addition to ${props.item.policy.metadata.name}.`)}
-                </StackItem>
+                <StackItem>{t('policy.modal.message.confirm', { name: props.item.policy.metadata.name })}</StackItem>
                 <StackItem>
                     <Checkbox
                         id="delete-placement-bindings"

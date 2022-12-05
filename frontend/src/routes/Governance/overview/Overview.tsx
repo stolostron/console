@@ -135,14 +135,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                 <Fragment key={`${props.title}-${violation.name}`}>
                                     <span>{violation.name}</span>
                                     {violation.compliant ? (
-                                        <Tooltip
-                                            content={t(
-                                                violation.compliant === 1
-                                                    ? 'policies.noviolations'
-                                                    : 'policies.noviolations_plural',
-                                                { count: violation.compliant }
-                                            )}
-                                        >
+                                        <Tooltip content={t('policies.noviolations', { count: violation.compliant })}>
                                             <Fragment>
                                                 <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                     <Button
@@ -161,14 +154,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                         <span />
                                     )}
                                     {violation.noncompliant ? (
-                                        <Tooltip
-                                            content={t(
-                                                violation.noncompliant === 1
-                                                    ? 'policy.violations'
-                                                    : 'policy.violations_plural',
-                                                { count: violation.noncompliant }
-                                            )}
-                                        >
+                                        <Tooltip content={t('policy.violations', { count: violation.noncompliant })}>
                                             <Fragment>
                                                 <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                     <Button

@@ -467,6 +467,11 @@ export function HypershiftUpgradeModal(props: {
         currentVersion: 'Current version',
         newVersion: 'New version',
     }
+    const columnNamesTranslated = {
+        name: t('Name'),
+        currentVersion: t('Current version'),
+        newVersion: t('New version'),
+    }
 
     const paddingZero = { paddingLeft: 0, paddingRight: 0 }
     const borderNone = { border: 'none' }
@@ -486,9 +491,9 @@ export function HypershiftUpgradeModal(props: {
                         <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
                             <Thead>
                                 <Tr>
-                                    <Th>{t(columnNames.name)}</Th>
-                                    <Th>{t(columnNames.currentVersion)}</Th>
-                                    <Th>{t(columnNames.newVersion)}</Th>
+                                    <Th>{columnNamesTranslated.name}</Th>
+                                    <Th>{columnNamesTranslated.currentVersion}</Th>
+                                    <Th>{columnNamesTranslated.newVersion}</Th>
                                 </Tr>
                             </Thead>
                             <Tbody>

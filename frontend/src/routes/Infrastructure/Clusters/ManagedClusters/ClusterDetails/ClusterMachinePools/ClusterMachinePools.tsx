@@ -23,6 +23,7 @@ import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/
 import { useSharedAtoms, useRecoilState } from '../../../../../../shared-recoil'
 
 export function MachinePoolsPageContent() {
+    /* t('preview.machinePools') */
     return (
         <AcmPageContent id="nodes">
             <PageSection>
@@ -229,7 +230,7 @@ export function MachinePoolsTable() {
                         title={t('managed.cluster.machinePools.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'managed.cluster.machinePools.emptyStateButton'}
+                                i18nKey="managed.cluster.machinePools.emptyStateButton"
                                 components={{ bold: <strong /> }}
                             />
                         }
