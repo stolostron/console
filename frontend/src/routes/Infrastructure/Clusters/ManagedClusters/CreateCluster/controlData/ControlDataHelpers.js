@@ -204,8 +204,9 @@ const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = getControlByID(controlData, 'hasProxy').active
-    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
+    const useProxy = getControlByID(controlData, 'hasProxy').active[
+        ('httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle')
+    ].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
@@ -257,7 +258,7 @@ export const onChangeConnection = (control, controlData) => {
     }
     setTimeout(() => {
         const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
-        if (datbControl) {
+        if (datbControl && replacements) {
             datbControl.active = replacements['additionalTrustBundle']
             datbControl.disabled = !datbControl.active
         }
@@ -268,8 +269,9 @@ export const onChangeDisconnect = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = getControlByID(controlData, 'isDisconnected').active
-    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
+    const isDisconnected = getControlByID(controlData, 'isDisconnected').active[
+        ('clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle')
+    ].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
@@ -290,7 +292,7 @@ export const onChangeDisconnect = (control, controlData) => {
 }
 export function getOSTNetworkingControlData(t) {
     // Kuryr should only be available for Openstack
-    const networkData = _.cloneDeep(networkingControlData(t))
+    const networkData = networkingControlData(t)
     const modifiedData = networkData.find((object) => object.id == 'networkType')
     modifiedData.available.push('Kuryr')
     return networkData

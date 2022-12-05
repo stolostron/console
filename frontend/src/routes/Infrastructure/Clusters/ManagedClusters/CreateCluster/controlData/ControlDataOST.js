@@ -267,8 +267,8 @@ export const getControlDataOST = (
             name: t('creation.ocp.cluster.ost.api.floating.ip'),
             placeholder: t('placeholder.creation.ocp.cluster.ost.api.floating.ip'),
             tooltip: t('tooltip.creation.ocp.cluster.ost.api.floating.ip'),
-            hidden: (control, controlData) => {
-                if (!isHidden_gt_OCP46(control, controlData)) {
+            hidden: (control, ctrlData) => {
+                if (!isHidden_gt_OCP46(control, ctrlData)) {
                     control.active = undefined
                     return true
                 }
