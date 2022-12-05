@@ -15,7 +15,6 @@ import _ from 'lodash'
 import { getGitChannelBranches, getGitChannelPaths, listChannels } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
-import { t } from 'i18next'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
 const specPathname = 'spec.pathname'

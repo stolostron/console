@@ -249,18 +249,14 @@ class DetailsView extends Component {
         }
     }
 
-    renderLabel({ labelKey, labelValue, value, indent, status }, t) {
-        let label = labelValue
+    renderLabel({ labelValue, value, indent, status }, t) {
         const fillMap = new Map([
             ['checkmark', '#3E8635'],
             ['failure', '#C9190B'],
             ['warning', '#F0AB00'],
             ['pending', '#878D96'],
         ])
-        if (labelKey) {
-            label = labelValue ? t(labelKey, [labelValue], t) : t(labelKey)
-        }
-        label = value !== undefined ? `${label}:` : label //add : for 0 values
+        const label = value !== undefined ? `${labelValue}:` : labelValue //add : for 0 values
         const mainSectionClasses = classNames({
             sectionContent: true,
             borderLeft: value !== undefined ? true : false,
@@ -277,7 +273,7 @@ class DetailsView extends Component {
         const iconFill = statusIcon ? fillMap.get(statusIcon) : '#FFFFFF'
         return (
             <div className={mainSectionClasses} key={Math.random()}>
-                {(labelKey || labelValue) && statusIcon ? (
+                {labelValue && statusIcon ? (
                     <span className="label sectionLabel">
                         <svg width="10px" height="10px" fill={iconFill} style={{ marginRight: '8px' }}>
                             <use href={`#diagramIcons_${statusIcon}`} className="label-icon" />
@@ -307,7 +303,7 @@ class DetailsView extends Component {
         return null
     }
 
-    renderLink({ value, indent }, t) {
+    renderLink({ value, indent }) {
         if (!value) {
             return <div />
         }
@@ -320,7 +316,7 @@ class DetailsView extends Component {
             _.get(value, 'data.action', '') !== 'show_search' &&
             _.get(value, 'data.action', '') !== 'show_resource_yaml'
 
-        const label = value.labelKey ? t(value.labelKey) : value.label
+        const label = value.labelValue || value.label
 
         const mainSectionClasses = classNames({
             sectionContent: true,

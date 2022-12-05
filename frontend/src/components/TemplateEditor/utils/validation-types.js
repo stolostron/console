@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import get from 'lodash/get'
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
 

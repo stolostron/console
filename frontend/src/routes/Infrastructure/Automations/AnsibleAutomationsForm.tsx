@@ -175,7 +175,7 @@ export function AnsibleAutomationsForm(props: {
                     setAnsibleTowerJobTemplateList([])
                 })
         }
-    }, [ansibleSelection, ansibleCredentials])
+    }, [ansibleSelection, ansibleCredentials, t])
 
     function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {

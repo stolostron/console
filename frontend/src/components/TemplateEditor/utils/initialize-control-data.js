@@ -51,7 +51,7 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
 ///////////////////////////////////////////////////////////////////////////////
 // initialze each control
 ///////////////////////////////////////////////////////////////////////////////
-const initialControl = (control, onControlInitialize, i18n) => {
+const initialControl = (control, onControlInitialize) => {
     const { type, isInitialized } = control
     if (!isInitialized) {
         control = Object.assign({}, control)
