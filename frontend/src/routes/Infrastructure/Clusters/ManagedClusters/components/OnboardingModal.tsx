@@ -96,7 +96,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                         <span style={{ color: '#393F44', fontSize: '24px' }}>
                             <Trans
                                 i18nKey="Managing clusters <bold>just got easier</bold>"
-                                components={{ bold: <span className="pf-u-font-weight-bold" /> }}
+                                components={{ bold: <strong /> }}
                             />
                         </span>
                     </div>
