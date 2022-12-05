@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Checkbox } from '@patternfly/react-core'
+import { Button, ButtonVariant, Checkbox } from '@patternfly/react-core'
 import { AngleDownIcon, AngleRightIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { AcmLabels } from '../../AcmLabels'
 
 export function AcmExpandableCheckbox(props: {
@@ -17,16 +18,24 @@ export function AcmExpandableCheckbox(props: {
     expandable?: boolean
     id?: string
 }) {
+    const { t } = useTranslation()
     return (
         <div>
-            <button
+            <Button
+                aria-label={t('Expand')}
+                variant={ButtonVariant.plain}
                 id={`${props.id}-toggle` || ''}
-                style={{ border: '0px', backgroundColor: 'white', visibility: props.expandable ? 'visible' : 'hidden' }}
+                style={{
+                    border: '0px',
+                    visibility: props.expandable ? 'visible' : 'hidden',
+                    paddingLeft: '6px',
+                    paddingRight: '6px',
+                }}
                 onClick={() => props.onToggle(props.expanded)}
             >
                 {!props.expanded && <AngleRightIcon />}
                 {props.expanded && <AngleDownIcon />}
-            </button>
+            </Button>
             <span style={{ paddingRight: '10px' }}>
                 <Checkbox
                     isChecked={props.checked}

@@ -28,7 +28,6 @@ export function AcmExpandableCard(props: {
         <Card id={props.id} className={props.className} isExpanded={open}>
             <CardHeader
                 onExpand={() => onToggle(acmCardID, open, setOpen)}
-                onClick={() => onToggle(acmCardID, open, setOpen)}
                 toggleButtonProps={{
                     id: 'toggle-button',
                     'aria-label': t('Toggle details'),
