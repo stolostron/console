@@ -362,7 +362,7 @@ export function ClustersTable(props: {
                         description: t('bulk.message.detach'),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
-                        actionFn: (cluster) => detachCluster(cluster.name!),
+                        actionFn: (cluster) => detachCluster(cluster),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',

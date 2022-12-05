@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { StatusIcon } from '../../../../../components/Topology/constants.js'
+import { StatusIcon } from './constants.js'
 import _ from 'lodash'
 
 const HOURS = 1000 * 60 * 60

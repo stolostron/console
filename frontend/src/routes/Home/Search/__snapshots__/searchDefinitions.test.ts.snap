@@ -1,27 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Correctly returns CreateApplicationTopologyLink 1`] = `
-<a
-  href="/multicloud/applications/details/testNamespace/testApp/topology?apiVersion=application.app.k8s.io"
+<Link
+  to={
+    Object {
+      "pathname": "/multicloud/applications/details/testNamespace/testApp/topology",
+      "search": "?apiVersion=application.app.k8s.io",
+    }
+  }
 >
   View topology
-</a>
+</Link>
 `;
 
 exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
-<a
-  href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/topology?apiVersion=application.app.k8s.io&cluster=cluster"
+<Link
+  to={
+    Object {
+      "pathname": "/multicloud/applications/details/testApplicationNamespace/testApplicationName/overview",
+      "search": "?apiVersion=application.app.k8s.io&cluster=cluster",
+    }
+  }
 >
   testApplicationName
-</a>
+</Link>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Cluster 1`] = `
-<a
-  href="/multicloud/infrastructure/clusters/details/testClusterName/overview"
+<Link
+  to="/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview"
 >
   testClusterName
-</a>
+</Link>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Default 1`] = `
@@ -42,11 +52,11 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
 `;
 
 exports[`Correctly returns CreateDetailsLink - HUB-Policy 1`] = `
-<a
-  href="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
+<Link
+  to="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
 >
   testPolicyName
-</a>
+</Link>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
@@ -84,11 +94,16 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
 `;
 
 exports[`Correctly returns CreateDetailsLink - PolicyReport 1`] = `
-<a
-  href="/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/overview?showClusterIssues%3Dtrue"
+<Link
+  to={
+    Object {
+      "pathname": "/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/testPolicyReportNamespace/overview",
+      "search": "?showClusterIssues%3Dtrue",
+    }
+  }
 >
   testPolicyReport
-</a>
+</Link>
 `;
 
 exports[`Correctly returns CreateExternalLink from clusterip 1`] = `"http://clusterip"`;

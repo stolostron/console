@@ -228,10 +228,11 @@ describe('DeleteResourceModal', () => {
             // find the button and simulate a click
             const submitButton = screen.getByText('Delete')
             expect(submitButton).toBeTruthy()
+            expect(submitButton).not.toBeDisabled()
             userEvent.click(submitButton)
 
-            // Wait for delete resource requesets to finish, Mimic the polling requests
-            await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
+            // // Wait for delete resource requesets to finish, Mimic the polling requests
+            // await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
@@ -240,5 +241,7 @@ describe('DeleteResourceModal', () => {
 
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
+        // Wait for delete resource requesets to finish, Mimic the polling requests
+        await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
     })
 })

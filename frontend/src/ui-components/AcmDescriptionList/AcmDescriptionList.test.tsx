@@ -15,11 +15,13 @@ describe('AcmDescriptionList', () => {
         { key: 'Console URL', value: undefined },
     ]
     const allItems = [...leftItems, ...rightItems]
-    const DescriptionList = (props: { leftItems: ListItems[]; rightItems?: ListItems[] }) => (
-        <AcmDescriptionList title="Details" leftItems={props.leftItems} rightItems={props.rightItems} />
+    const DescriptionList = (props: { leftItems: ListItems[]; rightItems?: ListItems[]; id?: string }) => (
+        <AcmDescriptionList title="Details" leftItems={props.leftItems} rightItems={props.rightItems} id={props.id} />
     )
     test('renders', () => {
-        const { queryByText, getByRole } = render(<DescriptionList leftItems={leftItems} rightItems={rightItems} />)
+        const { queryByText, getByRole } = render(
+            <DescriptionList leftItems={leftItems} rightItems={rightItems} id="test1" />
+        )
         expect(queryByText('Details')).toBeInTheDocument()
         expect(queryByText('Name')).toBeInTheDocument()
         expect(queryByText('Namespace')).toBeInTheDocument()
@@ -27,7 +29,7 @@ describe('AcmDescriptionList', () => {
         expect(queryByText('Name')).toBeNull()
     })
     test('renders if only given left items', () => {
-        const { queryByText, getByRole } = render(<DescriptionList leftItems={allItems} />)
+        const { queryByText, getByRole } = render(<DescriptionList leftItems={allItems} id="test2" />)
         expect(queryByText('Details')).toBeInTheDocument()
         expect(queryByText('Name')).toBeInTheDocument()
         expect(queryByText('Namespace')).toBeInTheDocument()
@@ -35,7 +37,7 @@ describe('AcmDescriptionList', () => {
         expect(queryByText('Name')).toBeNull()
     })
     test('has zero accessibility defects', async () => {
-        const { container } = render(<DescriptionList leftItems={leftItems} rightItems={rightItems} />)
+        const { container } = render(<DescriptionList leftItems={leftItems} rightItems={rightItems} id="test3" />)
         expect(await axe(container)).toHaveNoViolations()
     })
 })

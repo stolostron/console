@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { makeStyles } from '@material-ui/styles'
-import { ExpandableSection, ModalVariant, TextVariants, Text, Button, ButtonVariant } from '@patternfly/react-core'
+import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { ClusterCurator, ClusterCuratorAnsibleJob } from '../resources'
 import { AcmModal } from '../ui-components'
@@ -55,21 +55,19 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     isIndented
                 >
                     <ComposableTable
-                        title={t('template.preInstall.label')}
-                        curatorJobs={
-                            clusterCurator.spec.install.prehook?.map(
-                                (job: ClusterCuratorAnsibleJob) => job.name
-                            ) as string[]
-                        }
+                        stage={t('template.preInstall.label')}
+                        curatorJobs={clusterCurator.spec.install.prehook?.map((job: ClusterCuratorAnsibleJob) => ({
+                            name: job.name,
+                            type: job.type,
+                        }))}
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
-                            title={t('template.postInstall.label')}
-                            curatorJobs={
-                                clusterCurator.spec.install.posthook?.map(
-                                    (job: ClusterCuratorAnsibleJob) => job.name
-                                ) as string[]
-                            }
+                            stage={t('template.postInstall.label')}
+                            curatorJobs={clusterCurator.spec.install.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
+                                name: job.name,
+                                type: job.type,
+                            }))}
                         ></ComposableTable>
                     </div>
                 </ExpandableSection>
@@ -83,21 +81,19 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
                     isIndented
                 >
                     <ComposableTable
-                        title={t('template.preUpgrade.label')}
-                        curatorJobs={
-                            clusterCurator.spec.upgrade.prehook?.map(
-                                (job: ClusterCuratorAnsibleJob) => job.name
-                            ) as string[]
-                        }
+                        stage={t('template.preUpgrade.label')}
+                        curatorJobs={clusterCurator.spec.upgrade.prehook?.map((job: ClusterCuratorAnsibleJob) => ({
+                            name: job.name,
+                            type: job.type,
+                        }))}
                     ></ComposableTable>
                     <div className={classes.expandableSection}>
                         <ComposableTable
-                            title={t('template.postUpgrade.label')}
-                            curatorJobs={
-                                clusterCurator.spec.upgrade.posthook?.map(
-                                    (job: ClusterCuratorAnsibleJob) => job.name
-                                ) as string[]
-                            }
+                            stage={t('template.postUpgrade.label')}
+                            curatorJobs={clusterCurator.spec.upgrade.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
+                                name: job.name,
+                                type: job.type,
+                            }))}
                         ></ComposableTable>
                     </div>
                 </ExpandableSection>
@@ -123,32 +119,33 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
     )
 }
 
-function ComposableTable(props: { title: string; curatorJobs?: string[] }) {
-    const { curatorJobs, title } = props
+function ComposableTable(props: { stage: string; curatorJobs?: { name: string; type?: string }[] }) {
+    const { curatorJobs, stage } = props
     const { t } = useTranslation()
-    return (
+
+    return curatorJobs && curatorJobs.length > 0 ? (
         <TableComposable aria-label="Simple table" variant={'compact'}>
             <Thead>
                 <Tr>
-                    <Th style={{ padding: '0px 0px 8px 0px' }}>{title}</Th>
+                    <Th style={{ padding: '0px 0px 8px 0px' }}>{stage}</Th>
+                    <Th style={{ padding: '0px 0px 8px 0px' }}>{t('Template Type')}</Th>
                 </Tr>
             </Thead>
-            {curatorJobs && (
-                <Tbody>
-                    {curatorJobs.length > 0 ? (
-                        curatorJobs.map((item) => (
-                            <Tr key={item}>
-                                <Td style={{ padding: '8px 0px' }} dataLabel={item}>
-                                    {item}
-                                </Td>
-                            </Tr>
-                        ))
-                    ) : (
-                        <Text component={TextVariants.small}>{t('None selected')}</Text>
-                    )}
-                </Tbody>
-            )}
+            <Tbody>
+                {curatorJobs.map((job) => (
+                    <Tr key={job.name}>
+                        <Td style={{ padding: '8px 0px' }} dataLabel={job.name}>
+                            {job.name}
+                        </Td>
+                        <Td style={{ padding: '8px 0px' }} dataLabel={job.type}>
+                            {job.type}
+                        </Td>
+                    </Tr>
+                ))}
+            </Tbody>
         </TableComposable>
+    ) : (
+        <></>
     )
 }
 

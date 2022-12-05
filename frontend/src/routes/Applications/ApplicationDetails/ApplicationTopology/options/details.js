@@ -29,7 +29,7 @@ import {
     addNodeOCPRouteLocationForCluster,
     addIngressNodeInfo,
 } from '../helpers/diagram-helpers'
-import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
+import { kubeNaming } from './utilities'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'

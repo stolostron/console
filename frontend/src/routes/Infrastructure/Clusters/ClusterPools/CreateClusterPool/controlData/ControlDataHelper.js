@@ -57,6 +57,11 @@ export const fixupControlsForClusterPool = (controlData, t) => {
                 required: true,
                 contextTester: lessThanEqualSize,
             },
+        },
+        {
+            id: 'showSecrets',
+            type: 'hidden',
+            active: false,
         }
     )
 

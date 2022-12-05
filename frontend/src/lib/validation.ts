@@ -6,6 +6,8 @@ import { t, TFunction } from 'i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
 
+import isCidr from 'is-cidr'
+
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
 export function validateKubernetesDnsName(value: string, t: TFunction) {
@@ -352,4 +354,15 @@ export function validateVCenterServer(value: string, t: TFunction) {
             return t('The value must be a fully-qualified host name or IP address.')
         }
     }
+}
+
+export function validateCidr(value: string, t: TFunction) {
+    if (value == '') {
+        return undefined
+    }
+
+    if (isCidr(value)) {
+        return undefined
+    }
+    return t('Value must be a valid IPv4 CIDR.')
 }

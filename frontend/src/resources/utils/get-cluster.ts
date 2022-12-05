@@ -25,6 +25,7 @@ import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
+import { HypershiftCloudPlatformType } from '..'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -526,7 +527,18 @@ export function getProvider(
     }
 
     if (hostedCluster) {
-        return Provider.hypershift
+        switch (hostedCluster.spec.platform.type) {
+            case HypershiftCloudPlatformType.AWS:
+                return Provider.aws
+            case HypershiftCloudPlatformType.Azure:
+                return Provider.azure
+            case HypershiftCloudPlatformType.PowerVS:
+                return Provider.ibmpower
+            case HypershiftCloudPlatformType.KubeVirt:
+                return Provider.kubevirt
+            default:
+                return Provider.hypershift
+        }
     }
 
     const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef

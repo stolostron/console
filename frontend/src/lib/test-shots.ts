@@ -88,26 +88,22 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
     const expectCallTimes: string[] = []
 
     Array.from(funcSet).forEach((name) => {
-        mockFunctions.push(`const mock${name} = jest.fn()`)
-        actualCallTimes.push(`    console.log(mock${name}.mock.calls.length)`)
+        mockFunctions.push(`//const mock${name} = jest.fn()`)
+        actualCallTimes.push(`//    console.log(mock${name}.mock.calls.length)`)
         expectCallTimes.push(`//    expect(mock${name}).toHaveBeenCalledTimes(0)`)
     })
     return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
 }
 
-const getSnippet = (stack: StackTrace.StackFrame[], snaps: string[], expects: string[]) => {
-    const className = stack[1].getFunctionName().split('.')[0]
-    const fileName = path.parse(stack[1].getFileName()).name
+const getSnippet = (snaps: string[], expects: string[]) => {
     const snippets = []
-    snippets.push(`import ${className} from './${fileName}'`)
     snippets.push(...snaps)
     snippets.push('\n\n')
-    snippets.push(`       render(<${className} {...props} />)`)
     snippets.push(...expects)
-    snippets.push(`\n\n\n    })`)
     return snippets.join('\n')
 }
 
+// window.propShot(props or this.props)
 window.propShot = (props: any, max?: number) => {
     if (process.env.NODE_ENV === 'production') {
         console.log('!!!! REMOVE propShot FROM CODE !!!!')
@@ -118,8 +114,7 @@ window.propShot = (props: any, max?: number) => {
         const className = stack[1].getFunctionName().split('.')[0]
         const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, false, max || 10)
         const snippet = getSnippet(
-            stack,
-            [...mockFunctions, `const props = ${snapshot}`],
+            [...mockFunctions, `const props /*:PropType*/ = ${snapshot}`],
             ['\n\n', ...expectCallTimes, '\n\n', ...actualCallTimes]
         )
         const snip: { [index: string]: string } = {}
@@ -137,18 +132,16 @@ window.coilShot = (recoil: any, stateName: string, max?: number) => {
     if (process.env.NODE_ENV !== 'test') {
         const stack: StackTrace.StackFrame[] = StackTrace.getSync()
         const className = stack[1].getFunctionName().split('.')[0]
-        const fileName = path.parse(stack[1].getFileName()).name
         const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
         const { snapshot } = getSnapshot(recoil, false, max || 10)
         const snippets = []
-        snippets.push(`import ${className} from './${fileName}'`)
-        snippets.push(`import {${stateName}} from '../../atoms'\n\n`)
-        snippets.push(`const ${dataName} = ${snapshot}\n\n`)
-        snippets.push(`   render(`)
-        snippets.push(`     <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`)
+        snippets.push(`//import {${stateName}} from '../../atoms'\n\n`)
+        snippets.push(`//const ${dataName} = ${snapshot}\n\n`)
+        snippets.push(`//   render(`)
+        snippets.push(`    <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`)
         snippets.push(`        <${className} />`)
         snippets.push(`     </RecoilRoot>`)
-        snippets.push(`   )`)
+        snippets.push(`//   )`)
 
         const snip: { [index: string]: string } = {}
         const key = `${stateName}CoilShot`
@@ -157,6 +150,8 @@ window.coilShot = (recoil: any, stateName: string, max?: number) => {
     }
 }
 
+// return window.funcShot([arg1, arg2], ret)
+// //return original
 window.funcShot = (args, ret) => {
     if (process.env.NODE_ENV === 'production') {
         console.log('!!!! REMOVE funcShot FROM CODE !!!!')
@@ -168,11 +163,11 @@ window.funcShot = (args, ret) => {
         const fileName = path.parse(stack[1].getFileName()).name
         const apiName = camelCase(fileName)
         const snippets = []
-        const { snapshot: argShot } = getSnapshot(args, false, 5)
-        const { snapshot: retShot } = getSnapshot(ret, false, 5)
-        snippets.push(`import * as ${apiName}API from './${fileName}'\n`)
+        const { snapshot: argShot } = getSnapshot(args, false, 1000)
+        const { snapshot: retShot } = getSnapshot(ret, false, 1000)
+        snippets.push(`//import * as ${apiName}API from './${fileName}'\n`)
         snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
-        snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}')`)
+        snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}') as jest.Mock<any>`)
         snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
         const snip: { [index: string]: string } = {}
         const key = `${methodName}FuncShot`

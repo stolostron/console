@@ -15,7 +15,7 @@
 import _ from 'lodash'
 import R from 'ramda'
 import { getClusterName } from '../helpers/diagram-helpers-utils'
-import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
+import { defaultShapes } from './constants'
 
 const TypeFilters = {
     application: {
