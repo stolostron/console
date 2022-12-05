@@ -18,7 +18,7 @@ export function HypershiftAWSCLI() {
     ]
 
     const copyCommand =
-        'hypershift create cluster aws --name $CLUSTER_NAME --namespace $NAMESPACE --node-pool-replicas=3 --secret-creds $SECRET_CREDS --region $REGION'
+        'oc hcp create cluster aws --name $CLUSTER_NAME --namespace $NAMESPACE --node-pool-replicas=3 --secret-creds $SECRET_CREDS --region $REGION'
 
     return (
         <Page>
@@ -46,7 +46,7 @@ export function HypershiftAWSCLI() {
                             <Text component={TextVariants.h2}>{t('Prerequisite')}</Text>
                             <Text component={TextVariants.p}>
                                 {t(
-                                    'Enable hosted control plane feature for AWS. Download and install hosted control plane CLI.'
+                                    'Enable the Hosted Control Plane feature for AWS. Download and install the Hypershift Hosted Control Plane CLI.'
                                 )}
                             </Text>
                             <Text component={TextVariants.a} href={DOC_LINKS.HOSTED_CONTROL_PLANES} target="_blank">
@@ -56,22 +56,22 @@ export function HypershiftAWSCLI() {
                     </ListItem>
                     <ListItem icon={<span className="ocm-icons">2</span>}>
                         <TextContent>
-                            <Text component={TextVariants.h2}>{t('AWS Credentials')}</Text>
+                            <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) Credentials')}</Text>
                             <Text component={TextVariants.p}>
-                                {t('Use existing AWS credentials, or create new AWS credentials.')}
+                                {t('Use your existing AWS credentials, or create new AWS credentials.')}
                             </Text>
                             <Text
                                 component={TextVariants.a}
                                 href={`${NavigationPath.addCredentials}?type=aws`}
                                 target="_blank"
                             >
-                                {t('Click here for Credentials wizard.')}
+                                {t('Click here to open the Credentials wizard.')}
                             </Text>
                         </TextContent>
                     </ListItem>
                     <ListItem icon={<span className="ocm-icons">3</span>}>
                         <TextContent>
-                            <Text component={TextVariants.h2}>{t('Hosted control plane command')}</Text>
+                            <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane Command')}</Text>
                             <Text component={TextVariants.h4}>{t('Copy command')}</Text>
                             <Text component={TextVariants.p}>
                                 {t('Log in to OpenShift Container Platform by using the oc login command.')}
@@ -83,14 +83,14 @@ export function HypershiftAWSCLI() {
                                     id="copy-template"
                                     iconPosition="left"
                                 />{' '}
-                                {t('to create the hosted control plane command.')}
+                                {t('to create the Hosted Control Plane command.')}
                             </Text>
                             <Text component={TextVariants.h4}>{t('Replace variables')}</Text>
                             <Text component={TextVariants.p}>{t('Replace the template variables.')}</Text>
                             <Text component={TextVariants.p}>
                                 {t('*Note')}: {/* command, no translation needed */}
                                 <span style={{ border: '1px solid #dfe3e6', padding: '0.2em' }}>
-                                    --secret-screds $SECRET_CREDS
+                                    --secret-creds $SECRET_CREDS
                                 </span>{' '}
                                 {t('will be replaced with your AWS credentials from step 1.')}
                             </Text>
