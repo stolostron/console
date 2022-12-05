@@ -27,7 +27,7 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 const unavailable = '-unavailable-'
 
-export const loadExistingPlacementRules = () => {
+export const loadExistingPlacementRules = (t) => {
     let nsControl = undefined
 
     return {
@@ -37,7 +37,7 @@ export const loadExistingPlacementRules = () => {
         variables: (control, globalControl) => {
             nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
         },
-        loadingDesc: 'creation.app.loading.rules',
+        loadingDesc: t('creation.app.loading.rules'),
         setAvailable: setAvailableRules.bind(null),
     }
 }
@@ -251,7 +251,7 @@ const placementData = (isLocalCluster, t) => {
             opaque: false,
             placeholder: t('creation.app.settings.existingRule'),
             reverse: reverseExistingRule,
-            fetchAvailable: loadExistingPlacementRules(),
+            fetchAvailable: loadExistingPlacementRules(t),
             onSelect: updateNewRuleControls,
             validation: {},
             summarize: () => {},

@@ -8,9 +8,6 @@ import { DOC_LINKS } from '../../../lib/doc-util'
 import { AcmButton } from '../../../ui-components'
 
 const localStorageKey = `HostInventoryBannerDismissed`
-// t('Hosts are discovered and stored in infrastructure environments. You can manage your host inventory with infrastructure environments which allow to set the same configurations for all hosts that it contains.')
-export const description =
-    'Hosts are discovered and stored in infrastructure environments. You can manage your host inventory with infrastructure environments which allow to set the same configurations for all hosts that it contains.'
 
 export const HostInventoryBanner = () => {
     const { t } = useTranslation()
@@ -29,7 +26,11 @@ export const HostInventoryBanner = () => {
         <StackItem>
             <Card>
                 <CardTitle>{t('About host inventory')}</CardTitle>
-                <CardBody>{t(description)}</CardBody>
+                <CardBody>
+                    {t(
+                        'Hosts are discovered and stored in infrastructure environments. You can manage your host inventory with infrastructure environments which allow to set the same configurations for all hosts that it contains.'
+                    )}
+                </CardBody>
                 <CardFooter>
                     <ActionGroup>
                         <AcmButton variant={ButtonVariant.secondary} onClick={dismiss}>

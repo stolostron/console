@@ -22,7 +22,7 @@ import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
 import ObjectStore from '../../logos/ObjectStore.svg'
 
-export const loadExistingNamespaces = () => {
+export const loadExistingNamespaces = (t) => {
     return {
         query: () => {
             return new Promise(async (resolve, reject) => {
@@ -34,7 +34,7 @@ export const loadExistingNamespaces = () => {
                 }
             })
         },
-        loadingDesc: 'Loading namespaces...',
+        loadingDesc: t('Loading namespaces...'),
         setAvailable: setAvailableNSSpecs.bind(null),
     }
 }
@@ -85,7 +85,7 @@ export const controlData = (isLocalCluster, handleModalToggle, t) => {
             tooltip: t('tooltip.creation.app.namespace'),
             id: 'namespace',
             type: 'combobox',
-            fetchAvailable: loadExistingNamespaces(),
+            fetchAvailable: loadExistingNamespaces(t),
             editing: { disabled: true }, // if editing existing app, disable this field
             onSelect: updateNSControls,
             validation: {

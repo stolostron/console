@@ -149,7 +149,7 @@ const githubChannelData = (isLocalCluster, handleModalToggle, t) => {
             placeholder: t('app.enter.select.github.url'),
             available: [],
             validation: VALIDATE_URL,
-            fetchAvailable: loadExistingChannels('git'),
+            fetchAvailable: loadExistingChannels('git', t),
             reverse: 'Channel[0].spec.pathname',
             onSelect: updateChannelControls,
             simplified: channelSimplified,

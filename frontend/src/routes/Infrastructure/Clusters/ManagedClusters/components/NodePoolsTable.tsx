@@ -80,9 +80,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
     const renderHealthCheck = useCallback(
         (nodepool: NodePool) => {
-            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? 'True' : 'False'
+            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? t('True') : t('False')
 
-            return <span>{t(healthCheck)}</span>
+            return <span>{healthCheck}</span>
         },
         [t]
     )

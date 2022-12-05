@@ -34,6 +34,7 @@ import {
     ClusterDeployment,
     ClusterDeploymentDefinition,
     ClusterStatus,
+    getClusterStatusLabel,
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
@@ -142,7 +143,7 @@ export default function ManagedClusters() {
                                     key="mcEmptyState"
                                     title={t('managed.emptyStateHeader')}
                                     message={
-                                        <Trans i18nKey={'managed.emptyStateMsg'} components={{ bold: <strong /> }} />
+                                        <Trans i18nKey="managed.emptyStateMsg" components={{ bold: <strong /> }} />
                                     }
                                     action={<AddCluster type="button" />}
                                 />
@@ -365,7 +366,7 @@ export function ClustersTable(props: {
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
-                        confirmText: t('confirm').toLowerCase(),
+                        confirmText: t('confirm'),
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
@@ -388,7 +389,7 @@ export function ClustersTable(props: {
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
-                        confirmText: t('confirm').toLowerCase(),
+                        confirmText: t('confirm'),
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
@@ -418,13 +419,14 @@ export function ClustersTable(props: {
                 id: 'status',
                 label: t('table.status'),
                 options: Object.keys(ClusterStatus)
-                    .map((key) => ({
-                        label: t(`status.${key}`),
-                        value: t(`status.${key}`),
+                    .map((status) => ({
+                        label: getClusterStatusLabel(status as ClusterStatus, t),
+                        value: getClusterStatusLabel(status as ClusterStatus, t),
                     }))
                     .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
                     .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-                tableFilterFn: (selectedValues, cluster) => selectedValues.includes(t(`status.${cluster.status}`)),
+                tableFilterFn: (selectedValues, cluster) =>
+                    selectedValues.includes(getClusterStatusLabel(cluster.status as ClusterStatus, t)),
             },
         ]
     }, [t])

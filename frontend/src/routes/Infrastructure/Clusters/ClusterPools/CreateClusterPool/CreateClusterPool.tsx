@@ -174,9 +174,6 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
 
     // setup translation
     const { t } = useTranslation()
-    const i18n = (key: string, arg: any) => {
-        return t(key, arg)
-    }
 
     //compile template
     const template = Handlebars.compile(hiveTemplate)
@@ -237,7 +234,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                         }
                     }
                     if (!control?.validation?.tester.test(active)) {
-                        return t(control?.validation?.notification, [active])
+                        return control?.validation?.notification
                     }
                 }
                 break
@@ -296,7 +293,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}
                 onControlInitialize={onControlInitialize}
-                i18n={i18n}
+                i18n={t}
             />
         </Fragment>
     )

@@ -34,11 +34,10 @@ export const getAge = (value) => {
 }
 
 export const addDetails = (details, dets) => {
-    dets.forEach(({ labelKey, labelValue, value, indent, status }) => {
+    dets.forEach(({ labelValue, value, indent, status }) => {
         if (value !== undefined) {
             details.push({
                 type: 'label',
-                labelKey,
                 labelValue,
                 value,
                 indent,
@@ -68,7 +67,7 @@ export const getNodePropery = (node, propPath, key, defaultValue, status) => {
     if (data !== undefined) {
         // must show 0 values as well
         return {
-            labelKey: key,
+            labelValue: key,
             value: data,
             status: status && !dataObj, //show as error message if data not defined and marked for error
         }
@@ -497,7 +496,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
 
         details.push({
             type: 'label',
-            labelKey: t('Location'),
+            labelValue: t('Location'),
         })
     }
 
@@ -505,7 +504,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
         details.push({
             type: 'link',
             value: {
-                labelKey: t('Launch Route URL'),
+                labelValue: t('Launch Route URL'),
                 id: `${_.get(typeObject, '_uid', '0')}`,
                 data: {
                     action: 'open_route_url',
@@ -560,7 +559,7 @@ export const addIngressNodeInfo = (node, details, t) => {
     if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Ingress') {
         details.push({
             type: 'label',
-            labelKey: t('Location'),
+            labelValue: t('Location'),
         })
 
         //ingress - single service
@@ -577,17 +576,17 @@ export const addIngressNodeInfo = (node, details, t) => {
         rules.forEach((ruleInfo) => {
             const hostName = R.pathOr('NA', ['host'])(ruleInfo)
             details.push({
-                labelKey: t('Host'),
+                labelValue: t('Host'),
                 value: hostName,
             })
             const paths = R.pathOr([], ['http', 'paths'])(ruleInfo)
             paths.forEach((pathInfo) => {
                 details.push({
-                    labelKey: t('Service Name'),
+                    labelValue: t('Service Name'),
                     value: R.pathOr('NA', ['backend', 'serviceName'])(pathInfo),
                 })
                 details.push({
-                    labelKey: t('Service Port'),
+                    labelValue: t('Service Port'),
                     value: R.pathOr('NA', ['backend', 'servicePort'])(pathInfo),
                 })
             })
@@ -627,14 +626,14 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     return details
 }
 
-export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
+export const addNodeServiceLocationForCluster = (node, typeObject, details, t) => {
     if (node && typeObject && typeObject.clusterIP && typeObject.port) {
         let port = R.split(':', typeObject.port)[0] // take care of 80:etc format
         port = R.split('/', port)[0] //now remove any 80/TCP
 
         const location = `${typeObject.clusterIP}:${port}`
         details.push({
-            labelKey: 'Location',
+            labelValue: t('Location'),
             value: location,
         })
     }

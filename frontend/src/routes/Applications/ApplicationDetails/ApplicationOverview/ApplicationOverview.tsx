@@ -65,8 +65,9 @@ import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcon
 import { useRecoilState } from '../../../../shared-recoil'
 import { PluginContext } from '../../../../lib/PluginContext'
 
-const clusterResourceStatusText = 'Cluster resource status'
-const clusterResourceStatusTooltip = 'Status represents the subscription selection within Resource topology.'
+const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
+const clusterResourceStatusTooltip = (t: TFunction) =>
+    t('Status represents the subscription selection within Resource topology.')
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
@@ -173,10 +174,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     value: cluster,
                 },
                 {
-                    key: t(clusterResourceStatusText),
+                    key: clusterResourceStatusText(t),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t(clusterResourceStatusTooltip)}>
+                        <Tooltip content={clusterResourceStatusTooltip(t)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
@@ -221,7 +222,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 },
                 {
                     key: t('Created'),
-                    value: t(getShortDateTime(applicationData.application.metadata.creationTimestamp)),
+                    value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
                 },
                 {
                     key: t('Last reconciled'),
@@ -252,10 +253,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                 },
                 {
-                    key: t(clusterResourceStatusText),
+                    key: clusterResourceStatusText(t),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t(clusterResourceStatusTooltip)}>
+                        <Tooltip content={clusterResourceStatusTooltip(t)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
@@ -337,10 +338,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
                 },
                 {
-                    key: t(clusterResourceStatusText),
+                    key: clusterResourceStatusText(t),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={t(clusterResourceStatusTooltip)}>
+                        <Tooltip content={clusterResourceStatusTooltip(t)}>
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),

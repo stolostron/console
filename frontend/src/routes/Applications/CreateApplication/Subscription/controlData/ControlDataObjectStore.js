@@ -42,7 +42,7 @@ const objectstoreChannelData = (isLocalCluster, t) => {
             placeholder: t('app.enter.select.objectstore.url'),
             available: [],
             validation: VALIDATE_URL,
-            fetchAvailable: loadExistingChannels('objectbucket'),
+            fetchAvailable: loadExistingChannels('objectbucket', t),
             reverse: 'Channel[0].spec.pathname',
             onSelect: updateChannelControls,
             simplified: channelSimplified,

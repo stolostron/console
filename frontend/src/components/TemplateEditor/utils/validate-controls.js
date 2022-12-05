@@ -224,11 +224,13 @@ const validateTableControl = (
         })
     }
     if (exceptions.length > 0) {
-        table.exception = i18n(`creation.ocp.validation.errors${hidden ? '.hidden' : ''}`)
+        table.exception = hidden
+            ? i18n('creation.ocp.validation.errors.hidden')
+            : i18n('creation.ocp.validation.errors')
     } else if (typeof tester === 'function') {
         const exception = tester(rows, table, globalControlData)
         if (exception) {
-            table.exception = i18n(exception)
+            table.exception = exception
         }
     }
 }
@@ -257,8 +259,8 @@ const validateControl = (control, controlData, templateObjectMap, templateExcept
                 ((!active && active !== 0) ||
                     (type === 'cards' && (active.length === 0 || typeof active[0] !== 'string')))
             ) {
-                const msg = notification ? notification : 'creation.missing.input'
-                control.exception = i18n(msg, [name])
+                const msg = notification ? notification : i18n('creation.missing.input', [name])
+                control.exception = msg
                 reportException(control, exceptions)
                 return
             }
@@ -354,7 +356,7 @@ const validateTextControl = (control, templateObjectMap, templateExceptionMap, i
                 if (active.length > 50) {
                     active = `${active.substr(0, 25)}...${active.substr(-25)}`
                 }
-                exception = i18n(notification, [active])
+                exception = notification
             }
         } else {
             exception = i18n('validation.missing.value', [name])
@@ -379,13 +381,13 @@ const validateSingleSelectControl = (control, templateObjectMap, templateExcepti
     }
 }
 
-const validateCardsControl = (control, templateObjectMap, templateExceptionMap, i18n) => {
+const validateCardsControl = (control) => {
     const {
         active,
         validation: { required, notification },
     } = control
     if (required && !active) {
-        control.exception = i18n(notification)
+        control.exception = notification
     }
 }
 

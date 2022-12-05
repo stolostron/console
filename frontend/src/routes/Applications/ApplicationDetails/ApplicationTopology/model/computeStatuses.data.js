@@ -113,7 +113,7 @@ export const persVolumePendingStatePendingRes = [
         type: 'spacer',
     },
     {
-        labelKey: 'Cluster deploy status',
+        labelValue: 'Cluster deploy status',
         type: 'label',
     },
     {
@@ -151,7 +151,7 @@ export const persVolumePendingStateGreenRes = [
         type: 'spacer',
     },
     {
-        labelKey: 'Cluster deploy status',
+        labelValue: 'Cluster deploy status',
         type: 'label',
     },
     {
