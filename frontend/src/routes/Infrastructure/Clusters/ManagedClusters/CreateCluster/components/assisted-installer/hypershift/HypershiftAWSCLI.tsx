@@ -71,7 +71,7 @@ export function HypershiftAWSCLI() {
                     </ListItem>
                     <ListItem icon={<span className="ocm-icons">3</span>}>
                         <TextContent>
-                            <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane Command')}</Text>
+                            <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane command')}</Text>
                             <Text component={TextVariants.h4}>{t('Copy command')}</Text>
                             <Text component={TextVariants.p}>
                                 {t('Log in to OpenShift Container Platform by using the oc login command.')}
