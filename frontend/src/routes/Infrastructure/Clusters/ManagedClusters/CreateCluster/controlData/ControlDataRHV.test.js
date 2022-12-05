@@ -9,14 +9,14 @@ const t = i18next.t.bind(i18next)
 
 describe('getControlDataRHV', () => {
     it('get control data for RHV - default', () => {
-        getControlDataRHV(undefined, true, true, t)
+        getControlDataRHV(t, undefined, true, true)
     })
 
     it('get control data for RHV - no automation', () => {
-        getControlDataRHV(undefined, false, true, t)
+        getControlDataRHV(t, undefined, false, true)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataRHV(undefined, true, false, t)
+        getControlDataRHV(t, undefined, true, false)
     })
 })
