@@ -72,11 +72,7 @@ const labelArr: string[] = [
     'app.kubernetes.io/part-of=',
 ]
 
-const cachedFilters = JSON.parse(localStorage.getItem('cachedFilters') || '[]')
-
-localStorage.setItem('cachedFilters', JSON.stringify(cachedFilters))
-
-const initialFilters = { 'table.filter.type.acm.application.label': cachedFilters }
+const filterId = 'table-filter-type-acm-application-label'
 
 type IApplicationResource = IResource | OCPAppResource
 
@@ -722,7 +718,7 @@ export default function ApplicationsOverview() {
         () => [
             {
                 label: t('Type'),
-                id: 'table.filter.type.acm.application.label',
+                id: filterId,
                 options: [
                     {
                         label: t('Application Set'),
@@ -765,7 +761,6 @@ export default function ApplicationsOverview() {
                         }
                     })
                 },
-                cachedFilters: cachedFilters,
             },
         ],
         [t]
@@ -1047,6 +1042,7 @@ export default function ApplicationsOverview() {
             <DeleteResourceModal {...modalProps} />
             {pluginModal}
             <AcmTable<IResource>
+                id="applicationTable"
                 key="data-table"
                 plural={t('Applications')}
                 columns={columns}
@@ -1054,7 +1050,6 @@ export default function ApplicationsOverview() {
                 items={tableItems}
                 filters={filters}
                 customTableAction={appCreationButton}
-                initialFilters={cachedFilters.length ? initialFilters : undefined}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"

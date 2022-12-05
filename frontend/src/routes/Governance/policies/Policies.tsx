@@ -719,6 +719,7 @@ export default function PoliciesPage() {
             {modal !== undefined && modal}
             <BulkActionModel<PolicyTableItem> {...modalProps} />
             <AcmTable<PolicyTableItem>
+                id="policyTable"
                 plural={t('Policies')}
                 columns={policyColumns}
                 keyFn={policyKeyFn}

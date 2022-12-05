@@ -466,6 +466,7 @@ export function ClustersTable(props: {
                 rowActions={rowActions}
                 emptyState={props.emptyState}
                 filters={filters}
+                id="managedClusters"
             />
         </Fragment>
     )
