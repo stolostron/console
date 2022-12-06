@@ -614,7 +614,7 @@ export const automationControlData = (t) => {
         {
             type: 'custom',
             id: 'automationProviderHint',
-            component: <AutomationProviderHint />,
+            component: <AutomationProviderHint component="hint" className="creation-view-controls-hint" />,
         },
         {
             name: t('template.clusterCreate.name'),
