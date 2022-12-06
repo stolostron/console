@@ -282,7 +282,7 @@ const validateControl = (control, controlData, templateObjectMap, templateExcept
                 validateCheckboxControl(control, templateObjectMap, templateExceptionMap, i18n)
                 break
             case 'cards':
-                validateCardsControl(control, templateObjectMap, templateExceptionMap, i18n)
+                validateCardsControl(control)
                 break
             case 'singleselect':
                 validateSingleSelectControl(control, templateObjectMap, templateExceptionMap, i18n)

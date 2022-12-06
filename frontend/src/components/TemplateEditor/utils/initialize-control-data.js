@@ -27,7 +27,7 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
                 return control
             }
             default:
-                return initialControl(control, onControlInitialize, i18n)
+                return initialControl(control, onControlInitialize)
         }
     })
 
