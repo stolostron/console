@@ -794,7 +794,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
         {
             id: 'detailStep',
             type: 'step',
-            title: t('Cluster pool details'),
+            title: t('Cluster details'),
         },
         {
             id: 'infrastructure',

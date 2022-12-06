@@ -276,7 +276,7 @@ export const getControlDataVMW = (
             title: t('Networking'),
         },
         {
-            id: 'networkType',
+            id: 'networkName',
             name: t('creation.ocp.cluster.vmw.network.type'),
             tooltip: t('tooltip.creation.ocp.cluster.vmw.network.type'),
             placeholder: t('creation.ocp.cluster.vmw.network.type'),
