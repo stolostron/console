@@ -3,8 +3,6 @@ import {
     Button,
     Flex,
     FlexItem,
-    Split,
-    Stack,
     TextContent,
     Text,
     ToggleGroup,
@@ -22,20 +20,14 @@ import {
     EditMode,
     WizHidden,
     WizItemSelector,
-    WizMultiSelect,
-    Radio,
-    WizRadioGroup,
     Section,
     Select,
     Step,
-    WizTextDetail,
     Tile,
     WizTiles,
-    WizTimeRange,
     WizardCancel,
     WizardPage,
     WizardSubmit,
-    WizArrayInput,
     WizCheckbox,
     WizTextInput,
     Sync,
@@ -642,78 +634,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
     )
 }
 
-export function DeploymentWindow(props: { timeZone: string[] }) {
-    const { t } = useTranslation()
-    return (
-        <Section
-            hidden={(data) => {
-                return data.deployType === 'ArgoCD'
-            }}
-            id="deploymentWindow.title"
-            label={t('Deployment window')}
-            description={t('Schedule a time window for deployments')}
-            labelHelp={t(
-                'Define a time window if you want to activate or block resources deployment within a certain time interval.'
-            )}
-        >
-            <WizRadioGroup
-                id="remediation"
-                path="deployment.window"
-                required
-                // hidden={get(resources, 'DELEM') === undefined}
-            >
-                <Radio id="always" label={t('Always active')} value="always" />
-                <Radio id="active" label={t('Active within specified interval')} value="active">
-                    <TimeWindow timeZone={props.timeZone} />
-                </Radio>
-                <Radio id="blocked" label={t('Blocked within specified interval')} value="blocked">
-                    <TimeWindow timeZone={props.timeZone} />
-                </Radio>
-            </WizRadioGroup>
-        </Section>
-    )
-}
-
-export function TimeWindow(props: { timeZone: string[] }) {
-    const { t } = useTranslation()
-    return (
-        <Stack hasGutter style={{ paddingBottom: 16 }}>
-            <WizMultiSelect
-                label={t('Time window configuration')}
-                placeholder={t('Select at least one day to create a time window.')}
-                path="timewindow.daysofweek"
-                required
-                options={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
-            />
-            <Select
-                path="timeWindow.timezone"
-                label={t('Time zone')}
-                placeholder={t('Select the time zone')}
-                options={props.timeZone}
-                required
-            />
-            <WizArrayInput
-                path="timeWindows"
-                placeholder={t('Add time range')}
-                collapsedContent={
-                    <Fragment>
-                        <WizTextDetail path="start" placeholder={t('Expand to enter the variable')} />
-                        <WizHidden hidden={(item: ITimeRangeVariableData) => item.end === undefined}>
-                            &nbsp;-&nbsp;
-                            <WizTextDetail path="end" />
-                        </WizHidden>
-                    </Fragment>
-                }
-            >
-                <Split hasGutter>
-                    <WizTimeRange path="start" label={t('Start Time')}></WizTimeRange>
-                    <WizTimeRange path="end" label={t('End Time')}></WizTimeRange>
-                </Split>
-            </WizArrayInput>
-        </Stack>
-    )
-}
-
 async function getGitBranchList(
     channel: Channel,
     getGitBranches: (
@@ -761,11 +681,6 @@ export function ExternalLinkButton(props: { id: string; href?: string; icon?: Re
             </FlexItem>
         </Flex>
     )
-}
-
-interface ITimeRangeVariableData {
-    start: string
-    end: string
 }
 
 function repositoryTypeToSource(value: unknown) {
