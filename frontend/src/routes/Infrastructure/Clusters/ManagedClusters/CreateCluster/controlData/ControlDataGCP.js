@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
+import { getAlphanumericValidator, getNumericValidator } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
@@ -378,7 +378,7 @@ export const getControlDataGCP = (
             type: 'combobox',
             active: 'us-east1',
             available: GCPregions,
-            validation: VALIDATE_ALPHANUMERIC,
+            validation: getAlphanumericValidator(t),
             cacheUserValueKey: 'create.cluster.region',
             reverse: 'ClusterDeployment[0].metadata.labels.region',
         },
@@ -472,7 +472,7 @@ export const getControlDataGCP = (
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
             ],

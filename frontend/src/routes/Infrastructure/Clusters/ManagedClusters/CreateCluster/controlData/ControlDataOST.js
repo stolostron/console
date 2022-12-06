@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    VALIDATE_NUMERIC,
-    VALIDATE_IP,
-    VALIDATE_IP_OPTIONAL,
-    VALIDATE_URL,
+    getNumericValidator,
+    getIPValidator,
+    getOptionalIPValidator,
+    getURLValidator,
 } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
@@ -224,7 +224,7 @@ export const getControlDataOST = (
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
             ],
@@ -259,7 +259,7 @@ export const getControlDataOST = (
                 }
             },
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         {
             id: 'apiFloatingIP',
@@ -274,7 +274,7 @@ export const getControlDataOST = (
                 }
             },
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         {
             id: 'ingressFloatingIP',
@@ -283,7 +283,7 @@ export const getControlDataOST = (
             placeholder: t('placeholder.creation.ocp.cluster.ost.ingress.floating.ip'),
             tooltip: t('tooltip.creation.ocp.cluster.ost.ingress.floating.ip'),
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         {
             id: 'externalDNS',
@@ -292,7 +292,7 @@ export const getControlDataOST = (
             placeholder: t('placeholder.creation.ocp.cluster.ost.external.dns'),
             tooltip: t('tooltip.creation.ocp.cluster.ost.external.dns'),
             active: [],
-            validation: VALIDATE_IP_OPTIONAL,
+            validation: getOptionalIPValidator(t),
         },
         ...getOSTNetworkingControlData(t),
         ...proxyControlData(t),
@@ -322,7 +322,7 @@ export const getControlDataOST = (
             name: t('Cluster OS image'),
             disabled: true,
             tip: t('The location of the Red Hat Enterprise Linux CoreOS image in your local registry.'),
-            validation: VALIDATE_URL,
+            validation: getURLValidator(t),
         },
         {
             id: 'imageContentSources',

@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALIDATE_URL } from '../../../../../components/TemplateEditor'
+import { getURLValidator } from '../../../../../components/TemplateEditor'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 
@@ -41,7 +41,7 @@ const helmReleaseChannelData = (isLocalCluster, t) => {
             active: '',
             placeholder: t('app.enter.select.helmrepo.url'),
             available: [],
-            validation: VALIDATE_URL,
+            validation: getURLValidator(t),
             fetchAvailable: loadExistingChannels('helmrepo', t),
             reverse: 'Channel[0].spec.pathname',
             onSelect: updateChannelControls,

@@ -2,12 +2,12 @@
 
 import {
     getValue,
-    VALIDATE_CIDR,
-    VALIDATE_NUMERIC,
+    getCIDRValidator,
+    getNumericValidator,
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
-    VALIDATE_URL,
-    VALIDATE_ALPHANUMERIC,
+    getURLValidator,
+    getAlphanumericValidator,
 } from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
@@ -462,7 +462,7 @@ export const networkingControlData = (t) => {
                     tooltip: t('tooltip.creation.ocp.cluster.network'),
                     placeholder: t('creation.ocp.cluster.network.placeholder'),
                     active: '10.128.0.0/14',
-                    validation: VALIDATE_CIDR,
+                    validation: getCIDRValidator(t),
                 },
                 {
                     id: 'hostPrefix',
@@ -471,7 +471,7 @@ export const networkingControlData = (t) => {
                     tooltip: t('tooltip.creation.ocp.cluster.network.host.prefix'),
                     placeholder: t('creation.ocp.cluster.network.host.prefix.placeholder'),
                     active: '23',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 {
                     id: 'serviceNetwork',
@@ -480,7 +480,7 @@ export const networkingControlData = (t) => {
                     tooltip: t('tooltip.creation.ocp.service.network'),
                     placeholder: t('creation.ocp.service.network.placeholder'),
                     active: '172.30.0.0/16',
-                    validation: VALIDATE_CIDR,
+                    validation: getCIDRValidator(t),
                 },
                 {
                     id: 'machineCIDR',
@@ -489,7 +489,7 @@ export const networkingControlData = (t) => {
                     tooltip: t('tooltip.creation.ocp.machine.cidr'),
                     placeholder: t('creation.ocp.machine.cidr.placeholder'),
                     active: '10.0.0.0/16',
-                    validation: VALIDATE_CIDR,
+                    validation: getCIDRValidator(t),
                 },
             ],
         },
@@ -523,7 +523,7 @@ export const proxyControlData = (t) => {
             name: t('HTTP proxy'),
             disabled: true,
             tip: t('Requires this format: http://<username>:<pswd>@<ip>:<port>'),
-            validation: VALIDATE_URL,
+            validation: getURLValidator(t),
         },
         {
             id: 'httpsProxy',
@@ -531,7 +531,7 @@ export const proxyControlData = (t) => {
             name: t('HTTPS proxy'),
             tip: t('Requires this format: https://<username>:<pswd>@<ip>:<port>'),
             disabled: true,
-            validation: VALIDATE_URL,
+            validation: getURLValidator(t),
         },
         {
             active: [],
@@ -682,7 +682,7 @@ export const architectureData = (t) => {
             id: 'architecture',
             type: 'combobox',
             available: ['amd64'],
-            validation: VALIDATE_ALPHANUMERIC,
+            validation: getAlphanumericValidator(t),
             cacheUserValueKey: 'create.cluster.architecture',
         },
     ]

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
+import { getNumericValidator, getIPValidator } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
@@ -174,7 +174,7 @@ export const getControlDataRHV = (
                     id: 'masterCores',
                     type: 'number',
                     initial: '4',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  sockets  /////////////////////////////////////
                 {
@@ -183,7 +183,7 @@ export const getControlDataRHV = (
                     id: 'masterSockets',
                     type: 'number',
                     initial: '2',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  memoryMB  /////////////////////////////////////
                 {
@@ -192,7 +192,7 @@ export const getControlDataRHV = (
                     id: 'masterMemoryMB',
                     type: 'number',
                     initial: '16348',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  root volume  /////////////////////////////////////
                 {
@@ -201,7 +201,7 @@ export const getControlDataRHV = (
                     id: 'masterRootStorage',
                     type: 'number',
                     initial: '120',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
             ],
         },
@@ -246,7 +246,7 @@ export const getControlDataRHV = (
                     id: 'cores',
                     type: 'number',
                     initial: '4',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  sockets  /////////////////////////////////////
                 {
@@ -255,7 +255,7 @@ export const getControlDataRHV = (
                     id: 'sockets',
                     type: 'number',
                     initial: '1',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  memoryMB  /////////////////////////////////////
                 {
@@ -264,7 +264,7 @@ export const getControlDataRHV = (
                     id: 'memoryMB',
                     type: 'number',
                     initial: '16348',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  sizeGB  /////////////////////////////////////
                 {
@@ -273,7 +273,7 @@ export const getControlDataRHV = (
                     id: 'diskSizeGB',
                     type: 'number',
                     initial: '120',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  compute node count  /////////////////////////////////////
                 {
@@ -282,7 +282,7 @@ export const getControlDataRHV = (
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
             ],
@@ -325,7 +325,7 @@ export const getControlDataRHV = (
             tooltip: t('tooltip.creation.ocp.api.vip'),
             placeholder: t('creation.ocp.api.vip.placeholder'),
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         {
             id: 'ingressVIP',
@@ -334,7 +334,7 @@ export const getControlDataRHV = (
             tooltip: t('tooltip.creation.ocp.ingress.vip'),
             placeholder: t('creation.ocp.ingress.vip.placeholder'),
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         ...networkingControlData(t),
         ...proxyControlData(t),
