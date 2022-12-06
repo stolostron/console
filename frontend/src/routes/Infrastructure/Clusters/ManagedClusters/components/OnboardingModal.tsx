@@ -102,7 +102,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     </div>
                     <div style={{ color: '#6A6E73', fontSize: '14px', paddingTop: '8px' }}>
                         {t(
-                            'Create and manage a fleet of clusters with ease using this all clusters view. To view a single cluster, select it from the "All Clusters" dropdown or access it from the cluster list.'
+                            'Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.'
                         )}
                     </div>
                     <div style={{ color: '#151515', fontSize: '16px', paddingTop: '48px' }}>
