@@ -137,3 +137,23 @@ export function AcmDonutChart(props: {
         </Card>
     )
 }
+
+export const colorThemes = {
+    failureWarningSuccess: [
+        'var(--pf-chart-color-red-100)',
+        'var(--pf-global--warning-color--100)',
+        'var(--pf-chart-color-black-100)',
+    ],
+    failureSuccess: ['var(--pf-chart-color-red-100)', 'var(--pf-chart-color-black-100)'],
+    failurePendingSuccess: [
+        'var(--pf-chart-color-red-100)',
+        'var(--pf-chart-color-gold-300)',
+        'var(--pf-chart-color-black-100)',
+    ],
+    dangerImportantModerateInfo: [
+        'var(--pf-chart-color-red-100)',
+        'var(--pf-global--warning-color--100)',
+        'var(--pf-chart-color-gold-300)',
+        'var(--pf-global--info-color--100)',
+    ],
+}

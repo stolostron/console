@@ -12,7 +12,7 @@ import {
     ToggleGroupItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '../../../../ui-components'
+import { AcmLabels, AcmTable, colorThemes, compareNumbers, compareStrings } from '../../../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -38,18 +38,18 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
     const formattedData = [
         {
             key:
+                clusterNonCompliantCount === 1
+                    ? t('Cluster with policy violations')
+                    : t('Clusters with policy violations'),
+            value: clusterNonCompliantCount,
+        },
+        {
+            key:
                 clusterCompliantCount === 1
                     ? t('Cluster without policy violations')
                     : t('Clusters without policy violations'),
             value: clusterCompliantCount,
             isPrimary: true,
-        },
-        {
-            key:
-                clusterNonCompliantCount === 1
-                    ? t('Cluster with policy violations')
-                    : t('Clusters with policy violations'),
-            value: clusterNonCompliantCount,
         },
     ]
     const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
@@ -75,7 +75,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                     <ChartLegend
                         data={legendData}
                         labelComponent={<ChartLabel />}
-                        colorScale={['#BBB', 'var(--pf-global--danger-color--100)']}
+                        colorScale={colorThemes.failureSuccess}
                     />
                 }
                 labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -84,7 +84,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                 }}
                 title={donutTitle}
                 width={450}
-                colorScale={['var(--pf-global--success-color--100)', 'var(--pf-global--danger-color--100)']}
+                colorScale={colorThemes.failureSuccess}
             />
         </div>
     )

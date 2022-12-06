@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card } from '@patternfly/react-core'
-import { AcmDonutChart } from '../../../ui-components'
+import { AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useMemo } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -74,7 +74,7 @@ export function ViolationsCard(props: {
                         link: props.compliant > 0 ? `${NavigationPath.policySets}?violation=no-violation` : undefined,
                     },
                 ]}
-                colorScale={['var(--pf-global--danger-color--100)', '#BBB', 'var(--pf-global--warning-color--100)']}
+                colorScale={colorThemes.failureSuccess}
             />
         </Card>
     )

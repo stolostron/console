@@ -18,7 +18,7 @@ import {
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { AcmLabels, AcmTable, compareStrings } from '../../../../../ui-components'
+import { AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useState } from 'react'
@@ -108,12 +108,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
                 <ChartLegend
                     data={legendData}
                     labelComponent={<ChartLabel />}
-                    colorScale={[
-                        'var(--pf-global--danger-color--100)',
-                        'var(--pf-global--palette--orange-300)',
-                        'var(--pf-global--palette--orange-200)',
-                        'var(--pf-global--warning-color--100)',
-                    ]}
+                    colorScale={colorThemes.dangerImportantModerateInfo}
                 />
             }
             labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -127,12 +122,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
             subTitle={t('Total issues')}
             width={400}
             height={200}
-            colorScale={[
-                'var(--pf-global--danger-color--100)',
-                'var(--pf-global--palette--orange-300)',
-                'var(--pf-global--palette--orange-200)',
-                'var(--pf-global--warning-color--100)',
-            ]}
+            colorScale={colorThemes.dangerImportantModerateInfo}
         />
     )
 }
