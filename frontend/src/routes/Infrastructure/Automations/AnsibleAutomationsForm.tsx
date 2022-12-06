@@ -645,9 +645,9 @@ function EditAnsibleJobModal(props: {
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
-                    label={t(
-                        filterForJobTemplates ? 'template.modal.name.label' : 'template.workflow.modal.name.label'
-                    )}
+                    label={
+                        filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')
+                    }
                     id="job-name"
                     value={ansibleJob?.name}
                     onChange={(name) => {
