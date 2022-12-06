@@ -7,6 +7,7 @@ import {
     Flex,
     FlexItem,
     FormGroup,
+    Label,
     Modal,
     ModalVariant,
     Radio,
@@ -251,6 +252,9 @@ export function AnsibleAutomationsForm(props: {
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
         return [
             <Flex style={{ gap: '8px' }} key={ansibleJob.name}>
+                <FlexItem>
+                    <Label color="blue">{ansibleJob.type === 'Job' ? t('Job') : t('Workflow')}</Label>
+                </FlexItem>
                 <FlexItem>{ansibleJob.name}</FlexItem>
                 {ansibleJob.extra_vars && (
                     <ChipGroup>
