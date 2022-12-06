@@ -297,7 +297,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             <AcmButton
                 id="addNodepoolEmptyState"
                 children={t('Add node pool')}
-                variant={ButtonVariant.primary}
+                variant={ButtonVariant.secondary}
                 onClick={() => toggleAddNodepoolModal()}
                 tooltip={
                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
@@ -347,7 +347,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                               'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : t('rbac.unauthorized'),
-                                variant: ButtonVariant.primary,
+                                variant: ButtonVariant.secondary,
                             },
                         ]}
                         rowActionResolver={rowActionResolver}
