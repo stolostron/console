@@ -2,6 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+import { TFunction } from 'i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -10,7 +11,8 @@ const dateValues = ['hour', 'day', 'week', 'month', 'year']
 export function formatSearchbarSuggestions(
     data: string[],
     suggestionKind: 'label' | 'filter' | 'value',
-    searchQuery: string
+    searchQuery: string,
+    t: TFunction
 ) {
     let valuesToRemoveFromSuggestions: string[] = []
     let suggestions: DropdownSuggestionsProps[] = []
@@ -61,7 +63,7 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-operator-label',
-                name: 'Operators',
+                name: t('Operators'),
                 kind: 'label',
                 disabled: true,
             })
@@ -77,7 +79,7 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-filter-label',
-                name: `${searchCompleteFilter} within the last:`,
+                name: t('{{0}} within the last:', [searchCompleteFilter]),
                 kind: 'label',
                 disabled: true,
             })

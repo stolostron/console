@@ -581,14 +581,14 @@ function createSubsCards(
                             <div className="sub-card-column add-right-border">
                                 <GripHorizontalIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Subscription</div>
+                                    <div className="sub-card-title">{t('Subscription')}</div>
                                     <span>{sub.metadata.name}</span>
                                 </div>
                             </div>
                             <div className="sub-card-column add-right-border">
                                 <FolderIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Repository resource</div>
+                                    <div className="sub-card-title">{t('Repository resource')}</div>
                                     <ResourceLabels
                                         appRepos={appRepos as any[]}
                                         translation={t}
@@ -600,7 +600,7 @@ function createSubsCards(
                             <div className="sub-card-column">
                                 <OutlinedClockIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Time window</div>
+                                    <div className="sub-card-title">{t('Time window')}</div>
                                     {!sub.spec.timewindow?.windowtype ? (
                                         <AcmButton
                                             id="set-time-window-link"
@@ -612,7 +612,7 @@ function createSubsCards(
                                             variant={ButtonVariant.link}
                                             rel="noreferrer"
                                         >
-                                            Set time window
+                                            {t('Set time window')}
                                         </AcmButton>
                                     ) : (
                                         <TimeWindowLabels
