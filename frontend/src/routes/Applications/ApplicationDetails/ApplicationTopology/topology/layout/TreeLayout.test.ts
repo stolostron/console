@@ -7,12 +7,12 @@ describe('TreeLayout tests', () => {
         jest.clearAllMocks()
     })
 
-    test('app subriction 3 subscriptions', async () => {
+    test('app subscription 3 subscriptions', async () => {
         const calculateNodeOffsetsFn = jest.spyOn(treeLayoutAPI, 'calculateNodeOffsets') as jest.Mock<any>
         expect(calculateNodeOffsetsFn(...calculateNodeOffsets1.args)).toEqual(calculateNodeOffsets1.ret)
     })
 
-    test('app subriction 2 subscriptions with placment', async () => {
+    test('app subscription 2 subscriptions with placment', async () => {
         const calculateNodeOffsetsFn = jest.spyOn(treeLayoutAPI, 'calculateNodeOffsets') as jest.Mock<any>
         expect(calculateNodeOffsetsFn(...calculateNodeOffsets2.args)).toEqual(calculateNodeOffsets2.ret)
     })

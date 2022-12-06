@@ -344,7 +344,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
             },
             isDanger: true,
             icon: 'warning',
-            confirmText: t('confirm').toLowerCase(),
+            confirmText: t('confirm'),
             disableSubmitButton: isDeleteDisabled(infraEnvs, agents),
         })
     }

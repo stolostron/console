@@ -33,11 +33,11 @@ class ControlPanelMultiSelect extends React.Component {
         let { active, placeholder = '' } = control
         if (!active) {
             if (isLoading) {
-                active = i18n(get(control, 'fetchAvailable.loadingDesc', 'resource.loading'))
+                active = get(control, 'fetchAvailable.loadingDesc', i18n('resource.loading'))
             } else if (isFailed) {
                 active = i18n('resource.error')
             } else if (available.length === 0) {
-                active = i18n(get(control, 'fetchAvailable.emptyDesc', 'resource.none'))
+                active = get(control, 'fetchAvailable.emptyDesc', i18n('resource.none'))
             } else {
                 active = []
             }

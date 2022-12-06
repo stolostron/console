@@ -21,7 +21,6 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import {
     setAvailableConnections,
     arrayItemHasKey,
@@ -39,6 +38,7 @@ import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
 import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
+import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -174,9 +174,6 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
 
     // setup translation
     const { t } = useTranslation()
-    const i18n = (key: any, arg: any) => {
-        return t(key, arg)
-    }
 
     //compile template
     const template = Handlebars.compile(hiveTemplate)
@@ -185,17 +182,17 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
     switch (infrastructureType) {
         case Provider.aws:
             controlData = getControlDataAWS(
+                t,
                 handleModalToggle,
-                false,
                 settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.gcp:
-            controlData = getControlDataGCP(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            controlData = getControlDataGCP(t, handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
         case Provider.azure:
-            controlData = getControlDataAZR(handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
+            controlData = getControlDataAZR(t, handleModalToggle, false, settings.singleNodeOpenshift === 'enabled')
             break
     }
 
@@ -237,7 +234,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                         }
                     }
                     if (!control?.validation?.tester.test(active)) {
-                        return t(control?.validation?.notification, [active])
+                        return control?.validation?.notification
                     }
                 }
                 break
@@ -282,7 +279,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 type={'ClusterPool'}
                 title={'ClusterPool YAML'}
                 monacoEditor={<MonacoEditor />}
-                controlData={fixupControlsForClusterPool(controlData)}
+                controlData={fixupControlsForClusterPool(controlData, t)}
                 template={template}
                 portals={Portals}
                 createControl={{
@@ -296,7 +293,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                 logging={process.env.NODE_ENV !== 'production'}
                 onControlChange={onControlChange}
                 onControlInitialize={onControlInitialize}
-                i18n={i18n}
+                i18n={t}
             />
         </Fragment>
     )

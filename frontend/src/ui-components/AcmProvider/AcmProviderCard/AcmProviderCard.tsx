@@ -62,7 +62,7 @@ export function AcmOverviewProviders(props: { providers: ProviderCardProps[] }) 
         return (
             <AcmEmptyState
                 title={t('managed.emptyStateHeader')}
-                message={<Trans i18nKey={'managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
+                message={<Trans i18nKey="managed.emptyStateMsg" components={{ bold: <strong /> }} />}
                 action={<AddCluster type="button" />}
             />
         )

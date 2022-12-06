@@ -27,7 +27,7 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 const unavailable = '-unavailable-'
 
-export const loadExistingPlacementRules = () => {
+export const loadExistingPlacementRules = (t) => {
     let nsControl = undefined
 
     return {
@@ -37,7 +37,7 @@ export const loadExistingPlacementRules = () => {
         variables: (control, globalControl) => {
             nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
         },
-        loadingDesc: 'creation.app.loading.rules',
+        loadingDesc: t('creation.app.loading.rules'),
         setAvailable: setAvailableRules.bind(null),
     }
 }
@@ -222,104 +222,108 @@ export const summarizeSelectorControl = (control, globalControlData, summary) =>
     }
 }
 
-const placementData = (isLocalCluster) => [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  clusters  /////////////////////////////////////
-    {
-        id: 'clusterSection',
-        type: 'section',
-        title: 'creation.app.placement.rule',
-        subgroup: true,
-        collapsable: true,
-        collapsed: false,
-        info: getSharedPlacementRuleWarning,
-        editing: { editMode: true },
-    },
-    {
-        id: existingRuleCheckbox,
-        type: 'radio',
-        name: 'creation.app.settings.existingRule',
-        tooltip: 'tooltip.creation.app.settings.existingRule',
-        onSelect: updatePlacementControls,
-        active: true,
-        summarize: summarizeOnline,
-    },
-    {
-        id: 'placementrulecombo',
-        type: 'combobox',
-        opaque: false,
-        placeholder: 'creation.app.settings.existingRule',
-        reverse: reverseExistingRule,
-        fetchAvailable: loadExistingPlacementRules(),
-        onSelect: updateNewRuleControls,
-        validation: {},
-        summarize: () => {},
-    },
-    {
-        id: 'selectedRuleName',
-        type: 'hidden',
-        reverse: reverseExistingRule,
-    },
-    {
-        id: 'enableHubSelfManagement',
-        type: 'hidden',
-        active: isLocalCluster,
-    },
-    {
-        type: 'custom',
-        id: 'clusterSelector',
-        component: <ClusterSelector />,
-        available: [],
-        onSelect: updatePlacementControls,
-        summarize: summarizeSelectorControl,
-    },
-    {
-        id: onlineClusterCheckbox,
-        type: 'radio',
-        name: isLocalCluster ? 'creation.app.settings.onlineClusters' : 'creation.app.settings.onlineClustersOnly',
-        tooltip: isLocalCluster
-            ? 'tooltip.creation.app.settings.onlineClusters'
-            : 'tooltip.creation.app.settings.onlineClustersOnly',
-        active: false,
-        available: [],
-        onSelect: updatePlacementControls,
-        reverse: reverseOnline,
-        summarize: () => {},
-    },
-    {
-        id: localClusterCheckbox,
-        type: isLocalCluster ? 'radio' : 'hidden',
-        name: 'creation.app.settings.localClusters',
-        tooltip: 'tooltip.creation.app.settings.localClusters',
-        onSelect: updatePlacementControls,
-        active: false,
-        available: [],
-        reverse: [
-            'Subscription[0].spec.placement.local',
-            'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
-        ],
-        summarize: () => {},
-    },
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  settings  /////////////////////////////////////
-    {
-        id: 'settingsSection',
-        type: 'section',
-        title: 'creation.app.section.settings',
-        subgroup: true,
-        collapsable: true,
-        collapsed: false,
-        info: getSharedSubscriptionWarning,
-        editing: { editMode: true },
-    },
-    {
-        type: 'custom',
-        id: 'timeWindow',
-        component: <TimeWindow />,
-        available: [],
-        reverse: reverseTimeWindow,
-        summarize: summarizeTimeWindow,
-    },
-]
+const placementData = (isLocalCluster, t) => {
+    return [
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  clusters  /////////////////////////////////////
+        {
+            id: 'clusterSection',
+            type: 'section',
+            title: t('creation.app.placement.rule'),
+            subgroup: true,
+            collapsable: true,
+            collapsed: false,
+            info: getSharedPlacementRuleWarning,
+            editing: { editMode: true },
+        },
+        {
+            id: existingRuleCheckbox,
+            type: 'radio',
+            name: t('creation.app.settings.existingRule'),
+            tooltip: t('tooltip.creation.app.settings.existingRule'),
+            onSelect: updatePlacementControls,
+            active: true,
+            summarize: summarizeOnline,
+        },
+        {
+            id: 'placementrulecombo',
+            type: 'combobox',
+            opaque: false,
+            placeholder: t('creation.app.settings.existingRule'),
+            reverse: reverseExistingRule,
+            fetchAvailable: loadExistingPlacementRules(t),
+            onSelect: updateNewRuleControls,
+            validation: {},
+            summarize: () => {},
+        },
+        {
+            id: 'selectedRuleName',
+            type: 'hidden',
+            reverse: reverseExistingRule,
+        },
+        {
+            id: 'enableHubSelfManagement',
+            type: 'hidden',
+            active: isLocalCluster,
+        },
+        {
+            type: 'custom',
+            id: 'clusterSelector',
+            component: <ClusterSelector />,
+            available: [],
+            onSelect: updatePlacementControls,
+            summarize: summarizeSelectorControl,
+        },
+        {
+            id: onlineClusterCheckbox,
+            type: 'radio',
+            name: isLocalCluster
+                ? t('creation.app.settings.onlineClusters')
+                : t('creation.app.settings.onlineClustersOnly'),
+            tooltip: isLocalCluster
+                ? t('tooltip.creation.app.settings.onlineClusters')
+                : t('tooltip.creation.app.settings.onlineClustersOnly'),
+            active: false,
+            available: [],
+            onSelect: updatePlacementControls,
+            reverse: reverseOnline,
+            summarize: () => {},
+        },
+        {
+            id: localClusterCheckbox,
+            type: isLocalCluster ? 'radio' : 'hidden',
+            name: t('creation.app.settings.localClusters'),
+            tooltip: t('tooltip.creation.app.settings.localClusters'),
+            onSelect: updatePlacementControls,
+            active: false,
+            available: [],
+            reverse: [
+                'Subscription[0].spec.placement.local',
+                'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+            ],
+            summarize: () => {},
+        },
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////  settings  /////////////////////////////////////
+        {
+            id: 'settingsSection',
+            type: 'section',
+            title: t('creation.app.section.settings'),
+            subgroup: true,
+            collapsable: true,
+            collapsed: false,
+            info: getSharedSubscriptionWarning,
+            editing: { editMode: true },
+        },
+        {
+            type: 'custom',
+            id: 'timeWindow',
+            component: <TimeWindow />,
+            available: [],
+            reverse: reverseTimeWindow,
+            summarize: summarizeTimeWindow,
+        },
+    ]
+}
 
 export default placementData

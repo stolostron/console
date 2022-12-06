@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
+import { Cluster, ClusterStatus, getClusterStatusLabel, getLatestAnsibleJob } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -189,7 +189,11 @@ export function StatusField(props: { cluster: Cluster }) {
             if (!location.pathname.endsWith('/overview')) {
                 hasAction = true
                 Action = () => (
-                    <Link to={`${NavigationPath.clusterOverview.replace(':id', props.cluster?.name!)}`}>
+                    <Link
+                        to={`${NavigationPath.clusterOverview
+                            .replace(':namespace', props.cluster?.namespace!)
+                            .replace(':name', props.cluster?.name!)}`}
+                    >
                         {t('Go to Overview')}
                     </Link>
                 )
@@ -198,10 +202,41 @@ export function StatusField(props: { cluster: Cluster }) {
             break
     }
 
+    /*
+        t('status.creating.message')
+        t('status.degraded.message')
+        t('status.deprovisionfailed.message')
+        t('status.destroying.message')
+        t('status.detached.message')
+        t('status.detaching.message')
+        t('status.draft.message')
+        t('status.failed.message')
+        t('status.hibernating.message')
+        t('status.importfailed.message')
+        t('status.importing.message')
+        t('status.needsapproval.message')
+        t('status.notaccepted.message')
+        t('status.notstarted.message')
+        t('status.offline.message')
+        t('status.pending.message')
+        t('status.pendingimport.message')
+        t('status.posthookfailed.message')
+        t('status.posthookjob.message')
+        t('status.prehookfailed.message')
+        t('status.prehookjob.message')
+        t('status.provisionfailed.message')
+        t('status.ready.message')
+        t('status.resuming.message')
+        t('status.running.message')
+        t('status.stopping.message')
+        t('status.unknown.message')
+        t('status.upgradefailed.message')
+    */
+
     return (
         <AcmInlineStatus
             type={type}
-            status={t(`status.${props.cluster?.status}`)}
+            status={getClusterStatusLabel(props.cluster?.status, t)}
             popover={{
                 maxWidth: '448px',
                 bodyContent: (

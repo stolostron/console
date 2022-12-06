@@ -11,6 +11,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
 import { listMultiClusterEngines } from '../../../../../../resources/multi-cluster-engine'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 const {
     ClusterDeploymentProgress,
@@ -63,6 +64,8 @@ const AIClusterDetails: React.FC = () => {
     >({ open: false })
 
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
+
+    const { t } = useTranslation()
 
     useEffect(() => {
         const getAssistedServiceNS = async () => {
@@ -123,7 +126,7 @@ const AIClusterDetails: React.FC = () => {
             )}
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
                 <div style={{ marginBottom: '24px' }}>
-                    <AcmExpandableCard title="Cluster installation progress" id="aiprogress">
+                    <AcmExpandableCard title={t('Cluster installation progress')} id="aiprogress">
                         {!!clusterDeployment && !!agentClusterInstall && (
                             <Stack hasGutter>
                                 <StackItem>
@@ -162,7 +165,7 @@ const AIClusterDetails: React.FC = () => {
                                             id="cluster-events-button"
                                             entityKind="cluster"
                                             cluster={cluster}
-                                            title="Cluster Events"
+                                            title={t('Cluster Events')}
                                             variant={ButtonVariant.link}
                                             style={{ textAlign: 'right' }}
                                             onFetchEvents={onFetchEvents}
@@ -192,7 +195,7 @@ const AIClusterDetails: React.FC = () => {
                 </div>
             )}
             <div style={{ marginBottom: '24px' }}>
-                <AcmExpandableCard title="Cluster hosts" id="aihosts">
+                <AcmExpandableCard title={t('Cluster hosts')} id="aihosts">
                     {!!agentClusterInstall && (
                         <>
                             <BulkActionModel<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />

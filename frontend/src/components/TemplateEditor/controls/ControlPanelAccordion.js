@@ -96,7 +96,7 @@ class ControlPanelAccordion extends React.Component {
                         onKeyPress={handleCollapseKey}
                         ref={this.setControlSectionTitleRef.bind(this, control)}
                     >
-                        {note && <div className="creation-view-controls-note">{i18n(note)}</div>}
+                        {note && <div className="creation-view-controls-note">{note}</div>}
                         {label && (
                             <div className={mainTitleClasses}>
                                 {collapsable && (

@@ -82,12 +82,11 @@ const mockDetails = {
     details: [
         {
             type: 'label',
-            labelKey: 'resource.type',
-            labelValue: undefined,
+            labelValue: 'resource.type',
             value: 'deployment',
             indent: undefined,
         },
-        { type: 'label', labelKey: 'resource.container.logs' },
+        { type: 'label', labelValue: 'resource.container.logs' },
         {
             type: 'link',
             value: {
@@ -129,42 +128,37 @@ const mockDetails = {
         {
             type: 'label',
             label: 'resource.clustername',
-            labelValue: undefined,
             value: 'localcluster',
             indent: undefined,
             status: 'error',
         },
         {
             type: 'label',
-            labelKey: 'resource.hostip',
+            labelValue: 'resource.hostip',
             value: '10.16.44.146',
             indent: undefined,
         },
         {
             type: 'label',
-            labelKey: 'resource.podip',
-            labelValue: undefined,
+            labelValue: 'resource.podip',
             value: '10.254.12.220',
             indent: undefined,
         },
         {
             type: 'label',
-            labelKey: 'resource.created',
-            labelValue: undefined,
+            labelValue: 'resource.created',
             value: '5 days ago',
             indent: undefined,
         },
         {
             type: 'label',
-            labelKey: 'resource.status',
-            labelValue: undefined,
+            labelValue: 'resource.status',
             value: 'Running',
             indent: undefined,
         },
         {
             type: 'label',
-            labelKey: 'resource.restarts',
-            labelValue: undefined,
+            labelValue: 'resource.restarts',
             value: 1,
             indent: undefined,
         },

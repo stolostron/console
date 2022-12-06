@@ -3,17 +3,20 @@
 'use strict'
 
 import { getControlDataRHV } from './ControlDataRHV'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 describe('getControlDataRHV', () => {
     it('get control data for RHV - default', () => {
-        getControlDataRHV()
+        getControlDataRHV(t, undefined, true, true)
     })
 
     it('get control data for RHV - no automation', () => {
-        getControlDataRHV(false, true)
+        getControlDataRHV(t, undefined, false, true)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataRHV(true, false)
+        getControlDataRHV(t, undefined, true, false)
     })
 })

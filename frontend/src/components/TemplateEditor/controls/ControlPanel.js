@@ -703,7 +703,7 @@ class ControlPanel extends React.Component {
     }
 
     renderDeleteGroupButton(control, inx) {
-        const { i18n, controlData } = this.props
+        const { controlData } = this.props
         const {
             prompts: { deletePrompt },
         } = control
@@ -715,14 +715,13 @@ class ControlPanel extends React.Component {
                 handleGroupChange()
             }
         }
-        const text = i18n(deletePrompt)
         return (
             <div
                 className="creation-view-controls-delete-button"
                 tabIndex="0"
                 role={'button'}
-                title={text}
-                aria-label={text}
+                title={deletePrompt}
+                aria-label={deletePrompt}
                 onClick={handleGroupChange}
                 onKeyPress={handleGroupChangeKey}
             >
@@ -732,7 +731,7 @@ class ControlPanel extends React.Component {
     }
 
     renderAddGroupButton(control) {
-        const { i18n, controlData } = this.props
+        const { controlData } = this.props
         const {
             prompts: { addPrompt },
         } = control
@@ -744,7 +743,6 @@ class ControlPanel extends React.Component {
                 handleGroupChange()
             }
         }
-        const text = i18n(addPrompt)
         return (
             <div className="creation-view-controls-add-value-container">
                 <div
@@ -752,12 +750,12 @@ class ControlPanel extends React.Component {
                     className="creation-view-controls-add-button"
                     tabIndex="0"
                     role={'button'}
-                    title={text}
-                    aria-label={text}
+                    title={addPrompt}
+                    aria-label={addPrompt}
                     onClick={handleGroupChange}
                     onKeyPress={handleGroupChangeKey}
                 >
-                    {text}
+                    {addPrompt}
                     <AddIcon className="icon" />
                 </div>
             </div>

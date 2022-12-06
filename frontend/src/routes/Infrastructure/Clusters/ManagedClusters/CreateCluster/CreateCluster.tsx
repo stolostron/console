@@ -101,9 +101,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
     // setup translation
     const { t } = useTranslation()
-    const i18n = (key: string, arg: any) => {
-        return t(key, arg)
-    }
     const controlPlaneBreadCrumbBM = { text: t('Control plane type'), to: NavigationPath.createBMControlPlane }
     const controlPlaneBreadCrumbAWS = { text: t('Control plane type'), to: NavigationPath.createAWSControlPlane }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
@@ -369,11 +366,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         }
     }, [infrastructureType, isInfraEnvAvailable, t])
 
-    // cluster set dropdown won't update without this
-    if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
-        return null
-    }
-
     let controlData: any[]
     const breadcrumbs = [
         { text: t('Clusters'), to: NavigationPath.clusters },
@@ -385,11 +377,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     const handleModalToggle = () => {
         setIsModalOpen(!isModalOpen)
     }
-
     switch (infrastructureType) {
         case Provider.aws:
             breadcrumbs.push(controlPlaneBreadCrumbAWS)
             controlData = getControlDataAWS(
+                t,
                 handleModalToggle,
                 true,
                 settings.awsPrivateWizardStep === 'enabled',
@@ -399,57 +391,66 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
             break
         case Provider.gcp:
             controlData = getControlDataGCP(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.azure:
             controlData = getControlDataAZR(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.vmware:
             controlData = getControlDataVMW(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.openstack:
             controlData = getControlDataOST(
+                t,
                 handleModalToggle,
                 true,
-                settings.singleNodeOpenshift === 'enabled',
-                isACMAvailable
+                isACMAvailable,
+                settings.singleNodeOpenshift === 'enabled'
             )
             break
         case Provider.redhatvirtualization:
-            controlData = getControlDataRHV(handleModalToggle, true, isACMAvailable)
+            controlData = getControlDataRHV(t, handleModalToggle, true, isACMAvailable)
             break
         case HostInventoryInfrastructureType.CIMHypershift:
             template = Handlebars.compile(hypershiftTemplate)
-            controlData = getControlDataHypershift(handleModalToggle, <Warning />, true, isACMAvailable)
+            controlData = getControlDataHypershift(t, handleModalToggle, <Warning />, true, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.CIM:
             template = Handlebars.compile(cimTemplate)
-            controlData = getControlDataCIM(handleModalToggle, <Warning />, isACMAvailable)
+            controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM)
             break
         case HostInventoryInfrastructureType.AI:
             template = Handlebars.compile(aiTemplate)
-            controlData = getControlDataAI(handleModalToggle, isACMAvailable)
+            controlData = getControlDataAI(t, handleModalToggle, isACMAvailable)
             breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
             break
     }
 
     breadcrumbs.push({ text: t('page.header.create-cluster'), to: NavigationPath.emptyPath })
+
+    // cluster set dropdown won't update without this
+    if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
+        return null
+    }
 
     return (
         <AcmPage
@@ -521,7 +522,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                                         backButtonOverride,
                                     }}
                                     logging={process.env.NODE_ENV !== 'production'}
-                                    i18n={i18n}
+                                    i18n={t}
                                     onControlInitialize={onControlInitialize}
                                     onControlChange={onControlChange}
                                     ref={templateEditorRef}

@@ -7,7 +7,7 @@ module.exports = {
         const files = staged.join(' ')
         return [
             `npm run lint:fix:frontend -- ${files}`,
-            `npm run i18n:frontend -- ${files}`,
+            `npm run i18n:frontend`,
             'git diff --exit-code frontend/public/locales/en/translation.json',
         ]
     },

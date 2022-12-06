@@ -238,16 +238,42 @@ export default function AdvancedConfiguration() {
         const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
         const actions: IAcmRowAction<any>[] = []
 
+        let canDeleteResource = false
+        let editActionLabel,
+            searchActionLabel,
+            deleteActionLabel: string | undefined = undefined
+
+        switch (_.get(item, 'kind')) {
+            case SubscriptionKind:
+                canDeleteResource = canDeleteSubscription
+                editActionLabel = t('Edit subscription')
+                searchActionLabel = t('Search subscription')
+                deleteActionLabel = t('Delete subscription')
+                break
+            case ChannelKind:
+                canDeleteResource = canDeleteChannel
+                editActionLabel = t('Edit channel')
+                searchActionLabel = t('Search channel')
+                deleteActionLabel = t('Delete channel')
+                break
+            case PlacementKind:
+                canDeleteResource = canDeletePlacement
+                editActionLabel = t('Edit placement')
+                searchActionLabel = t('Search placement')
+                deleteActionLabel = t('Delete placement')
+                break
+            case PlacementRuleKind:
+                canDeleteResource = canDeletePlacementRule
+                editActionLabel = t('Edit placement rule')
+                searchActionLabel = t('Search placement rule')
+                deleteActionLabel = t('Delete placement rule')
+                break
+        }
+
         // edit
         actions.push({
             id: `edit${kind}`,
-            /*
-                t('Edit subscription')
-                t('Edit channel')
-                t('Edit placement')
-                t('Edit placement rule')
-                */
-            title: t(`Edit ${kind}`),
+            title: editActionLabel,
             click: () => {
                 const searchParams: any = {
                     properties: {
@@ -266,13 +292,7 @@ export default function AdvancedConfiguration() {
         // search
         actions.push({
             id: `search${kind}`,
-            /*
-                t('Search subscription')
-                t('Search channel')
-                t('Search placement')
-                t('Search placement rule')
-                */
-            title: t(`Search ${kind}`),
+            title: searchActionLabel,
             click: () => {
                 const [apigroup, apiversion] = item.apiVersion.split('/')
                 const searchLink = getSearchLink({
@@ -289,33 +309,10 @@ export default function AdvancedConfiguration() {
             isDisabled: false, // implement when we use search for remote Argo apps
         })
 
-        let canDeleteResource = false
-
-        switch (_.get(item, 'kind')) {
-            case SubscriptionKind:
-                canDeleteResource = canDeleteSubscription
-                break
-            case ChannelKind:
-                canDeleteResource = canDeleteChannel
-                break
-            case PlacementKind:
-                canDeleteResource = canDeletePlacement
-                break
-            case PlacementRuleKind:
-                canDeleteResource = canDeletePlacementRule
-                break
-        }
-
         //delete
         actions.push({
             id: `delete${kind}`,
-            /*
-                t('Delete subscription')
-                t('Delete channel')
-                t('Delete placement')
-                t('Delete placement rule')
-                */
-            title: t(`Delete ${kind}`),
+            title: deleteActionLabel,
             click: () => {
                 setModalProps({
                     open: true,
@@ -383,8 +380,9 @@ export default function AdvancedConfiguration() {
                         },
                         sort: 'spec.channel',
                         transforms: [cellWidth(20)],
-                        tooltip:
-                            'Displays the name of the channel used by the subscription. Click to search for the channel.',
+                        tooltip: t(
+                            'Displays the name of the channel used by the subscription. Click to search for the channel.'
+                        ),
                     },
                     {
                         header: t('Applications'),
@@ -411,8 +409,9 @@ export default function AdvancedConfiguration() {
                             return appCount
                         },
                         sort: 'transformed.appCount',
-                        tooltip:
-                            'Displays the number of applications using the subscription. Click to search for all related applications.',
+                        tooltip: t(
+                            'Displays the number of applications using the subscription. Click to search for all related applications.'
+                        ),
                     },
                     {
                         header: t('Clusters'),
@@ -429,8 +428,9 @@ export default function AdvancedConfiguration() {
                             return getClusterCountString(t, clusterCount)
                         },
                         sort: 'transformed.clusterCount',
-                        tooltip:
-                            'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.',
+                        tooltip: t(
+                            'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.'
+                        ),
                     },
                     {
                         header: t('Time window'),
@@ -442,8 +442,9 @@ export default function AdvancedConfiguration() {
                             return ''
                         },
                         sort: 'spec.timewindow.windowtype',
-                        tooltip:
-                            'Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.',
+                        tooltip: t(
+                            'Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.'
+                        ),
                     },
                     {
                         header: t('Created'),
@@ -502,7 +503,7 @@ export default function AdvancedConfiguration() {
                             }
                         },
                         sort: 'spec.type',
-                        tooltip: 'Provides a link to the resource repository that is represented by the channel.',
+                        tooltip: t('Provides a link to the resource repository that is represented by the channel.'),
                     },
                     {
                         header: t('Subscriptions'),
@@ -525,15 +526,17 @@ export default function AdvancedConfiguration() {
                             return subscriptionCount
                         },
                         sort: 'transformed.subscriptionCount',
-                        tooltip:
-                            'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.',
+                        tooltip: t(
+                            'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.'
+                        ),
                     },
                     {
                         header: t('Clusters'),
                         cell: 'transformed.clusterCount',
                         sort: 'transformed.clusterCount',
-                        tooltip:
-                            'Displays the number of remote and local clusters where resources from the channel are deployed.',
+                        tooltip: t(
+                            'Displays the number of remote and local clusters where resources from the channel are deployed.'
+                        ),
                     },
                     {
                         header: t('Created'),
@@ -618,15 +621,17 @@ export default function AdvancedConfiguration() {
                         header: t('Clusters'),
                         cell: 'transformed.clusterCount',
                         sort: 'transformed.clusterCount',
-                        tooltip:
-                            'Displays the number of remote and local clusters where resources are deployed because of the placement rule.',
+                        tooltip: t(
+                            'Displays the number of remote and local clusters where resources are deployed because of the placement rule.'
+                        ),
                     },
                     {
                         header: t('Replicas'),
                         cell: 'spec.clusterReplicas',
                         sort: 'spec.clusterReplicas',
-                        tooltip:
-                            'Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.',
+                        tooltip: t(
+                            'Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.'
+                        ),
                     },
                     {
                         header: t('Created'),

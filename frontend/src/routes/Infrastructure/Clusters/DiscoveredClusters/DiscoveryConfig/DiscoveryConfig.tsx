@@ -237,7 +237,7 @@ export function DiscoveryConfigPageContent(props: {
                     confirmText: t('discoveryConfig.delete.btn'),
                     message: (
                         <Trans
-                            i18nKey={'discoveryConfig.delete.message'}
+                            i18nKey="discoveryConfig.delete.message"
                             components={{ bold: <strong /> }}
                             values={{ discoveryConfigNamespace: discoveryConfig!.metadata!.namespace }}
                         />

@@ -433,7 +433,7 @@ export function CreateSubscriptionApplication(
                 type={'application'}
                 title={t('application.create.yaml')}
                 monacoEditor={<MonacoEditor />}
-                controlData={getControlData(isLocalCluster, handleModalToggle)}
+                controlData={getControlData(isLocalCluster, handleModalToggle, t)}
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}
