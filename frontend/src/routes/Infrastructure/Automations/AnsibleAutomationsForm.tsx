@@ -13,7 +13,6 @@ import {
     Radio,
     SelectOption,
     SelectVariant,
-    Tooltip,
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
@@ -254,9 +253,7 @@ export function AnsibleAutomationsForm(props: {
         return [
             <Flex style={{ gap: '8px' }} key={ansibleJob.name}>
                 <FlexItem>
-                    <Tooltip content={ansibleJob.type === 'Job' ? t('Job template') : t('Workflow job template')}>
-                        <Label color="blue">{ansibleJob.type === 'Job' ? t('JT') : t('WJT')}</Label>
-                    </Tooltip>
+                    <Label color="blue">{ansibleJob.type === 'Job' ? t('Job') : t('Workflow')}</Label>
                 </FlexItem>
                 <FlexItem>{ansibleJob.name}</FlexItem>
                 {ansibleJob.extra_vars && (
