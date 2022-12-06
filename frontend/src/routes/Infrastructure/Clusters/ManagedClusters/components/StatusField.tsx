@@ -189,7 +189,11 @@ export function StatusField(props: { cluster: Cluster }) {
             if (!location.pathname.endsWith('/overview')) {
                 hasAction = true
                 Action = () => (
-                    <Link to={`${NavigationPath.clusterOverview.replace(':id', props.cluster?.name!)}`}>
+                    <Link
+                        to={`${NavigationPath.clusterOverview
+                            .replace(':namespace', props.cluster?.namespace!)
+                            .replace(':name', props.cluster?.name!)}`}
+                    >
                         {t('Go to Overview')}
                     </Link>
                 )
