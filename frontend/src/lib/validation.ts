@@ -87,8 +87,9 @@ export function validateJSON(value: string, t: TFunction) {
     }
     return undefined
 }
+
+export const VALID_DNS_NAME_TESTER = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
 export function validateBaseDnsName(value: string, t: TFunction) {
-    const VALID_DNS_NAME_TESTER = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
     if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
         return t('validate.baseDnsName.start')
     }

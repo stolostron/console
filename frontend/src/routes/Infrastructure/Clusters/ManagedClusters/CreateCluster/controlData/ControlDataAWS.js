@@ -18,9 +18,9 @@ import {
     proxyControlData,
 } from './ControlDataHelpers'
 import {
-    VALIDATE_ALPHANUMERIC,
-    VALIDATE_ALPHANUMERIC_PERIOD,
-    VALIDATE_NUMERIC,
+    getAlphanumericValidator,
+    getAlphanumericWithPeriodValidator,
+    getNumericValidator,
 } from '../../../../../../components/TemplateEditor'
 
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
@@ -707,7 +707,7 @@ const awsPrivateControlData = (t) => {
             disabled: true,
             placeholder: t('creation.aws.ami.placeholder'),
             active: '',
-            validation: VALIDATE_ALPHANUMERIC,
+            validation: getAlphanumericValidator(t),
         },
         {
             name: t('creation.aws.hostedZone'),
@@ -717,7 +717,7 @@ const awsPrivateControlData = (t) => {
             disabled: true,
             placeholder: t('creation.aws.hostedZone.placeholder'),
             active: '',
-            validation: VALIDATE_ALPHANUMERIC_PERIOD,
+            validation: getAlphanumericWithPeriodValidator(t),
         },
         ///////////////////////  subnets  /////////////////////////////////////
         {
@@ -741,7 +741,7 @@ const awsPrivateControlData = (t) => {
                     type: 'values',
                     placeholder: t('creation.aws.subnetID.placeholder'),
                     active: [],
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                 },
             ],
         },
@@ -773,7 +773,7 @@ const awsPrivateControlData = (t) => {
                     type: 'text',
                     placeholder: t('creation.aws.serviceEndpointName.placeholder'),
                     active: '',
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                 },
                 {
                     name: t('URL'),
@@ -782,7 +782,7 @@ const awsPrivateControlData = (t) => {
                     type: 'text',
                     placeholder: t('creation.aws.serviceEndpointUrl.placeholder'),
                     active: '',
-                    validation: VALIDATE_ALPHANUMERIC_PERIOD,
+                    validation: getAlphanumericWithPeriodValidator(t),
                 },
             ],
         },
@@ -903,7 +903,7 @@ export const getControlDataAWS = (
             type: 'combobox',
             active: 'us-east-1',
             available: Object.keys(awsRegions),
-            validation: VALIDATE_ALPHANUMERIC,
+            validation: getAlphanumericValidator(t),
             cacheUserValueKey: 'create.cluster.region',
             onSelect: setAWSZones,
             reverse: 'ClusterDeployment[0].metadata.labels.region',
@@ -933,7 +933,7 @@ export const getControlDataAWS = (
                     available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
                     placeholder: t('creation.ocp.add.zones'),
                     cacheUserValueKey: 'create.cluster.aws.master.zones',
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                     multiselect: true,
                 },
                 ///////////////////////  instance type  /////////////////////////////////////
@@ -960,7 +960,7 @@ export const getControlDataAWS = (
                     type: 'combobox',
                     active: '100',
                     available: ['100', '300', '500', '800', '1000', '1200'],
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.master.root.storage',
                 },
             ],
@@ -994,7 +994,7 @@ export const getControlDataAWS = (
                     id: 'workerName',
                     type: 'text',
                     active: 'worker',
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                 },
                 ///////////////////////  zone  /////////////////////////////////////
                 {
@@ -1005,7 +1005,7 @@ export const getControlDataAWS = (
                     available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
                     placeholder: t('creation.ocp.add.zones'),
                     cacheUserValueKey: 'create.cluster.aws.worker.zones',
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                     multiselect: true,
                 },
                 ///////////////////////  instance type  /////////////////////////////////////
@@ -1031,7 +1031,7 @@ export const getControlDataAWS = (
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
                 ///////////////////////  storage  /////////////////////////////////////
@@ -1042,7 +1042,7 @@ export const getControlDataAWS = (
                     type: 'combobox',
                     active: '100',
                     available: ['100', '300', '500', '800', '1000', '1200'],
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.persistent.storage',
                 },
             ],

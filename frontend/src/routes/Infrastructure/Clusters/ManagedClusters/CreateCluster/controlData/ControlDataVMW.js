@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP } from '../../../../../../components/TemplateEditor'
+import { getNumericValidator, getIPValidator } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
@@ -155,7 +155,7 @@ export const getControlDataVMW = (
                     id: 'masterCoresPerSocket',
                     type: 'number',
                     initial: '2',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  cpus  /////////////////////////////////////
                 {
@@ -164,7 +164,7 @@ export const getControlDataVMW = (
                     id: 'masterCpus',
                     type: 'number',
                     initial: '4',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  memoryMB  /////////////////////////////////////
                 {
@@ -173,7 +173,7 @@ export const getControlDataVMW = (
                     id: 'masterMemoryMB',
                     type: 'number',
                     initial: '16384',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  root volume  /////////////////////////////////////
                 {
@@ -182,7 +182,7 @@ export const getControlDataVMW = (
                     id: 'masterRootStorage',
                     type: 'number',
                     initial: '120',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
             ],
         },
@@ -227,7 +227,7 @@ export const getControlDataVMW = (
                     id: 'coresPerSocket',
                     type: 'number',
                     initial: '2',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  cpus  /////////////////////////////////////
                 {
@@ -236,7 +236,7 @@ export const getControlDataVMW = (
                     id: 'cpus',
                     type: 'number',
                     initial: '4',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  memoryMB  /////////////////////////////////////
                 {
@@ -245,7 +245,7 @@ export const getControlDataVMW = (
                     id: 'memoryMB',
                     type: 'number',
                     initial: '16384',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  diskSizeGB  /////////////////////////////////////
                 {
@@ -254,7 +254,7 @@ export const getControlDataVMW = (
                     id: 'diskSizeGB',
                     type: 'number',
                     initial: '120',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                 },
                 ///////////////////////  compute node count  /////////////////////////////////////
                 {
@@ -263,7 +263,7 @@ export const getControlDataVMW = (
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
             ],
@@ -290,7 +290,7 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.api.vip'),
             placeholder: t('creation.ocp.api.vip.placeholder'),
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         {
             id: 'ingressVIP',
@@ -299,7 +299,7 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.ingress.vip'),
             placeholder: t('creation.ocp.ingress.vip.placeholder'),
             active: '',
-            validation: VALIDATE_IP,
+            validation: getIPValidator(t),
         },
         ...proxyControlData(t),
         ///////////////////////  openstack  /////////////////////////////////////

@@ -16,7 +16,7 @@ import {
     onImageChange,
     proxyControlData,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from '../../../../../../components/TemplateEditor'
+import { getAlphanumericValidator, getNumericValidator } from '../../../../../../components/TemplateEditor'
 
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -561,7 +561,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
             type: 'combobox',
             active: 'centralus',
             available: regions,
-            validation: VALIDATE_ALPHANUMERIC,
+            validation: getAlphanumericValidator(t),
             cacheUserValueKey: 'create.cluster.region',
             reverse: 'ClusterDeployment[0].metadata.labels.region',
         },
@@ -605,7 +605,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
                     type: 'combobox',
                     active: '128',
                     available: ['128', '256', '512', '1024', '2048'],
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.master.root.storage',
                 },
             ],
@@ -653,7 +653,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
                     active: ['1', '2', '3'],
                     available: ['1', '2', '3'],
                     cacheUserValueKey: 'create.cluster.aws.worker.zones',
-                    validation: VALIDATE_ALPHANUMERIC,
+                    validation: getAlphanumericValidator(t),
                     multiselect: true,
                 },
                 ///////////////////////  instance type  /////////////////////////////////////
@@ -679,7 +679,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
                     id: 'computeNodeCount',
                     type: 'number',
                     initial: '3',
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.compute.node.count',
                 },
                 ///////////////////////  storage  /////////////////////////////////////
@@ -690,7 +690,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
                     type: 'combobox',
                     active: '128',
                     available: ['128', '256', '512', '1024', '2048'],
-                    validation: VALIDATE_NUMERIC,
+                    validation: getNumericValidator(t),
                     cacheUserValueKey: 'create.cluster.persistent.storage',
                 },
             ],

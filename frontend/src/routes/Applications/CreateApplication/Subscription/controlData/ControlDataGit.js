@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from '../../../../../components/TemplateEditor'
+import { VALID_REPOPATH, getURLValidator, getSourcePath } from '../../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
 import getControlDataPrePostTasks from './ControlDataPrePostTasks'
 import {
@@ -148,7 +148,7 @@ const githubChannelData = (isLocalCluster, handleModalToggle, t) => {
             active: '',
             placeholder: t('app.enter.select.github.url'),
             available: [],
-            validation: VALIDATE_URL,
+            validation: getURLValidator(t),
             fetchAvailable: loadExistingChannels('git', t),
             reverse: 'Channel[0].spec.pathname',
             onSelect: updateChannelControls,
