@@ -78,6 +78,8 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
             return t('status.failed')
         case ClusterStatus.hibernating:
             return t('status.hibernating')
+        case ClusterStatus.importfailed:
+            return t('status.importfailed')
         case ClusterStatus.importing:
             return t('status.importing')
         case ClusterStatus.needsapproval:
@@ -90,6 +92,14 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
             return t('status.offline')
         case ClusterStatus.pending:
             return t('status.pending')
+        case ClusterStatus.pendingimport:
+            return t('status.pendingimport')
+        case ClusterStatus.posthookfailed:
+            return t('status.posthookfailed')
+        case ClusterStatus.prehookfailed:
+            return t('status.prehookfailed')
+        case ClusterStatus.provisionfailed:
+            return t('status.provisionfailed')
         case ClusterStatus.ready:
             return t('status.ready')
         case ClusterStatus.resuming:
