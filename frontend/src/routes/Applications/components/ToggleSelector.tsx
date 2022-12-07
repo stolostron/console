@@ -26,11 +26,11 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     const t = props.t
     const defaultOption = 'subscriptions'
     const options = [
-        { id: 'subscriptions', title: 'Subscriptions' },
-        { id: 'channels', title: 'Channels' },
-        { id: 'placements', title: 'Placements' },
-        { id: 'placementrules', title: 'Placement rules' },
-    ]
+        { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions") },
+        { id: 'channels', title: t('Channels'), emptyMessage: t("You don't have any channels") },
+        { id: 'placements', title: t('Placements'), emptyMessage: t("You don't have any placements") },
+        { id: 'placementrules', title: t('Placement rules'), emptyMessage: t("You don't have any placement rules") },
+    ] as const
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
     const selectedResources = _.get(props.table, `${selectedId}`)
@@ -52,13 +52,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                         key="switcher"
                         options={options.map(({ id, title }) => ({
                             id,
-                            /*
-                                t('Subscriptions')
-                                t('Channels')
-                                t('Placements')
-                                t('Placement rules')
-                                */
-                            contents: t(title),
+                            contents: title,
                         }))}
                         defaultOption={defaultOption}
                     />
@@ -69,22 +63,12 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                         message={
                             selectedId === 'subscriptions' ? (
                                 <Trans
-                                    i18nKey={'advancedConfiguration.empty.subtitle'}
+                                    i18nKey="advancedConfiguration.empty.subtitle"
                                     components={{ italic: <em />, bold: <strong /> }}
                                 />
                             ) : null
                         }
-                        /*
-                            t('You don\'t have any subscriptions')
-                            t('You don\'t have any channels')
-                            t('You don\'t have any placements')
-                            t('You don\'t have any placement rules')
-                            */
-                        title={t(
-                            `You don't have any ${options
-                                .find((option) => option.id === selectedId)
-                                ?.title.toLowerCase()}`
-                        )}
+                        title={options.find((option) => option.id === selectedId)?.emptyMessage || ''}
                         action={
                             <Fragment>
                                 {selectedId === 'subscriptions' && (
@@ -144,27 +128,27 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
     )
 }
 
-function getSelectedId(props: ISelectedIds) {
+function getSelectedId<T extends readonly { readonly id: string }[]>(props: {
+    location?: Location
+    options: T
+    defaultOption: T[number]['id']
+    queryParam?: string
+    query?: queryString.ParsedQuery<string>
+}): T[number]['id'] {
     const { options, queryParam, defaultOption, location } = props
     let { query } = props
     if (!query) {
         query = location && queryString.parse(location.search)
     }
     const validOptionIds = options.map((o) => o.id)
-    const isQueryParam = query && queryParam ? (query[queryParam] as string) : undefined
-    const isValidOptionIds = isQueryParam ? validOptionIds.includes(isQueryParam) : false
-    return queryParam && query && isValidOptionIds ? query[queryParam] : defaultOption
+    const queryParamValue = query && queryParam ? (query[queryParam] as string) : undefined
+    const validQueryParamValue =
+        queryParamValue && validOptionIds.includes(queryParamValue) ? queryParamValue : undefined
+    return validQueryParamValue || defaultOption
 }
 
 export interface IQuerySwitcherInterface {
     options: { id: string; contents: string }[]
-    defaultOption: String
+    defaultOption: string
     queryParam?: string
-}
-export interface ISelectedIds {
-    location?: Location
-    options: { id: string; contents?: string }[]
-    defaultOption: String
-    queryParam?: string
-    query?: queryString.ParsedQuery<string>
 }

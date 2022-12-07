@@ -172,7 +172,7 @@ export function DistributionField(props: {
         if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
             statusType = StatusType.warning
             if (props.cluster?.distribution?.upgradeInfo?.prehooks?.failed) {
-                statusTitle = 'upgrade.ansible.prehookjob.title'
+                statusTitle = t('upgrade.ansible.prehookjob.title')
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.prehook.failure')}
@@ -180,7 +180,7 @@ export function DistributionField(props: {
                     </Fragment>
                 )
             } else {
-                statusTitle = 'upgrade.ansible.posthookjob.title'
+                statusTitle = t('upgrade.ansible.posthookjob.title')
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.posthook.failure')}
@@ -194,9 +194,9 @@ export function DistributionField(props: {
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={statusType}
-                    status={t(statusTitle)}
+                    status={statusTitle}
                     popover={{
-                        headerContent: t(statusTitle),
+                        headerContent: statusTitle,
                         bodyContent: statusMessage || '',
                         footerContent: footerContent,
                     }}

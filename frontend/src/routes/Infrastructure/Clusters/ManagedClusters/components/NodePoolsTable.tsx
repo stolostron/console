@@ -5,7 +5,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
-import { NodePool, NodePoolDefinition } from '../../../../../resources'
+import { HypershiftCloudPlatformType, NodePool, NodePoolDefinition } from '../../../../../resources'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -13,7 +13,6 @@ import { DistributionField } from './DistributionField'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
-import { HypershiftCloudPlatformType } from './NodePoolForm'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 
@@ -80,9 +79,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
     const renderHealthCheck = useCallback(
         (nodepool: NodePool) => {
-            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? 'True' : 'False'
+            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? t('True') : t('False')
 
-            return <span>{t(healthCheck)}</span>
+            return <span>{healthCheck}</span>
         },
         [t]
     )
@@ -298,7 +297,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             <AcmButton
                 id="addNodepoolEmptyState"
                 children={t('Add node pool')}
-                variant={ButtonVariant.primary}
+                variant={ButtonVariant.secondary}
                 onClick={() => toggleAddNodepoolModal()}
                 tooltip={
                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
@@ -348,7 +347,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                               'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : t('rbac.unauthorized'),
-                                variant: ButtonVariant.primary,
+                                variant: ButtonVariant.secondary,
                             },
                         ]}
                         rowActionResolver={rowActionResolver}

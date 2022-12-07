@@ -75,36 +75,35 @@ describe('Applications Page', () => {
         await waitForText(mockApplication0.metadata.name!)
     })
 
-    test('should display app info', async () => {
+    test('should display info', async () => {
+        // app
         expect(screen.getByText(SubscriptionKind)).toBeTruthy()
         expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
         expect(screen.getAllByText('Local')).toBeTruthy()
         expect(screen.getAllByText('Git')).toBeTruthy()
         expect(screen.getByText('a few seconds ago')).toBeTruthy()
-    })
 
-    test('should display appset', async () => {
+        // appset
         expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
         expect(screen.getByText(ApplicationSetKind)).toBeTruthy()
-    })
 
-    test('should display argoapp', async () => {
+        // argo app
         expect(screen.getByText(mockArgoApplication1.metadata.name!)).toBeTruthy()
         expect(screen.getByText('feng-remote-argo8')).toBeTruthy()
         expect(screen.getAllByText('Discovered')).toHaveLength(2)
-    })
 
-    test('should display ocp app', async () => {
+        // ocp app
         expect(screen.getByText(mockOCPApplication0.name!)).toBeTruthy()
         expect(screen.getByText('OpenShift')).toBeTruthy()
-    })
 
-    test('should display flux app', async () => {
+        // flux
         expect(screen.getByText(mockFluxApplication0.name!)).toBeTruthy()
         expect(screen.getByText('OpenShift')).toBeTruthy()
     })
 
-    test('should filter subscription apps', async () => {
+    test('should filter', async () => {
+        // subscription
+
         // Open filter
         userEvent.click(screen.getByText('Filter'))
         expect(screen.getByTestId('app.k8s.io/Application')).toBeTruthy()
@@ -122,9 +121,8 @@ describe('Applications Page', () => {
 
         // clear subscription filter
         userEvent.click(screen.getByRole('button', { name: /close subscription/i }))
-    })
 
-    test('should filter argo apps', async () => {
+        // argo apps
         // Open filter
         userEvent.click(screen.getByText('Filter'))
         expect(screen.getByTestId('argoproj.io/Application')).toBeTruthy()
@@ -136,15 +134,13 @@ describe('Applications Page', () => {
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
-        const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
         expect(screen.getAllByText('Discovered')).toBeTruthy()
 
         // clear argo filter
         userEvent.click(screen.getByRole('button', { name: /close argo cd/i }))
-    })
 
-    test('should filter appset apps', async () => {
+        // appset
         // Open filter
         userEvent.click(screen.getByText('Filter'))
         expect(screen.getByTestId('argoproj.io/ApplicationSet')).toBeTruthy()
@@ -152,19 +148,16 @@ describe('Applications Page', () => {
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
-        expect(argoCheckBox).toBeNull()
-        const applicationType = screen.queryByText(ApplicationKind)
+        const argoAppSetCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
+        expect(argoAppSetCheckBox).toBeNull()
         expect(applicationType).toBeNull()
-        const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
         expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
 
         // clear appset filter
         userEvent.click(screen.getByRole('button', { name: /close application set/i }))
-    })
 
-    test('should filter ocp apps', async () => {
+        // OCP
         // Open filter
         userEvent.click(screen.getByText('Filter'))
         expect(screen.getByTestId('openshiftapps')).toBeTruthy()
@@ -174,9 +167,7 @@ describe('Applications Page', () => {
         userEvent.click(screen.getByText('Filter'))
         const ocpCheckBox = screen.queryByTestId('openshiftapps')
         expect(ocpCheckBox).toBeNull()
-        const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
-        const discoveredType = screen.queryByText('Discovered')
         expect(discoveredType).toBeNull()
 
         // clear openshift filter

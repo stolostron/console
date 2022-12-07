@@ -3,21 +3,24 @@
 'use strict'
 
 import { getControlDataAZR } from './ControlDataAZR'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 describe('getControlDataAZR', () => {
     it('get control data for Azure - default', () => {
-        getControlDataAZR()
+        getControlDataAZR(t, undefined, true, true, false)
     })
 
     it('get control data for Azure - no automation', () => {
-        getControlDataAZR(false, false, true)
+        getControlDataAZR(t, undefined, false, true, false)
     })
 
     it('get control data for Azure - include sno cluster', () => {
-        getControlDataAZR(true, true, true)
+        getControlDataAZR(t, undefined, true, true, true)
     })
 
     it('get control data for Azure - no klusterletaddon', () => {
-        getControlDataAZR(true, true, true)
+        getControlDataAZR(t, undefined, true, false, true)
     })
 })

@@ -153,17 +153,17 @@ describe('setSubscriptionDeployStatus with time window', () => {
         },
     }
     const response = [
-        { labelKey: 'Time Window', type: 'label' },
-        { labelKey: 'Time Window type', value: 'blocked' },
-        { labelKey: 'Time Window days', value: '["Monday", "Tuesday"]' },
-        { labelKey: 'Time Window hours', value: '09:18AM-09:18PM' },
-        { labelKey: 'Time zone', value: 'America/Toronto' },
+        { labelValue: 'Time Window', type: 'label' },
+        { labelValue: 'Time Window type', value: 'blocked' },
+        { labelValue: 'Time Window days', value: '["Monday", "Tuesday"]' },
+        { labelValue: 'Time Window hours', value: '09:18AM-09:18PM' },
+        { labelValue: 'Time zone', value: 'America/Toronto' },
         { type: 'spacer' },
-        { labelKey: 'Subscription deployed on local cluster', value: 'true' },
+        { labelValue: 'Subscription deployed on local cluster', value: 'true' },
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { labelValue: 'local', status: 'failure', value: 'Failed' },
-        { labelKey: 'Current window status is', value: 'Blocked' },
+        { labelValue: 'Current window status is', value: 'Blocked' },
         {
             labelValue: 'Error',
             status: 'failure',
@@ -214,9 +214,9 @@ describe('setSubscriptionDeployStatus with local hub subscription error', () => 
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Subscription deployed on local cluster', value: 'true' },
+        { labelValue: 'Subscription deployed on local cluster', value: 'true' },
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { labelValue: 'local', status: 'failure', value: 'Failed' },
         {
             labelValue: 'Error',
@@ -258,7 +258,7 @@ describe('setSubscriptionDeployStatus with hub error', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { labelValue: 'local', status: 'failure', value: 'Failed' },
         {
             labelValue: 'Error',
@@ -321,9 +321,9 @@ describe('setSubscriptionDeployStatus with Failed phase subscription statuses', 
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Subscription deployed on local cluster', value: 'true' },
+        { labelValue: 'Subscription deployed on local cluster', value: 'true' },
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { labelValue: 'local-cluster', status: 'checkmark', value: 'Subscribed' },
         {
             labelValue: 'Warning',
@@ -350,7 +350,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         {
             labelValue: 'Remote subscriptions',
             status: 'failure',
@@ -408,7 +408,7 @@ describe('setSubscriptionDeployStatus with error', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { labelValue: 'local', status: 'failure', value: 'Failed' },
         {
             labelValue: 'Error',
@@ -450,7 +450,7 @@ describe('setSubscriptionDeployStatus with hub no status', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         {
             labelValue: 'local',
             status: 'warning',
@@ -500,7 +500,7 @@ describe('setSubscriptionDeployStatus with remote no status', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         {
             labelValue: 'remote1',
@@ -534,7 +534,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
     }
     const response = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         {
             labelValue: 'Remote subscriptions',
             status: 'failure',
@@ -740,7 +740,7 @@ describe('setResourceDeployStatus 1', () => {
     }
     const result = [
         { type: 'spacer' },
-        { type: 'label', labelKey: 'Cluster deploy status' },
+        { type: 'label', labelValue: 'Cluster deploy status' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'braveman' },
         { labelValue: '*', value: 'Not Deployed', status: 'pending' },
@@ -1145,11 +1145,11 @@ describe('setResourceDeployStatus 2', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: 'default', status: 'checkmark', value: 'Deployed' },
-        { labelKey: 'Location', value: '172.30.140.196:9080' },
+        { labelValue: 'Location', value: '172.30.140.196:9080' },
         {
             indent: true,
             type: 'link',
@@ -1227,11 +1227,11 @@ describe('setResourceDeployStatus 2 with filter green', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: 'default', status: 'checkmark', value: 'Deployed' },
-        { labelKey: 'Location', value: '172.30.140.196:9080' },
+        { labelValue: 'Location', value: '172.30.140.196:9080' },
         {
             indent: true,
             type: 'link',
@@ -1286,7 +1286,7 @@ describe('setResourceDeployStatus 2 with filter yellow', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: '*', status: 'pending', value: 'Not Deployed' },
@@ -1331,7 +1331,7 @@ describe('setResourceDeployStatus 2 with filter orange', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: '*', status: 'pending', value: 'Not Deployed' },
@@ -1398,7 +1398,7 @@ describe('setResourceDeployStatus 3', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status', type: 'label' },
+        { labelValue: 'Cluster deploy status', type: 'label' },
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'braveman' },
         { labelValue: '*', status: 'pending', value: 'Not Deployed' },
@@ -1577,7 +1577,7 @@ describe('setApplicationDeployStatus 2', () => {
     }
     const result = [
         {
-            labelKey: 'Subscription Selector',
+            labelValue: 'Subscription Selector',
             status: false,
             value: 'test',
         },
@@ -1609,13 +1609,13 @@ describe('setApplicationDeployStatus application', () => {
     }
     const result = [
         {
-            labelKey: 'Subscription Selector',
+            labelValue: 'Subscription Selector',
             status: false,
             value: 'test',
         },
         { type: 'spacer' },
         {
-            labelKey: 'Error',
+            labelValue: 'Error',
             status: 'failure',
             value: 'This application has no matched subscription. Make sure the subscription match selector spec.selector.matchExpressions exists and matches a Subscription resource created in the {{0}} namespace.',
         },
@@ -1650,13 +1650,13 @@ describe('setApplicationDeployStatus no selector', () => {
     }
     const result = [
         {
-            labelKey: 'Subscription Selector',
+            labelValue: 'Subscription Selector',
             status: true,
             value: 'This application has no subscription match selector (spec.selector.matchExpressions)',
         },
         { type: 'spacer' },
         {
-            labelKey: 'Error',
+            labelValue: 'Error',
             status: 'failure',
             value: 'This application has no matched subscription. Make sure the subscription match selector spec.selector.matchExpressions exists and matches a Subscription resource created in the {{0}} namespace.',
         },
@@ -1692,7 +1692,7 @@ describe('setApplicationDeployStatus channels', () => {
     }
     const result = [
         {
-            labelKey: 'Subscription Selector',
+            labelValue: 'Subscription Selector',
             status: true,
             value: 'This application has no subscription match selector (spec.selector.matchExpressions)',
         },
@@ -1789,16 +1789,14 @@ describe('setPodDeployStatus  with pod less then desired', () => {
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
             type: 'label',
-            labelKey: 'Namespace',
-            labelValue: undefined,
+            labelValue: 'Namespace',
             value: 'default',
             indent: undefined,
             status: undefined,
         },
         {
             indent: undefined,
-            labelKey: 'Status',
-            labelValue: undefined,
+            labelValue: 'Status',
             status: 'failure',
             type: 'label',
             value: 'Failed',
@@ -1817,24 +1815,21 @@ describe('setPodDeployStatus  with pod less then desired', () => {
         },
         {
             indent: undefined,
-            labelKey: 'Restarts',
-            labelValue: undefined,
+            labelValue: 'Restarts',
             status: undefined,
             type: 'label',
             value: 'undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Host and Pod IP',
-            labelValue: undefined,
+            labelValue: 'Host and Pod IP',
             status: undefined,
             type: 'label',
             value: 'undefined, undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Created',
-            labelValue: undefined,
+            labelValue: 'Created',
             status: undefined,
             type: 'label',
             value: '-',
@@ -1920,16 +1915,14 @@ describe('setPodDeployStatus  with pod as desired', () => {
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
             type: 'label',
-            labelKey: 'Namespace',
-            labelValue: undefined,
+            labelValue: 'Namespace',
             value: 'default',
             indent: undefined,
             status: undefined,
         },
         {
             indent: undefined,
-            labelKey: 'Status',
-            labelValue: undefined,
+            labelValue: 'Status',
             status: 'checkmark',
             type: 'label',
             value: 'Running',
@@ -1948,24 +1941,21 @@ describe('setPodDeployStatus  with pod as desired', () => {
         },
         {
             indent: undefined,
-            labelKey: 'Restarts',
-            labelValue: undefined,
+            labelValue: 'Restarts',
             status: undefined,
             type: 'label',
             value: 'undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Host and Pod IP',
-            labelValue: undefined,
+            labelValue: 'Host and Pod IP',
             status: undefined,
             type: 'label',
             value: 'undefined, undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Created',
-            labelValue: undefined,
+            labelValue: 'Created',
             status: undefined,
             type: 'label',
             value: '-',
@@ -1973,16 +1963,14 @@ describe('setPodDeployStatus  with pod as desired', () => {
         { type: 'spacer' },
         {
             type: 'label',
-            labelKey: 'Namespace',
-            labelValue: undefined,
+            labelValue: 'Namespace',
             value: 'default',
             indent: undefined,
             status: undefined,
         },
         {
             indent: undefined,
-            labelKey: 'Status',
-            labelValue: undefined,
+            labelValue: 'Status',
             status: 'warning',
             type: 'label',
             value: 'Pending',
@@ -2001,24 +1989,21 @@ describe('setPodDeployStatus  with pod as desired', () => {
         },
         {
             indent: undefined,
-            labelKey: 'Restarts',
-            labelValue: undefined,
+            labelValue: 'Restarts',
             status: undefined,
             type: 'label',
             value: 'undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Host and Pod IP',
-            labelValue: undefined,
+            labelValue: 'Host and Pod IP',
             status: undefined,
             type: 'label',
             value: 'undefined, undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Created',
-            labelValue: undefined,
+            labelValue: 'Created',
             status: undefined,
             type: 'label',
             value: '-',
@@ -2026,16 +2011,14 @@ describe('setPodDeployStatus  with pod as desired', () => {
         { type: 'spacer' },
         {
             indent: undefined,
-            labelKey: 'Namespace',
-            labelValue: undefined,
+            labelValue: 'Namespace',
             status: undefined,
             type: 'label',
             value: 'default',
         },
         {
             indent: undefined,
-            labelKey: 'Status',
-            labelValue: undefined,
+            labelValue: 'Status',
             status: 'failure',
             type: 'label',
             value: 'CrashLoopBackOff',
@@ -2054,24 +2037,21 @@ describe('setPodDeployStatus  with pod as desired', () => {
         },
         {
             indent: undefined,
-            labelKey: 'Restarts',
-            labelValue: undefined,
+            labelValue: 'Restarts',
             status: undefined,
             type: 'label',
             value: 'undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Host and Pod IP',
-            labelValue: undefined,
+            labelValue: 'Host and Pod IP',
             status: undefined,
             type: 'label',
             value: 'undefined, undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Created',
-            labelValue: undefined,
+            labelValue: 'Created',
             status: undefined,
             type: 'label',
             value: '-',
@@ -2172,16 +2152,14 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
             type: 'label',
-            labelKey: 'Namespace',
-            labelValue: undefined,
+            labelValue: 'Namespace',
             value: 'default',
             indent: undefined,
             status: undefined,
         },
         {
             indent: undefined,
-            labelKey: 'Status',
-            labelValue: undefined,
+            labelValue: 'Status',
             status: 'checkmark',
             type: 'label',
             value: 'Running',
@@ -2200,24 +2178,21 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
         },
         {
             indent: undefined,
-            labelKey: 'Restarts',
-            labelValue: undefined,
+            labelValue: 'Restarts',
             status: undefined,
             type: 'label',
             value: 'undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Host and Pod IP',
-            labelValue: undefined,
+            labelValue: 'Host and Pod IP',
             status: undefined,
             type: 'label',
             value: 'undefined, undefined',
         },
         {
             indent: undefined,
-            labelKey: 'Created',
-            labelValue: undefined,
+            labelValue: 'Created',
             status: undefined,
             type: 'label',
             value: '-',
@@ -2292,7 +2267,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
+        { labelValue: 'Cluster deploy status for pods', type: 'label' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: 'default', value: 'Not Deployed', status: 'pending' },
         { type: 'spacer' },

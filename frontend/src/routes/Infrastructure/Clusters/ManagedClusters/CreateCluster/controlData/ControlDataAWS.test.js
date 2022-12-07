@@ -1,27 +1,29 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-
 import { getControlDataAWS } from './ControlDataAWS'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 describe('getControlDataAWS', () => {
     it('get control data for AWS - default', () => {
-        getControlDataAWS()
+        getControlDataAWS(t, undefined, false, false, false, true)
     })
 
     it('get control data for AWS - no automation', () => {
-        getControlDataAWS(false, true, false, true)
+        getControlDataAWS(t, undefined, false, true, true, true)
     })
 
     it('get control data for AWS - include sno cluster', () => {
-        getControlDataAWS(true, true, true, true)
+        getControlDataAWS(t, undefined, true, true, true, true)
     })
 
     it('get control data for AWS - no klusterletaddon', () => {
-        getControlDataAWS(true, true, true, true)
+        getControlDataAWS(t, undefined, true, true, true, false)
     })
 
     it('get control data for AWS - no awsprivate', () => {
-        getControlDataAWS(true, false, true, true)
+        getControlDataAWS(t, undefined, true, false, true, true)
     })
 })

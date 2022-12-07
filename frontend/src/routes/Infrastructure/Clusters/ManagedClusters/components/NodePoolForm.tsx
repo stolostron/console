@@ -34,6 +34,7 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import {
     createResource,
+    HypershiftCloudPlatformType,
     IRequestResult,
     NodePool,
     NodePoolApiVersion,
@@ -46,13 +47,6 @@ import { Fragment, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 
 const { getVersionFromReleaseImage } = CIM
-
-export enum HypershiftCloudPlatformType {
-    AWS = 'AWS',
-    Azure = 'Azure',
-    PowerVS = 'PowerVS',
-    KubeVirt = 'KubeVirt',
-}
 
 export type ListItems = {
     key: string
@@ -243,6 +237,7 @@ export function NodePoolForm(props: {
                     onChange={setAwsSubnetID}
                     isRequired
                     value={awsSubnetID}
+                    isDisabled={props.refNodepool ? true : false}
                 />
             ),
         },

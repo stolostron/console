@@ -26,7 +26,7 @@ export function ClusterSetClusterPoolsPageContent() {
                             title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
                             message={
                                 <Trans
-                                    i18nKey={'managed.clusterSets.clusterPools.emptyStateMsg'}
+                                    i18nKey="managed.clusterSets.clusterPools.emptyStateMsg"
                                     components={{ bold: <strong /> }}
                                 />
                             }

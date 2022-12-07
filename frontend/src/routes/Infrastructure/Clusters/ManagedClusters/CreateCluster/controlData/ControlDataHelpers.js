@@ -2,12 +2,12 @@
 
 import {
     getValue,
-    VALIDATE_CIDR,
-    VALIDATE_NUMERIC,
+    getCIDRValidator,
+    getNumericValidator,
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
-    VALIDATE_URL,
-    VALIDATE_ALPHANUMERIC,
+    getURLValidator,
+    getAlphanumericValidator,
 } from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
@@ -20,21 +20,21 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const CREATE_AUTOMATION_TEMPLATE = {
-    prompt: 'creation.ocp.cloud.add.template',
+const createAutomationTemplate = (t) => ({
+    prompt: t('creation.ocp.cloud.add.template'),
     type: 'link',
     url: NavigationPath.addAnsibleAutomation,
     positionBottomRight: true,
     id: 'add-automation-template',
     icon: <ExternalLinkAltIcon />,
-}
-export const LOAD_OCP_IMAGES = (provider) => {
+})
+export const LOAD_OCP_IMAGES = (provider, t) => {
     return {
         query: () => {
             return listClusterImageSets().promise
         },
-        emptyDesc: 'creation.ocp.cloud.no.ocp.images',
-        loadingDesc: 'creation.ocp.cloud.loading.ocp.images',
+        emptyDesc: t('creation.ocp.cloud.no.ocp.images'),
+        loadingDesc: t('creation.ocp.cloud.loading.ocp.images'),
         setAvailable: setAvailableOCPImages.bind(null, provider),
         setAvailableMap: setAvailableOCPMap.bind(null),
     }
@@ -59,12 +59,14 @@ export const getSimplifiedImageName = (image) => {
     }
 }
 
-export const numberedControlNameFunction = (key) => (control, controlData, i18n) => {
+export const numberedControlNameFunction = (i18nFunc) => (control, controlData, i18n) => {
     const { grpNum } = control
-    return i18n(key, [grpNum + 1])
+    return i18nFunc(i18n, [grpNum + 1])
 }
 
-export const getWorkerName = numberedControlNameFunction('creation.ocp.node.worker.pool.title')
+export const getWorkerName = numberedControlNameFunction((i18n, num) =>
+    i18n('creation.ocp.node.worker.pool.title', num)
+)
 
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
@@ -202,8 +204,9 @@ const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = getControlByID(controlData, 'hasProxy').active
-    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
+    const useProxy = getControlByID(controlData, 'hasProxy').active[
+        ('httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle')
+    ].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
@@ -255,7 +258,7 @@ export const onChangeConnection = (control, controlData) => {
     }
     setTimeout(() => {
         const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
-        if (datbControl) {
+        if (datbControl && replacements) {
             datbControl.active = replacements['additionalTrustBundle']
             datbControl.disabled = !datbControl.active
         }
@@ -266,8 +269,9 @@ export const onChangeDisconnect = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = getControlByID(controlData, 'isDisconnected').active
-    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
+    const isDisconnected = getControlByID(controlData, 'isDisconnected').active[
+        ('clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle')
+    ].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
@@ -286,9 +290,9 @@ export const onChangeDisconnect = (control, controlData) => {
         }
     })
 }
-export function getOSTNetworkingControlData() {
+export function getOSTNetworkingControlData(t) {
     // Kuryr should only be available for Openstack
-    const networkData = _.cloneDeep(networkingControlData)
+    const networkData = networkingControlData(t)
     const modifiedData = networkData.find((object) => object.id == 'networkType')
     modifiedData.available.push('Kuryr')
     return networkData
@@ -308,226 +312,244 @@ export const onImageChange = (control, controlData) => {
     }
 }
 
-export const clusterDetailsControlData = [
-    {
-        name: 'creation.ocp.name',
-        tooltip: 'tooltip.creation.ocp.name',
-        placeholder: 'creation.ocp.name.placeholder',
-        id: 'name',
-        type: 'text',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
+export const clusterDetailsControlData = (t) => {
+    return [
+        {
+            name: t('creation.ocp.name'),
+            tooltip: t('tooltip.creation.ocp.name'),
+            placeholder: t('creation.ocp.name.placeholder'),
+            id: 'name',
+            type: 'text',
+            validation: {
+                constraint: VALID_DNS_LABEL,
+                notification: t('import.form.invalid.dns.label'),
+                required: true,
+            },
+            reverse: 'ClusterDeployment[0].metadata.name',
         },
-        reverse: 'ClusterDeployment[0].metadata.name',
-    },
-    {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
-        id: 'clusterSet',
-        type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
-        validation: {
-            required: false,
+        {
+            name: t('creation.ocp.clusterSet'),
+            tooltip: t('tooltip.creation.ocp.clusterSet'),
+            id: 'clusterSet',
+            type: 'singleselect',
+            placeholder: t('placeholder.creation.ocp.clusterSet'),
+            validation: {
+                required: false,
+            },
+            available: [],
         },
-        available: [],
-    },
-    {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
-    },
-    {
-        name: 'cluster.create.ocp.fips',
-        id: 'fips',
-        type: 'checkbox',
-        active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
-    },
-    {
-        id: 'showSecrets',
-        type: 'hidden',
-        active: false,
-    },
-    {
-        active: 1,
-        id: 'installAttemptsLimit',
-        type: 'hidden',
-    },
-]
+        {
+            name: t('creation.ocp.baseDomain'),
+            tooltip: t('tooltip.creation.ocp.baseDomain'),
+            placeholder: t('placeholder.creation.ocp.baseDomain'),
+            id: 'baseDomain',
+            type: 'text',
+            validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+            tip: t(
+                'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
+            ),
+        },
+        {
+            name: t('cluster.create.ocp.fips'),
+            id: 'fips',
+            type: 'checkbox',
+            active: false,
+            tip: t(
+                'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
+            ),
+        },
+        {
+            id: 'showSecrets',
+            type: 'hidden',
+            active: false,
+        },
+        {
+            active: 1,
+            id: 'installAttemptsLimit',
+            type: 'hidden',
+        },
+    ]
+}
 
-export const clusterPoolDetailsControlData = [
-    {
-        name: 'creation.ocp.name',
-        tooltip: 'tooltip.creation.ocp.name',
-        placeholder: 'creation.ocp.name.placeholder',
-        id: 'name',
-        type: 'text',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
+export const clusterPoolDetailsControlData = (t) => {
+    return [
+        {
+            name: t('creation.ocp.name'),
+            tooltip: t('tooltip.creation.ocp.name'),
+            placeholder: t('creation.ocp.name.placeholder'),
+            id: 'name',
+            type: 'text',
+            validation: {
+                constraint: VALID_DNS_LABEL,
+                notification: t('import.form.invalid.dns.label'),
+                required: true,
+            },
+            reverse: 'ClusterPool[0].metadata.name',
         },
-        reverse: 'ClusterDeployment[0].metadata.name',
-    },
-    {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
-        id: 'clusterSet',
-        type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
-        validation: {
-            required: false,
+        {
+            name: t('creation.ocp.clusterSet'),
+            tooltip: t('tooltip.creation.ocp.clusterSet'),
+            id: 'clusterSet',
+            type: 'singleselect',
+            placeholder: t('placeholder.creation.ocp.clusterSet'),
+            validation: {
+                required: false,
+            },
+            available: [],
         },
-        available: [],
-    },
-    {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
-    },
-    {
-        name: 'cluster.create.ocp.fips',
-        id: 'fips',
-        type: 'checkbox',
-        active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
-    },
-]
+        {
+            name: t('creation.ocp.baseDomain'),
+            tooltip: t('tooltip.creation.ocp.baseDomain'),
+            placeholder: t('placeholder.creation.ocp.baseDomain'),
+            id: 'baseDomain',
+            type: 'text',
+            validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+            tip: t(
+                'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.'
+            ),
+        },
+        {
+            name: t('cluster.create.ocp.fips'),
+            id: 'fips',
+            type: 'checkbox',
+            active: false,
+            tip: t(
+                'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.'
+            ),
+        },
+    ]
+}
 
-export const networkingControlData = [
-    ///////////////////////  networking  /////////////////////////////////////
-    {
-        id: 'networkInfo',
-        type: 'title',
-        info: 'Configure network access for your cluster. One network is created by default.',
-    },
-    {
-        id: 'networkType',
-        name: 'creation.ocp.cluster.network.type',
-        tooltip: 'tooltip.creation.ocp.cluster.network.type',
-        type: 'singleselect',
-        active: 'OVNKubernetes',
-        available: ['OpenShiftSDN', 'OVNKubernetes'],
-        validation: {
-            notification: 'creation.ocp.cluster.valid.key',
-            required: true,
+export const networkingControlData = (t) => {
+    return [
+        ///////////////////////  networking  /////////////////////////////////////
+        {
+            id: 'networkInfo',
+            type: 'title',
+            info: t('Configure network access for your cluster. One network is created by default.'),
         },
-    },
-    {
-        id: 'networks',
-        type: 'group',
-        prompts: {
-            addPrompt: 'creation.ocp.cluster.add.network',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+        {
+            id: 'networkType',
+            name: t('creation.ocp.cluster.network.type'),
+            tooltip: t('tooltip.creation.ocp.cluster.network.type'),
+            type: 'singleselect',
+            active: 'OVNKubernetes',
+            available: ['OpenShiftSDN', 'OVNKubernetes'],
+            validation: {
+                notification: t('creation.ocp.cluster.valid.key'),
+                required: true,
+            },
         },
-        controlData: [
-            {
-                id: 'networkGroup',
-                type: 'section',
-                collapsable: true,
-                subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
-                info: 'creation.ocp.node.network.info',
+        {
+            id: 'networks',
+            type: 'group',
+            prompts: {
+                addPrompt: t('creation.ocp.cluster.add.network'),
+                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
             },
-            {
-                id: 'clusterNetwork',
-                type: 'text',
-                name: 'creation.ocp.cluster.network',
-                tooltip: 'tooltip.creation.ocp.cluster.network',
-                placeholder: 'creation.ocp.cluster.network.placeholder',
-                active: '10.128.0.0/14',
-                validation: VALIDATE_CIDR,
-            },
-            {
-                id: 'hostPrefix',
-                type: 'text',
-                name: 'creation.ocp.cluster.network.host.prefix',
-                tooltip: 'tooltip.creation.ocp.cluster.network.host.prefix',
-                placeholder: 'creation.ocp.cluster.network.host.prefix.placeholder',
-                active: '23',
-                validation: VALIDATE_NUMERIC,
-            },
-            {
-                id: 'serviceNetwork',
-                type: 'text',
-                name: 'creation.ocp.service.network',
-                tooltip: 'tooltip.creation.ocp.service.network',
-                placeholder: 'creation.ocp.service.network.placeholder',
-                active: '172.30.0.0/16',
-                validation: VALIDATE_CIDR,
-            },
-            {
-                id: 'machineCIDR',
-                type: 'text',
-                name: 'creation.ocp.machine.cidr',
-                tooltip: 'tooltip.creation.ocp.machine.cidr',
-                placeholder: 'creation.ocp.machine.cidr.placeholder',
-                active: '10.0.0.0/16',
-                validation: VALIDATE_CIDR,
-            },
-        ],
-    },
-]
+            controlData: [
+                {
+                    id: 'networkGroup',
+                    type: 'section',
+                    collapsable: true,
+                    subtitle: numberedControlNameFunction((i18n, num) => i18n('creation.ocp.node.network.title', num)),
+                    info: t('creation.ocp.node.network.info'),
+                },
+                {
+                    id: 'clusterNetwork',
+                    type: 'text',
+                    name: t('creation.ocp.cluster.network'),
+                    tooltip: t('tooltip.creation.ocp.cluster.network'),
+                    placeholder: t('creation.ocp.cluster.network.placeholder'),
+                    active: '10.128.0.0/14',
+                    validation: getCIDRValidator(t),
+                },
+                {
+                    id: 'hostPrefix',
+                    type: 'text',
+                    name: t('creation.ocp.cluster.network.host.prefix'),
+                    tooltip: t('tooltip.creation.ocp.cluster.network.host.prefix'),
+                    placeholder: t('creation.ocp.cluster.network.host.prefix.placeholder'),
+                    active: '23',
+                    validation: getNumericValidator(t),
+                },
+                {
+                    id: 'serviceNetwork',
+                    type: 'text',
+                    name: t('creation.ocp.service.network'),
+                    tooltip: t('tooltip.creation.ocp.service.network'),
+                    placeholder: t('creation.ocp.service.network.placeholder'),
+                    active: '172.30.0.0/16',
+                    validation: getCIDRValidator(t),
+                },
+                {
+                    id: 'machineCIDR',
+                    type: 'text',
+                    name: t('creation.ocp.machine.cidr'),
+                    tooltip: t('tooltip.creation.ocp.machine.cidr'),
+                    placeholder: t('creation.ocp.machine.cidr.placeholder'),
+                    active: '10.0.0.0/16',
+                    validation: getCIDRValidator(t),
+                },
+            ],
+        },
+    ]
+}
 
-export const proxyControlData = [
-    {
-        id: 'proxyStep',
-        type: 'step',
-        title: 'Proxy',
-    },
-    {
-        id: 'proxyInfo',
-        type: 'title',
-        info: 'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.',
-    },
-    {
-        name: 'Use proxy',
-        id: 'hasProxy',
-        type: 'checkbox',
-        active: false,
-        onSelect: onChangeProxy,
-    },
-    {
-        id: 'httpProxy',
-        type: 'text',
-        name: 'HTTP proxy',
-        disabled: true,
-        tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
-        validation: VALIDATE_URL,
-    },
-    {
-        id: 'httpsProxy',
-        type: 'text',
-        name: 'HTTPS proxy',
-        tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
-        disabled: true,
-        validation: VALIDATE_URL,
-    },
-    {
-        active: [],
-        id: 'noProxy',
-        type: 'values',
-        name: 'No proxy',
-        disabled: true,
-        tip: 'noProxyTip',
-    },
-    {
-        id: 'additionalTrustBundle',
-        type: 'textarea',
-        name: 'Additional trust bundle',
-        disabled: true,
-        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
-    },
-]
+export const proxyControlData = (t) => {
+    return [
+        {
+            id: 'proxyStep',
+            type: 'step',
+            title: t('Proxy'),
+        },
+        {
+            id: 'proxyInfo',
+            type: 'title',
+            info: t(
+                'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.'
+            ),
+        },
+        {
+            name: t('Use proxy'),
+            id: 'hasProxy',
+            type: 'checkbox',
+            active: false,
+            onSelect: onChangeProxy,
+        },
+        {
+            id: 'httpProxy',
+            type: 'text',
+            name: t('HTTP proxy'),
+            disabled: true,
+            tip: t('Requires this format: http://<username>:<pswd>@<ip>:<port>'),
+            validation: getURLValidator(t),
+        },
+        {
+            id: 'httpsProxy',
+            type: 'text',
+            name: t('HTTPS proxy'),
+            tip: t('Requires this format: https://<username>:<pswd>@<ip>:<port>'),
+            disabled: true,
+            validation: getURLValidator(t),
+        },
+        {
+            active: [],
+            id: 'noProxy',
+            type: 'values',
+            name: t('No proxy'),
+            disabled: true,
+            tip: 'noProxyTip',
+        },
+        {
+            id: 'additionalTrustBundle',
+            type: 'textarea',
+            name: t('Additional trust bundle'),
+            disabled: true,
+            placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        },
+    ]
+}
 
 export const onChangeAutomationTemplate = (control, controlData) => {
     const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
@@ -576,91 +598,95 @@ const reverseClusterCuratorSpec = (control, templateObject) => {
     }
 }
 
-export const automationControlData = [
-    ///////////////////////  automation  /////////////////////////////////////
-    {
-        id: 'automationStep',
-        type: 'step',
-        title: 'template.clusterCreate.title',
-    },
-    {
-        id: 'chooseTemplate',
-        type: 'title',
-        info: 'template.clusterCreate.info',
-    },
-    {
-        type: 'custom',
-        id: 'automationProviderHint',
-        component: <AutomationProviderHint component="hint" className="creation-view-controls-hint" />,
-    },
-    {
-        name: 'template.clusterCreate.name',
-        id: 'templateName',
-        type: 'combobox',
-        tooltip: 'template.clusterCreate.tooltip',
-        placeholder: 'template.clusterCreate.select.placeholder',
-        onSelect: onChangeAutomationTemplate,
-        validation: {
-            required: false,
+export const automationControlData = (t) => {
+    return [
+        ///////////////////////  automation  /////////////////////////////////////
+        {
+            id: 'automationStep',
+            type: 'step',
+            title: t('template.clusterCreate.title'),
         },
-        prompts: CREATE_AUTOMATION_TEMPLATE,
-    },
-    {
-        type: 'custom',
-        id: 'curatorLinkOut',
-        component: <TemplateLinkOutControl />,
-    },
-    {
-        type: 'custom',
-        id: 'curatorSummary',
-        component: <TemplateSummaryControl />,
-    },
-    {
-        id: 'clusterCuratorSpec',
-        type: 'hidden',
-        active: '',
-        reverse: reverseClusterCuratorSpec,
-    },
-    {
-        id: 'supportedCurations',
-        type: 'values',
-        hidden: true,
-        active: [],
-    },
-    {
-        id: 'toweraccess-install',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-upgrade',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-scale',
-        type: 'hidden',
-        active: '',
-    },
-    {
-        id: 'toweraccess-destroy',
-        type: 'hidden',
-        active: '',
-    },
-]
+        {
+            id: 'chooseTemplate',
+            type: 'title',
+            info: t('template.clusterCreate.info'),
+        },
+        {
+            type: 'custom',
+            id: 'automationProviderHint',
+            component: <AutomationProviderHint component="hint" className="creation-view-controls-hint" />,
+        },
+        {
+            name: t('template.clusterCreate.name'),
+            id: 'templateName',
+            type: 'combobox',
+            tooltip: t('template.clusterCreate.tooltip'),
+            placeholder: t('template.clusterCreate.select.placeholder'),
+            onSelect: onChangeAutomationTemplate,
+            validation: {
+                required: false,
+            },
+            prompts: createAutomationTemplate(t),
+        },
+        {
+            type: 'custom',
+            id: 'curatorLinkOut',
+            component: <TemplateLinkOutControl />,
+        },
+        {
+            type: 'custom',
+            id: 'curatorSummary',
+            component: <TemplateSummaryControl />,
+        },
+        {
+            id: 'clusterCuratorSpec',
+            type: 'hidden',
+            active: '',
+            reverse: reverseClusterCuratorSpec,
+        },
+        {
+            id: 'supportedCurations',
+            type: 'values',
+            hidden: true,
+            active: [],
+        },
+        {
+            id: 'toweraccess-install',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-upgrade',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-scale',
+            type: 'hidden',
+            active: '',
+        },
+        {
+            id: 'toweraccess-destroy',
+            type: 'hidden',
+            active: '',
+        },
+    ]
+}
 
-export const architectureData = [
-    {
-        name: 'CPU architecture',
-        placeholder: 'Enter CPU architecture',
-        tooltip: 'tooltip.architecture',
-        id: 'architecture',
-        type: 'combobox',
-        available: ['amd64'],
-        validation: VALIDATE_ALPHANUMERIC,
-        cacheUserValueKey: 'create.cluster.architecture',
-    },
-]
+export const architectureData = (t) => {
+    return [
+        {
+            name: t('CPU architecture'),
+            placeholder: t('Enter CPU architecture'),
+            tooltip: t('tooltip.architecture'),
+            id: 'architecture',
+            type: 'combobox',
+            available: ['amd64'],
+            validation: getAlphanumericValidator(t),
+            cacheUserValueKey: 'create.cluster.architecture',
+        },
+    ]
+}
 
 const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
@@ -699,10 +725,10 @@ export const onChangeSNO = (control, controlData) => {
     })
 }
 
-export const addSnoText = (controlData) => {
+export const addSnoText = (controlData, t) => {
     const masterPool = controlData.find((object) => object.id == 'masterPool')
     const poolControlData = masterPool.controlData.find((object) => object.id == 'masterPool')
-    poolControlData.info = 'creation.ocp.node.controlplane.pool.info.sno_enabled'
+    poolControlData.info = t('creation.ocp.node.controlplane.pool.info.sno_enabled')
 }
 
 export const arrayItemHasKey = (options, key) => {

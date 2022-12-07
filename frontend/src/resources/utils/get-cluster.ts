@@ -24,6 +24,8 @@ import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
+import { TFunction } from 'i18next'
+import { HypershiftCloudPlatformType } from '..'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -53,6 +55,104 @@ export enum ClusterStatus {
     'importfailed' = 'importfailed',
     'draft' = 'draft',
     'running' = 'running',
+    'upgradefailed' = 'upgradefailed',
+}
+
+export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
+    switch (status) {
+        case ClusterStatus.creating:
+            return t('status.creating')
+        case ClusterStatus.degraded:
+            return t('status.degraded')
+        case ClusterStatus.deprovisionfailed:
+            return t('status.deprovisionfailed')
+        case ClusterStatus.destroying:
+            return t('status.destroying')
+        case ClusterStatus.detached:
+            return t('status.detached')
+        case ClusterStatus.detaching:
+            return t('status.detaching')
+        case ClusterStatus.draft:
+            return t('status.draft')
+        case ClusterStatus.failed:
+            return t('status.failed')
+        case ClusterStatus.hibernating:
+            return t('status.hibernating')
+        case ClusterStatus.importfailed:
+            return t('status.importfailed')
+        case ClusterStatus.importing:
+            return t('status.importing')
+        case ClusterStatus.needsapproval:
+            return t('status.needsapproval')
+        case ClusterStatus.notaccepted:
+            return t('status.notaccepted')
+        case ClusterStatus.notstarted:
+            return t('status.notstarted')
+        case ClusterStatus.offline:
+            return t('status.offline')
+        case ClusterStatus.pending:
+            return t('status.pending')
+        case ClusterStatus.pendingimport:
+            return t('status.pendingimport')
+        case ClusterStatus.posthookfailed:
+            return t('status.posthookfailed')
+        case ClusterStatus.prehookfailed:
+            return t('status.prehookfailed')
+        case ClusterStatus.provisionfailed:
+            return t('status.provisionfailed')
+        case ClusterStatus.ready:
+            return t('status.ready')
+        case ClusterStatus.resuming:
+            return t('status.resuming')
+        case ClusterStatus.running:
+            return t('status.running')
+        case ClusterStatus.stopping:
+            return t('status.stopping')
+        default:
+            return t('status.unknown')
+    }
+}
+
+export const getProvisionNotification = (status: ClusterStatus | undefined, t: TFunction) => {
+    switch (status) {
+        case ClusterStatus.creating:
+            return t('provision.notification.creating')
+        case ClusterStatus.deprovisionfailed:
+            return t('provision.notification.deprovisionfailed')
+        case ClusterStatus.destroying:
+            return t('provision.notification.destroying')
+        case ClusterStatus.provisionfailed:
+            return t('provision.notification.provisionfailed')
+        default:
+            return ''
+    }
+}
+
+export const getAlertTitle = (status: ClusterStatus | undefined, t: TFunction) => {
+    switch (status) {
+        case ClusterStatus.importfailed:
+            return t('status.importfailed.alert.title')
+        case ClusterStatus.notstarted:
+            return t('status.notstarted.alert.title')
+        case ClusterStatus.offline:
+            return t('status.offline.alert.title')
+        case ClusterStatus.posthookfailed:
+            return t('status.posthookfailed.alert.title')
+        case ClusterStatus.prehookfailed:
+            return t('status.prehookfailed.alert.title')
+        case ClusterStatus.provisionfailed:
+            return t('status.provisionfailed.alert.title')
+        case ClusterStatus.ready:
+            return t('status.ready.alert.title')
+        case ClusterStatus.resuming:
+            return t('status.resuming.alert.title')
+        case ClusterStatus.stopping:
+            return t('status.stopping.alert.title')
+        case ClusterStatus.upgradefailed:
+            return t('status.upgradefailed.alert.title')
+        default:
+            return t('status.unknown.alert.title')
+    }
 }
 
 export const clusterDangerStatuses = [
@@ -437,7 +537,18 @@ export function getProvider(
     }
 
     if (hostedCluster) {
-        return Provider.hypershift
+        switch (hostedCluster.spec.platform.type) {
+            case HypershiftCloudPlatformType.AWS:
+                return Provider.aws
+            case HypershiftCloudPlatformType.Azure:
+                return Provider.azure
+            case HypershiftCloudPlatformType.PowerVS:
+                return Provider.ibmpower
+            case HypershiftCloudPlatformType.KubeVirt:
+                return Provider.kubevirt
+            default:
+                return Provider.hypershift
+        }
     }
 
     const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef

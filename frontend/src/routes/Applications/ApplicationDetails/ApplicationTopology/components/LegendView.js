@@ -73,7 +73,7 @@ class LegendView extends Component {
                             <use href={`#nodeStatusIcon_${status}`} className="label-icon" />
                         </svg>
                     </div>
-                    <div>{t(descriptionMap.get(status))}</div>
+                    <div>{descriptionMap.get(status)}</div>
                 </div>
             )
         })

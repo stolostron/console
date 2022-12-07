@@ -3,21 +3,24 @@
 'use strict'
 
 import { getControlDataVMW } from './ControlDataVMW'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 describe('getControlDataVMW', () => {
     it('get control data for vsphere - default', () => {
-        getControlDataVMW()
+        getControlDataVMW(t, undefined, true, true, false)
     })
 
     it('get control data for vsphere - no automation', () => {
-        getControlDataVMW(false, false, true)
+        getControlDataVMW(t, undefined, false, true, false)
     })
 
     it('get control data for vsphere - include sno cluster', () => {
-        getControlDataVMW(true, true, true)
+        getControlDataVMW(t, undefined, true, true, true)
     })
 
     it('get control data for vsphere - no klusterletaddon', () => {
-        getControlDataVMW(true, true, true)
+        getControlDataVMW(t, undefined, true, false, true)
     })
 })

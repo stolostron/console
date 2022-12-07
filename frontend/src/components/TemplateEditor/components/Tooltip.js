@@ -14,17 +14,10 @@ class Tooltip extends React.PureComponent {
     }
 
     render() {
-        const { control, i18n, className } = this.props
+        const { control, className } = this.props
         const { controlId, tooltip } = control
         return tooltip ? (
-            <Popover
-                id={`${controlId}-label-help-popover`}
-                bodyContent={
-                    typeof tooltip === 'string' && typeof i18n === 'function'
-                        ? i18n(tooltip)
-                        : tooltip /* A component */
-                }
-            >
+            <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
                 <button
                     id={`${controlId}-label-help-button`}
                     aria-label="More info"

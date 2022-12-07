@@ -440,7 +440,12 @@ export function ClusterOverviewPageContent(props: {
                     close={() => setShowEditLabels(false)}
                 />
                 {details}
-                <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
+                <AcmDescriptionList
+                    title={t('table.details')}
+                    leftItems={leftItems}
+                    rightItems={rightItems}
+                    id="cluster-overview"
+                />
                 {cluster!.isManaged &&
                     [
                         ClusterStatus.ready,

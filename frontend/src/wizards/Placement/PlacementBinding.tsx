@@ -74,7 +74,7 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
                 required
                 options={[
                     { label: t('Placement'), value: 'Placement' },
-                    { label: t(`${PlacementRuleKind}`), value: PlacementRuleKind },
+                    { label: t('PlacementRule'), value: PlacementRuleKind },
                 ]}
             />
             <WizTextInput
