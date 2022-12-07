@@ -1019,6 +1019,7 @@
     "D2 - Up to 48 TB of HDD-based local storage": "D2 - Up to 48 TB of HDD-based local storage",
     "Date and time of the most recent reconcile for application resources.": "Date and time of the most recent reconcile for application resources.",
     "Dav4-series": "Dav4-series",
+<<<<<<< HEAD
     "Days of the week": "Days of the week",
     "dcTbl.created": "dcTbl.created",
     "dcTbl.discovered": "dcTbl.discovered",
@@ -1028,6 +1029,16 @@
     "dcTbl.namespace": "dcTbl.namespace",
     "dcTbl.openShiftVersion": "dcTbl.openShiftVersion",
     "dcTbl.type": "dcTbl.type",
+=======
+    "dcTbl.created": "Created",
+    "dcTbl.discovered": "Discovered",
+    "dcTbl.infrastructureProvider": "Infrastructure provider",
+    "dcTbl.lastActive": "Last active",
+    "dcTbl.name": "Name",
+    "dcTbl.namespace": "Namespace",
+    "dcTbl.openShiftVersion": "OpenShift version",
+    "dcTbl.type": "Type",
+>>>>>>> 0c9ed52e (remove log, and duplicate translation key-string)
     "Decisions": "Decisions",
     "Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.": "Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.",
     "Delay After Run Seconds": "Delay After Run Seconds",
