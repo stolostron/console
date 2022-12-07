@@ -53,6 +53,7 @@ import {
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { PluginContext } from '../../lib/PluginContext'
+import { get } from 'lodash'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -346,36 +347,45 @@ export default function ApplicationsOverview() {
     const argoApplicationTableItems = useMemo(
         () =>
             argoApplications
-                .filter((argoApp) => {
-                    const resources = argoApp.status ? argoApp.status.resources : undefined
-                    let definedNamespace = ''
-                    resources &&
-                        resources.forEach((resource: any) => {
-                            definedNamespace = resource.namespace
-                        })
-                    // cache Argo app signature for filtering OCP apps later
-                    setArgoApplicationsHashSet(
-                        (prev) =>
-                            new Set(
-                                prev.add(
-                                    `${argoApp.metadata.name}-${
-                                        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
-                                    }-${getArgoDestinationCluster(
-                                        argoApp.spec.destination,
-                                        managedClusters,
-                                        'local-cluster'
-                                    )}`
+                .filter(
+                    (argoApp: {
+                        status: { resources: any }
+                        metadata: { name: any; ownerReferences: { kind: string }[] }
+                        spec: { destination: { namespace: any } }
+                    }) => {
+                        const resources = argoApp.status ? argoApp.status.resources : undefined
+                        const resourcesWithNamespaces = resources?.filter(
+                            (resource: { namespace: string }) => resource.namespace
+                        )
+                        let definedNamespace: any = undefined
+                        if (resourcesWithNamespaces) {
+                            definedNamespace = get(resourcesWithNamespaces.pop(), 'namespace')
+                        }
+
+                        // cache Argo app signature for filtering OCP apps later
+                        setArgoApplicationsHashSet(
+                            (prev) =>
+                                new Set(
+                                    prev.add(
+                                        `${argoApp.metadata.name}-${
+                                            definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+                                        }-${getArgoDestinationCluster(
+                                            argoApp.spec.destination,
+                                            managedClusters,
+                                            'local-cluster'
+                                        )}`
+                                    )
                                 )
-                            )
-                    )
-                    const isChildOfAppset =
-                        argoApp.metadata.ownerReferences &&
-                        argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-                    if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
-                        return true
+                        )
+                        const isChildOfAppset =
+                            argoApp.metadata.ownerReferences &&
+                            argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+                        if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
+                            return true
+                        }
+                        return false
                     }
-                    return false
-                })
+                )
                 .map(generateTransformData),
         [argoApplications, generateTransformData, managedClusters]
     )
