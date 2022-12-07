@@ -494,7 +494,7 @@ export default function OverviewPage() {
                                     description={t('Overview of policy violation status')}
                                     loading={!complianceData}
                                     data={complianceData}
-                                    colorScale={colorThemes.failureSuccess}
+                                    colorScale={colorThemes.criticalSuccess}
                                 />
                                 {!searchError ? (
                                     <AcmDonutChart
@@ -502,7 +502,7 @@ export default function OverviewPage() {
                                         description={t('Overview of pod count and status')}
                                         loading={searchLoading}
                                         data={podData}
-                                        colorScale={colorThemes.failurePendingSuccess}
+                                        colorScale={colorThemes.criticalLowSuccess}
                                     />
                                 ) : undefined}
                                 <AcmDonutChart
@@ -510,7 +510,7 @@ export default function OverviewPage() {
                                     description={t('Overview of cluster status')}
                                     loading={!clusterData}
                                     data={clusterData}
-                                    colorScale={colorThemes.failureSuccess}
+                                    colorScale={colorThemes.criticalSuccess}
                                 />
                                 <AcmDonutChart
                                     title={t('Cluster issues')}
@@ -524,7 +524,7 @@ export default function OverviewPage() {
                                                 ? t('Cluster with issues')
                                                 : t('Clusters with issues'),
                                     }}
-                                    colorScale={colorThemes.dangerImportantModerateInfo}
+                                    colorScale={colorThemes.criticalImportantModerateLow}
                                 />
                             </AcmMasonry>
                         </Stack>

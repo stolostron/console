@@ -75,7 +75,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                     <ChartLegend
                         data={legendData}
                         labelComponent={<ChartLabel />}
-                        colorScale={colorThemes.failureSuccess}
+                        colorScale={colorThemes.criticalSuccess}
                     />
                 }
                 labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -84,7 +84,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                 }}
                 title={donutTitle}
                 width={450}
-                colorScale={colorThemes.failureSuccess}
+                colorScale={colorThemes.criticalSuccess}
             />
         </div>
     )

@@ -108,7 +108,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
                 <ChartLegend
                     data={legendData}
                     labelComponent={<ChartLabel />}
-                    colorScale={colorThemes.dangerImportantModerateInfo}
+                    colorScale={colorThemes.criticalImportantModerateLow}
                 />
             }
             labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -122,7 +122,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
             subTitle={t('Total issues')}
             width={400}
             height={200}
-            colorScale={colorThemes.dangerImportantModerateInfo}
+            colorScale={colorThemes.criticalImportantModerateLow}
         />
     )
 }

@@ -96,7 +96,7 @@ export function ViolationsCard(props: {
                                 : undefined,
                     },
                 ]}
-                colorScale={colorThemes.failureWarningSuccess}
+                colorScale={colorThemes.criticalImportantSuccess}
             />
         </Card>
     )

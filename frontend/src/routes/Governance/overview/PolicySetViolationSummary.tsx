@@ -74,7 +74,7 @@ export function ViolationsCard(props: {
                         link: props.compliant > 0 ? `${NavigationPath.policySets}?violation=no-violation` : undefined,
                     },
                 ]}
-                colorScale={colorThemes.failureSuccess}
+                colorScale={colorThemes.criticalSuccess}
             />
         </Card>
     )

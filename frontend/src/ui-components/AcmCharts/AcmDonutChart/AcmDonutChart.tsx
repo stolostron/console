@@ -138,22 +138,14 @@ export function AcmDonutChart(props: {
     )
 }
 
+const criticalColorClass = 'var(--pf-chart-color-red-100)'
+const importantColorClass = 'var(--pf-chart-color-orange-300)'
+const successColorClass = 'var(--pf-chart-color-black-100)'
+const lowColorClass = 'var(--pf-chart-color-gold-300)'
+
 export const colorThemes = {
-    failureWarningSuccess: [
-        'var(--pf-chart-color-red-100)',
-        'var(--pf-global--warning-color--100)',
-        'var(--pf-chart-color-black-100)',
-    ],
-    failureSuccess: ['var(--pf-chart-color-red-100)', 'var(--pf-chart-color-black-100)'],
-    failurePendingSuccess: [
-        'var(--pf-chart-color-red-100)',
-        'var(--pf-chart-color-gold-300)',
-        'var(--pf-chart-color-black-100)',
-    ],
-    dangerImportantModerateInfo: [
-        'var(--pf-chart-color-red-100)',
-        'var(--pf-global--warning-color--100)',
-        'var(--pf-chart-color-gold-300)',
-        'var(--pf-global--info-color--100)',
-    ],
+    criticalImportantSuccess: [criticalColorClass, importantColorClass, successColorClass],
+    criticalSuccess: [criticalColorClass, successColorClass],
+    criticalLowSuccess: [criticalColorClass, lowColorClass, successColorClass],
+    criticalImportantModerateLow: [criticalColorClass, importantColorClass, successColorClass, lowColorClass],
 }
