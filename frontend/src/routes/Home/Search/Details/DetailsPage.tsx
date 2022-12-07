@@ -13,7 +13,7 @@ import DetailsOverviewPage from './DetailsOverviewPage'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
 
-function getResourceData() {
+function getResourceParams() {
     let cluster = '',
         kind = '',
         apiversion = '',
@@ -48,38 +48,43 @@ export default function DetailsPage() {
     const { t } = useTranslation()
     const [resource, setResource] = useState<any>(undefined)
     const [containers, setContainers] = useState<string[]>()
+    const [resourceVersion, setResourceVersion] = useState<string>('')
     const [resourceError, setResourceError] = useState('')
-    const { cluster, kind, apiversion, namespace, name } = getResourceData()
+    const { cluster, kind, apiversion, namespace, name } = getResourceParams()
 
     useEffect(() => {
-        if (cluster === 'local-cluster') {
-            getResource<IResource>({
-                apiVersion: apiversion,
-                kind,
-                metadata: { namespace, name },
-            })
-                .promise.then((response) => {
-                    setResource(response)
+        if (resourceVersion !== resource?.metadata.resourceVersion) {
+            if (cluster === 'local-cluster') {
+                getResource<IResource>({
+                    apiVersion: apiversion,
+                    kind,
+                    metadata: { namespace, name },
                 })
-                .catch((err) => {
-                    console.error('Error getting resource: ', err)
-                    setResourceError(err.message)
-                })
-        } else {
-            fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-                .then((viewResponse) => {
-                    if (viewResponse?.message) {
-                        setResourceError(viewResponse.message)
-                    } else {
-                        setResource(viewResponse?.result)
-                    }
-                })
-                .catch((err) => {
-                    console.error('Error getting resource: ', err)
-                    setResourceError(err)
-                })
+                    .promise.then((response) => {
+                        setResource(response)
+                        setResourceVersion(response?.metadata?.resourceVersion ?? '')
+                    })
+                    .catch((err) => {
+                        console.error('Error getting resource: ', err)
+                        setResourceError(err.message)
+                    })
+            } else {
+                fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+                    .then((viewResponse) => {
+                        if (viewResponse?.message) {
+                            setResourceError(viewResponse.message)
+                        } else {
+                            setResource(viewResponse?.result)
+                            setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Error getting resource: ', err)
+                        setResourceError(err)
+                    })
+            }
         }
-    }, [cluster, kind, apiversion, name, namespace])
+    }, [cluster, kind, apiversion, name, namespace, resourceVersion, resource?.metadata.resourceVersion])
 
     useEffect(() => {
         setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
@@ -155,6 +160,7 @@ export default function DetailsPage() {
                         cluster={cluster}
                         kind={kind}
                         apiversion={apiversion}
+                        setResourceVersion={setResourceVersion}
                     />
                 </Route>
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (

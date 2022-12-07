@@ -50,8 +50,8 @@ export default function YAMLEditor(props: {
     useEffect(() => {
         let managedFieldsStart = 0
         let managedFieldsEnd = 0
-        process.env.NODE_ENV !== 'test' && editorRef.current?.setSelection(new monaco.Range(1, 0, 1, 0))
         if (resourceYAML && !hasManagedFieldsFolded) {
+            process.env.NODE_ENV !== 'test' && editorRef.current?.setSelection(new monaco.Range(1, 0, 1, 0))
             const resourceLines = resourceYAML.split('\n')
             resourceLines.forEach((line, i) => {
                 if (line === '  managedFields:') {
