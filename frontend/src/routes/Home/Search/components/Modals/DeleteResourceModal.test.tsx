@@ -217,11 +217,11 @@ describe('DeleteResourceModal', () => {
             expect(submitButton).toBeTruthy()
             userEvent.click(submitButton)
 
-            // Wait for delete resource requesets to finish
-            await waitForNocks([deleteResourceNock])
+            // // Wait for delete resource requesets to finish
+            // await waitForNocks([deleteResourceNock])
 
-            // Mimic the polling requests
-            await waitForNocks([getSuccessfulActionNock])
+            // // Mimic the polling requests
+            // await waitForNocks([getSuccessfulActionNock])
 
             // update the apollo cache
             await waitFor(() => expect(search.isDone()).toBeTruthy())
@@ -229,5 +229,10 @@ describe('DeleteResourceModal', () => {
             await wait() // Test that the component has rendered correctly
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
+        // Wait for delete resource requesets to finish
+        await waitForNocks([deleteResourceNock])
+
+        // Mimic the polling requests
+        await waitForNocks([getSuccessfulActionNock])
     })
 })
