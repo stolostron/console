@@ -14,8 +14,6 @@ import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../../components/Rbac'
-import { TechPreviewAlert } from '../../../../../../components/TechPreviewAlert'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
@@ -23,11 +21,9 @@ import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/
 import { useSharedAtoms, useRecoilState } from '../../../../../../shared-recoil'
 
 export function MachinePoolsPageContent() {
-    /* t('preview.machinePools') */
     return (
         <AcmPageContent id="nodes">
             <PageSection>
-                <TechPreviewAlert i18nKey="preview.machinePools" docHref={DOC_LINKS.MACHINE_POOLS} />
                 <MachinePoolsTable />
             </PageSection>
         </AcmPageContent>
