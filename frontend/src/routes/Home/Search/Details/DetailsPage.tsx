@@ -54,6 +54,7 @@ export default function DetailsPage() {
 
     useEffect(() => {
         if (resourceVersion !== resource?.metadata.resourceVersion) {
+            /* istanbul ignore else */
             if (cluster === 'local-cluster') {
                 getResource<IResource>({
                     apiVersion: apiversion,
