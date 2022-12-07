@@ -762,7 +762,7 @@
     "Create": "Create",
     "Create a cluster from hosts that have been discovered and made available in your host inventory.": "Create a cluster from hosts that have been discovered and made available in your host inventory.",
     "Create a discovery setting": "Create a discovery setting",
-    "Create and manage a fleet of clusters with ease using this all clusters view. To view a single cluster, select it from the \"All Clusters\" dropdown or access it from the cluster list.": "Create and manage a fleet of clusters with ease using this all clusters view. To view a single cluster, select it from the \"All Clusters\" dropdown or access it from the cluster list.",
+    "Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.": "Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.",
     "Create application": "Create application",
     "Create application set": "Create application set",
     "Create cluster": "Create cluster",

@@ -237,6 +237,7 @@ export function NodePoolForm(props: {
                     onChange={setAwsSubnetID}
                     isRequired
                     value={awsSubnetID}
+                    isDisabled={props.refNodepool ? true : false}
                 />
             ),
         },
