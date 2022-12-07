@@ -79,9 +79,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
     const renderHealthCheck = useCallback(
         (nodepool: NodePool) => {
-            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? 'True' : 'False'
+            const healthCheck = get(nodepool, 'spec.management.autoRepair', false) ? t('True') : t('False')
 
-            return <span>{t(healthCheck)}</span>
+            return <span>{healthCheck}</span>
         },
         [t]
     )
@@ -297,7 +297,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             <AcmButton
                 id="addNodepoolEmptyState"
                 children={t('Add node pool')}
-                variant={ButtonVariant.primary}
+                variant={ButtonVariant.secondary}
                 onClick={() => toggleAddNodepoolModal()}
                 tooltip={
                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
@@ -347,7 +347,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                               'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : t('rbac.unauthorized'),
-                                variant: ButtonVariant.primary,
+                                variant: ButtonVariant.secondary,
                             },
                         ]}
                         rowActionResolver={rowActionResolver}

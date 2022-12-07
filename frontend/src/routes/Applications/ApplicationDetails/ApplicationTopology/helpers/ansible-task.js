@@ -124,11 +124,11 @@ export const showAnsibleJobDetails = (node, details, t) => {
 
     addDetails(details, [
         {
-            labelKey: t('Ansible Tower Job template name'),
+            labelValue: t('Ansible Tower Job template name'),
             value: _.get(node, 'specs.raw.status.k8sJob.env.templateName'),
         },
         {
-            labelKey: t('Ansible Tower secret'),
+            labelValue: t('Ansible Tower secret'),
             value: _.get(node, 'specs.raw.status.k8sJob.env.secretNamespacedName'),
         },
     ])
@@ -145,7 +145,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
 
         details.push({
             type: 'label',
-            labelKey: t('Ansible Tower Job URL'),
+            labelValue: t('Ansible Tower Job URL'),
         })
 
         details.push({

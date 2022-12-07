@@ -19,7 +19,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         application: {
             columns: [
                 {
-                    header: t(t('Name')),
+                    header: t('Name'),
                     sort: 'name',
                     cell: (item: any) => {
                         return CreateDetailsLink(item)
@@ -937,12 +937,12 @@ export const getSearchDefinitions = (t: TFunction) => {
                     cell: 'cluster',
                 },
                 {
-                    header: t(t('Status')),
+                    header: t('Status'),
                     sort: 'status',
                     cell: 'status',
                 },
                 {
-                    header: t(t('Restarts')),
+                    header: t('Restarts'),
                     sort: 'restarts',
                     cell: 'restarts',
                 },

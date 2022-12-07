@@ -18,9 +18,7 @@ export function CreateDiscoverHost() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            t(
-                                'Create a cluster from hosts that have been discovered and made available in your host inventory.'
-                            )
+                            'Create a cluster from hosts that have been discovered and made available in your host inventory.'
                         ),
                     },
                 ],

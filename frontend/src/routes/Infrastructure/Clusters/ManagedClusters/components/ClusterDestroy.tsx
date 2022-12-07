@@ -15,7 +15,7 @@ import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const { LogsDownloadButton } = CIM
 
-export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
+export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) {
     const { t } = useTranslation()
     const history = useHistory()
     const { configMapsState } = useSharedAtoms()
@@ -23,10 +23,26 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
     const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
     const { agentClusterInstall } = useContext(ClusterContext)
 
+    /*
+        t('detaching.inprogress.message')
+        t('detaching.success.message')
+        t('destroying.inprogress.message')
+        t('destroying.success.message')
+    */
+    const { loadingTitle, successTitle } =
+        props.cluster.status === ClusterStatus.detaching
+            ? {
+                  loadingTitle: t('detaching.inprogress', { clusterName: props.cluster?.displayName }),
+                  successTitle: t('detaching.success', { clusterName: props.cluster?.displayName }),
+              }
+            : {
+                  loadingTitle: t('destroying.inprogress', { clusterName: props.cluster?.displayName }),
+                  successTitle: t('destroying.success', { clusterName: props.cluster?.displayName }),
+              }
     return (
         <AcmPageProcess
             isLoading={props.isLoading}
-            loadingTitle={t(`${props.cluster?.status}.inprogress`, { clusterName: props.cluster?.displayName })}
+            loadingTitle={loadingTitle}
             loadingMessage={
                 <Trans
                     i18nKey={`${props.cluster?.status}.inprogress.message`}
@@ -34,7 +50,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
                     components={{ bold: <strong /> }}
                 />
             }
-            successTitle={t(`${props.cluster?.status}.success`, { clusterName: props.cluster?.displayName })}
+            successTitle={successTitle}
             successMessage={
                 <Trans
                     i18nKey={`${props.cluster?.status}.success.message`}

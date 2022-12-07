@@ -13,11 +13,25 @@ import {
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
+import { TFunction } from 'i18next'
 
 export type ScaleMachinePoolModalProps = {
     machinePool?: MachinePool
     onClose?: () => void
     mode?: 'enable-autoscale' | 'disable-autoscale' | 'edit-autoscale' | 'edit-manualscale'
+}
+
+const getModalTitle = (mode: ScaleMachinePoolModalProps['mode'], t: TFunction) => {
+    switch (mode) {
+        case 'disable-autoscale':
+            return t('machinePool.modal.scale.disable-autoscale.title')
+        case 'edit-autoscale':
+            return t('machinePool.modal.scale.edit-autoscale.title')
+        case 'edit-manualscale':
+            return t('machinePool.modal.scale.edit-manualscale.title')
+        case 'enable-autoscale':
+            return t('machinePool.modal.scale.enable-autoscale.title')
+    }
 }
 
 export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
@@ -43,10 +57,17 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
         setReplicas(0)
     }
 
+    /*
+        t('machinePool.modal.scale.disable-autoscale.message')
+        t('machinePool.modal.scale.edit-autoscale.message')
+        t('machinePool.modal.scale.edit-manualscale.message')
+        t('machinePool.modal.scale.enable-autoscale.message')
+    */
+
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={t(`machinePool.modal.scale.${props.mode}.title`)}
+            title={getModalTitle(props.mode, t)}
             isOpen={props.machinePool !== undefined}
             onClose={reset}
         >

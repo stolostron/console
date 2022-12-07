@@ -77,10 +77,6 @@ export function CreateAWSControlPlane() {
                                     'Increases resiliency with closely interconnected control plane and worker nodes.'
                                 ),
                             },
-                            {
-                                text: t('Provides customized control plane cluster configuration.'),
-                                subTitles: [t('Standard'), t('Single node OpenShift'), t('Three-node cluster')],
-                            },
                         ],
                     },
                 ],

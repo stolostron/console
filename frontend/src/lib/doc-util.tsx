@@ -46,7 +46,6 @@ export const DOC_LINKS = {
     HOSTED_CONTROL_PLANES: `${DOC_BASE_PATH}/multicluster_engine/multicluster_engine_overview#hosted-control-planes-configure`,
     INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/multicluster_engine/index#creating-an-infrastructure-environment`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/multicluster_engine/index#discovery-intro`,
-    MACHINE_POOLS: `${DOC_BASE_PATH}/multicluster_engine/index#scaling-managed`,
     MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/multicluster_engine/index#ansible-config-cluster`,
     POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,

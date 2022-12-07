@@ -7,6 +7,7 @@ import {
     Flex,
     FlexItem,
     FormGroup,
+    Label,
     Modal,
     ModalVariant,
     Radio,
@@ -182,11 +183,11 @@ export function AnsibleAutomationsForm(props: {
                     }
                 })
                 .catch(() => {
-                    setAnsibleTowerAuthError('validate.ansible.host')
+                    setAnsibleTowerAuthError(t('validate.ansible.host'))
                     setAnsibleTowerJobTemplateList([])
                 })
         }
-    }, [ansibleSelection, ansibleCredentials])
+    }, [ansibleSelection, ansibleCredentials, t])
 
     function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -251,6 +252,9 @@ export function AnsibleAutomationsForm(props: {
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
         return [
             <Flex style={{ gap: '8px' }} key={ansibleJob.name}>
+                <FlexItem>
+                    <Label color="blue">{ansibleJob.type === 'Job' ? t('Job') : t('Workflow')}</Label>
+                </FlexItem>
                 <FlexItem>{ansibleJob.name}</FlexItem>
                 {ansibleJob.extra_vars && (
                     <ChipGroup>
@@ -313,7 +317,7 @@ export function AnsibleAutomationsForm(props: {
                         footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
                         isDisabled: isEditing,
                         validation: () => {
-                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
+                            if (AnsibleTowerAuthError) return AnsibleTowerAuthError
                         },
                     },
                 ],
@@ -645,9 +649,9 @@ function EditAnsibleJobModal(props: {
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
-                    label={t(
-                        filterForJobTemplates ? 'template.modal.name.label' : 'template.workflow.modal.name.label'
-                    )}
+                    label={
+                        filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')
+                    }
                     id="job-name"
                     value={ansibleJob?.name}
                     onChange={(name) => {

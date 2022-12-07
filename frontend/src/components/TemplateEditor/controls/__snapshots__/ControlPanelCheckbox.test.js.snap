@@ -39,7 +39,7 @@ exports[`ControlPanelCheckbox component renders as expected 1`] = `
               <span
                 class="pf-c-form__label-text"
               >
-                creation.app.name
+                Name
               </span>
             </label>
              

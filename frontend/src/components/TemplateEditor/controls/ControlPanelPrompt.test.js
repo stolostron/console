@@ -10,13 +10,13 @@ import i18n from 'i18next'
 const t = i18n.t.bind(i18n)
 
 export const control = {
-    name: 'creation.app.name',
-    tooltip: 'tooltip.creation.app.name',
+    name: 'Name',
+    tooltip: 'Application name',
     controlData: [],
     id: 'name',
     type: 'text',
     prompts: {
-        prompt: 'creation.ocp.cloud.add.connection',
+        prompt: 'Add credential',
         type: 'link',
         url: 'mylink',
         positionBottomRight: true,
