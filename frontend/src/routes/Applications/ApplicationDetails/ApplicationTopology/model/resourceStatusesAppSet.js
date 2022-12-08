@@ -31,14 +31,11 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
 
     const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources') : []
     let definedNamespace = ''
-    let kindsNotNamespaceScoped = []
-    let kindsNamespaceScoped = []
+    let kindsNotNamespaceScoped = ['cluster']
     resources.forEach((resource) => {
         definedNamespace = _.get(resource, 'namespace')
         if (!resource.namespace) {
             kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
-        } else {
-            kindsNamespaceScoped.push(resource.kind)
         }
     })
 
@@ -55,7 +52,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
 
     query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString())
     if (kindsNotNamespaceScoped.length > 0) {
-        queryNotNamespaceScoped = getQueryStringForResource(kindsNotNamespaceScoped, null)
+        queryNotNamespaceScoped = getQueryStringForResource(kindsNotNamespaceScoped)
     }
     //get the cluster for each target namespace and all pods related to this objects only
     //always ask for related pods, replicaset and replocationcontroller because they are tagged by the app instance
