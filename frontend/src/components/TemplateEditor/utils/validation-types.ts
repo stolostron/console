@@ -50,8 +50,11 @@ const IP_ADDRESS_TESTER: Tester = {
 }
 
 export const getIPValidator = (options: {
+    /** CIDR field to validate against */
     subnet?: { controlID: string; groupID: string }
+    /** List of other IP fields that should contain unique values */
     differentFrom?: string[]
+    /** Set to true if the field is not required */
     optional?: boolean
 }): Validator => {
     const { subnet, differentFrom, optional } = options || {}
