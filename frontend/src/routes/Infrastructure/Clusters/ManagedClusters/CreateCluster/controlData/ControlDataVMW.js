@@ -283,6 +283,9 @@ export const getControlDataVMW = (
             placeholder: t('creation.ocp.cluster.vmw.network.type'),
             type: 'text',
             active: '',
+            validation: {
+                required: true,
+            },
         },
         {
             id: 'apiVIP',
