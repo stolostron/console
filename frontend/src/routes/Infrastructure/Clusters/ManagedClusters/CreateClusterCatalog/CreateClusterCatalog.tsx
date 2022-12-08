@@ -84,7 +84,7 @@ export function CreateClusterCatalog() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A Red Hat OpenShift cluster that is running on available hosts from your inventory.'
+                            'A Red Hat OpenShift cluster that is running on available hosts from your on-premise inventory; bare metal or virtualized.'
                         ),
                     },
                 ],
