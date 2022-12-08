@@ -115,34 +115,6 @@ export function validateLibvirtURI(value: string, t: TFunction) {
     return undefined // the value is valid
 }
 
-export function validateImageMirror(value: string, t: TFunction) {
-    const VALID_REPOPATH_TESTER = new RegExp('^(/[A-Za-z0-9]+([-_\\.]*[A-Za-z0-9]+)*)*$')
-    const VALIDATE_NUMERIC_TESTER = new RegExp('^[0-9]+$')
-    if (value.length === 0) {
-        return undefined
-    }
-    const dnsName = value.split(':', 2)
-    if (dnsName.length === 1) {
-        return t('validate.imageMirror.format')
-    }
-    const errDnsName = validateBaseDnsName(dnsName[0], t)
-    if (errDnsName) {
-        return errDnsName
-    }
-    const port = dnsName[1].split('/', 2)
-    if ((port.length === 1 && port[0].length === 0) || !VALIDATE_NUMERIC_TESTER.test(port[0])) {
-        return t('validate.imageMirror.port')
-    }
-    if (port.length === 1) {
-        return t('validate.imageMirror.format')
-    }
-    const firstSlash = value.indexOf('/')
-    if (firstSlash !== -1 && !VALID_REPOPATH_TESTER.test(value.substring(firstSlash))) {
-        return t('validate.imageMirror.repositorypath')
-    }
-    return undefined
-}
-
 export function validateBaseDomain(value: string, t: TFunction) {
     const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
     if (value) {

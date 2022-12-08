@@ -275,7 +275,14 @@ const validateControl = (control, controlData, templateObjectMap, templateExcept
             case 'combobox':
             case 'toggle':
             case 'hidden':
-                validateTextControl(control, templateObjectMap, templateExceptionMap, isFinalValidate, i18n)
+                validateTextControl(
+                    control,
+                    controlData,
+                    templateObjectMap,
+                    templateExceptionMap,
+                    isFinalValidate,
+                    i18n
+                )
                 break
             case 'checkbox':
             case 'radio':
@@ -318,7 +325,7 @@ const shouldValidateControl = (control) => {
     return required
 }
 
-const validateTextControl = (control, templateObjectMap, templateExceptionMap, isFinalValidate, i18n) => {
+const validateTextControl = (control, controlData, templateObjectMap, templateExceptionMap, isFinalValidate, i18n) => {
     const {
         id,
         name,
@@ -351,7 +358,7 @@ const validateTextControl = (control, templateObjectMap, templateExceptionMap, i
         let exception
         if (active) {
             if (contextTester) {
-                exception = contextTester(active, templateObjectMap, i18n)
+                exception = contextTester(active, controlData, templateObjectMap, i18n)
             } else if (tester && !tester.test(active)) {
                 if (active.length > 50) {
                     active = `${active.substr(0, 25)}...${active.substr(-25)}`

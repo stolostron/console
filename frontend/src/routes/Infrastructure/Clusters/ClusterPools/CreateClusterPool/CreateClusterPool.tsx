@@ -219,6 +219,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
             case 'name':
                 control.validation.contextTester = (
                     active: string | undefined,
+                    _controlData: object,
                     templateObjectMap: { [x: string]: { ClusterPool: { $raw: { metadata: { namespace: any } } }[] } }
                 ) => {
                     if (clusterPools.length) {

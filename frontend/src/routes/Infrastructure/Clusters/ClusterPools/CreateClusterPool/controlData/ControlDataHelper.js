@@ -2,7 +2,7 @@
 
 import { keyBy } from 'lodash'
 
-const lessThanEqualSize = (active, templateObjectMap, i18n) => {
+const lessThanEqualSize = (active, _controlData, templateObjectMap, i18n) => {
     const runningCount = active
     const size = templateObjectMap['<<main>>'].ClusterPool[0].$raw.spec.size
     if (runningCount > size) {
