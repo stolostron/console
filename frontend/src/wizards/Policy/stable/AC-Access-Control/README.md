@@ -4,7 +4,7 @@ See [NIST Special Publication 800-53 (Rev. 4)](https://nvd.nist.gov/800-53/Rev4/
 
 | Policy                                                                         | Description                                                    | Prerequisites |
 | ------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------------- |
-| [policy-limitclusteradmin](../AC-Access-Control/policy-limitclusteradmin.yaml) | Limit the number of cluster administrator for Openshift users. |
+| [policy-limitclusteradmin](../AC-Access-Control/policy-limitclusteradmin.yaml) | Limit the number of cluster administrator for OpenShift users. |
 | [policy-role](../AC-Access-Control/policy-role.yaml)                           | Ensures that a role exists with permissions as specified.      |
 | [policy-rolebinding](../AC-Access-Control/policy-rolebinding.yaml)             | Ensures that an entity is bound to a particular role.          |
 

@@ -9,7 +9,7 @@ import moment from 'moment'
 import queryString from 'query-string'
 import { useMemo } from 'react'
 import { TFunction } from 'i18next'
-import { Link } from 'react-router-dom'
+import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmLabels } from '../../../ui-components'
@@ -19,7 +19,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         application: {
             columns: [
                 {
-                    header: t(t('Name')),
+                    header: t('Name'),
                     sort: 'name',
                     cell: (item: any) => {
                         return CreateDetailsLink(item)
@@ -40,7 +40,7 @@ export const getSearchDefinitions = (t: TFunction) => {
                 {
                     header: t('Topology'),
                     cell: (item: any) => {
-                        return CreateApplicationTopologyLink(item)
+                        return CreateApplicationTopologyLink(item, t)
                     },
                 },
                 {
@@ -145,7 +145,7 @@ export const getSearchDefinitions = (t: TFunction) => {
                     header: t('Console URL'),
                     sort: 'consoleURL',
                     cell: (item: any) => {
-                        return CreateExternalLink(item)
+                        return CreateExternalLink(item, t)
                     },
                 },
                 {
@@ -937,12 +937,12 @@ export const getSearchDefinitions = (t: TFunction) => {
                     cell: 'cluster',
                 },
                 {
-                    header: t(t('Status')),
+                    header: t('Status'),
                     sort: 'status',
                     cell: 'status',
                 },
                 {
-                    header: t(t('Restarts')),
+                    header: t('Restarts'),
                     sort: 'restarts',
                     cell: 'restarts',
                 },
@@ -1409,8 +1409,11 @@ export const GetUrlSearchParam = (resource: any) => {
 export function CreateDetailsLink(item: any) {
     switch (item.kind.toLowerCase()) {
         case 'cluster':
-            return <a href={`/multicloud/infrastructure/clusters/details/${item.name}/overview`}>{item.name}</a>
-
+            return (
+                <Link to={generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name })}>
+                    {item.name}
+                </Link>
+            )
         case 'application': {
             const { apigroup, applicationSet, cluster, name, namespace, kind } = item
             if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
@@ -1421,13 +1424,17 @@ export function CreateDetailsLink(item: any) {
                     applicationset: applicationSet == null ? undefined : applicationSet,
                 })
                 return (
-                    <a
-                        href={`${NavigationPath.applicationTopology
-                            .replace(':namespace', namespace)
-                            .replace(':name', name)}?${params}`}
+                    <Link
+                        to={{
+                            pathname: generatePath(NavigationPath.applicationOverview, {
+                                namespace,
+                                name,
+                            }),
+                            search: `?${params}`,
+                        }}
                     >
                         {name}
-                    </a>
+                    </Link>
                 )
             }
             return (
@@ -1450,13 +1457,11 @@ export function CreateDetailsLink(item: any) {
             // If the policy is not, it will redirect and just show the yaml.
             if (item._hubClusterResource && item.apigroup === 'policy.open-cluster-management.io') {
                 return (
-                    <a
-                        href={NavigationPath.policyDetails
-                            .replace(':namespace', item.namespace)
-                            .replace(':name', item.name)}
+                    <Link
+                        to={generatePath(NavigationPath.policyDetails, { name: item.name, namespace: item.namespace })}
                     >
                         {item.name}
-                    </a>
+                    </Link>
                 )
             }
             return (
@@ -1475,13 +1480,17 @@ export function CreateDetailsLink(item: any) {
             )
         case 'policyreport':
             return (
-                <a
-                    href={`/multicloud/infrastructure/clusters/details/${item.namespace}/overview?${encodeURIComponent(
-                        'showClusterIssues=true'
-                    )}`}
+                <Link
+                    to={{
+                        pathname: generatePath(NavigationPath.clusterOverview, {
+                            name: item.namespace,
+                            namespace: item.namespace,
+                        }),
+                        search: `?${encodeURIComponent('showClusterIssues=true')}`,
+                    }}
                 >
                     {item.name}
-                </a>
+                </Link>
             )
         default:
             return (
@@ -1501,28 +1510,23 @@ export function CreateDetailsLink(item: any) {
     }
 }
 
-export function CreateApplicationTopologyLink(item: any) {
+export function CreateApplicationTopologyLink(item: any, t: TFunction) {
     if (item.apiversion && item.apigroup) {
         const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
-        const link = `${NavigationPath.applicationTopology
-            .replace(':namespace', item.namespace)
-            .replace(':name', item.name)}?apiVersion=${apiversion}`
-        return (
-            <a href={link}>
-                {/* TODO Not translating - caused issue: https://github.com/open-cluster-management/backlog/issues/9184 */}
-                {'View topology'}
-            </a>
-        )
+        const link = {
+            pathname: generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace }),
+            search: `?apiVersion=${apiversion}`,
+        }
+        return <Link to={link}>{t('View topology')}</Link>
     }
     return '-'
 }
 
-export function CreateExternalLink(item: any) {
+export function CreateExternalLink(item: any, t: TFunction) {
     if (item.consoleURL) {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${item.consoleURL}`}>
-                {/* TODO Not translating - caused issue: https://github.com/open-cluster-management/backlog/issues/9184 */}
-                {'Launch'}
+                {t('Launch')}
             </a>
         )
     } else if (item.clusterip) {

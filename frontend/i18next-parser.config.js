@@ -23,7 +23,7 @@ module.exports = {
     indentation: 4,
     // Indentation of the catalog files
 
-    keepRemoved: true,
+    keepRemoved: false,
     // Keep keys from the catalog that are no longer in code
 
     keySeparator: false,

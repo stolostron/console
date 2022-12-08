@@ -4,13 +4,16 @@
 
 import { Warning } from '../Warning'
 import { getControlDataHypershift } from './ControlDataHypershift'
+import i18next from 'i18next'
+
+const t = i18next.t.bind(i18next)
 
 describe('getControlDataHypershift', () => {
     it('get control data for Hypershift - default', () => {
-        getControlDataHypershift()
+        getControlDataHypershift(t, undefined, undefined, true, true)
     })
 
     it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataHypershift(false, <Warning />)
+        getControlDataHypershift(t, undefined, <Warning />, true, false)
     })
 })

@@ -123,7 +123,7 @@ export function getClusterActions(cluster: Cluster) {
         actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
     }
 
-    if (!cluster.isHypershift || cluster.status === ClusterStatus.destroying) {
+    if (!cluster.isHypershift || !cluster.hypershift?.agent || cluster.status === ClusterStatus.destroying) {
         actionIds = actionIds.filter((id) => id !== 'destroy-hypershift-cluster')
     }
 
@@ -386,7 +386,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         description: t('bulk.message.detach'),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
-                        actionFn: (cluster) => detachCluster(cluster.name!),
+                        actionFn: (cluster) => detachCluster(cluster),
                         close: () => {
                             setModalProps({ open: false })
                         },
@@ -397,7 +397,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: cluster.isHostedCluster ? [] : [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
+                rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
                 id: 'destroy-cluster',
@@ -423,7 +423,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: cluster.isHostedCluster ? [] : destroyRbac,
+                rbac: destroyRbac,
             },
             {
                 id: 'ai-edit',
@@ -465,7 +465,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     })
                 },
                 isAriaDisabled: true,
-                rbac: cluster.isHostedCluster ? [] : destroyRbac,
+                rbac: destroyRbac,
             },
         ],
         [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]

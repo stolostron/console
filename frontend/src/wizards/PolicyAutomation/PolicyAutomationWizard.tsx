@@ -60,9 +60,9 @@ export function PolicyAutomationWizard(props: {
                 .then((jobNames) => setJobNames(jobNames))
                 .catch((err) => {
                     if (err instanceof Error) {
-                        setAlert({ title: t('Failed to get job names from ansible'), message: err.message })
+                        setAlert({ title: t('Failed to get job names from Ansible'), message: err.message })
                     } else {
-                        setAlert({ title: t('Failed to get job names from ansible'), message: 'Unknown error' })
+                        setAlert({ title: t('Failed to get job names from Ansible'), message: 'Unknown error' })
                     }
                 })
         }
@@ -133,12 +133,12 @@ export function PolicyAutomationWizard(props: {
                                     .catch((err) => {
                                         if (err instanceof Error) {
                                             setAlert({
-                                                title: t('Failed to get job names from ansible'),
+                                                title: t('Failed to get job names from Ansible'),
                                                 message: err.message,
                                             })
                                         } else {
                                             setAlert({
-                                                title: t('Failed to get job names from ansible'),
+                                                title: t('Failed to get job names from Ansible'),
                                                 message: t('Unknown error'),
                                             })
                                         }

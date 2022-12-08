@@ -14,8 +14,6 @@ import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../../components/Rbac'
-import { TechPreviewAlert } from '../../../../../../components/TechPreviewAlert'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
@@ -26,7 +24,6 @@ export function MachinePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
             <PageSection>
-                <TechPreviewAlert i18nKey="preview.machinePools" docHref={DOC_LINKS.MACHINE_POOLS} />
                 <MachinePoolsTable />
             </PageSection>
         </AcmPageContent>
@@ -229,7 +226,7 @@ export function MachinePoolsTable() {
                         title={t('managed.cluster.machinePools.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'managed.cluster.machinePools.emptyStateButton'}
+                                i18nKey="managed.cluster.machinePools.emptyStateButton"
                                 components={{ bold: <strong /> }}
                             />
                         }

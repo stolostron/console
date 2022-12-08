@@ -39,9 +39,7 @@ function EmptyStateNoCRHCredentials() {
     return (
         <AcmEmptyState
             title={t('emptystate.defaultState.title')}
-            message={
-                <Trans i18nKey={'emptystate.defaultState.msg'} components={{ italic: <em />, bold: <strong /> }} />
-            }
+            message={<Trans i18nKey="emptystate.defaultState.msg" components={{ italic: <em />, bold: <strong /> }} />}
             key="dcEmptyState"
             showIcon={true}
             action={
@@ -97,7 +95,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
             title={t('emptystate.credentials.title')}
             message={
                 <Trans
-                    i18nKey={'emptystate.credentials.msg'}
+                    i18nKey="emptystate.credentials.msg"
                     components={{ bold: <strong /> }}
                     values={{ discoveryConfigTotal: props.credentials?.length }}
                 />

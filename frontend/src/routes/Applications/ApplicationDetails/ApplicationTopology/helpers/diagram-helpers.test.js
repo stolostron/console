@@ -44,7 +44,7 @@ const key = 'nskey'
 const defaultValue = 'test'
 
 describe('getNodePropery', () => {
-    const result = { labelKey: 'nskey', value: 'test' }
+    const result = { labelValue: 'nskey', value: 'test' }
     it('get property nodes, not found', () => {
         expect(getNodePropery(node, propPath, key, defaultValue)).toEqual(result)
     })
@@ -57,7 +57,7 @@ describe('getNodePropery', () => {
 })
 
 describe('getNodePropery', () => {
-    const result = { labelKey: 'nskey', value: 'nodeNS' }
+    const result = { labelValue: 'nskey', value: 'nodeNS' }
 
     it('get property nodes, found', () => {
         expect(getNodePropery(node, propPath_found, key)).toEqual(result)
@@ -66,15 +66,15 @@ describe('getNodePropery', () => {
 
 const list = []
 describe('addPropertyToList', () => {
-    const result = [{ labelKey: 'nskey', value: 'nodeNS' }]
-    const data = { labelKey: 'nskey', value: 'nodeNS' }
+    const result = [{ labelValue: 'nskey', value: 'nodeNS' }]
+    const data = { labelValue: 'nskey', value: 'nodeNS' }
     it('addPropertyToList', () => {
         expect(addPropertyToList(list, data)).toEqual(result)
     })
 })
 
 describe('addPropertyToList undefined list', () => {
-    const data = { labelKey: 'nskey', value: 'nodeNS' }
+    const data = { labelValue: 'nskey', value: 'nodeNS' }
     it('addPropertyToList', () => {
         expect(addPropertyToList(undefined, data)).toEqual(undefined)
     })
@@ -726,7 +726,7 @@ describe('addNodeOCPRouteLocationForCluster no host spec', () => {
                     },
                 },
                 id: '0',
-                labelKey: 'Launch Route URL',
+                labelValue: 'Launch Route URL',
             },
         },
     ]
@@ -985,7 +985,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 },
                 id: 'objID',
-                labelKey: 'Launch Route URL',
+                labelValue: 'Launch Route URL',
             },
         },
     ]
@@ -1113,7 +1113,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 },
                 id: 'objID',
-                labelKey: 'Launch Route URL',
+                labelValue: 'Launch Route URL',
             },
         },
     ]
@@ -1182,18 +1182,18 @@ describe('addIngressNodeInfo 1', () => {
         },
     }
     const result = [
-        { labelKey: 'Location', type: 'label' },
-        { labelKey: 'Host', value: 'aaa' },
-        { labelKey: 'Service Name', value: 'n1' },
-        { labelKey: 'Service Port', value: 'p1' },
-        { labelKey: 'Service Name', value: 'n2' },
-        { labelKey: 'Service Port', value: 'p2' },
+        { labelValue: 'Location', type: 'label' },
+        { labelValue: 'Host', value: 'aaa' },
+        { labelValue: 'Service Name', value: 'n1' },
+        { labelValue: 'Service Port', value: 'p1' },
+        { labelValue: 'Service Name', value: 'n2' },
+        { labelValue: 'Service Port', value: 'p2' },
         { type: 'spacer' },
-        { labelKey: 'Host', value: 'bbb' },
-        { labelKey: 'Service Name', value: 'bn1' },
-        { labelKey: 'Service Port', value: 'bp1' },
-        { labelKey: 'Service Name', value: 'bn2' },
-        { labelKey: 'Service Port', value: 'bp2' },
+        { labelValue: 'Host', value: 'bbb' },
+        { labelValue: 'Service Name', value: 'bn1' },
+        { labelValue: 'Service Port', value: 'bp1' },
+        { labelValue: 'Service Name', value: 'bn2' },
+        { labelValue: 'Service Port', value: 'bp2' },
         { type: 'spacer' },
     ]
     it('addIngressNodeInfo 1', () => {
@@ -1250,9 +1250,9 @@ describe('addNodeServiceLocation 1', () => {
             },
         },
     }
-    const result = [{ labelKey: 'Location', value: '1.1:80' }]
+    const result = [{ labelValue: 'Location', value: '1.1:80' }]
     it('addNodeServiceLocation 1', () => {
-        expect(addNodeServiceLocation(node, 'possiblereptile', 'default', [])).toEqual(result)
+        expect(addNodeServiceLocation(node, 'possiblereptile', 'default', [], t)).toEqual(result)
     })
 })
 
@@ -1338,7 +1338,7 @@ describe('addNodeServiceLocationForCluster 1', () => {
         selfLink: '/api/v1/namespaces/app-guestbook-git-ns/services/frontend',
         type: 'NodePort',
     }
-    const result = [{ labelKey: 'Location', value: '172.30.129.147:80' }]
+    const result = [{ labelValue: 'Location', value: '172.30.129.147:80' }]
     it('addNodeServiceLocationForCluster 1', () => {
         expect(addNodeServiceLocationForCluster(node, obj, [], t)).toEqual(result)
     })

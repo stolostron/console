@@ -24,6 +24,7 @@ export enum Provider {
     hypershift = 'hypershift',
     alibaba = 'alibaba',
     other = 'other',
+    kubevirt = 'kubevirt',
 }
 
 export const ProviderShortTextMap = {
@@ -44,6 +45,7 @@ export const ProviderShortTextMap = {
     [Provider.hypershift]: 'Hypershift',
     [Provider.alibaba]: 'Alibaba',
     [Provider.other]: 'Other',
+    [Provider.kubevirt]: 'KubeVirt',
 }
 
 export const ProviderLongTextMap = {
@@ -64,6 +66,7 @@ export const ProviderLongTextMap = {
     [Provider.hypershift]: 'Hypershift',
     [Provider.alibaba]: 'Alibaba Cloud',
     [Provider.other]: 'Other',
+    [Provider.kubevirt]: 'KubeVirt',
 }
 
 export const ProviderIconMap = {
@@ -84,4 +87,5 @@ export const ProviderIconMap = {
     [Provider.alibaba]: AcmIconVariant.alibaba,
     [Provider.other]: AcmIconVariant.cloud,
     [Provider.hypershift]: AcmIconVariant.cloud,
+    [Provider.kubevirt]: AcmIconVariant.kubevirt,
 }

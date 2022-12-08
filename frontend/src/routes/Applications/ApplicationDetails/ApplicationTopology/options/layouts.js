@@ -11,8 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
-import { NODE_SIZE } from '../../../../../components/Topology/constants.js'
+import { defaultShapes, NODE_SIZE } from './constants'
 import { getClusterName } from '../helpers/diagram-helpers-utils'
 import _ from 'lodash'
 

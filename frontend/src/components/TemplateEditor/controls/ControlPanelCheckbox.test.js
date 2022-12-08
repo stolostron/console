@@ -12,8 +12,8 @@ const t = i18n.t.bind(i18n)
 
 export const control = {
     active: false,
-    name: 'creation.app.name',
-    tooltip: 'tooltip.creation.app.name',
+    name: 'Name',
+    tooltip: 'Application name',
     controlData: [],
     id: 'checkbox',
     type: 'checkbox',

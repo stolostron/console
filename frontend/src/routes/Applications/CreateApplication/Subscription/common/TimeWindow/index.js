@@ -70,7 +70,7 @@ export class TimeWindow extends Component {
     }
 
     validation(exceptions) {
-        const { control } = this.props
+        const { control, i18n } = this.props
         const timeWindowId = 'timeWindow-config'
         // Mode is active/blocked
         if (control.active.mode) {
@@ -78,7 +78,7 @@ export class TimeWindow extends Component {
             if (control.active.days.length === 0) {
                 exceptions.push({
                     row: 1,
-                    text: 'creation.missing.timeWindow.days',
+                    text: i18n('creation.missing.timeWindow.days'),
                     type: 'error',
                     controlId: timeWindowId,
                 })
@@ -87,7 +87,7 @@ export class TimeWindow extends Component {
             if (!control.active.timezone) {
                 exceptions.push({
                     row: 1,
-                    text: 'creation.missing.timeWindow.timezone',
+                    text: i18n('creation.missing.timeWindow.timezone'),
                     type: 'error',
                     controlId: timeWindowId,
                 })
@@ -99,7 +99,7 @@ export class TimeWindow extends Component {
                 if (control.active.timeList.some(invalidTimeRange)) {
                     exceptions.push({
                         row: 1,
-                        text: 'creation.missing.timeWindow.timelist',
+                        text: i18n('creation.missing.timeWindow.timelist'),
                         type: 'error',
                         controlId: timeWindowId,
                     })
@@ -107,7 +107,7 @@ export class TimeWindow extends Component {
             } else {
                 exceptions.push({
                     row: 1,
-                    text: 'creation.missing.timeWindow.timelist',
+                    text: i18n('creation.missing.timeWindow.timelist'),
                     type: 'error',
                     controlId: timeWindowId,
                 })

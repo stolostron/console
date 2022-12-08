@@ -13,6 +13,7 @@ import {
     RunningIcon,
     FileAltIcon,
 } from '@patternfly/react-icons'
+import { TFunction } from 'i18next'
 
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 
@@ -44,6 +45,23 @@ export enum StatusType {
     'empty' = 'empty',
     'draft' = 'draft',
     'running' = 'running',
+}
+
+export const getStatusLabel = (status: StatusType, t: TFunction) => {
+    switch (status) {
+        case StatusType.danger:
+            return t('status.subtitle.danger')
+        case StatusType.empty:
+            return t('status.subtitle.empty')
+        case StatusType.healthy:
+            return t('status.subtitle.healthy')
+        case StatusType.pending:
+            return t('status.subtitle.pending')
+        case StatusType.progress:
+            return t('status.subtitle.progress')
+        default:
+            return t('status.unknown')
+    }
 }
 
 export function AcmInlineStatus(props: { type: StatusType; status: string | React.ReactNode; popover?: PopoverProps }) {

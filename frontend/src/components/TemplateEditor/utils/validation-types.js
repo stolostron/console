@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import get from 'lodash/get'
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
+import { VALID_DNS_NAME_TESTER } from '../../../lib/validation'
 
 const IP_ADDRESS_TESTER = {
     test: (value) => {
@@ -21,40 +21,19 @@ const IP_ADDRESS_TESTER = {
     },
 }
 
-const getCIDRContextTexter = (cidrFieldKey, sourcePath) => {
-    const { tabId, path } = sourcePath
-    return (value, templateObjectMap, i18n) => {
-        if (!IP_ADDRESS_TESTER.test(value)) {
-            return i18n('creation.ocp.cluster.valid.ip')
-        }
-        const cidrString = get(templateObjectMap[tabId], path) || ''
-        const cidr = new IPCIDR(cidrString.toString())
-        if (cidr.isValid() && !cidr.contains(value)) {
-            const cidrFieldName = i18n(cidrFieldKey)
-            return i18n('creation.ocp.cluster.valid.cidr.membership', [cidrFieldName, cidrString])
-        }
-        return null
-    }
-}
-
-const MACHINE_CIDR_CONTEXT_TESTER = getCIDRContextTexter('creation.ocp.machine.cidr', {
-    tabId: 'install-config',
-    path: 'unknown[0].$synced.networking.$v.machineCIDR.$v',
+export const getIPValidator = (t) => ({
+    tester: IP_ADDRESS_TESTER,
+    notification: t('creation.ocp.cluster.valid.ip'),
+    required: true,
 })
 
-export const VALIDATE_IP = {
+export const getOptionalIPValidator = (t) => ({
     tester: IP_ADDRESS_TESTER,
-    notification: 'creation.ocp.cluster.valid.ip',
-    required: true,
-}
-
-export const VALIDATE_IP_OPTIONAL = {
-    tester: IP_ADDRESS_TESTER,
-    notification: 'creation.ocp.cluster.valid.ip',
+    notification: t('creation.ocp.cluster.valid.ip'),
     required: false,
-}
+})
 
-export const VALIDATE_CIDR = {
+export const getCIDRValidator = (t) => ({
     tester: {
         test: (value) => {
             const cidr = new IPCIDR(value)
@@ -62,11 +41,11 @@ export const VALIDATE_CIDR = {
             return cidr.isValid() && cidr.start() !== cidr.end()
         },
     },
-    notification: 'creation.ocp.cluster.valid.cidr',
+    notification: t('creation.ocp.cluster.valid.cidr'),
     required: true,
-}
+})
 
-export const VALIDATE_URL = {
+export const getURLValidator = (t) => ({
     tester: {
         test: (value) => {
             try {
@@ -77,70 +56,27 @@ export const VALIDATE_URL = {
             return true
         },
     },
-    notification: 'creation.invalid.url',
+    notification: t('creation.invalid.url'),
     required: true,
-}
+})
 
-export const VALIDATE_URL_OPTIONAL = {
-    tester: {
-        test: (value) => {
-            try {
-                new URL(value)
-            } catch (e) {
-                return false
-            }
-            return true
-        },
-    },
-    notification: 'creation.invalid.url',
-    required: false,
-}
-
-export const VALIDATE_IP_AGAINST_MACHINE_CIDR = {
-    contextTester: MACHINE_CIDR_CONTEXT_TESTER,
-    notification: 'creation.ocp.cluster.valid.ip',
-    required: true,
-}
-
-export const VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL = {
-    contextTester: MACHINE_CIDR_CONTEXT_TESTER,
-    required: false,
-}
-
-export const VALIDATE_USER_AND_IP = {
-    tester: new RegExp(
-        '^[-.0-9a-z]+@(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3,4}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(:[0-9]+)*$'
-    ),
-    notification: 'creation.ocp.cluster.valid.user.ip',
-    required: true,
-}
-
-export const VALIDATE_MAC_ADDRESS = {
-    tester: new RegExp('^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$'),
-    notification: 'creation.ocp.cluster.valid.mac',
-    required: true,
-}
-
-export const VALIDATE_ALPHANUMERIC = {
+export const getAlphanumericValidator = (t) => ({
     tester: new RegExp('^[A-Za-z0-9-_]+$'),
-    notification: 'creation.valid.alphanumeric',
+    notification: t('creation.valid.alphanumeric'),
     required: false,
-}
+})
 
-export const VALIDATE_NUMERIC = {
+export const getNumericValidator = (t) => ({
     tester: new RegExp('^[0-9]+$'),
-    notification: 'creation.valid.numeric',
+    notification: t('creation.valid.numeric'),
     required: true,
-}
+})
 
-export const VALIDATE_ALPHANUMERIC_PERIOD = {
+export const getAlphanumericWithPeriodValidator = (t) => ({
     tester: new RegExp('^[A-Za-z0-9-_.]+$'),
-    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+    notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
     required: false,
-}
-
-export const VALID_DNS_NAME = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
-const VALID_DNS_NAME_TESTER = new RegExp(VALID_DNS_NAME)
+})
 
 // Tests for one or more path entries
 export const VALID_REPOPATH = '^.+/[A-Za-z0-9]+(/[A-Za-z0-9-_\\.]*[A-Za-z0-9]+)*$'
@@ -159,7 +95,7 @@ export const IMAGE_MIRROR_VALIDATOR = (value, i18n) => {
         return i18n('creation.ocp.cluster.valid.imageregistrymirror')
     }
     const port = dnsName[1].split('/', 2)
-    if ((port.length === 1 && port[0].length === 0) || !VALIDATE_NUMERIC.tester.test(port[0])) {
+    if ((port.length === 1 && port[0].length === 0) || !getNumericValidator(i18n).tester.test(port[0])) {
         return i18n('creation.ocp.cluster.valid.port')
     }
     if (port.length === 1) {
@@ -185,7 +121,6 @@ export const VALIDATE_BASE_DNS_NAME_REQUIRED = {
     contextTester: (value, templateObjectMap, i18n) => {
         return BASE_DNS_NAME_VALIDATOR(value, i18n)
     },
-    notification: 'creation.ocp.cluster.missing.input',
     required: true,
 }
 

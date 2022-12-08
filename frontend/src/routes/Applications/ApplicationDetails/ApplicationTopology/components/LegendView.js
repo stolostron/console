@@ -21,7 +21,7 @@ class LegendView extends Component {
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <svg>
-                                <use href={'#diagramShapes_legend'} className="label-icon" />
+                                <use href={'#drawerShapes_legend'} className="label-icon" />
                             </svg>
                         </div>
                     </div>
@@ -70,10 +70,10 @@ class LegendView extends Component {
                 <div key={status} className="bodyText">
                     <div>
                         <svg className="statusSvg" fill={iconColorMap.get(status)}>
-                            <use href={`#diagramIcons_${status}`} className="label-icon" />
+                            <use href={`#nodeStatusIcon_${status}`} className="label-icon" />
                         </svg>
                     </div>
-                    <div>{t(descriptionMap.get(status))}</div>
+                    <div>{descriptionMap.get(status)}</div>
                 </div>
             )
         })

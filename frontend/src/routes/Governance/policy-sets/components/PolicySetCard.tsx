@@ -255,7 +255,7 @@ function DeletePolicySetModal(props: {
             if (err instanceof Error) {
                 setError(err.message)
             } else {
-                setError(t('Unknown error occured'))
+                setError(t('Unknown error occurred'))
             }
             setIsDeleting(false)
         }

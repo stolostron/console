@@ -41,7 +41,7 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
         reconcileResources(props.resources, existingResources).then(() => {
             toastContext.addAlert({
                 title: t('Subscription updated'),
-                message: t(`${subNames.join(', ')} were successfully synced.`),
+                message: t('{{names}} were successfully synced.', { name: subNames.join(', ') }),
                 type: 'success',
                 autoClose: true,
             })

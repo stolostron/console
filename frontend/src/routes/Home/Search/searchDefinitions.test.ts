@@ -12,6 +12,8 @@ import {
     GetUrlSearchParam,
     getSearchDefinitions,
 } from './searchDefinitions'
+import i18next from 'i18next'
+const t = i18next.t.bind(i18next)
 
 test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
     Date.now = jest.fn(() => 1607028460000)
@@ -136,7 +138,7 @@ test('Correctly returns CreateApplicationTopologyLink', () => {
         apiversion: 'v1beta1',
         apigroup: 'app.k8s.io',
     }
-    const result = CreateApplicationTopologyLink(item)
+    const result = CreateApplicationTopologyLink(item, t)
     expect(result).toMatchSnapshot()
 })
 
@@ -146,7 +148,7 @@ test('Correctly returns empty CreateApplicationTopologyLink', () => {
         namespace: 'testNamespace',
         dashboard: '',
     }
-    const result = CreateApplicationTopologyLink(item)
+    const result = CreateApplicationTopologyLink(item, t)
     expect(result).toMatchSnapshot()
 })
 
@@ -156,7 +158,7 @@ test('Correctly returns CreateExternalLink from consoleURL', () => {
         namespace: 'testNamespace',
         consoleURL: 'http://consoleurl',
     }
-    const result = CreateExternalLink(item)
+    const result = CreateExternalLink(item, t)
     expect(result).toMatchSnapshot()
 })
 
@@ -166,7 +168,7 @@ test('Correctly returns CreateExternalLink from clusterip', () => {
         namespace: 'testNamespace',
         clusterip: 'http://clusterip',
     }
-    const result = CreateExternalLink(item)
+    const result = CreateExternalLink(item, t)
     expect(result).toMatchSnapshot()
 })
 
@@ -175,7 +177,7 @@ test('Correctly returns empty CreateExternalLink', () => {
         name: 'testName',
         namespace: 'testNamespace',
     }
-    const result = CreateExternalLink(item)
+    const result = CreateExternalLink(item, t)
     expect(result).toMatchSnapshot()
 })
 

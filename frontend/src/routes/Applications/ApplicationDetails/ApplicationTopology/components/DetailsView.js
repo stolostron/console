@@ -30,7 +30,8 @@ const DetailsViewDecorator = ({ shape, className }) => {
     return (
         <div className="detailsIconContainer">
             <svg width="58px" height="58px" viewBox="0 0 58 58">
-                <use href={`#diagramShapes_${shape}`} className={`${className} detailsIcon`} />
+                <circle cx="29" cy="29" r="25" fill="#fff" stroke="#a7a7a7" strokeWidth="1" />
+                <use href={`#nodeIcon_${shape}`} className={`${className} detailsIcon`} />
             </svg>
         </div>
     )
@@ -109,7 +110,7 @@ class DetailsView extends Component {
                     {isLogURL && t('View logs in Search details')}
                     {!isLogURL && t('View YAML in Search details')}
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                        <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                        <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                     </svg>
                 </span>
                 <div className="spacer" />
@@ -147,7 +148,7 @@ class DetailsView extends Component {
                     {filteredNode && (
                         <div style={{ margin: '0 0 20px 10px' }}>
                             <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
-                                {t(`< Back to all ${resourceType}s`)}
+                                {t('< Back to all {{resourceType}} resources', { resourceType })}
                             </Button>
                         </div>
                     )}
@@ -249,18 +250,14 @@ class DetailsView extends Component {
         }
     }
 
-    renderLabel({ labelKey, labelValue, value, indent, status }, t) {
-        let label = labelValue
+    renderLabel({ labelValue, value, indent, status }, t) {
         const fillMap = new Map([
             ['checkmark', '#3E8635'],
             ['failure', '#C9190B'],
             ['warning', '#F0AB00'],
             ['pending', '#878D96'],
         ])
-        if (labelKey) {
-            label = labelValue ? t(labelKey, [labelValue], t) : t(labelKey)
-        }
-        label = value !== undefined ? `${label}:` : label //add : for 0 values
+        const label = value !== undefined ? `${labelValue}:` : labelValue //add : for 0 values
         const mainSectionClasses = classNames({
             sectionContent: true,
             borderLeft: value !== undefined ? true : false,
@@ -277,10 +274,10 @@ class DetailsView extends Component {
         const iconFill = statusIcon ? fillMap.get(statusIcon) : '#FFFFFF'
         return (
             <div className={mainSectionClasses} key={Math.random()}>
-                {(labelKey || labelValue) && statusIcon ? (
+                {labelValue && statusIcon ? (
                     <span className="label sectionLabel">
                         <svg width="10px" height="10px" fill={iconFill} style={{ marginRight: '8px' }}>
-                            <use href={`#diagramIcons_${statusIcon}`} className="label-icon" />
+                            <use href={`#nodeStatusIcon_${statusIcon}`} className="label-icon" />
                         </svg>
                         <span>{label} </span>
                     </span>
@@ -307,7 +304,7 @@ class DetailsView extends Component {
         return null
     }
 
-    renderLink({ value, indent }, t) {
+    renderLink({ value, indent }) {
         if (!value) {
             return <div />
         }
@@ -320,7 +317,7 @@ class DetailsView extends Component {
             _.get(value, 'data.action', '') !== 'show_search' &&
             _.get(value, 'data.action', '') !== 'show_resource_yaml'
 
-        const label = value.labelKey ? t(value.labelKey) : value.label
+        const label = value.labelValue || value.label
 
         const mainSectionClasses = classNames({
             sectionContent: true,
@@ -347,11 +344,11 @@ class DetailsView extends Component {
                     {showLaunchOutIcon &&
                         (isExternal ? (
                             <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                                <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                                <use href="#drawerShapes_carbonLaunch" className="label-icon" />
                             </svg>
                         ) : (
                             <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-                                <use href="#diagramIcons_open-new-tab" className="label-icon" />
+                                <use href="#drawerShapes_open-new-tab" className="label-icon" />
                             </svg>
                         ))}
                 </span>

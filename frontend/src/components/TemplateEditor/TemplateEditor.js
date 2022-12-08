@@ -105,7 +105,9 @@ export default class TemplateEditor extends React.Component {
                             exception:
                                 Array.isArray(creationMsg) && creationMsg.length
                                     ? creationMsg[0]
-                                    : i18n(isEditing ? 'success.create.updating' : 'success.create.creating', [type]),
+                                    : isEditing
+                                    ? i18n('success.create.updating', [type])
+                                    : i18n('success.create.creating', [type]),
                         },
                     ]
                     break
@@ -118,7 +120,9 @@ export default class TemplateEditor extends React.Component {
                             exception:
                                 Array.isArray(creationMsg) && creationMsg.length
                                     ? creationMsg[0]
-                                    : i18n(isEditing ? 'success.create.updated' : 'success.create.created', [type]),
+                                    : isEditing
+                                    ? i18n('success.create.updated', [type])
+                                    : i18n('success.create.created', [type]),
                         },
                     ]
                     break
@@ -1221,7 +1225,9 @@ export default class TemplateEditor extends React.Component {
                             id="edit-yaml"
                             key={`is${showEditor}`}
                             isChecked={showEditor}
-                            label={i18n ? i18n(editorReadOnly ? 'edit.yaml.on.ro' : 'edit.yaml.on') : 'Show Yaml'}
+                            label={
+                                i18n ? (editorReadOnly ? i18n('edit.yaml.on.ro') : i18n('edit.yaml.on')) : 'Show Yaml'
+                            }
                             labelOff={i18n ? i18n('edit.yaml.off') : 'Hide Yaml'}
                             onChange={handleToggle}
                         />

@@ -10,7 +10,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
+import { defaultShapes } from './constants'
 import { computeNodeStatus } from '../model/computeStatuses'
 import { getConnectedLayoutOptions, getUnconnectedLayoutOptions } from './layouts'
 import { getNodeDescription } from './descriptions'

@@ -16,11 +16,6 @@ import {
 } from './resource-helper'
 
 const t = i18next.t.bind(i18next)
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => i18next.t(key),
-    }),
-}))
 
 describe('normalizeRepoType', () => {
     it('should work with github', () => {

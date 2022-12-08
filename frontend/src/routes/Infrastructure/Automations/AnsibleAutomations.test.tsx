@@ -157,7 +157,7 @@ function TestIntegrationPage(props: {
     )
 }
 
-describe('ansible job page', () => {
+describe('automation page', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         nockIgnoreApiPaths()
@@ -207,7 +207,7 @@ describe('ansible job page', () => {
         await selectTableRow(1)
         await clickBulkAction('Delete templates')
         await waitForText(
-            'This action will delete Ansible job templates and will unlink any associated Ansible credential. Are you sure that you want to continue?'
+            'This action will delete automation templates and will unlink any associated Ansible credential. Are you sure that you want to continue?'
         )
         await clickByText('Delete')
         await waitForNock(deleteNock1)

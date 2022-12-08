@@ -26,7 +26,7 @@ Policies in this folder are supported by [Red Hat Advanced Cluster Management fo
 
 | Policy                                                                        | Description                                                 | Prerequisites |
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------- |
-| [policy-limitclusteradmin](./AC-Access-Control/policy-limitclusteradmin.yaml) | Limits the number of cluster administrator Openshift users. |
+| [policy-limitclusteradmin](./AC-Access-Control/policy-limitclusteradmin.yaml) | Limits the number of cluster administrator OpenShift users. |
 | [policy-role](./AC-Access-Control/policy-role.yaml)                           | Ensures that a role exists with permissions as specified.   |
 | [policy-rolebinding](./AC-Access-Control/policy-rolebinding.yaml)             | Ensures that an entity is bound to a particular role.       |
 

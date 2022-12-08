@@ -206,7 +206,6 @@ export interface ITableFilter<T> {
     options: TableFilterOption<FilterOptionValueT>[]
     tableFilterFn: TableFilterFn<T>
     showEmptyOptions?: boolean
-    cachedFilters?: string[]
 }
 
 const useStyles = makeStyles({
@@ -331,9 +330,11 @@ export interface AcmTableProps<T> {
     fuseThreshold?: number
     initialFilters?: { [key: string]: string[] }
     filters?: ITableFilter<T>[]
+    id?: string
 }
 export function AcmTable<T>(props: AcmTableProps<T>) {
     const {
+        id,
         items,
         columns,
         addSubRows,
@@ -353,8 +354,32 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
     const initialSort = props.initialSort || defaultSort
     const initialSearch = props.initialSearch || ''
-    const initialFilters = props.initialFilters || {}
+
+    function setLocalStorage(key: string | undefined, value: any) {
+        try {
+            window.localStorage.setItem(key as string, JSON.stringify(value))
+        } catch (e) {
+            // catch possible errors
+        }
+    }
+
+    function getLocalStorage(key: string | undefined, initialValue: {}) {
+        try {
+            const value = window.localStorage.getItem(key as string)
+            return value ? JSON.parse(value) : initialValue
+        } catch (e) {
+            // if error, return initial value
+            return initialValue
+        }
+    }
+
     const { t } = useTranslation()
+
+    // localStorage filter
+    const cachedPrefixId = id && `acm-table-filter.${id}`
+    const [cache, setCache] = useState(() => getLocalStorage(cachedPrefixId, {}))
+    // initialFilters takes precedence
+    const initialFilters = props.initialFilters || cache || {}
 
     // State that can come from context or component state (perPage)
     const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -390,6 +415,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const [tableDiv, setTableDiv] = useState<HTMLDivElement | null>(null)
     const outerDivRef = useCallback((elem) => setOuterDiv(elem), [])
     const tableDivRef = useCallback((elem) => setTableDiv(elem), [])
+
+    useEffect(() => {
+        setLocalStorage(cachedPrefixId, cache)
+    }, [cache, cachedPrefixId])
 
     /* istanbul ignore next */
     const updateBreakpoint = (width: number, tableWidth: number) => {
@@ -763,7 +792,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const clearSearch = useCallback(() => {
         /* istanbul ignore if */
         if (process.env.NODE_ENV !== 'test') {
-            ;(setInternalSearchWithDebounce as ReturnType<typeof debounce>).clear()
+            ;(setInternalSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
         }
         setSearch('')
         setInternalSearch('')
@@ -779,13 +808,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const clearSearchAndFilters = useCallback(() => {
         clearSearch()
         clearFilters()
-        for (const filter of filters) {
-            const cachedFilters = filter.cachedFilters
-            if (cachedFilters) {
-                cachedFilters.length = 0
-            }
+        if (cachedPrefixId) {
+            setCache({})
         }
-    }, [clearSearch, clearFilters, filters])
+    }, [clearSearch, clearFilters, cachedPrefixId])
 
     const updateSearch = useCallback(
         (newSearch: string) => {
@@ -1028,6 +1054,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                         items={items}
                                         toolbarFilterIds={toolbarFilterIds}
                                         setToolbarFilterIds={setToolbarFilterIds}
+                                        cachedPrefixId={cachedPrefixId}
+                                        setLocalStorage={setLocalStorage}
                                     />
                                 )}
                             </ToolbarGroup>
@@ -1174,33 +1202,31 @@ function TableColumnFilters<T>(props: {
         }>
     >
     items?: T[]
+    cachedPrefixId?: string
+    setLocalStorage?: any
 }) {
     const [isOpen, setIsOpen] = useState(false)
     const classes = useStyles()
-    const { filters, toolbarFilterIds, setToolbarFilterIds, items } = props
+    const { filters, toolbarFilterIds, setToolbarFilterIds, items, cachedPrefixId, setLocalStorage } = props
     const { t } = useTranslation()
 
     const onFilterSelect = useCallback(
         (selection: string | SelectOptionObject) => {
             /* istanbul ignore if */
+
             if (typeof selection !== 'string') {
                 /* istanbul ignore next */
                 throw new Error(t('Filter select error: Incorrect selection type'))
             }
+
             let filterId = ''
             for (const filter of filters) {
                 /* istanbul ignore next */
                 if (filter.options.find((option) => option.value === selection)) {
                     filterId = filter.id
-                    const cachedFilters = filter.cachedFilters
-                    if (cachedFilters) {
-                        if (!cachedFilters.includes(selection)) {
-                            cachedFilters.push(selection)
-                        }
-                    }
-                    break
                 }
             }
+
             setToolbarFilterIds((toolbarFilterIds) => {
                 const selectedFilterValues = toolbarFilterIds[filterId]
                 /* istanbul ignore next */
@@ -1217,6 +1243,9 @@ function TableColumnFilters<T>(props: {
                 } else {
                     updatedFilters[filterId] = [...(updatedFilters[filterId] ?? []), selection]
                 }
+                if (setLocalStorage && cachedPrefixId) {
+                    setLocalStorage(cachedPrefixId, updatedFilters)
+                }
                 return updatedFilters
             })
         },
@@ -1225,15 +1254,6 @@ function TableColumnFilters<T>(props: {
     )
 
     const onDelete = useCallback((filter: string, id: ToolbarChip) => {
-        for (const fil of filters) {
-            const cachedFilters = fil.cachedFilters
-            if (cachedFilters) {
-                if (cachedFilters.includes(id.key)) {
-                    cachedFilters.splice(cachedFilters.indexOf(id.key), 1)
-                }
-            }
-            break
-        }
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
             if (updatedFilters[filter].length === 1) {
@@ -1241,8 +1261,13 @@ function TableColumnFilters<T>(props: {
             } else {
                 updatedFilters[filter] = updatedFilters[filter].filter((f: string) => f !== id.key)
             }
+
+            if (setLocalStorage && cachedPrefixId) {
+                setLocalStorage(cachedPrefixId, updatedFilters)
+            }
             return updatedFilters
         })
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -1250,6 +1275,9 @@ function TableColumnFilters<T>(props: {
         setToolbarFilterIds((toolbarFilterIds) => {
             const updatedFilters = { ...toolbarFilterIds }
             delete updatedFilters[filter]
+            if (setLocalStorage && cachedPrefixId) {
+                setLocalStorage(cachedPrefixId, updatedFilters)
+            }
             return updatedFilters
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps

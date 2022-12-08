@@ -264,7 +264,7 @@ export const getPulseStatusForCluster = (node) => {
     /////////////////////////////////////////
     ///////// SEE IF CLUSTER IS OFFLINE
     ////////////////////////////////////////
-    let clusters = _.get(node, 'specs.clusters')
+    let clusters = _.get(node, 'specs.clusters', [])
     const appClusters = _.get(node, 'specs.appClusters', [])
     const clustersNames = _.get(node, 'specs.clustersNames')
     const targetNamespaces = _.get(node, 'specs.targetNamespaces', {})
@@ -556,7 +556,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
             const appNS = _.get(node, 'namespace', 'NA')
 
             details.push({
-                labelKey: t('Error'),
+                labelValue: t('Error'),
                 value: t(
                     'This application has no matched subscription. Make sure the subscription match selector spec.selector.matchExpressions exists and matches a Subscription resource created in the {{0}} namespace.',
                     [appNS]
@@ -597,7 +597,7 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
 
     if ((appHealth === 'Unknown' || appHealth === 'Degraded' || appHealth === 'Missing') && appStatusConditions) {
         details.push({
-            labelKey: 'Health status',
+            labelValue: t('Health status'),
             value: t(
                 'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.',
                 [_.get(node, 'name', ''), appHealth]
@@ -630,7 +630,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
     const isPlacementFound = _.get(node, 'isPlacementFound')
     if (!isPlacementFound) {
         details.push({
-            labelKey: 'Error',
+            labelValue: t('Error'),
             value: t(
                 'The placement referenced in the ApplicationSet is not found. Make sure the placement is configured properly.'
             ),
@@ -642,9 +642,9 @@ export const setAppSetDeployStatus = (node, details, t) => {
     const appSetApps = _.get(node, 'specs.appSetApps', [])
     if (appSetApps.length === 0) {
         details.push({
-            labelKey: 'Error',
+            labelValue: t('Error'),
             value: t(
-                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopcluster placement, managedclusterset. Also make sure the ApplicationSet feature is enabled if Gitops is deployed to a namespace other than openshift-gitops.'
+                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopscluster placement, managedclusterset. Also make sure the ApplicationSet feature is enabled if GitOps is deployed to a namespace other than openshift-gitops.'
             ),
             status: failureStatus,
         })
@@ -653,7 +653,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
 
     details.push({
         type: 'label',
-        labelKey: t('Application deploy status'),
+        labelValue: t('Application deploy status'),
     })
     details.push({
         type: 'spacer',
@@ -666,16 +666,16 @@ export const setAppSetDeployStatus = (node, details, t) => {
         const appNamespace = _.get(argoApp, 'metadata.namespace')
         const appStatusConditions = _.get(argoApp, 'status.conditions', [])
         details.push({
-            labelKey: appName,
+            labelValue: appName,
             value: appHealth,
         })
         details.push({
-            labelKey: t('Sync status'),
+            labelValue: t('Sync status'),
             value: appSync,
         })
         appStatusConditions.forEach((condition) => {
             details.push({
-                labelKey: condition.type,
+                labelValue: condition.type,
                 value: condition.message,
                 status: failureStatus,
             })
@@ -749,28 +749,28 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
 
         details.push({
             type: 'label',
-            labelKey: t('Time Window'),
+            labelValue: t('Time Window'),
         })
         details.push({
-            labelKey: t('Time Window type'),
+            labelValue: t('Time Window type'),
             value: timeWindow,
         })
         timeWindowDays &&
             details.push({
-                labelKey: t('Time Window days'),
+                labelValue: t('Time Window days'),
                 value: R.toString(timeWindowDays),
             })
 
         if (timeWindowHours) {
             timeWindowHours.forEach((timeH) => {
                 details.push({
-                    labelKey: t('Time Window hours'),
+                    labelValue: t('Time Window hours'),
                     value: `${_.get(timeH, 'start', 'NA')}-${_.get(timeH, 'end', 'NA')}`,
                 })
             })
         }
         details.push({
-            labelKey: t('Time zone'),
+            labelValue: t('Time zone'),
             value: timezone,
         })
     }
@@ -781,7 +781,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             type: 'spacer',
         })
         details.push({
-            labelKey: t('Subscription deployed on local cluster'),
+            labelValue: t('Subscription deployed on local cluster'),
             value: 'true',
         })
     }
@@ -791,7 +791,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     })
     details.push({
         type: 'label',
-        labelKey: t('Cluster deploy status'),
+        labelValue: t('Cluster deploy status'),
     })
 
     let localSubscriptionFailed = false
@@ -850,7 +850,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                     !isLocalPlacementSubs &&
                         isLinkedLocalPlacementSubs &&
                         details.push({
-                            labelKey: t('Subscription deployed on local cluster'),
+                            labelValue: t('Subscription deployed on local cluster'),
                             value: 'true',
                         })
 
@@ -1074,7 +1074,7 @@ const setClusterWindowStatus = (windowStatusArray, subscription, details, t) => 
     windowStatusArray.forEach((wstatus) => {
         if (_.startsWith(_.trimStart(wstatus), `${subscription.cluster}:`)) {
             details.push({
-                labelKey: t('Current window status is'),
+                labelValue: t('Current window status is'),
                 value: _.split(wstatus, ':')[1],
             })
         }
@@ -1137,15 +1137,15 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             if (addPodDetails) {
                 addDetails(clusterDetails, [
                     {
-                        labelKey: t('Pod'),
+                        labelValue: t('Pod'),
                         value: pod.name,
                     },
                     {
-                        labelKey: t('Namespace'),
+                        labelValue: t('Namespace'),
                         value: pod.namespace,
                     },
                     {
-                        labelKey: t('Status'),
+                        labelValue: t('Status'),
                         value: status,
                         status: statusStr,
                     },
@@ -1164,15 +1164,15 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
                 })
                 addDetails(clusterDetails, [
                     {
-                        labelKey: t('Restarts'),
+                        labelValue: t('Restarts'),
                         value: `${restarts}`,
                     },
                     {
-                        labelKey: t('Host and Pod IP'),
+                        labelValue: t('Host and Pod IP'),
                         value: `${hostIP}, ${podIP}`,
                     },
                     {
-                        labelKey: t('Created'),
+                        labelValue: t('Created'),
                         value: getAge(startedAt),
                     },
                 ])
@@ -1189,7 +1189,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
         })
         details.push({
             type: 'label',
-            labelKey: t('Cluster deploy status for pods'),
+            labelValue: t('Cluster deploy status for pods'),
         })
         clusterNames.forEach((clusterName) => {
             details.push({ labelValue: 'Cluster name', value: clusterName })
@@ -1307,7 +1307,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
         })
         details.push({
             type: 'label',
-            labelKey: t('Cluster deploy status'),
+            labelValue: t('Cluster deploy status'),
         })
     }
     clusterNames.forEach((clusterName) => {

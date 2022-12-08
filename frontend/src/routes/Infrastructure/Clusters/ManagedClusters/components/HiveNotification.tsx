@@ -10,6 +10,7 @@ import {
     ConfigMap,
     getHivePod,
     getLatest,
+    getProvisionNotification,
 } from '../../../../../resources'
 import { AcmAlert, AcmButton, Provider } from '../../../../../ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
@@ -85,7 +86,7 @@ export function HiveNotification() {
                 }
                 title={
                     <Fragment>
-                        {t(`provision.notification.${cluster?.status}`)}
+                        {getProvisionNotification(cluster?.status, t)}
                         <AcmButton
                             onClick={() => launchLogs(cluster!, configMaps)}
                             variant={ButtonVariant.link}

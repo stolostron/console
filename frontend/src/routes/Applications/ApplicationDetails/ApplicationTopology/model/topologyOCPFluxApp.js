@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, uniqBy } from 'lodash'
+import { get, uniqBy, filter, includes } from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName } from './utils'
+import { addClusters, getClusterName, processMultiples } from './utils'
 
 const excludedKindList = ['cluster', 'pod', 'replicaset', 'replicationcontroller']
 
@@ -81,60 +81,76 @@ export function generateTopology(application, resources, searchResults) {
 
     const clusterId = addClusters(appId, null, null, clusterNames, clusters, links, nodes, null)
 
-    resources.forEach((deployable) => {
-        const { name: deployableName, namespace: deployableNamespace, kind, apiversion, apigroup } = deployable
-        const type = kind.toLowerCase()
-
-        if (!excludedKindList.includes(type)) {
-            const memberId = `member--member--deployable--member--clusters--${getClusterName(
-                clusterId
-            )}--${type}--${deployableNamespace}--${deployableName}`
-
-            const raw = {
-                metadata: {
-                    name: deployableName,
-                    namespace: deployableNamespace,
-                },
-            }
-
-            let apiVersion = null
-            if (apiversion) {
-                apiVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
-            }
-            if (apiVersion) {
-                raw.apiVersion = apiVersion
-            }
-
-            const deployableObj = {
-                name: deployableName,
-                namespace: deployableNamespace,
-                type,
-                id: memberId,
-                uid: memberId,
-                specs: {
-                    isDesign: false,
-                    raw,
-                    clustersNames: clusterNames,
-                    parent: {
-                        clusterId,
-                    },
-                },
-            }
-
-            nodes.push(deployableObj)
-            links.push({
-                from: { uid: clusterId },
-                to: { uid: memberId },
-                type: '',
-            })
-
-            const template = { metadata: {} }
-            // create replica subobject, if this object defines a replicas
-            createReplicaChild(deployableObj, clusterNames, template, links, nodes)
-        }
+    const others = filter(resources, (obj) => {
+        const kind = get(obj, 'kind', '')
+        return !includes(excludedKindList, kind)
+    })
+    processMultiples(others).forEach((resource) => {
+        addOCPFluxResource(clusterId, clusterNames, resource, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links, rawSearchData: searchResults }
+}
+
+const addOCPFluxResource = (clusterId, clusterNames, resource, links, nodes) => {
+    const {
+        name: deployableName,
+        namespace: deployableNamespace,
+        kind,
+        apiversion,
+        apigroup,
+        resources,
+        resourceCount,
+    } = resource
+    const type = kind.toLowerCase()
+
+    const memberId = `member--member--deployable--member--clusters--${getClusterName(
+        clusterId
+    )}--${type}--${deployableNamespace}--${deployableName}`
+
+    const raw = {
+        metadata: {
+            name: deployableName,
+            namespace: deployableNamespace,
+        },
+    }
+
+    let apiVersion = null
+    if (apiversion) {
+        apiVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
+    }
+    if (apiVersion) {
+        raw.apiVersion = apiVersion
+    }
+
+    const deployableObj = {
+        name: deployableName,
+        namespace: deployableNamespace,
+        type,
+        id: memberId,
+        uid: memberId,
+        specs: {
+            isDesign: false,
+            raw,
+            clustersNames: clusterNames,
+            parent: {
+                clusterId,
+            },
+            resources,
+            resourceCount: resourceCount || 0 + clusterNames.length,
+        },
+    }
+
+    nodes.push(deployableObj)
+    links.push({
+        from: { uid: clusterId },
+        to: { uid: memberId },
+        type: '',
+    })
+
+    const template = { metadata: {} }
+    // create replica subobject, if this object defines a replicas
+    createReplicaChild(deployableObj, clusterNames, template, links, nodes)
 }
 
 // Put all search results together
