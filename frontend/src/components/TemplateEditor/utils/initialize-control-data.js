@@ -104,18 +104,7 @@ const initializeControlUserData = (control) => {
 }
 
 const initializeInnerControls = (control) => {
-    const { type, controlData, available } = control
-
-    // if table convert the controlData in that
-    if (type === 'table' && controlData) {
-        controlData.forEach((ctrl) => {
-            if (!ctrl.isInitialized) {
-                initializeInnerControls(ctrl)
-                initializeValidation(ctrl)
-                ctrl.isInitialized = true
-            }
-        })
-    }
+    const { type, available } = control
 
     // if cards convert the data in that
     if (type === 'cards' && available) {
