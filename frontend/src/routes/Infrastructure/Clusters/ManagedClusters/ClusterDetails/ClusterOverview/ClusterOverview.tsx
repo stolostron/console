@@ -329,6 +329,16 @@ export function ClusterOverviewPageContent(props: {
         leftItems.splice(5, 0, clusterProperties.channel)
     }
 
+    // clusterClaim should not be shown for stand alone clusters not from a clusterpool and not for hosted control planes.
+    if (
+        (clusterProperties.clusterControlPlaneType?.value === t('Standalone') &&
+            clusterProperties.clusterPool?.value === undefined) ||
+        clusterProperties.clusterControlPlaneType?.value === t('Hosted') ||
+        clusterProperties.clusterControlPlaneType?.value === t('Hub, Hosted')
+    ) {
+        leftItems.splice(2, 1)
+    }
+
     if (
         cluster?.provider === Provider.hostinventory &&
         !cluster?.isHypershift &&
