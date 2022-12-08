@@ -309,7 +309,7 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
 }
 
 export function validateRequiredPrefix(value: string, requiredPrefix: string) {
-    if (!value?.startsWith(requiredPrefix)) {
+    if (value && !value?.startsWith(requiredPrefix)) {
         return t("The path must begin with '{{prefix}}'", { prefix: requiredPrefix })
     }
     return undefined
