@@ -128,19 +128,19 @@ export const getURLValidator = (t: TFunction): Validator => ({
 })
 
 export const getAlphanumericValidator = (t: TFunction): Validator => ({
-    tester: new RegExp('^[A-Za-z0-9-_]+$'),
+    tester: /^[A-Za-z0-9-_]+$/,
     notification: t('creation.valid.alphanumeric'),
     required: false,
 })
 
 export const getNumericValidator = (t: TFunction): Validator => ({
-    tester: new RegExp('^[0-9]+$'),
+    tester: /^\d+$/,
     notification: t('creation.valid.numeric'),
     required: true,
 })
 
 export const getAlphanumericWithPeriodValidator = (t: TFunction): Validator => ({
-    tester: new RegExp('^[A-Za-z0-9-_.]+$'),
+    tester: /^[A-Za-z0-9-_.]+$/,
     notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
     required: false,
 })
@@ -149,7 +149,7 @@ export const getAlphanumericWithPeriodValidator = (t: TFunction): Validator => (
 export const VALID_REPOPATH = '^.+/[A-Za-z0-9]+(/[A-Za-z0-9-_\\.]*[A-Za-z0-9]+)*$'
 
 const BASE_DNS_NAME_VALIDATOR = (value: string, t: TFunction) => {
-    if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
+    if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substring(1))) {
         return t('formerror.valid.baseDNSPeriod')
     }
     if (!VALID_DNS_NAME_TESTER.test(value)) {
