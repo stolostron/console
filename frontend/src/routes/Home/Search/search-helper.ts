@@ -19,7 +19,7 @@ export function formatSearchbarSuggestions(
     const labelTag = {
         id: 'id-suggestions-label',
         key: 'key-suggestions-label',
-        name: 'Filters',
+        name: t('Filters'),
         kind: suggestionKind,
         disabled: true,
     }
@@ -27,7 +27,7 @@ export function formatSearchbarSuggestions(
         // Get a list of duplicate values to remove from suggestions dropdown
         const searchTokens = searchQuery.split(' ')
         const searchCompleteFilter = searchTokens[searchTokens.length - 1].replace(':', '')
-        labelTag.name = `${searchCompleteFilter} values`
+        labelTag.name = t('{{0}} values', [searchCompleteFilter])
         const query = convertStringToQuery(searchQuery)
         query.filters.forEach((filter) => {
             if (filter.property === searchCompleteFilter) {
