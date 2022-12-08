@@ -43,14 +43,14 @@ import {
     ListResourcesFuncType,
     PatchResourceFuncType,
 } from 'openshift-assisted-ui-lib/cim'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS, OCP_DOC_BASE_PATH, viewDocumentation } from '../../../lib/doc-util'
-import { rbacDelete } from '../../../lib/rbac-util'
+import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
@@ -148,8 +148,23 @@ const InfraEnvironmentsPage: React.FC = () => {
         ])
     )
 
+    const [canUserAgentServiceConfig, setCanUserAgentServiceConfig] = useState(false)
     const [isCimConfigurationModalOpen, setIsCimConfigurationModalOpen] = useState(false)
     const { t } = useTranslation()
+
+    useEffect(() => {
+        const canUserAgentServiceConfigPromise = canUser('get', {
+            apiVersion: 'agent-install.openshift.io/v1beta1',
+            kind: 'AgentServiceConfig',
+            metadata: {
+                name: 'agent',
+            },
+        })
+        canUserAgentServiceConfigPromise.promise
+            .then((result) => setCanUserAgentServiceConfig(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canUserAgentServiceConfigPromise.abort()
+    }, [])
 
     const platform: string = infrastructures?.[0]?.status?.platform || 'None'
     const agentServiceConfig = agentServiceConfigs?.[0]
@@ -180,7 +195,7 @@ const InfraEnvironmentsPage: React.FC = () => {
                     }
                     actions={
                         <Button
-                            isDisabled={!isStorage}
+                            isDisabled={!isStorage || !canUserAgentServiceConfig}
                             variant={ButtonVariant.link}
                             onClick={() => setIsCimConfigurationModalOpen(true)}
                         >
