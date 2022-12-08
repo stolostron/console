@@ -31,7 +31,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
 
     const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources') : []
     let definedNamespace = ''
-    let kindsNotNamespaceScoped = ['cluster']
+    const kindsNotNamespaceScoped = ['cluster']
     resources.forEach((resource) => {
         definedNamespace = _.get(resource, 'namespace')
         if (!resource.namespace) {
@@ -43,7 +43,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
 
     let query //= getQueryStringForResource('Application', name, namespace)
-    let queryNotNamespaceScoped
+    let queryNotNamespaceScoped //= getQueryStringForResource('cluster', other kinds)
     const argoKinds = appData.relatedKinds
         ? appData.relatedKinds.filter(function (el) {
               return !kindsNotNamespaceScoped.includes(el)
