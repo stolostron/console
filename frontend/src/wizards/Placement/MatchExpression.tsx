@@ -24,6 +24,7 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
             {labelValuesMap ? (
                 <WizSingleSelect
                     label={t('Label')}
+                    placeholder={t('Select the label')}
                     path="key"
                     options={Object.keys(labelValuesMap)}
                     isCreatable
@@ -65,6 +66,7 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
                         return (
                             <WizMultiSelect
                                 label={t('Values')}
+                                placeholder={t('Select the values')}
                                 path="values"
                                 isCreatable
                                 required

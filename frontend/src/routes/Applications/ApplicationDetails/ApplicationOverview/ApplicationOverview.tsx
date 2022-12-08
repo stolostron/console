@@ -165,8 +165,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         if (isOCPApp || isFluxApp) {
             const cluster = applicationData.application?.app.cluster.name
             leftItems = [
-                { key: 'Name', value: name },
-                { key: 'Namespace', value: namespace },
+                { key: t('Name'), value: name },
+                { key: t('Namespace'), value: namespace },
             ]
             rightItems = [
                 {
@@ -290,8 +290,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 }
             })
             leftItems = [
-                { key: 'Name', value: name },
-                { key: 'Namespace', value: namespace },
+                { key: t('Name'), value: name },
+                { key: t('Namespace'), value: namespace },
                 {
                     key: t('Created'),
                     value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
@@ -326,7 +326,9 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         </Fragment>
                     ),
                     keyAction: (
-                        <Tooltip content={'Date and time of the most recent sync request for application resources.'}>
+                        <Tooltip
+                            content={t('Date and time of the most recent sync request for application resources.')}
+                        >
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
@@ -385,7 +387,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                             >
                                 {renderData(
                                     subsList,
-                                    (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
+                                    (showSubCards ? t('Hide subscription details') : t('Show subscription details')) +
                                         ` (${subsList?.length})`,
                                     '70%'
                                 )}
@@ -412,7 +414,7 @@ function createSyncButton(
             <AcmButton
                 isDisabled={!hasSyncPermission}
                 variant={ButtonVariant.link}
-                className={`${syncInProgress ? 'syncInProgress' : ''}`}
+                className={`${syncInProgress ? t('syncInProgress') : ''}`}
                 id="sync-app"
                 component="a"
                 rel="noreferrer"

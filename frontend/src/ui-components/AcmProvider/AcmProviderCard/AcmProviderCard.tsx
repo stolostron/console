@@ -80,6 +80,7 @@ export function AcmOverviewProviders(props: { providers: ProviderCardProps[] }) 
 
 export function AcmProviderCard(props: ProviderCardProps) {
     const classes = useStyles()
+    const { t } = useTranslation()
     return (
         <Card
             onClick={() => props.onClick(props.provider)}
@@ -121,7 +122,7 @@ export function AcmProviderCard(props: ProviderCardProps) {
                             {props.clusterCount}
                         </Text>
                         <Text component={TextVariants.p} className={classes.clusterText}>
-                            {props.clusterCount === 1 ? 'Cluster' : 'Clusters'}
+                            {props.clusterCount === 1 ? t('Cluster') : t('Clusters')}
                         </Text>
                     </CardFooter>
                 </StackItem>

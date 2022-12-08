@@ -135,6 +135,7 @@ export function PolicyWizard(props: {
                                         id="name"
                                         path="metadata.name"
                                         label={t('Name')}
+                                        placeholder={t('Enter the name')}
                                         required
                                         validation={validatePolicyName}
                                         readonly={item.metadata?.uid !== undefined}
