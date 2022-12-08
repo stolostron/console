@@ -13,8 +13,8 @@ type Tester = {
 
 type ContextTester = (
     active: string,
-    controlData: [{ id: string }],
-    templateObjectMap: Map<string, object>,
+    controlData: { id: string }[],
+    templateObjectMap: Record<string, object>,
     t: TFunction
 ) => string | undefined
 
@@ -49,14 +49,16 @@ const IP_ADDRESS_TESTER: Tester = {
     },
 }
 
-export const getIPValidator = (options: {
-    /** CIDR field to validate against */
-    subnet?: { controlID: string; groupID: string }
-    /** List of other IP fields that should contain unique values */
-    differentFrom?: string[]
-    /** Set to true if the field is not required */
-    optional?: boolean
-}): Validator => {
+export const getIPValidator = (
+    options: {
+        /** CIDR field to validate against */
+        subnet?: { controlID: string; groupID: string }
+        /** List of other IP fields that should contain unique values */
+        differentFrom?: string[]
+        /** Set to true if the field is not required */
+        optional?: boolean
+    } = {}
+): Validator => {
     const { subnet, differentFrom, optional } = options || {}
     return {
         contextTester: (active, controlData, _templateObjectMap, t) => {
