@@ -439,6 +439,9 @@ const mockClusterDeploymentAwsAnsible = {
             region: 'us-east-1',
             vendor: 'OpenShift',
         },
+        annotations: {
+            'hive.openshift.io/reconcile-pause': 'true',
+        },
     },
     spec: {
         baseDomain,
@@ -446,7 +449,7 @@ const mockClusterDeploymentAwsAnsible = {
         controlPlaneConfig: {
             servingCertificates: {},
         },
-        installAttemptsLimit: 0,
+        installAttemptsLimit: 1,
         installed: false,
         platform: {
             aws: {
