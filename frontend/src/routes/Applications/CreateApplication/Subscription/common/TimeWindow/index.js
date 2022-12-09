@@ -69,13 +69,8 @@ export class TimeWindow extends Component {
         ])
     }
 
-<<<<<<< HEAD
     validation(exceptions) {
         const { control, i18n } = this.props
-=======
-    validation(exceptions, i18n) {
-        const { control } = this.props
->>>>>>> 27fa7bea (more string additions, placeholder values, etc)
         const timeWindowId = 'timeWindow-config'
         // Mode is active/blocked
         if (control.active.mode) {

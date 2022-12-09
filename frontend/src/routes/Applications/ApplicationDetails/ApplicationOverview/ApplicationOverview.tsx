@@ -414,7 +414,7 @@ function createSyncButton(
             <AcmButton
                 isDisabled={!hasSyncPermission}
                 variant={ButtonVariant.link}
-                className={`${syncInProgress ? t('syncInProgress') : ''}`}
+                className={`${syncInProgress ? 'syncInProgress' : ''}`}
                 id="sync-app"
                 component="a"
                 rel="noreferrer"
