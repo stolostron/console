@@ -17,6 +17,7 @@ import {
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     onImageChange,
+    networkingControlData,
     clusterDetailsControlData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -282,6 +283,9 @@ export const getControlDataVMW = (
             placeholder: t('creation.ocp.cluster.vmw.network.type'),
             type: 'text',
             active: '',
+            validation: {
+                required: true,
+            },
         },
         {
             id: 'apiVIP',
@@ -290,7 +294,10 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.api.vip'),
             placeholder: t('creation.ocp.api.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['ingressVIP'],
+            }),
         },
         {
             id: 'ingressVIP',
@@ -299,8 +306,12 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.ingress.vip'),
             placeholder: t('creation.ocp.ingress.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['apiVIP'],
+            }),
         },
+        ...networkingControlData(t),
         ...proxyControlData(t),
         ///////////////////////  openstack  /////////////////////////////////////
         {

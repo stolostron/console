@@ -42,15 +42,16 @@ import {
     GetResourceFuncType,
     ListResourcesFuncType,
     PatchResourceFuncType,
+    InfrastructureK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS, OCP_DOC_BASE_PATH, viewDocumentation } from '../../../lib/doc-util'
-import { rbacDelete } from '../../../lib/rbac-util'
+import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
@@ -62,43 +63,58 @@ import { createResource, getResource, listResources, patchResource } from '../..
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
 const assistedServiceDeploymentUrl = '/k8s/ns/multicluster-engine/deployments/assisted-service'
 
-const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
+export const getMatchingInfraAgents = (infraEnv: InfraEnvK8sResource, agents: AgentK8sResource[]) => {
+    const infraAgents = agents.filter((a) =>
+        isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
+    )
+    return infraAgents
+}
+
+export const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: AgentK8sResource[]) => {
     let isDisabled = true
     infraEnvs.forEach((infraEnv) => {
-        const infraAgents = agents.filter((a) =>
-            isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
-        )
-        if (infraAgents.length == 0) isDisabled = false
+        if (getMatchingInfraAgents(infraEnv, agents).length == 0) isDisabled = false
     })
     return isDisabled
 }
+
+export const getFirstAgenterviceConfig = (agentServiceConfigs?: AgentServiceConfigK8sResource[]) =>
+    agentServiceConfigs?.[0]
+
+export const getPlatform = (infrastructures?: InfrastructureK8sResource[]) =>
+    infrastructures?.[0]?.status?.platform || 'None'
+
+export const getInfraEnvsOfMatchingPullSecret = (infraEnvs: InfraEnvK8sResource[], infraEnv: InfraEnvK8sResource) =>
+    infraEnvs.filter((a) => isMatch(a.spec?.pullSecretRef || {}, infraEnv.spec?.pullSecretRef || {}))
+
+export const isPullSecretReused = (
+    infraEnvs: InfraEnvK8sResource[],
+    infraEnv: InfraEnvK8sResource,
+    agents: AgentK8sResource[]
+): boolean =>
+    !!infraEnv.spec?.pullSecretRef?.name &&
+    getInfraEnvsOfMatchingPullSecret(infraEnvs, infraEnv).length === 1 &&
+    getMatchingInfraAgents(infraEnv, agents).length === 0
 
 const deleteInfraEnv = (
     infraEnv: InfraEnvK8sResource,
     infraEnvs: InfraEnvK8sResource[],
     agents: AgentK8sResource[]
 ) => {
-    //1st: We prevent deleting action if there are any agents assigned to infraenv
-    const infraAgents = agents.filter((a) =>
-        isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
-    )
     const resources = [infraEnv]
+
     // Check all infraenv with same pull secret. If we don't found more infraenv we delete pull secret.
-    const pullSecrets = infraEnvs.filter((a) =>
-        isMatch(a.spec?.pullSecretRef || {}, infraEnv.spec?.pullSecretRef || {})
-    )
-    if (pullSecrets.length == 1) {
-        if (infraEnv.spec?.pullSecretRef?.name && infraAgents.length == 0) {
-            resources.push({
-                apiVersion: 'v1',
-                kind: 'Secret',
-                metadata: {
-                    name: infraEnv.spec.pullSecretRef.name,
-                    namespace: infraEnv.metadata?.namespace,
-                },
-            })
-        }
+    if (isPullSecretReused(infraEnvs, infraEnv, agents)) {
+        resources.push({
+            apiVersion: 'v1',
+            kind: 'Secret',
+            metadata: {
+                name: infraEnv.spec?.pullSecretRef?.name,
+                namespace: infraEnv.metadata?.namespace,
+            },
+        })
     }
+
     const deleteResourcesResult = deleteResources(resources as IResource[])
 
     return {
@@ -148,11 +164,26 @@ const InfraEnvironmentsPage: React.FC = () => {
         ])
     )
 
+    const [canUserAgentServiceConfig, setCanUserAgentServiceConfig] = useState(false)
     const [isCimConfigurationModalOpen, setIsCimConfigurationModalOpen] = useState(false)
     const { t } = useTranslation()
 
+    useEffect(() => {
+        const canUserAgentServiceConfigPromise = canUser('get', {
+            apiVersion: 'agent-install.openshift.io/v1beta1',
+            kind: 'AgentServiceConfig',
+            metadata: {
+                name: 'agent',
+            },
+        })
+        canUserAgentServiceConfigPromise.promise
+            .then((result) => setCanUserAgentServiceConfig(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canUserAgentServiceConfigPromise.abort()
+    }, [])
+
     const platform: string = infrastructures?.[0]?.status?.platform || 'None'
-    const agentServiceConfig = agentServiceConfigs?.[0]
+    const agentServiceConfig = getFirstAgenterviceConfig(agentServiceConfigs)
     const isStorage = isStorageConfigured({ storageClasses: storageClasses as K8sResourceCommon[] | undefined })
 
     return (
@@ -180,7 +211,7 @@ const InfraEnvironmentsPage: React.FC = () => {
                     }
                     actions={
                         <Button
-                            isDisabled={!isStorage}
+                            isDisabled={!isStorage || !canUserAgentServiceConfig}
                             variant={ButtonVariant.link}
                             onClick={() => setIsCimConfigurationModalOpen(true)}
                         >

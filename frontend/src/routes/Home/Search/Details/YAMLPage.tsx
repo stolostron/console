@@ -55,7 +55,8 @@ function loadResource(
     name: string,
     namespace: string,
     setResourceYaml: Dispatch<SetStateAction<string>>,
-    setUpdateError: Dispatch<SetStateAction<string>>
+    setUpdateError: Dispatch<SetStateAction<string>>,
+    setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
     if (cluster === 'local-cluster') {
         getResource({
@@ -65,6 +66,7 @@ function loadResource(
         })
             .promise.then((response: any) => {
                 setResourceYaml(jsYaml.dump(response, { indent: 2 }))
+                setResourceVersion(response?.metadata?.resourceVersion ?? '')
             })
             .catch((err) => {
                 console.error('Error getting resource: ', err)
@@ -77,6 +79,7 @@ function loadResource(
                     setUpdateError(`Error getting new resource YAML: ${viewResponse.message}`)
                 } else {
                     setResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
+                    setResourceVersion(viewResponse?.result?.metadata?.resourceVersion ?? '')
                 }
             })
             .catch((err) => {
@@ -96,12 +99,22 @@ function updateResource(
     resourceYaml: string,
     setResourceYaml: Dispatch<SetStateAction<string>>,
     setUpdateError: Dispatch<SetStateAction<string>>,
-    setUpdateSuccess: Dispatch<SetStateAction<boolean>>
+    setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
+    setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
     fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
         .then((actionResponse) => {
             if (actionResponse.actionDone === 'ActionDone') {
-                loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError)
+                loadResource(
+                    cluster,
+                    kind,
+                    apiversion,
+                    name,
+                    namespace,
+                    setResourceYaml,
+                    setUpdateError,
+                    setResourceVersion
+                )
                 setUpdateSuccess(true)
             } else {
                 setUpdateError(actionResponse.message)
@@ -153,8 +166,19 @@ export function EditorActionBar(props: {
     resourceYaml: string
     setResourceYaml: Dispatch<SetStateAction<string>>
     handleResize: () => void
+    setResourceVersion: Dispatch<SetStateAction<string>>
 }) {
-    const { cluster, kind, apiversion, name, namespace, resourceYaml, setResourceYaml, handleResize } = props
+    const {
+        cluster,
+        kind,
+        apiversion,
+        name,
+        namespace,
+        resourceYaml,
+        setResourceYaml,
+        handleResize,
+        setResourceVersion,
+    } = props
     const { t } = useTranslation()
     const history = useHistory()
     const [updateSuccess, setUpdateSuccess] = useState<boolean>(false)
@@ -208,7 +232,8 @@ export function EditorActionBar(props: {
                                     resourceYaml,
                                     setResourceYaml,
                                     setUpdateError,
-                                    setUpdateSuccess
+                                    setUpdateSuccess,
+                                    setResourceVersion
                                 )
                             }}
                         >
@@ -227,7 +252,8 @@ export function EditorActionBar(props: {
                                     name,
                                     namespace,
                                     setResourceYaml,
-                                    setUpdateError
+                                    setUpdateError,
+                                    setResourceVersion
                                 )
                                 setUpdateError('')
                                 setUpdateSuccess(false)
@@ -268,8 +294,9 @@ export default function YAMLPage(props: {
     cluster: string
     kind: string
     apiversion: string
+    setResourceVersion: Dispatch<SetStateAction<string>>
 }) {
-    const { resource, loading, error, name, namespace, cluster, kind, apiversion } = props
+    const { resource, loading, error, name, namespace, cluster, kind, apiversion, setResourceVersion } = props
     const { t } = useTranslation()
     const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
     const [resourceYaml, setResourceYaml] = useState<string>('')
@@ -382,6 +409,7 @@ export default function YAMLPage(props: {
                 resourceYaml={resourceYaml}
                 setResourceYaml={setResourceYaml}
                 handleResize={handleResize}
+                setResourceVersion={setResourceVersion}
             />
         </PageSection>
     )

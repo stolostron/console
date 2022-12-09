@@ -95,6 +95,24 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
     return { snapshot, mockFunctions, actualCallTimes, expectCallTimes }
 }
 
+export const removeCircular = (object: any) => {
+    const seen = new WeakSet()
+    const cleanCirculars = (obj: { [id: string]: object }, parent?: { [id: string]: object }, key?: string) => {
+        if (obj instanceof Object) {
+            if (!seen.has(obj)) {
+                seen.add(obj)
+                Object.entries(obj).forEach(([k, o]) => {
+                    cleanCirculars(o as { [id: string]: object }, obj, k)
+                })
+            } else if (parent && key) {
+                delete parent[key]
+            }
+        }
+    }
+    cleanCirculars(object)
+    return object
+}
+
 const getSnippet = (snaps: string[], expects: string[]) => {
     const snippets = []
     snippets.push(...snaps)
@@ -163,12 +181,14 @@ window.funcShot = (args, ret) => {
         const fileName = path.parse(stack[1].getFileName()).name
         const apiName = camelCase(fileName)
         const snippets = []
-        const { snapshot: argShot } = getSnapshot(args, false, 1000)
+        const { snapshot: argShot, mockFunctions } = getSnapshot(args, false, 1000)
         const { snapshot: retShot } = getSnapshot(ret, false, 1000)
         snippets.push(`//import * as ${apiName}API from './${fileName}'\n`)
+        snippets.push(`//import { removeCircular } from '../../../lib/test-shots'\n`)
+        snippets.push(...mockFunctions)
         snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
         snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}') as jest.Mock<any>`)
-        snippets.push(`expect (${methodName}Fn(...${methodName}.args)).toEqual(${methodName}.ret)`)
+        snippets.push(`expect (removeCircular(${methodName}Fn(...${methodName}.args))).toEqual(${methodName}.ret)`)
         const snip: { [index: string]: string } = {}
         const key = `${methodName}FuncShot`
         snip[key] = snippets.join('\n')

@@ -62,6 +62,9 @@ const initialControl = (control, onControlInitialize) => {
         // initialize user data if control's available choices were cached
         initializeControlUserData(control)
 
+        // initialize inner tables and cards
+        initializeInnerControls(control)
+
         // intialize choices available for a control
         initializeAvailableChoices(type, control)
 
@@ -97,6 +100,26 @@ const initializeControlUserData = (control) => {
         if (sessionObject) {
             control.userData = sessionObject
         }
+    }
+}
+
+const initializeInnerControls = (control) => {
+    const { type, available } = control
+
+    // if cards convert the data in that
+    if (type === 'cards' && available) {
+        available.forEach(({ change = {} }) => {
+            if (change.insertControlData) {
+                change.insertControlData.forEach((ctrl) => {
+                    if (!ctrl.isInitialized) {
+                        initializeControlActive(ctrl.type, ctrl)
+                        initializeInnerControls(ctrl)
+                        initializeValidation(ctrl)
+                        ctrl.isInitialized = true
+                    }
+                })
+            }
+        })
     }
 }
 

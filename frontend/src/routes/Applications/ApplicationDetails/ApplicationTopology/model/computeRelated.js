@@ -25,7 +25,23 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     if (checkNotOrObjects(resourceStatuses, resourceMap)) {
         return resourceMap
     }
-    const { related } = mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0]))
+    let related = []
+    if (resourceStatuses.data.searchResult.length > 1) {
+        const relatedFrist = _.get(
+            mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])),
+            'related',
+            []
+        )
+        const relatedSecond = _.get(
+            mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[1])),
+            'related',
+            []
+        )
+        related = [...new Set([...relatedFrist, ...relatedSecond])]
+    } else {
+        related = _.get(mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])), 'related', [])
+    }
+
     // store cluster objects and cluster names as returned by search; these are clusters related to the app
     const eqIgnoreCase = R.curry((a, b) => String(a).toLowerCase() === String(b).toLowerCase())
 
