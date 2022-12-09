@@ -31,21 +31,29 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
 
     const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources') : []
     let definedNamespace = ''
+    const kindsNotNamespaceScoped = ['cluster']
     resources.forEach((resource) => {
         definedNamespace = _.get(resource, 'namespace')
+        if (!resource.namespace) {
+            kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
+        }
     })
 
     appData.targetNamespaces = definedNamespace ? definedNamespace : _.uniq(targetNS)
     appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
 
     let query //= getQueryStringForResource('Application', name, namespace)
-    const argoKinds = appData.relatedKinds ? appData.relatedKinds.toString() : null
-    //get all resources from the target namespace since they are not linked to the argo application
+    let queryNotNamespaceScoped //= getQueryStringForResource('cluster', other kinds)
+    const argoKinds = appData.relatedKinds
+        ? appData.relatedKinds.filter(function (el) {
+              return !kindsNotNamespaceScoped.includes(el)
+          })
+        : null
+
     query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString())
-    query.filters.push({
-        property: 'label',
-        values: appData.argoAppsLabelNames,
-    })
+    if (kindsNotNamespaceScoped.length > 0) {
+        queryNotNamespaceScoped = getQueryStringForResource(kindsNotNamespaceScoped)
+    }
     //get the cluster for each target namespace and all pods related to this objects only
     //always ask for related pods, replicaset and replocationcontroller because they are tagged by the app instance
     //we'll get them if any are linked to the objects returned above
@@ -54,7 +62,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     return searchClient.query({
         query: SearchResultRelatedItemsDocument,
         variables: {
-            input: [{ ...query }],
+            input: [{ ...query }, { ...queryNotNamespaceScoped }],
             limit: 1000,
         },
         fetchPolicy: 'network-only',
