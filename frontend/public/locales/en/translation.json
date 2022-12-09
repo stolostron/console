@@ -740,6 +740,8 @@
     "Control plane pods": "Control plane pods",
     "Control plane status": "Control plane status",
     "Control plane type": "Control plane type",
+    "Control plane type - AWS": "Control plane type - AWS",
+    "Control plane type - Host Inventory": "Control plane type - Host Inventory",
     "controllers": "controllers",
     "Controls": "Controls",
     "Converse and connect.": "Converse and connect.",

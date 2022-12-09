@@ -100,7 +100,7 @@ export function CreateAWSControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control plane type')}
+                title={t('Control plane type - AWS')}
                 description={t('Choose a control plane type for your cluster.')}
                 breadcrumbs={breadcrumbs}
             />
