@@ -65,6 +65,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
     return (
         <Layer id={hover ? TOP_LAYER : DEFAULT_LAYER}>
             <g
+                data-test-id={passedData.id}
                 ref={(r) => {
                     r && hoverRef(r)
                 }}
