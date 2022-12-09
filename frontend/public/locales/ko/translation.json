@@ -1374,7 +1374,7 @@
     "Hosted cluster requires a manual import.": "호스트된 클러스터에는 수동 가져오기가 필요합니다.",
     "Hosted control plane": "호스팅 컨트롤 플레인",
     "Hosted control plane command": "호스팅 컨트롤 플레인 명령",
-    "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "호스트 컨트롤 플레인은 이미 사용 가능한 최신 버전으로 업그레이드되었습니다. 컨트롤 플레인과 일치하도록 클러스터 노드 풀을 업그레이드할 수 있습니다.",
+    "Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.": "호스트 컨트롤 플레인은 이미 사용 가능한 최신 버전으로 업그레이드되었습니다. 컨트롤 플레인과 일치하도록 클러스터 노드 풀을 업그레이드할 수 있습니다.",
     "Hosted control plane operator must be enabled in order to continue": "계속하려면 호스팅된 컨트롤 플레인 Operator를 활성화해야 합니다.",
     "Hosting service cluster": "서비스 클러스터 호스팅",
     "hosts": "호스트",

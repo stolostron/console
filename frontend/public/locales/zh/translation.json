@@ -1374,7 +1374,7 @@
     "Hosted cluster requires a manual import.": "托管集群需要手动导入。",
     "Hosted control plane": "托管的控制平面",
     "Hosted control plane command": "托管的控制平面命令",
-    "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "托管的控制平面可以被升级到最新可用的版本。集群节点池可以升级以匹配控制平面。",
+    "Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.": "托管的控制平面可以被升级到最新可用的版本。集群节点池可以升级以匹配控制平面。",
     "Hosted control plane operator must be enabled in order to continue": "必须启用托管的控制平面 Operator 才能继续",
     "Hosting service cluster": "托管服务集群",
     "hosts": "主机",

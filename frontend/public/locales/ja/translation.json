@@ -1374,7 +1374,7 @@
     "Hosted cluster requires a manual import.": "ホスト型クラスターには、手動インポートが必要です。",
     "Hosted control plane": "ホスト型コントロールプレーン",
     "Hosted control plane command": "ホスト型コントロールプレーンコマンド",
-    "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "ホスト型コントロールプレーンは、利用可能な最新バージョンにすでにアップグレードされています。クラスターノードプールは、コントロールプレーンに合わせてアップグレードできます。",
+    "Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.": "ホスト型コントロールプレーンは、利用可能な最新バージョンにすでにアップグレードされています。クラスターノードプールは、コントロールプレーンに合わせてアップグレードできます。",
     "Hosted control plane operator must be enabled in order to continue": "続行するには、ホストされたコントロールプレーン Operator を有効にする必要があります",
     "Hosting service cluster": "ホスティングサービスクラスター",
     "hosts": "ホスト",
