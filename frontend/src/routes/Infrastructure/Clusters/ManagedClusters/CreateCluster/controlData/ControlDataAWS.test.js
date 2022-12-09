@@ -2,28 +2,33 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 import { getControlDataAWS } from './ControlDataAWS'
+import { getControlDataAWS as getControlDataAWSClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataAWS'
+import { fixupControlsForClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataHelper'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
+const handleModalToggle = jest.fn()
 
-describe('getControlDataAWS', () => {
-    it('get control data for AWS - default', () => {
-        getControlDataAWS(t, undefined, false, false, false, true)
+describe('Cluster creation control data for AWS', () => {
+    it('generates correctly', () => {
+        expect(getControlDataAWS(t, handleModalToggle, true, false, false, true)).toMatchSnapshot()
     })
 
-    it('get control data for AWS - no automation', () => {
-        getControlDataAWS(t, undefined, false, true, true, true)
+    it('generates correctly with SNO enabled', () => {
+        expect(getControlDataAWS(t, handleModalToggle, true, false, true, true)).toMatchSnapshot()
     })
 
-    it('get control data for AWS - include sno cluster', () => {
-        getControlDataAWS(t, undefined, true, true, true, true)
+    it('generates correctly for MCE', () => {
+        expect(getControlDataAWS(t, handleModalToggle, true, false, false, false)).toMatchSnapshot()
     })
 
-    it('get control data for AWS - no klusterletaddon', () => {
-        getControlDataAWS(t, undefined, true, true, true, false)
+    it('generates correctly for cluster pools', () => {
+        expect(
+            fixupControlsForClusterPool(getControlDataAWSClusterPool(t, handleModalToggle, false, false), t)
+        ).toMatchSnapshot()
     })
 
-    it('get control data for AWS - no awsprivate', () => {
-        getControlDataAWS(t, undefined, true, false, true, true)
+    it('generates correctly with AWS private', () => {
+        expect(getControlDataAWS(t, handleModalToggle, true, true, false, true)).toMatchSnapshot()
     })
 })

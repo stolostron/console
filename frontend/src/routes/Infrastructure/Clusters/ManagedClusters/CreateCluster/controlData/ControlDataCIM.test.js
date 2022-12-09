@@ -3,17 +3,17 @@
 'use strict'
 
 import { Warning } from '../Warning'
-import { getControlDataHypershift } from './ControlDataHypershift'
+import { getControlDataCIM } from './ControlDataCIM'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
 
-describe('Cluster creation control data for Hypershift', () => {
+describe('Cluster creation control data for CIM', () => {
     it('generates correctly', () => {
-        expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, true)).toMatchSnapshot()
+        expect(getControlDataCIM(t, handleModalToggle, <Warning />, true)).toMatchSnapshot()
     })
     it('generates correctly for MCE', () => {
-        expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, false)).toMatchSnapshot()
+        expect(getControlDataCIM(t, handleModalToggle, <Warning />, false)).toMatchSnapshot()
     })
 })
