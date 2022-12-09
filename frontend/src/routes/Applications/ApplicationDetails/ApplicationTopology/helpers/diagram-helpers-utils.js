@@ -28,6 +28,7 @@ export const nodesWithNoNS = [
     'customresourcedefinition',
     'node',
     'project',
+    'consolelink',
 ]
 
 export const isDeployableResource = (node) => {
