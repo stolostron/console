@@ -36,7 +36,7 @@ export const discoverGroupsFromSource = (control, cd, templateObject, editor, i1
         let uniqueGroupID = times + 1
         _.times(times, () => {
             // add a group for every subscription
-            uniqueGroupID = uniqueGroupID++
+            uniqueGroupID = uniqueGroupID + 1
             const newGroup = initializeControls(groupData, editor, null, i18n, uniqueGroupID, true)
             active.push(newGroup)
             const nameControl = _.keyBy(newGroup, 'id')[nameId]
