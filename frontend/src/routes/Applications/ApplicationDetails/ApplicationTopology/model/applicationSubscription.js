@@ -16,7 +16,10 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
         const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
             return !isLocalSubscription(subscriptionName, subscriptionNames)
         })
-        const subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
+        let subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
+        subscriptions.sort((a, b) => {
+            return get(a, 'metadata.name', '').localeCompare(get(b, 'metadata.name', ''))
+        })
 
         // what subscriptions does user want to see
         model.channels = []
