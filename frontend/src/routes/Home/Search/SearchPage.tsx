@@ -178,12 +178,14 @@ function RenderSearchBar(props: {
                             ? formatSearchbarSuggestions(
                                   _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
                                   'filter',
-                                  '' // Dont need to de-dupe filters
+                                  '', // Dont need to de-dupe filters
+                                  t
                               )
                             : formatSearchbarSuggestions(
                                   _.get(searchCompleteResults, 'data.searchComplete', []),
                                   'value',
-                                  currentSearch // pass current search query in order to de-dupe already selected values
+                                  currentSearch, // pass current search query in order to de-dupe already selected values
+                                  t
                               )
                     }
                     currentQueryCallback={(newQuery) => {

@@ -78,23 +78,23 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
         const leftItems = [
             {
-                key: 'Name',
+                key: t('Name'),
                 value: policy.metadata.name ?? '-',
             },
             {
-                key: 'Namespace',
+                key: t('Namespace'),
                 value: policy.metadata.namespace,
             },
             {
-                key: 'Status',
+                key: t('Status'),
                 value: policy.spec.disabled ? t('Disabled') : t('Enabled') ?? '-',
             },
             {
-                key: 'Remediation',
+                key: t('Remediation'),
                 value: getPolicyRemediation(policy),
             },
             {
-                key: 'Cluster violations',
+                key: t('Cluster violations'),
                 value:
                     clusterRiskScore > 0 ? (
                         <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
@@ -107,23 +107,23 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         ]
         const rightItems = [
             {
-                key: 'Categories',
+                key: t('Categories'),
                 value: policy.metadata.annotations?.['policy.open-cluster-management.io/categories'] ?? '-',
             },
             {
-                key: 'Controls',
+                key: t('Controls'),
                 value: policy.metadata.annotations?.['policy.open-cluster-management.io/controls'] ?? '-',
             },
             {
-                key: 'Standards',
+                key: t('Standards'),
                 value: policy.metadata.annotations?.['policy.open-cluster-management.io/standards'] ?? '-',
             },
             {
-                key: 'Created',
+                key: t('Created'),
                 value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
             },
             {
-                key: 'Automation',
+                key: t('Automation'),
                 value: policyAutomationMatch ? (
                     <AcmButton
                         isDisabled={!canUpdatePolicyAutomation}

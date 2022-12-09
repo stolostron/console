@@ -135,15 +135,21 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                                 <Fragment>
                                     <WizTextInput
                                         label={t('Name')}
+                                        placeholder={t('Enter the name')}
                                         path="metadata.name"
                                         id="name"
                                         required
                                         validation={validateKubernetesResourceName}
                                         readonly={item.metadata?.uid !== undefined}
                                     />
-                                    <WizTextArea label={t('Description')} path="spec.description" />
+                                    <WizTextArea
+                                        label={t('Description')}
+                                        placeholder={t('Enter the description')}
+                                        path="spec.description"
+                                    />
                                     <WizSingleSelect
                                         label={t('Namespace')}
+                                        placeholder={t('Select the namespace')}
                                         path="metadata.namespace"
                                         id="namespace"
                                         required

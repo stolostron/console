@@ -2,6 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+import { TFunction } from 'i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -10,14 +11,15 @@ const dateValues = ['hour', 'day', 'week', 'month', 'year']
 export function formatSearchbarSuggestions(
     data: string[],
     suggestionKind: 'label' | 'filter' | 'value',
-    searchQuery: string
+    searchQuery: string,
+    t: TFunction
 ) {
     let valuesToRemoveFromSuggestions: string[] = []
     let suggestions: DropdownSuggestionsProps[] = []
     const labelTag = {
         id: 'id-suggestions-label',
         key: 'key-suggestions-label',
-        name: 'Filters',
+        name: t('Filters'),
         kind: suggestionKind,
         disabled: true,
     }
@@ -25,7 +27,7 @@ export function formatSearchbarSuggestions(
         // Get a list of duplicate values to remove from suggestions dropdown
         const searchTokens = searchQuery.split(' ')
         const searchCompleteFilter = searchTokens[searchTokens.length - 1].replace(':', '')
-        labelTag.name = `${searchCompleteFilter} values`
+        labelTag.name = t('{{0}} values', [searchCompleteFilter])
         const query = convertStringToQuery(searchQuery)
         query.filters.forEach((filter) => {
             if (filter.property === searchCompleteFilter) {
@@ -61,7 +63,7 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-operator-label',
-                name: 'Operators',
+                name: t('Operators'),
                 kind: 'label',
                 disabled: true,
             })
@@ -77,7 +79,7 @@ export function formatSearchbarSuggestions(
             })
             suggestions.unshift({
                 id: 'id-filter-label',
-                name: `${searchCompleteFilter} within the last:`,
+                name: t('{{0}} within the last:', [searchCompleteFilter]),
                 kind: 'label',
                 disabled: true,
             })

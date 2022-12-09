@@ -3,8 +3,6 @@ import {
     Button,
     Flex,
     FlexItem,
-    Split,
-    Stack,
     TextContent,
     Text,
     ToggleGroup,
@@ -22,20 +20,14 @@ import {
     EditMode,
     WizHidden,
     WizItemSelector,
-    WizMultiSelect,
-    Radio,
-    WizRadioGroup,
     Section,
     Select,
     Step,
-    WizTextDetail,
     Tile,
     WizTiles,
-    WizTimeRange,
     WizardCancel,
     WizardPage,
     WizardSubmit,
-    WizArrayInput,
     WizCheckbox,
     WizTextInput,
     Sync,
@@ -289,7 +281,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             onCancel={props.onCancel}
             onSubmit={props.onSubmit}
         >
-            <Step id="general" label="General">
+            <Step id="general" label={t('General')}>
                 <Sync
                     kind={PlacementKind}
                     path="metadata.name"
@@ -310,10 +302,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     suffix="-{{name}}"
                 />
                 <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-                    <Section label="General">
+                    <Section label={t('General')}>
                         <WizTextInput
                             path="metadata.name"
-                            label="ApplicationSet name"
+                            label={t('ApplicationSet name')}
                             placeholder={t('Enter the application set name')}
                             required
                             id="name"
@@ -322,7 +314,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         <Select
                             id="namespace"
                             path="metadata.namespace"
-                            label="Argo server"
+                            label={t('Argo server')}
                             placeholder={t('Select the Argo server')}
                             labelHelp={
                                 <Fragment>
@@ -365,7 +357,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             </Step>
             <Step id="template" label={t('Template')}>
                 <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-                    <Section label="Source">
+                    <Section label={t('Source')}>
                         <WizTiles
                             path="spec.template.spec.source"
                             label={t('Repository type')}
@@ -386,14 +378,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
                             <Tile
                                 id="git"
                                 value="Git"
-                                label="Git"
+                                label={t('Git')}
                                 icon={<GitAltIcon />}
                                 description={t('Use a Git repository')}
                             />
                             <Tile
                                 id="helm"
                                 value="Helm"
-                                label="Helm"
+                                label={t('Helm')}
                                 icon={<HelmIcon />}
                                 description={t('Use a Helm repository')}
                             />
@@ -402,7 +394,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         <WizHidden hidden={(data) => data.spec.template.spec.source.path === undefined}>
                             <Select
                                 path="spec.template.spec.source.repoURL"
-                                label="URL"
+                                label={t('URL')}
                                 labelHelp={t('The URL path for the Git repository.')}
                                 placeholder={t('Enter or select a Git URL')}
                                 options={gitChannels}
@@ -493,7 +485,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         <WizHidden hidden={(data) => data.spec.template.spec.source.chart === undefined}>
                             <Select
                                 path="spec.template.spec.source.repoURL"
-                                label="URL"
+                                label={t('URL')}
                                 labelHelp={t('The URL path for the Helm repository.')}
                                 placeholder={t('Enter or select a Helm URL')}
                                 options={helmChannels}
@@ -548,7 +540,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     </Section>
                 </WizItemSelector>
             </Step>
-            <Step id="sync-policy" label="Sync policy">
+            <Step id="sync-policy" label={t('Sync policy')}>
                 <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
                     <Section
                         label={t('Sync policy')}
@@ -629,7 +621,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     </Section>
                 </WizItemSelector>
             </Step>
-            <Step id="placement" label="Placement">
+            <Step id="placement" label={t('Placement')}>
                 <ArgoWizardPlacementSection
                     placements={props.placements}
                     clusters={props.clusters}
@@ -639,78 +631,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 />
             </Step>
         </WizardPage>
-    )
-}
-
-export function DeploymentWindow(props: { timeZone: string[] }) {
-    const { t } = useTranslation()
-    return (
-        <Section
-            hidden={(data) => {
-                return data.deployType === 'ArgoCD'
-            }}
-            id="deploymentWindow.title"
-            label={t('Deployment window')}
-            description={t('Schedule a time window for deployments')}
-            labelHelp={t(
-                'Define a time window if you want to activate or block resources deployment within a certain time interval.'
-            )}
-        >
-            <WizRadioGroup
-                id="remediation"
-                path="deployment.window"
-                required
-                // hidden={get(resources, 'DELEM') === undefined}
-            >
-                <Radio id="always" label={t('Always active')} value="always" />
-                <Radio id="active" label={t('Active within specified interval')} value="active">
-                    <TimeWindow timeZone={props.timeZone} />
-                </Radio>
-                <Radio id="blocked" label={t('Blocked within specified interval')} value="blocked">
-                    <TimeWindow timeZone={props.timeZone} />
-                </Radio>
-            </WizRadioGroup>
-        </Section>
-    )
-}
-
-export function TimeWindow(props: { timeZone: string[] }) {
-    const { t } = useTranslation()
-    return (
-        <Stack hasGutter style={{ paddingBottom: 16 }}>
-            <WizMultiSelect
-                label={t('Time window configuration')}
-                placeholder={t('Select at least one day to create a time window.')}
-                path="timewindow.daysofweek"
-                required
-                options={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
-            />
-            <Select
-                path="timeWindow.timezone"
-                label={t('Time zone')}
-                placeholder={t('Select the time zone')}
-                options={props.timeZone}
-                required
-            />
-            <WizArrayInput
-                path="timeWindows"
-                placeholder={t('Add time range')}
-                collapsedContent={
-                    <Fragment>
-                        <WizTextDetail path="start" placeholder={t('Expand to enter the variable')} />
-                        <WizHidden hidden={(item: ITimeRangeVariableData) => item.end === undefined}>
-                            &nbsp;-&nbsp;
-                            <WizTextDetail path="end" />
-                        </WizHidden>
-                    </Fragment>
-                }
-            >
-                <Split hasGutter>
-                    <WizTimeRange path="start" label={t('Start Time')}></WizTimeRange>
-                    <WizTimeRange path="end" label={t('End Time')}></WizTimeRange>
-                </Split>
-            </WizArrayInput>
-        </Stack>
     )
 }
 
@@ -761,11 +681,6 @@ export function ExternalLinkButton(props: { id: string; href?: string; icon?: Re
             </FlexItem>
         </Flex>
     )
-}
-
-interface ITimeRangeVariableData {
-    start: string
-    end: string
 }
 
 function repositoryTypeToSource(value: unknown) {
@@ -970,6 +885,7 @@ function ArgoWizardPlacementSection(props: {
                     <Select
                         path="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
                         label={t('Existing placement')}
+                        placeholder={t('Select the existing placement')}
                         options={placements.map((placement) => placement.metadata?.name ?? '')}
                     />
                 </WizItemSelector>

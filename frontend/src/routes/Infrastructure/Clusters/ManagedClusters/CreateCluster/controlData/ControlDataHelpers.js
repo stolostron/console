@@ -539,7 +539,7 @@ export const proxyControlData = (t) => {
             type: 'values',
             name: t('No proxy'),
             disabled: true,
-            tip: 'noProxyTip',
+            tip: t('noProxyTip'),
         },
         {
             id: 'additionalTrustBundle',
