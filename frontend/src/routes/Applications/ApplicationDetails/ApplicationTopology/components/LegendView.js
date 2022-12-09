@@ -20,8 +20,11 @@ class LegendView extends Component {
                             )}
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <svg>
+                            <svg height="140px">
                                 <use href={'#drawerShapes_legend'} className="label-icon" />
+                            </svg>
+                            <svg height="100px">
+                                <use href={'#drawerShapes_legend2'} className="label-icon" />
                             </svg>
                         </div>
                     </div>
