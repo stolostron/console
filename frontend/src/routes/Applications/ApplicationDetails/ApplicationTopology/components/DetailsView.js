@@ -172,8 +172,8 @@ class DetailsView extends Component {
                 </div>
                 <section style={{ height: activeTabKey !== 2 ? undefined : '100%' }}>
                     {isTableView
-                        ? this.renderTableContents(currentNode)
-                        : this.renderTabContents(currentNode, currentUpdatedNode)}
+                        ? this.renderTableContents(currentUpdatedNode)
+                        : this.renderTabContents(currentUpdatedNode)}
                 </section>
             </div>
         )
@@ -205,11 +205,11 @@ class DetailsView extends Component {
         return <DetailsTable id="details-view-table" node={node} handleOpen={this.handleOpen.bind(this)} t={t} />
     }
 
-    renderTabContents(node, currentUpdatedNode) {
+    renderTabContents(node) {
         const { options, activeFilters, t } = this.props
         const selectedNodeId = node.id
         const { getNodeDetails } = options
-        const details = getNodeDetails(node, currentUpdatedNode, activeFilters, t)
+        const details = getNodeDetails(node, activeFilters, t)
         const name = node.type === 'cluster' ? '' : node.name
         const yamlURL = createResourceURL(node, t)
         const { namespace, type } = node
@@ -277,7 +277,7 @@ class DetailsView extends Component {
                 {labelValue && statusIcon ? (
                     <span className="label sectionLabel">
                         <svg width="10px" height="10px" fill={iconFill} style={{ marginRight: '8px' }}>
-                            <use href={`#nodeStatusIcon_${statusIcon}`} className="label-icon" />
+                            <use href={`#drawerShapes_${statusIcon}`} className="label-icon" />
                         </svg>
                         <span>{label} </span>
                     </span>

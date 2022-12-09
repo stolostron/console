@@ -128,7 +128,7 @@ class DetailsTable extends Component {
                             <div style={{ display: 'flex' }}>
                                 <div style={{ marginRight: '8px' }}>
                                     <svg width="12" height="12" viewBox="0 0 12 12" fill={pulse}>
-                                        <use href={`#nodeStatusIcon_${icon}`} width={12} height={12} />
+                                        <use href={`#drawerShapes_${icon}`} width={12} height={12} />
                                     </svg>
                                 </div>
                                 <Button onClick={() => handleOpen(node, item)} variant="link" isInline>

@@ -34,7 +34,7 @@ import { kubeNaming } from './utilities'
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
 
-export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
+export const getNodeDetails = (node, activeFilters, t) => {
     const details = []
     if (node) {
         const { type, labels = [] } = node
@@ -76,7 +76,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
                 break
 
             default:
-                addK8Details(node, updatedNode, details, activeFilters, t)
+                addK8Details(node, details, activeFilters, t)
                 break
         }
 
@@ -95,7 +95,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
     return details
 }
 
-function addK8Details(node, updatedNode, details, activeFilters, t) {
+function addK8Details(node, details, activeFilters, t) {
     const { clusterName, type, layout = {}, specs } = node
     const { isDesign } = specs
     let labels
@@ -339,7 +339,7 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     setResourceDeployStatus(node, details, activeFilters, t)
 
     // kube model details
-    setPodDeployStatus(node, updatedNode, details, activeFilters, t)
+    setPodDeployStatus(node, details, activeFilters, t)
 
     return details
 }
