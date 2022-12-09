@@ -203,7 +203,6 @@ compute:
 {{! ========================================================== }}
 {{! ========================================================== }}
 
-{{#if_ne infrastructure 'vSphere'}}
 networking:
   networkType: {{{networkType}}} ##networkType
   clusterNetwork:
@@ -219,7 +218,6 @@ networking:
 {{#each networks}}
   - {{{serviceNetwork}}} ##networks.{{@index}}.serviceNetwork
 {{/each}}
-{{/if_ne}}
 
 
 {{! ========================================================== }}
