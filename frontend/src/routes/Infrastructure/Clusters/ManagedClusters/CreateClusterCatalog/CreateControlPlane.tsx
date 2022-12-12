@@ -113,7 +113,7 @@ export function CreateControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control plane type - Host Inventory')}
+                title={t('Control plane type{{hcType}}', { hcType: ' - Host Inventory' })}
                 description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
                 breadcrumbs={breadcrumbs}
             />
