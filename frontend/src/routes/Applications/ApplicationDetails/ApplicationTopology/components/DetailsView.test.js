@@ -27,6 +27,7 @@ describe('DetailsView no components', () => {
     returnEmptyArr.mockReturnValue([
         {
             uid: 'deployment1',
+            id: 'deployment1',
             type: 'deployment',
             name: 'name',
             namespace: 'ns',
@@ -56,6 +57,57 @@ describe('DetailsView no components', () => {
         processActionLink: jest.fn(),
     }
 
+    const laidoutNodes = [
+        {
+            id: 'deployment1',
+            uid: 'deployment1',
+            name: 'deployment1-app',
+            cluster: null,
+            clusterName: null,
+            type: 'deployment',
+            specs: {
+                isDesign: true,
+                activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
+                channels: ['default/mortgage-app-subscription//default/mortgage-channel'],
+                raw: {
+                    metadata: {
+                        namespace: 'default',
+                    },
+                },
+            },
+            namespace: 'default',
+            topology: null,
+            labels: null,
+            __typename: 'Resource',
+            layout: {
+                uid: 'application--mortgage-app',
+                type: 'application',
+                label: 'mortgage-app',
+                compactLabel: 'mortgage-app',
+                nodeIcons: {},
+                nodeStatus: '',
+                isDisabled: false,
+                title: '',
+                description: 'default',
+                tooltips: [
+                    {
+                        name: 'Application',
+                        value: 'mortgage-app',
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:application name:mortgage-app'}",
+                    },
+                    {
+                        name: 'Namespace',
+                        value: 'default',
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
+                    },
+                ],
+                x: 76.5,
+                y: 1.5,
+                section: { name: 'preset', hashCode: 872479835, x: 0, y: 0 },
+            },
+        },
+    ]
+
     beforeEach(async () => {
         render(
             <DetailsView
@@ -64,7 +116,7 @@ describe('DetailsView no components', () => {
                 selectedNodeId={mockData.selectedNodeId}
                 getViewContainer={mockData.getViewContainer}
                 processActionLink={mockData.processActionLink}
-                nodes={mockLaidoutNodes.laidoutNodes}
+                nodes={laidoutNodes}
                 t={t}
                 options={mockData.staticResourceData}
             />
