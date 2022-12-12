@@ -740,6 +740,7 @@
     "Control plane pods": "Control plane pods",
     "Control plane status": "Control plane status",
     "Control plane type": "Control plane type",
+    "Control plane type{{hcType}}": "Control plane type{{hcType}}",
     "controllers": "controllers",
     "Controls": "Controls",
     "Converse and connect.": "Converse and connect.",
