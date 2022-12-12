@@ -86,14 +86,14 @@ class TreeLayout extends ColaLayout {
             node.setFixed(true)
         })
 
-        graph.fit(80)
+        graph.fit(160)
     }
 
-    // protected startColaLayout(initialRun: boolean, addingNodes: boolean): void {
-    //     if (this.treeOptions.useCola) {
-    //         //super.startColaLayout(initialRun, addingNodes)
-    //     }
-    // }
+    protected startLayout(graph: Graph, initialRun: boolean, addingNodes: boolean): void {
+        if (this.treeOptions.useCola) {
+            super.startLayout(graph, initialRun, addingNodes)
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////

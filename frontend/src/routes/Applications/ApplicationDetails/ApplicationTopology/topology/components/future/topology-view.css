@@ -11,3 +11,15 @@
 .pf-topology-container {
     flex: 1;
 }
+
+.pf-topology__node__background {
+    fill: white;
+}
+
+.pf-topology__node__decorator__bg {
+    fill: white;
+}
+
+.pf-topology-connector-arrow {
+    fill: #808080;
+}

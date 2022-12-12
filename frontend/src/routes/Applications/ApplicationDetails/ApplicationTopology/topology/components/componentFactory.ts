@@ -11,7 +11,7 @@ import {
 } from '@patternfly/react-topology'
 import StyledNode from './StyledNode'
 
-import DefaultEdge from './future/DefaultEdge'
+import DefaultEdge from './DefaultEdge'
 
 const defaultComponentFactory: ComponentFactory = (
     kind: ModelKind
