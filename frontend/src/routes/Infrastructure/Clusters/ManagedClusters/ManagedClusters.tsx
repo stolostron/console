@@ -72,11 +72,13 @@ export default function ManagedClusters() {
     })
 
     const onBoardingModalID = `${window.location.href}/clusteronboardingmodal`
-    //localStorage.getItem(onBoardingModalID) ?? localStorage.setItem(onBoardingModalID, 'show')
-
     const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
         localStorage.getItem(onBoardingModalID) ? localStorage.getItem(onBoardingModalID) === 'show' : true
     )
+
+    const localCluster = useMemo(() => {
+        return clusters.find((cls) => cls.name === 'local-cluster')
+    }, [clusters])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -115,6 +117,7 @@ export default function ManagedClusters() {
                 <OnboardingModal
                     open={openOnboardingModal}
                     close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)}
+                    hub={localCluster}
                 />
                 <Stack hasGutter={true}>
                     <StackItem>

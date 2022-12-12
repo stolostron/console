@@ -10,10 +10,12 @@ import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from 
 import { NavigationPath } from '../../../../../NavigationPath'
 import './OnboardingModal.css'
 import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
+import { Cluster } from '../../../../../resources'
 
 export interface IOnboardingModalProps {
     close: () => void
     open: boolean
+    hub: Cluster | undefined
 }
 
 export function OnboardingModal(props: IOnboardingModalProps) {
@@ -37,7 +39,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 id: 'onboardingdiscoverbutton',
                 icon: <ConnectedIcon />,
                 text: t('Discover hosts to create host inventory'),
-                link: NavigationPath.discoveredClusters,
+                link: NavigationPath.infraEnvironments,
             },
         ],
         [t]

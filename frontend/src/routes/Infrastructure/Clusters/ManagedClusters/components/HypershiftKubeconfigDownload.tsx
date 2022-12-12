@@ -5,15 +5,15 @@ import { Button, ButtonVariant } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
 type HypershiftKubeconfigDownloadProps = {
-    hostedCluster: HostedClusterK8sResource
+    hostedCluster: HostedClusterK8sResource | undefined
     fetchSecret: (name: string, namespace: string) => Promise<SecretK8sResource>
 }
 
 const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: HypershiftKubeconfigDownloadProps) => {
     const { t } = useTranslation()
     const handleKubeconfigDownload = async () => {
-        const kubeconfigSecretName = hostedCluster.status?.kubeconfig?.name
-        const kubeconfigSecretNamespace = hostedCluster.metadata?.namespace
+        const kubeconfigSecretName = hostedCluster?.status?.kubeconfig?.name
+        const kubeconfigSecretNamespace = hostedCluster?.metadata?.namespace
 
         if (kubeconfigSecretName && kubeconfigSecretNamespace) {
             try {
@@ -34,7 +34,7 @@ const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: Hypershift
 
     return (
         <Button
-            variant={ButtonVariant.secondary}
+            variant={ButtonVariant.link}
             onClick={handleKubeconfigDownload}
             isDisabled={!hostedCluster?.status?.kubeconfig?.name}
         >
