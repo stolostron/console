@@ -206,16 +206,6 @@ export const NodeIcons = () => (
             <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="Artboard" transform="translate(-1245.000000, -1091.000000)">
                     <g id="Namespace" transform="translate(1245.000000, 1091.000000)">
-                        <circle
-                            id="Oval-Copy-38"
-                            stroke="#c7c7c7"
-                            strokeWidth="1.404"
-                            fill="#FFFFFF"
-                            cx="15.795"
-                            cy="15.795"
-                            r="15.093"
-                        ></circle>
-                        <circle id="Oval-Copy-37" fill="#FFFFFF" cx="15.795" cy="15.795" r="10.53"></circle>
                         <g
                             id="Organization-/-File-/-categories-/-32"
                             transform="translate(10.881000, 10.881000)"

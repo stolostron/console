@@ -11,6 +11,7 @@ import {
     WithSourceDragProps,
     WithTargetDragProps,
 } from '@patternfly/react-topology'
+import EdgeConnectorSquare from './EdgeConnectorSquare'
 
 type EdgeProps = {
     element: Edge
@@ -58,6 +59,7 @@ const DefaultEdge: React.FunctionComponent<EdgeProps> = ({
     return (
         <>
             <Layer id={dragging ? 'top' : undefined}>
+                <EdgeConnectorSquare dragRef={sourceDragRef} edge={element} />
                 <path
                     strokeWidth={1}
                     stroke={(element.getData() && element.getData().color) || '#808080'}

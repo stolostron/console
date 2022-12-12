@@ -246,7 +246,7 @@ class DetailsTable extends Component {
                         <TableBody />
                     </Table>
                     <Split>
-                        <SplitItem>
+                        <SplitItem style={{ width: '100%' }}>
                             {resources.length !== 0 && (
                                 <Pagination
                                     itemCount={unfilteredRows.length}
