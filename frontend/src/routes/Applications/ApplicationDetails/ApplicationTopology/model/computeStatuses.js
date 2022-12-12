@@ -1086,7 +1086,7 @@ const setClusterWindowStatus = (windowStatusArray, subscription, details, t) => 
 ///////////////////////////////////////////////////////////
 
 //show resource deployed status for resources producing pods
-export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t) => {
+export const setPodDeployStatus = (node, details, activeFilters, t) => {
     const { notDeployedStr } = getStateNames(t)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)

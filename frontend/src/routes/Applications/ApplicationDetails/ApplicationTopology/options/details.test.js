@@ -68,7 +68,7 @@ describe('getNodeDetails no clusters or violation', () => {
         },
     ]
     it('should process the node, no clusters or violation', () => {
-        expect(getNodeDetails(clusterNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -167,7 +167,7 @@ describe('getNodeDetails application node', () => {
     ]
 
     it('should process the node, application node', () => {
-        expect(getNodeDetails(applicationNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(applicationNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -285,7 +285,7 @@ describe('getNodeDetails cluster node 1', () => {
     ]
 
     it('should process the node, cluster node 2', () => {
-        expect(getNodeDetails(clusterNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -451,7 +451,7 @@ describe('getNodeDetails clusters node', () => {
     ]
 
     it('should process the clusters node', () => {
-        expect(getNodeDetails(clusterNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -617,9 +617,9 @@ describe('getNodeDetails subscription', () => {
     ]
 
     it('should process the node and show the details', () => {
-        expect(
-            getNodeDetails(subscription, undefined, ['application', 'cluster', 'placements', 'subscription'], t)
-        ).toEqual(expectedValue)
+        expect(getNodeDetails(subscription, ['application', 'cluster', 'placements', 'subscription'], t)).toEqual(
+            expectedValue
+        )
     })
 })
 
@@ -711,7 +711,7 @@ describe('getNodeDetails helm node', () => {
     ]
 
     it('should process the node, helm node', () => {
-        expect(getNodeDetails(helmreleaseNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(helmreleaseNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -764,7 +764,7 @@ describe('getNodeDetails helm node', () => {
     ]
 
     it('should process the node, packageNode node', () => {
-        expect(getNodeDetails(packageNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(packageNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -852,7 +852,7 @@ describe('getNodeDetails placement rules node with error', () => {
         },
     ]
     it('should process the node, placement rules node with error', () => {
-        expect(getNodeDetails(rulesNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(rulesNode, {}, t)).toEqual(expectedResult)
     })
 })
 
@@ -939,7 +939,7 @@ describe('getNodeDetails placement rules node with success', () => {
     ]
 
     it('should process the node, placement rules node with success', () => {
-        expect(getNodeDetails(rulesNode, undefined, {}, t)).toEqual(expectedResult)
+        expect(getNodeDetails(rulesNode, {}, t)).toEqual(expectedResult)
     })
 })
 

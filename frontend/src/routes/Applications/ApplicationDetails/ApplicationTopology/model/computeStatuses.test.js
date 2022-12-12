@@ -1715,7 +1715,7 @@ describe('setPodDeployStatus  node does not have pods', () => {
         },
     }
     it('setPodDeployStatus node does not have pods', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual([])
+        expect(setPodDeployStatus(node, [], {}, t)).toEqual([])
     })
 })
 
@@ -1837,7 +1837,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
         { type: 'spacer' },
     ]
     it('setPodDeployStatus with pod less then desired', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
+        expect(setPodDeployStatus(node, [], {}, t)).toEqual(result)
     })
 })
 
@@ -2061,7 +2061,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
         },
     ]
     it('setPodDeployStatus with pod as desired', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
+        expect(setPodDeployStatus(node, [], {}, t)).toEqual(result)
     })
 })
 
@@ -2200,7 +2200,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
         { type: 'spacer' },
     ]
     it('setPodDeployStatus - pod as desired green filter', () => {
-        expect(setPodDeployStatus(node, node, [], activeFilters, t)).toEqual(result)
+        expect(setPodDeployStatus(node, [], activeFilters, t)).toEqual(result)
     })
 })
 
@@ -2273,7 +2273,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
         { type: 'spacer' },
     ]
     it('setPodDeployStatus with pod as desired but no matched cluster', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
+        expect(setPodDeployStatus(node, [], {}, t)).toEqual(result)
     })
 })
 
