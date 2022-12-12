@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { observer } from 'mobx-react'
 import last from 'lodash/last'
