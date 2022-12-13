@@ -24,7 +24,6 @@ export const fixupControlsForClusterPool = (controlData, t) => {
 
     // Only allow 1 worker pool, and warn if default size is not used
     delete map['workerPools'].prompts.addPrompt
-    delete map['workerPools'].prompts.deletePrompt
     inx = map['workerPools'].controlData.findIndex(({ id }) => id === 'computeNodeCount')
     map['workerPools'].controlData.splice(inx, 1, {
         name: 'creation.ocp.compute.node.count',

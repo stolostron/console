@@ -286,7 +286,10 @@ class ControlPanel extends React.Component {
                                     {prompts && active.length > 1 && this.renderDeleteGroupButton(control, inx)}
                                     {this.renderGroupControlSections(controlData, inx, groupId)}
                                 </div>
-                                {prompts && active.length - 1 === inx && this.renderAddGroupButton(control)}
+                                {prompts &&
+                                    prompts.addPrompt &&
+                                    active.length - 1 === inx &&
+                                    this.renderAddGroupButton(control)}
                             </React.Fragment>
                         )
                     })}
