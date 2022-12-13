@@ -892,6 +892,7 @@
     "creation.ocp.cloud.select.ocp.image": "Select or enter a release image",
     "creation.ocp.cluster.add.network": "Add network",
     "creation.ocp.cluster.add.node.pool": "Add worker pool",
+    "creation.ocp.cluster.delete.network": "Delete network",
     "creation.ocp.cluster.delete.node.pool": "Delete node pool",
     "creation.ocp.cluster.duplicate.ip.address": "The address must be different from the address used for the following fields: {{controlList}}",
     "creation.ocp.cluster.enter.value": "Enter {{0}}",
