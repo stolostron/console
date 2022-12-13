@@ -34,6 +34,7 @@ export function DistributionField(props: {
     clusterCurator?: ClusterCurator | undefined
     nodepool?: NodePool
     hostedCluster?: HostedClusterK8sResource
+    resource?: string
 }) {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
@@ -100,22 +101,69 @@ export function DistributionField(props: {
         props.cluster?.isHypershift,
     ])
 
-    const nodepoolsHasUpdates: boolean = useMemo(() => {
-        let updateAvailable = false
-        if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
-            for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
-                if (
-                    (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
-                    (props.cluster.distribution?.ocp?.version || '')
-                ) {
-                    updateAvailable = true
-                    break
-                }
+    // const nodepoolsHasUpdates: boolean = useMemo(() => {
+    //     // let updateAvailable = false
+    //     // if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
+    //     //     for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
+    //     //         if (
+    //     //             (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
+    //     //             (props.cluster.distribution?.ocp?.version || '')
+    //     //         ) {
+    //     //             updateAvailable = true
+    //     //             break
+    //     //         }
+    //     //     }
+    //     // }
+
+    //     if (props.nodepool?.status?.version && props.cluster?.distribution?.ocp?.version) {
+    //         if ((props.nodepool?.status?.version || '') <
+    //                  (props.cluster.distribution?.ocp?.version || '')) {
+    //             return true
+    //         }
+
+    //     }
+    //     return false
+    //     //return updateAvailable
+    // }, [props.cluster?.distribution?.ocp?.version, props.cluster?.hypershift?.nodePools])
+
+    const isUpdateAvailable: boolean = useMemo(() => {
+        //if nodepool table
+        if (props.resource != null && props.resource === 'nodepool') {
+            if ((props.nodepool?.status?.version || '') < (props.cluster?.distribution?.ocp?.version || '')) {
+                return true
             }
+            return false
         }
 
-        return updateAvailable
-    }, [props.cluster?.distribution?.ocp?.version, props.cluster?.hypershift?.nodePools])
+        //if managed cluster page - cluster, cluster curator and hosted cluster
+        if (props.resource != null && props.resource === 'managedclusterpage') {
+            let updateAvailable = false
+            if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
+                for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
+                    if (
+                        (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
+                        (props.cluster.distribution?.ocp?.version || '')
+                    ) {
+                        updateAvailable = true
+                        break
+                    }
+                }
+            }
+            return updateAvailable
+        } else if (props.resource != null && props.resource === 'hostedcluster') {
+            //if hosted cluster progress - cluster and hostedcluster
+            return Object.keys(hypershiftAvailableUpdates).length > 0
+        }
+
+        return false
+        //return updateAvailable
+    }, [
+        props.cluster?.distribution?.ocp?.version,
+        props.cluster?.hypershift?.nodePools,
+        hypershiftAvailableUpdates,
+        props.nodepool?.status?.version,
+        props.resource,
+    ])
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
@@ -342,10 +390,7 @@ export function DistributionField(props: {
                 </span>
             </>
         )
-    } else if (
-        (props.cluster?.isHostedCluster || props.cluster?.isHypershift) &&
-        (Object.keys(hypershiftAvailableUpdates).length > 0 || nodepoolsHasUpdates)
-    ) {
+    } else if ((props.cluster?.isHostedCluster || props.cluster?.isHypershift) && isUpdateAvailable) {
         // UPGRADE AVAILABLE HYPERSHIFT
         return (
             <>

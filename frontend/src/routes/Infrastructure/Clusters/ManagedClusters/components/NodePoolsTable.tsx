@@ -119,7 +119,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 header: t('table.distribution'),
                 sort: 'status.version',
                 search: 'status.version',
-                cell: (nodepool: NodePool) => <DistributionField cluster={cluster} nodepool={nodepool} />,
+                cell: (nodepool: NodePool) => (
+                    <DistributionField cluster={cluster} nodepool={nodepool} resource={'nodepool'} />
+                ),
             }
         )
         if (hostedCluster?.spec?.platform?.type === HypershiftCloudPlatformType.AWS) {

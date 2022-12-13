@@ -46,6 +46,7 @@ const HostedClusterProgress = ({ hostedCluster }: HostedClusterProgressProps) =>
                                 cluster={cluster}
                                 clusterCurator={undefined}
                                 hostedCluster={hostedCluster}
+                                resource={'hostedcluster'}
                             />
                         </StackItem>
                         <StackItem className="nodepool-progress-item__body">

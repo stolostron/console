@@ -571,6 +571,7 @@ export function useClusterDistributionColumn(
                 hostedCluster={hostedClusters.find(
                     (hc) => cluster.namespace === hc.metadata?.namespace && cluster.name === hc.metadata?.name
                 )}
+                resource={'managedclusterpage'}
             />
         ),
     }
