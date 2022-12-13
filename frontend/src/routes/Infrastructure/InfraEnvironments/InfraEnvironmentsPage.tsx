@@ -592,9 +592,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                         emptyState={
                             <AcmEmptyState
                                 key="ieEmptyState"
-                                title={t("Let's create your first infrastructure environment")}
+                                title={t('No infrastructure environments yet')}
                                 message={t(
-                                    'Managing hosts with infrastructure environments makes it easy to set settings across multiple hosts.'
+                                    'To get started, create an infrastructure environment to define the settings across multiple hosts.'
                                 )}
                                 action={
                                     <div>
