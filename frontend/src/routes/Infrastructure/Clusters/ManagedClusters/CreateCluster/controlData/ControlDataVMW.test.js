@@ -1,26 +1,22 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-
 import { getControlDataVMW } from './ControlDataVMW'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
+const handleModalToggle = jest.fn()
 
-describe('getControlDataVMW', () => {
-    it('get control data for vsphere - default', () => {
-        getControlDataVMW(t, undefined, true, true, false)
+describe('Cluster creation control data for VMW', () => {
+    it('generates correctly', () => {
+        expect(getControlDataVMW(t, handleModalToggle, true, true, false)).toMatchSnapshot()
     })
 
-    it('get control data for vsphere - no automation', () => {
-        getControlDataVMW(t, undefined, false, true, false)
+    it('generates correctly with SNO enabled', () => {
+        expect(getControlDataVMW(t, handleModalToggle, true, true, true)).toMatchSnapshot()
     })
 
-    it('get control data for vsphere - include sno cluster', () => {
-        getControlDataVMW(t, undefined, true, true, true)
-    })
-
-    it('get control data for vsphere - no klusterletaddon', () => {
-        getControlDataVMW(t, undefined, true, false, true)
+    it('generates correctly for MCE', () => {
+        expect(getControlDataVMW(t, handleModalToggle, true, false, false)).toMatchSnapshot()
     })
 })
