@@ -2,7 +2,7 @@
 
 import YAML from 'yaml'
 
-import { t, TFunction } from 'i18next'
+import { TFunction } from 'i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
 
@@ -308,7 +308,7 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
     return undefined
 }
 
-export function validateRequiredPrefix(value: string, requiredPrefix: string) {
+export function validateRequiredPrefix(value: string, requiredPrefix: string, t: TFunction) {
     if (value && !value?.startsWith(requiredPrefix)) {
         return t("The path must begin with '{{prefix}}'", { prefix: requiredPrefix })
     }

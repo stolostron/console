@@ -890,7 +890,7 @@ export function CredentialsForm(
                         labelHelp: t('credentialsForm.vsphereFolder.labelHelp'),
                         value: vsphereFolder,
                         onChange: setVsphereFolder,
-                        validation: (value) => validateRequiredPrefix(value, `/${datacenter || 'DATACENTER'}/vm/`),
+                        validation: (value) => validateRequiredPrefix(value, `/${datacenter || 'DATACENTER'}/vm/`, t),
                         isRequired: false,
                     },
                     {
@@ -905,7 +905,8 @@ export function CredentialsForm(
                         validation: (value) =>
                             validateRequiredPrefix(
                                 value,
-                                `/${datacenter || 'DATACENTER'}/host/${cluster || 'CLUSTER'}/Resources/`
+                                `/${datacenter || 'DATACENTER'}/host/${cluster || 'CLUSTER'}/Resources/`,
+                                t
                             ),
                         isRequired: false,
                     },
