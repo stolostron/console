@@ -4,6 +4,7 @@ import { getNumericValidator, getIPValidator, getURLValidator } from '../../../.
 import {
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
@@ -198,6 +199,7 @@ export const getControlDataOST = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  instance type  /////////////////////////////////////
                 {

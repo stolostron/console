@@ -771,3 +771,7 @@ export const insertToggleModalFunction = (handleToggleModal, controlData) => {
         )
     }
 }
+
+export const disabledForFirstInGroup = (control) => {
+    return control.grpNum === 0
+}

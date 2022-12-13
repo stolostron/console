@@ -12,7 +12,7 @@ const ControlPanelFormGroup = (props: {
     control: any
     controlData: any
     controlId: string
-    showTip: boolean
+    showTip?: boolean
     i18n: TFunction
 }) => {
     const { controlId, control, controlData, showTip, children, i18n } = props

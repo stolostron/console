@@ -6,6 +6,7 @@ import {
     architectureData,
     automationControlData,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
     getSimplifiedImageName,
     getWorkerName,
     insertToggleModalFunction,
@@ -652,6 +653,7 @@ export const getControlDataAZR = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  zone  /////////////////////////////////////
                 {

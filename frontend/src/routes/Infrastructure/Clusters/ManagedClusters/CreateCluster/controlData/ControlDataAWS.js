@@ -16,6 +16,7 @@ import {
     onChangeSNO,
     onImageChange,
     proxyControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import {
     getAlphanumericValidator,
@@ -996,6 +997,7 @@ export const getControlDataAWS = (
                     type: 'text',
                     active: 'worker',
                     validation: getAlphanumericValidator(t),
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  zone  /////////////////////////////////////
                 {

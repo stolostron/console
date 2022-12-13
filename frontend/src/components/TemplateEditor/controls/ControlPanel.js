@@ -315,8 +315,8 @@ class ControlPanel extends React.Component {
                 stopRenderingOnNextControl = !control.active
             }
             if (!stopRendering) {
+                control.grpNum = grpNum
                 if (type === 'section') {
-                    control.grpNum = grpNum
                     content = []
                     section = { title: control, content }
                     controlSections.push(section)

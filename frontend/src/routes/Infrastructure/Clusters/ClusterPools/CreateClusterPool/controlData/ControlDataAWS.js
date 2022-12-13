@@ -4,6 +4,7 @@ import {
     addSnoText,
     architectureData,
     clusterPoolDetailsControlData,
+    disabledForFirstInGroup,
     getSimplifiedImageName,
     getWorkerName,
     insertToggleModalFunction,
@@ -987,6 +988,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
                     type: 'text',
                     active: 'worker',
                     validation: getAlphanumericValidator(t),
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  zone  /////////////////////////////////////
                 {
