@@ -345,7 +345,7 @@ export default function ApplicationsOverview() {
         () =>
             argoApplications
                 .filter((argoApp) => {
-                    const resources = argoApp.status.resources
+                    const resources = argoApp.status ? argoApp.status.resources : undefined
                     let definedNamespace = ''
                     resources &&
                         resources.forEach((resource: any) => {
