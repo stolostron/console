@@ -463,7 +463,7 @@ Array [
     "id": "networks",
     "prompts": Object {
       "addPrompt": "Add network",
-      "deletePrompt": "Delete node pool",
+      "deletePrompt": "Delete network",
     },
     "type": "group",
   },
@@ -1117,7 +1117,7 @@ Array [
     "id": "networks",
     "prompts": Object {
       "addPrompt": "Add network",
-      "deletePrompt": "Delete node pool",
+      "deletePrompt": "Delete network",
     },
     "type": "group",
   },
@@ -1771,7 +1771,7 @@ Array [
     "id": "networks",
     "prompts": Object {
       "addPrompt": "Add network",
-      "deletePrompt": "Delete node pool",
+      "deletePrompt": "Delete network",
     },
     "type": "group",
   },
