@@ -46,7 +46,7 @@ const ControlPanelTextInput = (props: {
                 <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
                     <TextInput
                         id={controlId}
-                        isDisabled={disabled}
+                        isDisabled={disabled as boolean}
                         type={type}
                         spellCheck="false"
                         placeholder={placeholder}
