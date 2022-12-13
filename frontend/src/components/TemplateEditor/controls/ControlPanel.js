@@ -283,7 +283,10 @@ class ControlPanel extends React.Component {
                             /* eslint-disable-next-line react/no-array-index-key */
                             <React.Fragment key={`${controlData[0].id}Group${inx}`}>
                                 <div className="creation-view-group-container" key={groupType}>
-                                    {prompts && active.length > 1 && this.renderDeleteGroupButton(control, inx)}
+                                    {prompts &&
+                                        ((prompts.disableDeleteForFirst && inx > 0) ||
+                                            (!prompts.disableDeleteForFirst && active.length > 1)) &&
+                                        this.renderDeleteGroupButton(control, inx)}
                                     {this.renderGroupControlSections(controlData, inx, groupId)}
                                 </div>
                                 {prompts &&

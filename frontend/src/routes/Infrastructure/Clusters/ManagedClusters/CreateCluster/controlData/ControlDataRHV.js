@@ -215,6 +215,7 @@ export const getControlDataRHV = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {

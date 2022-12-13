@@ -975,6 +975,7 @@ export const getControlDataAWS = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             onChange: updateWorkerZones,
             controlData: [
