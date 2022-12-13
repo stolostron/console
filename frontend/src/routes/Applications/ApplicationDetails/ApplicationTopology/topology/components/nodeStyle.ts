@@ -7,7 +7,7 @@ import './nodeStatusIcons.css'
 
 export const NODE_WIDTH = 65
 export const NODE_HEIGHT = 65
-export const X_SPACER = 70
+export const X_SPACER = 80
 export const Y_SPACER = 60
 const MAX_LABEL_WIDTH = 18
 

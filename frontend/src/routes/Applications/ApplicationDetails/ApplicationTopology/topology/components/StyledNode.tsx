@@ -18,7 +18,7 @@ import Ellipse from './future/Ellipse'
 import DefaultNode from './future/DefaultNode'
 import Decorator from './future/Decorator'
 import { getDefaultShapeDecoratorCenter, ShapeProps } from './future/shapeUtils'
-import { TopologyQuadrant } from './future/types'
+import { TopologyQuadrant, ScaleDetailsLevel } from './future/types'
 const DEFAULT_DECORATOR_RADIUS = 12
 
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon'
@@ -43,12 +43,21 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
     element,
     onContextMenu,
     contextMenuOpen,
+    showLabel,
     dragging,
     regrouping,
     ...rest
 }) => {
     const data = element.getData()
     const [hover, hoverRef] = useHover()
+
+    let detailsLevel = ScaleDetailsLevel.high
+    const scale = element.getGraph().getScale()
+    if (scale < 0.3) {
+        detailsLevel = ScaleDetailsLevel.low
+    } else if (scale < 0.6) {
+        detailsLevel = ScaleDetailsLevel.medium
+    }
 
     const passedData = React.useMemo(() => {
         const newData = { ...data }
@@ -57,8 +66,11 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
                 delete newData[key]
             }
         })
+        if (detailsLevel !== ScaleDetailsLevel.high) {
+            delete newData.secondaryLabel
+        }
         return newData
-    }, [data])
+    }, [data, detailsLevel])
 
     const LabelIcon = passedData.labelIcon
     const { width, height } = element.getDimensions()
@@ -73,6 +85,11 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
                 <DefaultNode
                     element={element}
                     nodeStatus={data.status}
+                    scaleLabel={detailsLevel !== ScaleDetailsLevel.low}
+                    scaleNode={hover && detailsLevel === ScaleDetailsLevel.low}
+                    showLabel={hover || (detailsLevel !== ScaleDetailsLevel.low && showLabel)}
+                    showStatusBackground={!hover && detailsLevel === ScaleDetailsLevel.low}
+                    showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
                     {...rest}
                     {...passedData}
                     getCustomShape={() => (passedData?.specs?.resourceCount > 1 ? MultiEllipse : Ellipse)}
@@ -81,9 +98,14 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
                     onContextMenu={data.showContextMenu ? onContextMenu : undefined}
                     contextMenuOpen={contextMenuOpen}
                     labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
-                    attachments={renderDecorators(element, passedData, rest.getShapeDecoratorCenter)}
+                    attachments={
+                        detailsLevel !== ScaleDetailsLevel.low &&
+                        renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
+                    }
                 >
-                    <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
+                    {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
+                        <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
+                    )}
                 </DefaultNode>
             </g>
         </Layer>

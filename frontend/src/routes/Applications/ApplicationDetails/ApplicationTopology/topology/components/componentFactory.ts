@@ -9,9 +9,9 @@ import {
     withDragNode,
     withSelection,
 } from '@patternfly/react-topology'
-import StyledNode from './StyledNode'
 
-import DefaultEdge from './DefaultEdge'
+import StyledNode from './StyledNode'
+import StyledEdge from './StyledEdge'
 
 const defaultComponentFactory: ComponentFactory = (
     kind: ModelKind
@@ -29,7 +29,7 @@ const defaultComponentFactory: ComponentFactory = (
         case ModelKind.edge:
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore: Fixed in next pf topology
-            return DefaultEdge
+            return StyledEdge
         /* istanbul ignore next */
         default:
             return undefined
