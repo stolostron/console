@@ -33,9 +33,9 @@ export const fixupControlsForClusterPool = (controlData, t) => {
         initial: '3',
         validation: getNumericValidator(t),
         cacheUserValueKey: 'create.cluster.compute.node.count',
-        info: (control, controlData, t) => {
+        info: (control, _controlData, i18n) => {
             return control.active !== '3'
-                ? t(
+                ? i18n(
                       'The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.'
                   )
                 : undefined

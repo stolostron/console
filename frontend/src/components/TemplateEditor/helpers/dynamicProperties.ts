@@ -16,9 +16,9 @@ export function useDynamicPropertyValues<
     dynamicProperties.forEach((key) => {
         const property = control[key]
         if (typeof property === 'function') {
-            values[key as DynamicProperty] = property(control, controlData, t)
+            values[key] = property(control, controlData, t)
         } else {
-            values[key as DynamicProperty] = property
+            values[key] = property
         }
     })
     return values
