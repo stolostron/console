@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
-import {
-    ClusterInstallationProgress,
-    getSupportedCM,
-    HostedClusterK8sResource,
-    ClusterImageSetK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+import { ClusterInstallationProgress, getSupportedCM, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { createResource, deleteResource, getResource, IResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
@@ -17,9 +12,9 @@ const AIHypershiftClusterDetails: React.FC = () => {
     const { hostedCluster, agents } = useContext(ClusterContext)
     const { waitForAll } = useSharedRecoil()
 
-    const { agentMachinesState, clusterImageSetsState, configMapsState, nodePoolsState } = useSharedAtoms()
-    const [nodePools, clusterImageSets, agentMachines, configMaps] = useRecoilValue(
-        waitForAll([nodePoolsState, clusterImageSetsState, agentMachinesState, configMapsState])
+    const { agentMachinesState, configMapsState, nodePoolsState } = useSharedAtoms()
+    const [nodePools, agentMachines, configMaps] = useRecoilValue(
+        waitForAll([nodePoolsState, agentMachinesState, configMapsState])
     )
 
     const clusterNodePools = nodePools.filter(
@@ -42,7 +37,6 @@ const AIHypershiftClusterDetails: React.FC = () => {
                             getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise
                         }
                         nodePools={clusterNodePools}
-                        clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
                         onRemoveNodePool={(np) => deleteResource(np as IResource).promise}
                         onUpdateNodePool={(nodePool, patches) => patchResource(nodePool as IResource, patches).promise}
                         onAddNodePool={(nodePool) => createResource(nodePool as IResource).promise}
