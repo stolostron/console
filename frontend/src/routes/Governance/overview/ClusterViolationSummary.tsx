@@ -76,6 +76,7 @@ export function usePolicySetClusterPolicyViolationsColumn(
                 <PolicyViolationIcons2
                     compliant={clusterViolationSummary.compliant}
                     noncompliant={clusterViolationSummary.noncompliant}
+                    pending={clusterViolationSummary.pending}
                     unknown={clusterViolationSummary.unknown}
                 />
             )
@@ -88,6 +89,8 @@ export function usePolicySetClusterPolicyViolationsColumn(
             if (!rhsViolations) return 1
             if (lhsViolations.noncompliant > rhsViolations.noncompliant) return -1
             if (lhsViolations.noncompliant < rhsViolations.noncompliant) return 1
+            if (lhsViolations.pending > rhsViolations.pending) return -1
+            if (lhsViolations.pending < rhsViolations.pending) return 1
             if (lhsViolations.compliant > rhsViolations.compliant) return -1
             if (lhsViolations.compliant < rhsViolations.compliant) return 1
             return 0

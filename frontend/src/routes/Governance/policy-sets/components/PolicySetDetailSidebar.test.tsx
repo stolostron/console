@@ -147,6 +147,61 @@ const mockPolicy0: Policy = {
         ],
     },
 }
+const mockPolicyPending: Policy = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: {
+        annotations: {
+            'policy.open-cluster-management.io/categories': 'PR.IP Information Protection Processes and Procedures',
+            'policy.open-cluster-management.io/controls': 'PR.IP-1 Baseline Configuration',
+            'policy.open-cluster-management.io/standards': 'NIST-CSF',
+        },
+        name: 'policy-set-with-1-placement-rule-policy-1',
+        namespace: 'test',
+        resourceVersion: '830175',
+        uid: 'cd18cf67-fe2d-4141-8649-4a2f002898d9',
+    },
+    spec: {
+        disabled: false,
+        'policy-templates': [
+            {
+                objectDefinition: {
+                    apiVersion: 'policy.open-cluster-management.io/v1',
+                    kind: 'ConfigurationPolicy',
+                    metadata: {
+                        name: 'policy-set-with-1-placement-rule-policy-1',
+                    },
+                    spec: {
+                        namespaceSelector: {
+                            exclude: ['kube-*'],
+                            include: ['default'],
+                        },
+                        remediationAction: 'inform',
+                        severity: 'low',
+                    },
+                },
+            },
+        ],
+        remediationAction: 'inform',
+    },
+    status: {
+        compliant: 'Pending',
+        placement: [
+            {
+                placementBinding: 'policy-set-with-1-placement-rule',
+                placementRule: 'policy-set-with-1-placement-rule',
+                policySet: 'policy-set-with-1-placement-rule',
+            },
+        ],
+        status: [
+            {
+                clustername: 'local-cluster',
+                clusternamespace: 'local-cluster',
+                compliant: 'Pending',
+            },
+        ],
+    },
+}
 const mockPolicies: Policy[] = [mockPolicy, mockPolicy0]
 
 const mockPlacementRule: PlacementRule = {
@@ -272,6 +327,60 @@ describe('PolicySets Page', () => {
         await waitForText('0 Clusters with policy violations')
         // Check policies with violation count
         await waitForText('1 Cluster without policy violations')
+
+        // Find the cluster names iin table
+        await waitForText(mockLocalCluster.metadata.name!)
+
+        // switch to the policies table
+        await clickByText('Policies')
+
+        // find the policy names in table
+        await waitForText(mockPolicy.metadata.name!)
+    })
+})
+
+describe('PolicySets Page with Pending policyset', () => {
+    test('Should render PolicySet page correctly', async () => {
+        const policySet: PolicySet = {
+            apiVersion: 'policy.open-cluster-management.io/v1beta1',
+            kind: 'PolicySet',
+            metadata: {
+                name: 'policy-set-with-1-placement-rule',
+                namespace: 'test',
+            },
+            spec: {
+                description: 'Policy set with a single PlacementRule and PlacementBinding.',
+                policies: ['policy-set-with-1-placement-rule-policy-1'],
+            },
+            status: {
+                compliant: 'Pending',
+                placement: [
+                    {
+                        placementBinding: 'policy-set-with-1-placement-rule',
+                        placementRule: 'policy-set-with-1-placement-rule',
+                    },
+                ],
+            },
+        }
+
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, [mockPolicyPending])
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(placementRulesState, mockPlacementRules)
+                    snapshot.set(placementBindingsState, mockPlacementBindings)
+                    snapshot.set(placementDecisionsState, mockPlacementDecisions)
+                }}
+            >
+                <MemoryRouter>
+                    <PolicySetDetailSidebar policySet={policySet} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // Check policies with violation count
+        await waitForText('1 Cluster with pending policies')
 
         // Find the cluster names iin table
         await waitForText(mockLocalCluster.metadata.name!)

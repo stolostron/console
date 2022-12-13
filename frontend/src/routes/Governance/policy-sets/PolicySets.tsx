@@ -35,6 +35,12 @@ function nonViolationFilterFn(policySet: PolicySet) {
     }
     return policySet.status.compliant === 'Compliant'
 }
+function pendingFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return false
+    }
+    return policySet.status.compliant === 'Pending'
+}
 function unknownStatusFilterFn(policySet: PolicySet) {
     if (!policySet.status) {
         return true
@@ -100,6 +106,7 @@ export default function PolicySetsPage() {
             let filterMatch =
                 violationFilters.includes('violation') ||
                 violationFilters.includes('no-violation') ||
+                violationFilters.includes('pending') ||
                 violationFilters.includes('no-status')
                     ? false
                     : true
@@ -113,6 +120,11 @@ export default function PolicySetsPage() {
                         break
                     case 'no-violation':
                         if (nonViolationFilterFn(policySet)) {
+                            filterMatch = true
+                        }
+                        break
+                    case 'pending':
+                        if (pendingFilterFn(policySet)) {
                             filterMatch = true
                         }
                         break
