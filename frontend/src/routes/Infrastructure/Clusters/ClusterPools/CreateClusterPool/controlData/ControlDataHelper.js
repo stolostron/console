@@ -26,8 +26,8 @@ export const fixupControlsForClusterPool = (controlData, t) => {
     delete map['workerPools'].prompts.addPrompt
     inx = map['workerPools'].controlData.findIndex(({ id }) => id === 'computeNodeCount')
     map['workerPools'].controlData.splice(inx, 1, {
-        name: 'creation.ocp.compute.node.count',
-        tooltip: 'tooltip.creation.ocp.compute.node.count',
+        name: t('creation.ocp.compute.node.count'),
+        tooltip: t('tooltip.creation.ocp.compute.node.count'),
         id: 'computeNodeCount',
         type: 'number',
         initial: '3',
