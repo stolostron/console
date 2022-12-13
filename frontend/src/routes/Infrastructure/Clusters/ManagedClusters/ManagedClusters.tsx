@@ -76,10 +76,6 @@ export default function ManagedClusters() {
         localStorage.getItem(onBoardingModalID) ? localStorage.getItem(onBoardingModalID) === 'show' : true
     )
 
-    const localCluster = useMemo(() => {
-        return clusters.find((cls) => cls.name === 'local-cluster')
-    }, [clusters])
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -117,7 +113,6 @@ export default function ManagedClusters() {
                 <OnboardingModal
                     open={openOnboardingModal}
                     close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)}
-                    hub={localCluster}
                 />
                 <Stack hasGutter={true}>
                     <StackItem>

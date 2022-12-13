@@ -10,12 +10,10 @@ import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from 
 import { NavigationPath } from '../../../../../NavigationPath'
 import './OnboardingModal.css'
 import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
-import { Cluster } from '../../../../../resources'
 
 export interface IOnboardingModalProps {
     close: () => void
     open: boolean
-    hub: Cluster | undefined
 }
 
 export function OnboardingModal(props: IOnboardingModalProps) {
@@ -95,7 +93,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 </GridItem>
                 <GridItem span={9}>
                     <div>
-                        <span style={{ fontSize: '24px' }}>
+                        <span style={{ color: '#393F44', fontSize: '24px' }}>
                             <Trans
                                 i18nKey="Managing clusters <bold>just got easier</bold>"
                                 components={{ bold: <strong /> }}

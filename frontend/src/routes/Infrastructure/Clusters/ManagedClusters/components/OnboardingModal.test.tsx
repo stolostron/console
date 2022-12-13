@@ -9,7 +9,7 @@ describe('OnboardingModal open', () => {
     beforeEach(async () => {
         render(
             <MemoryRouter>
-                <OnboardingModal open={true} close={() => {}} hub={undefined} />
+                <OnboardingModal open={true} close={() => {}} />
             </MemoryRouter>
         )
 
@@ -31,7 +31,7 @@ describe('OnboardingModal closed', () => {
     beforeEach(async () => {
         render(
             <MemoryRouter>
-                <OnboardingModal open={false} close={() => {}} hub={undefined} />
+                <OnboardingModal open={false} close={() => {}} />
             </MemoryRouter>
         )
     })
