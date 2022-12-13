@@ -16,6 +16,7 @@ import {
     onChangeSNO,
     onImageChange,
     proxyControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import {
     getAlphanumericValidator,
@@ -975,6 +976,7 @@ export const getControlDataAWS = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             onChange: updateWorkerZones,
             controlData: [
@@ -995,6 +997,7 @@ export const getControlDataAWS = (
                     type: 'text',
                     active: 'worker',
                     validation: getAlphanumericValidator(t),
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  zone  /////////////////////////////////////
                 {

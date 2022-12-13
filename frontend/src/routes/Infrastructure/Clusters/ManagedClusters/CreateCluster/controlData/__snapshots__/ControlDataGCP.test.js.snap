@@ -274,6 +274,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -811,6 +812,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",
@@ -1342,6 +1344,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -1879,6 +1882,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",
@@ -2430,6 +2434,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -2950,6 +2955,7 @@ Array [
       Object {
         "cacheUserValueKey": "create.cluster.compute.node.count",
         "id": "computeNodeCount",
+        "info": [Function],
         "initial": "3",
         "name": "Node count",
         "tooltip": "The number of nodes in this node pool.",
@@ -2964,9 +2970,9 @@ Array [
     "hidden": [Function],
     "id": "workerPools",
     "prompts": Object {
-      "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",
@@ -3410,6 +3416,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -3947,6 +3954,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",

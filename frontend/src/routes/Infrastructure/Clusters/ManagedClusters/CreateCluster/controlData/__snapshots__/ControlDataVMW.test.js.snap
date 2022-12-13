@@ -249,6 +249,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -328,6 +329,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",
@@ -903,6 +905,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -982,6 +985,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",
@@ -1557,6 +1561,7 @@ Array [
       },
       Object {
         "active": "worker",
+        "disabled": [Function],
         "id": "workerName",
         "name": "Pool name",
         "placeholder": "Enter pool name",
@@ -1636,6 +1641,7 @@ Array [
       "addPrompt": "Add worker pool",
       "baseName": "worker",
       "deletePrompt": "Delete node pool",
+      "disableDeleteForFirst": true,
       "nameId": "workerName",
     },
     "type": "group",

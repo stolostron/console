@@ -24,7 +24,7 @@ class ControlPanelTextArea extends React.Component {
     }
 
     render() {
-        const { controlId, i18n, control } = this.props
+        const { controlId, i18n, control, controlData } = this.props
         const { name, type, exception, disabled } = control
 
         // if placeholder missing, create one
@@ -46,7 +46,12 @@ class ControlPanelTextArea extends React.Component {
                     style={{ display: '' }}
                     ref={this.setControlRef.bind(this, control)}
                 >
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <TextArea
                             id={controlId}
                             isDisabled={disabled}

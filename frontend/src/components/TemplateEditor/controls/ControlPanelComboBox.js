@@ -123,7 +123,7 @@ class ControlPanelComboBox extends React.Component {
 
     render() {
         const { isOpen, searchText, sortToTop } = this.state
-        const { controlId, i18n, control } = this.props
+        const { controlId, i18n, control, controlData } = this.props
         const {
             name,
             userData = [],
@@ -188,7 +188,12 @@ class ControlPanelComboBox extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-combobox">
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         {isLoading || isRefetching ? (
                             <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
                                 <Spinner size="md" />

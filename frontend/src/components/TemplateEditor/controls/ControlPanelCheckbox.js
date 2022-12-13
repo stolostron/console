@@ -24,7 +24,7 @@ class ControlPanelCheckbox extends React.Component {
     }
 
     render() {
-        const { controlId, control, handleChange, i18n } = this.props
+        const { controlId, control, controlData, handleChange, i18n } = this.props
         const { name, active, type, tip, disabled = false } = control
 
         const onChange = () => {
@@ -49,7 +49,13 @@ class ControlPanelCheckbox extends React.Component {
                             onChange={onChange}
                             data-testid={`checkbox-${controlId}`}
                         />
-                        <ControlPanelFormGroup i18n={i18n} controlId={controlId} showTip={false} control={control} />
+                        <ControlPanelFormGroup
+                            i18n={i18n}
+                            controlId={controlId}
+                            control={control}
+                            controlData={controlData}
+                            showTip={false}
+                        />
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 'normal' }}>{tip}</div>
                 </div>

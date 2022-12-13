@@ -22,7 +22,7 @@ class ControlPanelValues extends React.Component {
     }
 
     render() {
-        const { controlId, control, i18n } = this.props
+        const { controlId, control, controlData, i18n } = this.props
         const { active = [], exception, placeholder, disabled } = control
         const formatted = active.filter((value) => value.length > 0)
         const { value } = this.state
@@ -30,7 +30,12 @@ class ControlPanelValues extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-labels">
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <div className="creation-view-controls-labels-container">
                             {formatted.length !== 0 && (
                                 <div className="creation-view-controls-labels-tag-container">

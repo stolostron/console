@@ -2476,6 +2476,7 @@
     "Templates": "Templates",
     "Tenant ID": "Tenant ID",
     "The cluster name is already used by another cluster.": "The cluster name is already used by another cluster.",
+    "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.": "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.",
     "The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters": "The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters",
     "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.": "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.",
     "The existing namespace where the credential secret will be stored.": "The existing namespace where the credential secret will be stored.",

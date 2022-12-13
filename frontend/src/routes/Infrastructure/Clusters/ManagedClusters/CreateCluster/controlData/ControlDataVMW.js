@@ -19,6 +19,7 @@ import {
     onImageChange,
     networkingControlData,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -197,6 +198,7 @@ export const getControlDataVMW = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {
@@ -220,6 +222,7 @@ export const getControlDataVMW = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  coresPerSocket  /////////////////////////////////////
                 {

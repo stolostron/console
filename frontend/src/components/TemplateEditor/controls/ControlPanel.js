@@ -283,10 +283,16 @@ class ControlPanel extends React.Component {
                             /* eslint-disable-next-line react/no-array-index-key */
                             <React.Fragment key={`${controlData[0].id}Group${inx}`}>
                                 <div className="creation-view-group-container" key={groupType}>
-                                    {prompts && active.length > 1 && this.renderDeleteGroupButton(control, inx)}
+                                    {prompts &&
+                                        ((prompts.disableDeleteForFirst && inx > 0) ||
+                                            (!prompts.disableDeleteForFirst && active.length > 1)) &&
+                                        this.renderDeleteGroupButton(control, inx)}
                                     {this.renderGroupControlSections(controlData, inx, groupId)}
                                 </div>
-                                {prompts && active.length - 1 === inx && this.renderAddGroupButton(control)}
+                                {prompts &&
+                                    prompts.addPrompt &&
+                                    active.length - 1 === inx &&
+                                    this.renderAddGroupButton(control)}
                             </React.Fragment>
                         )
                     })}
@@ -309,8 +315,8 @@ class ControlPanel extends React.Component {
                 stopRenderingOnNextControl = !control.active
             }
             if (!stopRendering) {
+                control.grpNum = grpNum
                 if (type === 'section') {
-                    control.grpNum = grpNum
                     content = []
                     section = { title: control, content }
                     controlSections.push(section)
@@ -437,6 +443,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -447,6 +454,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -457,6 +465,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -467,6 +476,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -488,6 +498,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -498,6 +509,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -508,6 +520,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         showEditor={showEditor}
                         handleChange={this.handleCardChange.bind(this, control)}
                         i18n={i18n}
@@ -520,6 +533,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleControlChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -530,6 +544,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleControlChange.bind(this, control)}
                         i18n={i18n}
                     />
@@ -541,6 +556,7 @@ class ControlPanel extends React.Component {
                         key={controlId}
                         controlId={controlId}
                         control={control}
+                        controlData={controlData}
                         handleChange={this.handleChange.bind(this, control)}
                         i18n={i18n}
                     />

@@ -15,6 +15,7 @@ import {
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -215,6 +216,7 @@ export const getControlDataRHV = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {
@@ -238,6 +240,7 @@ export const getControlDataRHV = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  cores  /////////////////////////////////////
                 {
