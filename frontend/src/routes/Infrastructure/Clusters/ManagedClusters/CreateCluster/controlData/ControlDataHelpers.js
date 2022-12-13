@@ -445,7 +445,7 @@ export const networkingControlData = (t) => {
             type: 'group',
             prompts: {
                 addPrompt: t('creation.ocp.cluster.add.network'),
-                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                deletePrompt: t('creation.ocp.cluster.delete.network'),
             },
             controlData: [
                 {
