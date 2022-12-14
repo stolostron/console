@@ -21,7 +21,35 @@
                     "type": "object",
                     "properties": {
                         "disabled": { "type": "boolean" },
-                        "remediationAction": { "enum": ["inform", "enforce"] }
+                        "remediationAction": { "enum": ["inform", "enforce"] },
+                        "dependencies": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "compliance": { "enum": ["Compliant", "NonCompliant", "Pending"] }
+                                },
+                                "validateDep": true
+                            }
+                        },
+                        "policy-templates": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "extraDependencies": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "compliance": { "enum": ["Compliant", "NonCompliant", "Pending"] }
+                                            },
+                                            "validateDep": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "required": ["disabled"]
                 }

@@ -25,6 +25,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
     immutables?: (string | string[])[]
     syncs?: unknown
     readonly?: boolean
+    mock?: boolean
     onClose?: () => void
     onStatusChange?: (editorState: any) => void
     onEditorChange?: (editorResources: any) => void
@@ -42,6 +43,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         syncs,
         filters,
         readonly,
+        mock,
         onStatusChange,
         onEditorChange,
         onClose,
@@ -49,6 +51,24 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const pageRef = useRef<HTMLDivElement>(null)
     const editorRef = useRef<any | null>(null)
     const monacoRef = useRef<any | null>(null)
+    if (mock) {
+        if (!monacoRef.current) {
+            monacoRef.current = {
+                editor: {
+                    setTheme: () => {},
+                },
+                languages: {
+                    registerHoverProvider: () => {},
+                },
+            }
+            editorRef.current = {
+                getModel: () => {},
+                onMouseDown: () => {},
+                onKeyDown: () => {},
+                onDidBlurEditorWidget: () => {},
+            }
+        }
+    }
     const editorHadFocus = useRef(false)
     const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
     const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
@@ -166,8 +186,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
     // prevent editor from flashing when typing in form
     useEffect(() => {
-        const model = editorRef.current?.getModel()
-        model.onDidChangeContent(() => {
+        const model = editorRef.current.getModel()
+        model?.onDidChangeContent(() => {
             model?.forceTokenization(model?.getLineCount())
         })
     }, [])

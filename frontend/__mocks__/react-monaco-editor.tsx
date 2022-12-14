@@ -12,7 +12,10 @@ let mockEditor: {
     focus: () => void
     trigger: () => void
     onKeyDown: () => void
+    onMouseDown: () => void
+    onDidBlurEditorWidget: () => void
     changeViewZones: () => void
+    addCommand: () => void
     getSelection: () => void
     setSelection: () => void
     setSelections: () => void
@@ -30,7 +33,13 @@ let mockEditor: {
         ) => { range: { startColumn: number; startLineNumber: number; endColumn: number; endLineNumber: number } }[]
     }
 }
-let mockMonaco: { editor: { setModelLanguage: () => void }; Range: Range }
+let mockMonaco: {
+    editor: { setModelLanguage: () => void; defineTheme: () => void; setTheme: () => void }
+    languages: { registerHoverProvider: () => void }
+    KeyMod: any
+    KeyCode: any
+    Range: Range
+}
 let mockChangeModelCallback: () => void
 
 const MonacoEditor = (props: {
@@ -42,6 +51,8 @@ const MonacoEditor = (props: {
             focus: () => void
             trigger: () => void
             onKeyDown: () => void
+            onMouseDown: () => void
+            onDidBlurEditorWidget: () => void
             changeViewZones: () => void
             getSelection: () => void
             setSelection: () => void
@@ -71,6 +82,7 @@ const MonacoEditor = (props: {
             getFullModelRange: () => {},
             canUndo: () => true,
             canRedo: () => true,
+            onDidChangeContent: () => {},
             findMatches: (find: string) => {
                 return find === 'that'
                     ? [
@@ -85,6 +97,9 @@ const MonacoEditor = (props: {
             focus: () => {},
             trigger: () => {},
             onKeyDown: () => {},
+            onMouseDown: () => {},
+            onDidBlurEditorWidget: () => {},
+            addCommand: () => {},
             changeViewZones: () => {},
             getSelection: () => {},
             setSelection: () => {},
@@ -97,7 +112,10 @@ const MonacoEditor = (props: {
             getModel: () => model,
         }
         mockMonaco = {
-            editor: { setModelLanguage: () => {} },
+            editor: { setModelLanguage: () => {}, defineTheme: () => {}, setTheme: () => {} },
+            languages: { registerHoverProvider: () => {} },
+            KeyMod: {},
+            KeyCode: {},
             Range: Range,
         }
         props.editorDidMount(mockEditor, mockMonaco)
