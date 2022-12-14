@@ -76,7 +76,7 @@ type NodePoolsProgressProps = {
     clusterImages: ClusterImageSetK8sResource[]
 }
 
-const NodePoolsProgress = ({ nodePools, clusterImages, ...rest }: NodePoolsProgressProps) => {
+const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     const { t } = useTranslation()
     const [isExpanded, setExpanded] = useState(true)
     const { hostedCluster } = useContext(ClusterContext)
@@ -100,8 +100,8 @@ const NodePoolsProgress = ({ nodePools, clusterImages, ...rest }: NodePoolsProgr
                 open={openAddNodepoolModal}
                 close={toggleAddNodepoolModal}
                 hostedCluster={hostedCluster!}
-                refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
-                clusterImages={clusterImages}
+                refNodepool={nodePools && nodePools.length > 0 ? (nodePools[0] as NodePool) : undefined}
+                clusterImages={rest.clusterImages}
             />
             <Stack hasGutter>
                 <StackItem>
