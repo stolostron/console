@@ -16,7 +16,6 @@ import {
     PageSection,
     Pagination,
     PaginationVariant,
-    PaginationTitles,
     PerPageOptions,
     SearchInput,
     Select,
@@ -75,6 +74,7 @@ import {
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { useTranslation } from '../../lib/acm-i18next'
+import { usePaginationTitles } from '../../lib/paginationStrings'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -977,20 +977,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const showToolbar = props.showToolbar !== false ? hasItems : false
     const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
-    const paginationTitles: PaginationTitles = {
-        currPage: t('current page'),
-        items: t('items'),
-        itemsPerPage: t('items per page'),
-        ofWord: t('of'),
-        page: t('page'),
-        pages: t('pages'),
-        paginationTitle: t('pagination'),
-        perPageSuffix: t('per page'),
-        toFirstPage: t('to first page'),
-        toLastPage: t('to last page'),
-        toNextPage: t('to next page'),
-        toPreviousPage: t('to previous page'),
-    }
+    const translatedPaginationTitles = usePaginationTitles()
 
     return (
         <Fragment>
@@ -1089,7 +1076,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                         {(!props.autoHidePagination || filtered.length > perPage) && (
                             <ToolbarItem variant="pagination">
                                 <Pagination
-                                    titles={paginationTitles}
+                                    titles={translatedPaginationTitles}
                                     itemCount={itemCount}
                                     perPage={perPage}
                                     page={page}
@@ -1195,7 +1182,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     )}
                     {(!props.autoHidePagination || filtered.length > perPage) && (
                         <Pagination
-                            titles={paginationTitles}
+                            titles={translatedPaginationTitles}
                             itemCount={itemCount}
                             perPage={perPage}
                             page={page}
