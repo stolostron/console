@@ -739,6 +739,7 @@ describe('DistributionField hypershift clusters', () => {
                     clusterCurator={clusterCurator}
                     nodepool={nodepool}
                     hostedCluster={hostedCluster}
+                    resource={'managedclusterpage'}
                 />
             </RecoilRoot>
         )
@@ -803,63 +804,6 @@ describe('DistributionField hypershift clusters', () => {
             undefined,
             undefined,
             undefined
-        )
-        expect(queryAllByText('Upgrade available').length).toBe(1)
-    })
-
-    it('should render distribution info for hypershift, only nodepool has updates', async () => {
-        const mockCluster: Cluster = {
-            name: 'hypershift-cluster1',
-            displayName: 'hypershift-cluster1',
-            namespace: 'clusters',
-            uid: 'hypershift-cluster1-uid',
-            provider: undefined,
-            status: ClusterStatus.ready,
-            distribution: {
-                ocp: {
-                    version: '4.11.12',
-                    availableUpdates: [],
-                    desiredVersion: '4.11.12',
-                    upgradeFailed: false,
-                },
-                isManagedOpenShift: false,
-            },
-            labels: { abc: '123' },
-            nodes: undefined,
-            kubeApiServer: '',
-            consoleURL: '',
-            hive: {
-                isHibernatable: true,
-                clusterPool: undefined,
-                secrets: {
-                    installConfig: '',
-                },
-            },
-            hypershift: {
-                agent: false,
-                hostingNamespace: 'clusters',
-                nodePools: mockNodepools,
-                secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
-            },
-            isHive: false,
-            isManaged: true,
-            isCurator: true,
-            isHostedCluster: true,
-            isHypershift: true,
-            isSNOCluster: false,
-            owner: {},
-            kubeadmin: '',
-            kubeconfig: '',
-            isRegionalHubCluster: false,
-        }
-        const { queryAllByText } = await renderDistributionInfoField(
-            mockCluster,
-            true,
-            false,
-            undefined,
-            undefined,
-            undefined,
-            false
         )
         expect(queryAllByText('Upgrade available').length).toBe(1)
     })
