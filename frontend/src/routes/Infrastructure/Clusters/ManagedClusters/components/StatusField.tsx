@@ -11,6 +11,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 const { LogsDownloadButton } = CIM
 
@@ -149,6 +150,21 @@ export function StatusField(props: { cluster: Cluster }) {
                         variant={ButtonVariant.link}
                     />
                 )
+            } else if (props.cluster.isHypershift) {
+                const url = `k8s/ns/${props.cluster.hypershift?.hostingNamespace}-${props.cluster.name}/pods`
+                Action = () => (
+                    <AcmButton
+                        style={{ padding: 0, fontSize: 'inherit' }}
+                        key={props.cluster.name}
+                        onClick={() => launchToOCP(url, true, () => window.open(`${window.location.origin}/${url}`))}
+                        variant="link"
+                        role="link"
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                    >
+                        {t('view.logs')}
+                    </AcmButton>
+                )
             } else {
                 Action = () => (
                     <AcmButton
@@ -189,7 +205,11 @@ export function StatusField(props: { cluster: Cluster }) {
             if (!location.pathname.endsWith('/overview')) {
                 hasAction = true
                 Action = () => (
-                    <Link to={`${NavigationPath.clusterOverview.replace(':id', props.cluster?.name!)}`}>
+                    <Link
+                        to={`${NavigationPath.clusterOverview
+                            .replace(':namespace', props.cluster?.namespace!)
+                            .replace(':name', props.cluster?.name!)}`}
+                    >
                         {t('Go to Overview')}
                     </Link>
                 )

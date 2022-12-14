@@ -1,26 +1,30 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-
 import { getControlDataAZR } from './ControlDataAZR'
+import { getControlDataAZR as getControlDataAZRClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataAZR'
+import { fixupControlsForClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataHelper'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
+const handleModalToggle = jest.fn()
 
-describe('getControlDataAZR', () => {
-    it('get control data for Azure - default', () => {
-        getControlDataAZR(t, undefined, true, true, false)
+describe('Cluster creation control data for AZR', () => {
+    it('generates correctly', () => {
+        expect(getControlDataAZR(t, handleModalToggle, true, true, false)).toMatchSnapshot()
     })
 
-    it('get control data for Azure - no automation', () => {
-        getControlDataAZR(t, undefined, false, true, false)
+    it('generates correctly with SNO enabled', () => {
+        expect(getControlDataAZR(t, handleModalToggle, true, true, true)).toMatchSnapshot()
     })
 
-    it('get control data for Azure - include sno cluster', () => {
-        getControlDataAZR(t, undefined, true, true, true)
+    it('generates correctly for MCE', () => {
+        expect(getControlDataAZR(t, handleModalToggle, true, false, false)).toMatchSnapshot()
     })
 
-    it('get control data for Azure - no klusterletaddon', () => {
-        getControlDataAZR(t, undefined, true, false, true)
+    it('generates correctly for cluster pools', () => {
+        expect(
+            fixupControlsForClusterPool(getControlDataAZRClusterPool(t, handleModalToggle, false, false), t)
+        ).toMatchSnapshot()
     })
 })

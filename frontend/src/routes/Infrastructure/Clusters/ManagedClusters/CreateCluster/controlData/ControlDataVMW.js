@@ -17,7 +17,9 @@ import {
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     onImageChange,
+    networkingControlData,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -196,6 +198,7 @@ export const getControlDataVMW = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {
@@ -219,6 +222,7 @@ export const getControlDataVMW = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  coresPerSocket  /////////////////////////////////////
                 {
@@ -282,6 +286,9 @@ export const getControlDataVMW = (
             placeholder: t('creation.ocp.cluster.vmw.network.type'),
             type: 'text',
             active: '',
+            validation: {
+                required: true,
+            },
         },
         {
             id: 'apiVIP',
@@ -290,7 +297,10 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.api.vip'),
             placeholder: t('creation.ocp.api.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['ingressVIP'],
+            }),
         },
         {
             id: 'ingressVIP',
@@ -299,8 +309,12 @@ export const getControlDataVMW = (
             tooltip: t('tooltip.creation.ocp.ingress.vip'),
             placeholder: t('creation.ocp.ingress.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['apiVIP'],
+            }),
         },
+        ...networkingControlData(t),
         ...proxyControlData(t),
         ///////////////////////  openstack  /////////////////////////////////////
         {

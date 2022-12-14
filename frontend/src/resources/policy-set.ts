@@ -40,7 +40,7 @@ export interface PolicySetSpec {
 }
 
 export interface PolicySetStatus {
-    compliant?: 'NonCompliant' | 'Compliant'
+    compliant?: 'NonCompliant' | 'Compliant' | 'Pending'
     placement?: PolicySetStatusPlacement[]
     statusMessage?: string
 }

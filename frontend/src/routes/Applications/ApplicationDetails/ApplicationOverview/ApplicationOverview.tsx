@@ -165,8 +165,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         if (isOCPApp || isFluxApp) {
             const cluster = applicationData.application?.app.cluster.name
             leftItems = [
-                { key: 'Name', value: name },
-                { key: 'Namespace', value: namespace },
+                { key: t('Name'), value: name },
+                { key: t('Namespace'), value: namespace },
             ]
             rightItems = [
                 {
@@ -262,7 +262,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                 },
                 {
-                    key: t('Repository Resource'),
+                    key: t('Repository resource'),
                     value: (
                         <ResourceLabels
                             appRepos={appRepos as any[]}
@@ -290,8 +290,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 }
             })
             leftItems = [
-                { key: 'Name', value: name },
-                { key: 'Namespace', value: namespace },
+                { key: t('Name'), value: name },
+                { key: t('Namespace'), value: namespace },
                 {
                     key: t('Created'),
                     value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
@@ -326,7 +326,9 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         </Fragment>
                     ),
                     keyAction: (
-                        <Tooltip content={'Date and time of the most recent sync request for application resources.'}>
+                        <Tooltip
+                            content={t('Date and time of the most recent sync request for application resources.')}
+                        >
                             <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
@@ -385,7 +387,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                             >
                                 {renderData(
                                     subsList,
-                                    (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
+                                    (showSubCards ? t('Hide subscription details') : t('Show subscription details')) +
                                         ` (${subsList?.length})`,
                                     '70%'
                                 )}
@@ -581,14 +583,14 @@ function createSubsCards(
                             <div className="sub-card-column add-right-border">
                                 <GripHorizontalIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Subscription</div>
+                                    <div className="sub-card-title">{t('Subscription')}</div>
                                     <span>{sub.metadata.name}</span>
                                 </div>
                             </div>
                             <div className="sub-card-column add-right-border">
                                 <FolderIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Repository resource</div>
+                                    <div className="sub-card-title">{t('Repository resource')}</div>
                                     <ResourceLabels
                                         appRepos={appRepos as any[]}
                                         translation={t}
@@ -600,7 +602,7 @@ function createSubsCards(
                             <div className="sub-card-column">
                                 <OutlinedClockIcon />
                                 <div className="sub-card-content">
-                                    <div className="sub-card-title">Time window</div>
+                                    <div className="sub-card-title">{t('Time window')}</div>
                                     {!sub.spec.timewindow?.windowtype ? (
                                         <AcmButton
                                             id="set-time-window-link"
@@ -612,7 +614,7 @@ function createSubsCards(
                                             variant={ButtonVariant.link}
                                             rel="noreferrer"
                                         >
-                                            Set time window
+                                            {t('Set time window')}
                                         </AcmButton>
                                     ) : (
                                         <TimeWindowLabels

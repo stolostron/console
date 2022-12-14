@@ -33,7 +33,7 @@ export function CreateAWSControlPlane() {
                     },
                     {
                         type: CatalogCardItemType.List,
-                        title: t('Features'),
+                        title: t(''),
                         icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
                         items: [
                             {
@@ -69,7 +69,7 @@ export function CreateAWSControlPlane() {
                     },
                     {
                         type: CatalogCardItemType.List,
-                        title: t('Features'),
+                        title: t(''),
                         icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
                         items: [
                             {
@@ -81,8 +81,6 @@ export function CreateAWSControlPlane() {
                     },
                 ],
                 onClick: nextStep(getTypedCreateClusterPath(Provider.aws)),
-                badge: t('Classic'),
-                badgeColor: CatalogColor.purple,
             },
         ]
         return newCards
@@ -102,7 +100,7 @@ export function CreateAWSControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control plane type')}
+                title={t('Control plane type{{hcType}}', { hcType: ' - AWS' })}
                 description={t('Choose a control plane type for your cluster.')}
                 breadcrumbs={breadcrumbs}
             />

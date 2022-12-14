@@ -86,14 +86,14 @@ class TreeLayout extends ColaLayout {
             node.setFixed(true)
         })
 
-        graph.fit(80)
+        graph.fit(160)
     }
 
-    // protected startColaLayout(initialRun: boolean, addingNodes: boolean): void {
-    //     if (this.treeOptions.useCola) {
-    //         //super.startColaLayout(initialRun, addingNodes)
-    //     }
-    // }
+    protected startLayout(graph: Graph, initialRun: boolean, addingNodes: boolean): void {
+        if (this.treeOptions.useCola) {
+            super.startLayout(graph, initialRun, addingNodes)
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -248,7 +248,9 @@ function sortConnectedGroupsIntoRows(metrics: MetricsType, options: TreeLayoutOp
         let groupIds = Object.keys(nodeMap)
         let lastRow: RowType = { row: [...roots] }
         let unchunkedLastRow
+        let row = 0
         do {
+            row = row + 1
             const newRow: RowType = {
                 row: [],
                 incomingRow: lastRow,
@@ -295,6 +297,7 @@ function sortConnectedGroupsIntoRows(metrics: MetricsType, options: TreeLayoutOp
                 }
             } else {
                 lastRow = newRow
+                unchunkedLastRow = undefined
             }
 
             groupIds = groupIds.filter((id) => !set.has(id))
@@ -307,7 +310,7 @@ function sortConnectedGroupsIntoRows(metrics: MetricsType, options: TreeLayoutOp
                     })
                 })
             }
-        } while (groupIds.length)
+        } while (groupIds.length && row < 10)
     })
 }
 // group nodes that have or don't have children--we want to center them in the group

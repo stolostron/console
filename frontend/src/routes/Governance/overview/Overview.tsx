@@ -35,7 +35,7 @@ export default function GovernanceOverview() {
             </PageSection>
         )
     }
-    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
         return (
             <PageSection isFilled>
                 <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
@@ -62,6 +62,7 @@ export interface SecurityGroupViolations {
     name: string
     compliant: number
     noncompliant: number
+    pending: number
 }
 
 function useSecurityGroupViolations(group: string, policies: Policy[]) {
@@ -75,7 +76,7 @@ function useSecurityGroupViolations(group: string, policies: Policy[]) {
             for (const name of names) {
                 let v = clusterViolations[name]
                 if (!v) {
-                    v = { name, compliant: 0, noncompliant: 0 }
+                    v = { name, compliant: 0, noncompliant: 0, pending: 0 }
                     clusterViolations[name] = v
                 }
                 switch (policy.status?.compliant) {
@@ -84,6 +85,9 @@ function useSecurityGroupViolations(group: string, policies: Policy[]) {
                         break
                     case 'NonCompliant':
                         v.noncompliant++
+                        break
+                    case 'Pending':
+                        v.pending++
                         break
                 }
             }
@@ -128,9 +132,10 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
             <Card isRounded>
                 <CardTitle>{props.title}</CardTitle>
                 <CardBody>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
                         {violations.map((violation) => {
-                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
+                            if (!(violation.compliant || violation.noncompliant || violation.pending))
+                                return <Fragment />
                             return (
                                 <Fragment key={`${props.title}-${violation.name}`}>
                                     <span>{violation.name}</span>
@@ -166,6 +171,25 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                                     </Button>{' '}
                                                     &nbsp;
                                                     <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    {violation.pending ? (
+                                        <Tooltip content={t('policies.pending', { count: violation.pending })}>
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    <Button
+                                                        isInline
+                                                        variant={ButtonVariant.link}
+                                                        onClick={() => onClick(violation, props.group, 'pending')}
+                                                    >
+                                                        {violation.pending}
+                                                    </Button>{' '}
+                                                    &nbsp;
+                                                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
                                                 </span>
                                             </Fragment>
                                         </Tooltip>

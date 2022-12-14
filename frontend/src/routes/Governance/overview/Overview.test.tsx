@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
 import GovernanceOverview from './Overview'
-import { mockEmptyPolicy, mockPolicyNoStatus, mockPolicy } from '../governance.sharedMocks'
+import { mockEmptyPolicy, mockPolicyNoStatus, mockPolicy, mockPendingPolicy } from '../governance.sharedMocks'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 describe('Overview Page', () => {
@@ -53,6 +53,22 @@ describe('Overview Page', () => {
             </RecoilRoot>
         )
 
-        expect(screen.getByText(/[0-9]+ pending/i)).toBeTruthy()
+        expect(screen.getByText(/[1-9]+ without violations/i)).toBeTruthy()
+    })
+
+    test('Should render Overview page correctly with pending policies', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(policiesState, mockPendingPolicy)
+                }}
+            >
+                <MemoryRouter>
+                    <GovernanceOverview />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        expect(screen.getByText(/[1-9]+ pending/i)).toBeTruthy()
     })
 })

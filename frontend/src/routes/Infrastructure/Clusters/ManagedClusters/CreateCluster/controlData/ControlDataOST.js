@@ -1,14 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    getNumericValidator,
-    getIPValidator,
-    getOptionalIPValidator,
-    getURLValidator,
-} from '../../../../../../components/TemplateEditor'
+import { getNumericValidator, getIPValidator, getURLValidator } from '../../../../../../components/TemplateEditor'
 import {
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
@@ -179,6 +175,7 @@ export const getControlDataOST = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {
@@ -202,6 +199,7 @@ export const getControlDataOST = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  instance type  /////////////////////////////////////
                 {
@@ -259,7 +257,7 @@ export const getControlDataOST = (
                 }
             },
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({ differentFrom: ['ingressFloatingIP'] }),
         },
         {
             id: 'apiFloatingIP',
@@ -274,7 +272,7 @@ export const getControlDataOST = (
                 }
             },
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({ differentFrom: ['ingressFloatingIP'] }),
         },
         {
             id: 'ingressFloatingIP',
@@ -283,7 +281,7 @@ export const getControlDataOST = (
             placeholder: t('placeholder.creation.ocp.cluster.ost.ingress.floating.ip'),
             tooltip: t('tooltip.creation.ocp.cluster.ost.ingress.floating.ip'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({ differentFrom: ['lbFloatingIP', 'apiFloatingIP'] }),
         },
         {
             id: 'externalDNS',
@@ -292,7 +290,7 @@ export const getControlDataOST = (
             placeholder: t('placeholder.creation.ocp.cluster.ost.external.dns'),
             tooltip: t('tooltip.creation.ocp.cluster.ost.external.dns'),
             active: [],
-            validation: getOptionalIPValidator(t),
+            validation: getIPValidator({ optional: true }),
         },
         ...getOSTNetworkingControlData(t),
         ...proxyControlData(t),

@@ -6,6 +6,7 @@ import { AcmButton } from '../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 export interface ITimeWindowLabelsProps {
     subName: string
@@ -17,7 +18,8 @@ export interface ITimeWindowLabelsProps {
 }
 
 export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
-    const notSelectedLabel = 'Not selected'
+    const { t } = useTranslation()
+    const notSelectedLabel = t('Not selected')
 
     const { subName, type, days, timezone, ranges, missingData } = props
 
@@ -44,17 +46,17 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
                 <div className="timeWindow-labels-popover-content">
                     {missingData ? (
                         <div className="timeWindow-content">
-                            'Go to the Editor tab to view time window information.'
+                            {t('Go to the Editor tab to view time window information.')}
                         </div>
                     ) : (
                         <Fragment>
-                            <div className="timeWindow-title">Days of the week</div>
+                            <div className="timeWindow-title">{t('Days of the week')}</div>
                             <div className="timeWindow-content">{days ? days.join(', ') : notSelectedLabel}</div>
 
-                            <div className="timeWindow-title">Time zone</div>
+                            <div className="timeWindow-title">{t('Time zone')}</div>
                             <div className="timeWindow-content">{timezone ? timezone : notSelectedLabel}</div>
 
-                            <div className="timeWindow-title">Time range</div>
+                            <div className="timeWindow-title">{t('Time range')}</div>
                             <div className="timeWindow-content">
                                 {ranges ? createTimeRanges(ranges) : notSelectedLabel}
                             </div>
@@ -70,7 +72,7 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
                         icon={<PencilAltIcon />}
                         iconPosition="right"
                     >
-                        Edit time window
+                        {t('Edit time window')}
                     </AcmButton>
                 </div>
             </LabelWithPopover>

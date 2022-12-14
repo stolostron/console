@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 
 import '@patternfly/react-core/dist/styles/base.css'
+import '@patternfly/patternfly/patternfly-charts.css'
 import { Fragment, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import 'regenerator-runtime/runtime'

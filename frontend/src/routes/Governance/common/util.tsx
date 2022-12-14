@@ -211,7 +211,7 @@ export function getClustersComplianceForPolicySet(
         placements
     )
     const policySetPolicies = getPolicySetPolicies(policies, policySet)
-    const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant' | 'Unknown'> = {}
+    const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant' | 'Pending' | 'Unknown'> = {}
     for (const placementDecision of policySetPlacementDecisions) {
         for (const decision of placementDecision.status.decisions) {
             if (clustersCompliance[decision.clusterName] === 'NonCompliant') {
@@ -231,6 +231,12 @@ export function getClustersComplianceForPolicySet(
                     clustersCompliance[decision.clusterName] !== 'NonCompliant'
                 ) {
                     clustersCompliance[decision.clusterName] = 'Unknown'
+                } else if (
+                    policyClusterStatus?.compliant === 'Pending' &&
+                    clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
+                    clustersCompliance[decision.clusterName] !== 'Unknown'
+                ) {
+                    clustersCompliance[decision.clusterName] = 'Pending'
                 } else if (
                     policyClusterStatus?.compliant === 'Compliant' &&
                     clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
@@ -260,6 +266,7 @@ export function getClustersSummaryForPolicySet(
     )
     const compliant: string[] = []
     const nonCompliant: string[] = []
+    const pending: string[] = []
     const unknown: string[] = []
     for (const clusterName in clustersCompliance) {
         switch (clustersCompliance[clusterName]) {
@@ -269,13 +276,16 @@ export function getClustersSummaryForPolicySet(
             case 'NonCompliant':
                 nonCompliant.push(clusterName)
                 break
+            case 'Pending':
+                pending.push(clusterName)
+                break
             case 'Unknown':
                 unknown.push(clusterName)
                 break
         }
     }
 
-    return { compliant, nonCompliant, unknown }
+    return { compliant, nonCompliant, pending, unknown }
 }
 
 export function resolveExternalStatus(policy: Policy) {

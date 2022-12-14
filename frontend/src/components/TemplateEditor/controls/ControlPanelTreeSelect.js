@@ -204,7 +204,7 @@ class ControlPanelTreeSelect extends React.Component {
     }
 
     render() {
-        const { controlId, control, i18n } = this.props
+        const { controlId, control, controlData, i18n } = this.props
         const { name, availableMap = {}, exception, disabled } = control
         const { isOpen, active, currentAvailable, indexes, searchText } = this.state
         const currentActive = availableMap[active] ? `${active} - ${availableMap[active]}` : active
@@ -229,7 +229,12 @@ class ControlPanelTreeSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-treeselect">
-                    <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <div id={controlId}>
                             <div
                                 role="listbox"

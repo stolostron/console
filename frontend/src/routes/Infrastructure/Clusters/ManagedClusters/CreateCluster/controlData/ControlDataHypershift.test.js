@@ -7,13 +7,13 @@ import { getControlDataHypershift } from './ControlDataHypershift'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
+const handleModalToggle = jest.fn()
 
-describe('getControlDataHypershift', () => {
-    it('get control data for Hypershift - default', () => {
-        getControlDataHypershift(t, undefined, undefined, true, true)
+describe('Cluster creation control data for Hypershift', () => {
+    it('generates correctly', () => {
+        expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, true)).toMatchSnapshot()
     })
-
-    it('get control data for RHV - no klusterletaddon', () => {
-        getControlDataHypershift(t, undefined, <Warning />, true, false)
+    it('generates correctly for MCE', () => {
+        expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, false)).toMatchSnapshot()
     })
 })

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card } from '@patternfly/react-core'
-import { AcmDonutChart } from '../../../ui-components'
+import { AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -84,6 +84,11 @@ export function ViolationsCard(props: {
                                 : undefined,
                     },
                     {
+                        key: 'pending',
+                        value: props.pending,
+                        link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
+                    },
+                    {
                         key: 'without violations',
                         value: props.compliant,
                         link:
@@ -91,17 +96,8 @@ export function ViolationsCard(props: {
                                 ? `${NavigationPath.policies}?violations=without-violations`
                                 : undefined,
                     },
-                    {
-                        key: 'pending',
-                        value: props.pending,
-                        link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
-                    },
                 ]}
-                colorScale={[
-                    'var(--pf-global--danger-color--100)',
-                    'var(--pf-global--success-color--100)',
-                    'var(--pf-global--warning-color--100)',
-                ]}
+                colorScale={colorThemes.criticalImportantSuccess}
             />
         </Card>
     )

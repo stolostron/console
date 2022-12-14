@@ -357,6 +357,7 @@ export function ClustersTable(props: {
                         open: true,
                         title: t('bulk.title.detach'),
                         action: t('detach'),
+                        plural: t('detachable clusters'),
                         processing: t('detaching'),
                         resources: clusters.filter((cluster) => !cluster.isHostedCluster),
                         description: t('bulk.message.detach'),
@@ -381,6 +382,7 @@ export function ClustersTable(props: {
                         title: t('bulk.title.destroy'),
                         action: t('destroy'),
                         processing: t('destroying'),
+                        plural: t('destroyable clusters'),
                         resources: clusters.filter((cluster) => !cluster.isHostedCluster),
                         description: t('bulk.message.destroy'),
                         columns: modalColumns,
@@ -498,6 +500,9 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     const { t } = useTranslation()
     return {
         header: t('table.namespace'),
+        tooltip: t(
+            'Standalone clusters will display the namespace used by the ManagedCluster resource. Hosted clusters will display the hosting namespace when the status is "Pending import" and the ManagedCluster namespace when the status is "Ready".'
+        ),
         sort: 'namespace',
         cell: (cluster) => cluster.namespace || '-',
     }

@@ -45,7 +45,7 @@ export const ProviderShortTextMap = {
     [Provider.hypershift]: 'Hypershift',
     [Provider.alibaba]: 'Alibaba',
     [Provider.other]: 'Other',
-    [Provider.kubevirt]: 'KubeVirt',
+    [Provider.kubevirt]: 'OpenShift Virtualization',
 }
 
 export const ProviderLongTextMap = {
@@ -66,7 +66,7 @@ export const ProviderLongTextMap = {
     [Provider.hypershift]: 'Hypershift',
     [Provider.alibaba]: 'Alibaba Cloud',
     [Provider.other]: 'Other',
-    [Provider.kubevirt]: 'KubeVirt',
+    [Provider.kubevirt]: 'Red Hat OpenShift Virtualization',
 }
 
 export const ProviderIconMap = {

@@ -1,26 +1,30 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-
 import { getControlDataGCP } from './ControlDataGCP'
+import { getControlDataGCP as getControlDataGCPClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataGCP'
+import { fixupControlsForClusterPool } from '../../../ClusterPools/CreateClusterPool/controlData/ControlDataHelper'
 import i18next from 'i18next'
 
 const t = i18next.t.bind(i18next)
+const handleModalToggle = jest.fn()
 
-describe('getControlDataGCP', () => {
-    it('get control data for GCP - default', () => {
-        getControlDataGCP(t, undefined, true, true, false)
+describe('Cluster creation control data for GCP', () => {
+    it('generates correctly', () => {
+        expect(getControlDataGCP(t, handleModalToggle, true, true, false)).toMatchSnapshot()
     })
 
-    it('get control data for GCP - no automation', () => {
-        getControlDataGCP(t, undefined, false, true, false)
+    it('generates correctly with SNO enabled', () => {
+        expect(getControlDataGCP(t, handleModalToggle, true, true, true)).toMatchSnapshot()
     })
 
-    it('get control data for GCP - include sno cluster', () => {
-        getControlDataGCP(t, undefined, true, true, true)
+    it('generates correctly for MCE', () => {
+        expect(getControlDataGCP(t, handleModalToggle, true, false, false)).toMatchSnapshot()
     })
 
-    it('get control data for GCP - no klusterletaddon', () => {
-        getControlDataGCP(t, undefined, true, false, true)
+    it('generates correctly for cluster pools', () => {
+        expect(
+            fixupControlsForClusterPool(getControlDataGCPClusterPool(t, handleModalToggle, false, false), t)
+        ).toMatchSnapshot()
     })
 })

@@ -137,3 +137,16 @@ export function AcmDonutChart(props: {
         </Card>
     )
 }
+
+const criticalColorClass = 'var(--pf-chart-color-red-100)'
+const importantColorClass = 'var(--pf-chart-color-orange-300)'
+const moderateColorClass = 'var(--pf-chart-color-gold-300)'
+const lowColorClass = 'var(--pf-chart-color-blue-200)'
+const successColorClass = 'var(--pf-chart-color-black-100)'
+
+export const colorThemes = {
+    criticalImportantSuccess: [criticalColorClass, importantColorClass, successColorClass],
+    criticalSuccess: [criticalColorClass, successColorClass],
+    criticalLowSuccess: [criticalColorClass, moderateColorClass, successColorClass],
+    criticalImportantModerateLow: [criticalColorClass, importantColorClass, moderateColorClass, lowColorClass],
+}

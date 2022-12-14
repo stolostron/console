@@ -269,6 +269,7 @@ export function PlacementSection(props: {
                     <WizSingleSelect
                         path="placementRef.name"
                         label={t('Placement rule')}
+                        placeholder={t('Select the placement rule')}
                         required
                         hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
                         options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}

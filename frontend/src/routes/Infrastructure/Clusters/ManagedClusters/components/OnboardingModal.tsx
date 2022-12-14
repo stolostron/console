@@ -58,7 +58,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 <AcmExpandableSection
                     label={t('Want to learn more?')}
                     style={{
-                        backgroundColor: '#F0F0F0',
                         width: '100%',
                         height: '100%',
                         padding: '16px 16px 16px 36px',
@@ -93,19 +92,19 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 </GridItem>
                 <GridItem span={9}>
                     <div>
-                        <span style={{ color: '#393F44', fontSize: '24px' }}>
+                        <span style={{ fontSize: '24px' }}>
                             <Trans
                                 i18nKey="Managing clusters <bold>just got easier</bold>"
                                 components={{ bold: <strong /> }}
                             />
                         </span>
                     </div>
-                    <div style={{ color: '#6A6E73', fontSize: '14px', paddingTop: '8px' }}>
+                    <div style={{ fontSize: '14px', paddingTop: '8px' }}>
                         {t(
-                            'Create and manage a fleet of clusters with ease using this all clusters view. To view a single cluster, select it from the "All Clusters" dropdown or access it from the cluster list.'
+                            'Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.'
                         )}
                     </div>
-                    <div style={{ color: '#151515', fontSize: '16px', paddingTop: '48px' }}>
+                    <div style={{ fontSize: '16px', paddingTop: '48px' }}>
                         {t('How would you like to create your cluster?')}
                     </div>
                 </GridItem>
@@ -116,7 +115,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     <GridItem key={card.id} span={4}>
                         <Link key={card.id} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
                             <Card id={card.id} key={card.id} isSelectable isFlat>
-                                <CardBody style={{ minHeight: '160px', borderColor: '#D2D2D2', color: '#151515' }}>
+                                <CardBody style={{ minHeight: '160px' }}>
                                     <div
                                         style={{
                                             position: 'absolute',

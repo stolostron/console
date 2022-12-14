@@ -203,7 +203,6 @@ compute:
 {{! ========================================================== }}
 {{! ========================================================== }}
 
-{{#if_ne infrastructure 'vSphere'}}
 networking:
   networkType: {{{networkType}}} ##networkType
   clusterNetwork:
@@ -219,7 +218,6 @@ networking:
 {{#each networks}}
   - {{{serviceNetwork}}} ##networks.{{@index}}.serviceNetwork
 {{/each}}
-{{/if_ne}}
 
 
 {{! ========================================================== }}
@@ -302,7 +300,7 @@ publish: Internal
     api_vip: {{{apiVIP}}}    ##apiVIP
     ingress_vip: {{{ingressVIP}}}  ##ingressVIP
     ovirt_network_name: {{{ovirt_network_name}}} ##ovirt_network_name
-    vnicProfileID: {{{vnicProfileID}}}
+    vnicProfileID: {{{vnicProfileID}}}  ##vnicProfileID
     ovirt_cluster_id: {{{ovirt_cluster_id}}} ##ovirt_cluster_id
     ovirt_storage_domain_id: {{{ovirt_storage_domain_id}}} ##ovirt_storage_domain_id
 {{/case}}

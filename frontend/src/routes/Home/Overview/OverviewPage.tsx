@@ -24,6 +24,7 @@ import {
     AcmPageHeader,
     AcmScrollable,
     AcmSummaryList,
+    colorThemes,
     Provider,
 } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -493,10 +494,7 @@ export default function OverviewPage() {
                                     description={t('Overview of policy violation status')}
                                     loading={!complianceData}
                                     data={complianceData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
+                                    colorScale={colorThemes.criticalSuccess}
                                 />
                                 {!searchError ? (
                                     <AcmDonutChart
@@ -504,11 +502,7 @@ export default function OverviewPage() {
                                         description={t('Overview of pod count and status')}
                                         loading={searchLoading}
                                         data={podData}
-                                        colorScale={[
-                                            'var(--pf-global--danger-color--100)',
-                                            'var(--pf-global--info-color--100)',
-                                            'var(--pf-global--success-color--100)',
-                                        ]}
+                                        colorScale={colorThemes.criticalLowSuccess}
                                     />
                                 ) : undefined}
                                 <AcmDonutChart
@@ -516,10 +510,7 @@ export default function OverviewPage() {
                                     description={t('Overview of cluster status')}
                                     loading={!clusterData}
                                     data={clusterData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
+                                    colorScale={colorThemes.criticalSuccess}
                                 />
                                 <AcmDonutChart
                                     title={t('Cluster issues')}
@@ -533,12 +524,7 @@ export default function OverviewPage() {
                                                 ? t('Cluster with issues')
                                                 : t('Clusters with issues'),
                                     }}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--palette--orange-300)',
-                                        'var(--pf-global--palette--orange-200)',
-                                        'var(--pf-global--warning-color--100)',
-                                    ]}
+                                    colorScale={colorThemes.criticalImportantModerateLow}
                                 />
                             </AcmMasonry>
                         </Stack>

@@ -192,16 +192,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                     isAutomationCredential(resource)
                 ) as Secret[]
 
-                // Check if an 'install' curation will be run
-                if (clusterCurator?.spec?.desiredCuration === 'install') {
-                    // set installAttemptsLimit to 0
-                    clusterResources.forEach((resource) => {
-                        if (resource?.kind === 'ClusterDeployment') {
-                            set(resource, 'spec.installAttemptsLimit', 0)
-                        }
-                    })
-                }
-
                 // add source labels to secrets, add backup labels
                 createResources.forEach((resource) => {
                     if (resource.kind === 'Secret') {

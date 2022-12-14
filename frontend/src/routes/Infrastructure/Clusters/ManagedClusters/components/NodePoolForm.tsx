@@ -237,6 +237,7 @@ export function NodePoolForm(props: {
                     onChange={setAwsSubnetID}
                     isRequired
                     value={awsSubnetID}
+                    isDisabled={props.refNodepool ? true : false}
                 />
             ),
         },
@@ -263,15 +264,27 @@ export function NodePoolForm(props: {
     }
 
     useEffect(() => {
+        const ver = getVersionFromReleaseImage(props.hostedCluster.spec.release.image)
         if (selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
             const availableImages = getOCPVersions(props.clusterImages)
             const filteredImages: any[] = []
             availableImages.forEach((image) => {
-                const ver = getVersionFromReleaseImage(props.hostedCluster.spec.release.image)
                 if (image.version <= ver && isWithinTwoVersions(ver, image.version)) {
                     filteredImages.push(image)
                 }
             })
+
+            //If HCP image is not in filtered images, add it to the list in order to be selectable
+            if (!filteredImages.includes(ver)) {
+                const hcpImage: OpenshiftVersionOptionType = {
+                    label: 'N/A',
+                    value: ver,
+                    version: ver,
+                    default: true,
+                    supportLevel: 'beta',
+                }
+                filteredImages.push(hcpImage)
+            }
 
             if (filteredImages.length > 0) {
                 setNodepoolImageOptions(filteredImages)
@@ -282,7 +295,7 @@ export function NodePoolForm(props: {
                 setUseHCImage(true)
             }
         }
-        if (!props.clusterImages || props.clusterImages.length === 0) {
+        if (!props.clusterImages || props.clusterImages.length === 0 || selectedImage === ver) {
             setUseHCImage(true)
         }
 

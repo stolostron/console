@@ -15,6 +15,7 @@ import {
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     clusterDetailsControlData,
+    disabledForFirstInGroup,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -215,6 +216,7 @@ export const getControlDataRHV = (
                 baseName: 'worker',
                 addPrompt: t('creation.ocp.cluster.add.node.pool'),
                 deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                disableDeleteForFirst: true,
             },
             controlData: [
                 {
@@ -238,6 +240,7 @@ export const getControlDataRHV = (
                         notification: t('creation.ocp.cluster.valid.alphanumeric'),
                         required: true,
                     },
+                    disabled: disabledForFirstInGroup,
                 },
                 ///////////////////////  cores  /////////////////////////////////////
                 {
@@ -325,7 +328,10 @@ export const getControlDataRHV = (
             tooltip: t('tooltip.creation.ocp.api.vip'),
             placeholder: t('creation.ocp.api.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['ingressVIP'],
+            }),
         },
         {
             id: 'ingressVIP',
@@ -334,7 +340,10 @@ export const getControlDataRHV = (
             tooltip: t('tooltip.creation.ocp.ingress.vip'),
             placeholder: t('creation.ocp.ingress.vip.placeholder'),
             active: '',
-            validation: getIPValidator(t),
+            validation: getIPValidator({
+                subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+                differentFrom: ['apiVIP'],
+            }),
         },
         ...networkingControlData(t),
         ...proxyControlData(t),

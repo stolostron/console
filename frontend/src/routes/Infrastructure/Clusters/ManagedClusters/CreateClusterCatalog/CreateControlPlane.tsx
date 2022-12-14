@@ -10,16 +10,12 @@ import {
     PageHeader,
     PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { TFunction } from 'i18next'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
-
-const clusterTypeTooltips = (t: TFunction) =>
-    t('Required operator: Red Hat Advanced Cluster Management or multicluster engine')
 
 export function CreateControlPlane() {
     const [t] = useTranslation()
@@ -33,29 +29,26 @@ export function CreateControlPlane() {
         const newCards: ICatalogCard[] = [
             {
                 id: 'hosted',
-                title: t('Hosted'),
+                title: t('Hosted control plane'),
                 items: [
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'A fully capable cluster with a smaller resource requirement and quicker cluster creation.'
+                            'Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.'
                         ),
                     },
                     {
                         type: CatalogCardItemType.List,
-                        title: t('Features'),
+                        title: t(''),
                         icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
                         items: [
-                            { text: t('Better hardware utilization') },
-                            { text: t('Network and trusted segmentation between control plane and workers') },
-                            { text: t('Rapid cluster creation') },
+                            {
+                                text: t(
+                                    'Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'
+                                ),
+                            },
+                            { text: t('Quickly provisions clusters.') },
                         ],
-                    },
-                    {
-                        type: CatalogCardItemType.List,
-                        title: t('Available cluster types'),
-                        icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
-                        items: [{ text: t('Hosted cluster') }],
                     },
                 ],
                 onClick: isHypershiftEnabled
@@ -75,42 +68,32 @@ export function CreateControlPlane() {
             },
             {
                 id: 'standalone',
-                title: t('Standalone'),
+                title: t('Standalone control plane'),
                 items: [
                     {
                         type: CatalogCardItemType.Description,
-                        description: t('Run an OpenShift cluster with dedicated control planes nodes.'),
+                        description: t(
+                            'Run an OpenShift cluster where the control plane and data plane are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.'
+                        ),
                     },
                     {
                         type: CatalogCardItemType.List,
-                        title: t('Features'),
-                        icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
-                        items: [
-                            { text: t('Increased resiliency with multiple masters') },
-                            { text: t('Isolation of workload creates secure profile') },
-                            { text: t('Dedicated control plane nodes') },
-                        ],
-                    },
-                    {
-                        type: CatalogCardItemType.List,
-                        title: t('Available cluster types'),
+                        title: t(''),
                         icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
                         items: [
                             {
-                                text: t('Multicluster Hub'),
-                                help: clusterTypeTooltips(t),
+                                text: t(
+                                    'Increased resiliency with closely interconnected control plane and worker nodes.'
+                                ),
                             },
                             {
-                                text: t('Hosting service cluster'),
-                                help: clusterTypeTooltips(t),
+                                text: t('Provide customized control plane cluster configuration.'),
+                                subTitles: [t('Standard'), t('Single node OpenShift'), t('Three-node cluster')],
                             },
-                            { text: t('Dedicated control plane') },
                         ],
                     },
                 ],
                 onClick: nextStep(NavigationPath.createDiscoverHost),
-                badge: t('Classic'),
-                badgeColor: CatalogColor.purple,
             },
         ]
         return newCards
@@ -130,8 +113,8 @@ export function CreateControlPlane() {
     return (
         <Fragment>
             <PageHeader
-                title={t('Control plane type')}
-                description={t('Choose a control plane type for your cluster.')}
+                title={t('Control plane type{{hcType}}', { hcType: ' - Host Inventory' })}
+                description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
                 breadcrumbs={breadcrumbs}
             />
             <ItemView

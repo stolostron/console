@@ -364,8 +364,8 @@ export const clusterDetailsControlData = (t) => {
             active: false,
         },
         {
-            active: 1,
-            id: 'installAttemptsLimit',
+            active: '',
+            id: 'reconcilePause',
             type: 'hidden',
         },
     ]
@@ -445,7 +445,7 @@ export const networkingControlData = (t) => {
             type: 'group',
             prompts: {
                 addPrompt: t('creation.ocp.cluster.add.network'),
-                deletePrompt: t('creation.ocp.cluster.delete.node.pool'),
+                deletePrompt: t('creation.ocp.cluster.delete.network'),
             },
             controlData: [
                 {
@@ -539,7 +539,7 @@ export const proxyControlData = (t) => {
             type: 'values',
             name: t('No proxy'),
             disabled: true,
-            tip: 'noProxyTip',
+            tip: t('noProxyTip'),
         },
         {
             id: 'additionalTrustBundle',
@@ -553,15 +553,15 @@ export const proxyControlData = (t) => {
 
 export const onChangeAutomationTemplate = (control, controlData) => {
     const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
-    const installAttemptsLimit = getControlByID(controlData, 'installAttemptsLimit')
+    const reconcilePause = getControlByID(controlData, 'reconcilePause')
     // TODO: include namespace in key
     const clusterCuratorTemplate = control.availableData.find((cc) => cc.metadata.name === control.active)
     const curations = getControlByID(controlData, 'supportedCurations')?.active
     if (control.active && clusterCuratorTemplate) {
         const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
-        if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
+        if (clusterCurator.spec?.install?.prehook?.length) {
             clusterCurator.spec.desiredCuration = 'install'
-            installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
+            reconcilePause.active = 'true'
         }
         curations.forEach((curation) => {
             if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
@@ -586,7 +586,7 @@ export const onChangeAutomationTemplate = (control, controlData) => {
             secretControl.active = ''
         })
         clusterCuratorSpec.active = ''
-        delete installAttemptsLimit.immutable
+        reconcilePause.active = ''
     }
 }
 
@@ -770,4 +770,8 @@ export const insertToggleModalFunction = (handleToggleModal, controlData) => {
             <CreateCredentialModal handleModalToggle={handleToggleModal} />
         )
     }
+}
+
+export const disabledForFirstInGroup = (control) => {
+    return control.grpNum === 0
 }
