@@ -11,14 +11,14 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
 import { NodePoolK8sResource, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 import NodePoolsTable from './NodePoolsTable'
 import './HypershiftClusterInstallProgress.css'
 import { NodePool, NodePoolDefinition } from '../../../../../resources/node-pool'
-import { AcmButton, AcmLabels } from '../../../../../ui-components'
+import { AcmButton } from '../../../../../ui-components'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
@@ -131,15 +131,20 @@ const NodePoolsProgress = ({ nodePools, clusterImages, ...rest }: NodePoolsProgr
                         </FlexItem>
                         {!isExpanded && (
                             <FlexItem>
-                                <AcmLabels
-                                    labels={nodepoolList}
-                                    expandedText={t('show.less')}
-                                    collapsedText={t('show.more', { number: nodepoolList.length })}
-                                    allCollapsedText={t('count.labels', { number: nodepoolList.length })}
-                                    collapse={nodepoolList}
-                                />
+                                {nodepoolList.map((nodePool) => (
+                                    <AcmButton
+                                        icon={<PenIcon />}
+                                        style={{ marginRight: '0.5em', fontSize: '0.8em', padding: '0.5em' }}
+                                        id={nodePool}
+                                        key={nodePool}
+                                        children={nodePool}
+                                        variant={ButtonVariant.tertiary}
+                                        onClick={() => setExpanded(true)}
+                                        iconPosition="right"
+                                    />
+                                ))}
+
                                 <AcmButton
-                                    style={{}}
                                     id="addNodepoolEmptyState"
                                     children={t('Add node pool')}
                                     variant={ButtonVariant.link}
