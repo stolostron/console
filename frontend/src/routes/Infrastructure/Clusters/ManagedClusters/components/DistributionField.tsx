@@ -290,6 +290,49 @@ export function DistributionField(props: {
                 />
             </>
         )
+    } else if (props.cluster.distribution.upgradeInfo?.posthookDidNotRun) {
+        // CURATOR POSTHOOK JOB DID NOT RUN
+        console.log('con 3')
+        console.log('hit posthook not run condition')
+        return (
+            <>
+                <div>{props.cluster?.distribution.displayVersion}</div>
+                <AcmInlineStatus
+                    type={StatusType.danger}
+                    status={t('upgrade.upgradefailed', {
+                        version: props.cluster?.consoleURL
+                            ? ''
+                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
+                    })}
+                    popover={
+                        props.cluster?.consoleURL
+                            ? {
+                                  headerContent: t('upgrade.upgradefailed', {
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                  }),
+                                  bodyContent: t('Upgrade posthook was not run', {
+                                      clusterName: props.cluster?.name,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                  }),
+                                  footerContent: (
+                                      <a
+                                          href={
+                                              `${props.cluster?.consoleURL}/k8s/ns/${props.cluster.namespace}` +
+                                              '/cluster.open-cluster-management.io~v1beta1~ClusterCurator/' +
+                                              `${props.cluster.name}`
+                                          }
+                                          target="_blank"
+                                          rel="noreferrer"
+                                      >
+                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                      </a>
+                                  ),
+                              }
+                            : undefined
+                    }
+                />
+            </>
+        )
     } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates && !props.cluster?.isHostedCluster) {
         // UPGRADE AVAILABLE
         return (

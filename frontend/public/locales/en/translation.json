@@ -2719,6 +2719,7 @@
     "Updated": "Updated",
     "updating": "Updating",
     "Upgrade": "Upgrade",
+    "Upgrade posthook did not run": "Upgrade posthook did not run",
     "Upgrade type": "Upgrade type",
     "Upgrade version": "Upgrade version",
     "upgrade.ansible.posthook": "Upgrade posthook jobs are running",

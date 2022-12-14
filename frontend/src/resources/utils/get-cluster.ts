@@ -245,6 +245,7 @@ export type UpgradeInfo = {
     upgradeFailed?: boolean
     hooksInProgress?: boolean
     hookFailed?: boolean
+    posthookDidNotRun?: boolean
     latestJob: {
         conditionMessage?: string
         step?: CuratorCondition | undefined
@@ -876,6 +877,13 @@ export function getDistributionInfo(
         upgradeInfo.desiredChannel = isSelectingChannel
             ? clusterCurator?.spec?.upgrade?.channel
             : upgradeInfo.currentChannel
+
+        upgradeInfo.posthookDidNotRun =
+            !upgradeInfo.isUpgrading &&
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions) &&
+            upgradeInfo.posthooks?.hasHooks &&
+            !upgradeInfo.posthooks?.success &&
+            !upgradeInfo.posthooks?.failed
     }
 
     if (displayVersion) {
