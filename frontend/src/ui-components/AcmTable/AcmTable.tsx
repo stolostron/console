@@ -16,6 +16,7 @@ import {
     PageSection,
     Pagination,
     PaginationVariant,
+    PaginationTitles,
     PerPageOptions,
     SearchInput,
     Select,
@@ -976,6 +977,21 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const showToolbar = props.showToolbar !== false ? hasItems : false
     const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
+    const paginationTitles: PaginationTitles = {
+        currPage: t('current page'),
+        items: t('items'),
+        itemsPerPage: t('items per page'),
+        ofWord: t('of'),
+        page: t('page'),
+        pages: t('pages'),
+        paginationTitle: t('pagination'),
+        perPageSuffix: t('per page'),
+        toFirstPage: t('to first page'),
+        toLastPage: t('to last page'),
+        toNextPage: t('to next page'),
+        toPreviousPage: t('to previous page'),
+    }
+
     return (
         <Fragment>
             {props.extraToolbarControls && (
@@ -1073,6 +1089,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                         {(!props.autoHidePagination || filtered.length > perPage) && (
                             <ToolbarItem variant="pagination">
                                 <Pagination
+                                    titles={paginationTitles}
                                     itemCount={itemCount}
                                     perPage={perPage}
                                     page={page}
@@ -1178,6 +1195,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     )}
                     {(!props.autoHidePagination || filtered.length > perPage) && (
                         <Pagination
+                            titles={paginationTitles}
                             itemCount={itemCount}
                             perPage={perPage}
                             page={page}

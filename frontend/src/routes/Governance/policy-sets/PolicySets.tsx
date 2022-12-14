@@ -2,6 +2,7 @@
 import {
     PageSection,
     Pagination,
+    PaginationTitles,
     PaginationVariant,
     Toolbar,
     ToolbarContent,
@@ -209,6 +210,21 @@ export default function PolicySetsPage() {
         )
     }
 
+    const paginationTitles: PaginationTitles = {
+        currPage: t('current page'),
+        items: t('items'),
+        itemsPerPage: t('items per page'),
+        ofWord: t('of'),
+        page: t('page'),
+        pages: t('pages'),
+        paginationTitle: t('pagination'),
+        perPageSuffix: t('per page'),
+        toFirstPage: t('to first page'),
+        toLastPage: t('to last page'),
+        toNextPage: t('to next page'),
+        toPreviousPage: t('to previous page'),
+    }
+
     return (
         <Fragment>
             <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', height: '100%' }}>
@@ -244,6 +260,7 @@ export default function PolicySetsPage() {
                             </ToolbarItem>
                             <ToolbarItem variant="pagination">
                                 <Pagination
+                                    titles={paginationTitles}
                                     itemCount={filteredPolicySets.length}
                                     perPage={perPage}
                                     page={page}
@@ -283,6 +300,7 @@ export default function PolicySetsPage() {
                 )}
             </div>
             <Pagination
+                titles={paginationTitles}
                 itemCount={filteredPolicySets.length}
                 perPage={perPage}
                 page={page}
