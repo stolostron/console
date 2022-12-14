@@ -7,7 +7,7 @@ export const usePaginationTitles = () => {
     const { t } = useTranslation()
     return useMemo(
         () => ({
-            currPage: t('current page'),
+            currPage: t('Current page'),
             items: t('items'),
             itemsPerPage: t('items per page'),
             ofWord: t('of'),
@@ -15,10 +15,10 @@ export const usePaginationTitles = () => {
             pages: t('pages'),
             paginationTitle: t('pagination'),
             perPageSuffix: t('per page'),
-            toFirstPage: t('to first page'),
-            toLastPage: t('to last page'),
-            toNextPage: t('to next page'),
-            toPreviousPage: t('to previous page'),
+            toFirstPage: t('Go to first page'),
+            toLastPage: t('Go to last page'),
+            toNextPage: t('Go to next page'),
+            toPreviousPage: t('Go to previous page'),
         }),
         [t]
     )
