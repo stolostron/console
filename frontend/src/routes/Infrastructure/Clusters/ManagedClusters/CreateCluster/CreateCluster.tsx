@@ -374,7 +374,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 t,
                 handleModalToggle,
                 true,
-                settings.awsPrivateWizardStep === 'enabled',
+                true,
                 settings.singleNodeOpenshift === 'enabled',
                 isACMAvailable
             )

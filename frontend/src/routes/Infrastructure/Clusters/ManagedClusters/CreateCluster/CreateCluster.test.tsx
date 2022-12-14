@@ -561,7 +561,6 @@ describe('CreateCluster AWS', () => {
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',
                         singleNodeOpenshift: 'enabled',
-                        awsPrivateWizardStep: 'enabled',
                     })
                     snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
                 }}
@@ -869,7 +868,6 @@ describe('CreateCluster on premise', () => {
                     snapshot.set(settingsState, {
                         ansibleIntegration: 'enabled',
                         singleNodeOpenshift: 'enabled',
-                        awsPrivateWizardStep: 'enabled',
                     })
                 }}
             >
