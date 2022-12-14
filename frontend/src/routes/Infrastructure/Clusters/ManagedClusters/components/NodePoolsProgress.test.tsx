@@ -396,16 +396,6 @@ describe('NodePoolsProgress', () => {
         render(
             <RecoilRoot>
                 <NodePoolsProgress nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
-
-                {/* <ClusterContext.Provider
-                    value={{
-                        hostedCluster: mockHostedCluster1,
-                        cluster: undefined,
-                        addons: undefined,
-                    }}
-                >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-                </ClusterContext.Provider> */}
             </RecoilRoot>
         )
     })
