@@ -204,9 +204,8 @@ const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = getControlByID(controlData, 'hasProxy').active[
-        ('httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle')
-    ].forEach((pid) => {
+    const useProxy = getControlByID(controlData, 'hasProxy').active
+    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
