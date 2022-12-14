@@ -134,7 +134,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                                     id="addNodepoolEmptyState"
                                     children={t('Add node pool')}
                                     variant={ButtonVariant.link}
-                                    onClick={() => toggleAddNodepoolModal()}
+                                    onClick={toggleAddNodepoolModal}
                                     tooltip={
                                         hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                                             ? t(
