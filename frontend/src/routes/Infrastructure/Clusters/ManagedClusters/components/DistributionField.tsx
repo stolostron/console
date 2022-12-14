@@ -101,31 +101,6 @@ export function DistributionField(props: {
         props.cluster?.isHypershift,
     ])
 
-    // const nodepoolsHasUpdates: boolean = useMemo(() => {
-    //     // let updateAvailable = false
-    //     // if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
-    //     //     for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
-    //     //         if (
-    //     //             (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
-    //     //             (props.cluster.distribution?.ocp?.version || '')
-    //     //         ) {
-    //     //             updateAvailable = true
-    //     //             break
-    //     //         }
-    //     //     }
-    //     // }
-
-    //     if (props.nodepool?.status?.version && props.cluster?.distribution?.ocp?.version) {
-    //         if ((props.nodepool?.status?.version || '') <
-    //                  (props.cluster.distribution?.ocp?.version || '')) {
-    //             return true
-    //         }
-
-    //     }
-    //     return false
-    //     //return updateAvailable
-    // }, [props.cluster?.distribution?.ocp?.version, props.cluster?.hypershift?.nodePools])
-
     const isUpdateAvailable: boolean = useMemo(() => {
         //if nodepool table
         if (props.resource != null && props.resource === 'nodepool') {
@@ -149,6 +124,12 @@ export function DistributionField(props: {
                     }
                 }
             }
+
+            //if no nodepool has updates, still check if hcp has updates
+            if (!updateAvailable) {
+                return Object.keys(hypershiftAvailableUpdates).length > 0
+            }
+
             return updateAvailable
         } else if (props.resource != null && props.resource === 'hostedcluster') {
             //if hosted cluster progress - cluster and hostedcluster
