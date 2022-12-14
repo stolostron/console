@@ -256,9 +256,17 @@ const DefaultNode: React.FunctionComponent<DefaultNodeProps> = ({
         }
     }, [scale, scaleNode])
 
-    const labelScale = scaleLabel && !scaleNode ? Math.max(1, 1 / scale) : 1
-    const labelPositionScale = scaleLabel && !scaleNode ? Math.min(1, scale) : 1
-
+    // counter zoom label
+    const counterZoom = (scale: number, scaleMin: number, scaleMax: number, valueMin: number, valueMax: number) => {
+        if (scale >= scaleMax) {
+            return valueMin
+        } else if (scale <= scaleMin) {
+            return valueMax
+        }
+        return valueMin + (1 - (scale - scaleMin) / (scaleMax - scaleMin)) * (valueMax - valueMin)
+    }
+    const labelScale = scaleLabel ? counterZoom(scale, 0.35, 0.85, 1, 1.5) : 1
+    const labelPositionScale = scaleLabel ? Math.min(1, 1 / labelScale) : 1
     const { translateX, translateY } = React.useMemo(() => {
         if (!scaleNode) {
             return { translateX: 0, translateY: 0 }
@@ -292,7 +300,7 @@ const DefaultNode: React.FunctionComponent<DefaultNodeProps> = ({
                         <NodeLabel
                             className={css(styles.topologyNodeLabel, labelClassName)}
                             x={(width / 2) * labelPositionScale}
-                            y={height + 6 * labelPositionScale}
+                            y={(height + 6) * labelPositionScale}
                             position={nodeLabelPosition}
                             paddingX={8}
                             paddingY={4}

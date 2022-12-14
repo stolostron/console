@@ -30,7 +30,14 @@ const DetailsViewDecorator = ({ shape, className }) => {
     return (
         <div className="detailsIconContainer">
             <svg width="58px" height="58px" viewBox="0 0 58 58">
-                <circle cx="29" cy="29" r="25" fill="#fff" stroke="#a7a7a7" strokeWidth="1" />
+                <circle
+                    cx="29"
+                    cy="29"
+                    r="25"
+                    className={'pf-topology__node__background'}
+                    stroke="#a7a7a7"
+                    strokeWidth="1"
+                />
                 <use href={`#nodeIcon_${shape}`} className={`${className} detailsIcon`} />
             </svg>
         </div>

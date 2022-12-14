@@ -24,3 +24,20 @@
 .pf-c-toolbar {
     padding-bottom: 0;
 }
+
+.pf-topology__node__icon {
+    fill: #000;
+    stroke: 'none';
+}
+
+:root:where(.pf-theme-dark) .pf-topology__node__icon {
+    fill: #fff;
+}
+
+.pf-topology__node__icon__stroke {
+    stroke: #000;
+}
+
+:root:where(.pf-theme-dark) .pf-topology__node__icon__stroke {
+    stroke: #fff;
+}

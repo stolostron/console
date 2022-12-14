@@ -87,16 +87,22 @@ describe('Topology tests', () => {
         /////////////////////////////////////////////////
         // verify topology
         // edges
+        // await new Promise((resolve) => setTimeout(resolve, 500))
+        // screen.logTestingPlaygroundURL()
+
         expect(container.querySelectorAll("[data-type='edge']")).toHaveLength(9)
         // nodes
-        expect(container.querySelectorAll("[href = '#nodeIcon_replicaset']")).toHaveLength(1)
-        expect(container.querySelectorAll("[href = '#nodeIcon_service']")).toHaveLength(1)
-        expect(container.querySelectorAll("[href = '#nodeIcon_application']")).toHaveLength(1)
-        // status icons
-        expect(container.querySelectorAll("[href = '#nodeStatusIcon_success']")).toHaveLength(5)
-        expect(container.querySelectorAll("[href = '#nodeStatusIcon_failure']")).toHaveLength(3)
-        expect(container.querySelectorAll("[href = '#nodeStatusIcon_pending']")).toHaveLength(1)
-        expect(container.querySelectorAll("[href = '#nodeStatusIcon_spinner']")).toHaveLength(1)
+        expect(container.querySelectorAll("[data-id='application--test']")).toHaveLength(2)
+        expect(
+            container.querySelectorAll(
+                "[data-id='member--deployed-resource--member--clusters----test-subscription-1--test--helloworld-app-deploy--deployment--replicaset--helloworld-app-deploy']"
+            )
+        ).toHaveLength(2)
+        expect(
+            container.querySelectorAll(
+                "[data-id='member--deployed-resource--member--deployed-resource--member--clusters----test-subscription-1--test--helloworld-app-route--route--test--helloworld-app-svc--service']"
+            )
+        ).toHaveLength(2)
     })
 
     test('app subscription topology with placement', async () => {

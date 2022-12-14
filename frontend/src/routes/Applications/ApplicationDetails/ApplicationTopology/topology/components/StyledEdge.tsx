@@ -41,7 +41,7 @@ const Bendpoint: React.FunctionComponent<BendpointProps> = observer(({ point }) 
     )
 })
 
-const DefaultEdge: React.FunctionComponent<EdgeProps> = ({
+const StyledEdge: React.FunctionComponent<EdgeProps> = ({
     element,
     sourceDragRef,
     targetDragRef,
@@ -78,4 +78,4 @@ const DefaultEdge: React.FunctionComponent<EdgeProps> = ({
     )
 }
 
-export default observer(DefaultEdge)
+export default observer(StyledEdge)
