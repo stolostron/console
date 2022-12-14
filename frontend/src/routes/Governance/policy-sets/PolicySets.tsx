@@ -12,6 +12,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { usePaginationTitles } from '../../../lib/paginationStrings'
 import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -79,6 +80,8 @@ export default function PolicySetsPage() {
     const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
     const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
     const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
+
+    const translatedPaginationTitles = usePaginationTitles()
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet, namespaces)
@@ -244,6 +247,7 @@ export default function PolicySetsPage() {
                             </ToolbarItem>
                             <ToolbarItem variant="pagination">
                                 <Pagination
+                                    titles={translatedPaginationTitles}
                                     itemCount={filteredPolicySets.length}
                                     perPage={perPage}
                                     page={page}
@@ -283,6 +287,7 @@ export default function PolicySetsPage() {
                 )}
             </div>
             <Pagination
+                titles={translatedPaginationTitles}
                 itemCount={filteredPolicySets.length}
                 perPage={perPage}
                 page={page}

@@ -74,6 +74,7 @@ import {
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { useTranslation } from '../../lib/acm-i18next'
+import { usePaginationTitles } from '../../lib/paginationStrings'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -976,6 +977,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const showToolbar = props.showToolbar !== false ? hasItems : false
     const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
+    const translatedPaginationTitles = usePaginationTitles()
+
     return (
         <Fragment>
             {props.extraToolbarControls && (
@@ -1073,6 +1076,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                         {(!props.autoHidePagination || filtered.length > perPage) && (
                             <ToolbarItem variant="pagination">
                                 <Pagination
+                                    titles={translatedPaginationTitles}
                                     itemCount={itemCount}
                                     perPage={perPage}
                                     page={page}
@@ -1178,6 +1182,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     )}
                     {(!props.autoHidePagination || filtered.length > perPage) && (
                         <Pagination
+                            titles={translatedPaginationTitles}
                             itemCount={itemCount}
                             perPage={perPage}
                             page={page}
