@@ -89,20 +89,6 @@ const NodePoolsProgress = ({ nodePools, clusterImages, ...rest }: NodePoolsProgr
     const { namespacesState } = useSharedAtoms()
     const [namespaces] = useRecoilState(namespacesState)
     const nodepoolList = nodePools.map((nodePool) => nodePool.metadata?.name) as string[]
-    // const nodepoolList2 = [
-    //     'dsfvcdfefdfd',
-    //     'dsfsfdsfdfdf',
-    //     'dssdfdsfdsfds',
-    //     'efvbfdewefgf',
-    //     'sdfbefbfwsfdf',
-    //     'dsfdfdsfdfdf',
-    //     'fvbdfvddfbff',
-    //     'dsfdfdfdsfdgfrefdvgrthgrgvfgbgbn',
-    //     'sffdvdcvfdgreferrfger',
-    //     'dsfdfdfdgfdcve',
-    //     'erthnbvdcseretyjj',
-    //     'defgbfwqefgbdvfvfvf',
-    // ]
 
     useEffect(() => {
         checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
