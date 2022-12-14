@@ -4,7 +4,7 @@ import { Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { RecoilRoot } from 'recoil'
 import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './NodePoolsProgress'
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
@@ -393,6 +393,7 @@ describe('NodePoolsProgress', () => {
     ]
     beforeEach(() => {
         nockIgnoreRBAC()
+        nockIgnoreApiPaths()
         render(
             <RecoilRoot>
                 <NodePoolsProgress nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
