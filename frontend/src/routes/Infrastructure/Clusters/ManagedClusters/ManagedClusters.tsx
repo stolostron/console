@@ -500,6 +500,9 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     const { t } = useTranslation()
     return {
         header: t('table.namespace'),
+        tooltip: t(
+            'Standalone clusters will display the namespace used by the ManagedCluster resource. Hosted clusters will display the hosting namespace when the status is "Pending import" and the ManagedCluster namespace when the status is "Ready".'
+        ),
         sort: 'namespace',
         cell: (cluster) => cluster.namespace || '-',
     }
