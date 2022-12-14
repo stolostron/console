@@ -22,6 +22,7 @@ import {
     ClusterDeployment,
     ClusterStatus,
     getCluster,
+    getResource,
     mapAddons,
     ResourceError,
     SecretDefinition,
@@ -45,6 +46,7 @@ import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePoo
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
+import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -238,6 +240,16 @@ export default function ClusterDetailsPage({
             <DownloadConfigurationDropdown
                 key={'DownloadConfigurationDropdown-cluster-action'}
                 canGetSecret={canGetSecret}
+            />
+        )
+    }
+    if (cluster?.isHypershift && cluster?.kubeconfig) {
+        clusterActionGroupChildren.push(
+            <HypershiftKubeconfigDownload
+                hostedCluster={hostedCluster}
+                fetchSecret={(name, namespace) =>
+                    getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise
+                }
             />
         )
     }

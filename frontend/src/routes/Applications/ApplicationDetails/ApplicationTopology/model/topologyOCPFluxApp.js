@@ -7,7 +7,7 @@ import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
 
-const excludedKindList = ['cluster', 'pod', 'replicaset', 'replicationcontroller']
+const excludedKindList = ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController']
 
 export async function getOCPFluxAppTopology(application) {
     let searchResults = {}

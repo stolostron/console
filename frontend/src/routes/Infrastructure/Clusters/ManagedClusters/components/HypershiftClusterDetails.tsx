@@ -2,7 +2,6 @@
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
 import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress'
-import { getResource } from '../../../../../resources'
 import { AcmExpandableCard } from '../../../../../ui-components'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
@@ -31,9 +30,6 @@ const HypershiftClusterDetails: React.FC = () => {
                     <AcmExpandableCard title={t('Control plane status')} id="hypershift-progress">
                         <HypershiftClusterInstallProgress
                             hostedCluster={hostedCluster}
-                            fetchSecret={(name, namespace) =>
-                                getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise
-                            }
                             nodePools={clusterNodePools}
                             clusterImages={clusterImageSets as CIM.ClusterImageSetK8sResource[]}
                             launchToOCP={(url, newTab) =>

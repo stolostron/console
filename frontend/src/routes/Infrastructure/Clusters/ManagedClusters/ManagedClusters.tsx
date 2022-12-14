@@ -72,8 +72,6 @@ export default function ManagedClusters() {
     })
 
     const onBoardingModalID = `${window.location.href}/clusteronboardingmodal`
-    //localStorage.getItem(onBoardingModalID) ?? localStorage.setItem(onBoardingModalID, 'show')
-
     const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
         localStorage.getItem(onBoardingModalID) ? localStorage.getItem(onBoardingModalID) === 'show' : true
     )

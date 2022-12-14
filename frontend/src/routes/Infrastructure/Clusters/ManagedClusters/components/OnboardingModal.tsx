@@ -37,7 +37,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 id: 'onboardingdiscoverbutton',
                 icon: <ConnectedIcon />,
                 text: t('Discover hosts to create host inventory'),
-                link: NavigationPath.discoveredClusters,
+                link: NavigationPath.infraEnvironments,
             },
         ],
         [t]
