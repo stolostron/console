@@ -270,6 +270,12 @@ const mockDistributionInfoPosthookNotRun: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
