@@ -9,7 +9,7 @@ import MainIcon from './OnboardingModalIcon.svg'
 import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { NavigationPath } from '../../../../../NavigationPath'
 import './OnboardingModal.css'
-import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
+import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 export interface IOnboardingModalProps {
     close: () => void
@@ -54,6 +54,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             ouiaId="clustersOnboardingModal"
             isOpen={true}
             onClose={props.close}
+            className="onboardingmodalclass"
             footer={
                 <AcmExpandableSection
                     label={t('Want to learn more?')}
@@ -72,8 +73,13 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                         <Text
                             component={TextVariants.a}
                             isVisitedLink
-                            href={DOC_BASE_PATH}
-                            target="_blank"
+                            onClick={() =>
+                                launchToOCP(
+                                    'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace',
+                                    true,
+                                    () => window.open(`${window.location.origin}`)
+                                )
+                            }
                             style={{
                                 cursor: 'pointer',
                                 display: 'inline-block',
@@ -92,19 +98,19 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 </GridItem>
                 <GridItem span={9}>
                     <div>
-                        <span style={{ fontSize: '24px' }}>
+                        <span className="pf-u-color-100" style={{ fontSize: '24px' }}>
                             <Trans
                                 i18nKey="Managing clusters <bold>just got easier</bold>"
                                 components={{ bold: <strong /> }}
                             />
                         </span>
                     </div>
-                    <div style={{ fontSize: '14px', paddingTop: '8px' }}>
+                    <div className="pf-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
                         {t(
                             'Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.'
                         )}
                     </div>
-                    <div style={{ fontSize: '16px', paddingTop: '48px' }}>
+                    <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '48px' }}>
                         {t('How would you like to create your cluster?')}
                     </div>
                 </GridItem>
@@ -117,6 +123,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                             <Card id={card.id} key={card.id} isSelectable isFlat>
                                 <CardBody style={{ minHeight: '160px' }}>
                                     <div
+                                        className="pf-u-color-100"
                                         style={{
                                             position: 'absolute',
                                             top: '50%',

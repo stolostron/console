@@ -8,6 +8,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 export function ProgressStepBar() {
     const { t } = useTranslation()
@@ -134,7 +135,14 @@ export function ProgressStepBar() {
                 ...(provisionStatus.includes(cluster?.status!) && {
                     link: {
                         linkName: t('status.link.logs'),
-                        linkCallback: () => launchLogs(cluster!, configMaps),
+                        linkCallback: () => {
+                            if (cluster?.isHypershift) {
+                                const url = `k8s/ns/${cluster.hypershift?.hostingNamespace}-${cluster.name}/pods`
+                                launchToOCP(url, true, () => window.open(`${window.location.origin}/${url}`))
+                            } else {
+                                launchLogs(cluster!, configMaps)
+                            }
+                        },
                     },
                 }),
             },

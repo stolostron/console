@@ -24,6 +24,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
 import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { onToggle } from '../utils/utils'
 
 export type NodePoolStatus = {
     type: 'error' | 'pending' | 'ok' | 'warning'
@@ -78,7 +79,9 @@ type NodePoolsProgressProps = {
 
 const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     const { t } = useTranslation()
-    const [isExpanded, setExpanded] = useState(true)
+    const nodePoolsProgressID = `${window.location.href}node-pools-progress`
+    localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
+    const [expanded, setExpanded] = useState(localStorage.getItem(nodePoolsProgressID) === 'show')
     const { hostedCluster } = useContext(ClusterContext)
     const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
     const toggleAddNodepoolModal = useCallback(
@@ -108,14 +111,14 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                     <Flex>
                         <FlexItem>
                             <ExpandableSectionToggle
-                                isExpanded={isExpanded}
-                                onToggle={setExpanded}
+                                isExpanded={expanded}
+                                onToggle={() => onToggle(nodePoolsProgressID, expanded, setExpanded)}
                                 className="nodepool-progress-item__header"
                             >
                                 {t('Cluster node pools')}
                             </ExpandableSectionToggle>
                         </FlexItem>
-                        {!isExpanded && (
+                        {!expanded && (
                             <FlexItem>
                                 {nodepoolList.map((nodePool) => (
                                     <AcmButton
@@ -151,7 +154,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                         )}
                     </Flex>
                 </StackItem>
-                {isExpanded && (
+                {expanded && (
                     <StackItem className="nodepool-progress-item__body">
                         <NodePoolsTable nodePools={nodePools as NodePool[]} {...rest} />
                     </StackItem>
