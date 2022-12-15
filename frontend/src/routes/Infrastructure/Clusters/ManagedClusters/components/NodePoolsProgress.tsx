@@ -1,14 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as React from 'react'
-import { ExpandableSectionToggle, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
+import { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
+import {
+    ButtonVariant,
+    ExpandableSectionToggle,
+    Flex,
+    FlexItem,
+    ProgressStep,
+    Spinner,
+    Stack,
+    StackItem,
+} from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
 import { NodePoolK8sResource, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 import NodePoolsTable from './NodePoolsTable'
 import './HypershiftClusterInstallProgress.css'
-import { NodePool } from '../../../../../resources/node-pool'
+import { NodePool, NodePoolDefinition } from '../../../../../resources/node-pool'
+import { AcmButton } from '../../../../../ui-components'
+import { AddNodePoolModal } from './AddNodePoolModal'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
+import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 
 export type NodePoolStatus = {
     type: 'error' | 'pending' | 'ok' | 'warning'
@@ -30,7 +45,7 @@ export const getNodePoolStatus = (nodePool: NodePoolK8sResource, t: TFunction): 
           }
 }
 
-export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): React.ReactNode => {
+export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): ReactNode => {
     const nodePoolMap = nodePools.reduce<{
         [key: string]: { status: NodePoolStatus }
     }>((acc, np) => {
@@ -41,7 +56,7 @@ export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunctio
         return acc
     }, {})
 
-    const nodePoolsStatus: { type: string; icon: React.ReactNode } = {
+    const nodePoolsStatus: { type: string; icon: ReactNode } = {
         type: 'ok',
         icon: <CheckCircleIcon color={okColor.value} />,
     }
@@ -63,19 +78,78 @@ type NodePoolsProgressProps = {
 
 const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     const { t } = useTranslation()
-    const [isExpanded, setExpanded] = React.useState(true)
+    const [isExpanded, setExpanded] = useState(true)
+    const { hostedCluster } = useContext(ClusterContext)
+    const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
+    const toggleAddNodepoolModal = useCallback(
+        () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
+        [openAddNodepoolModal]
+    )
+    const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
+    const { namespacesState } = useSharedAtoms()
+    const [namespaces] = useRecoilState(namespacesState)
+    const nodepoolList = nodePools.map((nodePool) => nodePool.metadata?.name) as string[]
+
+    useEffect(() => {
+        checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
+    }, [namespaces])
 
     return (
         <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
+            <AddNodePoolModal
+                open={openAddNodepoolModal}
+                close={toggleAddNodepoolModal}
+                hostedCluster={hostedCluster!}
+                refNodepool={nodePools && nodePools.length > 0 ? (nodePools[0] as NodePool) : undefined}
+                clusterImages={rest.clusterImages}
+            />
             <Stack hasGutter>
                 <StackItem>
-                    <ExpandableSectionToggle
-                        isExpanded={isExpanded}
-                        onToggle={setExpanded}
-                        className="nodepool-progress-item__header"
-                    >
-                        {t('Cluster node pools')}
-                    </ExpandableSectionToggle>
+                    <Flex>
+                        <FlexItem>
+                            <ExpandableSectionToggle
+                                isExpanded={isExpanded}
+                                onToggle={setExpanded}
+                                className="nodepool-progress-item__header"
+                            >
+                                {t('Cluster node pools')}
+                            </ExpandableSectionToggle>
+                        </FlexItem>
+                        {!isExpanded && (
+                            <FlexItem>
+                                {nodepoolList.map((nodePool) => (
+                                    <AcmButton
+                                        icon={<PenIcon />}
+                                        style={{ marginRight: '0.5em', fontSize: '0.8em', padding: '0.5em' }}
+                                        id={nodePool}
+                                        key={nodePool}
+                                        children={nodePool}
+                                        variant={ButtonVariant.tertiary}
+                                        onClick={() => setExpanded(true)}
+                                        iconPosition="right"
+                                    />
+                                ))}
+
+                                <AcmButton
+                                    id="addNodepoolEmptyState"
+                                    children={t('Add node pool')}
+                                    variant={ButtonVariant.link}
+                                    onClick={toggleAddNodepoolModal}
+                                    tooltip={
+                                        hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
+                                            ? t(
+                                                  'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
+                                              )
+                                            : t('rbac.unauthorized')
+                                    }
+                                    isDisabled={
+                                        hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
+                                        !canCreateNodepool
+                                    }
+                                />
+                            </FlexItem>
+                        )}
+                    </Flex>
                 </StackItem>
                 {isExpanded && (
                     <StackItem className="nodepool-progress-item__body">
