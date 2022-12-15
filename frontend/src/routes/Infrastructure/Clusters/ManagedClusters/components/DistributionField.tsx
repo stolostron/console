@@ -292,8 +292,6 @@ export function DistributionField(props: {
         )
     } else if (props.cluster.distribution.upgradeInfo?.posthookDidNotRun) {
         // CURATOR POSTHOOK JOB DID NOT RUN
-        console.log('con 3')
-        console.log('hit posthook not run condition')
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>

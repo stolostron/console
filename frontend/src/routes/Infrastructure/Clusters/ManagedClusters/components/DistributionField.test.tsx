@@ -251,6 +251,27 @@ const clusterCuratorUpgrade: ClusterCurator = {
         ],
     },
 }
+const mockDistributionInfoPosthookNotRun: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: [],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        isReadySelectChannels: false,
+        posthookDidNotRun: true,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+        latestJob: {},
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: false,
+}
 
 const clusterCuratorUpgradeFailed: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -534,7 +555,8 @@ describe('DistributionField', () => {
         data: DistributionInfo,
         allowUpgrade: boolean,
         hasUpgrade = false,
-        clusterCurator?: ClusterCurator
+        clusterCurator?: ClusterCurator,
+        consoleURL?: string
     ) => {
         let nockAction: nock.Scope | undefined = undefined
         let nockAction2: nock.Scope | undefined = undefined
@@ -554,7 +576,7 @@ describe('DistributionField', () => {
             labels: { abc: '123' },
             nodes: undefined,
             kubeApiServer: '',
-            consoleURL: '',
+            consoleURL: consoleURL || '',
             hive: {
                 isHibernatable: true,
                 clusterPool: undefined,
@@ -625,6 +647,19 @@ describe('DistributionField', () => {
         )
         await waitFor(() => expect(getAllByText('Upgrade available')).toBeTruthy())
         expect(queryAllByText('Upgrade failing').length).toBe(0)
+    })
+
+    it('should show failed when posthook is never reached', async () => {
+        renderDistributionInfoField(
+            mockDistributionInfoPosthookNotRun,
+            false,
+            false,
+            clusterCuratorUpgrade,
+            '/test-cluster'
+        )
+        await waitForText('Upgrade failing')
+        await clickByText('Upgrade failing')
+        await waitForText('Upgrade posthook was not run')
     })
 
     it('should not show upgrade button for managed OpenShift', async () => {
