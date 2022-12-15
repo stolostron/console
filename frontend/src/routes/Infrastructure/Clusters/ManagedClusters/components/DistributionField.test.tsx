@@ -18,6 +18,7 @@ import {
     NodePool,
     ResourceAttributes,
 } from '../../../../../resources'
+import { createBrowserHistory } from 'history'
 import { render, waitFor } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
@@ -25,6 +26,7 @@ import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../..
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
+import { Router } from 'react-router-dom'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -555,8 +557,7 @@ describe('DistributionField', () => {
         data: DistributionInfo,
         allowUpgrade: boolean,
         hasUpgrade = false,
-        clusterCurator?: ClusterCurator,
-        consoleURL?: string
+        clusterCurator?: ClusterCurator
     ) => {
         let nockAction: nock.Scope | undefined = undefined
         let nockAction2: nock.Scope | undefined = undefined
@@ -576,7 +577,7 @@ describe('DistributionField', () => {
             labels: { abc: '123' },
             nodes: undefined,
             kubeApiServer: '',
-            consoleURL: consoleURL || '',
+            consoleURL: '',
             hive: {
                 isHibernatable: true,
                 clusterPool: undefined,
@@ -598,7 +599,9 @@ describe('DistributionField', () => {
 
         const retResource = render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
-                <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                <Router history={createBrowserHistory()}>
+                    <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                </Router>
             </RecoilRoot>
         )
         if (nockAction) {
@@ -650,16 +653,10 @@ describe('DistributionField', () => {
     })
 
     it('should show failed when posthook is never reached', async () => {
-        renderDistributionInfoField(
-            mockDistributionInfoPosthookNotRun,
-            false,
-            false,
-            clusterCuratorUpgrade,
-            '/test-cluster'
-        )
+        renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
         await waitForText('Upgrade failing')
         await clickByText('Upgrade failing')
-        await waitForText('Upgrade posthook was not run')
+        await waitForText('Upgrade posthook was not run.')
     })
 
     it('should not show upgrade button for managed OpenShift', async () => {
