@@ -269,7 +269,7 @@ export const onChangeDisconnect = (control, controlData) => {
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
     const isDisconnected = getControlByID(controlData, 'isDisconnected').active
-    ;[('clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle')].forEach((pid) => {
+    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
