@@ -4,6 +4,7 @@ import {
     AnsibleJob,
     Cluster,
     ClusterCurator,
+    ClusterCuratorApiVersion,
     ClusterCuratorDefinition,
     ClusterStatus,
     CuratorCondition,
@@ -11,7 +12,7 @@ import {
     NodePool,
 } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
-import { ButtonVariant } from '@patternfly/react-core'
+import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -23,6 +24,8 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
+import { Link } from 'react-router-dom'
+import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 
 const { getVersionFromReleaseImage } = CIM
 
@@ -292,42 +295,38 @@ export function DistributionField(props: {
         )
     } else if (props.cluster.distribution.upgradeInfo?.posthookDidNotRun) {
         // CURATOR POSTHOOK JOB DID NOT RUN
+        const [apigroup, apiversion] = ClusterCuratorApiVersion.split('/')
+        const targetLink = getSearchLink({
+            properties: {
+                name: props.cluster?.name,
+                namespace: props.cluster?.namespace,
+                kind: 'clustercurator',
+                apigroup,
+                apiversion,
+            },
+        })
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
-                    status={t('upgrade.upgradefailed', {
-                        version: props.cluster?.consoleURL
-                            ? ''
-                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
-                    })}
-                    popover={
-                        props.cluster?.consoleURL
-                            ? {
-                                  headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
-                                  bodyContent: t('Upgrade posthook was not run.', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
-                                  footerContent: (
-                                      <a
-                                          href={
-                                              `${props.cluster?.consoleURL}/k8s/ns/${props.cluster.namespace}` +
-                                              '/cluster.open-cluster-management.io~v1beta1~ClusterCurator/' +
-                                              `${props.cluster.name}`
-                                          }
-                                          target="_blank"
-                                          rel="noreferrer"
-                                      >
-                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
-                                      </a>
-                                  ),
-                              }
-                            : undefined
-                    }
+                    status={t('upgrade.upgradefailed')}
+                    popover={{
+                        headerContent: t('upgrade.upgradefailed', {
+                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                        }),
+                        bodyContent: t('Upgrade posthook was not run.', {
+                            clusterName: props.cluster?.name,
+                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                        }),
+                        footerContent: (
+                            <Link to={targetLink} target={'_blank'}>
+                                <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
+                                    {t('upgrade.upgrading.link')}
+                                </Button>
+                            </Link>
+                        ),
+                    }}
                 />
             </>
         )
