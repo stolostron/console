@@ -308,7 +308,7 @@ export function DistributionField(props: {
                                   headerContent: t('upgrade.upgradefailed', {
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent: t('Upgrade posthook was not run', {
+                                  bodyContent: t('Upgrade posthook was not run.', {
                                       clusterName: props.cluster?.name,
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
