@@ -120,6 +120,7 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: true,
+        posthookDidNotRun: false,
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
