@@ -32,6 +32,7 @@ import {
     ItemContext,
     useItem,
 } from '@patternfly-labs/react-form-wizard'
+import { NavigationPath } from '../../NavigationPath'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
@@ -55,6 +56,7 @@ export function PolicyWizard(props: {
     clusterSetBindings: IClusterSetBinding[]
     editMode?: EditMode
     resources?: IResource[]
+    defaultPlacementKind?: 'Placement' | 'PlacementRule'
     yamlEditor?: () => ReactNode
     gitSource?: string
     onSubmit: WizardSubmit
@@ -173,11 +175,12 @@ export function PolicyWizard(props: {
                 <PlacementSection
                     existingPlacements={props.placements}
                     existingPlacementRules={props.placementRules}
+                    createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
                     existingClusterSets={props.clusterSets}
                     existingClusterSetBindings={props.clusterSetBindings}
                     bindingSubjectKind={PolicyKind}
                     bindingSubjectApiGroup={PolicyApiGroup}
-                    defaultPlacementKind={PlacementRuleKind}
+                    defaultPlacementKind={props.defaultPlacementKind ?? PlacementRuleKind}
                     clusters={props.clusters}
                     allowNoPlacement
                     withoutOnlineClusterCondition
