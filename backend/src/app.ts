@@ -41,7 +41,7 @@ router.all(`/apis/*`, proxy)
 router.all(`/apiPaths`, apiPaths)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
-if (isDevelopment) {
+if (!isProduction) {
     router.get(`/login`, login)
     router.get(`/login/callback`, loginCallback)
     router.get(`/logout`, logout)
@@ -54,7 +54,7 @@ router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
-if (isDevelopment) {
+if (!isProduction) {
     router.get('/configure', configure)
     router.get('/username', username)
 }
