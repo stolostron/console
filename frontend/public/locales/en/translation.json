@@ -2041,7 +2041,6 @@
     "Root volume size": "Root volume size",
     "Root volume type": "Root volume type",
     "Rules": "Rules",
-    "Run an OpenShift cluster where the control plane and data plan are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.": "Run an OpenShift cluster where the control plane and data plan are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.",
     "Run an OpenShift cluster where the control plane and data plane are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.": "Run an OpenShift cluster where the control plane and data plane are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.",
     "Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.": "Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.",
     "Run search": "Run search",

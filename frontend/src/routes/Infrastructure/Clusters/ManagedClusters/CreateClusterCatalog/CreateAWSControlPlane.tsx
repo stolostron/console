@@ -64,7 +64,7 @@ export function CreateAWSControlPlane() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'Run an OpenShift cluster where the control plane and data plan are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.'
+                            'Run an OpenShift cluster where the control plane and data plane are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.'
                         ),
                     },
                     {
