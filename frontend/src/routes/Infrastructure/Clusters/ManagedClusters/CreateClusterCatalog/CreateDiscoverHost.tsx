@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
-import { Fragment, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
+import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateDiscoverHost() {
@@ -51,12 +52,15 @@ export function CreateDiscoverHost() {
     ]
 
     return (
-        <Fragment>
-            <PageHeader
-                title={t('Hosts')}
-                description={t('Choose an option based on your hosts.')}
-                breadcrumbs={breadcrumbs}
-            />
+        <AcmPage
+            header={
+                <PageHeader
+                    title={t('Hosts')}
+                    description={t('Choose an option based on your hosts.')}
+                    breadcrumbs={breadcrumbs}
+                />
+            }
+        >
             <ItemView
                 items={cards}
                 itemKeyFn={keyFn}
@@ -64,6 +68,6 @@ export function CreateDiscoverHost() {
                 onBack={back(NavigationPath.createBMControlPlane)}
                 onCancel={cancel(NavigationPath.clusters)}
             />
-        </Fragment>
+        </AcmPage>
     )
 }
