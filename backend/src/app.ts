@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-/* istanbul ignore file */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { loadSettings, stopSettingsWatch } from './lib/config'
