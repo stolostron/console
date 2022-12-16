@@ -2,7 +2,7 @@
 
 import { jsonRequest } from './json-request'
 import { logger } from './logger'
-import { getServiceAccountToken } from '../routes/liveness'
+import { getServiceAccountToken } from '../routes/serviceAccountToken'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
 interface MultiClusterHub {
