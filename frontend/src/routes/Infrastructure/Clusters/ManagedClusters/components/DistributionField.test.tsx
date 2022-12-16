@@ -64,6 +64,12 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         currentVersion: '1.2.3',
         desiredVersion: '1.2.4',
         latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
