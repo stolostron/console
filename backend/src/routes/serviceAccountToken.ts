@@ -11,6 +11,7 @@ export function getServiceAccountToken(): string {
             serviceAccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf-8')
         } catch (err: unknown) {
             serviceAccountToken = process.env.TOKEN
+            /* istanbul ignore if */
             if (!serviceAccountToken) {
                 if (err instanceof Error) {
                     logger.error('Error reading service account token', err && err.message)

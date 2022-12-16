@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../mock-request'
 import nock from 'nock'
-import { apiServerPing, setDead } from '../../src/routes/liveness'
+import { apiServerPing } from '../../src/routes/liveness'
 
 describe(`liveness Route`, function () {
     it(`GET /livenessProbe should return status code 200`, async function () {
