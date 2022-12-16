@@ -11,6 +11,7 @@ import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { getTemplateValue } from '../utils'
 import { defaultPodCIDR, defaultServiceCIDR } from './constants'
+import { getClusterImageVersion, getDefaultNetworkType } from './utils'
 
 type FormControl = {
     active: any
@@ -67,23 +68,34 @@ export const getDefaultNetworkFormValues = (
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
-    const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace } =
+    const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace, releaseImage } =
         React.useContext(HypershiftAgentContext)
     const { waitForAll } = useSharedRecoil()
-    const { agentsState, infrastructuresState } = useSharedAtoms()
-    const [agents, infrastructures] = useRecoilValue(waitForAll([agentsState, infrastructuresState]))
+    const { agentsState, infrastructuresState, clusterImageSetsState } = useSharedAtoms()
+    const [agents, infrastructures, clusterImageSets] = useRecoilValue(
+        waitForAll([agentsState, infrastructuresState, clusterImageSetsState])
+    )
 
     const formRef = React.useRef<FormikProps<any>>(null)
 
     const onValuesChanged = React.useCallback((values) => {
         if (!isEqual(values, control.active)) {
-            control.active = values
+            control.active = { ...control.active, ...values }
             setIsAdvancedNetworking(values.isAdvanced)
             control.step.title.isComplete = false
             handleChange(control)
         }
         // eslint-disable-next-line
     }, [])
+
+    React.useEffect(() => {
+        const clusterVersion = getClusterImageVersion(clusterImageSets, releaseImage)
+        const networkType = getDefaultNetworkType(clusterVersion)
+
+        if (control.active.networkType !== networkType) {
+            onValuesChanged({ ...control.active, networkType })
+        }
+    }, [releaseImage, clusterImageSets, onValuesChanged, control.active])
 
     control.validate = () => {
         return formRef?.current?.submitForm().then(() => {
