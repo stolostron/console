@@ -24,6 +24,8 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { username } from './routes/username'
 
+const eventsEnabled = process.env.DISABLE_EVENTS !== 'true'
+
 // Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
 // If the route exceeds 500 chars the route will not be found from this fn: router.find()
 export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
@@ -41,7 +43,9 @@ router.get(`/login`, login)
 router.get(`/login/callback`, loginCallback)
 router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
-router.get(`/events`, events)
+if (eventsEnabled) {
+    router.get(`/events`, events)
+}
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
@@ -77,7 +81,9 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 
 export function start(): Promise<Http2Server | undefined> {
     loadSettings()
-    startWatching()
+    if (eventsEnabled) {
+        startWatching()
+    }
     return startServer({ requestHandler })
 }
 
