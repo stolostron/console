@@ -217,17 +217,11 @@ export function DistributionField(props: {
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
-                    status={t('upgrade.upgradefailed', {
-                        version: props.cluster?.consoleURL
-                            ? ''
-                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
-                    })}
+                    status={t('upgrade.upgradefailed')}
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
+                                  headerContent: t('upgrade.upgradefailed'),
                                   bodyContent: t('upgrade.upgradefailed.message', {
                                       clusterName: props.cluster?.name,
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
@@ -265,9 +259,7 @@ export function DistributionField(props: {
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgrading', {
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
+                                  headerContent: t('upgrade.upgrading'),
                                   bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
                                       ? t('upgrade.upgrading.message.percentage', {
                                             clusterName: props.cluster?.name,
@@ -312,13 +304,8 @@ export function DistributionField(props: {
                     type={StatusType.danger}
                     status={t('upgrade.upgradefailed')}
                     popover={{
-                        headerContent: t('upgrade.upgradefailed', {
-                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                        }),
-                        bodyContent: t('Upgrade posthook was not run.', {
-                            clusterName: props.cluster?.name,
-                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                        }),
+                        headerContent: t('upgrade.upgradefailed'),
+                        bodyContent: t('Upgrade posthook was not run.'),
                         footerContent: (
                             <Link to={targetLink} target={'_blank'}>
                                 <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
