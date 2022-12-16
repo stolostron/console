@@ -73,6 +73,7 @@ kind: ManagedCluster
 metadata:
   labels:
     cloud: hybrid
+    vendor: OpenShift
     name: '{{{ai.name}}}'
     {{#if ai.managedClusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{ai.managedClusterSet}}}'
@@ -96,6 +97,7 @@ spec:
   clusterNamespace: '{{{ai.name}}}'
   clusterLabels:
     cloud: hybrid
+    vendor: OpenShift
   applicationManager:
     enabled: true
   policyController:

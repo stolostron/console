@@ -126,6 +126,7 @@ kind: ManagedCluster
 metadata:
   labels:
     cloud: hypershift
+    vendor: OpenShift
     name: '{{{hypershift.name}}}'
     {{#if hypershift.managedClusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{hypershift.managedClusterSet}}}'
@@ -149,6 +150,7 @@ spec:
   clusterNamespace: '{{{hypershift.name}}}'
   clusterLabels:
     cloud: ai-hypershift
+    vendor: OpenShift
   applicationManager:
     enabled: true
   policyController:

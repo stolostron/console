@@ -239,6 +239,7 @@ const mockManagedClusterAI: ManagedCluster = {
     metadata: {
         labels: {
             cloud: 'hybrid',
+            vendor: 'OpenShift',
             name: 'test',
             myLabelKey: 'myValue',
         },
@@ -346,6 +347,7 @@ const mockKlusterletAddonConfigAI = {
         clusterNamespace: clusterName,
         clusterLabels: {
             cloud: 'hybrid',
+            vendor: 'OpenShift',
         },
         applicationManager: {
             enabled: true,
