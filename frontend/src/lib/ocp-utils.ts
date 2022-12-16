@@ -8,13 +8,18 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
+export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction, oauthOpenshift?: boolean) {
     api<{ data: { consoleURL: string } }>(
         '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
     )
         .then(({ data }) => {
             if (newTab) {
-                window.open(`${data.consoleURL}/${urlSuffix}`)
+                if (oauthOpenshift) {
+                    const url = data.consoleURL.replace('console-openshift-console', 'oauth-openshift')
+                    window.open(`${url}/${urlSuffix}`)
+                } else {
+                    window.open(`${data.consoleURL}/${urlSuffix}`)
+                }
             } else {
                 location.href = `${data.consoleURL}/${urlSuffix}`
             }
