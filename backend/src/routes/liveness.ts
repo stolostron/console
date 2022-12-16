@@ -49,25 +49,28 @@ let serviceAccountToken: string
 const agent = new Agent({ rejectUnauthorized: false })
 
 export async function apiServerPing(): Promise<void> {
+    const msg = 'kube api server ping failed'
     try {
         const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
             headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAccountToken}` },
             agent,
         })
         if (response.status !== 200) {
+            const { status } = response
+            logger.error({ msg, response: { status } })
             setDead()
         }
         void response.blob()
     } catch (err) {
         if (err instanceof FetchError) {
-            logger.error({ msg: 'kube api server ping failed', error: err.message })
+            logger.error({ msg, error: err.message })
             if (err.errno === 'ENOTFOUND' || err.code === 'ENOTFOUND') {
                 setDead()
             }
         } else if (err instanceof Error) {
-            logger.error({ msg: 'api server ping failed', error: err.message })
+            logger.error({ msg, error: err.message })
         } else {
-            logger.error({ msg: 'api server ping failed', err: err as unknown })
+            logger.error({ msg, err: err as unknown })
         }
     }
 }

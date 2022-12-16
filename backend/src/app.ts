@@ -24,6 +24,8 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { username } from './routes/username'
 
+const isProduction = process.env.NODE_ENV === 'production'
+const isDevelopment = process.env.NODE_ENV === 'development'
 const eventsEnabled = process.env.DISABLE_EVENTS !== 'true'
 
 // Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
@@ -39,10 +41,12 @@ router.all(`/apis/*`, proxy)
 router.all(`/apiPaths`, apiPaths)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
-router.get(`/login`, login)
-router.get(`/login/callback`, loginCallback)
-router.get(`/logout`, logout)
-router.get(`/logout/`, logout)
+if (isDevelopment) {
+    router.get(`/login`, login)
+    router.get(`/login/callback`, loginCallback)
+    router.get(`/logout`, logout)
+    router.get(`/logout/`, logout)
+}
 if (eventsEnabled) {
     router.get(`/events`, events)
 }
@@ -50,11 +54,13 @@ router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
-router.get('/configure', configure)
-router.get('/username', username)
+if (isDevelopment) {
+    router.get('/configure', configure)
+    router.get('/username', username)
+}
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isProduction) {
         if (cors(req, res)) return
         await delay(req, res)
     }
@@ -88,7 +94,7 @@ export function start(): Promise<Http2Server | undefined> {
 }
 
 export async function stop(): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevelopment) {
         setTimeout(() => {
             logger.warn('process stop timeout. exiting...')
             process.exit(1)

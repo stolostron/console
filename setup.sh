@@ -20,9 +20,6 @@ echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
 OAUTH2_REDIRECT_URL=https://localhost:3000/multicloud/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
-BACKEND_URL=https://localhost:4000
-echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
-
 FRONTEND_URL=https://localhost:3000
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
