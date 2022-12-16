@@ -8,6 +8,10 @@ describe('addDiagramDetails', () => {
             data: {
                 searchResult: [
                     {
+                        items: [],
+                        related: null,
+                    },
+                    {
                         items: [
                             {
                                 apigroup: 'apps.open-cluster-management.io',
