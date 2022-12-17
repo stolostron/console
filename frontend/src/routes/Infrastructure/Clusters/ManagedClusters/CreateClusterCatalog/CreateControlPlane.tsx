@@ -10,11 +10,12 @@ import {
     PageHeader,
     PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { Fragment, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateControlPlane() {
@@ -111,12 +112,15 @@ export function CreateControlPlane() {
     }, [t])
 
     return (
-        <Fragment>
-            <PageHeader
-                title={t('Control plane type{{hcType}}', { hcType: ' - Host Inventory' })}
-                description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
-                breadcrumbs={breadcrumbs}
-            />
+        <AcmPage
+            header={
+                <PageHeader
+                    title={t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' })}
+                    description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
+                    breadcrumbs={breadcrumbs}
+                />
+            }
+        >
             <ItemView
                 items={cards}
                 itemKeyFn={keyFn}
@@ -124,6 +128,6 @@ export function CreateControlPlane() {
                 onBack={back(NavigationPath.createCluster)}
                 onCancel={cancel(NavigationPath.clusters)}
             />
-        </Fragment>
+        </AcmPage>
     )
 }
