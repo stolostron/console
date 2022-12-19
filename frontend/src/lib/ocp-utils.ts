@@ -1,5 +1,3 @@
-import { ConfigMapApiVersion, ConfigMapKind, getResource } from '../resources'
-
 /* Copyright Contributors to the Open Cluster Management project */
 function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     return fetch(url, headers).then((response) => {
@@ -10,29 +8,12 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
-    const resourceResult = getResource({
-        apiVersion: ConfigMapApiVersion,
-        kind: ConfigMapKind,
-        metadata: {
-            name: 'console-public',
-            namespace: 'openshift-config-managed',
-        },
-    }).promise
-
-    resourceResult
-        .then((response: any) => {
-            if (newTab) {
-                window.open(`${response.data.consoleURL}/${urlSuffix}`)
-            } else {
-                location.href = `${response.data.consoleURL}/${urlSuffix}`
-            }
-        })
-        .catch((err: any) => {
-            onError?.()
-            // eslint-disable-next-line no-console
-            console.error(err)
-        })
+export function launchToOCP(urlSuffix: string, newTab: boolean) {
+    if (newTab) {
+        window.open(`/${urlSuffix}`)
+    } else {
+        location.href = `/${urlSuffix}`
+    }
 }
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
