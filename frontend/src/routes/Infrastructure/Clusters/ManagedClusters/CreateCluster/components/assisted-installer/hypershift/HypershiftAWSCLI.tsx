@@ -17,7 +17,6 @@ import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
-import { launchToOCP } from '../../../../../../../../lib/ocp-utils'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import './css/HypershiftAWSCLI.css'
 
@@ -125,7 +124,9 @@ hypershift create cluster aws
                             <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>
                             <Text
                                 component={TextVariants.a}
-                                onClick={() => launchToOCP('oauth/token/request', true, undefined, true)}
+                                onClick={() => {
+                                    // TBD
+                                }}
                                 target="_blank"
                             >
                                 {t('Use the oc login command.')}
