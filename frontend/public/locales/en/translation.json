@@ -2577,6 +2577,7 @@
     "This value contains an HTTP or HTTPS URL to the image to use for Red Hat OpenShift Container Platform cluster machines. Optionally the URL can include a SHA-256 checksum. The value can also be the name of an existing Glance image.": "This value contains an HTTP or HTTPS URL to the image to use for Red Hat OpenShift Container Platform cluster machines. Optionally the URL can include a SHA-256 checksum. The value can also be the name of an existing Glance image.",
     "This value must end with an alphanumeric character": "This value must end with an alphanumeric character",
     "This value must start with an alphanumeric character": "This value must start with an alphanumeric character",
+    "This value provides one or more additional CA certificates that are required for proxying HTTPS connections.": "This value provides one or more additional CA certificates that are required for proxying HTTPS connections.",
     "This value provides the contents of the certificate file that is required to access the mirror registry.": "This value provides the contents of the certificate file that is required to access the mirror registry.",
     "Three-node cluster": "Three-node cluster",
     "Time range": "Time range",

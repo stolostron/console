@@ -177,6 +177,9 @@ export const setAvailableConnections = (control, secrets) => {
         if (!replacements['additionalTrustBundle']) {
             delete replacements['additionalTrustBundle']
         }
+        if (!replacements['disconnectedAdditionalTrustBundle']) {
+            delete replacements['disconnectedAdditionalTrustBundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
@@ -258,7 +261,7 @@ export const onChangeConnection = (control, controlData) => {
     setTimeout(() => {
         const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
         if (datbControl && replacements) {
-            datbControl.active = replacements['additionalTrustBundle']
+            datbControl.active = replacements['disconnectedAdditionalTrustBundle']
             datbControl.disabled = !datbControl.active
         }
     })

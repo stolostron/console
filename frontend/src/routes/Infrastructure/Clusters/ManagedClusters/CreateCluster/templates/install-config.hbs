@@ -349,12 +349,15 @@ sshKey: |-
 {{/if}}
 
 {{! ==================Disconnected BMC================================ }}
-{{#if additionalTrustBundle}}
+{{#if_or additionalTrustBundle disconnectedAdditionalTrustBundle}}
 additionalTrustBundle: |-
 {{#each additionalTrustBundle}}
     {{{.}}}
 {{/each}}
-{{/if}}
+{{#each disconnectedAdditionalTrustBundle}}
+    {{{.}}}
+{{/each}}
+{{/if_or}}
 
 {{#if imageContentSources}}
 imageContentSources:

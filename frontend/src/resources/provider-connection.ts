@@ -47,7 +47,7 @@ export interface ProviderConnectionStringData {
     imageMirror?: string
     bootstrapOSImage?: string
     clusterOSImage?: string
-    additionalTrustBundle?: string
+    disconnectedAdditionalTrustBundle?: string
 
     // OpenShift Cluster Manager
     ocmAPIToken?: string
@@ -72,6 +72,7 @@ export interface ProviderConnectionStringData {
     httpsProxy?: any
     noProxy?: any
     imageContentSources?: any
+    additionalTrustBundle?: string
 
     host?: string
     token?: string
