@@ -141,7 +141,7 @@ hypershift create cluster aws
                                 {t('Use the following command to see all available parameters.')}
                             </Text>
                             <CodeBlock actions={actions(helperCommand)}>
-                                <CodeBlockCode id="code-content">{helperCommand}</CodeBlockCode>
+                                <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
                             </CodeBlock>
                             {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
                         </TextContent>
