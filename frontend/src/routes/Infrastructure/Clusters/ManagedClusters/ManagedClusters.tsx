@@ -75,7 +75,7 @@ export default function ManagedClusters() {
     const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
         localStorage.getItem(onBoardingModalID)
             ? localStorage.getItem(onBoardingModalID) === 'show'
-            : clusters.length === 6 && clusters.find((lc) => lc.name === 'local-cluster') !== undefined //Check if one cluster exists and it is local-cluster
+            : clusters.length === 1 && clusters.find((lc) => lc.name === 'local-cluster') !== undefined //Check if one cluster exists and it is local-cluster
     )
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
