@@ -24,7 +24,12 @@ spec:
   baseDomain: {{{baseDomain}}}  ##baseDomain
 {{#if singleNode}}
   skipMachinePools: true
+{{else}}
+{{#if_ne workerPools.0.computeNodeCount '3' }}
+  skipMachinePools: true
+{{/if_ne}}
 {{/if}}
+
   installConfigSecretTemplateRef:
     name: {{{name}}}-install-config
 {{#if releaseImageReference}}
