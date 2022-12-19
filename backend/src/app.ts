@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-/* istanbul ignore file */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { loadSettings, stopSettingsWatch } from './lib/config'
@@ -24,6 +22,10 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { username } from './routes/username'
 
+const isProduction = process.env.NODE_ENV === 'production'
+const isDevelopment = process.env.NODE_ENV === 'development'
+const eventsEnabled = process.env.DISABLE_EVENTS !== 'true'
+
 // Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
 // If the route exceeds 500 chars the route will not be found from this fn: router.find()
 export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
@@ -37,20 +39,26 @@ router.all(`/apis/*`, proxy)
 router.all(`/apiPaths`, apiPaths)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
-router.get(`/login`, login)
-router.get(`/login/callback`, loginCallback)
-router.get(`/logout`, logout)
-router.get(`/logout/`, logout)
-router.get(`/events`, events)
+if (!isProduction) {
+    router.get(`/login`, login)
+    router.get(`/login/callback`, loginCallback)
+    router.get(`/logout`, logout)
+    router.get(`/logout/`, logout)
+}
+if (eventsEnabled) {
+    router.get(`/events`, events)
+}
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
-router.get('/configure', configure)
-router.get('/username', username)
+if (!isProduction) {
+    router.get('/configure', configure)
+    router.get('/username', username)
+}
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isProduction) {
         if (cors(req, res)) return
         await delay(req, res)
     }
@@ -77,12 +85,14 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 
 export function start(): Promise<Http2Server | undefined> {
     loadSettings()
-    startWatching()
+    if (eventsEnabled) {
+        startWatching()
+    }
     return startServer({ requestHandler })
 }
 
 export async function stop(): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevelopment) {
         setTimeout(() => {
             logger.warn('process stop timeout. exiting...')
             process.exit(1)

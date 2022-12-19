@@ -14,7 +14,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from './liveness'
+import { getServiceAccountToken } from './serviceAccountToken'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)

@@ -5,7 +5,7 @@ import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken, isAuthenticated } from '../lib/token'
-import { getServiceAccountToken } from './liveness'
+import { getServiceAccountToken } from './serviceAccountToken'
 
 interface APIPathResponse {
     paths: string[]

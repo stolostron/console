@@ -5,7 +5,7 @@ import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
-import { getServiceAccountToken } from './liveness'
+import { getServiceAccountToken } from './serviceAccountToken'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
 interface TokenReview {
