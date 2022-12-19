@@ -15,7 +15,6 @@ const EditAgentModal: React.FC<{
         usedHostnames={usedHostnames}
         onClose={() => setAgent(undefined)}
         onSave={onSaveAgent}
-        onFormSaveError={() => {}}
     />
 )
 
