@@ -14,6 +14,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
+import { get } from 'lodash'
 import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
@@ -125,7 +126,7 @@ hypershift create cluster aws
                             <Text
                                 component={TextVariants.a}
                                 onClick={() => {
-                                    // TBD
+                                    window.open(get(window, 'SERVER_FLAGS.requestTokenURL'))
                                 }}
                                 target="_blank"
                             >
