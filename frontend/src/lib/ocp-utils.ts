@@ -1,3 +1,5 @@
+import { ConfigMapApiVersion, ConfigMapKind, getResource } from '../resources'
+
 /* Copyright Contributors to the Open Cluster Management project */
 function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     return fetch(url, headers).then((response) => {
@@ -9,20 +11,27 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
 }
 
 export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
-    api<{ data: { consoleURL: string } }>(
-        '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
-    )
-        .then(({ data }) => {
+    const resourceResult = getResource({
+        apiVersion: ConfigMapApiVersion,
+        kind: ConfigMapKind,
+        metadata: {
+            name: 'console-public',
+            namespace: 'openshift-config-managed',
+        },
+    }).promise
+
+    resourceResult
+        .then((response: any) => {
             if (newTab) {
-                window.open(`${data.consoleURL}/${urlSuffix}`)
+                window.open(`${response.data.consoleURL}/${urlSuffix}`)
             } else {
-                location.href = `${data.consoleURL}/${urlSuffix}`
+                location.href = `${response.data.consoleURL}/${urlSuffix}`
             }
         })
-        .catch((error) => {
+        .catch((err: any) => {
             onError?.()
             // eslint-disable-next-line no-console
-            console.error(error)
+            console.error(err)
         })
 }
 
