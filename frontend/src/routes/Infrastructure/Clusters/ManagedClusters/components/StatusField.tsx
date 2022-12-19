@@ -196,7 +196,7 @@ export function StatusField(props: { cluster: Cluster }) {
                         .replace(':namespace', props.cluster?.namespace!)
                         .replace(':name', props.cluster?.name!)}`}
                 >
-                    {t('cluster.edit')}
+                    {t('Continue cluster configuration')}
                 </Link>
             )
             break
