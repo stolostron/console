@@ -16,6 +16,7 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    onImageChange,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -286,6 +287,7 @@ const controlDataGCP = [
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
         },
+        onSelect: onImageChange,
     },
     //Always Hidden
     {

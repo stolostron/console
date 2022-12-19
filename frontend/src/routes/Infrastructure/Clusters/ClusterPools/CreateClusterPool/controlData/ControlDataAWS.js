@@ -20,6 +20,7 @@ import {
     onChangeConnection,
     addSnoText,
     architectureData,
+    onImageChange,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -693,6 +694,7 @@ const controlDataAWS = [
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
         },
+        onSelect: onImageChange,
     },
     //Always Hidden
     {
