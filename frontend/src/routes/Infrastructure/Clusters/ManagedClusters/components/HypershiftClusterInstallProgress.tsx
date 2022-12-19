@@ -14,18 +14,13 @@ type HypershiftClusterInstallProgressProps = {
     hostedCluster: HostedClusterK8sResource
     nodePools: NodePoolK8sResource[]
     clusterImages: ClusterImageSetK8sResource[]
-    launchToOCP: (urlSuffix: string, newTab: boolean) => void
 }
 
-const HypershiftClusterInstallProgress = ({
-    hostedCluster,
-    launchToOCP,
-    ...rest
-}: HypershiftClusterInstallProgressProps) => (
+const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => (
     <Stack hasGutter>
         <StackItem>
             <ProgressStepper isVertical>
-                <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={launchToOCP} />
+                <HostedClusterProgress hostedCluster={hostedCluster} />
                 <NodePoolsProgress {...rest} />
             </ProgressStepper>
         </StackItem>

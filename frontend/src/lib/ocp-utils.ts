@@ -8,12 +8,8 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string, newTab: boolean) {
-    if (newTab) {
-        window.open(`/${urlSuffix}`)
-    } else {
-        location.href = `/${urlSuffix}`
-    }
+export function launchToOCP(urlSuffix: string) {
+    window.open(`/${urlSuffix}`)
 }
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
