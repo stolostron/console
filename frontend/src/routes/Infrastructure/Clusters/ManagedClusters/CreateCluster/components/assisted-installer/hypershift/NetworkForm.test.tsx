@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getDefaultNetworkFormValues } from './NetworkForm'
+import { render } from '@testing-library/react'
+import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { NavigationPath } from '../../../../../../../../NavigationPath'
+
+import NetworkForm, { getDefaultNetworkFormValues } from './NetworkForm'
 
 const templateYAML = `
 apiVersion: hypershift.openshift.io/v1alpha1
@@ -49,8 +54,41 @@ spec:
 `
 
 describe('NetworkForm', () => {
+    const handleChange = jest.fn()
+    const onNext = jest.fn()
+    const Component = () => {
+        return (
+            <RecoilRoot>
+                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                    <Route path={NavigationPath.createCluster}>
+                        <NetworkForm
+                            templateYAML={templateYAML}
+                            key={'key'}
+                            control={{
+                                active: false,
+                                onNext,
+                                step: {
+                                    title: {
+                                        isComplete: false,
+                                    },
+                                },
+                            }}
+                            handleChange={handleChange}
+                        />{' '}
+                    </Route>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+    }
+
     test('it sets default form values', () => {
         const initialValues = getDefaultNetworkFormValues(templateYAML, true, false)
         expect(initialValues).toMatchSnapshot()
+    })
+
+    test('it renders', async () => {
+        const { container } = render(<Component />)
+        // waitForText('ai:API server publishing strategy')
+        expect(container).toMatchSnapshot()
     })
 })
