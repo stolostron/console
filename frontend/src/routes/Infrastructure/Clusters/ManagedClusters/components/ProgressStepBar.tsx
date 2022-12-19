@@ -138,7 +138,7 @@ export function ProgressStepBar() {
                         linkCallback: () => {
                             if (cluster?.isHypershift) {
                                 const url = `k8s/ns/${cluster.hypershift?.hostingNamespace}-${cluster.name}/pods`
-                                launchToOCP(url, true, () => window.open(`${window.location.origin}/${url}`))
+                                launchToOCP(url, true)
                             } else {
                                 launchLogs(cluster!, configMaps)
                             }

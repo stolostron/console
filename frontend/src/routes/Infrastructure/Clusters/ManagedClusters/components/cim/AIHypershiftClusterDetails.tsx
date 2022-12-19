@@ -46,9 +46,7 @@ const AIHypershiftClusterDetails: React.FC = () => {
                         onRemoveNodePool={(np) => deleteResource(np as IResource).promise}
                         onUpdateNodePool={(nodePool, patches) => patchResource(nodePool as IResource, patches).promise}
                         onAddNodePool={(nodePool) => createResource(nodePool as IResource).promise}
-                        launchToOCP={(url, newTab) =>
-                            launchToOCP(url, newTab, () => window.open(`${window.location.origin}/${url}`))
-                        }
+                        launchToOCP={(url, newTab) => launchToOCP(url, newTab)}
                         supportedVersionsCM={supportedVersionsCM}
                     />
                 </AcmExpandableCard>

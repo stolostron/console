@@ -32,9 +32,7 @@ const HypershiftClusterDetails: React.FC = () => {
                             hostedCluster={hostedCluster}
                             nodePools={clusterNodePools}
                             clusterImages={clusterImageSets as CIM.ClusterImageSetK8sResource[]}
-                            launchToOCP={(url, newTab) =>
-                                launchToOCP(url, newTab, () => window.open(`${window.location.origin}/${url}`))
-                            }
+                            launchToOCP={(url, newTab) => launchToOCP(url, newTab)}
                         />
                     </AcmExpandableCard>
                 </div>
