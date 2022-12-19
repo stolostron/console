@@ -156,9 +156,7 @@ export function PlacementSection(props: {
                 ?.filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === namespace)
                 .filter((clusterSetBinding) =>
                     props.existingClusterSets?.find(
-                        (clusterSet) =>
-                            clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet &&
-                            clusterSet.metadata?.namespace === namespace
+                        (clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet
                     )
                 )
                 .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
@@ -233,7 +231,11 @@ export function PlacementSection(props: {
                     <Sync kind={PlacementKind} path="metadata.namespace" targetKind={PlacementBindingKind} />
 
                     <WizItemSelector selectKey="kind" selectValue={PlacementKind}>
-                        <Placement namespaceClusterSetNames={namespaceClusterSetNames} clusters={props.clusters} />
+                        <Placement
+                            namespaceClusterSetNames={namespaceClusterSetNames}
+                            clusters={props.clusters}
+                            createClusterSetCallback={props.createClusterSetCallback}
+                        />
                     </WizItemSelector>
                 </Fragment>
             )}

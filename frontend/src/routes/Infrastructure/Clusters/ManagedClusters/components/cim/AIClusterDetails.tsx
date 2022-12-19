@@ -183,10 +183,7 @@ const AIClusterDetails: React.FC = () => {
                                 </StackItem>
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
                                     <StackItem>
-                                        <ClusterInstallationError
-                                            clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
-                                            agentClusterInstall={agentClusterInstall}
-                                        />
+                                        <ClusterInstallationError agentClusterInstall={agentClusterInstall} />
                                     </StackItem>
                                 )}
                             </Stack>

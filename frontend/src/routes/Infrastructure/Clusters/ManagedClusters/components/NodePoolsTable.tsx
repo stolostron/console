@@ -298,7 +298,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 id="addNodepoolEmptyState"
                 children={t('Add node pool')}
                 variant={ButtonVariant.secondary}
-                onClick={() => toggleAddNodepoolModal()}
+                onClick={toggleAddNodepoolModal}
                 tooltip={
                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
                         ? t(

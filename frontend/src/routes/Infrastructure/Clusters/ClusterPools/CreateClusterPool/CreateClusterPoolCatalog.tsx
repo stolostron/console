@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
-import { Fragment, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '../../../../../ui-components'
+import { AcmIcon, AcmPage, Provider, ProviderIconMap, ProviderLongTextMap } from '../../../../../ui-components'
 import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 export function CreateClusterPoolCatalog() {
@@ -89,12 +89,15 @@ export function CreateClusterPoolCatalog() {
     )
 
     return (
-        <Fragment>
-            <PageHeader
-                title={t('Infrastructure')}
-                description={t('Choose your infrastructure provider.')}
-                breadcrumbs={breadcrumbs}
-            />
+        <AcmPage
+            header={
+                <PageHeader
+                    title={t('Infrastructure')}
+                    description={t('Choose your infrastructure provider.')}
+                    breadcrumbs={breadcrumbs}
+                />
+            }
+        >
             <ItemView
                 items={cards}
                 itemKeyFn={keyFn}
@@ -102,6 +105,6 @@ export function CreateClusterPoolCatalog() {
                 onBack={back(NavigationPath.clusterPools)}
                 onCancel={cancel(NavigationPath.clusterPools)}
             />
-        </Fragment>
+        </AcmPage>
     )
 }

@@ -81,7 +81,10 @@ export function DistributionField(props: {
         const updates: any = {}
         clusterImageSets.forEach((cis) => {
             const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
-            if (isUpdateVersionAcceptable(props.cluster?.distribution?.ocp?.version || '', releaseImageVersion)) {
+            if (
+                releaseImageVersion &&
+                isUpdateVersionAcceptable(props.cluster?.distribution?.ocp?.version || '', releaseImageVersion)
+            ) {
                 updates[releaseImageVersion] = cis.spec?.releaseImage
             }
         })

@@ -265,7 +265,7 @@ export function NodePoolForm(props: {
 
     useEffect(() => {
         const ver = getVersionFromReleaseImage(props.hostedCluster.spec.release.image)
-        if (selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
+        if (ver && selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
             const availableImages = getOCPVersions(props.clusterImages)
             const filteredImages: any[] = []
             availableImages.forEach((image) => {

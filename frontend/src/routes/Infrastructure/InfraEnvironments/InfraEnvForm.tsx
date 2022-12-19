@@ -14,10 +14,12 @@ import {
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { FormikProps } from 'formik'
+
+import { useTranslation } from '../../../lib/acm-i18next'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
+import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 
 import './InfraEnvForm.css'
-import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
@@ -47,6 +49,8 @@ type InfraEnvFormProps = {
 }
 
 const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
+    const { t } = useTranslation()
+
     const { infraEnvironmentsState } = useSharedAtoms()
     const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
     const formRef = useRef<FormikProps<any>>(null)
@@ -108,16 +112,18 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                                     </CardBody>
                                 </SplitItem>
                                 <SplitItem isFilled>
-                                    <CardTitle>Next steps: Adding hosts</CardTitle>
+                                    <CardTitle>{t('Next steps: Adding hosts')}</CardTitle>
                                     <CardBody>
                                         <Stack hasGutter>
                                             <StackItem>
-                                                After your infrastructure environment is successfully created, open the
-                                                details view and click the "Add hosts" button.
+                                                {t(
+                                                    'After your infrastructure environment is successfully created, open the details view and click the "Add hosts" button.'
+                                                )}
                                             </StackItem>
                                             <StackItem>
-                                                Adding hosts allows cluster creators to pull any available hosts from
-                                                the infrastructure environment.
+                                                {t(
+                                                    'Adding hosts allows cluster creators to pull any available hosts from the infrastructure environment.'
+                                                )}
                                             </StackItem>
                                         </Stack>
                                     </CardBody>

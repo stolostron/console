@@ -10,10 +10,10 @@ import {
     PageHeader,
     PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { Fragment, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { Provider } from '../../../../../ui-components'
+import { AcmPage, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 
 export function CreateAWSControlPlane() {
@@ -64,7 +64,7 @@ export function CreateAWSControlPlane() {
                     {
                         type: CatalogCardItemType.Description,
                         description: t(
-                            'Run an OpenShift cluster where the control plane and data plan are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.'
+                            'Run an OpenShift cluster where the control plane and data plane are coupled. The control plane is hosted by a dedicated group of physical or virtual nodes and the network stack is shared.'
                         ),
                     },
                     {
@@ -98,12 +98,15 @@ export function CreateAWSControlPlane() {
     }, [t])
 
     return (
-        <Fragment>
-            <PageHeader
-                title={t('Control plane type{{hcType}}', { hcType: ' - AWS' })}
-                description={t('Choose a control plane type for your cluster.')}
-                breadcrumbs={breadcrumbs}
-            />
+        <AcmPage
+            header={
+                <PageHeader
+                    title={t('Control plane type - {{hcType}}', { hcType: 'AWS' })}
+                    description={t('Choose a control plane type for your cluster.')}
+                    breadcrumbs={breadcrumbs}
+                />
+            }
+        >
             <ItemView
                 items={cards}
                 itemKeyFn={keyFn}
@@ -111,6 +114,6 @@ export function CreateAWSControlPlane() {
                 onBack={back(NavigationPath.createCluster)}
                 onCancel={cancel(NavigationPath.clusters)}
             />
-        </Fragment>
+        </AcmPage>
     )
 }

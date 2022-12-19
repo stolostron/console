@@ -10,6 +10,7 @@ import { AcmButton } from '../../../../../ui-components'
 import './HypershiftClusterInstallProgress.css'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
+import { onToggle } from '../utils/utils'
 
 type HostedClusterProgressProps = {
     hostedCluster: HostedClusterK8sResource
@@ -19,7 +20,9 @@ type HostedClusterProgressProps = {
 const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProgressProps) => {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
-    const [isExpanded, setExpanded] = useState(true)
+    const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
+    localStorage.getItem(hostedClusterProgressID) ?? localStorage.setItem(hostedClusterProgressID, 'show')
+    const [expanded, setExpanded] = useState(localStorage.getItem(hostedClusterProgressID) === 'show')
 
     const hostedClusterAvailable =
         hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
@@ -29,14 +32,14 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
             <Stack hasGutter>
                 <StackItem>
                     <ExpandableSectionToggle
-                        isExpanded={isExpanded}
-                        onToggle={setExpanded}
+                        isExpanded={expanded}
+                        onToggle={() => onToggle(hostedClusterProgressID, expanded, setExpanded)}
                         className="nodepool-progress-item__header"
                     >
                         {t('Control plane')}
                     </ExpandableSectionToggle>
                 </StackItem>
-                {isExpanded && (
+                {expanded && (
                     <>
                         <StackItem className="nodepool-progress-item__body">
                             <DistributionField

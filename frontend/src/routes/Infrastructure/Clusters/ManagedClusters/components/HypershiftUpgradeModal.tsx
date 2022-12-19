@@ -555,7 +555,6 @@ export function HypershiftUpgradeModal(props: {
                                             value={controlPlaneNewVersion || ''}
                                             label=""
                                             maxHeight={'10em'}
-                                            isRequired
                                             isDisabled={!controlPlaneChecked}
                                         >
                                             {availableUpdateKeys.map((version) => (
