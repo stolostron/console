@@ -52,12 +52,12 @@ hypershift create cluster aws
         setCopied(true)
     }
 
-    const actions = (code: string) => (
+    const actions = (code: string, id: string) => (
         <Fragment>
             <CodeBlockAction>
                 <ClipboardCopyButton
-                    id="basic-copy-button"
-                    textId="code-content"
+                    id={`${id}-copy`}
+                    textId={id}
                     aria-label="Copy to clipboard"
                     onClick={() => onClick(code)}
                     exitDelay={copied ? 1500 : 600}
@@ -134,13 +134,13 @@ hypershift create cluster aws
                             <Text component={TextVariants.p}>
                                 {t('To create the Hosted Control Plane command, copy the code using the copy icon.')}
                             </Text>
-                            <CodeBlock actions={actions(code)}>
+                            <CodeBlock actions={actions(code, 'code-command')}>
                                 <CodeBlockCode id="code-content">{code}</CodeBlockCode>
                             </CodeBlock>
                             <Text style={{ marginTop: '1em' }}>
                                 {t('Use the following command to see all available parameters.')}
                             </Text>
-                            <CodeBlock actions={actions(helperCommand)}>
+                            <CodeBlock actions={actions(helperCommand, 'helper-command')}>
                                 <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
                             </CodeBlock>
                             {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
