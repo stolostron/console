@@ -137,7 +137,9 @@ hypershift create cluster aws
                             <CodeBlock actions={actions(code)}>
                                 <CodeBlockCode id="code-content">{code}</CodeBlockCode>
                             </CodeBlock>
-                            <Text>{t('Use the following command to see all available parameters.')}</Text>
+                            <Text style={{ marginTop: '1em' }}>
+                                {t('Use the following command to see all available parameters.')}
+                            </Text>
                             <CodeBlock actions={actions(helperCommand)}>
                                 <CodeBlockCode id="code-content">{helperCommand}</CodeBlockCode>
                             </CodeBlock>
