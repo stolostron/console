@@ -18,6 +18,7 @@ import {
     WizTextInput,
     Sync,
 } from '@patternfly-labs/react-form-wizard'
+import { NavigationPath } from '../../NavigationPath'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
@@ -41,6 +42,7 @@ export interface PolicySetWizardProps {
     clusterSetBindings: IClusterSetBinding[]
     editMode?: EditMode
     resources?: IResource[]
+    defaultPlacementKind?: 'Placement' | 'PlacementRule'
     onSubmit: WizardSubmit
     onCancel: WizardCancel
     yamlEditor?: () => ReactNode
@@ -169,11 +171,12 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
                 <PlacementSection
                     existingClusterSets={props.clusterSets}
                     existingClusterSetBindings={props.clusterSetBindings}
+                    createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
                     bindingSubjectKind={PolicySetKind}
                     bindingSubjectApiGroup={PolicySetApiGroup}
                     existingPlacements={props.placements}
                     existingPlacementRules={props.placementRules}
-                    defaultPlacementKind={PlacementRuleKind}
+                    defaultPlacementKind={props.defaultPlacementKind ?? PlacementRuleKind}
                     clusters={props.clusters}
                     withoutOnlineClusterCondition
                 />
