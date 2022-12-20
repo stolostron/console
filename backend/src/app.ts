@@ -40,6 +40,7 @@ router.all(`/apiPaths`, apiPaths)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
 if (!isProduction) {
+    router.get('/configure', configure)
     router.get(`/login`, login)
     router.get(`/login/callback`, loginCallback)
     router.get(`/logout`, logout)
@@ -51,11 +52,8 @@ if (eventsEnabled) {
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
+router.get('/username', username)
 router.get(`/*`, serve)
-if (!isProduction) {
-    router.get('/configure', configure)
-    router.get('/username', username)
-}
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (!isProduction) {
