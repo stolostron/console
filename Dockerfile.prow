@@ -25,7 +25,7 @@ WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
-FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-14
+FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-18
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
