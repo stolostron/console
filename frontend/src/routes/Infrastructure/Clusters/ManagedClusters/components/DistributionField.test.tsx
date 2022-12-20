@@ -18,6 +18,7 @@ import {
     NodePool,
     ResourceAttributes,
 } from '../../../../../resources'
+import { createBrowserHistory } from 'history'
 import { render, waitFor } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
@@ -25,6 +26,7 @@ import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../..
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
+import { Router } from 'react-router-dom'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -62,6 +64,12 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         currentVersion: '1.2.3',
         desiredVersion: '1.2.4',
         latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -118,6 +126,7 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: true,
+        posthookDidNotRun: false,
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
@@ -250,6 +259,33 @@ const clusterCuratorUpgrade: ClusterCurator = {
             },
         ],
     },
+}
+const mockDistributionInfoPosthookNotRun: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: [],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        isReadySelectChannels: false,
+        posthookDidNotRun: true,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+        latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 
 const clusterCuratorUpgradeFailed: ClusterCurator = {
@@ -576,7 +612,9 @@ describe('DistributionField', () => {
 
         const retResource = render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
-                <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                <Router history={createBrowserHistory()}>
+                    <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                </Router>
             </RecoilRoot>
         )
         if (nockAction) {
@@ -625,6 +663,13 @@ describe('DistributionField', () => {
         )
         await waitFor(() => expect(getAllByText('Upgrade available')).toBeTruthy())
         expect(queryAllByText('Upgrade failing').length).toBe(0)
+    })
+
+    it('should show failed when posthook is never reached', async () => {
+        renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
+        await waitForText('Upgrade failing')
+        await clickByText('Upgrade failing')
+        await waitForText('Upgrade posthook was not run.')
     })
 
     it('should not show upgrade button for managed OpenShift', async () => {
