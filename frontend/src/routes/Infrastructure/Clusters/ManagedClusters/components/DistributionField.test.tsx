@@ -20,6 +20,8 @@ import { ansibleJobState } from '../../../../../atoms'
 import { nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -77,6 +79,12 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
         availableUpdates: [],
         currentVersion: '1.2.3',
         latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -113,6 +121,7 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: true,
+        posthookDidNotRun: false,
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
@@ -246,6 +255,33 @@ const clusterCuratorUpgrade: ClusterCurator = {
         ],
     },
 }
+const mockDistributionInfoPosthookNotRun: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: [],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        isReadySelectChannels: false,
+        posthookDidNotRun: true,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+        latestJob: {},
+        posthooks: {
+            hasHooks: true,
+            success: false,
+            failed: true,
+            inProgress: false,
+        },
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: false,
+}
 
 const clusterCuratorUpgradeFailed: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -363,7 +399,9 @@ describe('DistributionField', () => {
 
         const retResource = render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
-                <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                <Router history={createBrowserHistory()}>
+                    <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+                </Router>
             </RecoilRoot>
         )
         if (nockAction) {
@@ -443,5 +481,12 @@ describe('DistributionField', () => {
         await clickByText('Upgrade prehook')
         await clickByText('View logs')
         await waitForCalled(window.open as jest.Mock)
+    })
+
+    it('should show failed when posthook is never reached', async () => {
+        renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
+        await waitForText('Upgrade failing')
+        await clickByText('Upgrade failing')
+        await waitForText('Upgrade posthook was not run.')
     })
 })
