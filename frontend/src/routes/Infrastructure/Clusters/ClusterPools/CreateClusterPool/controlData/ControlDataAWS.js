@@ -122,7 +122,6 @@ const onChangeAWSPrivate = (control, controlData) => {
         if (id === 'amiID' || id === 'hostedZone' || id === 'privateLinkCheckbox') awsPrivateFields.push(controlItem)
         if (id === 'privateLink' || id === 'serviceEndpoints') awsPrivateSections.push(controlItem)
     })
-    console.log('checking control Data:', control)
     awsPrivateFields.forEach((controlItem) => {
         controlItem.disabled = !controlItem.disabled
         controlItem.id === 'privateLinkCheckbox' ? (controlItem.active = control.active) : (controlItem.active = '')
