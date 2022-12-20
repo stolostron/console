@@ -11,13 +11,13 @@ import './HypershiftClusterInstallProgress.css'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
 import { onToggle } from '../utils/utils'
+import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 type HostedClusterProgressProps = {
     hostedCluster: HostedClusterK8sResource
-    launchToOCP: (urlSuffix: string, newTab: boolean) => void
 }
 
-const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProgressProps) => {
+const HostedClusterProgress = ({ hostedCluster }: HostedClusterProgressProps) => {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
@@ -59,8 +59,7 @@ const HostedClusterProgress = ({ hostedCluster, launchToOCP }: HostedClusterProg
                                     launchToOCP(
                                         `k8s/ns/${hostedCluster?.metadata?.namespace || ''}-${
                                             hostedCluster?.metadata?.name || ''
-                                        }/pods`,
-                                        true
+                                        }/pods`
                                     )
                                 }
                                 icon={<ExternalLinkAltIcon />}

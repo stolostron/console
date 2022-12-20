@@ -1,11 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, List, ListItem, Page, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+    Card,
+    ClipboardCopyButton,
+    CodeBlock,
+    CodeBlockAction,
+    CodeBlockCode,
+    List,
+    ListItem,
+    Page,
+    Text,
+    TextContent,
+    TextVariants,
+} from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
+import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../../../../../../lib/doc-util'
+import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
-import { AcmInlineCopy } from '../../../../../../../../ui-components'
 import './css/HypershiftAWSCLI.css'
 
 export function HypershiftAWSCLI() {
@@ -17,8 +29,45 @@ export function HypershiftAWSCLI() {
         { label: t('Create cluster') },
     ]
 
-    const copyCommand =
-        'oc hcp create cluster aws --name $CLUSTER_NAME --namespace $NAMESPACE --node-pool-replicas=3 --secret-creds $SECRET_CREDS --region $REGION'
+    const [copied, setCopied] = useState(false)
+
+    const code = `# Set environment variables
+REGION=us-east-1
+CLUSTER_NAME=example
+SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
+NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $Namespace.
+
+hypershift create cluster aws 
+  --name $CLUSTER_NAME \\
+  --namespace $NAMESPACE \\
+  --node-pool-replicas=3 \\
+  --secret-creds $SECRET_CREDS \\
+  --region $REGION \\`
+
+    const helperCommand = `hypershift create cluster aws --help`
+
+    const onClick = (text: string) => {
+        navigator.clipboard.writeText(text.toString())
+        setCopied(true)
+    }
+
+    const actions = (code: string, id: string) => (
+        <Fragment>
+            <CodeBlockAction>
+                <ClipboardCopyButton
+                    id={`${id}-copy`}
+                    textId={id}
+                    aria-label="Copy to clipboard"
+                    onClick={() => onClick(code)}
+                    exitDelay={copied ? 1500 : 600}
+                    maxWidth="110px"
+                    variant="plain"
+                >
+                    {copied ? t('Successfully copied to clipboard!') : t('Copy to clipboard')}
+                </ClipboardCopyButton>
+            </CodeBlockAction>
+        </Fragment>
+    )
 
     return (
         <Page>
@@ -72,28 +121,30 @@ export function HypershiftAWSCLI() {
                     <ListItem icon={<span className="ocm-icons">3</span>}>
                         <TextContent>
                             <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane command')}</Text>
-                            <Text component={TextVariants.h4}>{t('Copy command')}</Text>
-                            <Text component={TextVariants.p}>
-                                {t('Log in to OpenShift Container Platform by using the oc login command.')}
+                            <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>
+                            <Text
+                                component={TextVariants.a}
+                                onClick={() => {
+                                    window.open(window.SERVER_FLAGS?.requestTokenURL)
+                                }}
+                                target="_blank"
+                            >
+                                {t('Use the oc login command.')}
                             </Text>
+                            <Text component={TextVariants.h4}>{t('Execute command')}</Text>
                             <Text component={TextVariants.p}>
-                                <AcmInlineCopy
-                                    text={copyCommand}
-                                    displayText={t('Copy this template')}
-                                    id="copy-template"
-                                    iconPosition="left"
-                                />{' '}
-                                {t('to create the Hosted Control Plane command.')}
+                                {t('To create the Hosted Control Plane command, copy the code using the copy icon.')}
                             </Text>
-                            <Text component={TextVariants.h4}>{t('Replace variables')}</Text>
-                            <Text component={TextVariants.p}>{t('Replace the template variables.')}</Text>
-                            <Text component={TextVariants.p}>
-                                {t('*Note')}: {/* command, no translation needed */}
-                                <span style={{ border: '1px solid #dfe3e6', padding: '0.2em' }}>
-                                    --secret-creds $SECRET_CREDS
-                                </span>{' '}
-                                {t('will be replaced with your AWS credentials from step 1.')}
+                            <CodeBlock actions={actions(code, 'code-command')}>
+                                <CodeBlockCode id="code-content">{code}</CodeBlockCode>
+                            </CodeBlock>
+                            <Text style={{ marginTop: '1em' }}>
+                                {t('Use the following command to see all available parameters.')}
                             </Text>
+                            <CodeBlock actions={actions(helperCommand, 'helper-command')}>
+                                <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
+                            </CodeBlock>
+                            {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
                         </TextContent>
                     </ListItem>
                 </List>

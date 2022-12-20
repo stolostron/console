@@ -10,6 +10,8 @@ export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_a
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
+export const DOC_CREATE_HOSTED_CLUSTER = 'https://hypershift-docs.netlify.app/getting-started/#create-a-hostedcluster'
+
 export const DOC_LINKS = {
     CLUSTERS: `${DOC_BASE_PATH}/multicluster_engine/index#cluster-overview`,
     CREATE_CONNECTION: `${DOC_BASE_PATH}/multicluster_engine/index#credentials`,

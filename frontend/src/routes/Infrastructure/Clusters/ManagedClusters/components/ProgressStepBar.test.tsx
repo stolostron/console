@@ -53,6 +53,57 @@ const mockCluster: Cluster = {
     isRegionalHubCluster: false,
 }
 
+const mockCluster1: Cluster = {
+    name: 'clusterName',
+    displayName: 'clusterName',
+    namespace: 'clusterName',
+    uid: 'clusterName-uid',
+    provider: undefined,
+    status: ClusterStatus.creating,
+    distribution: {
+        ocp: {
+            version: '1.2.3',
+            availableUpdates: ['1.2.4', '1.2.5'],
+            desiredVersion: '1.2.4',
+            upgradeFailed: false,
+        },
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: true,
+            isReadyUpdates: false,
+            isReadySelectChannels: false,
+            availableUpdates: ['1.2.4', '1.2.5'],
+            currentVersion: '1.2.3',
+            desiredVersion: '1.2.4',
+            latestJob: {},
+        },
+        k8sVersion: '1.11',
+        displayVersion: 'openshift',
+        isManagedOpenShift: false,
+    },
+    labels: { abc: '123' },
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+        },
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: true,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: true,
+    isRegionalHubCluster: false,
+}
+
 const clusterCurator1: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -137,5 +188,24 @@ describe('ProgressStepBar', () => {
         await waitForText('Cluster install')
         await clickByText('View logs')
         await waitForCalled(window.open as jest.Mock)
+    })
+
+    test('hypershift logs link', async () => {
+        window.open = jest.fn()
+        render(
+            <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+                <RecoilRoot
+                    initializeState={(snapshot) => {
+                        snapshot.set(clusterCuratorsState, [clusterCurator1])
+                        snapshot.set(ansibleJobState, [ansibleJob])
+                    }}
+                >
+                    <MemoryRouter>
+                        <ProgressStepBar />
+                    </MemoryRouter>
+                </RecoilRoot>
+            </ClusterContext.Provider>
+        )
+        await clickByText('View logs')
     })
 })

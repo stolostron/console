@@ -156,7 +156,7 @@ export function StatusField(props: { cluster: Cluster }) {
                     <AcmButton
                         style={{ padding: 0, fontSize: 'inherit' }}
                         key={props.cluster.name}
-                        onClick={() => launchToOCP(url, true, () => window.open(`${window.location.origin}/${url}`))}
+                        onClick={() => launchToOCP(url)}
                         variant="link"
                         role="link"
                         icon={<ExternalLinkAltIcon />}

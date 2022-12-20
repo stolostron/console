@@ -15,14 +15,9 @@ type HypershiftClusterInstallProgressProps = {
     hostedCluster: HostedClusterK8sResource
     nodePools: NodePoolK8sResource[]
     clusterImages: ClusterImageSetK8sResource[]
-    launchToOCP: (urlSuffix: string, newTab: boolean) => void
 }
 
-const HypershiftClusterInstallProgress = ({
-    hostedCluster,
-    launchToOCP,
-    ...rest
-}: HypershiftClusterInstallProgressProps) => {
+const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
     const [nodePoolTableWidth, setNodePoolTableWidth] = useState<number>()
     const useNodePoolTableWidthCallback = () => {
         const setRef = useCallback((node) => {
@@ -41,7 +36,7 @@ const HypershiftClusterInstallProgress = ({
             <div id="hypershift-cluster-install-progress" ref={nodePoolTableWidthRef}>
                 <StackItem>
                     <ProgressStepper isVertical>
-                        <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={launchToOCP} />
+                        <HostedClusterProgress hostedCluster={hostedCluster} />
                         <NodePoolsProgress {...rest} nodePoolTableWidth={nodePoolTableWidth} />
                     </ProgressStepper>
                 </StackItem>

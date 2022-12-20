@@ -214,7 +214,7 @@ describe('HostedClusterProgress', () => {
         nockIgnoreRBAC()
         render(
             <RecoilRoot>
-                <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={jest.fn} />
+                <HostedClusterProgress hostedCluster={hostedCluster} />
             </RecoilRoot>
         )
     })
@@ -229,7 +229,7 @@ describe('HostedClusterProgress click launchToOCP link', () => {
         nockIgnoreRBAC()
         render(
             <RecoilRoot>
-                <HostedClusterProgress hostedCluster={hostedCluster2} launchToOCP={jest.fn} />
+                <HostedClusterProgress hostedCluster={hostedCluster2} />
             </RecoilRoot>
         )
     })

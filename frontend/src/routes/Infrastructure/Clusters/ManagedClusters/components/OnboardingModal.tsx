@@ -75,9 +75,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                             isVisitedLink
                             onClick={() =>
                                 launchToOCP(
-                                    'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace',
-                                    true,
-                                    () => window.open(`${window.location.origin}`)
+                                    'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
                                 )
                             }
                             style={{

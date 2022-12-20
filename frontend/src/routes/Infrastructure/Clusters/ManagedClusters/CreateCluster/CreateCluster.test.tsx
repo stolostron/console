@@ -28,7 +28,7 @@ import {
     SubscriptionOperatorApiVersion,
     SubscriptionOperatorKind,
 } from '../../../../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -176,6 +176,8 @@ const providerConnectionAws: ProviderConnection = {
         pullSecret: '{"pullSecret":"secret"}',
         'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
         'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+        httpProxy: 'http://example.com',
+        httpsProxy: 'https://example.com',
     },
     type: 'Opaque',
 }
@@ -595,25 +597,26 @@ describe('CreateCluster AWS', () => {
 
         // connection should be pre-selected
 
-        // step 2 -- the name and imageset
+        // step 1 -- cluster details
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 3 -- nodes
+        // step 2 -- node pools
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 3 -- netwroking
         await clickByText('Next')
 
-        // skipping private configuration
+        // step 4 -- proxy
+        screen.getByRole('checkbox', { name: /use proxy/i }).click()
         await clickByText('Next')
 
-        // skipping proxy
+        // step 5 - AWS private configuration
         await clickByText('Next')
 
-        // choose ansible template
+        // step 6 -- automation
         await waitForText('Install the operator')
         await clickByPlaceholderText('Select an automation template')
         await clickByText(mockClusterCurators[0].metadata.name!)
@@ -669,25 +672,26 @@ describe('CreateCluster AWS', () => {
 
         // connection should be pre-selected
 
-        // step 2 -- the name and imageset
+        // step 1 -- cluster details
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 3 -- nodes
+        // step 2 -- node pools
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 3 -- networking
         await clickByText('Next')
 
-        // skipping private configuration
+        // step 4 -- proxy
+        screen.getByRole('checkbox', { name: /use proxy/i }).click()
         await clickByText('Next')
 
-        // skipping proxy
+        // step 5 -- AWS private configuration
         await clickByText('Next')
 
-        // ansible template
+        // step 6 -- automation
         await waitForText('Automation template')
         await waitForNotText('Install the operator')
         await clickByPlaceholderText('Select an automation template')
@@ -736,22 +740,23 @@ describe('CreateCluster AWS', () => {
 
         // connection should be pre-selected
 
-        // step 1 -- the name and imageset
+        // step 1 -- cluster details
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 2 -- nodes
+        // step 2 -- node pools
         await clickByText('Next')
 
-        // step 3 -- the network
+        // step 3 -- networking
         await clickByText('Next')
 
         // step 4 -- proxy
+        screen.getByRole('checkbox', { name: /use proxy/i }).click()
         await clickByText('Next')
 
-        // private configuration
+        // step 5 -- AWS private configuration
         await clickByTestId('hasPrivateConfig')
         await typeByText('Hosted zone', 'aws-hosted-zone.com')
         await typeByPlaceholderText('Enter AMI ID', 'ami-0876eacb38191e91f')
@@ -762,10 +767,8 @@ describe('CreateCluster AWS', () => {
         await typeByPlaceholderText('Enter AWS service endpoint URL', 'aws.endpoint-1.com')
         await clickByText('Next')
 
-        // skipping proxy
+        // step 6 -- automation
         await clickByText('Next')
-
-        // step 6 - integration - skipping ansible template
 
         // nocks for cluster creation
         const createNocks = [
@@ -811,25 +814,26 @@ describe('CreateCluster AWS', () => {
 
         // connection should be pre-selected
 
-        // step 2 -- the name and imageset
+        // step 1 -- cluster details
         await typeByTestId('eman', clusterName!)
         await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 3 -- nodes
+        // step 2 -- node pools
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 4 -- networking
         await clickByText('Next')
 
-        // skipping private configuration
+        // step 4 -- proxy
+        screen.getByRole('checkbox', { name: /use proxy/i }).click()
         await clickByText('Next')
 
-        // skipping proxy
+        // step 5 -- AWS private configuration
         await clickByText('Next')
 
-        // step 6 - integration - skipping ansible template
+        // step 6 -- automation
         await clickByText('Next')
 
         // nocks for cluster creation

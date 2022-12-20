@@ -187,6 +187,9 @@ export function CredentialsForm(
     const [httpProxy, setHttpProxy] = useState(() => providerConnection?.stringData?.httpProxy ?? '')
     const [httpsProxy, setHttpsProxy] = useState(() => providerConnection?.stringData?.httpsProxy ?? '')
     const [noProxy, setNoProxy] = useState(() => providerConnection?.stringData?.noProxy ?? '')
+    const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
+        () => providerConnection?.stringData?.additionalTrustBundle ?? ''
+    )
 
     // Amazon Web Services State
     const [aws_access_key_id, setAwsAccessKeyID] = useState(
@@ -292,10 +295,10 @@ export function CredentialsForm(
     const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
     const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
 
-    // Disconnected or Proxy
+    // Disconnected
     const [clusterOSImage, setClusterOSImage] = useState(() => providerConnection?.stringData?.clusterOSImage ?? '')
-    const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
-        () => providerConnection?.stringData?.additionalTrustBundle ?? ''
+    const [disconnectedAdditionalTrustBundle, setDisconnectedAdditionalTrustBundle] = useState(
+        () => providerConnection?.stringData?.disconnectedAdditionalTrustBundle ?? ''
     )
     const [imageContentSources, setImageContentSources] = useState(
         () => providerConnection?.stringData?.imageContentSources ?? ''
@@ -395,6 +398,7 @@ export function CredentialsForm(
                 stringData['ssh-privatekey'] = sshPrivatekey
                 stringData['ssh-publickey'] = sshPublickey
                 stringData.imageContentSources = imageContentSources
+                stringData.disconnectedAdditionalTrustBundle = disconnectedAdditionalTrustBundle
                 stringData.httpProxy = httpProxy
                 stringData.httpsProxy = httpsProxy
                 stringData.noProxy = noProxy
@@ -409,6 +413,7 @@ export function CredentialsForm(
                 stringData['ssh-publickey'] = sshPublickey
                 stringData.clusterOSImage = clusterOSImage
                 stringData.imageContentSources = imageContentSources
+                stringData.disconnectedAdditionalTrustBundle = disconnectedAdditionalTrustBundle
                 stringData.httpProxy = httpProxy
                 stringData.httpsProxy = httpsProxy
                 stringData.noProxy = noProxy
@@ -489,6 +494,10 @@ export function CredentialsForm(
             { path: 'Secret[0].stringData.ovirt_ca_bundle', setState: setOvirtCABundle },
             { path: 'Secret[0].stringData.clusterOSImage', setState: setClusterOSImage },
             { path: 'Secret[0].stringData.additionalTrustBundle', setState: setAdditionalTrustBundle },
+            {
+                path: 'Secret[0].stringData.disconnectedAdditionalTrustBundle',
+                setState: setDisconnectedAdditionalTrustBundle,
+            },
             { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
             { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
             { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
@@ -1065,7 +1074,7 @@ export function CredentialsForm(
                         validation: (value) => validateImageContentSources(value, t),
                     },
                     {
-                        id: 'additionalTrustBundle',
+                        id: 'disconnectedAdditionalTrustBundle',
                         isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Additional trust bundle'),
@@ -1073,8 +1082,8 @@ export function CredentialsForm(
                         labelHelp: t(
                             'This value provides the contents of the certificate file that is required to access the mirror registry.'
                         ),
-                        value: additionalTrustBundle,
-                        onChange: setAdditionalTrustBundle,
+                        value: disconnectedAdditionalTrustBundle,
+                        onChange: setDisconnectedAdditionalTrustBundle,
                     },
                 ],
             },
@@ -1162,7 +1171,7 @@ export function CredentialsForm(
                         label: t('Additional trust bundle'),
                         placeholder: t('Enter your additional trust bundle'),
                         labelHelp: t(
-                            'This value provides the contents of the certificate file that is required to access the mirror registry.'
+                            'This value provides one or more additional CA certificates that are required for proxying HTTPS connections.'
                         ),
                         value: additionalTrustBundle,
                         onChange: setAdditionalTrustBundle,
@@ -1389,6 +1398,7 @@ export function CredentialsForm(
                 '*.stringData.token',
                 '*.stringData.ocmAPIToken',
                 '*.stringData.additionalTrustBundle',
+                '*.stringData.disconnectedAdditionalTrustBundle',
                 '*.stringData.ovirt_ca_bundle',
                 '*.stringData.ovirt_password',
                 '*.stringData.ovirt-config.yaml',

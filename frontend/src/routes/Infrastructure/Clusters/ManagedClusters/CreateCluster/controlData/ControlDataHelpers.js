@@ -177,6 +177,9 @@ export const setAvailableConnections = (control, secrets) => {
         if (!replacements['additionalTrustBundle']) {
             delete replacements['additionalTrustBundle']
         }
+        if (!replacements['disconnectedAdditionalTrustBundle']) {
+            delete replacements['disconnectedAdditionalTrustBundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
@@ -200,12 +203,14 @@ export const setAvailableTemplates = (control, templates) => {
     control.available = templates.map((template) => template.metadata.name)
 }
 
+const PROXY_CONTROLS = ['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle']
+
 const onChangeProxy = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = getControlByID(controlData, 'hasProxy').active
-    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
+    const useProxy = control.active
+    PROXY_CONTROLS.forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
@@ -225,6 +230,15 @@ const onChangeProxy = (control, controlData) => {
     })
 }
 
+const someControlsHaveReplacements = (controls, replacements) => controls.some((control) => !!replacements[control])
+const enableControls = (controls, controlData) =>
+    controls.forEach((control) => {
+        const controlObject = getControlByID(controlData, control)
+        if (controlObject) {
+            controlObject.disabled = false
+        }
+    })
+
 export const onChangeConnection = (control, controlData) => {
     const { active, availableMap = {} } = control
     const replacements = _.get(availableMap[active], 'replacements')
@@ -232,10 +246,20 @@ export const onChangeConnection = (control, controlData) => {
         controlData.forEach((control) => {
             switch (control.id) {
                 case 'hasProxy':
-                    control.active = !!replacements['httpProxy']
+                    control.active = someControlsHaveReplacements(PROXY_CONTROLS, replacements)
+                    if (control.active) {
+                        enableControls(PROXY_CONTROLS, controlData) // enable all controls; values will be set in default case block
+                    } else {
+                        onChangeProxy(control, controlData) // new connection does not specify proxy; stash current values
+                    }
                     break
                 case 'isDisconnected':
-                    control.active = !!replacements['imageContentSources']
+                    control.active = someControlsHaveReplacements(DISCONNECTED_CONTROLS, replacements)
+                    if (control.active) {
+                        enableControls(DISCONNECTED_CONTROLS, controlData) // enable all controls; values will be set in default case block
+                    } else {
+                        onChangeDisconnect(control, controlData) // new connection does not specify disconnected; stash current values
+                    }
                     break
                 default:
                     if (replacements[control.id]) {
@@ -247,29 +271,21 @@ export const onChangeConnection = (control, controlData) => {
                                 control.active = replacements[control.id]
                                 break
                         }
-                        control.disabled = false
-                        if (control.id === 'disconnectedAdditionalTrustBundle') {
-                        }
                     }
                     break
             }
         })
     }
-    setTimeout(() => {
-        const datbControl = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
-        if (datbControl && replacements) {
-            datbControl.active = replacements['additionalTrustBundle']
-            datbControl.disabled = !datbControl.active
-        }
-    })
 }
+
+const DISCONNECTED_CONTROLS = ['clusterOSImage', 'imageContentSources', 'disconnectedAdditionalTrustBundle']
 
 export const onChangeDisconnect = (control, controlData) => {
     const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = getControlByID(controlData, 'isDisconnected').active
-    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
+    const isDisconnected = control.active
+    DISCONNECTED_CONTROLS.forEach((pid) => {
         const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
