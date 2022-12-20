@@ -8,22 +8,8 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string, newTab: boolean, onError?: VoidFunction) {
-    api<{ data: { consoleURL: string } }>(
-        '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
-    )
-        .then(({ data }) => {
-            if (newTab) {
-                window.open(`${data.consoleURL}/${urlSuffix}`)
-            } else {
-                location.href = `${data.consoleURL}/${urlSuffix}`
-            }
-        })
-        .catch((error) => {
-            onError?.()
-            // eslint-disable-next-line no-console
-            console.error(error)
-        })
+export function launchToOCP(urlSuffix: string) {
+    window.open(`/${urlSuffix}`)
 }
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {

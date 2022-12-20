@@ -3,7 +3,6 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
 import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress'
 import { AcmExpandableCard } from '../../../../../ui-components'
-import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -32,9 +31,6 @@ const HypershiftClusterDetails: React.FC = () => {
                             hostedCluster={hostedCluster}
                             nodePools={clusterNodePools}
                             clusterImages={clusterImageSets as CIM.ClusterImageSetK8sResource[]}
-                            launchToOCP={(url, newTab) =>
-                                launchToOCP(url, newTab, () => window.open(`${window.location.origin}/${url}`))
-                            }
                         />
                     </AcmExpandableCard>
                 </div>
