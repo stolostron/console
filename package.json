@@ -5,7 +5,7 @@
     "private": "true",
     "scripts": {
         "postinstall": "concurrently npm:ci:* -c green,blue",
-        "ci:frontend": "cd frontend && npm ci --legacy-peer-deps",
+        "ci:frontend": "cd frontend && npm ci",
         "ci:backend": "cd backend && npm ci",
         "start": "concurrently npm:start:* -c green,blue",
         "start:backend": "cd backend && npm start",
