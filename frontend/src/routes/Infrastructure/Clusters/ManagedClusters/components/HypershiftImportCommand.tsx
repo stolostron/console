@@ -21,6 +21,8 @@ import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/Hyper
 import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
 
+export const hostControlPlaneReadyMsg = 'The hosted control plane is available'
+
 export const HypershiftImportCommand = (props: { selectedHostedClusterResource: HostedClusterK8sResource }) => {
     const { selectedHostedClusterResource } = props
     const { t } = useTranslation()
@@ -45,6 +47,9 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     const { v1ImportCommand, loading, error: importErr } = useImportCommand(true)
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
+    const HostedClusterReadyStatus = props.selectedHostedClusterResource.status.conditions?.find(
+        ({ message }: { message: string }) => message === hostControlPlaneReadyMsg
+    )
 
     function importHostedControlPlaneCluster() {
         const hdName = selectedHostedClusterResource.metadata?.name
@@ -99,7 +104,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         ])
     }
 
-    if (!v1ImportCommand && cluster?.isHypershift) {
+    if (!v1ImportCommand && cluster?.isHypershift && HostedClusterReadyStatus.status === 'True') {
         // import alert
         return (
             <div style={{ marginBottom: '12px' }}>
