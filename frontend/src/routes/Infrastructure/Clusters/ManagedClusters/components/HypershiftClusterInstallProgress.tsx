@@ -9,6 +9,7 @@ import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 
 import './HypershiftClusterInstallProgress.css'
+import { useCallback, useState } from 'react'
 
 type HypershiftClusterInstallProgressProps = {
     hostedCluster: HostedClusterK8sResource
@@ -21,15 +22,32 @@ const HypershiftClusterInstallProgress = ({
     hostedCluster,
     launchToOCP,
     ...rest
-}: HypershiftClusterInstallProgressProps) => (
-    <Stack hasGutter>
-        <StackItem>
-            <ProgressStepper isVertical>
-                <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={launchToOCP} />
-                <NodePoolsProgress {...rest} />
-            </ProgressStepper>
-        </StackItem>
-    </Stack>
-)
+}: HypershiftClusterInstallProgressProps) => {
+    const [nodePoolTableWidth, setNodePoolTableWidth] = useState<number>()
+    const useNodePoolTableWidthCallback = () => {
+        const setRef = useCallback((node) => {
+            if (node) {
+                setNodePoolTableWidth(node.offsetWidth * 0.95)
+            }
+        }, [])
+
+        return [setRef]
+    }
+
+    const [nodePoolTableWidthRef] = useNodePoolTableWidthCallback()
+
+    return (
+        <Stack hasGutter>
+            <div id="hypershift-cluster-install-progress" ref={nodePoolTableWidthRef}>
+                <StackItem>
+                    <ProgressStepper isVertical>
+                        <HostedClusterProgress hostedCluster={hostedCluster} launchToOCP={launchToOCP} />
+                        <NodePoolsProgress {...rest} nodePoolTableWidth={nodePoolTableWidth} />
+                    </ProgressStepper>
+                </StackItem>
+            </div>
+        </Stack>
+    )
+}
 
 export default HypershiftClusterInstallProgress

@@ -75,9 +75,10 @@ export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunctio
 type NodePoolsProgressProps = {
     nodePools: NodePoolK8sResource[]
     clusterImages: ClusterImageSetK8sResource[]
+    nodePoolTableWidth: number | undefined
 }
 
-const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
+const NodePoolsProgress = ({ nodePools, nodePoolTableWidth, ...rest }: NodePoolsProgressProps) => {
     const { t } = useTranslation()
     const nodePoolsProgressID = `${window.location.href}node-pools-progress`
     localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
@@ -156,7 +157,11 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                 </StackItem>
                 {expanded && (
                     <StackItem className="nodepool-progress-item__body">
-                        <NodePoolsTable nodePools={nodePools as NodePool[]} {...rest} />
+                        <NodePoolsTable
+                            nodePools={nodePools as NodePool[]}
+                            nodePoolTableWidth={nodePoolTableWidth}
+                            {...rest}
+                        />
                     </StackItem>
                 )}
             </Stack>

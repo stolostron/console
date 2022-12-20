@@ -19,9 +19,10 @@ import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../
 type NodePoolsTableProps = {
     nodePools: NodePool[]
     clusterImages: ClusterImageSetK8sResource[]
+    nodePoolTableWidth: number | undefined
 }
 
-const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
+const NodePoolsTable = ({ nodePools, clusterImages, nodePoolTableWidth }: NodePoolsTableProps): JSX.Element => {
     const { t } = useTranslation()
     const { cluster, hostedCluster } = useContext(ClusterContext)
     const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
@@ -326,7 +327,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 clusterImages={clusterImages}
             />
             <Stack hasGutter>
-                <StackItem>
+                <StackItem style={{ width: nodePoolTableWidth }}>
                     <AcmTable<NodePool>
                         key="nodepool-table"
                         plural={t('Node pools')}
