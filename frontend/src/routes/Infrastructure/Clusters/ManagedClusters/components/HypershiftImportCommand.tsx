@@ -47,7 +47,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     const { v1ImportCommand, loading, error: importErr } = useImportCommand(true)
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
-    const HostedClusterReadyStatus = props.selectedHostedClusterResource.status.conditions?.find(
+    const HostedClusterReadyStatus = props?.selectedHostedClusterResource?.status?.conditions?.find(
         ({ message }: { message: string }) => message === hostControlPlaneReadyMsg
     )
 
@@ -104,7 +104,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         ])
     }
 
-    if (!v1ImportCommand && cluster?.isHypershift && HostedClusterReadyStatus.status === 'True') {
+    if (!v1ImportCommand && cluster?.isHypershift && HostedClusterReadyStatus?.status === 'True') {
         // import alert
         return (
             <div style={{ marginBottom: '12px' }}>
