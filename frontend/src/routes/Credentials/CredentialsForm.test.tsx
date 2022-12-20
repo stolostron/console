@@ -219,6 +219,7 @@ describe('add credentials page', () => {
                 vsphereFolder: '/datacenter/vm/folder',
                 vsphereResourcePool: '/datacenter/host/cluster/Resources/resourcePool',
                 imageContentSources: '',
+                disconnectedAdditionalTrustBundle: '',
             },
             true
         )
@@ -333,6 +334,7 @@ describe('add credentials page', () => {
                 cloud: 'openstack',
                 clusterOSImage: '',
                 imageContentSources: '',
+                disconnectedAdditionalTrustBundle: '',
             },
             true
         )
