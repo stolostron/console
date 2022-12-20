@@ -69,7 +69,7 @@ apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:
   labels:
-    cloud: hybrid
+    cloud: BareMetal
     vendor: OpenShift
     name: '{{{ai.name}}}'
     {{#if ai.managedClusterSet}}
@@ -93,7 +93,7 @@ spec:
   clusterName: '{{{ai.name}}}'
   clusterNamespace: '{{{ai.name}}}'
   clusterLabels:
-    cloud: hybrid
+    cloud: BareMetal
     vendor: OpenShift
   applicationManager:
     enabled: true
