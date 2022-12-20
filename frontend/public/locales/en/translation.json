@@ -2546,6 +2546,7 @@
     "updating": "Updating",
     "Updating": "Updating",
     "Upgrade": "Upgrade",
+    "Upgrade posthook was not run.": "Upgrade posthook was not run.",
     "upgrade.ansible.pending.title": "Upgrade pending",
     "upgrade.ansible.posthook": "Upgrade posthook jobs are running",
     "upgrade.ansible.posthook.failure": "Upgrade posthook jobs have failed:",
