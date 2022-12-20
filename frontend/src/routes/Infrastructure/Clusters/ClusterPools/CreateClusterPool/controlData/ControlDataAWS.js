@@ -119,13 +119,13 @@ const onChangeAWSPrivate = (control, controlData) => {
 
     controlData.forEach((controlItem) => {
         const id = controlItem.id
-        if (id === 'amiID' || id === 'hostedZone') awsPrivateFields.push(controlItem)
+        if (id === 'amiID' || id === 'hostedZone' || id === 'privateLinkCheckbox') awsPrivateFields.push(controlItem)
         if (id === 'privateLink' || id === 'serviceEndpoints') awsPrivateSections.push(controlItem)
     })
 
     awsPrivateFields.forEach((controlItem) => {
         controlItem.disabled = !controlItem.disabled
-        controlItem.active = ''
+        controlItem.id === 'privateLinkCheckbox' ? (controlItem.active = true) : (controlItem.active = '')
     })
     awsPrivateSections.forEach((controlItem) => {
         controlItem.active.forEach((section) => {
@@ -697,6 +697,13 @@ export const awsPrivateControlData = (t) => {
             type: 'checkbox',
             active: false,
             onSelect: onChangeAWSPrivate,
+        },
+        {
+            name: t('Use AWS PrivateLink'),
+            id: 'privateLinkCheckbox',
+            type: 'checkbox',
+            disabled: true,
+            active: false,
         },
         {
             name: t('creation.aws.ami'),
