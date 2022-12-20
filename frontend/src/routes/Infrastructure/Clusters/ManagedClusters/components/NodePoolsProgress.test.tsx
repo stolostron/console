@@ -396,7 +396,11 @@ describe('NodePoolsProgress', () => {
         nockIgnoreApiPaths()
         render(
             <RecoilRoot>
-                <NodePoolsProgress nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
+                <NodePoolsProgress
+                    nodePools={nodePools}
+                    clusterImages={[mockClusterImageSet0]}
+                    nodePoolTableWidth={1000}
+                />
             </RecoilRoot>
         )
     })

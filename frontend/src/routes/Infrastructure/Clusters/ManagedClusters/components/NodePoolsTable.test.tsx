@@ -793,7 +793,11 @@ describe('NodePoolsTable', () => {
                         addons: undefined,
                     }}
                 >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
+                    <NodePoolsTable
+                        nodePools={nodePools}
+                        clusterImages={[mockClusterImageSet0]}
+                        nodePoolTableWidth={1000}
+                    />
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
@@ -879,7 +883,7 @@ describe('NodePoolsTable no status', () => {
                         addons: undefined,
                     }}
                 >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} nodePoolTableWidth={1000} />
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
@@ -949,7 +953,7 @@ describe('NodePoolsTable no conditions', () => {
                         addons: undefined,
                     }}
                 >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} nodePoolTableWidth={1000} />
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
@@ -1087,7 +1091,7 @@ describe('NodePoolsTable - Azure', () => {
                         addons: undefined,
                     }}
                 >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} nodePoolTableWidth={1000} />
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
@@ -1148,7 +1152,7 @@ describe('NodePoolsTable - PowerVS', () => {
                         addons: undefined,
                     }}
                 >
-                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+                    <NodePoolsTable nodePools={nodePools} clusterImages={[]} nodePoolTableWidth={1000} />
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
