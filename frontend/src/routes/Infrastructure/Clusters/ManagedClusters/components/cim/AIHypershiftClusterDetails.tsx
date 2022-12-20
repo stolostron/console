@@ -10,6 +10,7 @@ import {
 import { CIM } from 'openshift-assisted-ui-lib'
 import { createResource, deleteResource, getResource, IResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
+import { launchToOCP } from '../../../../../../lib/ocp-utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 
 const AIHypershiftClusterDetails: React.FC = () => {
@@ -45,6 +46,7 @@ const AIHypershiftClusterDetails: React.FC = () => {
                         onRemoveNodePool={(np) => deleteResource(np as IResource).promise}
                         onUpdateNodePool={(nodePool, patches) => patchResource(nodePool as IResource, patches).promise}
                         onAddNodePool={(nodePool) => createResource(nodePool as IResource).promise}
+                        launchToOCP={(url, newTab) => launchToOCP(url, newTab)}
                         supportedVersionsCM={supportedVersionsCM}
                     />
                 </AcmExpandableCard>

@@ -8,7 +8,8 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-export function launchToOCP(urlSuffix: string) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function launchToOCP(urlSuffix: string, newTab?: boolean) {
     window.open(`/${urlSuffix}`)
 }
 
