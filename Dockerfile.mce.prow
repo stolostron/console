@@ -3,7 +3,7 @@
 FROM registry.ci.openshift.org/stolostron/builder:nodejs18-linux as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
-RUN npm ci --no-optional
+RUN npm ci --no-optional --legacy-peer-deps
 RUN npm run build:plugin:mce
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs18-linux as backend
