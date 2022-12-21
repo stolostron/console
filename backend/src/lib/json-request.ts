@@ -3,11 +3,12 @@ import { constants } from 'http2'
 import { Agent } from 'https'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
+import { rejectUnauthorized } from './rejectUnauthorized'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_ACCEPT_ENCODING } =
     constants
 
-const agent = new Agent({ rejectUnauthorized: false })
+const agent = new Agent({ rejectUnauthorized })
 
 export function jsonRequest<T>(url: string, token?: string): Promise<T> {
     const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: 'application/json' }

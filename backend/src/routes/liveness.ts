@@ -4,6 +4,7 @@ import { Agent } from 'https'
 import { FetchError } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 import { respondInternalServerError, respondOK } from '../lib/respond'
 import { getOauthInfoPromise } from './oauth'
 import { getServiceAccountToken } from './serviceAccountToken'
@@ -26,7 +27,7 @@ export function setDead(): void {
     }
 }
 
-const agent = new Agent({ rejectUnauthorized: false })
+const agent = new Agent({ rejectUnauthorized })
 
 export async function apiServerPing(): Promise<void> {
     const msg = 'kube api server ping failed'

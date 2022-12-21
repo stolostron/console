@@ -3,9 +3,10 @@ import { constants, Http2ServerRequest } from 'http2'
 import { Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
+import { rejectUnauthorized } from './rejectUnauthorized'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
-const agent = new Agent({ rejectUnauthorized: false })
+const agent = new Agent({ rejectUnauthorized })
 
 export function getToken(req: Http2ServerRequest): string | undefined {
     let token = parseCookies(req)['acm-access-token-cookie']

@@ -10,6 +10,7 @@ import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
@@ -197,7 +198,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
         const request = got
             .get(url, {
                 headers: { authorization: `Bearer ${serviceAccountToken}` },
-                https: { rejectUnauthorized: false },
+                https: { rejectUnauthorized },
             })
             .json<{
                 metadata: { _continue?: string; continue?: string; resourceVersion: string }
@@ -276,7 +277,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
                 headers: { authorization: `Bearer ${serviceAccountToken}` },
-                https: { rejectUnauthorized: false },
+                https: { rejectUnauthorized },
                 timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
             })
             // TODO use abort signal when on node 16

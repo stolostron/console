@@ -5,6 +5,7 @@ import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 import { notFound, respondBadRequest, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 
@@ -41,7 +42,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
             headers: {
                 Authorization: `Bearer ${ansibleCredential.token}`,
             },
-            rejectUnauthorized: false,
+            rejectUnauthorized,
         }
         if (process.env.HTTPS_PROXY) {
             options.agent = new ProxyAgent()

@@ -6,6 +6,7 @@ import { encode as stringifyQuery, parse as parseQueryString } from 'querystring
 import { deleteCookie } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 import { setDead } from './liveness'
@@ -80,7 +81,7 @@ export async function logout(req: Http2ServerRequest, res: Http2ServerResponse):
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
 
-    const gotOptions = { headers: { Authorization: `Bearer ${token}` }, https: { rejectUnauthorized: false } }
+    const gotOptions = { headers: { Authorization: `Bearer ${token}` }, https: { rejectUnauthorized } }
 
     let tokenName = token
     const sha256Prefix = 'sha256~'

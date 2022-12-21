@@ -4,8 +4,9 @@ import { constants } from 'http2'
 import { Agent, request, RequestOptions } from 'https'
 import { AbortSignal } from 'node-fetch/externals'
 import { logger } from './logger'
+import { rejectUnauthorized } from './rejectUnauthorized'
 
-const agent = new Agent({ rejectUnauthorized: false })
+const agent = new Agent({ rejectUnauthorized })
 
 const { HTTP2_HEADER_CONTENT_LENGTH, HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } =
     constants

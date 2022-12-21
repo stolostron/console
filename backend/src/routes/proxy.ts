@@ -4,6 +4,7 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 
@@ -41,7 +42,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
         path: url,
         method: req.method,
         headers,
-        rejectUnauthorized: false,
+        rejectUnauthorized,
     }
     pipeline(
         req,

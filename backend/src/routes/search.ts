@@ -8,6 +8,7 @@ import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
+import { rejectUnauthorized } from '../lib/rejectUnauthorized'
 
 const proxyHeaders = [
     constants.HTTP2_HEADER_ACCEPT,
@@ -63,7 +64,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
         path: url.pathname,
         method: req.method,
         headers,
-        rejectUnauthorized: false,
+        rejectUnauthorized,
     }
 
     pipeline(
