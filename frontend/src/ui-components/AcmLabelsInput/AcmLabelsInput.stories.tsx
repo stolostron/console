@@ -13,8 +13,8 @@ export default {
     },
 }
 
-export const LabelsInput = (args) => {
-    const [value, setValue] = useState<string[]>([])
+export const LabelsInput = (args: any) => {
+    const [value, setValue] = useState<Record<string, string> | undefined>({})
     return (
         <AcmPageCard>
             <AcmForm>

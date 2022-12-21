@@ -10,13 +10,13 @@ export default {
 }
 
 export const ProviderCard = () => {
-    const [filter, setFilter] = useState<Provider | undefined>(undefined)
-    const providers = Object.values(Provider).map((provider, i) => ({
+    const [filter, setFilter] = useState<string | undefined>(undefined)
+    const providers = Object.values(Provider).map((provider: Provider, i) => ({
         provider,
         clusterCount: i <= 1 ? i : Math.floor(Math.random() * 100 + 1),
         danger: i === 0,
         isSelected: provider === filter,
-        onClick: (provider: Provider) => {
+        onClick: (provider: string) => {
             if (provider === filter) {
                 setFilter(undefined)
             } else {

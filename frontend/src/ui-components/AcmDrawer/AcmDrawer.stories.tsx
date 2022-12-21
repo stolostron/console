@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { ActionGroup, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmDrawer, AcmDrawerContext } from './AcmDrawer'
@@ -15,7 +15,7 @@ export default {
 
 export const Drawer = () => {
     const [isExpanded, setIsExpanded] = useState<boolean>(false)
-    const [labels, setLabels] = useState<Record<string, string>>({
+    const [labels, setLabels] = useState<Record<string, string> | undefined>({
         cloud: 'Amazon',
         clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
         name: 'local-cluster',
@@ -61,14 +61,14 @@ export const Drawer = () => {
 }
 
 export const DrawerUsingAcmPageContext = () => {
-    const [labels, setLabels] = useState<Record<string, string>>({
+    const [labels, setLabels] = useState<Record<string, string> | undefined>({
         cloud: 'Amazon',
         clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
         name: 'local-cluster',
         vendor: 'OpenShift',
     })
     return (
-        <AcmPage hasDrawer={true}>
+        <AcmPage header={<Fragment />} hasDrawer={true}>
             <AcmDrawerContext.Consumer>
                 {({ setDrawerContext }) => (
                     <div style={{ height: '100vh' }}>

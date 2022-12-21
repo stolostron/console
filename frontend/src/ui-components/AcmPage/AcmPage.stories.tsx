@@ -22,7 +22,7 @@ import { LoadingPage as LoadingPageStory } from '../AcmLoadingPage/AcmLoadingPag
 import { AcmRefreshTime } from '../AcmRefreshTime/AcmRefreshTime'
 import { AcmSecondaryNav, AcmSecondaryNavItem } from '../AcmSecondaryNav/AcmSecondaryNav'
 import { TableStory } from '../AcmTable/AcmTable.stories'
-import { AcmPage, AcmPageContent, AcmPageHeader } from './AcmPage'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmPageHeaderProps } from './AcmPage'
 
 const meta: Meta = {
     title: 'Page',
@@ -75,7 +75,7 @@ export const Page = (args: {
                         popoverPosition="bottom"
                         popoverAutoWidth={true}
                         label={args.label}
-                        labelColor={args.labelColor}
+                        labelColor={args.labelColor as AcmPageHeaderProps['labelColor']}
                         description={args.description}
                         switches={args.showSwitch && <Switch label="YAML on" labelOff="YAML off" />}
                         controls={

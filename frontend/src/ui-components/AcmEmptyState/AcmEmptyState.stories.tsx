@@ -34,7 +34,7 @@ export default {
     },
 }
 
-export const EmptyState = (args) => (
+export const EmptyState = (args: any) => (
     <AcmEmptyState
         title={args.title}
         message={args.message}

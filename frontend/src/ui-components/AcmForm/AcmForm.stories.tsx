@@ -38,7 +38,7 @@ export function FormStory() {
     const [password, setPassword] = useState<string>('')
     const [description, setDescription] = useState<string>()
     const [selectValue, setSelectValue] = useState<string>()
-    const [multiselectValue, setMultiselectValue] = useState<string[]>([])
+    const [multiselectValue, setMultiselectValue] = useState<string[] | undefined>([])
     const [labels, setLabels] = useState<Record<string, string>>()
     const [submitText, setSubmitText] = useState('Submit')
     const [number, setNumber] = useState<number>(0)
