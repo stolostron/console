@@ -349,10 +349,9 @@ export default function ApplicationsOverview() {
                 .filter((argoApp) => {
                     const resources = argoApp.status ? argoApp.status.resources : undefined
                     let definedNamespace = ''
-                    resources &&
-                        resources.forEach((resource: any) => {
-                            definedNamespace = resource.namespace
-                        })
+                    if (resources) {
+                        definedNamespace = resources[0].namespace
+                    }
                     // cache Argo app signature for filtering OCP apps later
                     setArgoApplicationsHashSet(
                         (prev) =>
