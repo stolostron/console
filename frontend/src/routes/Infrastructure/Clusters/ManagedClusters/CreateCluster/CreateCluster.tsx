@@ -101,8 +101,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
     // setup translation
     const { t } = useTranslation()
-    const controlPlaneBreadCrumbBM = { text: t('Control plane type'), to: NavigationPath.createBMControlPlane }
-    const controlPlaneBreadCrumbAWS = { text: t('Control plane type'), to: NavigationPath.createAWSControlPlane }
+    const controlPlaneBreadCrumbBM = {
+        text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+        to: NavigationPath.createBMControlPlane,
+    }
+    const controlPlaneBreadCrumbAWS = {
+        text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }),
+        to: NavigationPath.createAWSControlPlane,
+    }
     const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
 
     const settings = useRecoilValue(settingsState)

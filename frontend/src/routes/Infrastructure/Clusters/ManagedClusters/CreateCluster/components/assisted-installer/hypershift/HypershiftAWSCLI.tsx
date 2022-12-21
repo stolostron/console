@@ -25,7 +25,7 @@ export function HypershiftAWSCLI() {
     const breadcrumbs = [
         { label: t('Clusters'), to: NavigationPath.clusters },
         { label: t('Infrastructure'), to: NavigationPath.createCluster },
-        { label: t('Control plane type'), to: NavigationPath.createAWSControlPlane },
+        { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
         { label: t('Create cluster') },
     ]
 

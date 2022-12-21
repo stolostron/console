@@ -106,7 +106,7 @@ export function CreateControlPlane() {
         const newBreadcrumbs: ICatalogBreadcrumb[] = [
             { label: t('Clusters'), to: NavigationPath.clusters },
             { label: t('Infrastructure'), to: NavigationPath.createCluster },
-            { label: t('Control plane type') },
+            { label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }) },
         ]
         return newBreadcrumbs
     }, [t])
