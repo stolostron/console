@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { Grid, GridItem, gridItemSpanValueShape, Skeleton } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 

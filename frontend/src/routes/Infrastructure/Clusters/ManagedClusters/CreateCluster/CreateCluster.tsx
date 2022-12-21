@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 import Handlebars from 'handlebars'

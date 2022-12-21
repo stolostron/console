@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {

@@ -12,7 +12,7 @@ import {
     DropdownProps,
     TooltipPosition,
 } from '@patternfly/react-core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { TooltipWrapper } from '../utils'
 
 type Props = Omit<DropdownProps, 'toggle' | 'onSelect'>

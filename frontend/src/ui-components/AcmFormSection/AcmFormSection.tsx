@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMediaQuery } from '@material-ui/core'
+import { useMediaQuery } from '@mui/material'
 import { Button, Popover, Split, SplitItem, Title, TitleProps } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment } from 'react'

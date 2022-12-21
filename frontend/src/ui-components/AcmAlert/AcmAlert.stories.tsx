@@ -44,26 +44,26 @@ export function ToastGroup() {
 
 export function AlertGroupStory(props: { useToast?: boolean }) {
     const alertContext = useContext(props.useToast ? AcmToastContext : AcmAlertContext)
-    const addAlert = useCallback(() => alertContext.addAlert({ title: 'Alert', message: 'Message' }), [])
+    const addAlert = useCallback(() => alertContext.addAlert({ title: 'Alert', message: 'Message' }), [alertContext])
     const addInfo = useCallback(
         () => alertContext.addAlert({ title: 'Info Alert', message: 'Message', type: 'info' }),
-        []
+        [alertContext]
     )
     const addSuccess = useCallback(
         () => alertContext.addAlert({ title: 'Success Alert', message: 'Message', type: 'success' }),
-        []
+        [alertContext]
     )
     const addWarning = useCallback(
         () => alertContext.addAlert({ title: 'Warning Alert', message: 'Message', type: 'warning' }),
-        []
+        [alertContext]
     )
     const addError = useCallback(
         () => alertContext.addAlert({ title: 'ErrorAlert', message: 'Message', type: 'danger' }),
-        []
+        [alertContext]
     )
     const addExpiring = useCallback(
         () => alertContext.addAlert({ title: 'Info Alert', message: 'Message', type: 'info', autoClose: true }),
-        []
+        [alertContext]
     )
     useEffect(() => {
         addAlert()
@@ -71,7 +71,7 @@ export function AlertGroupStory(props: { useToast?: boolean }) {
         addSuccess()
         addWarning()
         addError()
-    }, [])
+    }, [addAlert, addInfo, addSuccess, addWarning, addError])
     return (
         <Toolbar>
             <ToolbarContent>

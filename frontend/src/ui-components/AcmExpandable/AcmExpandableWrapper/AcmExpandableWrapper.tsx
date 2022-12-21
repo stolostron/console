@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Children, useState } from 'react'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { AcmButton } from '../../AcmButton/AcmButton'
 import { Title, Gallery, GalleryItem } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'

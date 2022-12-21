@@ -2,7 +2,7 @@
 
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { Fragment, useMemo } from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { useTranslation } from '../../lib/acm-i18next'
 
 const useStyles = makeStyles({

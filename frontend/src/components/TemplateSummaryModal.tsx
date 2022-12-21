@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { ClusterCurator, ClusterCuratorAnsibleJob } from '../resources'

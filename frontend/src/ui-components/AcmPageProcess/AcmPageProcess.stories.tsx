@@ -16,7 +16,7 @@ export default {
     },
 }
 
-export const PageProcess = (args) => {
+export const PageProcess = (args: any) => {
     const [isLoading, setIsLoading] = useState<boolean>(true)
 
     useEffect(() => {

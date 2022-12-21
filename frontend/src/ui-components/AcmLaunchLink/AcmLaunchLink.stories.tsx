@@ -19,7 +19,7 @@ export default {
     },
 }
 
-export const DynamicLaunchLink = (args) => {
+export const DynamicLaunchLink = (args: any) => {
     const links: LaunchLink[] = [
         { id: 'grafana', text: 'Grafana', href: '/grafana' },
         { id: 'logs', text: 'Kibana', href: '/kibana' },

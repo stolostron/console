@@ -12,7 +12,7 @@ export const InlineCopy = () => {
     return (
         <Card>
             <CardBody>
-                <AcmInlineCopy text="Copy me" />
+                <AcmInlineCopy id="example-1" text="Copy me" />
             </CardBody>
         </Card>
     )
@@ -22,7 +22,7 @@ export const InlineCopyWithDisplayText = () => {
     return (
         <Card>
             <CardBody>
-                <AcmInlineCopy text="Copy me" displayText="Non-copy text" />
+                <AcmInlineCopy id="example-2" text="Copy me" displayText="Non-copy text" />
             </CardBody>
         </Card>
     )

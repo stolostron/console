@@ -15,7 +15,7 @@ export default {
     },
 }
 
-export const Dropdown = (args) => {
+export const Dropdown = (args: any) => {
     const dropdownItems = [
         { id: 'install-config', text: 'Install config' },
         { id: 'kubeconfig', text: 'Kubeconfig' },

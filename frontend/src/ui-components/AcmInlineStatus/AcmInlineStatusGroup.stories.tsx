@@ -20,7 +20,7 @@ export default {
     },
 }
 
-export const InlineStatusGroup = (args) => {
+export const InlineStatusGroup = (args: any) => {
     return (
         <Card>
             <CardBody>

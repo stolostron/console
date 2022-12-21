@@ -15,7 +15,7 @@ export default {
     },
 }
 
-export const InlineStatus = (args) => {
+export const InlineStatus = (args: any) => {
     return (
         <Card>
             <CardBody>

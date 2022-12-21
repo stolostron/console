@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { Fragment } from 'react'
 import { AcmLabels, AcmModal } from '../../../../../ui-components'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
 const useStyles = makeStyles({

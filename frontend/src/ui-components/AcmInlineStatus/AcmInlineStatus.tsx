@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { Button, Popover, PopoverProps, Spinner } from '@patternfly/react-core'
 import {
     AsleepIcon,

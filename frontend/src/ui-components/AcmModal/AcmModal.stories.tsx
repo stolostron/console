@@ -23,7 +23,7 @@ const meta: Meta = {
 }
 export default meta
 
-export const Modal = (args) => {
+export const Modal = (args: any) => {
     const [open, toggleOpen] = useState<boolean>(true)
     const toggle = () => toggleOpen(!open)
     return (

@@ -15,7 +15,7 @@ import {
     ClusterCuratorKind,
     ClusterStatus,
 } from '../../../../../resources'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import {
     AcmAlert,
     AcmButton,

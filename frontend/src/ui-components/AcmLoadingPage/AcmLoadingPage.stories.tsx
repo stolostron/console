@@ -11,6 +11,6 @@ export default {
     },
 }
 
-export const LoadingPage = (args) => <AcmLoadingPage {...args} />
+export const LoadingPage = (args: any) => <AcmLoadingPage {...args} />
 
 LoadingPage.args = {}
