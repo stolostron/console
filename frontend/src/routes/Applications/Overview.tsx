@@ -53,6 +53,7 @@ import {
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { PluginContext } from '../../lib/PluginContext'
+import { get } from 'lodash'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -348,10 +349,8 @@ export default function ApplicationsOverview() {
             argoApplications
                 .filter((argoApp) => {
                     const resources = argoApp.status ? argoApp.status.resources : undefined
-                    let definedNamespace = ''
-                    if (resources && resources.length) {
-                        definedNamespace = resources[0].namespace
-                    }
+                    const definedNamespace = get(resources, '[0].namespace')
+
                     // cache Argo app signature for filtering OCP apps later
                     setArgoApplicationsHashSet(
                         (prev) =>
