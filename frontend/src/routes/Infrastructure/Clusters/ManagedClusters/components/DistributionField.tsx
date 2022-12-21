@@ -5,12 +5,13 @@ import {
     Cluster,
     ClusterCurator,
     ClusterCuratorDefinition,
+    ClusterCuratorApiVersion,
     ClusterStatus,
     CuratorCondition,
     getLatestAnsibleJob,
 } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
-import { ButtonVariant } from '@patternfly/react-core'
+import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -21,6 +22,8 @@ import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { Link } from 'react-router-dom'
+import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 
 const { getVersionFromReleaseImage } = CIM
 
@@ -137,17 +140,11 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
-                    status={t('upgrade.upgradefailed', {
-                        version: props.cluster?.consoleURL
-                            ? ''
-                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
-                    })}
+                    status={t('upgrade.upgradefailed')}
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
+                                  headerContent: t('upgrade.upgradefailed'),
                                   bodyContent: t('upgrade.upgradefailed.message', {
                                       clusterName: props.cluster?.name,
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
@@ -185,9 +182,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgrading', {
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
+                                  headerContent: t('upgrade.upgrading'),
                                   bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
                                       ? t('upgrade.upgrading.message.percentage', {
                                             clusterName: props.cluster?.name,
@@ -210,6 +205,38 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                               }
                             : undefined
                     }
+                />
+            </>
+        )
+    } else if (props.cluster.distribution.upgradeInfo?.posthookDidNotRun) {
+        // CURATOR POSTHOOK JOB DID NOT RUN
+        const [apigroup, apiversion] = ClusterCuratorApiVersion.split('/')
+        const targetLink = getSearchLink({
+            properties: {
+                name: props.cluster?.name,
+                namespace: props.cluster?.namespace,
+                kind: 'clustercurator',
+                apigroup,
+                apiversion,
+            },
+        })
+        return (
+            <>
+                <div>{props.cluster?.distribution.displayVersion}</div>
+                <AcmInlineStatus
+                    type={StatusType.danger}
+                    status={t('upgrade.upgradefailed')}
+                    popover={{
+                        headerContent: t('upgrade.upgradefailed'),
+                        bodyContent: t('Upgrade posthook was not run.'),
+                        footerContent: (
+                            <Link to={targetLink} target={'_blank'}>
+                                <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
+                                    {t('upgrade.upgrading.link')}
+                                </Button>
+                            </Link>
+                        ),
+                    }}
                 />
             </>
         )

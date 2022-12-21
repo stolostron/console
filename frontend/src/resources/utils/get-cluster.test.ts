@@ -36,6 +36,13 @@ const conditionCuratorMonitoring = {
     type: 'monitor-upgrade',
     message: 'Upgrade status Working towards 4.6.13: 11% complete',
 }
+const conditionCuratorFailedUpdate = {
+    lastTransitionTime: new Date('2021-01-04T18:23:37Z'),
+    message: 'curator-job-mvjq6 DesiredCuration: upgrade failed',
+    reason: 'Job_failed',
+    status: 'True',
+    type: 'clustercurator-job',
+}
 const mockClusterCuratorUpdating: ClusterCurator = {
     ...mockClusterCurator,
     spec: {
@@ -58,6 +65,23 @@ const mockClusterCuratorMonitoring: ClusterCurator = {
     },
     status: {
         conditions: [conditionCuratorJobRunning, conditionCuratorMonitoring],
+    },
+}
+const mockClusterCuratorFailedUpdateJob: ClusterCurator = {
+    ...mockClusterCurator,
+    spec: {
+        desiredCuration: 'upgrade',
+        upgrade: {
+            desiredUpdate: '1.2.5',
+            posthook: [
+                {
+                    name: 'job_1',
+                },
+            ],
+        },
+    },
+    status: {
+        conditions: [conditionCuratorFailedUpdate, conditionCuratorJobRunning, conditionCuratorMonitoring],
     },
 }
 const mockClusterCuratorSelectingChannel: ClusterCurator = {
@@ -161,6 +185,29 @@ const mockManagedClusterInfoFailedUpdating: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: [], //deprecated
                 versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
+                desiredVersion: '', //deprecated
+                upgradeFailed: true,
+                channel: 'stable-1.2',
+                desired: {
+                    channels: ['stable-1.3', 'stable-1.2'],
+                    version: '1.2.4',
+                    image: 'abc',
+                },
+            },
+            type: 'OCP',
+        },
+    },
+}
+const mockManagedClusterInfoFailedUpdatingPosthookNotRun: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: clusterName, namespace: clusterName },
+    status: {
+        distributionInfo: {
+            ocp: {
+                version: '1.2.4',
+                availableUpdates: [], //deprecated
+                versionAvailableUpdates: [],
                 desiredVersion: '', //deprecated
                 upgradeFailed: true,
                 channel: 'stable-1.2',
@@ -695,6 +742,15 @@ describe('getDistributionInfo', () => {
             mockClusterCuratorSelectingChannel
         )
         expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
+    })
+    it('should return posthookDidNotRun when update failure occurs and there is no status from posthook', () => {
+        const d1 = getDistributionInfo(
+            mockManagedClusterInfoFailedUpdatingPosthookNotRun,
+            mockManagedCluster,
+            mockClusterDeployment,
+            mockClusterCuratorFailedUpdateJob
+        )
+        expect(d1?.upgradeInfo.posthookDidNotRun).toBeTruthy()
     })
 })
 
