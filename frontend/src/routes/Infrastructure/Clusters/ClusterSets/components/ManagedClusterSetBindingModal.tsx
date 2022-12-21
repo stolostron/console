@@ -6,7 +6,9 @@ import {
     ManagedClusterSet,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
+    ManagedClusterSetBindingDefinition,
     ManagedClusterSetBindingKind,
+    Namespace,
     resultsSettled,
 } from '../../../../../resources'
 import {
@@ -21,6 +23,7 @@ import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { canUser } from '../../../../../lib/rbac-util'
 
 export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
     const { managedClusterSetBindingsState } = useSharedAtoms()
@@ -39,6 +42,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
     const [namespaces] = useRecoilState(namespacesState)
     const clusterSetBindings = useClusterSetBindings(props.clusterSet)
     const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
+    const [rbacNamespaces, setRbacNamespaces] = useState<Namespace[] | undefined>(undefined)
     const [loaded, setLoaded] = useState<boolean>(false)
 
     function reset() {
@@ -52,8 +56,26 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
             setLoaded(true)
             const clusterSetBindingNamespaces = clusterSetBindings.map((mcsb) => mcsb.metadata.namespace!)
             setSelectedNamespaces(clusterSetBindingNamespaces)
+
+            const requests = Promise.allSettled(
+                namespaces.map((namespace) => {
+                    return canUser('delete', ManagedClusterSetBindingDefinition, namespace.metadata.name).promise
+                })
+            )
+            requests.then((results) => {
+                const authorizedRbacNamespaces: string[] = []
+                results.forEach((res) => {
+                    if (res.status !== 'rejected' && res.value.status?.allowed) {
+                        authorizedRbacNamespaces.push(res.value.spec.resourceAttributes.namespace!)
+                    }
+                })
+                const authorizedNamespaces = namespaces.filter((ns) =>
+                    authorizedRbacNamespaces.includes(ns.metadata.name!)
+                )
+                return setRbacNamespaces(authorizedNamespaces)
+            })
         }
-    }, [props.clusterSet, clusterSetBindings, loaded])
+    }, [props.clusterSet, clusterSetBindings, loaded, namespaces, rbacNamespaces])
 
     return (
         <AcmModal
@@ -68,7 +90,6 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                         <div style={{ marginBottom: '16px' }}>
                             <Trans i18nKey="clusterSetBinding.edit.message" components={{ bold: <strong /> }} />
                         </div>
-
                         <AcmMultiSelect
                             id="namespaces"
                             variant={SelectVariant.typeaheadMulti}
@@ -79,13 +100,14 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             maxHeight="18em"
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
                         >
-                            {namespaces.map((namespace) => {
-                                return (
-                                    <SelectOption key={namespace.metadata.name} value={namespace.metadata.name!}>
-                                        {namespace.metadata.name}
-                                    </SelectOption>
-                                )
-                            })}
+                            {rbacNamespaces &&
+                                rbacNamespaces.map((namespace) => {
+                                    return (
+                                        <SelectOption key={namespace.metadata.name} value={namespace.metadata.name!}>
+                                            {namespace.metadata.name}
+                                        </SelectOption>
+                                    )
+                                })}
                         </AcmMultiSelect>
 
                         <AcmAlertGroup isInline canClose />
