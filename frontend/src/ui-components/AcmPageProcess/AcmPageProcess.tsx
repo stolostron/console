@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EmptyState, EmptyStateBody, EmptyStateSecondaryActions, Title } from '@patternfly/react-core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLoadingPage } from '../AcmLoadingPage/AcmLoadingPage'
 import DestroyedImage from '../assets/resource-destroyed.png'

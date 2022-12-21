@@ -67,7 +67,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
 

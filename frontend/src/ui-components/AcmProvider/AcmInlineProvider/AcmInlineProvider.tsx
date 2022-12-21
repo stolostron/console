@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { Provider, ProviderLongTextMap, ProviderIconMap } from '../'
 import { AcmIcon } from '../../AcmIcons/AcmIcons'
 

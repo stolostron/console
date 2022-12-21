@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { useMediaQuery } from '@material-ui/core'
+import { useMediaQuery } from '@mui/material'
 import {
     ApplicationLauncher,
     ApplicationLauncherItem,

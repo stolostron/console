@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

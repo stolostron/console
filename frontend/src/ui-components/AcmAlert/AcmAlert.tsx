@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import Collapse from '@material-ui/core/Collapse'
+import { Collapse } from '@mui/material'
 import { Alert, AlertActionCloseButton, AlertGroup, Flex } from '@patternfly/react-core'
 import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 

@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 import {
     ButtonVariant,
     EmptyState,

@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
 import { Gallery, GalleryItem, PopoverProps, Text, TextContent } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useViewport } from '../AcmCharts/AcmChartGroup'
-import { ClassNameMap } from '@material-ui/styles'
+import { ClassNameMap } from '@mui/styles'
 import { AcmInlineStatus, StatusType } from '../AcmInlineStatus'
 import { AcmButton } from '../AcmButton'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'

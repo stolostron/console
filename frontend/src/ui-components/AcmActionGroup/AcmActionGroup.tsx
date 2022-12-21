@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react'
 import { Flex, FlexItem, Divider } from '@patternfly/react-core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 
 const useStyles = makeStyles({
     group: {

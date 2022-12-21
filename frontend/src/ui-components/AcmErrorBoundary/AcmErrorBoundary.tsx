@@ -14,7 +14,7 @@ import {
     Bullseye,
 } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { withStyles, Styles } from '@material-ui/styles'
+import { withStyles, Styles } from '@mui/styles'
 import { Component } from 'react'
 
 type ErrorBoundaryStyles = {

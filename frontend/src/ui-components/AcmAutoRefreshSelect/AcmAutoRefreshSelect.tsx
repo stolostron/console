@@ -3,7 +3,7 @@
 import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 
 const DEFAULTS = {
     initPollInterval: 60,
