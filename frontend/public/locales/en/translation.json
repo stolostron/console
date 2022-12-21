@@ -2591,7 +2591,7 @@
     "To apply a resource to a cluster, the placement must be bound to the resource using a placement binding.": "To apply a resource to a cluster, the placement must be bound to the resource using a placement binding.",
     "To complete these values, use the imageContentSources that you recorded during mirror registry creation.": "To complete these values, use the imageContentSources that you recorded during mirror registry creation.",
     "To create an infrastructure environment, you must configure the host inventory settings.": "To create an infrastructure environment, you must configure the host inventory settings.",
-    "To create the Hosted Control Plane command, copy the code using the copy icon.": "To create the Hosted Control Plane command, copy the code using the copy icon.",
+    "To create the Hosted Control Plane command, copy the code:": "To create the Hosted Control Plane command, copy the code:",
     "To get started, create an infrastructure environment to define the settings across multiple hosts.": "To get started, create an infrastructure environment to define the settings across multiple hosts.",
     "To run automation manually, select \"Disabled\" and check the \"Manual run\" checkbox.)": "To run automation manually, select \"Disabled\" and check the \"Manual run\" checkbox.)",
     "To search for a keyword, type the word in the search box.": "To search for a keyword, type the word in the search box.",

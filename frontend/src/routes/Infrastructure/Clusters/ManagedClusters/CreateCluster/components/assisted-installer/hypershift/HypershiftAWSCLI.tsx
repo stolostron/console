@@ -32,10 +32,10 @@ export function HypershiftAWSCLI() {
     const [copied, setCopied] = useState(false)
 
     const code = `# Set environment variables
-REGION=us-east-1
-CLUSTER_NAME=example
+REGION="us-east-1"
+CLUSTER_NAME="example"
 SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
-NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $Namespace.
+NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
 
 hypershift create cluster aws 
   --name $CLUSTER_NAME \\
@@ -133,7 +133,7 @@ hypershift create cluster aws
                             </Text>
                             <Text component={TextVariants.h4}>{t('Execute command')}</Text>
                             <Text component={TextVariants.p}>
-                                {t('To create the Hosted Control Plane command, copy the code using the copy icon.')}
+                                {t('To create the Hosted Control Plane command, copy the code:')}
                             </Text>
                             <CodeBlock actions={actions(code, 'code-command')}>
                                 <CodeBlockCode id="code-content">{code}</CodeBlockCode>
