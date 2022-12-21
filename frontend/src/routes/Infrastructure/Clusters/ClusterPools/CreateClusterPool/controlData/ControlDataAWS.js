@@ -124,12 +124,13 @@ const onChangeAWSPrivate = (control, controlData) => {
     })
     awsPrivateFields.forEach((controlItem) => {
         controlItem.disabled = !controlItem.disabled
-        if(controlItem.id === 'privateLinkCheckbox'){
+        if (controlItem.id === 'privateLinkCheckbox') {
             controlItem.active = control.active
-        } else{
+        } else {
             controlItem.active = ''
         }
-       
+    })
+
     awsPrivateSections.forEach((controlItem) => {
         controlItem.active.forEach((section) => {
             section.forEach((item) => {
