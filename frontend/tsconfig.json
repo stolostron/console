@@ -35,5 +35,4 @@
         "noEmit": true
     },
     "include": ["src", "webpack.config.ts", "webpack.plugin.ts", "*.ts"],
-    "exclude": ["**/*.stories.tsx"]
 }
