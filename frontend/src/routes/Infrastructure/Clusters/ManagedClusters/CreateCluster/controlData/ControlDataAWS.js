@@ -709,10 +709,6 @@ const awsPrivateControlData = (t) => {
             type: 'text',
             disabled: true,
             placeholder: t('creation.aws.ami.placeholder'),
-            validation: {
-                notification: t('Enter an amiID'),
-                required: false,
-            },
             active: '',
             validation: getAlphanumericValidator(t),
         },
@@ -723,10 +719,6 @@ const awsPrivateControlData = (t) => {
             type: 'text',
             disabled: true,
             placeholder: t('creation.aws.hostedZone.placeholder'),
-            validation: {
-                notification: t('Enter a hosted zone'),
-                required: false,
-            },
             active: '',
             validation: getAlphanumericWithPeriodValidator(t),
         },
@@ -751,10 +743,6 @@ const awsPrivateControlData = (t) => {
                     id: 'subnetID',
                     type: 'values',
                     placeholder: t('creation.aws.subnetID.placeholder'),
-                    validation: {
-                        notification: t('Enter a subnet ID'),
-                        required: false,
-                    },
                     active: [],
                     validation: getAlphanumericValidator(t),
                 },
