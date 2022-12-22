@@ -23,6 +23,7 @@ import {
     ClusterStatus,
     getCluster,
     getResource,
+    ManagedCluster,
     mapAddons,
     ResourceError,
     SecretDefinition,
@@ -49,9 +50,10 @@ import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
 
 export const ClusterContext = createContext<{
-    readonly cluster: Cluster | undefined
+    readonly cluster?: Cluster
+    readonly managedCluster?: ManagedCluster
     readonly clusterCurator?: ClusterCurator
-    readonly addons: Addon[] | undefined
+    readonly addons?: Addon[]
     readonly clusterDeployment?: ClusterDeployment
     readonly agents?: AgentK8sResource[]
     readonly agentClusterInstall?: AgentClusterInstallK8sResource
@@ -59,17 +61,7 @@ export const ClusterContext = createContext<{
     readonly infraEnvAIFlow?: InfraEnvK8sResource
     readonly hostedCluster?: HostedClusterK8sResource
     readonly selectedHostedCluster?: HostedClusterK8sResource
-}>({
-    cluster: undefined,
-    addons: undefined,
-    clusterDeployment: undefined,
-    agents: undefined,
-    agentClusterInstall: undefined,
-    // infraEnv: undefined,
-    infraEnvAIFlow: undefined,
-    hostedCluster: undefined,
-    selectedHostedCluster: undefined,
-})
+}>({})
 
 export default function ClusterDetailsPage({
     match: {
@@ -263,6 +255,7 @@ export default function ClusterDetailsPage({
         <ClusterContext.Provider
             value={{
                 cluster,
+                managedCluster,
                 clusterCurator,
                 addons,
                 agentClusterInstall,

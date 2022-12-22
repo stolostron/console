@@ -23,10 +23,13 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { TFunction } from 'i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { checkForCondition, getConditionMessage } from '../../../../../resources/utils/status-conditions'
+
+const ManagedClusterImportSucceededCondition = 'ManagedClusterImportSucceeded'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation()
-    const { cluster } = useContext(ClusterContext)
+    const { cluster, managedCluster } = useContext(ClusterContext)
 
     const { loading, error, autoImportSecret, v1ImportCommand, v1Beta1ImportCommand } = useImportCommand()
 
@@ -44,16 +47,26 @@ export function ImportCommandContainer() {
         return <AcmAlert isInline variant="danger" title={t('request.failed')} message={error} />
     }
 
+    const conditions = managedCluster?.status?.conditions
+    const automaticImportFailed =
+        conditions && checkForCondition(ManagedClusterImportSucceededCondition, conditions, 'False')
+
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
         return (
             <>
                 <div style={{ marginBottom: '12px' }}>
-                    <AcmAlert
-                        isInline
-                        variant={AlertVariant.info}
-                        title={t('import.command.pendingimport')}
-                        message={t('import.command.pendingimport.message')}
-                    />
+                    {automaticImportFailed ? (
+                        <Alert
+                            isInline
+                            variant={AlertVariant.danger}
+                            title={t('Automatic import failed')}
+                            actionLinks={t('You can try importing manually by running the import command.')}
+                        >
+                            {getConditionMessage(ManagedClusterImportSucceededCondition, conditions)}
+                        </Alert>
+                    ) : (
+                        <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                    )}
                 </div>
                 <ImportCommand v1ImportCommand={v1ImportCommand} v1Beta1ImportCommand={v1Beta1ImportCommand} />
             </>
