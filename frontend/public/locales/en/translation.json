@@ -2782,7 +2782,7 @@
     "validate.projectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
     "validate.publicSshKey": "Must be a valid public key",
     "validate.yaml.cloud.not.found": "The cloud name was not found in clouds.yaml.",
-    "validate.yaml.not.valid": "The yaml file is not valid.",
+    "validate.yaml.not.valid": "The YAML is not valid.",
     "Validating...": "Validating...",
     "Validation errors detected": "Validation errors detected",
     "validation.bad.value": "The '{{0}}' key must point to one of these values: {{1}}",
