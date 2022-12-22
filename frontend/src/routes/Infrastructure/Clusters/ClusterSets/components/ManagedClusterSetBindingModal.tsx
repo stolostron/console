@@ -55,27 +55,49 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
         if (props.clusterSet && !loaded) {
             setLoaded(true)
             const clusterSetBindingNamespaces = clusterSetBindings.map((mcsb) => mcsb.metadata.namespace!)
-            setSelectedNamespaces(clusterSetBindingNamespaces)
 
-            const requests = Promise.allSettled(
-                namespaces.map((namespace) => {
-                    return canUser('delete', ManagedClusterSetBindingDefinition, namespace.metadata.name).promise
-                })
-            )
-            requests.then((results) => {
-                const authorizedRbacNamespaces: string[] = []
-                results.forEach((res) => {
-                    if (res.status !== 'rejected' && res.value.status?.allowed) {
-                        authorizedRbacNamespaces.push(res.value.spec.resourceAttributes.namespace!)
+            const getNamespaces = async () => {
+                const [namespacesWithDelete, namespacesWithCreate] = await Promise.allSettled([
+                    Promise.all(
+                        clusterSetBindingNamespaces.map((namespace) => {
+                            return canUser('delete', ManagedClusterSetBindingDefinition, namespace).promise
+                        })
+                    ),
+                    Promise.all(
+                        namespaces.map((namespace) => {
+                            return canUser('create', ManagedClusterSetBindingDefinition, namespace.metadata.name)
+                                .promise
+                        })
+                    ),
+                ])
+
+                const filterNamespaces = (results: any) => {
+                    const authorizedRbacNamespaces: string[] = []
+
+                    if (results.status !== 'rejected') {
+                        results.value.forEach((ssar: any) => {
+                            if (ssar.status?.allowed) {
+                                authorizedRbacNamespaces.push(ssar.spec.resourceAttributes.namespace!)
+                            }
+                        })
                     }
-                })
-                const authorizedNamespaces = namespaces.filter((ns) =>
-                    authorizedRbacNamespaces.includes(ns.metadata.name!)
-                )
-                return setRbacNamespaces(authorizedNamespaces)
-            })
+
+                    const authorizedNamespaces = namespaces.filter((ns) =>
+                        authorizedRbacNamespaces.includes(ns.metadata.name!)
+                    )
+
+                    return authorizedNamespaces
+                }
+                const rbacDeleteNamespaces = filterNamespaces(namespacesWithDelete)
+                const rbacCreateNamespaces = filterNamespaces(namespacesWithCreate)
+                const availableRbacNamespaces = [...new Set([...rbacDeleteNamespaces, ...rbacCreateNamespaces])]
+
+                setSelectedNamespaces(rbacDeleteNamespaces.map((ns) => ns.metadata.name!))
+                setRbacNamespaces(availableRbacNamespaces)
+            }
+            getNamespaces().catch(console.error)
         }
-    }, [props.clusterSet, clusterSetBindings, loaded, namespaces, rbacNamespaces])
+    }, [props.clusterSet, clusterSetBindings, loaded, namespaces, selectedNamespaces, rbacNamespaces])
 
     return (
         <AcmModal
