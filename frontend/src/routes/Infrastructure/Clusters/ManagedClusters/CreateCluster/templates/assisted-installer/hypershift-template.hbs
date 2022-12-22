@@ -126,7 +126,8 @@ apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:
   labels:
-    cloud: hypershift
+    cloud: BareMetal
+    vendor: OpenShift
     name: '{{{hypershift.name}}}'
     {{#if hypershift.managedClusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{hypershift.managedClusterSet}}}'
@@ -149,7 +150,8 @@ spec:
   clusterName: '{{{hypershift.name}}}'
   clusterNamespace: '{{{hypershift.name}}}'
   clusterLabels:
-    cloud: ai-hypershift
+    cloud: BareMetal
+    vendor: OpenShift
   applicationManager:
     enabled: true
   policyController:
