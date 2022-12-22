@@ -131,7 +131,7 @@ export function PolicyWizard(props: {
                         )}
 
                         <ItemContext.Consumer>
-                            {(item: IResource) => (
+                            {() => (
                                 <Fragment>
                                     <WizTextInput
                                         id="name"
@@ -140,7 +140,7 @@ export function PolicyWizard(props: {
                                         placeholder={t('Enter the name')}
                                         required
                                         validation={validatePolicyName}
-                                        readonly={item.metadata?.uid !== undefined}
+                                        readonly={props.editMode === EditMode.Edit}
                                     />
                                     <WizSingleSelect
                                         id="namespace"
@@ -152,7 +152,7 @@ export function PolicyWizard(props: {
                                         )}
                                         options={props.namespaces}
                                         required
-                                        readonly={item.metadata?.uid !== undefined}
+                                        readonly={props.editMode === EditMode.Edit}
                                     />
                                 </Fragment>
                             )}
