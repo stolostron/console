@@ -6,7 +6,6 @@ import {
     AcmEmptyState,
     AcmExpandableCard,
     AcmLabels,
-    AcmLaunchLink,
     AcmPageContent,
     AcmTable,
 } from '../../../../ui-components'
@@ -30,16 +29,12 @@ import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
-    Cluster,
     deleteResource,
     ManagedClusterSet,
     ManagedClusterSetDefinition,
-    mapAddons,
-    mapClusters,
     ResourceErrorCode,
     isGlobalClusterSet,
 } from '../../../../resources'
-import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
@@ -51,61 +46,13 @@ export default function ClusterSetsPage() {
     const { t } = useTranslation()
     const { isSubmarinerAvailable } = useContext(PluginContext)
     const alertContext = useContext(AcmAlertContext)
-    const { waitForAll } = useSharedRecoil()
-    const {
-        agentClusterInstallsState,
-        certificateSigningRequestsState,
-        clusterDeploymentsState,
-        hostedClustersState,
-        managedClusterAddonsState,
-        managedClusterInfosState,
-        managedClusterSetsState,
-        managedClustersState,
-        nodePoolsState,
-    } = useSharedAtoms()
+    const { managedClusterSetsState } = useSharedAtoms()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
-    const [
-        managedClusterSets,
-        managedClusters,
-        clusterDeployments,
-        managedClusterInfos,
-        certificateSigningRequests,
-        managedClusterAddons,
-        agentClusterInstalls,
-        hostedClusters,
-        nodePools,
-    ] = useRecoilValue(
-        waitForAll([
-            managedClusterSetsState,
-            managedClustersState,
-            clusterDeploymentsState,
-            managedClusterInfosState,
-            certificateSigningRequestsState,
-            managedClusterAddonsState,
-            agentClusterInstallsState,
-            hostedClustersState,
-            nodePoolsState,
-        ])
-    )
+    const managedClusterSets = useRecoilValue(managedClusterSetsState)
 
-    let clusters = mapClusters(
-        clusterDeployments,
-        managedClusterInfos,
-        certificateSigningRequests,
-        managedClusters,
-        managedClusterAddons,
-        undefined,
-        undefined,
-        agentClusterInstalls,
-        hostedClusters,
-        nodePools
-    )
-    clusters = clusters.filter((cluster) => cluster?.clusterSet)
-
-    usePageContext(clusters.length > 0, PageActions)
     return (
         <AcmPageContent id="clusters">
             <PageSection>
@@ -155,7 +102,7 @@ export default function ClusterSetsPage() {
                         </Flex>
                     </AcmExpandableCard>
                     <Stack>
-                        <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
+                        <ClusterSetsTable managedClusterSets={managedClusterSets} />
                     </Stack>
                 </Stack>
             </PageSection>
@@ -163,26 +110,7 @@ export default function ClusterSetsPage() {
     )
 }
 
-const PageActions = () => {
-    const { clusterManagementAddonsState } = useSharedAtoms()
-    const { waitForAll } = useSharedRecoil()
-    const [clusterManagementAddons] = useRecoilValue(waitForAll([clusterManagementAddonsState]))
-    const addons = mapAddons(clusterManagementAddons)
-
-    return (
-        <AcmLaunchLink
-            links={addons
-                ?.filter((addon) => addon.launchLink)
-                ?.map((addon) => ({
-                    id: addon.launchLink?.displayText ?? '',
-                    text: addon.launchLink?.displayText ?? '',
-                    href: addon.launchLink?.href ?? '',
-                }))}
-        />
-    )
-}
-
-export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
+export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
