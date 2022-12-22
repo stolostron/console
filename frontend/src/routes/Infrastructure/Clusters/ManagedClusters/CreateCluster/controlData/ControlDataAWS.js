@@ -128,12 +128,14 @@ const onChangeAWSPrivate = (control, controlData) => {
     awsPrivateFields.forEach((controlItem) => {
         controlItem.disabled = !controlItem.disabled
         controlItem.active = ''
+        controlItem.validation.required = !controlItem.validation.required
     })
     awsPrivateSections.forEach((controlItem) => {
         controlItem.active.forEach((section) => {
             section.forEach((item) => {
-                if (item.controlId === 'subnetID') {
+                if (item.id === 'subnetID') {
                     item.active = []
+                    item.validation.required = !item.validation.required
                 }
                 if (item.id === 'endpointName') {
                     controlItem.active.length = 1
@@ -707,6 +709,10 @@ const awsPrivateControlData = (t) => {
             type: 'text',
             disabled: true,
             placeholder: t('creation.aws.ami.placeholder'),
+            validation: {
+                notification: t('Enter an amiID'),
+                required: false,
+            },
             active: '',
             validation: getAlphanumericValidator(t),
         },
@@ -717,6 +723,10 @@ const awsPrivateControlData = (t) => {
             type: 'text',
             disabled: true,
             placeholder: t('creation.aws.hostedZone.placeholder'),
+            validation: {
+                notification: t('Enter a hosted zone'),
+                required: false,
+            },
             active: '',
             validation: getAlphanumericWithPeriodValidator(t),
         },
@@ -741,6 +751,10 @@ const awsPrivateControlData = (t) => {
                     id: 'subnetID',
                     type: 'values',
                     placeholder: t('creation.aws.subnetID.placeholder'),
+                    validation: {
+                        notification: t('Enter a subnet ID'),
+                        required: false,
+                    },
                     active: [],
                     validation: getAlphanumericValidator(t),
                 },
