@@ -24,6 +24,7 @@ export function WizardSyncEditor() {
             onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
+            editableUidSiblings={true}
         />
     )
 }
