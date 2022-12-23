@@ -26,6 +26,16 @@ import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
 import { HypershiftCloudPlatformType } from '..'
+import {
+    checkCuratorLatestOperation,
+    checkCuratorLatestFailedOperation,
+    checkCuratorConditionFailed,
+    getConditionMessage,
+    checkCuratorConditionInProgress,
+    checkCuratorConditionDone,
+    checkForRequirementsMetConditionFailureReason,
+    checkForCondition,
+} from './status-conditions'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -438,57 +448,6 @@ export function getCluster(
     }
 }
 
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
-    conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
-
-const checkForRequirementsMetConditionFailureReason = (
-    reason: string,
-    conditions: V1CustomResourceDefinitionCondition[]
-) => {
-    const cond = conditions?.find((c) => c.type === 'RequirementsMet')
-    return cond?.status === 'False' && cond?.reason === reason
-}
-
-export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-    const cond = conditions?.find((c) => c.message?.includes(condition))
-    return cond?.status === 'False' && cond.reason === 'Job_has_finished'
-}
-
-export const checkCuratorLatestFailedOperation = (
-    condition: string,
-    conditions: V1CustomResourceDefinitionCondition[]
-) => {
-    const cond = conditions?.find((c) => c.message?.includes(condition))
-    return cond?.status === 'True' && cond.reason === 'Job_failed'
-}
-
-export const checkCuratorConditionInProgress = (
-    condition: string,
-    conditions: V1CustomResourceDefinitionCondition[]
-) => {
-    const cond = conditions?.find((c) => c.type === condition)
-    return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
-}
-export const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-    const cond = conditions?.find((c) => c.type === condition)
-    return cond?.message
-}
-
-export const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-    const cond = conditions?.find((c) => c.type === condition)
-    return cond?.status === 'True' && cond?.reason === 'Job_failed'
-}
-
-export const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-    const cond = conditions?.find((c) => c.type === condition)
-    return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
-}
-
-export const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-    const cond = conditions?.find((c) => c.type === condition)
-    return cond?.message
-}
-
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const userIdentity = 'open-cluster-management.io/user-identity'
     const cdUserIdentity = clusterDeployment?.metadata.annotations?.[userIdentity]
@@ -802,7 +761,7 @@ export function getDistributionInfo(
             (checkCuratorConditionFailed(CuratorCondition.prehook, curatorConditions) ||
                 checkCuratorConditionFailed(CuratorCondition.posthook, curatorConditions))
         upgradeInfo.latestJob.conditionMessage =
-            getConditionStatusMessage(CuratorCondition.curatorjob, curatorConditions) || ''
+            getConditionMessage(CuratorCondition.curatorjob, curatorConditions) || ''
         upgradeInfo.latestJob.step =
             isUpgradeCuration && checkCuratorLatestOperation(CuratorCondition.posthook, curatorConditions)
                 ? CuratorCondition.posthook
@@ -818,7 +777,7 @@ export function getDistributionInfo(
             clusterCurator?.spec?.upgrade?.channel !== managedClusterInfo?.status?.distributionInfo?.ocp.channel &&
             !curatorIsIdle
 
-        const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
+        const upgradeDetailedMessage = getConditionMessage('monitor-upgrade', curatorConditions) || ''
         const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
         upgradeInfo.upgradePercentage = percentageMatch.length > 0 && curatorIsUpgrading ? percentageMatch[0] : ''
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
@@ -1005,7 +964,7 @@ export function getClusterStatus(
                 // Check if pre-hook is in progress or failed
                 if (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions)) {
                     ccStatus = ClusterStatus.prehookfailed
-                    statusMessage = getConditionStatusMessage(CuratorCondition.prehook, ccConditions)
+                    statusMessage = getConditionMessage(CuratorCondition.prehook, ccConditions)
                 } else {
                     ccStatus = ClusterStatus.prehookjob
                 }
@@ -1019,7 +978,7 @@ export function getClusterStatus(
                 // check if import is in progress or failed
                 if (checkCuratorConditionFailed(CuratorCondition.import, ccConditions)) {
                     ccStatus = ClusterStatus.importfailed
-                    statusMessage = getConditionStatusMessage(CuratorCondition.import, ccConditions)
+                    statusMessage = getConditionMessage(CuratorCondition.import, ccConditions)
                 } else {
                     ccStatus = ClusterStatus.importing
                 }
@@ -1030,7 +989,7 @@ export function getClusterStatus(
                 // check if post-hook is in progress or failed
                 if (checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions)) {
                     ccStatus = ClusterStatus.posthookfailed
-                    statusMessage = getConditionStatusMessage(CuratorCondition.posthook, ccConditions)
+                    statusMessage = getConditionMessage(CuratorCondition.posthook, ccConditions)
                 } else {
                     ccStatus = ClusterStatus.posthookjob
                 }

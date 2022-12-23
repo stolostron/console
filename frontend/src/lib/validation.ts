@@ -225,6 +225,17 @@ export function validateImageContentSources(value: string, t: TFunction) {
     return undefined
 }
 
+export function validateYAML(value: string, t: TFunction) {
+    if (value) {
+        try {
+            YAML.parse(value)
+        } catch (e) {
+            return t('validate.yaml.not.valid')
+        }
+    }
+    return undefined
+}
+
 export function validateHttpProxy(value: string, t: TFunction) {
     if (value) {
         if (

@@ -70,6 +70,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@mui/styles'
 import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
+import { validateYAML } from '../../../../../lib/validation'
 
 const acmSchema = [...schema, ...kac]
 
@@ -687,6 +688,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         [autoImportSecret, dispatch, kubeconfig, resources, server, token, update]
     )
 
+    const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
+
     const controlId = 'import-mode'
     const controlLabel = t('import.mode.select')
     return (
@@ -766,6 +769,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
                         dispatch({ type: 'setKubeconfig', kubeconfig: (k as State['kubeconfig']) ?? '' })
                     }
                     secret
+                    validation={validateKubeconfig}
                     required={importMode === ImportMode.kubeconfig}
                     hidden={() => importMode !== ImportMode.kubeconfig}
                 />
