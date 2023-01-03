@@ -23,13 +23,16 @@ import {
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { managedClusterSetsState, namespacesState, secretsState } from '../../../../../atoms'
+import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
+    clickByTestId,
     clickByText,
     selectByText,
+    typeByPlaceholderText,
     typeByTestId,
+    typeByText,
     waitForNocks,
     waitForTestId,
     waitForText,
@@ -133,6 +136,20 @@ const mockInstallConfigSecret: Secret = {
     },
 }
 
+const mockInstallConfigSecretAWSPrivate: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+        name: 'test-install-config',
+        namespace: mockNamespace.metadata.name!,
+    },
+    type: 'Opaque',
+    data: {
+        'install-config.yaml':
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQogICAgcHJpdmF0ZUxpbms6CiAgICAgICAgZW5hYmxlZDogdHJ1ZQogICAgc3VibmV0czoKICAgICAgLSBzdWJuZXQtMDIyMTZkZDRkYWU3YzQ1ZDAKICAgIHNlcnZpY2VFbmRwb2ludHM6CiAgICAgIC0gbmFtZTogZW5kcG9pbnQtMQogICAgICAgIHVybDogYXdzLmVuZHBvaW50LTEuY29tCiAgICBob3N0ZWRab25lOiBhd3MtaG9zdGVkLXpvbmUuY29tCiAgICBhbWlJRDogYW1pLTA4NzZlYWNiMzgxOTFlOTFmCnB1Ymxpc2g6IEludGVybmFsCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZWVtYWlsQHJlZGhhdC5jb20K',
+    },
+}
+
 const mockCredentialSecret: Secret = {
     apiVersion: SecretApiVersion,
     kind: SecretKind,
@@ -183,6 +200,10 @@ const mockClusterPool: ClusterPool = {
     },
 }
 
+const settings: Settings = {
+    awsPrivateWizardStep: 'enabled',
+}
+
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 describe('CreateClusterPool AWS', () => {
@@ -193,6 +214,7 @@ describe('CreateClusterPool AWS', () => {
                     snapshot.set(managedClusterSetsState, [])
                     snapshot.set(namespacesState, mockNamespaces)
                     snapshot.set(secretsState, [providerConnection as Secret])
+                    snapshot.set(settingsState, settings)
                 }}
             >
                 <MemoryRouter
@@ -263,6 +285,81 @@ describe('CreateClusterPool AWS', () => {
             // create the managed cluster
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
+            nockCreate(mockCredentialSecret),
+            nockCreate(mockClusterPool),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        await waitForText('Creating ClusterPool ...')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
+
+    test('can create a cluster pool with AWS private', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSet, mockClusterImageSet)]
+
+        const newProviderConnection = createProviderConnection(
+            'aws',
+            { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
+            true
+        )
+
+        // create the form
+        const { container } = render(<Component />)
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('Select a credential')
+
+        // Should show the modal wizard
+        await clickByText('Add credential')
+        // Credentials type
+        await waitForTestId('credentialsType-input-toggle')
+        await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
+        await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
+        await clickByText('Cancel', 1)
+
+        await clickByPlaceholderText('Select a credential')
+        await clickByText(providerConnection.metadata.name!)
+
+        // step 2 -- the name, namespace and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('emanspace', mockCreateProject.metadata.name!)
+        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+        await clickByText('Next')
+        await clickByText('Next')
+        await clickByText('Next')
+
+        // AWS private config
+        // step 5 -- AWS private configuration
+        await clickByTestId('hasPrivateConfig')
+        await typeByText('Hosted zone', 'aws-hosted-zone.com')
+        await typeByPlaceholderText('Enter AMI ID', 'ami-0876eacb38191e91f')
+        await clickByText('Subnets')
+        await typeByPlaceholderText('Enter one or more subnet IDs', 'subnet-02216dd4dae7c45d0')
+        await clickByText('Service Endpoints')
+        await typeByPlaceholderText('Enter AWS service endpoint name', 'endpoint-1')
+        await typeByPlaceholderText('Enter AWS service endpoint URL', 'aws.endpoint-1.com')
+        await clickByText('Next')
+        await clickByText('Review and create', 1)
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockCreateProject),
+            nockReplace(mockNamespaceUpdate),
+
+            // create the managed cluster
+            nockCreate(mockPullSecret),
+            nockCreate(mockInstallConfigSecretAWSPrivate),
             nockCreate(mockCredentialSecret),
             nockCreate(mockClusterPool),
         ]
