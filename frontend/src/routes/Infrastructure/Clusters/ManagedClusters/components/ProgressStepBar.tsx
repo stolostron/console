@@ -112,7 +112,7 @@ export function ProgressStepBar() {
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
-                statusText: t('status.prehook.text'),
+                statusText: t('status.prehook'),
                 statusSubtitle: prehooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
                 // will render link when prehook job url is defined or when there are no job hooks setup
                 link: {
@@ -153,7 +153,7 @@ export function ProgressStepBar() {
             },
             {
                 statusType: posthookStatus,
-                statusText: t('status.posthook.text'),
+                statusText: t('status.posthook'),
                 statusSubtitle: posthooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
                 ...(posthooks &&
                     latestJobs.posthook?.status?.ansibleJobResult?.url && {

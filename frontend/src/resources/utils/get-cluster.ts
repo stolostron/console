@@ -104,6 +104,10 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
             return t('status.pending')
         case ClusterStatus.pendingimport:
             return t('status.pendingimport')
+        case ClusterStatus.prehookjob:
+            return t('status.prehook')
+        case ClusterStatus.posthookjob:
+            return t('status.posthook')
         case ClusterStatus.posthookfailed:
             return t('status.posthookfailed')
         case ClusterStatus.prehookfailed:
