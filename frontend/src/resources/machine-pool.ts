@@ -51,6 +51,18 @@ export interface MachinePool {
             }
             openstack?: {
                 flavor: string
+                rootVolume?: {
+                    size: number
+                    type: string
+                }
+            }
+            ovirt?: {
+                cpu?: {}
+                memoryMB?: number
+                osDisk?: {
+                    sizeGB: number
+                }
+                vmType?: '' | 'desktop' | 'server' | 'high_performance'
             }
         }
         autoscaling?: {

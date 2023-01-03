@@ -8,7 +8,12 @@ import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../..
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
-import { mockCluster, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.sharedmocks'
+import {
+    mockCluster,
+    mockMachinePoolAuto,
+    mockMachinePoolManual,
+    mockMachinePoolOther,
+} from '../ClusterDetails.sharedmocks'
 
 describe('ClusterMachinePools', () => {
     beforeEach(() => {
@@ -17,7 +22,7 @@ describe('ClusterMachinePools', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
+                    snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto, mockMachinePoolOther])
                 }}
             >
                 <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
@@ -29,6 +34,7 @@ describe('ClusterMachinePools', () => {
 
     it('should be able to manually scale a machine pool', async () => {
         await waitForText(mockMachinePoolManual.metadata.name!)
+        await waitForText('nova-default') // Check OpenStack flavor displays as Instance type
         await clickByLabel('Actions', 1)
         await clickByText('Scale machine pool')
         await waitForText('Scale machine pool')
@@ -43,6 +49,7 @@ describe('ClusterMachinePools', () => {
     })
     it('should be able to enable autoscaling for a machine pool', async () => {
         await waitForText(mockMachinePoolManual.metadata.name!)
+        await waitForText('m4.xlarge') // Check AWS type displays as Instance type
         await clickByLabel('Actions', 1)
         await clickByText('Enable autoscale')
         await waitForText('Enable autoscale')
@@ -105,6 +112,8 @@ describe('ClusterMachinePools', () => {
     it('should be able to delete machine pools', async () => {
         await waitForText(mockMachinePoolAuto.metadata.name!)
         await waitForText(mockMachinePoolManual.metadata.name!)
+        await waitForText(mockMachinePoolOther.metadata.name!)
+        await waitForText('high_performance') // Check RHV vmType displays as Instance type
         await clickByLabel('Actions', 0)
         await clickByText('Delete machine pool')
         await waitForText('Permanently delete machine pools?')
