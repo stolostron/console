@@ -395,6 +395,9 @@ export function ClusterOverviewPageContent(props: {
     }
 
     let details = <ProgressStepBar />
+    if (cluster?.isHypershift) {
+        details = <HypershiftClusterDetails />
+    }
     if (cluster?.provider === Provider.hostinventory) {
         if (cluster.isHypershift) {
             details = <AIHypershiftClusterDetails />
@@ -413,9 +416,6 @@ export function ClusterOverviewPageContent(props: {
         } else {
             details = <AIClusterDetails />
         }
-    }
-    if (cluster?.isHostedCluster) {
-        details = <HypershiftClusterDetails />
     }
 
     return (

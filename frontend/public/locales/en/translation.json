@@ -2498,6 +2498,7 @@
     "The Globalnet CIDR to be used within the clusterset pool. The default is 242.0.0.0/8": "The globalnet CIDR to be used within the clusterset pool. The default is 242.0.0.0/8",
     "The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.": "The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.",
     "The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.": "The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.",
+    "The Hosted Cluster is pending import. The import feature is only enabled when the hosted control plane is available.": "The Hosted Cluster is pending import. The import feature is only enabled when the hosted control plane is available.",
     "The imageContentSources values that were generated during mirror registry creation.": "The imageContentSources values that were generated during mirror registry creation.",
     "The impact of the problem would be {{totalRisk}} if it occurred": "The impact of the problem would be {{totalRisk}} if it occurred",
     "The instance profile for the node pool.": "The instance profile for the node pool.",
