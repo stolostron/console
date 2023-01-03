@@ -733,13 +733,8 @@ export const mockMachinePoolManual: MachinePool = {
         },
         name: 'worker',
         platform: {
-            aws: {
-                rootVolume: {
-                    iops: 100,
-                    size: 22,
-                    type: 'gp2',
-                },
-                type: 'm4.xlarge',
+            openstack: {
+                flavor: 'nova-default',
             },
         },
         replicas: 3,
@@ -852,6 +847,38 @@ export const mockMachinePoolAuto: MachinePool = {
                 minReplicas: 0,
                 name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
                 replicas: 0,
+            },
+        ],
+    },
+}
+
+export const mockMachinePoolOther: MachinePool = {
+    apiVersion: MachinePoolApiVersion,
+    kind: MachinePoolKind,
+    metadata: {
+        name: `${clusterName}-other`,
+        namespace: clusterName,
+    },
+    spec: {
+        clusterDeploymentRef: {
+            name: clusterName,
+        },
+        name: 'worker',
+        platform: {
+            ovirt: {
+                vmType: 'high_performance',
+            },
+        },
+        replicas: 1,
+    },
+    status: {
+        replicas: 1,
+        machineSets: [
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-other-ovirt`,
+                replicas: 1,
             },
         ],
     },
