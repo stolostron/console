@@ -1040,6 +1040,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                                 {hasSearch && (
                                     <ToolbarItem variant="search-filter">
                                         <SearchInput
+                                            id="search-filter"
                                             placeholder={searchPlaceholder}
                                             value={search}
                                             onChange={updateSearch}
