@@ -104,7 +104,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         ])
     }
 
-    if (!v1ImportCommand && cluster?.isHypershift && HostedClusterReadyStatus?.status === 'True') {
+    if (!v1ImportCommand && cluster?.isHypershift) {
         // import alert
         return (
             <div style={{ marginBottom: '12px' }}>
@@ -115,12 +115,17 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                     noClose
                     message={
                         <Stack hasGutter>
-                            <StackItem>{t('Hosted cluster requires a manual import.')}</StackItem>
+                            <StackItem>
+                                {t(
+                                    'The Hosted Cluster is pending import. The import feature is only enabled when the hosted control plane is available.'
+                                )}
+                            </StackItem>
                             <StackItem>
                                 <AcmButton
                                     variant="link"
                                     style={{ paddingLeft: '0px' }}
                                     onClick={() => importHostedControlPlaneCluster()}
+                                    isDisabled={HostedClusterReadyStatus?.status !== 'True'}
                                 >
                                     {t('managed.importCluster')}
                                 </AcmButton>
