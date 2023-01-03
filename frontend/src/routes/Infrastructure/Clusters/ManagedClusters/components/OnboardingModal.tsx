@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Card, CardBody, Grid, GridItem, ModalVariant, TextVariants, Text } from '@patternfly/react-core'
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmExpandableSection, AcmModal } from '../../../../../ui-components'
@@ -10,6 +10,8 @@ import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from 
 import { NavigationPath } from '../../../../../NavigationPath'
 import './OnboardingModal.css'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
+import { PluginContext } from '../../../../../lib/PluginContext'
+import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
 
 export interface IOnboardingModalProps {
     close: () => void
@@ -18,6 +20,7 @@ export interface IOnboardingModalProps {
 
 export function OnboardingModal(props: IOnboardingModalProps) {
     const { t } = useTranslation()
+    const { isACMAvailable } = useContext(PluginContext)
 
     const cards = useMemo(
         () => [
@@ -74,9 +77,11 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                             component={TextVariants.a}
                             isVisitedLink
                             onClick={() =>
-                                launchToOCP(
-                                    'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-                                )
+                                !isACMAvailable
+                                    ? launchToOCP(
+                                          'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                                      )
+                                    : window.open(DOC_BASE_PATH, '_blank')
                             }
                             style={{
                                 cursor: 'pointer',
