@@ -42,12 +42,23 @@ export function MachinePoolsTable() {
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
 
     function getInstanceType(machinePool: MachinePool) {
-        const platformKey =
-            machinePool.spec?.platform && Object.keys(machinePool.spec.platform).length > 0
-                ? Object.keys(machinePool.spec.platform)?.[0]
-                : ''
-        const type =
-            platformKey && (machinePool?.spec?.platform as Record<string, { type: string }>)?.[platformKey]?.type
+        let type: string | undefined
+
+        const platform = machinePool.spec?.platform
+        const platformKey = platform && Object.keys(platform).length ? Object.keys(platform)[0] : null
+
+        if (platform && platformKey) {
+            switch (platformKey) {
+                case 'openstack':
+                    type = platform.openstack?.flavor
+                    break
+                case 'ovirt':
+                    type = platform.ovirt?.vmType
+                    break
+                default:
+                    type = (platform as Record<string, { type: string }>)?.[platformKey]?.type
+            }
+        }
         return type ?? '-'
     }
 
