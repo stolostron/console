@@ -435,7 +435,7 @@ describe('Overview Tab', () => {
         await waitForText('Clusters')
         await waitForText('None')
         // created
-        await waitForText('Mar 1, 9:30 pm')
+        await waitForText('Mar 1 2022, 9:30 pm')
     })
 
     test('should display AppSet app info', async () => {
