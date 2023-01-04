@@ -12,6 +12,9 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+    KlusterletAddonConfig,
     patchResource,
     unpackSecret,
 } from '../../../../../resources'
@@ -77,6 +80,39 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             },
         }
 
+        const klusterletAddonConfig: KlusterletAddonConfig = {
+            apiVersion: KlusterletAddonConfigApiVersion,
+            kind: KlusterletAddonConfigKind,
+            metadata: {
+                name: hdName,
+                namespace: hdNamespace,
+            },
+            spec: {
+                clusterName: hdName!,
+                clusterNamespace: hdNamespace!,
+                clusterLabels: {
+                    cloud: 'Amazon',
+                    vendor: 'Openshift',
+                },
+                applicationManager: {
+                    enabled: false,
+                    argocdCluster: false,
+                },
+                policyController: {
+                    enabled: true,
+                },
+                searchCollector: {
+                    enabled: true,
+                },
+                certPolicyController: {
+                    enabled: true,
+                },
+                iamPolicyController: {
+                    enabled: true,
+                },
+            },
+        }
+
         const updateAnnotations = {
             'cluster.open-cluster-management.io/managedcluster-name': hdName,
             'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
@@ -102,6 +138,8 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         patchResource(selectedHostedClusterResource as IResource, [
             { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
         ])
+
+        createResource(klusterletAddonConfig as IResource)
     }
 
     if (!v1ImportCommand && cluster?.isHypershift && HostedClusterReadyStatus?.status === 'True') {
