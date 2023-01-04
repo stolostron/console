@@ -1187,8 +1187,17 @@ export function getClusterStatus(
     } else if (!clusterJoined) {
         mcStatus = ClusterStatus.pendingimport
 
-        if (hostedCluster) {
-            mcStatus = ClusterStatus.importing
+        const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
+        const managedClusterAvailableConditionMessage = mcConditions.find(
+            (c) => c.type === 'ManagedClusterConditionAvailable'
+        )
+        mcStatus = clusterUnavailable ? ClusterStatus.offline : ClusterStatus.unknown
+        statusMessage = managedClusterAvailableConditionMessage?.message
+
+        if (hostedCluster && mcStatus !== ClusterStatus.unknown) {
+            if (mcStatus !== ClusterStatus.offline) {
+                mcStatus = ClusterStatus.importing
+            }
         }
 
         // check for respective csrs awaiting approval

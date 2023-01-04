@@ -27,7 +27,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     const { selectedHostedClusterResource } = props
     const { t } = useTranslation()
     const [hypershiftKubeAPI, error] = useHypershiftKubeconfig()
-    const { cluster } = React.useContext(ClusterContext)
+    const { cluster, managedCluster } = React.useContext(ClusterContext)
     const toastContext = useContext(AcmToastContext)
 
     const [credentials, setCredentials] = React.useState<LoginCredential>()
@@ -104,7 +104,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         ])
     }
 
-    if (!v1ImportCommand && cluster?.isHypershift) {
+    if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {
         // import alert
         return (
             <div style={{ marginBottom: '12px' }}>
