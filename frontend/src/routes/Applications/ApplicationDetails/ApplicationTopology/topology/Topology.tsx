@@ -175,15 +175,23 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
                 <TopologyControlBar
                     controlButtons={createTopologyControlButtons({
                         ...defaultControlButtonsOptions,
+                        zoomInTip: t('Zoom In'),
+                        zoomInAriaLabel: t('Zoom In'),
                         zoomInCallback: action(() => {
                             controller.getGraph().scaleBy(4 / 3)
                         }),
+                        zoomOutTip: t('Zoom Out'),
+                        zoomOutAriaLabel: t('Zoom Out'),
                         zoomOutCallback: action(() => {
                             controller.getGraph().scaleBy(0.75)
                         }),
+                        fitToScreenTip: t('Fit to Screen'),
+                        fitToScreenAriaLabel: t('Fit to Screen'),
                         fitToScreenCallback: action(() => {
                             controller.getGraph().fit(160)
                         }),
+                        resetViewTip: t('Reset View'),
+                        resetViewAriaLabel: t('Reset View'),
                         resetViewCallback: action(() => {
                             controller.getGraph().reset()
                             controller.getGraph().layout()

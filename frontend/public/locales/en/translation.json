@@ -1315,6 +1315,7 @@
     "Find by name": "Find by name",
     "Find clusters": "Find clusters",
     "find.label": "Find",
+    "Fit to Screen": "Fit to Screen",
     "Flux": "Flux",
     "Follow documentation for more information.": "Follow documentation for more information.",
     "For more details and logs, click on the nodes to open the properties view.": "For more details and logs, click on the nodes to open the properties view.",
@@ -2005,6 +2006,7 @@
     "Required Replicas": "Required Replicas",
     "Requires this format: http://<username>:<pswd>@<ip>:<port>": "Requires this format: http://<username>:<pswd>@<ip>:<port>",
     "Requires this format: https://<username>:<pswd>@<ip>:<port>": "Requires this format: https://<username>:<pswd>@<ip>:<port>",
+    "Reset View": "Reset View",
     "resource": "resource",
     "Resource": "Resource",
     "Resource deploy status": "Resource deploy status",
@@ -2895,5 +2897,7 @@
     "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'": "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'",
     "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'": "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'",
     "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'": "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'",
-    "Z1d - With SSD, fastest processor": "Z1d - With SSD, fastest processor"
+    "Z1d - With SSD, fastest processor": "Z1d - With SSD, fastest processor",
+    "Zoom In": "Zoom In",
+    "Zoom Out": "Zoom Out"
 }
