@@ -374,7 +374,7 @@ describe('UpdateAutomationModal', () => {
         render(<Component />)
 
         // Show alert with automation support message
-        await waitForText('4 cluster cannot be edited') /* TODO - Pluralize not working in test - robdolares to fix*/
+        await waitForText('4 clusters cannot be edited')
         await waitFor(() =>
             expect(screen.getByTestId('view-selected').getAttribute('aria-disabled')).not.toEqual('false')
         )
