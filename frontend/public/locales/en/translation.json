@@ -1485,7 +1485,6 @@
     "infraEnv.tableHeader.namespace": "Namespace",
     "infraEnvCount": "{{count}} infrastructure environment",
     "infraEnvCount_plural": "{{count}} infrastructure environments",
-    "infraenvs": "Host inventory",
     "Infrastructure": "Infrastructure",
     "install": "Install",
     "Install plan approved": "Install plan approved",

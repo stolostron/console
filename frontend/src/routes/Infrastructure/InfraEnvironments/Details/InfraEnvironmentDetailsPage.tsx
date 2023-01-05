@@ -100,7 +100,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('infraenvs'), to: NavigationPath.infraEnvironments },
+                            { text: t('Host inventory'), to: NavigationPath.infraEnvironments },
                             { text: infraEnv?.metadata?.name || '', to: '' },
                         ]}
                         title={infraEnv.metadata?.name || ''}
