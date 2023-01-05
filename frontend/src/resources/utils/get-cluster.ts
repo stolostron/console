@@ -36,6 +36,7 @@ import {
     checkForRequirementsMetConditionFailureReason,
     checkForCondition,
 } from './status-conditions'
+import { hostControlPlaneReadyMsg } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/HypershiftImportCommand'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -1184,21 +1185,8 @@ export function getClusterStatus(
         mcStatus = ClusterStatus.notaccepted
 
         // not joined
-    } else if (!clusterJoined) {
+    } else if (!clusterJoined && !hostedCluster) {
         mcStatus = ClusterStatus.pendingimport
-
-        const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
-        const managedClusterAvailableConditionMessage = mcConditions.find(
-            (c) => c.type === 'ManagedClusterConditionAvailable'
-        )
-        mcStatus = clusterUnavailable ? ClusterStatus.offline : ClusterStatus.unknown
-        statusMessage = managedClusterAvailableConditionMessage?.message
-
-        if (hostedCluster && mcStatus !== ClusterStatus.unknown) {
-            if (mcStatus !== ClusterStatus.offline) {
-                mcStatus = ClusterStatus.importing
-            }
-        }
 
         // check for respective csrs awaiting approval
         if (certificateSigningRequests && certificateSigningRequests.length) {
@@ -1209,6 +1197,24 @@ export function getClusterStatus(
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
             mcStatus =
                 activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
+        }
+    } else if (hostedCluster) {
+        // HC import
+        const HostedClusterReadyStatus = hostedCluster?.status?.conditions?.find(
+            ({ message }: { message: string }) => message === hostControlPlaneReadyMsg
+        )
+
+        if (managedCluster && HostedClusterReadyStatus) {
+            mcStatus = ClusterStatus.importing
+            if (clusterAvailable) {
+                mcStatus = ClusterStatus.ready
+            } else {
+                const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
+                if (mcConditionAvailable) {
+                    mcStatus = ClusterStatus.unknown
+                    statusMessage = mcConditionAvailable?.message
+                }
+            }
         }
     } else {
         if (clusterAvailable) {
