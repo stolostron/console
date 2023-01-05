@@ -12,7 +12,7 @@ export interface PlacementDecision extends IResource {
     apiVersion: PlacementDecisionApiVersionType
     kind: PlacementDecisionKindType
     metadata: Metadata
-    status: PlacementDecisionStatus
+    status?: PlacementDecisionStatus
 }
 
 export interface PlacementDecisionStatus {

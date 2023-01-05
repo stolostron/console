@@ -122,7 +122,7 @@ export function getPolicyComplianceForPolicySet(
 
     const policyCompliance: PolicyCompliance[] = []
     for (const placementDecision of policySetPlacementDecisions) {
-        for (const decision of placementDecision.status.decisions) {
+        for (const decision of placementDecision.status?.decisions || []) {
             for (const policy of policySetPolicies) {
                 const policyIdx = policyCompliance.findIndex((p) => p.policyName === policy.metadata.name!)
                 const policyClusterStatus = policy.status?.status?.find(
@@ -213,7 +213,7 @@ export function getClustersComplianceForPolicySet(
     const policySetPolicies = getPolicySetPolicies(policies, policySet)
     const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant' | 'Pending' | 'Unknown'> = {}
     for (const placementDecision of policySetPlacementDecisions) {
-        for (const decision of placementDecision.status.decisions) {
+        for (const decision of placementDecision.status?.decisions || []) {
             if (clustersCompliance[decision.clusterName] === 'NonCompliant') {
                 continue
             }
