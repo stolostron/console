@@ -17,6 +17,9 @@ import {
     KlusterletAddonConfig,
     patchResource,
     unpackSecret,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
 } from '../../../../../resources'
 import { AcmAlert, AcmButton, AcmToastContext } from '../../../../../ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -86,11 +89,11 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             kind: KlusterletAddonConfigKind,
             metadata: {
                 name: hdName,
-                namespace: hdNamespace,
+                namespace: hdName,
             },
             spec: {
                 clusterName: hdName!,
-                clusterNamespace: hdNamespace!,
+                clusterNamespace: hdName!,
                 clusterLabels: {
                     cloud: 'Amazon',
                     vendor: 'Openshift',
@@ -111,6 +114,14 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                 iamPolicyController: {
                     enabled: true,
                 },
+            },
+        }
+
+        const clusterNameSpace: Namespace = {
+            apiVersion: NamespaceApiVersion,
+            kind: NamespaceKind,
+            metadata: {
+                name: hdName,
             },
         }
 
@@ -139,6 +150,11 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         patchResource(selectedHostedClusterResource as IResource, [
             { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
         ])
+
+        //Create namespace for addons if it doesn't already exist
+        try {
+            createResource(clusterNameSpace as IResource)
+        } catch (err) {}
 
         createResource(klusterletAddonConfig as IResource)
     }
