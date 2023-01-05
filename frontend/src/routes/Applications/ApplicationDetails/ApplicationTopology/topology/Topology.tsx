@@ -170,6 +170,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 
     return (
         <TopologyView
+            className="app-topology-view"
             controlBar={
                 <TopologyControlBar
                     controlButtons={createTopologyControlButtons({
