@@ -238,7 +238,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         (policy: Policy) => {
             return decision.length
                 ? policy?.status?.status?.filter((status) => {
-                      return decision[0].status.decisions.find(
+                      return (decision[0].status?.decisions || []).find(
                           (decisionStatus) => decisionStatus.clusterName === status.clustername
                       )
                   })
