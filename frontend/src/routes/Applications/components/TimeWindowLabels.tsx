@@ -66,12 +66,10 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
                         </Fragment>
                     )}
                     <Link
-                        to={{
-                            pathname: generatePath(NavigationPath.editApplicationSubscription, {
-                                name: params.name!,
-                                namespace: params.namespace!,
-                            }),
-                        }}
+                        to={generatePath(NavigationPath.editApplicationSubscription, {
+                            name: params.name!,
+                            namespace: params.namespace!,
+                        })}
                     >
                         <AcmButton
                             id="set-time-window-link"

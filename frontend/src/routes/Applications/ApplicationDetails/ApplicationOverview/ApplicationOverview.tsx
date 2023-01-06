@@ -605,12 +605,10 @@ function createSubsCards(
                                     <div className="sub-card-title">{t('Time window')}</div>
                                     {!sub.spec.timewindow?.windowtype ? (
                                         <Link
-                                            to={{
-                                                pathname: generatePath(NavigationPath.editApplicationSubscription, {
-                                                    name: appResource?.metadata?.name!,
-                                                    namespace: appResource?.metadata?.namespace!,
-                                                }),
-                                            }}
+                                            to={generatePath(NavigationPath.editApplicationSubscription, {
+                                                name: appResource?.metadata?.name!,
+                                                namespace: appResource?.metadata?.namespace!,
+                                            })}
                                         >
                                             <AcmButton
                                                 id="set-time-window-link"
