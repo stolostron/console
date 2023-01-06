@@ -64,12 +64,14 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     style={{
                         width: '100%',
                         height: '100%',
-                        padding: '16px 16px 16px 36px',
+                        padding: '16px 16px 16px 24px',
+                        display: 'inline',
+                        fontSize: 'var(--pf-global--icon--FontSize--md)',
                     }}
                 >
                     <div>
                         <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}>
-                            {t('Getting Started with on-premise host inventory')}
+                            {t('Get Started with on-premise host inventory')}
                         </Link>
                     </div>
                     <div>
@@ -89,7 +91,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                             }}
                         >
                             {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}{' '}
-                            <ExternalLinkAltIcon />
+                            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', padding: '2px' }} />
                         </Text>
                     </div>
                 </AcmExpandableSection>
@@ -113,7 +115,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                             'Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.'
                         )}
                     </div>
-                    <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '48px' }}>
+                    <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
                         {t('How would you like to create your cluster?')}
                     </div>
                 </GridItem>
