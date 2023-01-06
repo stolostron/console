@@ -329,14 +329,14 @@ export function ClusterOverviewPageContent(props: {
         leftItems.splice(5, 0, clusterProperties.channel)
     }
 
-    // clusterClaim should not be shown for stand alone clusters not from a clusterpool and not for hosted control planes.
+    // clusterClaim should not be shown for stand alone clusters not from a clusterpool
     if (
-        (clusterProperties.clusterControlPlaneType?.value === t('Standalone') &&
-            clusterProperties.clusterPool?.value === undefined) ||
-        clusterProperties.clusterControlPlaneType?.value === t('Hosted') ||
-        clusterProperties.clusterControlPlaneType?.value === t('Hub, Hosted')
+        (clusterProperties.clusterControlPlaneType?.value === t('Standalone') ||
+            clusterProperties.clusterControlPlaneType?.value === t('Hub')) &&
+        clusterProperties.clusterPool?.value === undefined
     ) {
         leftItems.splice(2, 1)
+        rightItems.splice(6, 1)
     }
 
     if (
@@ -392,6 +392,14 @@ export function ClusterOverviewPageContent(props: {
         leftItems.splice(7, 0, clusterProperties.acmDistribution)
         leftItems.splice(8, 0, clusterProperties.acmChannel)
         rightItems.splice(2, 0, clusterProperties.acmConsoleUrl)
+    }
+
+    // clusterClaim should not be shown for hosted control planes.
+    if (
+        clusterProperties.clusterControlPlaneType?.value === t('Hosted') ||
+        clusterProperties.clusterControlPlaneType?.value === t('Hub, Hosted')
+    ) {
+        leftItems.splice(2, 1)
     }
 
     let details = <ProgressStepBar />
