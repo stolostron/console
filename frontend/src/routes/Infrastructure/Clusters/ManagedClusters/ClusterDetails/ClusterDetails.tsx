@@ -176,7 +176,11 @@ export default function ClusterDetailsPage({
         nodePools
     )
     const prevCluster = usePrevious(cluster)
-    const showMachinePoolTab = cluster.isHive && cluster.isManaged && cluster.provider !== Provider.baremetal
+    const showMachinePoolTab =
+        cluster.isHive &&
+        cluster.isManaged &&
+        cluster.provider &&
+        ![Provider.baremetal, Provider.hostinventory].includes(cluster.provider)
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
     useEffect(() => {
