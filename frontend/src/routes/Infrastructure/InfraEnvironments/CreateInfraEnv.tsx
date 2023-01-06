@@ -111,7 +111,7 @@ const CreateInfraEnv: React.FC = () => {
                 <AcmPageHeader
                     title={t('createInfraEnv.title')}
                     breadcrumb={[
-                        { text: t('infraenvs'), to: NavigationPath.infraEnvironments },
+                        { text: t('Host inventory'), to: NavigationPath.infraEnvironments },
                         { text: t('createInfraEnv.title'), to: '' },
                     ]}
                     switches={switches}
