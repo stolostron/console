@@ -1,4 +1,4 @@
-[comment]: # ( Copyright Contributors to the Open Cluster Management project )
+[comment]: # ' Copyright Contributors to the Open Cluster Management project '
 
 # @stolostron/console
 
@@ -17,8 +17,8 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) 14
-- NPM 6
+-   [Node.js](https://nodejs.org) 18
+-   NPM 8
 
 ## Active Release Branches
 
@@ -36,14 +36,14 @@ release-2.4
 
 A number of the core NPM package dependencies are published from other repositories. To allow development of new features in these projects, branches are created each time a new release is started.
 
-| console branch | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
-|----------------|-----------------------------------|----------------------------|--------------------------|----------------------|
-| main<br/>release-2.7<br/>backplane-2.2 | main | main | N/A | N/A |
-| release-2.6<br/>backplane-2.1 | v1.8.z | v1.0.z | N/A | N/A |
-| release-2.5<br/>backplane-2.0 | v1.7.z | N/A | v1.69.z | 2.5 |
-| release-2.4 | N/A | N/A | v1.25.z | 2.4 |
-| release-2.3 | N/A | N/A | v0.180.z | 2.3 |
-| release-2.2 | N/A | N/A | No branch; uses 0.1.214 | 2.2 |
+| console branch                         | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
+| -------------------------------------- | --------------------------------- | -------------------------- | ------------------------ | -------------------- |
+| main<br/>release-2.7<br/>backplane-2.2 | main                              | main                       | N/A                      | N/A                  |
+| release-2.6<br/>backplane-2.1          | v1.8.z                            | v1.0.z                     | N/A                      | N/A                  |
+| release-2.5<br/>backplane-2.0          | v1.7.z                            | N/A                        | v1.69.z                  | 2.5                  |
+| release-2.4                            | N/A                               | N/A                        | v1.25.z                  | 2.4                  |
+| release-2.3                            | N/A                               | N/A                        | v0.180.z                 | 2.3                  |
+| release-2.2                            | N/A                               | N/A                        | No branch; uses 0.1.214  | 2.2                  |
 
 ## Running
 
@@ -51,29 +51,30 @@ A number of the core NPM package dependencies are published from other repositor
 
 2. Install dependencies
 
-   ```
-   npm ci
-   ```
+    ```
+    npm ci
+    ```
 
 3. Setup environment
 
-   You need:
-     - to be connected to a OpenShift 4.x.x cluster
-     - to have Advanced Cluster Management installed on the cluster
+    You need:
 
-   ```
-   npm run setup
-   ```
+    - to be connected to a OpenShift 4.x.x cluster
+    - to have Advanced Cluster Management installed on the cluster
 
-   This will create a `.env` file in the backend directory containing environment variables.
+    ```
+    npm run setup
+    ```
+
+    This will create a `.env` file in the backend directory containing environment variables.
 
 4. Start the development services
 
-   ```
-   npm start
-   ```
+    ```
+    npm start
+    ```
 
-   This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)
+    This will start the frontend and the backend in parallel. (It may take up to 30 seconds for the UI to appear)
 
 ## Running as an OpenShift console plugin-in
 
@@ -87,9 +88,9 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 To develop with self signed certificates goto `chrome://flags/`and enable
 
-- Allow invalid certificates for resources loaded from localhost.
-- Insecure origins treated as secure.
-  - <http://localhost>
+-   Allow invalid certificates for resources loaded from localhost.
+-   Insecure origins treated as secure.
+    -   <http://localhost>
 
 ### Authentication
 
@@ -104,13 +105,12 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`).  The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product. These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`). The following features are available:
 
 ### Single node OpenShift
 
-Enabling this feature will allow the user to create a cluster that only contains a single control plane node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
+Enabling this feature will allow the user to create a cluster that only contains a single control plane node. This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
 
 ## References
 
 `console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
-
