@@ -195,10 +195,15 @@ const InfraEnvironmentsPage: React.FC = () => {
                     description={
                         <>
                             <span>
-                                {t('{{hostCount}} hosts in {{infraEnvCount}} infrastructure environment', {
-                                    hostCount: agents.length,
-                                    infraEnvCount: infraEnvs.length,
-                                })}
+                                {
+                                    // i18next-parser does not detect nested references in values
+                                    // t('hostCount')
+                                    // t('infraEnvCount')
+                                    t('hostInfraEnvCounts', {
+                                        hostCount: agents.length,
+                                        infraEnvCount: infraEnvs.length,
+                                    })
+                                }
                             </span>
                             <Popover
                                 bodyContent={t(
