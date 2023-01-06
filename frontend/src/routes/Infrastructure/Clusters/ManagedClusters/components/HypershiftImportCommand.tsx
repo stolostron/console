@@ -21,8 +21,6 @@ import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/Hyper
 import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
 
-export const hostControlPlaneReadyMsg = 'The hosted control plane is available'
-
 export const HypershiftImportCommand = (props: { selectedHostedClusterResource: HostedClusterK8sResource }) => {
     const { selectedHostedClusterResource } = props
     const { t } = useTranslation()
@@ -48,7 +46,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
     const HostedClusterReadyStatus = props?.selectedHostedClusterResource?.status?.conditions?.find(
-        ({ message }: { message: string }) => message === hostControlPlaneReadyMsg
+        (c) => c.reason === 'HostedClusterAsExpected'
     )
 
     function importHostedControlPlaneCluster() {
@@ -116,9 +114,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                     message={
                         <Stack hasGutter>
                             <StackItem>
-                                {t(
-                                    'The Hosted Cluster is pending import. The import feature is only enabled when the hosted control plane is available.'
-                                )}
+                                {t('Import the Hosted Cluster once the Hosted Control Plane is available.')}
                             </StackItem>
                             <StackItem>
                                 <AcmButton

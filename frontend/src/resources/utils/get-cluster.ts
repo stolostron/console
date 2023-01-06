@@ -36,7 +36,6 @@ import {
     checkForRequirementsMetConditionFailureReason,
     checkForCondition,
 } from './status-conditions'
-import { hostControlPlaneReadyMsg } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/HypershiftImportCommand'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -1200,11 +1199,10 @@ export function getClusterStatus(
         }
     } else if (hostedCluster) {
         // HC import
-        const HostedClusterReadyStatus = hostedCluster?.status?.conditions?.find(
-            ({ message }: { message: string }) => message === hostControlPlaneReadyMsg
-        )
+        const hcConditions = hostedCluster.status?.conditions ?? []
+        const HostedClusterReadyStatus = hcConditions.find((c) => c.reason === 'HostedClusterAsExpected')
 
-        if (managedCluster && HostedClusterReadyStatus) {
+        if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
             mcStatus = ClusterStatus.importing
             if (clusterAvailable) {
                 mcStatus = ClusterStatus.ready
