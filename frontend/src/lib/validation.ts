@@ -268,6 +268,23 @@ export function validateHttpsProxy(value: string, t: TFunction) {
     return undefined
 }
 
+export function validateHttpsURL(value: string, t: TFunction) {
+    if (value) {
+        if (
+            validator.isURL(value, {
+                require_protocol: true,
+                require_valid_protocol: true,
+                protocols: ['https'],
+                require_host: true,
+            })
+        ) {
+            return undefined
+        }
+        return t('validate.https.url.not.valid')
+    }
+    return undefined
+}
+
 export function validateNoProxy(value: string, t: TFunction) {
     if (value) {
         const noProxies = value.split(',')
