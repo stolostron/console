@@ -9,7 +9,6 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../resources'
-import { getPlacementBindingsForResource, getPlacementsForResource } from '../routes/Governance/common/util'
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(
@@ -22,15 +21,13 @@ export function deletePolicy(
 ) {
     let resources: IResource[] = [policy]
 
-    const bindings = getPlacementBindingsForResource(policy, placementBindings)
-
     if (deletePlacementBindings) {
-        resources = [...resources, ...bindings]
+        resources = [...resources, ...placementBindings]
     }
 
     if (deletePlacements) {
-        resources = [...resources, ...getPlacementsForResource(policy, bindings, placements)]
-        resources = [...resources, ...getPlacementsForResource(policy, bindings, placementRules)]
+        resources = [...resources, ...placementRules]
+        resources = [...resources, ...placements]
     }
 
     const deleteResourcesResult = deleteResources(resources)

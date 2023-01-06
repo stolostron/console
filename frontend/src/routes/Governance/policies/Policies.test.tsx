@@ -2,10 +2,17 @@
 import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { policiesState, policySetsState } from '../../../atoms'
+import {
+    placementBindingsState,
+    placementRulesState,
+    placementsState,
+    policiesState,
+    policySetsState,
+} from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import PoliciesPage, { AddToPolicySetModal, PolicyTableItem } from './Policies'
+import { Placement, PlacementBinding, PlacementRule } from '../../../resources'
+import PoliciesPage, { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from './Policies'
 import { mockPolicy, mockEmptyPolicy, mockPolicySets, mockPendingPolicy } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
@@ -133,5 +140,155 @@ describe('Add Policy to policy set', () => {
         screen.getByRole('button', { name: 'Add' }).click()
         await new Promise((resolve) => setTimeout(resolve, 500))
         expect(isClosed).toBe(true)
+    })
+})
+
+describe('Delete policy modal with shared placements and bindings', () => {
+    test('should show two warnings', async () => {
+        const tableItem: PolicyTableItem = {
+            policy: {
+                apiVersion: 'policy.open-cluster-management.io/v1',
+                kind: 'Policy',
+                metadata: {
+                    name: 'my-policy',
+                    namespace: 'test',
+                },
+                spec: {
+                    disabled: false,
+                },
+            },
+            source: 'Local',
+        }
+        const placement: Placement = {
+            apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
+            kind: 'Placement',
+            metadata: {
+                name: 'all-clusters',
+                namespace: 'test',
+            },
+            spec: {},
+        }
+        const placementRule: PlacementRule = {
+            apiVersion: 'apps.open-cluster-management.io/v1',
+            kind: 'PlacementRule',
+            metadata: {
+                name: 'all-clusters-legacy',
+                namespace: 'test',
+            },
+            spec: {},
+        }
+        const placementBinding1: PlacementBinding = {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PlacementBinding',
+            metadata: {
+                name: 'all-clusters-placement',
+                namespace: 'test',
+            },
+            placementRef: {
+                apiGroup: 'clusters.open-cluster-management.io',
+                kind: 'Placement',
+                name: 'all-clusters',
+            },
+            subjects: [
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'my-policy',
+                },
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'an-unrelated-policy',
+                },
+            ],
+        }
+        const placementBinding2: PlacementBinding = {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PlacementBinding',
+            metadata: {
+                name: 'all-clusters-legacy-placement',
+                namespace: 'test',
+            },
+            placementRef: {
+                apiGroup: 'apps.open-cluster-management.io',
+                kind: 'PlacementRule',
+                name: 'all-clusters-legacy',
+            },
+            subjects: [
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'my-policy',
+                },
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'an-unrelated-policy',
+                },
+            ],
+        }
+        const placementBinding3: PlacementBinding = {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PlacementBinding',
+            metadata: {
+                name: 'other-placement',
+                namespace: 'test',
+            },
+            placementRef: {
+                apiGroup: 'clusters.open-cluster-management.io',
+                kind: 'Placement',
+                name: 'all-clusters',
+            },
+            subjects: [
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'an-unrelated-policy2',
+                },
+            ],
+        }
+        const placementBinding4: PlacementBinding = {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PlacementBinding',
+            metadata: {
+                name: 'other-legacy-placement',
+                namespace: 'test',
+            },
+            placementRef: {
+                apiGroup: 'apps.open-cluster-management.io',
+                kind: 'PlacementRule',
+                name: 'all-clusters-legacy',
+            },
+            subjects: [
+                {
+                    apiGroup: 'policy.open-cluster-management.io',
+                    kind: 'Policy',
+                    name: 'an-unrelated-policy2',
+                },
+            ],
+        }
+        const onClose = () => {}
+
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(placementsState, [placement])
+                    snapshot.set(placementBindingsState, [
+                        placementBinding1,
+                        placementBinding2,
+                        placementBinding3,
+                        placementBinding4,
+                    ])
+                    snapshot.set(placementRulesState, [placementRule])
+                }}
+            >
+                <DeletePolicyModal item={tableItem} onClose={onClose} />
+            </RecoilRoot>
+        )
+
+        screen.getByRole('heading', { name: 'Warning alert: These PlacementBindings are in use elsewhere' })
+        screen.getByText('all-clusters-placement, all-clusters-legacy-placement')
+        screen.getByRole('heading', { name: 'Warning alert: These Placements/PlacementRules are in use elsewhere' })
+        screen.getByText('all-clusters, all-clusters-legacy')
     })
 })
