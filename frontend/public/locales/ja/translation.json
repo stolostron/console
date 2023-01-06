@@ -1974,7 +1974,7 @@
     "Remove item": "アイテムの削除",
     "Remove node pool": "ノードプールの削除",
     "removing": "削除中",
-    "Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.": "{{name}} を削除すると、元に戻せません。{{name}} に加えて、削除する必要のある関連リソースを選択します。",
+    "Removing {{name}} is irreversible. Select any associated resources that you want to delete in addition to {{name}}.": "{{name}} を削除すると、元に戻せません。{{name}} に加えて、削除する必要のある関連リソースを選択します。",
     "Removing last node pool": "最後のノードプールの削除",
     "Replace resources instead of applying changes from the source repository": "ソースリポジトリーからの変更を適用する代わりにリソースを置き換える",
     "Replace the template variables.": "テンプレート変数を置き換えます。",

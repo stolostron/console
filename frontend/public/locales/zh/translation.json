@@ -1974,7 +1974,7 @@
     "Remove item": "删除项",
     "Remove node pool": "删除节点池",
     "removing": "删除",
-    "Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.": "删除 {{name}} 不可逆。选择除了 {{name}} 外，还需要删除的关联资源。",
+    "Removing {{name}} is irreversible. Select any associated resources that you want to delete in addition to {{name}}.": "删除 {{name}} 不可逆。选择除了 {{name}} 外，还需要删除的关联资源。",
     "Removing last node pool": "删除最后的节点池",
     "Replace resources instead of applying changes from the source repository": "替换资源而不是应用源仓库中的更改",
     "Replace the template variables.": "替换模板变量。",

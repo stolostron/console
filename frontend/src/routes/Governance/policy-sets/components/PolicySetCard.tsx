@@ -290,7 +290,7 @@ function DeletePolicySetModal(props: {
             <Stack hasGutter>
                 <StackItem>
                     {t(
-                        'Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.',
+                        'Removing {{name}} is irreversible. Select any associated resources that you want to delete in addition to {{name}}.',
                         { name: props.item.metadata.name }
                     )}
                 </StackItem>
