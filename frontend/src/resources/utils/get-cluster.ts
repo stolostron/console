@@ -1184,12 +1184,8 @@ export function getClusterStatus(
         mcStatus = ClusterStatus.notaccepted
 
         // not joined
-    } else if (!clusterJoined) {
+    } else if (!clusterJoined && !hostedCluster) {
         mcStatus = ClusterStatus.pendingimport
-
-        if (hostedCluster) {
-            mcStatus = ClusterStatus.importing
-        }
 
         // check for respective csrs awaiting approval
         if (certificateSigningRequests && certificateSigningRequests.length) {
@@ -1200,6 +1196,23 @@ export function getClusterStatus(
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
             mcStatus =
                 activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
+        }
+    } else if (hostedCluster) {
+        // HC import
+        const hcConditions = hostedCluster.status?.conditions ?? []
+        const HostedClusterReadyStatus = hcConditions.find((c) => c.reason === 'HostedClusterAsExpected')
+
+        if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
+            mcStatus = ClusterStatus.importing
+            if (clusterAvailable) {
+                mcStatus = ClusterStatus.ready
+            } else {
+                const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
+                if (mcConditionAvailable) {
+                    mcStatus = ClusterStatus.unknown
+                    statusMessage = mcConditionAvailable?.message
+                }
+            }
         }
     } else {
         if (clusterAvailable) {

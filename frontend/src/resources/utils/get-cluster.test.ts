@@ -6,6 +6,8 @@ import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKin
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
 import { ClusterStatus, getClusterStatus, getDistributionInfo, getIsHostedCluster } from './get-cluster'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../cluster-claim'
+import { HostedClusterApiVersion, HostedClusterKind } from '..'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -107,6 +109,85 @@ const mockClusterCuratorRunningOther: ClusterCurator = {
     },
     status: {
         conditions: [conditionCuratorJobRunning],
+    },
+}
+
+const mockHostedCluster: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    metadata: {
+        name: 'feng-hypershift-import',
+        namespace: 'clusters',
+        annotations: {
+            'cluster.open-cluster-management.io/hypershiftdeployment': 'clusters/feng-hypershift-import',
+            'cluster.open-cluster-management.io/managedcluster-name': 'feng-hypershift-import',
+        },
+    },
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+            image: 'randomimage',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+    },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '2022-12-17T22:14:15Z',
+                message: 'The hosted control plane is available',
+                observedGeneration: 4,
+                reason: 'HostedClusterAsExpected',
+                status: 'True',
+                type: 'Available',
+            },
+        ],
+    },
+}
+
+const mockHostedClusterManagedCluster: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        annotations: {
+            'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+            'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+        },
+        name: 'feng-hypershift-import',
+    },
+    status: {
+        allocatable: {
+            cpu: '1500ms',
+            memory: '6692664Ki',
+        },
+        capacity: {
+            cpu: '2',
+            memory: '7843640Ki',
+        },
+        clusterClaims: [{ name: 'hostedcluster.hypershift.openshift.io', value: 'true' }],
+        conditions: [
+            {
+                message: 'Accepted by hub cluster admin',
+                reason: 'HubClusterAdminAccepted',
+                status: 'True',
+                type: 'HubAcceptedManagedCluster',
+            },
+            {
+                message: 'Managed cluster joined',
+                reason: 'ManagedClusterJoined',
+                status: 'True',
+                type: 'ManagedClusterJoined',
+            },
+            {
+                status: 'Unknown',
+                type: 'ManagedClusterConditionAvailable',
+            },
+        ],
+        version: { kubernetes: 'v1.24.6+5658434' },
     },
 }
 
@@ -850,6 +931,21 @@ describe('getClusterStatus', () => {
             undefined /* agentClusterInstall */,
             undefined /* clusterClaim */,
             undefined /* hostedCluster */
+        )
+        expect(status.status).toBe(ClusterStatus.unknown)
+        expect(status.statusMessage).toBeUndefined()
+    })
+    it('should return unknown for a hosted cluster with corresponding managed cluster', () => {
+        const status = getClusterStatus(
+            undefined,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            mockHostedClusterManagedCluster /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */,
+            mockHostedCluster /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.unknown)
         expect(status.statusMessage).toBeUndefined()
