@@ -233,10 +233,6 @@ platform:
 {{#case 'AWS'}}
   aws:
     region: {{{region}}}
-    {{#if privateLinkCheckbox}}
-    privateLink:
-        enabled: true
-    {{/if}}
     {{#if subnetID}}
     subnets:
     {{#each subnetID}}

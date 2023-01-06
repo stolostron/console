@@ -7190,13 +7190,6 @@ Array [
     "type": "checkbox",
   },
   Object {
-    "active": false,
-    "disabled": true,
-    "id": "privateLinkCheckbox",
-    "name": "Use AWS PrivateLink",
-    "type": "checkbox",
-  },
-  Object {
     "active": "",
     "disabled": true,
     "id": "amiID",

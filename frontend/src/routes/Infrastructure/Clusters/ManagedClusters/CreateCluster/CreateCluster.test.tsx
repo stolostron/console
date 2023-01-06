@@ -279,7 +279,7 @@ const mockInstallConfigSecretPrivate = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKICAgIHByaXZhdGVMaW5rOgogICAgICAgIGVuYWJsZWQ6IHRydWUKICAgIHN1Ym5ldHM6CiAgICAgIC0gc3VibmV0LTAyMjE2ZGQ0ZGFlN2M0NWQwCiAgICBzZXJ2aWNlRW5kcG9pbnRzOgogICAgICAtIG5hbWU6IGVuZHBvaW50LTEKICAgICAgICB1cmw6IGF3cy5lbmRwb2ludC0xLmNvbQogICAgaG9zdGVkWm9uZTogYXdzLWhvc3RlZC16b25lLmNvbQogICAgYW1pSUQ6IGFtaS0wODc2ZWFjYjM4MTkxZTkxZgpwdWJsaXNoOiBJbnRlcm5hbApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKICAgIHN1Ym5ldHM6CiAgICAgIC0gc3VibmV0LTAyMjE2ZGQ0ZGFlN2M0NWQwCiAgICBzZXJ2aWNlRW5kcG9pbnRzOgogICAgICAtIG5hbWU6IGVuZHBvaW50LTEKICAgICAgICB1cmw6IGF3cy5lbmRwb2ludC0xLmNvbQogICAgaG9zdGVkWm9uZTogYXdzLWhvc3RlZC16b25lLmNvbQogICAgYW1pSUQ6IGFtaS0wODc2ZWFjYjM4MTkxZTkxZgpwdWJsaXNoOiBJbnRlcm5hbApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
     },
 }
 
@@ -413,6 +413,54 @@ const mockClusterDeploymentAws = {
                     name: 'test-aws-creds',
                 },
                 region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            installConfigSecretRef: {
+                name: 'test-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-ssh-private-key',
+            },
+            imageSetRef: {
+                name: 'ocp-release48',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-pull-secret',
+        },
+    },
+}
+
+const mockClusterDeploymentAwsPrivate = {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterDeployment',
+    metadata: {
+        name: 'test',
+        namespace: 'test',
+        labels: {
+            cloud: 'AWS',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+    },
+    spec: {
+        baseDomain,
+        clusterName: 'test',
+        controlPlaneConfig: {
+            servingCertificates: {},
+        },
+        installAttemptsLimit: 1,
+        installed: false,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-aws-creds',
+                },
+                region: 'us-east-1',
+                privateLink: {
+                    enabled: true,
+                },
             },
         },
         provisioning: {
@@ -785,7 +833,7 @@ describe('CreateCluster AWS', () => {
             nockCreate(mockInstallConfigSecretPrivate),
             nockCreate(mockPrivateSecretAws),
             nockCreate(mockKlusterletAddonSecretAws),
-            nockCreate(mockClusterDeploymentAws),
+            nockCreate(mockClusterDeploymentAwsPrivate),
         ]
 
         // click create button

@@ -32,6 +32,9 @@ export interface ClusterPool extends IResource {
                     name: string
                 }
                 region: string
+                privateLink?: {
+                    enabled: boolean
+                }
             }
             gcp?: {
                 credentialsSecretRef: {

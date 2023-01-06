@@ -146,7 +146,7 @@ const mockInstallConfigSecretAWSPrivate: Secret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQogICAgcHJpdmF0ZUxpbms6CiAgICAgICAgZW5hYmxlZDogdHJ1ZQogICAgc3VibmV0czoKICAgICAgLSBzdWJuZXQtMDIyMTZkZDRkYWU3YzQ1ZDAKICAgIHNlcnZpY2VFbmRwb2ludHM6CiAgICAgIC0gbmFtZTogZW5kcG9pbnQtMQogICAgICAgIHVybDogYXdzLmVuZHBvaW50LTEuY29tCiAgICBob3N0ZWRab25lOiBhd3MtaG9zdGVkLXpvbmUuY29tCiAgICBhbWlJRDogYW1pLTA4NzZlYWNiMzgxOTFlOTFmCnB1Ymxpc2g6IEludGVybmFsCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZWVtYWlsQHJlZGhhdC5jb20K',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQogICAgc3VibmV0czoKICAgICAgLSBzdWJuZXQtMDIyMTZkZDRkYWU3YzQ1ZDAKICAgIHNlcnZpY2VFbmRwb2ludHM6CiAgICAgIC0gbmFtZTogZW5kcG9pbnQtMQogICAgICAgIHVybDogYXdzLmVuZHBvaW50LTEuY29tCiAgICBob3N0ZWRab25lOiBhd3MtaG9zdGVkLXpvbmUuY29tCiAgICBhbWlJRDogYW1pLTA4NzZlYWNiMzgxOTFlOTFmCnB1Ymxpc2g6IEludGVybmFsCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZWVtYWlsQHJlZGhhdC5jb20K',
     },
 }
 
@@ -195,6 +195,44 @@ const mockClusterPool: ClusterPool = {
                     name: mockCredentialSecret.metadata.name!,
                 },
                 region: 'us-east-1',
+            },
+        },
+    },
+}
+const mockClusterPoolPrivate: ClusterPool = {
+    apiVersion: ClusterPoolApiVersion,
+    kind: ClusterPoolKind,
+    metadata: {
+        name: clusterName,
+        namespace: mockNamespace.metadata.name!,
+        labels: {
+            cloud: 'AWS',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+    },
+    spec: {
+        size: 1,
+        runningCount: 0,
+        baseDomain: providerConnection.stringData?.baseDomain!,
+        installConfigSecretTemplateRef: {
+            name: mockInstallConfigSecret.metadata.name!,
+        },
+        imageSetRef: {
+            name: clusterImageSet.metadata.name!,
+        },
+        pullSecretRef: {
+            name: mockPullSecret.metadata.name!,
+        },
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: mockCredentialSecret.metadata.name!,
+                },
+                region: 'us-east-1',
+                privateLink: {
+                    enabled: true,
+                },
             },
         },
     },
@@ -361,7 +399,7 @@ describe('CreateClusterPool AWS', () => {
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecretAWSPrivate),
             nockCreate(mockCredentialSecret),
-            nockCreate(mockClusterPool),
+            nockCreate(mockClusterPoolPrivate),
         ]
 
         // click create button

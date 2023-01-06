@@ -2755,7 +2755,6 @@
     "URL": "URL",
     "Use a Git repository": "Use a Git repository",
     "Use a Helm repository": "Use a Helm repository",
-    "Use AWS PrivateLink": "Use AWS PrivateLink",
     "Use cluster labels and application placement rules to easily move workloads across clusters, even between multiple cloud providers.": "Use cluster labels and application placement rules to easily move workloads across clusters, even between multiple cloud providers.",
     "Use existing hosts": "Use existing hosts",
     "Use keywords or property filters to search for resources.": "Use keywords or property filters to search for resources.",
