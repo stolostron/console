@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '../../../../../../resources'
+import {
+    ClusterCuratorDefinition,
+    ClusterDeployment,
+    ClusterStatus,
+    ManagedClusterDefinition,
+} from '../../../../../../resources'
 import {
     AcmButton,
     AcmDescriptionList,
@@ -42,6 +47,24 @@ import TemplateSummaryModal from '../../../../../../components/TemplateSummaryMo
 import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const { getClusterProperties } = CIM
+
+function getAIClusterProperties(
+    clusterDeployment: ClusterDeployment,
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource
+) {
+    const aiClusterProperties = getClusterProperties(
+        clusterDeployment as ClusterDeploymentK8sResource,
+        agentClusterInstall
+    )
+    return [
+        aiClusterProperties.baseDnsDomain,
+        aiClusterProperties.apiVip,
+        aiClusterProperties.ingressVip,
+        aiClusterProperties.clusterNetworkCidr,
+        aiClusterProperties.clusterNetworkHostPrefix,
+        aiClusterProperties.serviceNetworkCidr,
+    ]
+}
 
 export function ClusterOverviewPageContent(props: {
     canGetSecret?: boolean
@@ -304,103 +327,46 @@ export function ClusterOverviewPageContent(props: {
             },
         }
 
-    let leftItems = [
-        clusterProperties.clusterName,
-        clusterProperties.clusterControlPlaneType,
-        clusterProperties.clusterClaim,
-        clusterProperties.status,
-        clusterProperties.provider,
-        clusterProperties.distribution,
-        clusterProperties.labels,
-    ]
-    let rightItems = [
-        clusterProperties.kubeApiServer,
-        clusterProperties.consoleUrl,
-        clusterProperties.clusterId,
-        clusterProperties.credentials,
-        clusterProperties.claimedBy,
-        clusterProperties.clusterSet,
-        clusterProperties.clusterPool,
-        clusterProperties.automationTemplate,
-    ]
-
-    // should only show channel for ocp clusters with version
-    if (cluster?.distribution?.ocp?.version) {
-        leftItems.splice(5, 0, clusterProperties.channel)
-    }
-
-    // clusterClaim should not be shown for stand alone clusters not from a clusterpool
-    if (
-        (clusterProperties.clusterControlPlaneType?.value === t('Standalone') ||
-            clusterProperties.clusterControlPlaneType?.value === t('Hub')) &&
-        clusterProperties.clusterPool?.value === undefined
-    ) {
-        leftItems.splice(2, 1)
-        rightItems.splice(6, 1)
-    }
-
-    if (
+    const fromClusterPool =
+        !(cluster?.isHostedCluster || cluster?.isHypershift) && clusterProperties.clusterPool?.value !== undefined
+    const hasOCPVersion = cluster?.distribution?.ocp?.version
+    const hasAIClusterProperties =
         cluster?.provider === Provider.hostinventory &&
         !cluster?.isHypershift &&
         clusterDeployment &&
         agentClusterInstall
-    ) {
-        const aiClusterProperties = getClusterProperties(
-            clusterDeployment as ClusterDeploymentK8sResource,
-            agentClusterInstall
-        )
 
-        leftItems = [
-            ...leftItems,
-            clusterProperties.claimedBy,
-            clusterProperties.clusterSet,
-            clusterProperties.clusterPool,
-        ]
-        rightItems = [
-            clusterProperties.kubeApiServer,
-            clusterProperties.consoleUrl,
-            clusterProperties.clusterId,
-            clusterProperties.credentials,
-            aiClusterProperties.baseDnsDomain,
-            aiClusterProperties.apiVip,
-            aiClusterProperties.ingressVip,
-            aiClusterProperties.clusterNetworkCidr,
-            aiClusterProperties.clusterNetworkHostPrefix,
-            aiClusterProperties.serviceNetworkCidr,
-        ]
-    }
+    const clusterClaimedBySetPool = [
+        ...(!cluster?.isHypershift ? [clusterProperties.claimedBy] : []),
+        clusterProperties.clusterSet,
+        // clusterPool should not be shown for stand alone clusters not from a clusterpool
+        ...(fromClusterPool ? [clusterProperties.clusterPool] : []),
+    ]
 
-    if (cluster?.isHypershift) {
-        leftItems = [
-            clusterProperties.clusterName,
-            clusterProperties.clusterControlPlaneType,
-            clusterProperties.clusterClaim,
-            clusterProperties.status,
-            clusterProperties.provider,
-            clusterProperties.distribution,
-            clusterProperties.labels,
-        ]
-        rightItems = [
-            clusterProperties.kubeApiServer,
-            clusterProperties.consoleUrl,
-            clusterProperties.credentials,
-            clusterProperties.clusterSet,
-        ]
-    }
-
-    if (cluster?.isRegionalHubCluster) {
-        leftItems.splice(7, 0, clusterProperties.acmDistribution)
-        leftItems.splice(8, 0, clusterProperties.acmChannel)
-        rightItems.splice(2, 0, clusterProperties.acmConsoleUrl)
-    }
-
-    // clusterClaim should not be shown for hosted control planes.
-    if (
-        clusterProperties.clusterControlPlaneType?.value === t('Hosted') ||
-        clusterProperties.clusterControlPlaneType?.value === t('Hub, Hosted')
-    ) {
-        leftItems.splice(2, 1)
-    }
+    const leftItems = [
+        clusterProperties.clusterName,
+        clusterProperties.clusterControlPlaneType,
+        // clusterClaim should not be shown for stand alone clusters not from a clusterpool
+        ...(fromClusterPool ? [clusterProperties.clusterClaim] : []),
+        clusterProperties.status,
+        clusterProperties.provider,
+        clusterProperties.distribution,
+        // should only show channel for ocp clusters with version
+        ...(!cluster?.isHypershift && hasOCPVersion ? [clusterProperties.channel] : []),
+        ...(cluster?.isRegionalHubCluster ? [clusterProperties.acmDistribution, clusterProperties.acmChannel] : []),
+        clusterProperties.labels,
+        ...(hasAIClusterProperties ? clusterClaimedBySetPool : []),
+    ]
+    const rightItems = [
+        clusterProperties.kubeApiServer,
+        clusterProperties.consoleUrl,
+        ...(cluster?.isRegionalHubCluster ? [clusterProperties.acmConsoleUrl] : []),
+        ...(!cluster?.isHypershift ? [clusterProperties.clusterId] : []),
+        clusterProperties.credentials,
+        ...(hasAIClusterProperties
+            ? getAIClusterProperties(clusterDeployment, agentClusterInstall)
+            : [...clusterClaimedBySetPool, ...(!cluster?.isHypershift ? [clusterProperties.automationTemplate] : [])]),
+    ]
 
     let details = <ProgressStepBar />
     if (cluster?.isHypershift) {
