@@ -51,6 +51,10 @@ spec:
       credentialsSecretRef:
         name: {{{name}}}-aws-creds
       region: {{{region}}}
+      {{#if hasPrivateConfig}}
+      privateLink:
+        enabled: true
+      {{/if}}
   {{/case}}
 
   {{#case 'GCP'}}
