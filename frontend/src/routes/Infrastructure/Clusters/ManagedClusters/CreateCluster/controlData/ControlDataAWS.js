@@ -788,7 +788,7 @@ const awsPrivateControlData = (t) => {
                     type: 'text',
                     placeholder: t('creation.aws.serviceEndpointUrl.placeholder'),
                     active: '',
-                    validation: getHttpsURLValidator(),
+                    validation: getHttpsURLValidator(false),
                 },
             ],
         },

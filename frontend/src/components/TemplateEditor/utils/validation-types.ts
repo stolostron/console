@@ -129,9 +129,9 @@ export const getURLValidator = (t: TFunction): Validator => ({
     required: true,
 })
 
-export const getHttpsURLValidator = (): Validator => ({
+export const getHttpsURLValidator = (required: boolean): Validator => ({
     contextTester: (active, _controlData, _templateObjectMap, t) => validateHttpsURL(active, t),
-    required: true,
+    required,
 })
 
 export const getAlphanumericValidator = (t: TFunction): Validator => ({
