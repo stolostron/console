@@ -474,6 +474,13 @@ Array [
     "name": "No proxy",
     "tip": "Add a comma-separated list of sites that bypass the proxy. The hub API server address must be included in this list. By default, all cluster egress traffic is sent through the proxy, including calls to hosting and cloud provider APIs.",
     "type": "values",
+    "validation": Object {
+      "notification": "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'.",
+      "required": false,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
   },
   Object {
     "disabled": true,
@@ -1097,6 +1104,13 @@ Array [
     "name": "No proxy",
     "tip": "Add a comma-separated list of sites that bypass the proxy. The hub API server address must be included in this list. By default, all cluster egress traffic is sent through the proxy, including calls to hosting and cloud provider APIs.",
     "type": "values",
+    "validation": Object {
+      "notification": "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'.",
+      "required": false,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
   },
   Object {
     "disabled": true,
@@ -1720,6 +1734,13 @@ Array [
     "name": "No proxy",
     "tip": "Add a comma-separated list of sites that bypass the proxy. The hub API server address must be included in this list. By default, all cluster egress traffic is sent through the proxy, including calls to hosting and cloud provider APIs.",
     "type": "values",
+    "validation": Object {
+      "notification": "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'.",
+      "required": false,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
   },
   Object {
     "disabled": true,
