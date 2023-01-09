@@ -20,7 +20,14 @@ import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { nockCreate, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
-import { clickByLabel, clickByText, waitForNock, waitForNocks, waitForText } from '../../../../../lib/test-util'
+import {
+    clickByLabel,
+    clickByText,
+    waitForNock,
+    waitForNocks,
+    waitForNotText,
+    waitForText,
+} from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
 import { NavigationPath } from '../../../../../NavigationPath'
 
@@ -195,6 +202,15 @@ describe('ClusterActionDropdown', () => {
         await clickByText('Resume cluster')
         await clickByText('Resume')
         await waitForNock(nockPatch)
+    })
+
+    test('update automation template should not be shown for hosted cluster', async () => {
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        cluster.isHostedCluster = true
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await waitForText('Detach cluster')
+        await waitForNotText('Update automation template')
     })
 })
 

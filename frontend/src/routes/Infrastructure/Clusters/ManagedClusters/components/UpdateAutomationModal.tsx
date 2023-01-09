@@ -103,7 +103,8 @@ export function UpdateAutomationModal(props: {
             isReady &&
             !isUpgrading &&
             !isRoks &&
-            !isCloudLabelSet
+            !isCloudLabelSet &&
+            !cluster.isHostedCluster
         )
     }
 
