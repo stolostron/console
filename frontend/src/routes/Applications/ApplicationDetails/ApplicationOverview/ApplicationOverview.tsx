@@ -59,7 +59,7 @@ import { ISyncResourceModalProps, SyncResourceModal } from '../../components/Syn
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
-import { Link } from 'react-router-dom'
+import { generatePath, Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { useRecoilState } from '../../../../shared-recoil'
@@ -604,18 +604,21 @@ function createSubsCards(
                                 <div className="sub-card-content">
                                     <div className="sub-card-title">{t('Time window')}</div>
                                     {!sub.spec.timewindow?.windowtype ? (
-                                        <AcmButton
-                                            id="set-time-window-link"
-                                            target="_blank"
-                                            component="a"
-                                            href={NavigationPath.editApplicationSubscription
-                                                .replace(':namespace', appResource.metadata?.namespace as string)
-                                                .replace(':name', appResource.metadata?.name as string)}
-                                            variant={ButtonVariant.link}
-                                            rel="noreferrer"
+                                        <Link
+                                            to={generatePath(NavigationPath.editApplicationSubscription, {
+                                                name: appResource?.metadata?.name!,
+                                                namespace: appResource?.metadata?.namespace!,
+                                            })}
                                         >
-                                            {t('Set time window')}
-                                        </AcmButton>
+                                            <AcmButton
+                                                id="set-time-window-link"
+                                                component="a"
+                                                variant={ButtonVariant.link}
+                                                rel="noreferrer"
+                                            >
+                                                {t('Set time window')}
+                                            </AcmButton>
+                                        </Link>
                                     ) : (
                                         <TimeWindowLabels
                                             subName={sub.metadata.name as string}

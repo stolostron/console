@@ -7,6 +7,8 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { NavigationPath } from '../../../NavigationPath'
+import { generatePath, Link, useParams } from 'react-router-dom'
 
 export interface ITimeWindowLabelsProps {
     subName: string
@@ -18,6 +20,7 @@ export interface ITimeWindowLabelsProps {
 }
 
 export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
+    const params: { namespace?: string; name?: string } = useParams()
     const { t } = useTranslation()
     const notSelectedLabel = t('Not selected')
 
@@ -62,18 +65,23 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
                             </div>
                         </Fragment>
                     )}
-                    <AcmButton
-                        id="set-time-window-link"
-                        target="_blank"
-                        component="a"
-                        href={''} //TODO: update once edit link is in
-                        variant={ButtonVariant.link}
-                        rel="noreferrer"
-                        icon={<PencilAltIcon />}
-                        iconPosition="right"
+                    <Link
+                        to={generatePath(NavigationPath.editApplicationSubscription, {
+                            name: params.name!,
+                            namespace: params.namespace!,
+                        })}
                     >
-                        {t('Edit time window')}
-                    </AcmButton>
+                        <AcmButton
+                            id="set-time-window-link"
+                            component="a"
+                            variant={ButtonVariant.link}
+                            rel="noreferrer"
+                            icon={<PencilAltIcon />}
+                            iconPosition="right"
+                        >
+                            {t('Edit time window')}
+                        </AcmButton>
+                    </Link>
                 </div>
             </LabelWithPopover>
         </div>
