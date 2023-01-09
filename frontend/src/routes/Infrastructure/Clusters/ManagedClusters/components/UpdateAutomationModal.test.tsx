@@ -288,7 +288,6 @@ const mockClusterHosted: Cluster = {
     kubeadmin: '',
     kubeconfig: '',
     isHypershift: true,
-    isRegionalHubCluster: false,
 }
 
 const providerConnectionAnsible: ProviderConnection = {
