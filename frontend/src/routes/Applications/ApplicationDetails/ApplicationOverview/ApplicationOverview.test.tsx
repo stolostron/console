@@ -11,7 +11,7 @@ import {
     subscriptionsState,
 } from '../../../../atoms'
 import { nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText } from '../../../../lib/test-util'
+import { clickByRole, clickByText, waitForText } from '../../../../lib/test-util'
 
 import {
     ApplicationApiVersion,
@@ -286,6 +286,128 @@ const mockApplicationDataSubscription: ApplicationDataType = {
                     namespace: 'demo-etherpad',
                     resourceVersion: '83124008',
                 },
+                spec: {},
+            },
+        ],
+        app: {
+            apiVersion: ApplicationApiVersion,
+            kind: ApplicationKind,
+            metadata: {
+                creationTimestamp: '2022-03-01T21:30:03Z',
+                generation: 1,
+                name: 'demo-etherpad',
+                namespace: 'demo-etherpad',
+                resourceVersion: '74226379',
+            },
+        },
+        metadata: {
+            name: 'demo-etherpad',
+            namespace: 'demo-etherpad',
+            creationTimestamp: '2022-03-01T21:30:03Z',
+        },
+        isAppSet: false,
+        isArgoApp: false,
+    },
+    topology: {
+        links: [],
+        nodes: [],
+    },
+}
+
+const mockApplicationDataSubscriptionTimewindow: ApplicationDataType = {
+    refreshTime: 1646925212170,
+    activeChannel: 'demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20',
+    allChannels: ['demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20'],
+    appData: {
+        isArgoApp: false,
+        relatedKinds: [
+            'application',
+            'subscription',
+            'placements',
+            'cluster',
+            'service',
+            'deployment',
+            'replicaset',
+            'configmap',
+            'pod',
+        ],
+        subscription: 'demo-etherpad',
+    },
+    application: {
+        activeChannel: 'demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20',
+        allChannels: [
+            {
+                apiVersion: ChannelApiVersion,
+                kind: ChannelKind,
+                metadata: {
+                    annotations: {
+                        'apps.open-cluster-management.io/cluster-admin': 'true',
+                        'apps.open-cluster-management.io/hosting-subscription':
+                            'magchen-sibling-ns/magchen-sibling-subscription-1-local',
+                        'apps.open-cluster-management.io/reconcile-option': 'merge',
+                    },
+                    creationTimestamp: '2022-03-01T21:30:02Z',
+                    generation: 1,
+                    labels: {
+                        app: 'magchen-sibling',
+                        'app.kubernetes.io/part-of': 'magchen-sibling',
+                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                    },
+                    name: 'github-redhat-sa-brazil-demo-summitgov-cy20',
+                    namespace: 'demo-etherpad-repos',
+                    resourceVersion: '74226330',
+                    uid: '4f8848b4-c5b3-4b3d-b636-7e9377b9f127',
+                },
+                spec: { pathname: 'https://github.com/redhat-sa-brazil/demo-summitgov-cy20.git', type: 'GitHub' },
+            },
+        ],
+        allClusters: [],
+        allSubscriptions: [
+            {
+                apiVersion: SubscriptionApiVersion,
+                kind: SubscriptionKind,
+                channels: [
+                    {
+                        apiVersion: ChannelApiVersion,
+                        kind: ChannelKind,
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/cluster-admin': 'true',
+                                'apps.open-cluster-management.io/hosting-subscription':
+                                    'magchen-sibling-ns/magchen-sibling-subscription-1-local',
+                                'apps.open-cluster-management.io/reconcile-option': 'merge',
+                            },
+                            creationTimestamp: '2022-03-01T21:30:02Z',
+                            generation: 1,
+                            labels: {
+                                app: 'magchen-sibling',
+                                'app.kubernetes.io/part-of': 'magchen-sibling',
+                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                            },
+                            name: 'github-redhat-sa-brazil-demo-summitgov-cy20',
+                            namespace: 'demo-etherpad-repos',
+                        },
+                        spec: {
+                            pathname: 'https://github.com/redhat-sa-brazil/demo-summitgov-cy20.git',
+                            type: 'GitHub',
+                        },
+                    },
+                ],
+                metadata: {
+                    creationTimestamp: '2022-03-01T21:30:03Z',
+                    generation: 476,
+                    name: 'demo-etherpad',
+                    namespace: 'demo-etherpad',
+                    resourceVersion: '83124008',
+                },
+                spec: {
+                    timewindow: {
+                        daysofweek: ['Sunday', 'Saturday'],
+                        hours: [],
+                        location: 'America/Toronto',
+                        windowtype: 'blocked',
+                    },
+                },
             },
         ],
         app: {
@@ -412,11 +534,19 @@ const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoA
 
 //////////////// Test /////////////////
 
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+    useParams: () => ({
+        namespace: 'demo-etherpad',
+        name: 'demo-etherpad',
+    }),
+}))
+
 describe('Overview Tab', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
     })
-    test('should display subscription app info', async () => {
+    test('should display subscription app info without time window', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -438,7 +568,42 @@ describe('Overview Tab', () => {
         await waitForText('Clusters')
         await waitForText('None')
         // created
-        await waitForText('Mar 1, 9:30 pm')
+        await waitForText('Mar 1 2022, 9:30 pm')
+
+        // click show subscription details
+        await clickByRole('button', 1)
+
+        await waitForText('Set time window')
+    })
+
+    test('should display subscription app info with time window', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(subscriptionsState, mockSubscriptions)
+                    snapshot.set(channelsState, mockChannels)
+                    snapshot.set(placementRulesState, mockPlacementrules)
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(namespacesState, mockNamespaces)
+                }}
+            >
+                <MemoryRouter>
+                    <ApplicationOverviewPageContent applicationData={mockApplicationDataSubscriptionTimewindow} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText('Name')
+        // cluster
+        await waitForText('Clusters')
+        await waitForText('None')
+        // created
+        await waitForText('Mar 1 2022, 9:30 pm')
+
+        // click show subscription details
+        await clickByRole('button', 1)
+        await clickByText('blocked')
+        await waitForText('Edit time window')
     })
 
     test('should display AppSet app info', async () => {
