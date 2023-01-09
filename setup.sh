@@ -33,7 +33,7 @@ SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE -o json | jq -r "[.items[]
 SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE ${SA_SECRET} -o="jsonpath={.data.token}"`
 
 echo ${SA_TOKEN} > /tmp/tmp_SA_TOKEN
-SA_TOKEN=`cat /tmp/tmp_SA_TOKEN | base64 -d -`
+SA_TOKEN=`cat /tmp/tmp_SA_TOKEN | base64 -d`
 rm /tmp/tmp_SA_TOKEN
 echo TOKEN=$SA_TOKEN >> ./backend/.env
 
