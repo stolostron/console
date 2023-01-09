@@ -548,7 +548,8 @@ export function NodePoolForm(props: {
                             {
                                 header: t('Error'),
                                 cell: (error) => {
-                                    return error.msg
+                                    // remove backslashes
+                                    return JSON.stringify(error.msg.message).replaceAll('\\', '')
                                 },
                             },
                         ]}
