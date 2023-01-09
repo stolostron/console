@@ -32,7 +32,7 @@ import {
     validateImageContentSources,
     validateJSON,
     validateKubernetesDnsName,
-    validateNoProxy,
+    validateNoProxyList,
     validatePrivateSshKey,
     validatePublicSshKey,
     validateRequiredPrefix,
@@ -1151,11 +1151,11 @@ export function CredentialsForm(
                         label: t('No proxy'),
                         placeholder: t('Enter the comma delimited list of URLs that do not require a proxy'),
                         labelHelp: t(
-                            'A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.'
+                            "A comma-separated list of destination domain names, IP addresses, or other network CIDRs to exclude from proxying. Preface a domain with '.' to include all subdomains of that domain. Use '*' to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues."
                         ),
                         value: noProxy,
                         onChange: setNoProxy,
-                        validation: (value) => validateNoProxy(value, t),
+                        validation: (value) => validateNoProxyList(value, t),
                     },
                     {
                         id: 'additionalTrustBundle',
