@@ -11,7 +11,7 @@ import {
     subscriptionsState,
 } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText } from '../../../../lib/test-util'
+import { clickByRole, waitForText } from '../../../../lib/test-util'
 
 import {
     ApplicationApiVersion,
@@ -284,6 +284,7 @@ const mockApplicationDataSubscription: ApplicationDataType = {
                     namespace: 'demo-etherpad',
                     resourceVersion: '83124008',
                 },
+                spec: {},
             },
         ],
         app: {
@@ -436,6 +437,11 @@ describe('Overview Tab', () => {
         await waitForText('None')
         // created
         await waitForText('Mar 1 2022, 9:30 pm')
+
+        // click show subscription details
+        await clickByRole('button', 1)
+
+        await waitForText('Set time window')
     })
 
     test('should display AppSet app info', async () => {
