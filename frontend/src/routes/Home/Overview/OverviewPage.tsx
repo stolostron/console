@@ -3,7 +3,6 @@
 import { PageSection, Stack } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -15,6 +14,7 @@ import {
     PolicyReport,
     PolicyReportResults,
 } from '../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import {
     AcmAlert,
     AcmDonutChart,
@@ -299,7 +299,7 @@ export default function OverviewPage() {
             const localClusterFilter: string = localCluster === true ? `%20cluster%3Alocal-cluster` : ''
             return selectedCloud === ''
                 ? `${NavigationPath.search}?filters={"textsearch":"kind%3A${kind}${localClusterFilter}"}`
-                : `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
+                : `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster${cloudLabelFilter}"}&showrelated=${kind}`
         },
         [cloudLabelFilter, selectedCloud]
     )
@@ -310,13 +310,13 @@ export default function OverviewPage() {
                 isLoading: !apps || !argoApps,
                 description: t('Applications'),
                 count: [...apps, ...argoApps].length || 0,
-                href: buildSummaryLinks('application', true),
+                href: buildSummaryLinks('Application', true),
             },
             {
                 isLoading: !clusters,
                 description: t('Clusters'),
                 count: selectedClusterNames.length > 0 ? selectedClusterNames.length : clusters.length || 0,
-                href: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
+                href: `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster${cloudLabelFilter}"}`,
             },
             {
                 isLoading: kubernetesTypes?.size === null,
@@ -332,7 +332,7 @@ export default function OverviewPage() {
                 isLoading: nodeCount === null,
                 description: t('Nodes'),
                 count: nodeCount || 0,
-                href: buildSummaryLinks('node'),
+                href: buildSummaryLinks('Node'),
             },
         ]
         if (searchError) {
@@ -363,18 +363,18 @@ export default function OverviewPage() {
             {
                 key: t('Failed'),
                 value: searchResult[2]?.count || 0,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CError%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled%2CCreateContainerError${urlClusterFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3APod%20status%3ACrashLoopBackOff%2CError%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled%2CCreateContainerError${urlClusterFilter}"}`,
             },
             {
                 key: t('Pending'),
                 value: searchResult[1]?.count || 0,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting%2CContainerStatusUnknown${urlClusterFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3APod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting%2CContainerStatusUnknown${urlClusterFilter}"}`,
             },
             {
                 key: t('Running'),
                 value: searchResult[0]?.count || 0,
                 isPrimary: true,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3APod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
             },
         ]
     }, [searchResult, selectedClusterNames, t])
@@ -382,9 +382,9 @@ export default function OverviewPage() {
     // TODO: Breaks url if length of selectedClustersFilter is too big.
     // Issue: https://github.com/open-cluster-management/backlog/issues/7087
     function buildClusterComplianceLinks(clusterNames: Array<string> = []): string {
-        return `${NavigationPath.search}?filters={"textsearch":"kind:cluster${
+        return `${NavigationPath.search}?filters={"textsearch":"kind:Cluster${
             clusterNames.length > 0 ? `%20name:${clusterNames.join(',')}` : ''
-        }"}&showrelated=policy`
+        }"}&showrelated=Policy`
     }
     const complianceData = useMemo(() => {
         return [
@@ -407,13 +407,13 @@ export default function OverviewPage() {
             {
                 key: t('Offline'),
                 value: offline,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
             },
             {
                 key: t('Ready'),
                 value: ready,
                 isPrimary: true,
-                link: `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
+                link: `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
             },
         ]
     }, [cloudLabelFilter, offline, ready, t])
@@ -426,7 +426,7 @@ export default function OverviewPage() {
                 isPrimary: true,
                 link:
                     policyReportCriticalCount > 0
-                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20critical%3A>0"}`
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20critical%3A>0"}`
                         : undefined,
             },
             {
@@ -434,7 +434,7 @@ export default function OverviewPage() {
                 value: policyReportImportantCount,
                 link:
                     policyReportImportantCount > 0
-                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20important%3A>0"}`
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20important%3A>0"}`
                         : undefined,
             },
             {
@@ -442,7 +442,7 @@ export default function OverviewPage() {
                 value: policyReportModerateCount,
                 link:
                     policyReportModerateCount > 0
-                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20moderate%3A>0"}`
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20moderate%3A>0"}`
                         : undefined,
             },
             {
@@ -450,7 +450,7 @@ export default function OverviewPage() {
                 value: policyReportLowCount,
                 link:
                     policyReportLowCount > 0
-                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3Apolicyreport%20low%3A>0"}`
+                        ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20low%3A>0"}`
                         : undefined,
             },
         ]

@@ -10,18 +10,18 @@ import {
     Text,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable } from '../../../ui-components'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
-import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
-import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 
 export interface JobTableData {
     name: string
@@ -165,7 +165,7 @@ export function AutomationDetailsSidebar(props: {
                     <a
                         target="_blank"
                         rel="noopener noreferrer"
-                        href={`${NavigationPath.search}?filters={%22textsearch%22:%22cluster%3Alocal-cluster%20kind%3Aansiblejob%20namespace%3A${item.namespace}%20name%3A${item.name}%22}`}
+                        href={`${NavigationPath.search}?filters={%22textsearch%22:%22cluster%3Alocal-cluster%20kind%3AAnsibleJob%20namespace%3A${item.namespace}%20name%3A${item.name}%22}`}
                     >
                         {'View job'}
                     </a>
