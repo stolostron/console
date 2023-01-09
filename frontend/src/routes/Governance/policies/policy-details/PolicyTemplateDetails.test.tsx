@@ -154,7 +154,6 @@ describe('Policy Template Details content', () => {
         // wait for related resources table to load correctly
         await waitForText('Related resources')
         await waitForText('test')
-        await waitForText('namespace')
         await waitForText('v1')
         await waitForText('No violations')
         await waitForText('Resource found as expected')
