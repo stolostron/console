@@ -282,24 +282,3 @@ export function validateHttpsProxy(value: string, t: TFunction) {
     }
     return undefined
 }
-
-export function validateNoProxy(value: string, t: TFunction) {
-    if (value) {
-        const noProxies = value.split(',')
-        if (noProxies) {
-            const allGood = noProxies.every((noProxy) => {
-                return validator.isURL(noProxy, {
-                    require_protocol: false,
-                    require_valid_protocol: false,
-                    require_host: false,
-                })
-            })
-            if (allGood) {
-                return undefined
-            }
-        }
-
-        return t('validate.ansible.url.not.valid')
-    }
-    return undefined
-}

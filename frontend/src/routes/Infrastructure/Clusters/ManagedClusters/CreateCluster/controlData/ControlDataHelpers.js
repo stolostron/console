@@ -8,6 +8,7 @@ import {
     VALID_DNS_LABEL,
     VALIDATE_URL,
     VALIDATE_ALPHANUMERIC,
+    getNoProxyValidator,
 } from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
@@ -530,6 +531,7 @@ export const proxyControlData = [
         name: 'No proxy',
         disabled: true,
         tip: 'noProxyTip',
+        validation: getNoProxyValidator(),
     },
     {
         id: 'additionalTrustBundle',
