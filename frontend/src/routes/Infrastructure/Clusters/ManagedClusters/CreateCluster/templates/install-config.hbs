@@ -236,7 +236,7 @@ platform:
     {{#if subnetID}}
     subnets:
     {{#each subnetID}}
-      - {{{.}}}
+      - {{{.}}} ##subnetID.{{@index}}
     {{/each}}
     {{/if}}
 
@@ -244,16 +244,16 @@ platform:
     serviceEndpoints:
     {{#each serviceEndpoints}}
       {{#if endpointName}}
-      - name: {{{endpointName}}}
-        url: {{{endpointURL}}}
+      - name: {{{endpointName}}} ##serviceEndpoints.{{@index}}.endpointName
+        url: {{{endpointURL}}} ##serviceEndpoints.{{@index}}.endpointURL
       {{/if}}
     {{/each}}
     {{/if}}
     {{#if hostedZone}}
-    hostedZone: {{{hostedZone}}}
+    hostedZone: {{{hostedZone}}} ##hostedZone
     {{/if}}
     {{#if amiID}}
-    amiID: {{{amiID}}}
+    amiID: {{{amiID}}} ##amiID
     {{/if}}
 {{#if hasPrivateConfig}}
 publish: Internal

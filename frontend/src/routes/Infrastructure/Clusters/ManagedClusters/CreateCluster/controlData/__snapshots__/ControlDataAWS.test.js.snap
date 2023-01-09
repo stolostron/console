@@ -7277,9 +7277,8 @@ Array [
         "tooltip": "The AWS service endpoint URL. The endpoint URL must use the https protocol and the host must trust the certificate.",
         "type": "text",
         "validation": Object {
-          "notification": "Value must be alphanumeric, including periods.",
+          "contextTester": [Function],
           "required": false,
-          "tester": /\\^\\[A-Za-z0-9-_\\.\\]\\+\\$/,
         },
       },
     ],

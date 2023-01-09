@@ -20,8 +20,8 @@ import {
     getAlphanumericValidator,
     getAlphanumericWithPeriodValidator,
     getNumericValidator,
+    getHttpsURLValidator,
 } from '../../../../../../components/TemplateEditor'
-
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import Handlebars from 'handlebars'
@@ -781,7 +781,7 @@ export const awsPrivateControlData = (t) => {
                     type: 'text',
                     placeholder: t('creation.aws.serviceEndpointUrl.placeholder'),
                     active: '',
-                    validation: getAlphanumericWithPeriodValidator(t),
+                    validation: getHttpsURLValidator(false),
                 },
             ],
         },
