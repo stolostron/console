@@ -71,7 +71,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 >
                     <div>
                         <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}>
-                            {t('Get Started with on-premise host inventory')}
+                            {t('Get started with on-premise host inventory')}
                         </Link>
                     </div>
                     <div>
