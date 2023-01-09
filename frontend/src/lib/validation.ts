@@ -285,23 +285,36 @@ export function validateHttpsURL(value: string, t: TFunction) {
     return undefined
 }
 
+const FQDN_OPTIONS = { require_tld: false }
 export function validateNoProxy(value: string, t: TFunction) {
+    if (
+        validator.isFQDN(value, FQDN_OPTIONS) ||
+        (value.startsWith('.') && validator.isFQDN(value.substring(1), FQDN_OPTIONS)) ||
+        validator.isIP(value) ||
+        isCidr(value) ||
+        value === '*'
+    ) {
+        return undefined
+    }
+
+    return t(
+        "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'."
+    )
+}
+
+export function validateNoProxyList(value: string, t: TFunction) {
     if (value) {
         const noProxies = value.split(',')
         if (noProxies) {
-            const allGood = noProxies.every((noProxy) => {
-                return validator.isURL(noProxy, {
-                    require_protocol: false,
-                    require_valid_protocol: false,
-                    require_host: false,
-                })
+            let validationMessage
+            const validationFailed = noProxies.some((noProxy) => {
+                validationMessage = validateNoProxy(noProxy, t)
+                return !!validationMessage
             })
-            if (allGood) {
-                return undefined
+            if (validationFailed) {
+                return validationMessage
             }
         }
-
-        return t('validate.ansible.url.not.valid')
     }
     return undefined
 }

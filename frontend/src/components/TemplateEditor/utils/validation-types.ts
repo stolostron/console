@@ -3,7 +3,7 @@
 
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
-import { validateHttpsURL, VALID_DNS_NAME_TESTER } from '../../../lib/validation'
+import { validateHttpsURL, validateNoProxy, VALID_DNS_NAME_TESTER } from '../../../lib/validation'
 import { TFunction } from 'i18next'
 import { getControlByID } from '../../../lib/temptifly-utils'
 
@@ -132,6 +132,16 @@ export const getURLValidator = (t: TFunction): Validator => ({
 export const getHttpsURLValidator = (required: boolean): Validator => ({
     contextTester: (active, _controlData, _templateObjectMap, t) => validateHttpsURL(active, t),
     required,
+})
+
+export const getNoProxyValidator = (t: TFunction): Validator => ({
+    tester: {
+        test: (value) => !validateNoProxy(value, t),
+    },
+    notification: t(
+        "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'."
+    ),
+    required: false,
 })
 
 export const getAlphanumericValidator = (t: TFunction): Validator => ({
