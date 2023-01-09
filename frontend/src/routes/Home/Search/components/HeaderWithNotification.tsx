@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Message } from '../search-sdk/search-sdk'
 import { NavigationPath } from '../../../../NavigationPath'
+import { AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
+import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
     const { t } = useTranslation()
@@ -36,7 +36,7 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
                                     bodyContent: displayLongText,
                                     footerContent: msg.id === 'S20' && (
                                         <a
-                                            href={`${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`}
+                                            href={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`}
                                         >
                                             {footerText}
                                         </a>
