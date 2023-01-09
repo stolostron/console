@@ -33,7 +33,7 @@ function getWizardSyncEditor() {
     return <WizardSyncEditor />
 }
 
-export function CreatePolicy() {
+export function CreatePolicy(props: { initialResources?: IResource[] }) {
     const { t } = useTranslation()
     const {
         managedClusterSetBindingsState,
@@ -69,6 +69,7 @@ export function CreatePolicy() {
             policies={policies}
             clusters={managedClusters}
             yamlEditor={getWizardSyncEditor}
+            resources={props.initialResources}
             namespaces={namespaceNames}
             placements={placements}
             placementRules={placementRules}

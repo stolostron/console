@@ -25,9 +25,10 @@ import {
     mockPlacements,
     mockPolicy,
 } from '../governance.sharedMocks'
+import { IResource } from '../../../resources'
 import userEvent from '@testing-library/user-event'
 
-function TestCreatePolicyPage() {
+function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
@@ -42,7 +43,7 @@ function TestCreatePolicyPage() {
         >
             <MemoryRouter initialEntries={[`${NavigationPath.createPolicy}`]}>
                 <Route path={NavigationPath.createPolicy}>
-                    <CreatePolicy />
+                    <CreatePolicy initialResources={props.initialResources} />
                 </Route>
             </MemoryRouter>
         </RecoilRoot>
@@ -129,5 +130,29 @@ describe('Create Policy Page', () => {
         await waitForText('Create policy')
         await clickByText('Cancel')
         await waitForNotText('Cancel')
+    })
+
+    test('can edit name even if initial resource has a uid', async () => {
+        render(
+            <TestCreatePolicyPage
+                initialResources={[
+                    {
+                        apiVersion: 'policy.open-cluster-management.io/v1',
+                        kind: 'Policy',
+                        metadata: {
+                            name: 'foobar',
+                            namespace: 'default',
+                            uid: '9f7de1f1-b46f-47df-8ef4-0930aecc5902',
+                        },
+                    },
+                ]}
+            />
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        expect(screen.getByRole('textbox', { name: 'Name' })).not.toHaveAttribute('readonly')
+        userEvent.type(screen.getByRole('textbox', { name: 'Name' }), '{selectall}policy2')
+        expect(screen.getByRole('textbox', { name: 'Name' })).toHaveAttribute('value', 'policy2')
     })
 })
