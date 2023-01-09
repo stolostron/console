@@ -4,6 +4,8 @@
 import get from 'lodash/get'
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
+import validator from 'validator'
+import isCidr from 'is-cidr'
 
 const IP_ADDRESS_TESTER = {
     test: (value) => {
@@ -190,3 +192,44 @@ export const VALIDATE_BASE_DNS_NAME_REQUIRED = {
 }
 
 export const VALID_DNS_LABEL = '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+
+const FQDN_OPTIONS = { require_tld: false }
+export function validateNoProxy(value) {
+    if (
+        validator.isFQDN(value, FQDN_OPTIONS) ||
+        (value.startsWith('.') && validator.isFQDN(value.substring(1), FQDN_OPTIONS)) ||
+        validator.isIP(value) ||
+        isCidr(value) ||
+        value === '*'
+    ) {
+        return undefined
+    }
+
+    return "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'."
+}
+
+export function validateNoProxyList(value) {
+    if (value) {
+        const noProxies = value.split(',')
+        if (noProxies) {
+            let validationMessage
+            const validationFailed = noProxies.some((noProxy) => {
+                validationMessage = validateNoProxy(noProxy)
+                return !!validationMessage
+            })
+            if (validationFailed) {
+                return validationMessage
+            }
+        }
+    }
+    return undefined
+}
+
+export const getNoProxyValidator = () => ({
+    tester: {
+        test: (value) => !validateNoProxy(value),
+    },
+    notification:
+        "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'.",
+    required: false,
+})
