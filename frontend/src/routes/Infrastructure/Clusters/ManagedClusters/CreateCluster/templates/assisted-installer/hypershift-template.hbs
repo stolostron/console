@@ -126,6 +126,9 @@ apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:
   labels:
+    annotations:
+      import.open-cluster-management.io/hosting-cluster-name: local-cluster 
+      import.open-cluster-management.io/klusterlet-deploy-mode: Hosted
     cloud: BareMetal
     vendor: OpenShift
     name: '{{{hypershift.name}}}'
