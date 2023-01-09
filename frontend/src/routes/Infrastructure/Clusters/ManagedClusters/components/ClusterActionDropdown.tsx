@@ -140,6 +140,11 @@ export function getClusterActions(cluster: Cluster) {
     ) {
         actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
     }
+
+    // Remove "Update automation template" for hosted clusters
+    if (cluster.isHostedCluster) {
+        actionIds = actionIds.filter((id) => id !== 'update-automation-template')
+    }
     return actionIds
 }
 
