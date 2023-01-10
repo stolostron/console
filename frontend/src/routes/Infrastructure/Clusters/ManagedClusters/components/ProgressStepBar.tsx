@@ -154,7 +154,7 @@ export function ProgressStepBar() {
             {
                 statusType: posthookStatus,
                 statusText: t('status.posthook'),
-                statusSubtitle: posthooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
+                statusSubtitle: posthooks ? getStatusLabel(posthookStatus, t) : t('status.subtitle.nojobs'),
                 ...(posthooks &&
                     latestJobs.posthook?.status?.ansibleJobResult?.url && {
                         link: {
