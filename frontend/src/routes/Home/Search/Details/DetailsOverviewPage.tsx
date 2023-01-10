@@ -18,7 +18,7 @@ import {
 import { GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { generatePath, Link, useHistory } from 'react-router-dom'
 import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -326,13 +326,7 @@ export default function DetailsOverviewPage(props: {
         }
     }, [cluster, resource, history])
 
-    if (loading || (!resource && error === '')) {
-        return (
-            <PageSection>
-                <AcmLoadingPage />
-            </PageSection>
-        )
-    } else if (error) {
+    if (error) {
         return (
             <PageSection>
                 <AcmAlert
@@ -344,7 +338,14 @@ export default function DetailsOverviewPage(props: {
                 />
             </PageSection>
         )
+    } else if (loading) {
+        return (
+            <PageSection>
+                <AcmLoadingPage />
+            </PageSection>
+        )
     }
+
     if (resource && !loading && !error) {
         return (
             <PageSection>
@@ -390,7 +391,10 @@ export default function DetailsOverviewPage(props: {
                                 <DescriptionListDescription>
                                     <Link
                                         to={{
-                                            pathname: NavigationPath.clusterOverview.replace(':id', cluster),
+                                            pathname: generatePath(NavigationPath.clusterOverview, {
+                                                name: cluster,
+                                                namespace: cluster,
+                                            }),
                                         }}
                                     >
                                         {cluster}

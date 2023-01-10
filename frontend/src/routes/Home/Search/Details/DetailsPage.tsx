@@ -146,7 +146,7 @@ export default function DetailsPage() {
                 <Route exact path={NavigationPath.resources}>
                     <DetailsOverviewPage
                         cluster={cluster}
-                        loading={!resource && resourceError !== ''}
+                        loading={!resource && resourceError === ''}
                         error={resourceError}
                         resource={resource}
                     />
@@ -154,7 +154,7 @@ export default function DetailsPage() {
                 <Route exact path={NavigationPath.resourceYAML}>
                     <YAMLPage
                         resource={resource}
-                        loading={!resource && resourceError !== ''}
+                        loading={!resource && resourceError === ''}
                         error={resourceError}
                         name={name}
                         namespace={namespace}
