@@ -247,6 +247,49 @@ const mockClusterRoks: Cluster = {
     isHypershift: false,
 }
 
+const mockClusterHosted: Cluster = {
+    name: 'cluster-5-hosted',
+    displayName: 'cluster-5-hosted',
+    namespace: 'cluster-5-hosted',
+    uid: 'cluster-5-hosted',
+    status: ClusterStatus.ready,
+    isHive: false,
+    provider: Provider.aws,
+    distribution: {
+        k8sVersion: '1.24',
+        ocp: {
+            availableUpdates: [],
+            desiredVersion: '4.11.17',
+            upgradeFailed: false,
+            version: '4.11.17',
+        },
+        displayVersion: 'Openshift 4.11.17',
+        isManagedOpenShift: false,
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            isReadyUpdates: false,
+            isReadySelectChannels: false,
+            availableUpdates: [],
+            currentVersion: '4.11.17',
+            desiredVersion: '4.11.17',
+            latestJob: {},
+        },
+    },
+    hive: {
+        isHibernatable: false,
+        secrets: {},
+    },
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: true,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: true,
+}
+
 const providerConnectionAnsible: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
@@ -341,6 +384,7 @@ const mockClusters: Array<Cluster> = [
     mockClusterNonOCP,
     mockClusterPending,
     mockClusterRoks,
+    mockClusterHosted,
 ]
 
 describe('UpdateAutomationModal', () => {
@@ -368,7 +412,7 @@ describe('UpdateAutomationModal', () => {
         render(<Component />)
 
         // Show alert with automation support message
-        await waitForText('4 cluster cannot be edited') /* TODO - Pluralize not working in test - robdolares to fix*/
+        await waitForText('5 clusters cannot be edited')
         await waitFor(() =>
             expect(screen.getByTestId('view-selected').getAttribute('aria-disabled')).not.toEqual('false')
         )
