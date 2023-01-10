@@ -96,7 +96,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             const min = autoscaling.min || 1
             const max = autoscaling.max || 1
 
-            return t('Min') + ' ' + min + ' ' + t('Max') + ' ' + max
+            return t('Min {{min}} Max {{max}}', { min, max })
         },
         [t]
     )
