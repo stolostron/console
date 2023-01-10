@@ -1974,7 +1974,7 @@
     "Remove item": "항목 제거",
     "Remove node pool": "노드 풀 삭제",
     "removing": "제거 중",
-    "Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.": "{{name}}을/를 제거하는 것은 되돌릴 수 없습니다. {{name}} 외에도 삭제해야 하는 관련 리소스를 선택합니다.",
+    "Removing {{name}} is irreversible. Select any associated resources that you want to delete in addition to {{name}}.": "{{name}}을/를 제거하는 것은 되돌릴 수 없습니다. {{name}} 외에도 삭제해야 하는 관련 리소스를 선택합니다.",
     "Removing last node pool": "마지막 노드 풀 제거 중",
     "Replace resources instead of applying changes from the source repository": "소스 리포지터리의 변경 사항을 적용하는 대신 리소스 교체",
     "Replace the template variables.": "템플릿 변수를 교체합니다.",

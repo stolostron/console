@@ -35,6 +35,7 @@ import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
+import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -997,15 +998,20 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [isDeleting, setIsDeleting] = useState(false)
     const [error, setError] = useState('')
+
+    const policyBindings = getPlacementBindingsForResource(props.item.policy, placementBindings)
+    const policyPlacements = getPlacementsForResource(props.item.policy, policyBindings, placements)
+    const policyPlacementRules = getPlacementsForResource(props.item.policy, policyBindings, placementRules)
+
     const onConfirm = useCallback(async () => {
         setIsDeleting(true)
         try {
             setError('')
             await deletePolicy(
                 props.item.policy,
-                placements,
-                placementRules,
-                placementBindings,
+                policyPlacements,
+                policyPlacementRules,
+                policyBindings,
                 deletePlacements,
                 deletePlacementBindings
             ).promise
@@ -1018,7 +1024,26 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
             }
             setIsDeleting(false)
         }
-    }, [props, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings, t])
+    }, [props, policyPlacements, policyPlacementRules, policyBindings, deletePlacements, deletePlacementBindings, t])
+
+    const reusedBindings = policyBindings.filter((binding) =>
+        binding.subjects?.find(
+            (subject) => !(subject.kind === props.item.policy.kind && subject.name === props.item.policy.metadata.name)
+        )
+    )
+
+    // Find all the instances where the Policy's Placements/PlacementRules are in a PlacementBinding that doesn't bind
+    // the Policy itself. This logic excludes those Placements/PlacementRules covered by reusedBindings.
+    const reusedPlacements = [...policyPlacements, ...policyPlacementRules].filter((placement) =>
+        placementBindings.find(
+            (binding) =>
+                binding.metadata.namespace === props.item.policy.metadata.namespace &&
+                binding.placementRef.kind === placement.kind &&
+                binding.placementRef.name === placement.metadata.name &&
+                !policyBindings.find((policyBinding) => policyBinding.metadata.name === binding.metadata.name)
+        )
+    )
+
     return (
         <Modal
             title={t('policy.modal.title.delete')}
@@ -1045,6 +1070,17 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                         label={t('policy.modal.delete.associatedResources.placementBinding')}
                     />
                 </StackItem>
+                {reusedBindings.length > 0 ? (
+                    <StackItem>
+                        <AcmAlert
+                            variant="warning"
+                            title={t('policy.modal.message.reused', { kind: 'PlacementBindings' })}
+                            message={reusedBindings.map((binding) => binding.metadata.name).join(', ')}
+                            noClose={true}
+                            isInline
+                        />
+                    </StackItem>
+                ) : null}
                 <StackItem>
                     <Checkbox
                         id="delete-placements"
@@ -1053,6 +1089,17 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                         label={t('policy.modal.delete.associatedResources.placement')}
                     />
                 </StackItem>
+                {reusedPlacements.length > 0 ? (
+                    <StackItem>
+                        <AcmAlert
+                            variant="warning"
+                            title={t('policy.modal.message.reused', { kind: 'Placements/PlacementRules' })}
+                            message={reusedPlacements.map((placement) => placement.metadata.name).join(', ')}
+                            noClose={true}
+                            isInline
+                        />
+                    </StackItem>
+                ) : null}
                 {props.item.source !== 'Local' ? (
                     <StackItem>
                         <AcmAlert
