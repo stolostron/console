@@ -331,7 +331,7 @@ export default function ImportClusterPage() {
                 id="code-content"
                 schema={isACMAvailable ? acmSchema : schema}
                 resources={resources}
-                secrets={['*.stringData.token', '*.stringData.kubeconfig']}
+                secrets={['Secret.0.stringData.token', 'Secret.0.stringData.kubeconfig']}
                 syncs={syncs}
                 onEditorChange={(changes: { resources: any[] }): void => {
                     update(changes?.resources)
