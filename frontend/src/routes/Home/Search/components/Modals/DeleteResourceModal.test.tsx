@@ -3,111 +3,9 @@
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { nockCreate, nockDelete, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
-import { SelfSubjectAccessReview } from '../../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
-
-const deleteResourceSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'pods',
-            verb: 'delete',
-            group: '',
-            namespace: 'testNamespace',
-            name: 'testPod',
-        },
-    },
-}
-
-const deleteResourceSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'pods',
-            verb: 'delete',
-            group: '',
-            namespace: 'testNamespace',
-            name: 'testPod',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-const deleteResourceRequest = {
-    apiVersion: 'action.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterAction',
-    metadata: {
-        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
-        namespace: 'local-cluster',
-    },
-}
-
-const mcaDeleteResourceRequest = {
-    apiVersion: 'action.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterAction',
-    metadata: {
-        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
-        namespace: 'local-cluster',
-    },
-    spec: {
-        cluster: {
-            name: 'local-cluster',
-        },
-        type: 'Action',
-        scope: {
-            resourceType: 'pod',
-            namespace: 'testNamespace',
-        },
-        actionType: 'Delete',
-        kube: {
-            resource: 'pod',
-            name: 'testPod',
-            namespace: 'testNamespace',
-        },
-    },
-}
-
-const deleteResourceResponse = {
-    apiVersion: 'action.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterAction',
-    metadata: {
-        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
-        namespace: 'local-cluster',
-    },
-    spec: {
-        cluster: {
-            name: 'local-cluster',
-        },
-        type: 'Action',
-        scope: {
-            resourceType: 'pod',
-            namespace: 'testNamespace',
-        },
-        actionType: 'Delete',
-        kube: {
-            resource: 'pod',
-            name: 'testPod',
-            namespace: 'testNamespace',
-        },
-    },
-    status: {
-        conditions: [
-            {
-                message: 'Action is done.',
-                reason: 'ActionDone',
-                status: 'done',
-                type: 'Completed',
-            },
-        ],
-    },
-}
 
 const getMCAResponse = {
     apiVersion: 'action.open-cluster-management.io/v1beta1',
@@ -192,16 +90,11 @@ const mockSearchResponse = {
 
 describe('DeleteResourceModal', () => {
     beforeEach(() => {
+        nockIgnoreRBAC()
         nockIgnoreApiPaths()
     })
 
     it('should call the delete resource mutation with a successful response', async () => {
-        const deleteResourceSelfSubjectAccessNock = nockCreate(
-            deleteResourceSelfSubjectAccessRequest,
-            deleteResourceSelfSubjectAccessResponse
-        )
-        const nockCreateMcaDeleteAction = nockCreate(mcaDeleteResourceRequest, deleteResourceResponse)
-        const nockDeleteReq = nockDelete(deleteResourceRequest)
         const getSuccessfulActionNock = nockGet(getMCAResponse)
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
@@ -222,9 +115,6 @@ describe('DeleteResourceModal', () => {
         )
 
         await act(async () => {
-            // wait for user access query to finish
-            await waitForNocks([deleteResourceSelfSubjectAccessNock])
-
             // find the button and simulate a click
             const submitButton = screen.getByText('Delete')
             expect(submitButton).toBeTruthy()
@@ -242,6 +132,6 @@ describe('DeleteResourceModal', () => {
             await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
         })
         // Wait for delete resource requesets to finish, Mimic the polling requests
-        await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
+        await waitForNocks([getSuccessfulActionNock])
     })
 })
