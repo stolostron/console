@@ -190,7 +190,7 @@ const process = (
         if (secrets && !isEmpty(secrets)) {
             allSecrets = getMatchingValues(secrets, paths)
             allSecrets.forEach((value: { $p: string[] }) => {
-                const v = get(parsed, value.$p)
+                const v = get(parsed, value?.$p)
                 if (v && typeof v === 'string') {
                     if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value: v })
                     set(parsed, value.$p, `${'*'.repeat(Math.min(20, v.replace(/\n$/, '').length))}`)
@@ -204,7 +204,7 @@ const process = (
             allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
                 allFiltered.forEach((value: { $p: string[] }) => {
-                    const v = get(parsed, value.$p)
+                    const v = get(parsed, value?.$p)
                     if (v && typeof v === 'object') {
                         if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: v })
                         set(parsed, value.$p, undefined)
@@ -220,13 +220,17 @@ const process = (
 
         // prevent typing on redacted yaml
         ;[...allSecrets].forEach((value: { $r: any }) => {
-            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+            if (value?.$r) {
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+            }
             //value.$s = true
         })
 
         // add toggle button to filtered values
         ;[...allFiltered].forEach((value: { $r: any }) => {
-            filteredRows.push(value.$r)
+            if (value?.$r) {
+                filteredRows.push(value.$r)
+            }
         })
     }
 
@@ -234,7 +238,8 @@ const process = (
     if (immutables) {
         const allImmutables = getMatchingValues(immutables, paths)
         allImmutables.forEach((value: { $r: any; $l: any }) => {
-            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
+            if (value?.$r && value?.$l)
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
         })
     }
 
@@ -251,7 +256,7 @@ const process = (
         validate(validators, mappings, resources, validationErrors, syntaxErrors, protectedRanges)
     }
 
-    if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
+    if ((syntaxErrors.length !== 0 || validationErrors.length !== 0) && cachedSecrets && cacheFiltered) {
         unredactedChange.hiddenSecretsValues = cachedSecrets
         unredactedChange.hiddenFilteredValues = cacheFiltered
     }
