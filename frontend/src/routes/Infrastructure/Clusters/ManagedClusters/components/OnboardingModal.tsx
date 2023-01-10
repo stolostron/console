@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, Grid, GridItem, ModalVariant, TextVariants, Text } from '@patternfly/react-core'
+import { Card, CardBody, Grid, GridItem, ModalVariant, Text } from '@patternfly/react-core'
 import { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
-import { AcmExpandableSection, AcmModal } from '../../../../../ui-components'
+import { AcmButton, AcmExpandableSection, AcmModal } from '../../../../../ui-components'
 import MainIcon from './OnboardingModalIcon.svg'
 import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -51,6 +51,8 @@ export function OnboardingModal(props: IOnboardingModalProps) {
 
     return (
         <AcmModal
+            position="top"
+            positionOffset="10em"
             variant={ModalVariant.medium}
             title=" "
             id="clustersOnboardingModal"
@@ -64,34 +66,32 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     style={{
                         width: '100%',
                         height: '100%',
-                        padding: '16px 16px 16px 36px',
+                        padding: '16px 16px 16px 24px',
+                        fontSize: 'var(--pf-global--icon--FontSize--md)',
                     }}
                 >
-                    <div>
-                        <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}>
-                            {t('Getting Started with on-premise host inventory')}
-                        </Link>
-                    </div>
-                    <div>
-                        <Text
-                            component={TextVariants.a}
-                            isVisitedLink
-                            onClick={() =>
-                                !isACMAvailable
-                                    ? launchToOCP(
-                                          'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-                                      )
-                                    : window.open(DOC_BASE_PATH, '_blank')
-                            }
-                            style={{
-                                cursor: 'pointer',
-                                display: 'inline-block',
-                            }}
-                        >
-                            {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}{' '}
-                            <ExternalLinkAltIcon />
-                        </Text>
-                    </div>
+                    <Link key="gettingstarted" to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}>
+                        {t('Get started with on-premise host inventory')}
+                    </Link>
+                    <AcmButton
+                        variant="link"
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                        isInline
+                        onClick={() =>
+                            !isACMAvailable
+                                ? launchToOCP(
+                                      'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                                  )
+                                : window.open(DOC_BASE_PATH, '_blank')
+                        }
+                        style={{
+                            padding: '0',
+                            fontSize: 'var(--pf-global--icon--FontSize--md)',
+                        }}
+                    >
+                        {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
+                    </AcmButton>
                 </AcmExpandableSection>
             }
         >
@@ -109,11 +109,12 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                         </span>
                     </div>
                     <div className="pf-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
-                        {t(
-                            'Create and manage a fleet of clusters with ease using this all clusters view. To access a single cluster you can select it from the cluster list table.'
-                        )}
+                        <Text>
+                            {t('Create and manage a fleet of clusters with ease using this all clusters view. ')}
+                        </Text>
+                        <Text>{t('To access a single cluster you can select it from the cluster list table.')}</Text>
                     </div>
-                    <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '48px' }}>
+                    <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
                         {t('How would you like to create your cluster?')}
                     </div>
                 </GridItem>
