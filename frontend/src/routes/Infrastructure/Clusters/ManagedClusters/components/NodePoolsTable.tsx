@@ -86,17 +86,20 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         [t]
     )
 
-    const getAutoscaling = useCallback((nodepool: NodePool) => {
-        const autoscaling = get(nodepool, 'spec.autoScaling')
-        if (!autoscaling) {
-            return ''
-        }
+    const getAutoscaling = useCallback(
+        (nodepool: NodePool) => {
+            const autoscaling = get(nodepool, 'spec.autoScaling')
+            if (!autoscaling) {
+                return t('False')
+            }
 
-        const min = autoscaling.min || 1
-        const max = autoscaling.max || 1
+            const min = autoscaling.min || 1
+            const max = autoscaling.max || 1
 
-        return `Min ${min} Max ${max}`
-    }, [])
+            return t('Min {{min}} Max {{max}}', { min, max })
+        },
+        [t]
+    )
 
     // Need to dynamically add columns when we add support for other clouds ie. Azure
     const columns = useMemo<IAcmTableColumn<NodePool>[]>(() => {
