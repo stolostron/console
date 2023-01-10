@@ -442,7 +442,7 @@
     "API groups": "API groups",
     "API Groups": "API Groups",
     "API Version": "API Version",
-    "app.enter.access.token": "Optional:Enter the Git access token",
+    "app.enter.access.token": "Optional: Enter the Git access token",
     "app.enter.accesskey": "Enter the object store access key",
     "app.enter.helmrepo.chart.name": "Enter name of the target Helm chart",
     "app.enter.helmrepo.package.alias": "Enter the alias name of the target Helm chart",

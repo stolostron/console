@@ -292,7 +292,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise
         const gitUrl = selectedChannel ? _.get(selectedChannel, specPathname, '') : _.get(gitControl, 'active', '')
         const namespace = _.get(selectedChannel, 'metadata.namespace', '')
-        const secretRef = _.get(selectedChannel, 'secretRef', '')
+        const secretRef = _.get(selectedChannel, 'spec.secretRef.name', '')
         const accessToken = _.get(githubAccessIdCtrl, 'active')
         const user = _.get(githubUserCtrl, 'active')
 

@@ -43,15 +43,10 @@ const initialControl = (control, editor) => {
     if (type !== 'title' && type !== 'section' && !setActive) {
         if (typeof control.onSelect === 'function') {
             control.onSelect = control.onSelect.bind(null, control, lastestData, (ctrl, isLoading) => {
-                if (isLoading) {
+                setTimeout(() => {
                     ctrl.isLoading = isLoading
                     editor.forceUpdate()
-                } else {
-                    setTimeout(() => {
-                        ctrl.isLoading = isLoading
-                        editor.forceUpdate()
-                    })
-                }
+                })
             })
         }
 
