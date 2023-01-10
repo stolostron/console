@@ -18,7 +18,7 @@ import {
 import { GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { generatePath, Link, useHistory } from 'react-router-dom'
 import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -391,9 +391,10 @@ export default function DetailsOverviewPage(props: {
                                 <DescriptionListDescription>
                                     <Link
                                         to={{
-                                            pathname: NavigationPath.clusterOverview
-                                                .replace(':namespace', cluster)
-                                                .replace(':name', cluster),
+                                            pathname: generatePath(NavigationPath.clusterOverview, {
+                                                name: cluster,
+                                                namespace: cluster,
+                                            }),
                                         }}
                                     >
                                         {cluster}
