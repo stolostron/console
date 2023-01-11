@@ -39,11 +39,13 @@ export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
 const isPromiseFulfilledResult = (result: PromiseSettledResult<any>): result is PromiseFulfilledResult<any> =>
     result.status === 'fulfilled'
 
+const isAccessAllowed = (ssar: SelfSubjectAccessReview) => ssar.status?.allowed
+
 const getAllowedNamespaces = (results: PromiseSettledResult<SelfSubjectAccessReview>[]) =>
     results
         .filter(isPromiseFulfilledResult) //Filter out rejected promises
         .map((result) => result.value)
-        .filter((ssar) => ssar.status?.allowed) // Check if RBAC was allowed
+        .filter(isAccessAllowed) // Check if RBAC was allowed
         .map((ssar) => ssar.spec.resourceAttributes.namespace)
         .filter((value): value is string => !!value)
 
@@ -54,8 +56,8 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
     const clusterSetBindings = useClusterSetBindings(props.clusterSet)
     const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
     const [rbacNamespaces, setRbacNamespaces] = useState<string[] | undefined>(undefined)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [loaded, setLoaded] = useState<boolean>(false)
-    const [canCreateDeleteManagedClusterSet, setCanCreateDeleteManagedClusterSet] = useState<boolean>(false)
 
     function reset() {
         props.onClose?.()
@@ -65,24 +67,17 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
     const clusterSetBindingNamespaces = clusterSetBindings.map((mcsb) => mcsb.metadata.namespace!)
 
     useEffect(() => {
-        if (props.clusterSet && !loaded) {
+        if (props.clusterSet && !loaded && !isLoading) {
             const getNamespaces = async () => {
-                const canCreateManagedClusterSetPromise = canUser('create', ManagedClusterSetBindingDefinition)
-                const canDeleteManagedClusterSetPromise = canUser('delete', ManagedClusterSetBindingDefinition)
-
-                Promise.all([
-                    canCreateManagedClusterSetPromise.promise,
-                    canDeleteManagedClusterSetPromise.promise,
-                ]).then((result) => {
-                    setCanCreateDeleteManagedClusterSet(result.every((r) => r.status?.allowed!))
-                })
-                setSelectedNamespaces(clusterSetBindingNamespaces)
-            }
-
-            getNamespaces().catch(console.error)
-
-            if (!canCreateDeleteManagedClusterSet) {
-                const getRbacNamespaces = async () => {
+                setIsLoading(true)
+                const globalPermission = await Promise.all([
+                    canUser('create', ManagedClusterSetBindingDefinition).promise,
+                    canUser('delete', ManagedClusterSetBindingDefinition).promise,
+                ])
+                if (globalPermission.every(isAccessAllowed)) {
+                    setSelectedNamespaces(clusterSetBindingNamespaces)
+                    setRbacNamespaces(namespaces.map((namespace) => namespace.metadata.name!))
+                } else {
                     const [namespacesWithDelete, namespacesWithCreate] = await Promise.all([
                         Promise.allSettled(
                             clusterSetBindingNamespaces.map((namespace) => {
@@ -99,43 +94,17 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                     const availableRbacNamespaces = [...new Set([...namespacesWithDelete, ...namespacesWithCreate])]
                     setSelectedNamespaces(namespacesWithDelete)
                     setRbacNamespaces(availableRbacNamespaces)
-                    setLoaded(true)
                 }
-                getRbacNamespaces().catch(console.error)
+                setLoaded(true)
+                setIsLoading(false)
             }
-        }
-    }, [
-        props.clusterSet,
-        clusterSetBindings,
-        loaded,
-        namespaces,
-        selectedNamespaces,
-        canCreateDeleteManagedClusterSet,
-        clusterSetBindingNamespaces,
-    ])
 
-    const namespaceDropdown = () => {
-        if (canCreateDeleteManagedClusterSet) {
-            return namespaces.map((namespace) => {
-                return (
-                    <SelectOption key={namespace.metadata.name} value={namespace.metadata.name}>
-                        {namespace.metadata.name}
-                    </SelectOption>
-                )
+            getNamespaces().catch((err) => {
+                setIsLoading(false)
+                console.error(err)
             })
-        } else {
-            return (
-                rbacNamespaces &&
-                rbacNamespaces.map((namespace) => {
-                    return (
-                        <SelectOption key={namespace} value={namespace}>
-                            {namespace}
-                        </SelectOption>
-                    )
-                })
-            )
         }
-    }
+    }, [props.clusterSet, loaded, isLoading, namespaces, clusterSetBindingNamespaces])
 
     return (
         <AcmModal
@@ -164,7 +133,14 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
                             isLoading={!loaded}
                         >
-                            {namespaceDropdown()}
+                            {rbacNamespaces &&
+                                rbacNamespaces.map((namespace) => {
+                                    return (
+                                        <SelectOption key={namespace} value={namespace}>
+                                            {namespace}
+                                        </SelectOption>
+                                    )
+                                })}
                         </AcmMultiSelect>
 
                         <AcmAlertGroup isInline canClose />
