@@ -89,7 +89,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }>()
     const [lastUserEdits, setLastUserEdits] = useState<any>([])
     const [squigglyTooltips, setSquigglyTooltips] = useState<any>([])
-    const [customYaml, setCustomYaml] = useState<string>()
     const [lastChange, setLastChange] = useState<ProcessedType>()
     const [lastUnredactedChange, setLastUnredactedChange] = useState<ProcessedType>()
     const [lastFormComparison, setLastFormComparison] = useState<{
@@ -196,12 +195,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         debounce((e) => {
             // if clicking on a filtered row, toggle the
             // show filter state to "expand" filtered content
-            setEditorHasFocus(true)
+            const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
             const isClickOnFilteredLine = filteredRows.includes(e?.target?.position?.lineNumber)
             setClickedOnFilteredLine(isClickOnFilteredLine)
             if (isClickOnFilteredLine) {
                 setShowFiltered(!showFiltered)
             }
+            setEditorHasFocus(editorHasFocus && !isClickOnFilteredLine)
         }, 0),
         [filteredRows, showFiltered]
     )
@@ -250,9 +250,22 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             }) => {
                 const selections = editorRef.current.getSelections()
                 // if user presses enter, add new key: below this line
+                let endOfLineEnter = false
+                if (e.code === 'Enter') {
+                    const editor = editorRef.current
+                    const model = editor.getModel()
+                    const pos = editor.getPosition()
+                    const thisLine = model.getLineContent(pos.lineNumber)
+                    endOfLineEnter = thisLine.length < pos.column
+                }
                 if (
                     // if user clicks on readonly area, ignore
                     !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
+                    e.code !== 'ArrowDown' &&
+                    e.code !== 'ArrowUp' &&
+                    e.code !== 'ArrowLeft' &&
+                    e.code !== 'ArrowRight' &&
+                    !endOfLineEnter &&
                     !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
                         return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
                     })
@@ -268,8 +281,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // if editor loses focus, do form changes immediately
     useEffect(() => {
         editorRef.current.onDidBlurEditorWidget(() => {
-            const parent = document.getElementsByClassName('sync-editor__container')[0]
-            if (!parent.contains(document.activeElement)) {
+            const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
+            const activeId = document.activeElement?.id as string
+            if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
                 setClickedOnFilteredLine(false)
                 setEditorHasFocus(false)
             }
@@ -280,18 +294,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         // debounce changes from form
         const formChange = () => {
-            // if form hasn't caught up with user edits, ignore this change
-            const caughtUp = !customYaml || !editorRef.current.customYaml || editorRef.current.customYaml === customYaml
-            if (!caughtUp) {
-                return
-            }
-            setCustomYaml(undefined)
-            // if editor has errors and still has focus, ignore form changes
-            // as soon as form has focus it will fix all errors like an auto correct
-            if (editorHasFocus && editorRef.current.customSyntaxErrors) {
+            if (editorHasFocus) {
                 return
             }
             // parse/validate/secrets
+            const model = editorRef.current?.getModel()
             const {
                 yaml,
                 protectedRanges,
@@ -312,7 +319,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 immutables,
                 readonly === true,
                 userEdits,
-                validationRef.current
+                validationRef.current,
+                model.getValue()
             )
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
@@ -329,20 +337,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastFormComparison
             )
 
-            // only update yaml in editor if it changed syntactically changed
-            // allows user to add spaces without this wiping them out
-            const model = editorRef.current?.getModel()
-            if (!isEqual(model.resources, change.resources) || editorRef.current.customSyntaxErrors) {
-                editorRef.current.customSyntaxErrors = false
-                model.resources = cloneDeep(change.resources)
-                const saveDecorations = getResourceEditorDecorations(editorRef)
-                const viewState = editorRef.current?.saveViewState()
-                model.setValue(yaml)
-                editorRef.current?.restoreViewState(viewState)
-                editorRef.current.deltaDecorations([], saveDecorations)
-                setHasRedo(false)
-                setHasUndo(false)
-            }
+            // update yaml in editor
+            model.resources = cloneDeep(change.resources)
+            const saveDecorations = getResourceEditorDecorations(editorRef, false)
+            const viewState = editorRef.current?.saveViewState()
+            model.setValue(yaml)
+            editorRef.current?.restoreViewState(viewState)
+            editorRef.current.deltaDecorations([], saveDecorations)
+            setHasRedo(false)
+            setHasUndo(false)
 
             // if there were remaining edits, report to form
             setStatusChanges(cloneDeep({ changes: remainingEdits, redactedChange: change, errors: allErrors }))
@@ -387,7 +390,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }, [
         JSON.stringify(resources),
         code,
-        customYaml,
         showSecrets,
         showFiltered,
         editorHasFocus,
@@ -417,7 +419,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastUnredactedChange?.hiddenFilteredValues,
                 immutables,
                 readonly === true,
-                validationRef.current
+                validationRef.current,
+                value
             )
             setLastUnredactedChange(unredactedChange)
             setProhibited(protectedRanges)
@@ -441,7 +444,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
             // report new resources/errors/useredits to form
             // if there are validation errors still pass it to form
-            editorRef.current.customSyntaxErrors = allErrors.length > 0
             if (errors.syntax.length === 0) {
                 setResourceChanges(cloneDeep(unredactedChange))
             }
@@ -494,7 +496,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
     const editorChange = useCallback(
         (value, e) => {
-            editorRef.current.customYaml = value
             debouncedEditorChange(value, e)
         },
         [debouncedEditorChange]
@@ -514,7 +515,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 const editChanges = {
                     resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
                 }
-                setCustomYaml(editorRef.current.customYaml)
                 onEditorChange(editChanges)
             }
         }
@@ -544,6 +544,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* undo */}
                     {!readonly && (
                         <CodeEditorControl
+                            id="undo-button"
                             icon={<UndoIcon />}
                             aria-label="Undo"
                             toolTipText="Undo"
@@ -556,6 +557,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* redo */}
                     {!readonly && (
                         <CodeEditorControl
+                            id="redo-button"
                             icon={<RedoIcon />}
                             aria-label="Redo"
                             toolTipText="Redo"
@@ -567,6 +569,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     )}
                     {/* search */}
                     <CodeEditorControl
+                        id="search-button"
                         icon={<SearchIcon />}
                         aria-label="Find"
                         toolTipText="Find"
@@ -577,6 +580,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* secrets */}
                     {secrets && (
                         <CodeEditorControl
+                            id="secret-button"
                             icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
                             aria-label="Show Secrets"
                             toolTipText="Show Secrets"

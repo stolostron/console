@@ -2,7 +2,7 @@
 import YAML from 'yaml'
 import { isEmpty, set, unset, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getMatchingValues, getUidSiblings, crossReference } from './synchronize'
+import { getMatchingValues, getUidSiblings, crossReference, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -21,6 +21,7 @@ export interface ProcessedType {
 
 export interface MappingType {
     $k: string // what's it's key
+    $p: string | (string | number)[] // the path to the value in a parsed object
     $r: number //what line is it on in the yaml
     $l: number // how many lines does it use in the yaml
     $v: any // what's its value
@@ -50,7 +51,8 @@ export const processForm = (
     immutables: (string | string[])[] | undefined,
     readonly: boolean,
     userEdits: ChangeType[],
-    validators: any
+    validators: any,
+    currentEditorValue: string
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -95,7 +97,9 @@ export const processForm = (
             [],
             immutables,
             readonly,
-            validators
+            validators,
+            currentEditorValue,
+            false
         ),
     }
 }
@@ -110,7 +114,8 @@ export const processUser = (
     cacheFiltered: CachedValuesType[] | undefined,
     immutables: (string | string[])[] | undefined,
     readonly: boolean,
-    validators: any
+    validators: any,
+    currentEditorValue: string
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
@@ -135,7 +140,9 @@ export const processUser = (
             cacheFiltered,
             immutables,
             readonly,
-            validators
+            validators,
+            currentEditorValue,
+            true
         ),
     }
 }
@@ -152,7 +159,9 @@ const process = (
     cacheFiltered: CachedValuesType[] | undefined,
     immutables: (string | string[])[] | undefined,
     readonly: boolean,
-    validators: any
+    validators: any,
+    currentEditorValue: string,
+    editorHasFocus: boolean
 ) => {
     // restore hidden secret values
     let { mappings, parsed, resources, paths } = getMappings(documents)
@@ -182,11 +191,10 @@ const process = (
     unredactedChange.hiddenFilteredValues = hiddenFilteredValues
 
     // hide and remember secret values
-    const filteredRows: number[] = []
-    let protectedRanges: any[] = []
+    let allSecrets = []
+    let allFiltered = []
     if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
-        let allSecrets = []
         if (secrets && !isEmpty(secrets)) {
             allSecrets = getMatchingValues(secrets, paths)
             allSecrets.forEach((value: { $p: string[] }) => {
@@ -199,7 +207,6 @@ const process = (
         }
 
         // stuff filtered with '-filtered-'
-        let allFiltered = []
         if (filters && !isEmpty(filters)) {
             allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
@@ -214,42 +221,34 @@ const process = (
         }
 
         // create redacted yaml, etc
-        yaml = stringify(resources)
+        yaml = editorHasFocus ? currentEditorValue : stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
         ;({ mappings, parsed, resources, paths } = getMappings(documents))
+    }
 
-        // prevent typing on redacted yaml
-        ;[...allSecrets].forEach((value: { $r: any }) => {
-            if (value?.$r) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+    // add protected ranges for the yaml as it looks in the editor
+    const filteredRows: number[] = []
+    const protectedRanges: any[] = []
+    if (!isEmpty(parsed)) {
+        const allImmutables = immutables ? getMatchingValues(immutables, paths) : []
+        const uidSiblings = getUidSiblings(paths, mappings)
+        ;[...allSecrets, ...uidSiblings, ...allImmutables].forEach((value) => {
+            if (value && value.$p) {
+                const range = get(mappings, getPathArray(value.$p))
+                if (range?.$r) {
+                    protectedRanges.push(new monacoRef.current.Range(range.$r, 0, range.$r + range.$l, 0))
+                }
             }
-            //value.$s = true
         })
 
-        // add toggle button to filtered values
-        ;[...allFiltered].forEach((value: { $r: any }) => {
-            if (value?.$r) {
-                filteredRows.push(value.$r)
+        // // add toggle button to filtered values
+        allFiltered.forEach((value: { $p: any }) => {
+            const range = get(mappings, getPathArray(value.$p))
+            if (range?.$r) {
+                filteredRows.push(range.$r)
             }
         })
     }
-
-    // prevent typing on immutables
-    if (immutables) {
-        const allImmutables = getMatchingValues(immutables, paths)
-        allImmutables.forEach((value: { $r: any; $l: any }) => {
-            if (value?.$r && value?.$l)
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
-        })
-    }
-
-    // prevent typing on uid and its siblings
-    protectedRanges = [
-        ...protectedRanges,
-        ...getUidSiblings(paths, mappings).map((value) => {
-            return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
-        }),
-    ]
 
     const validationErrors: any[] = []
     if (syntaxErrors.length === 0 && validators) {
@@ -346,15 +345,17 @@ function getMappingItems(
                 const firstRow = valuePos?.start.line ?? 1
                 const lastRow = valuePos?.end.line ?? firstRow
                 const length = Math.max(1, lastRow - firstRow)
+                const path = [...parentPath, rangeObj.length - 1]
                 rangeObj.push({
                     $k: `${rangeObj.length}`,
+                    $p: path,
                     $r: firstRow,
                     $l: length,
                     $v: value,
                     $gv: valuePos,
                 })
                 paths[`${parentKey}.${rangeObj.length - 1}`] = {
-                    $p: [...parentPath, rangeObj.length - 1],
+                    $p: path,
                     $r: firstRow,
                     $l: length,
                     $v: value,
@@ -366,8 +367,10 @@ function getMappingItems(
                 const firstRow = keyPos?.start.line ?? 1
                 const lastRow = valuePos?.end.line ?? firstRow
                 const length = Math.max(1, lastRow - firstRow)
+                const path = [...parentPath, key]
                 rangeObj[key] = {
                     $k: key,
+                    $p: path,
                     $r: firstRow,
                     $l: length,
                     $v: value,
@@ -375,7 +378,7 @@ function getMappingItems(
                     $gv: valuePos,
                 }
                 paths[`${parentKey}.${key}`] = {
-                    $p: [...parentPath, key],
+                    $p: path,
                     $r: firstRow,
                     $l: length,
                     $v: value,
