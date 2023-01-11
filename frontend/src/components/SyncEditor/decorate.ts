@@ -37,7 +37,8 @@ export const decorate = (
     addFilteredDecorations(monacoRef, filteredRows, decorations)
 
     // add decorations to editor
-    const handles = getResourceEditorDecorations(editorRef).map((decoration: { id: any }) => decoration.id)
+    const hasErrors = errors.length > 0
+    const handles = getResourceEditorDecorations(editorRef, hasErrors).map((decoration: { id: any }) => decoration.id)
     editorRef.current.deltaDecorations(handles, decorations)
 
     // scroll to best line to show
@@ -151,16 +152,23 @@ const addChangeDecorations = (
     })
 }
 
-export const getResourceEditorDecorations = (editorRef: any) => {
+export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean) => {
     // clear resource-editor decorations
+    // don't filter protectedDecoration if there are errors because parser doesn't know where protected
+    // areas are so only previous decorations do
     const model = editorRef.current?.getModel()
-    return model
-        .getAllDecorations()
-        .filter(
-            (decoration: { options: { className: string; description: string } }) =>
-                decoration?.options?.className?.startsWith('squiggly-') ||
-                decoration?.options?.description === 'resource-editor'
-        )
+    return model.getAllDecorations().filter(
+        (decoration: {
+            options: {
+                inlineClassName: string
+                className: string
+                description: string
+            }
+        }) =>
+            decoration?.options?.className?.startsWith('squiggly-') ||
+            (decoration?.options?.description === 'resource-editor' &&
+                (decoration?.options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
+    )
 }
 
 const scrollToChangeDecoration = (editorRef: any, errors: any[], decorations: any[]) => {
