@@ -150,6 +150,9 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                         <div style={{ marginBottom: '16px' }}>
                             <Trans i18nKey="clusterSetBinding.edit.message" components={{ bold: <strong /> }} />
                         </div>
+                        <div style={{ marginBottom: '16px' }}>
+                            <Trans i18nKey="clusterSetBinding.edit.message.rbac" components={{ bold: <strong /> }} />
+                        </div>
                         <AcmMultiSelect
                             id="namespaces"
                             variant={SelectVariant.typeaheadMulti}
