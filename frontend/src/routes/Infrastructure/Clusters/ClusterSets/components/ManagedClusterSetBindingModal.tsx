@@ -66,8 +66,6 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
 
     useEffect(() => {
         if (props.clusterSet && !loaded) {
-            setLoaded(true)
-
             const getNamespaces = async () => {
                 const canCreateManagedClusterSetPromise = canUser('create', ManagedClusterSetBindingDefinition)
                 const canDeleteManagedClusterSetPromise = canUser('delete', ManagedClusterSetBindingDefinition)
@@ -101,6 +99,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                     const availableRbacNamespaces = [...new Set([...namespacesWithDelete, ...namespacesWithCreate])]
                     setSelectedNamespaces(namespacesWithDelete)
                     setRbacNamespaces(availableRbacNamespaces)
+                    setLoaded(true)
                 }
                 getRbacNamespaces().catch(console.error)
             }
@@ -160,6 +159,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             menuAppendTo="parent"
                             maxHeight="18em"
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
+                            isLoading={!loaded}
                         >
                             {namespaceDropdown()}
                         </AcmMultiSelect>
@@ -171,6 +171,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                                 variant="primary"
                                 label={t('save')}
                                 processingLabel={t('saving')}
+                                isDisabled={!loaded}
                                 onClick={() => {
                                     alertContext.clearAlerts()
                                     return new Promise(async (resolve, reject) => {

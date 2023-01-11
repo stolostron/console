@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, FormGroup, Popover, Select, SelectOption, SelectProps, SelectVariant } from '@patternfly/react-core'
+import {
+    Button,
+    FormGroup,
+    Popover,
+    Select,
+    SelectOption,
+    SelectProps,
+    SelectVariant,
+    Skeleton,
+} from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Children, Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -20,6 +29,7 @@ type AcmMultiSelectProps = Pick<
     labelHelpTitle?: ReactNode
     helperText?: ReactNode
     isRequired?: boolean
+    isLoading?: boolean
 }
 
 export function AcmMultiSelect(props: AcmMultiSelectProps) {
@@ -36,6 +46,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
         onChange,
         value,
         placeholder,
+        isLoading,
         ...selectProps
     } = props
 
@@ -138,40 +149,44 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
                 )
             }
         >
-            <Select
-                variant={SelectVariant.checkbox}
-                aria-labelledby={`${props.id}-label`}
-                {...selectProps}
-                isOpen={open}
-                onToggle={() => {
-                    setOpen(!open)
-                }}
-                selections={value}
-                onSelect={(_event, selection) => {
-                    if (value === undefined) {
-                        onChange([selection as string])
-                    } else {
-                        if (value.includes(selection as string)) {
-                            onChange(value.filter((item) => item !== selection))
+            {isLoading ? (
+                <Skeleton height="36px" screenreaderText={t('Loading')} />
+            ) : (
+                <Select
+                    variant={SelectVariant.checkbox}
+                    aria-labelledby={`${props.id}-label`}
+                    {...selectProps}
+                    isOpen={open}
+                    onToggle={() => {
+                        setOpen(!open)
+                    }}
+                    selections={value}
+                    onSelect={(_event, selection) => {
+                        if (value === undefined) {
+                            onChange([selection as string])
                         } else {
-                            onChange([...value, selection as string])
+                            if (value.includes(selection as string)) {
+                                onChange(value.filter((item) => item !== selection))
+                            } else {
+                                onChange([...value, selection as string])
+                            }
                         }
+                    }}
+                    onClear={
+                        !props.isRequired
+                            ? () => {
+                                  onChange(undefined)
+                              }
+                            : undefined
                     }
-                }}
-                onClear={
-                    !props.isRequired
-                        ? () => {
-                              onChange(undefined)
-                          }
-                        : undefined
-                }
-                placeholderText={
-                    /* istanbul ignore next */ props.variant === SelectVariant.typeaheadMulti
-                        ? placeholder
-                        : placeholderText
-                }
-                isDisabled={props.isDisabled || ValidationContext.isReadOnly}
-            />
+                    placeholderText={
+                        /* istanbul ignore next */ props.variant === SelectVariant.typeaheadMulti
+                            ? placeholder
+                            : placeholderText
+                    }
+                    isDisabled={props.isDisabled || ValidationContext.isReadOnly}
+                />
+            )}
             {validated === 'error' ? (
                 <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>
             ) : (
