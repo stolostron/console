@@ -71,6 +71,303 @@ const createSecondNamespaceBinding: ManagedClusterSetBinding = {
     },
 }
 
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews2 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                name: 'test-cluster-set',
+                resource: 'managedclustersets',
+                subresource: 'bind',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersets',
+                subresource: 'bind',
+                name: 'test-cluster-set',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews3 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                name: 'test-cluster-set',
+                resource: 'managedclustersets',
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersets',
+                name: 'test-cluster-set',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews4 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                name: 'test-cluster-set',
+                resource: 'managedclustersets',
+                subresource: 'join',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersets',
+                subresource: 'join',
+                name: 'test-cluster-set',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews5 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                resource: 'managedclustersetbindings',
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+            },
+        },
+        status: {
+            allowed: false,
+            reason: 'Not authorized',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews6 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                resource: 'managedclustersetbindings',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+            },
+        },
+        status: {
+            allowed: false,
+            reason: 'Not authorized',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews7 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                namespace: 'first-namespace',
+                resource: 'managedclustersetbindings',
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+                namespace: 'first-namespace',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews8 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                namespace: 'first-namespace',
+                resource: 'managedclustersetbindings',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+                namespace: 'first-namespace',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews9 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                namespace: 'second-namespace',
+                resource: 'managedclustersetbindings',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+                namespace: 'second-namespace',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
+//---create 'SelfSubjectAccessReview'---
+const createSelfsubjectaccessreviews10 = {
+    req: {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: {
+            resourceAttributes: {
+                namespace: 'third-namespace',
+                resource: 'managedclustersetbindings',
+                verb: 'create',
+                group: 'cluster.open-cluster-management.io',
+            },
+        },
+    },
+    res: {
+        kind: 'SelfSubjectAccessReview',
+        apiVersion: 'authorization.k8s.io/v1',
+        spec: {
+            resourceAttributes: {
+                verb: 'delete',
+                group: 'cluster.open-cluster-management.io',
+                resource: 'managedclustersetbindings',
+                namespace: 'third-namespace',
+            },
+        },
+        status: {
+            allowed: true,
+            reason: 'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+        },
+    },
+}
+
 const Component = () => (
     <RecoilRoot
         initializeState={(snapshot) => {
@@ -84,11 +381,20 @@ const Component = () => (
 
 describe('ClusterSetActionDropdown', () => {
     beforeEach(() => {
-        nockIgnoreRBAC()
         nockIgnoreApiPaths()
         render(<Component />)
     })
     test('can edit managed cluster set bindings for a cluster set', async () => {
+        nockCreate(createSelfsubjectaccessreviews2.req, createSelfsubjectaccessreviews2.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews3.req, createSelfsubjectaccessreviews3.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews4.req, createSelfsubjectaccessreviews4.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews5.req, createSelfsubjectaccessreviews5.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews6.req, createSelfsubjectaccessreviews6.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews7.req, createSelfsubjectaccessreviews7.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews8.req, createSelfsubjectaccessreviews8.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews9.req, createSelfsubjectaccessreviews9.res).persist() // create 'SelfSubjectAccessReview'
+        nockCreate(createSelfsubjectaccessreviews10.req, createSelfsubjectaccessreviews10.res).persist() // create 'SelfSubjectAccessReview'
+
         await clickByText('Actions')
         await clickByText('Edit namespace bindings')
 
@@ -108,6 +414,7 @@ describe('ClusterSetActionDropdown', () => {
         await waitForNocks([deleteNock, createNock])
     })
     test('delete action should delete the managed cluster set', async () => {
+        nockIgnoreRBAC()
         const nock = nockDelete(mockManagedClusterSet)
         await clickByText('Actions')
         await clickByText('Delete cluster set')
