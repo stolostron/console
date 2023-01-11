@@ -282,7 +282,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         editorRef.current.onDidBlurEditorWidget(() => {
             const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
-            if (!editorHasFocus) {
+            const activeId = document.activeElement?.id as string
+            if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
                 setClickedOnFilteredLine(false)
                 setEditorHasFocus(false)
             }
@@ -543,6 +544,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* undo */}
                     {!readonly && (
                         <CodeEditorControl
+                            id="undo-button"
                             icon={<UndoIcon />}
                             aria-label="Undo"
                             toolTipText="Undo"
@@ -555,6 +557,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* redo */}
                     {!readonly && (
                         <CodeEditorControl
+                            id="redo-button"
                             icon={<RedoIcon />}
                             aria-label="Redo"
                             toolTipText="Redo"
@@ -566,6 +569,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     )}
                     {/* search */}
                     <CodeEditorControl
+                        id="search-button"
                         icon={<SearchIcon />}
                         aria-label="Find"
                         toolTipText="Find"
@@ -576,6 +580,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {/* secrets */}
                     {secrets && (
                         <CodeEditorControl
+                            id="secret-button"
                             icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
                             aria-label="Show Secrets"
                             toolTipText="Show Secrets"
