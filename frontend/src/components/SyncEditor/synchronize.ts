@@ -3,6 +3,16 @@ import get from 'lodash/get'
 import set from 'lodash/set'
 import { MappingType } from './process'
 
+const immutableKeys = [
+    'name',
+    'namespace',
+    'creationTimestamp',
+    'generation',
+    'managedFields',
+    'resourceVersion',
+    'uid',
+]
+
 // set form/wizard inputs to yaml changes
 export const setFormValues = (
     syncs: unknown,
@@ -41,7 +51,7 @@ export const getUidSiblings = (paths: { [name: string]: any[] }, mappings: { [na
         if (parent?.$v) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             Object.entries(parent.$v as MappingType).forEach(([_k, v]) => {
-                if (typeof v.$v !== 'object' || v.$k === 'managedFields') {
+                if (immutableKeys.indexOf(v.$k) != -1) {
                     uidSiblings.push(v)
                 }
             })
