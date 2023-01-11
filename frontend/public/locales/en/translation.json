@@ -712,6 +712,7 @@
     "clusterSelector.value.placeholder.field": "Label value",
     "clusterSetBinding.edit.message": "A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource.",
     "clusterSetBinding.edit.message.noBold": "A ManagedClusterSetBinding resource binds a ManagedClusterSet resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound ManagedClusterSet resource.",
+    "clusterSetBinding.edit.message.rbac": "<bold>Note:</bold> Only namespaces in which you have permission to create or delete the <bold>ManagedClusterSetBinding</bold> are shown. This permission is required in addition to permission to bind the <bold>ManagedClusterSet</bold>.",
     "clusterSetBinding.edit.select.label": "Namespaces",
     "clusterSetBinding.edit.select.placeholder": "Select namespaces",
     "clusterSetBinding.edit.title": "Edit namespace bindings",
