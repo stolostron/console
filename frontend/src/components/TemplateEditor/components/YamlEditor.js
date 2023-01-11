@@ -129,17 +129,31 @@ class YamlEditor extends React.Component {
                     prohibited.push(new this.editor.monaco.Range(obj.$r + 1, 0, obj.$r + 1, 132))
                 })
 
-                // prevent typing on same
-                if (!(e.code === 'KeyC' && (e.ctrlKey || e.metaKey))) {
-                    const selections = this.editor.getSelections()
-                    if (
-                        !prohibited.every((prohibit) => {
-                            return selections.findIndex((range) => prohibit.intersectRanges(range)) === -1
-                        })
-                    ) {
-                        e.stopPropagation()
-                        e.preventDefault()
-                    }
+                // if user presses enter, add new key: below this line
+                let endOfLineEnter = false
+                if (e.code === 'Enter') {
+                    const model = this.editor.getModel()
+                    const pos = this.editor.getPosition()
+                    const thisLine = model.getLineContent(pos.lineNumber)
+                    endOfLineEnter = thisLine.length < pos.column
+                }
+
+                // prevent typing on readonly ranges
+                const selections = this.editor.getSelections()
+                if (
+                    // if user clicks on readonly area, ignore
+                    !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
+                    e.code !== 'ArrowDown' &&
+                    e.code !== 'ArrowUp' &&
+                    e.code !== 'ArrowLeft' &&
+                    e.code !== 'ArrowRight' &&
+                    !endOfLineEnter &&
+                    !prohibited.every((prohibit) => {
+                        return selections.findIndex((range) => prohibit.intersectRanges(range)) === -1
+                    })
+                ) {
+                    e.stopPropagation()
+                    e.preventDefault()
                 }
             }).bind(this)
         )
