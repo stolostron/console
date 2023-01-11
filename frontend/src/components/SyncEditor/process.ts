@@ -232,10 +232,12 @@ const process = (
     if (!isEmpty(parsed)) {
         const allImmutables = immutables ? getMatchingValues(immutables, paths) : []
         const uidSiblings = getUidSiblings(paths, mappings)
-        ;[...allSecrets, ...uidSiblings, ...allImmutables].forEach((value: { $p: any }) => {
-            const range = get(mappings, getPathArray(value.$p))
-            if (range?.$r) {
-                protectedRanges.push(new monacoRef.current.Range(range.$r, 0, range.$r + range.$l, 0))
+        ;[...allSecrets, ...uidSiblings, ...allImmutables].forEach((value) => {
+            if (value && value.$p) {
+                const range = get(mappings, getPathArray(value.$p))
+                if (range?.$r) {
+                    protectedRanges.push(new monacoRef.current.Range(range.$r, 0, range.$r + range.$l, 0))
+                }
             }
         })
 
