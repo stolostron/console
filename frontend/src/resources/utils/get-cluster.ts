@@ -1200,7 +1200,11 @@ export function getClusterStatus(
     } else if (hostedCluster) {
         // HC import
         const hcConditions = hostedCluster.status?.conditions ?? []
-        const HostedClusterReadyStatus = hcConditions.find((c) => c.reason === 'HostedClusterAsExpected')
+        const HostedClusterReadyStatus = hcConditions.find(
+            (c) =>
+                c.reason === 'HostedClusterAsExpected' ||
+                (c.reason === 'AsExpected' && c.message === 'The hosted control plane is available')
+        )
 
         if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
             mcStatus = ClusterStatus.importing

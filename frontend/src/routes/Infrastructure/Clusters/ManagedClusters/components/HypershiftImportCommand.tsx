@@ -45,8 +45,11 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     const { v1ImportCommand, loading, error: importErr } = useImportCommand(true)
 
     const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
+    // support all hypershift operator versions
     const HostedClusterReadyStatus = props?.selectedHostedClusterResource?.status?.conditions?.find(
-        (c) => c.reason === 'HostedClusterAsExpected'
+        (c) =>
+            c.reason === 'HostedClusterAsExpected' ||
+            (c.reason === 'AsExpected' && c.message === 'The hosted control plane is available')
     )
 
     function importHostedControlPlaneCluster() {
