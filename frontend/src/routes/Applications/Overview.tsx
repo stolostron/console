@@ -57,6 +57,9 @@ import { get } from 'lodash'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
+// support github annotations
+const githubBranchAnnotationStr = 'apps.open-cluster-management.io/github-branch'
+const githubPathAnnotationStr = 'apps.open-cluster-management.io/github-path'
 const localClusterStr = 'local-cluster'
 const partOfAnnotationStr = 'app.kubernetes.io/part-of'
 const appAnnotationStr = 'app'
@@ -163,8 +166,12 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
                             appRepos.push({
                                 type: channel?.spec.type,
                                 pathName: channel?.spec.pathname,
-                                gitBranch: getAnnotation(sub, gitBranchAnnotationStr),
-                                gitPath: getAnnotation(sub, gitPathAnnotationStr),
+                                gitBranch:
+                                    getAnnotation(sub, gitBranchAnnotationStr) ||
+                                    getAnnotation(sub, githubBranchAnnotationStr),
+                                gitPath:
+                                    getAnnotation(sub, gitPathAnnotationStr) ||
+                                    getAnnotation(sub, githubPathAnnotationStr),
                                 package: sub.spec.name,
                                 packageFilterVersion: sub.spec.packageFilter?.version,
                             })
