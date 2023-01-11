@@ -55,40 +55,88 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
     const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
     const [rbacNamespaces, setRbacNamespaces] = useState<string[] | undefined>(undefined)
     const [loaded, setLoaded] = useState<boolean>(false)
+    const [canCreateDeleteManagedClusterSet, setCanCreateDeleteManagedClusterSet] = useState<boolean>(false)
 
     function reset() {
         props.onClose?.()
         setSelectedNamespaces([])
         setLoaded(false)
     }
+    const clusterSetBindingNamespaces = clusterSetBindings.map((mcsb) => mcsb.metadata.namespace!)
 
     useEffect(() => {
         if (props.clusterSet && !loaded) {
             setLoaded(true)
-            const clusterSetBindingNamespaces = clusterSetBindings.map((mcsb) => mcsb.metadata.namespace!)
 
             const getNamespaces = async () => {
-                const [namespacesWithDelete, namespacesWithCreate] = await Promise.all([
-                    Promise.allSettled(
-                        clusterSetBindingNamespaces.map((namespace) => {
-                            return canUser('delete', ManagedClusterSetBindingDefinition, namespace).promise
-                        })
-                    ).then(getAllowedNamespaces),
-                    Promise.allSettled(
-                        namespaces.map((namespace) => {
-                            return canUser('create', ManagedClusterSetBindingDefinition, namespace.metadata.name)
-                                .promise
-                        })
-                    ).then(getAllowedNamespaces),
-                ])
-                const availableRbacNamespaces = [...new Set([...namespacesWithDelete, ...namespacesWithCreate])]
+                const canCreateManagedClusterSetPromise = canUser('create', ManagedClusterSetBindingDefinition)
+                const canDeleteManagedClusterSetPromise = canUser('delete', ManagedClusterSetBindingDefinition)
 
-                setSelectedNamespaces(namespacesWithDelete)
-                setRbacNamespaces(availableRbacNamespaces)
+                Promise.all([
+                    canCreateManagedClusterSetPromise.promise,
+                    canDeleteManagedClusterSetPromise.promise,
+                ]).then((result) => {
+                    setCanCreateDeleteManagedClusterSet(result.every((r) => r.status?.allowed!))
+                })
+                setSelectedNamespaces(clusterSetBindingNamespaces)
             }
+
             getNamespaces().catch(console.error)
+
+            if (!canCreateDeleteManagedClusterSet) {
+                const getRbacNamespaces = async () => {
+                    const [namespacesWithDelete, namespacesWithCreate] = await Promise.all([
+                        Promise.allSettled(
+                            clusterSetBindingNamespaces.map((namespace) => {
+                                return canUser('delete', ManagedClusterSetBindingDefinition, namespace).promise
+                            })
+                        ).then(getAllowedNamespaces),
+                        Promise.allSettled(
+                            namespaces.map((namespace) => {
+                                return canUser('create', ManagedClusterSetBindingDefinition, namespace.metadata.name)
+                                    .promise
+                            })
+                        ).then(getAllowedNamespaces),
+                    ])
+                    const availableRbacNamespaces = [...new Set([...namespacesWithDelete, ...namespacesWithCreate])]
+                    setSelectedNamespaces(namespacesWithDelete)
+                    setRbacNamespaces(availableRbacNamespaces)
+                }
+                getRbacNamespaces().catch(console.error)
+            }
         }
-    }, [props.clusterSet, clusterSetBindings, loaded, namespaces, selectedNamespaces])
+    }, [
+        props.clusterSet,
+        clusterSetBindings,
+        loaded,
+        namespaces,
+        selectedNamespaces,
+        canCreateDeleteManagedClusterSet,
+        clusterSetBindingNamespaces,
+    ])
+
+    const namespaceDropdown = () => {
+        if (canCreateDeleteManagedClusterSet) {
+            return namespaces.map((namespace) => {
+                return (
+                    <SelectOption key={namespace.metadata.name} value={namespace.metadata.name}>
+                        {namespace.metadata.name}
+                    </SelectOption>
+                )
+            })
+        } else {
+            return (
+                rbacNamespaces &&
+                rbacNamespaces.map((namespace) => {
+                    return (
+                        <SelectOption key={namespace} value={namespace}>
+                            {namespace}
+                        </SelectOption>
+                    )
+                })
+            )
+        }
+    }
 
     return (
         <AcmModal
@@ -113,14 +161,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             maxHeight="18em"
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
                         >
-                            {rbacNamespaces &&
-                                rbacNamespaces.map((namespace) => {
-                                    return (
-                                        <SelectOption key={namespace} value={namespace}>
-                                            {namespace}
-                                        </SelectOption>
-                                    )
-                                })}
+                            {namespaceDropdown()}
                         </AcmMultiSelect>
 
                         <AcmAlertGroup isInline canClose />
