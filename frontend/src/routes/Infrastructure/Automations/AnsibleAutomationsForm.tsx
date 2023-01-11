@@ -14,7 +14,6 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
-import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
@@ -339,7 +338,8 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: installPreJobs,
                                 onChange: setInstallPreJobs,
-                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
@@ -357,7 +357,8 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: installPostJobs,
                                 onChange: setInstallPostJobs,
-                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
@@ -383,7 +384,8 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePreJobs,
                                 onChange: setUpgradePreJobs,
-                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
@@ -401,7 +403,8 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePostJobs,
                                 onChange: setUpgradePostJobs,
-                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
@@ -429,7 +432,8 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: scalePreJobs,
                                           onChange: setScalePreJobs,
-                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                          keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                          summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
@@ -447,7 +451,8 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: scalePostJobs,
                                           onChange: setScalePostJobs,
-                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                          keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                          summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
@@ -473,7 +478,8 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: destroyPreJobs,
                                           onChange: setDestroyPreJobs,
-                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                          keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                          summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({
@@ -497,7 +503,8 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: destroyPostJobs,
                                           onChange: setDestroyPostJobs,
-                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
+                                          keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
+                                          summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({
@@ -663,13 +670,6 @@ function EditAnsibleJobModal(props: {
                             ? t('template.modal.name.placeholder')
                             : t('template.workflow.modal.name.placeholder')
                     }
-                    validation={(name) => {
-                        const selectedJobs = _.map(props.ansibleJobList, 'name')
-                        if (name && selectedJobs.includes(name)) {
-                            // no duplicate job names can be added
-                            return t('template.job.duplicate.error')
-                        }
-                    }}
                     isRequired
                 >
                     {filterForJobTemplates

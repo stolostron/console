@@ -2462,7 +2462,6 @@
     "template.emptyStateMsg": "Click <bold>Create automation template</bold> to create your resource.",
     "template.information.description": "To create a sequence of events, add multiple templates. Drag and drop the Ansible templates to reorder the sequence.",
     "template.information.title": "Basic information",
-    "template.job.duplicate.error": "The Ansible template name already exists in this hook. The list cannot contain duplicates.",
     "template.job.placeholder": "Add an Ansible template",
     "template.link": "Link a credential",
     "template.modal.delete.message.linked": "This action will delete your automation template. Are you sure you want to unlink <bold>{{curatorTemplate}}</bold> from <bold>{{ansibleCredential}}</bold>?",

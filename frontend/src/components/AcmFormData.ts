@@ -150,10 +150,11 @@ export interface NumberInput extends InputBase<number> {
 
 export interface FormDataOrderedInput<T = any> extends InputBase<T[]> {
     type: 'OrderedItems'
-    keyFn: (item: T) => string
+    keyFn: (item: T, index: number) => string
     cellsFn: (item: T) => ReactNode[]
     onEdit?: (item: T) => void
     onCreate?: () => void
+    summaryFn: (item: T) => string
 }
 
 export type Input =
