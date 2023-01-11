@@ -26,11 +26,6 @@ class ControlPanelComboBox extends React.Component {
         const handleComboChange = (selectedItem) => {
             if (!control.disabled) {
                 control.active = (selectedItem || '').trim()
-                // if value was a key, convert to actual value
-                const { simplified, availableData } = control
-                if (simplified && availableData) {
-                    control.active = control.simplified(control.active, control)
-                }
                 if (control.lastActive !== control.active) {
                     control.lastActive = control.active
                     handleControlChange()
