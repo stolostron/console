@@ -339,7 +339,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
             // update yaml in editor
             model.resources = cloneDeep(change.resources)
-            const saveDecorations = getResourceEditorDecorations(editorRef)
+            const saveDecorations = getResourceEditorDecorations(editorRef, false)
             const viewState = editorRef.current?.saveViewState()
             model.setValue(yaml)
             editorRef.current?.restoreViewState(viewState)
