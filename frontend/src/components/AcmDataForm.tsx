@@ -870,8 +870,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
                     <DescriptionListDescription>
                         <Stack>
-                            {input.value.map((value) => (
-                                <div>{input.keyFn(value)}</div>
+                            {input.value.map((value, index) => (
+                                <div key={input.keyFn(value, index)}>{input.summaryFn(value)}</div>
                             ))}
                         </Stack>
                     </DescriptionListDescription>
@@ -1511,14 +1511,16 @@ function OrderedItemsInput(props: {
                 aria-label="draggable data list example"
                 isCompact
                 onDragFinish={(itemOrder) => {
-                    const newItems = itemOrder.map((key) => input.value.find((item) => key === input.keyFn(item)))
+                    const newItems = itemOrder.map((key) =>
+                        input.value.find((item, index) => key === input.keyFn(item, index))
+                    )
                     input.onChange(newItems)
                 }}
-                itemOrder={input.value.map((item) => input.keyFn(item))}
+                itemOrder={input.value.map((item, index) => input.keyFn(item, index))}
                 style={{ borderTop: '0' }}
             >
-                {input.value.map((item) => {
-                    const key = input.keyFn(item)
+                {input.value.map((item, index) => {
+                    const key = input.keyFn(item, index)
                     return (
                         <DataListItem aria-labelledby="simple-item1" id={key} key={key}>
                             <DataListItemRow>
@@ -1559,7 +1561,11 @@ function OrderedItemsInput(props: {
                                             variant="plain"
                                             aria-label="Action"
                                             onClick={() =>
-                                                input.onChange(input.value.filter((item) => input.keyFn(item) !== key))
+                                                input.onChange(
+                                                    input.value.filter(
+                                                        (item, index) => input.keyFn(item, index) !== key
+                                                    )
+                                                )
                                             }
                                         >
                                             <TrashIcon />
