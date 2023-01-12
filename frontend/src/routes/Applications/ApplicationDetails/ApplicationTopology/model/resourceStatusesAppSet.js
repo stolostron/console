@@ -29,7 +29,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
         argoNS && targetNS.push(argoNS)
     })
 
-    const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources') : []
+    const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []
     let definedNamespace = ''
     const kindsNotNamespaceScoped = ['cluster']
     resources.forEach((resource) => {
