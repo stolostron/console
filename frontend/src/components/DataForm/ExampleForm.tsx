@@ -122,6 +122,7 @@ export default function ExampleForm() {
                                 onChange: setOrderedItems,
                                 isRequired: true,
                                 keyFn: (item) => item,
+                                summaryFn: (item) => item,
                                 cellsFn: (item) => [item],
                             },
                         ],
