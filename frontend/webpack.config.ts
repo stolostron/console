@@ -7,6 +7,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
 import webpack from 'webpack'
@@ -92,6 +93,19 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 })
             }),
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
+            new ForkTsCheckerWebpackPlugin({
+                async: false,
+                typescript: {
+                    configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+                },
+                eslint: {
+                    enabled: isDevelopment,
+                    files: ['./src/**/*.{ts,tsx}'],
+                },
+                issue: {
+                    exclude: [{ origin: 'eslint', severity: 'warning' }],
+                },
+            }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
                 new CopyPlugin({
