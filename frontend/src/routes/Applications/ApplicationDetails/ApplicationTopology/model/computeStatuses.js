@@ -264,7 +264,7 @@ export const getPulseStatusForCluster = (node) => {
     /////////////////////////////////////////
     ///////// SEE IF CLUSTER IS OFFLINE
     ////////////////////////////////////////
-    let clusters = _.get(node, 'specs.clusters')
+    let clusters = _.get(node, 'specs.clusters', [])
     const appClusters = _.get(node, 'specs.appClusters', [])
     const clustersNames = _.get(node, 'specs.clustersNames')
     const targetNamespaces = _.get(node, 'specs.targetNamespaces', {})
