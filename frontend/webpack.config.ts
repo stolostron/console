@@ -20,6 +20,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
     const locales = supportedLanguages
+    const useTsChecker = argv.hot
     const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         resolve: {
             extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -93,19 +94,17 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 })
             }),
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
-            new ForkTsCheckerWebpackPlugin({
-                async: false,
-                typescript: {
-                    configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
-                },
-                eslint: {
-                    enabled: isDevelopment,
-                    files: ['./src/**/*.{ts,tsx}'],
-                },
-                issue: {
-                    exclude: [{ origin: 'eslint', severity: 'warning' }],
-                },
-            }),
+            useTsChecker &&
+                new ForkTsCheckerWebpackPlugin({
+                    async: false,
+                    typescript: {
+                        configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+                    },
+                    eslint: {
+                        enabled: isDevelopment,
+                        files: ['./src/**/*.{ts,tsx,js,jsx}'],
+                    },
+                }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
             isProduction &&
                 new CopyPlugin({
