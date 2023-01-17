@@ -27,17 +27,12 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     }
     let related = []
     if (resourceStatuses.data.searchResult.length > 1) {
-        const relatedFrist = _.get(
-            mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])),
-            'related',
-            []
-        )
-        const relatedSecond = _.get(
-            mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[1])),
-            'related',
-            []
-        )
-        related = [...new Set([...relatedFrist, ...relatedSecond])]
+        const searchResultArr = []
+
+        resourceStatuses.data.searchResult.forEach((result) => {
+            searchResultArr.push(..._.get(mapSingleApplication(_.cloneDeep(result)), 'related', []))
+        })
+        related = [...new Set(searchResultArr)]
     } else {
         related = _.get(mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])), 'related', [])
     }
