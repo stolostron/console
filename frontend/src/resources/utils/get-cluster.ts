@@ -1293,7 +1293,7 @@ export function getHCUpgradeStatus(hostedCluster?: HostedClusterK8sResource) {
         const mostRecentVersion = pastVersions[0].image
         //If desired version is > current version and progressing, HC is currently updating
 
-        return desiredVersion !== mostRecentVersion
+        return desiredVersion !== mostRecentVersion || pastVersions[0].state === 'Partial'
     } else {
         return
     }
