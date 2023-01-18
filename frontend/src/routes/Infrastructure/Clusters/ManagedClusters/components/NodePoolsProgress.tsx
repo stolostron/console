@@ -82,7 +82,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     const nodePoolsProgressID = `${window.location.href}node-pools-progress`
     localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
     const [expanded, setExpanded] = useState(localStorage.getItem(nodePoolsProgressID) === 'show')
-    const { hostedCluster } = useContext(ClusterContext)
+    const { cluster, hostedCluster } = useContext(ClusterContext)
     const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
     const toggleAddNodepoolModal = useCallback(
         () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
@@ -143,11 +143,14 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                                             ? t(
                                                   'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                               )
+                                            : cluster?.hypershift?.isUpgrading
+                                            ? t('Cannot add node pools during hosted cluster upgrade')
                                             : t('rbac.unauthorized')
                                     }
                                     isDisabled={
                                         hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
-                                        !canCreateNodepool
+                                        !canCreateNodepool ||
+                                        cluster?.hypershift?.isUpgrading
                                     }
                                 />
                             </FlexItem>
