@@ -566,6 +566,8 @@
     "C5n - Intel processors, optimized network": "C5n - Intel processors, optimized network",
     "cancel": "Cancel",
     "Cancel": "Cancel",
+    "Cannot add node pools during hosted cluster upgrade": "Cannot add node pools during hosted cluster upgrade",
+    "Cannot manage node pools during hosted cluster upgrade": "Cannot manage node pools during hosted cluster upgrade",
     "Capacity": "Capacity",
     "Categories": "Categories",
     "Category": "Category",
