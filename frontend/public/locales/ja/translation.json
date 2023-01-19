@@ -1890,7 +1890,7 @@
     "Policy steps": "ポリシーの手順",
     "Policy templates": "ポリシーテンプレート",
     "Policy updated": "ポリシーが更新されました",
-    "Policy Violation Context Limit": "ポリシー違反のコンテキスト制限",
+    "Policy Violations Limit": "ポリシー違反のコンテキスト制限",
     "Policy violations": "ポリシー違反",
     "Policy YAML": "ポリシー YAML",
     "policy.identified.issues": "1 つの特定された問題",

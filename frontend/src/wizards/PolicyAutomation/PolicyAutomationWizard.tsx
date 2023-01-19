@@ -175,8 +175,8 @@ export function PolicyAutomationWizard(props: {
                         hidden={(item) => !item.spec?.automationDef?.name}
                     />
                     <WizNumberInput
-                        path="spec.automationDef.policyViolationContextLimit"
-                        label={t('Policy Violation Context Limit')}
+                        path="spec.automationDef.policyViolationsLimit"
+                        label={t('Policy Violations Limit')}
                         labelHelp={t(
                             'The maximum number of non-compliant cluster policy details that pass to the Ansible platform as extra variables. When it is set to 0, it means no limit. The default value is 1000.'
                         )}
