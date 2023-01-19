@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
     ButtonVariant,
     ExpandableSectionToggle,
@@ -97,15 +97,15 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
         checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
     }, [namespaces])
 
-    const addNodePoolStatusMessage = () => {
+    const addNodePoolStatusMessage = useMemo(() => {
         if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {
             return t('Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.')
         }
         if (cluster?.hypershift?.isUpgrading) {
-            return t('Node pools cannot be added during hosted cluster upgrade.')
+            return t('Cannot add node pools during hosted cluster upgrade')
         }
         return t('rbac.unauthorized')
-    }
+    }, [hostedCluster?.spec?.platform?.type, cluster?.hypershift?.isUpgrading, t])
 
     return (
         <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
