@@ -1286,9 +1286,9 @@ export function getHCUpgradeStatus(hostedCluster?: HostedClusterK8sResource) {
         hostedCluster?.status?.version?.desired.image !== undefined ||
         hostedCluster?.status?.version?.history !== undefined
     ) {
-        const desiredVersion = hostedCluster?.status?.version?.desired.image!
+        const desiredVersion = hostedCluster?.status?.version?.desired.image
 
-        const pastVersions = hostedCluster?.status?.version?.history!
+        const pastVersions = hostedCluster?.status?.version?.history
 
         const mostRecentVersion = pastVersions[0].image
         //If desired version is > current version and progressing, HC is currently updating

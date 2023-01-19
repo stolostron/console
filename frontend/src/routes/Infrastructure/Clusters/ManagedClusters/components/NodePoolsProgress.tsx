@@ -97,6 +97,16 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
         checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
     }, [namespaces])
 
+    const addNodePoolStatusMessage = () => {
+        if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {
+            return t('Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.')
+        }
+        if (cluster?.hypershift?.isUpgrading) {
+            return t('Node pools cannot be added during hosted cluster upgrade.')
+        }
+        return t('rbac.unauthorized')
+    }
+
     return (
         <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
             <AddNodePoolModal
@@ -138,15 +148,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                                     children={t('Add node pool')}
                                     variant={ButtonVariant.link}
                                     onClick={toggleAddNodepoolModal}
-                                    tooltip={
-                                        hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
-                                            ? t(
-                                                  'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
-                                              )
-                                            : cluster?.hypershift?.isUpgrading
-                                            ? t('Node pools cannot be added during hosted cluster upgrade.')
-                                            : t('rbac.unauthorized')
-                                    }
+                                    tooltip={addNodePoolStatusMessage}
                                     isDisabled={
                                         hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
                                         !canCreateNodepool ||
