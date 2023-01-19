@@ -144,7 +144,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                                                   'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                               )
                                             : cluster?.hypershift?.isUpgrading
-                                            ? t('Cannot add node pools during hosted cluster upgrade')
+                                            ? t('Node pools cannot be added during hosted cluster upgrade.')
                                             : t('rbac.unauthorized')
                                     }
                                     isDisabled={

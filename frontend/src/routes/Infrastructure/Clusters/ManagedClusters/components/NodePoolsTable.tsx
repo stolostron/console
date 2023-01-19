@@ -264,7 +264,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                         })
                 },
                 tooltip: cluster?.hypershift?.isUpgrading
-                    ? t('Cannot manage node pools during hosted cluster upgrade')
+                    ? t('Node pools cannot be managed during hosted cluster upgrade.')
                     : '',
                 isDisabled: !canPatchNodepool || cluster?.hypershift?.isUpgrading,
             })
@@ -313,7 +313,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                               'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                           )
                         : cluster?.hypershift?.isUpgrading
-                        ? t('Cannot add node pools during hosted cluster upgrade')
+                        ? t('Node pools cannot be added during hosted cluster upgrade.')
                         : t('rbac.unauthorized')
                 }
                 isDisabled={
@@ -366,7 +366,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                               'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
                                           )
                                         : cluster?.hypershift?.isUpgrading
-                                        ? t('Cannot add node pools during hosted cluster upgrade')
+                                        ? t('Node pools cannot be added during hosted cluster upgrade.')
                                         : t('rbac.unauthorized'),
                                 variant: ButtonVariant.secondary,
                             },
