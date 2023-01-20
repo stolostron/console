@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -437,8 +437,7 @@ describe('Overview Tab', () => {
         // cluster
         await waitForText('Clusters')
         await waitForText('None')
-        // created
-        await waitForText('Mar 1, 9:30 pm')
+        await waitFor(() => expect(screen.getByText(/mar 1 2022, 9:30 pm/i)).toBeDefined())
     })
 
     test('should display AppSet app info', async () => {

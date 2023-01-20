@@ -22,6 +22,9 @@ fetchMock.dontMock()
 global.fetch = jest.fn((input, reqInit) =>
     fetchMock(typeof input === 'string' ? new URL(input, process.env.JEST_DEFAULT_HOST).toString() : input, reqInit)
 )
+if (!process.env.DEBUG_PRINT_LIMIT) {
+    process.env.DEBUG_PRINT_LIMIT = '0'
+}
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)

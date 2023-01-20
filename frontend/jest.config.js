@@ -14,6 +14,11 @@ module.exports = {
     },
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
+    globals: {
+        'ts-jest': {
+            isolatedModules: true,
+        },
+    },
     transform: {
         '^.+\\.jsx?$': 'babel-jest',
         '^.+\\.tsx?$': 'ts-jest',
@@ -32,5 +37,6 @@ module.exports = {
         '!<rootDir>/src/*.test.{tsx,ts,jsx,js}',
         '!<rootDir>/node_modules/**',
     ],
-    bail: true,
+    verbose: true,
+    bail: false,
 }
