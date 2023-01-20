@@ -382,6 +382,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     let pulse = greenPulse
     const namespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`)
+    const resources = _.get(node, `specs.resources`)
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
 
@@ -392,6 +393,11 @@ const getPulseStatusForGenericNode = (node, t) => {
             pulse = greenPulse
         }
         return pulse
+    }
+
+    // check resources against the resourceMap
+    if (resources && resources.length !== Object.keys(resourceMap).length) {
+        return yellowPulse
     }
 
     //go through all clusters to make sure all pods are counted, even if they are not deployed there

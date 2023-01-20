@@ -6,7 +6,7 @@ import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName } from './utils'
+import { addClusters, getClusterName, processMultiples } from './utils'
 
 export function getAppSetTopology(application) {
     const links = []
@@ -86,8 +86,16 @@ export function getAppSetTopology(application) {
     const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
     const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
 
-    resources.forEach((deployable) => {
-        const { name: deployableName, namespace: deployableNamespace, kind, version, group } = deployable
+    processMultiples(resources).forEach((deployable) => {
+        const {
+            name: deployableName,
+            namespace: deployableNamespace,
+            kind,
+            version,
+            group,
+            resourceCount,
+            resources,
+        } = deployable
         const type = kind.toLowerCase()
 
         const memberId = `member--member--deployable--member--clusters--${getClusterName(
@@ -123,6 +131,8 @@ export function getAppSetTopology(application) {
                 parent: {
                     clusterId,
                 },
+                resources,
+                resourceCount: resourceCount || 0 + clusterNames.length,
             },
         }
 
