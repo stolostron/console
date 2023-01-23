@@ -90,9 +90,10 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
             })
 
             // get clusters it was deployed to
-            const clustersNames = get(subscription, 'report.results', []).map((result) => {
+            let clustersNames = get(subscription, 'report.results', []).map((result) => {
                 return result.source
             })
+            clustersNames = clustersNames.length ? clustersNames : ruleClusterNames
 
             const isRulePlaced = ruleClusterNames.length > 0
             const subscriptionId = addSubscription(
