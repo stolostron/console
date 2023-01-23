@@ -25,7 +25,8 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
 ```
-main → release-2.7 → backplane-2.2
+main → release-2.8 → backplane-2.3
+release-2.7 → backplane-2.2
 release-2.6 → backplane-2.1
 release-2.5
 backplane-2.0 // cherry-pick from PRs against release-2.5
@@ -38,7 +39,8 @@ A number of the core NPM package dependencies are published from other repositor
 
 | console branch                         | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
 | -------------------------------------- | --------------------------------- | -------------------------- | ------------------------ | -------------------- |
-| main<br/>release-2.7<br/>backplane-2.2 | main                              | main                       | N/A                      | N/A                  |
+| main<br/>release-2.8<br/>backplane-2.3 | main                              | main                       | N/A                      | N/A                  |
+| release-2.7<br/>backplane-2.2          | v1.13.z                           | v1.4.z                     | N/A                      | N/A                  |
 | release-2.6<br/>backplane-2.1          | v1.8.z                            | v1.0.z                     | N/A                      | N/A                  |
 | release-2.5<br/>backplane-2.0          | v1.7.z                            | N/A                        | v1.69.z                  | 2.5                  |
 | release-2.4                            | N/A                               | N/A                        | v1.25.z                  | 2.4                  |
