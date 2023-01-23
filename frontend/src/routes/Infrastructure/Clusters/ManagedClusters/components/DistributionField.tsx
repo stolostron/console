@@ -277,7 +277,7 @@ export function DistributionField(props: {
     } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
         // HYPERSHIFT UPGRADE IN PROGRESS
         const rx = /[0-9]*\.[0-9]*\.[0-9]*/
-        const image = props.hostedCluster?.status?.version?.desired.image || ''
+        const image = props.hostedCluster?.status?.version?.history[0].image || ''
         rx.lastIndex = 0
         const versionNum = rx.exec(image)![0] || ''
 
@@ -293,16 +293,10 @@ export function DistributionField(props: {
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgrading'),
-                                  bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
-                                      ? t('upgrade.upgrading.message.percentage', {
-                                            clusterName: props.cluster?.name,
-                                            version: 'Openshift ' + versionNum,
-                                            percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
-                                        })
-                                      : t('upgrade.upgrading.message', {
-                                            clusterName: props.cluster?.name,
-                                            version: 'Openshift ' + versionNum,
-                                        }),
+                                  bodyContent: t('upgrade.upgrading.message', {
+                                      clusterName: props.cluster?.name,
+                                      version: versionNum,
+                                  }),
                                   footerContent: (
                                       <a
                                           href={`${props.cluster?.consoleURL}/settings/cluster`}
