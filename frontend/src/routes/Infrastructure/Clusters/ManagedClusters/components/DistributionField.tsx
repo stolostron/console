@@ -276,10 +276,8 @@ export function DistributionField(props: {
         )
     } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
         // HYPERSHIFT UPGRADE IN PROGRESS
-        const rx = /\d*\.\d*\.\d*/ //Look for x.y.z version
         const image = props.hostedCluster?.status?.version?.history[0].image || ''
-        rx.lastIndex = 0
-        const versionNum = rx.exec(image)![0] || ''
+        const versionNum = getVersionFromReleaseImage(image) || ''
 
         return (
             <>
@@ -287,7 +285,7 @@ export function DistributionField(props: {
                 <AcmInlineStatus
                     type={StatusType.progress}
                     status={t('upgrade.upgrading.version', {
-                        version: 'Openshift ' + versionNum || '',
+                        version: openshiftText + ' ' + versionNum || '',
                     })}
                     popover={
                         props.cluster?.consoleURL
