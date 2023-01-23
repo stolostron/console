@@ -605,6 +605,36 @@ describe('Overview Tab', () => {
         await waitForText('Edit time window')
     })
 
+    test('should display subscription app info with time window', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(subscriptionsState, mockSubscriptions)
+                    snapshot.set(channelsState, mockChannels)
+                    snapshot.set(placementRulesState, mockPlacementrules)
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(namespacesState, mockNamespaces)
+                }}
+            >
+                <MemoryRouter>
+                    <ApplicationOverviewPageContent applicationData={mockApplicationDataSubscriptionTimewindow} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText('Name')
+        // cluster
+        await waitForText('Clusters')
+        await waitForText('None')
+        // created
+        await waitForText('Mar 1 2022, 9:30 pm')
+
+        // click show subscription details
+        await clickByRole('button', 1)
+        await clickByText('blocked')
+        await waitForText('Edit time window')
+    })
+
     test('should display AppSet app info', async () => {
         render(
             <RecoilRoot
