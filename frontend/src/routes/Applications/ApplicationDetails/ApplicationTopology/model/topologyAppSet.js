@@ -94,7 +94,7 @@ export function getAppSetTopology(application) {
             version,
             group,
             resourceCount,
-            resources,
+            resources: deployableResources,
         } = deployable
         const type = kind.toLowerCase()
 
@@ -131,7 +131,7 @@ export function getAppSetTopology(application) {
                 parent: {
                     clusterId,
                 },
-                resources,
+                resources: deployableResources,
                 resourceCount: resourceCount || 0 + clusterNames.length,
             },
         }
