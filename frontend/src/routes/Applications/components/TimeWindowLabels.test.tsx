@@ -3,6 +3,14 @@ import { render } from '@testing-library/react'
 import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { TimeWindowLabels } from './TimeWindowLabels'
 
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+    useParams: () => ({
+        namespace: 'test-ns',
+        name: 'test',
+    }),
+}))
+
 //////////////// Test /////////////////
 
 describe('TimeWindowLabels', () => {
