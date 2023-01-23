@@ -15,7 +15,7 @@ const mockSearchQuery = {
                 filters: [
                     {
                         property: 'kind',
-                        values: ['applicationset', 'placement'],
+                        values: ['applicationset', 'placement', 'cluster'],
                     },
                     {
                         property: 'namespace',
@@ -29,7 +29,25 @@ const mockSearchQuery = {
                 filters: [
                     {
                         property: 'kind',
-                        values: ['cluster', 'consolelink', 'consolelink'],
+                        values: ['consolelink'],
+                    },
+                    {
+                        property: 'name',
+                        values: ['application-menu-rh-developer-blog'],
+                    },
+                ],
+                relatedKinds: [],
+            },
+            {
+                keywords: [],
+                filters: [
+                    {
+                        property: 'kind',
+                        values: ['consolelink'],
+                    },
+                    {
+                        property: 'name',
+                        values: ['ocp100'],
                     },
                 ],
                 relatedKinds: [],
