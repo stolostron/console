@@ -5,8 +5,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
-//import util from 'util'
 import { cloneDeep } from 'lodash'
+//import util from 'util'
 
 const mockOneditorchangeCreate = jest.fn()
 const mockOneditorchangeEdit = jest.fn()
@@ -29,8 +29,103 @@ describe('SyncEditor component', () => {
         jest.resetAllMocks()
     })
 
-    // secrets
-    // immutables
+    it('validation', async () => {
+        const clone = cloneDeep(propsNewResource)
+
+        // case 'required':
+        // case 'const':
+        // case 'pattern':
+        // case 'validateName':
+        // case 'validateDep':
+        // case 'validateLabel':
+        // case 'enum':
+        // case 'type':
+
+        clone.resources = [
+            {
+                apiVersion: 'policy.open-cluster-management.io/v1',
+                kind: 'Policy',
+                metadata: {
+                    nam: '-test', //required-- must have 'name' not 'nam'
+                    namespace: '-default', // validateName --must not start with -
+                    constTest: 'Testee', // const test -- must be Test
+                    enumTest: 'xst', // enum test -- must be ['ost', 'vmw']
+                    typeTest: 3, //type test--must be string
+                    validateLabelTest: '1234567890123456789012345678901234567890123456789012345678901234567890', //validateLabel--must be less then 63 chars
+                    kind: 'IamPolicy', // 'validateDep' --IamPolicy cannot have namespace
+                    patternTest: 'abcd', // must match pattern
+                    immutableTest: 1234, // sematxci errors ignored on immutable lines
+                },
+            },
+        ]
+        clone.schema = {
+            type: 'object',
+            properties: {
+                apiVersion: {
+                    type: 'string',
+                },
+                kind: {
+                    const: 'Policy',
+                },
+                metadata: {
+                    type: 'object',
+                    properties: {
+                        name: {
+                            validateName: true,
+                        },
+                        namespace: {
+                            validateName: true,
+                        },
+                        constTest: {
+                            const: 'Test',
+                        },
+                        enumTest: {
+                            enum: ['ost', 'vmw'],
+                        },
+                        typeTest: {
+                            type: 'string',
+                        },
+                        validateLabelTest: {
+                            validateLabel: true,
+                        },
+                        validateDepTest: {
+                            validateDep: true,
+                        },
+                        patternTest: {
+                            pattern: '[%d] [%p] [application-ui] [%c] %m',
+                        },
+                    },
+                    validateDep: true,
+                    required: ['name', 'namespace'],
+                },
+            },
+            required: ['apiVersion', 'metadata', 'kind'],
+        }
+        clone.immutables = ['*.metadata.immutableTest']
+        render(<SyncEditor {...clone} />)
+
+        // make sure yaml matches
+        const input = screen.getByRole('textbox', {
+            name: /monaco/i,
+        }) as HTMLTextAreaElement
+        await waitFor(() => expect(input).not.toHaveValue(''))
+
+        // >>>SEMANTIC ERRORS
+        let decorators = JSON.parse(input.dataset['decorators'] || '')
+        //console.log(util.inspect(decorators, { depth: null }))
+        expect(decorators).toEqual(semanticErrors)
+
+        // >>>SYNTAX ERROR--type 'abc' over colon in 'kind:'
+        const text = 'kind:'
+        const i = input.value.indexOf(text) + text.length - 1
+        input.setSelectionRange(i, i + 1)
+        userEvent.type(input, 'abc')
+        await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+        decorators = JSON.parse(input.dataset['decorators'] || '')
+        //console.log(util.inspect(decorators, { depth: null }))
+        expect(decorators).toEqual(syntaxError)
+    })
+
     it('render new resource', async () => {
         render(<SyncEditor {...propsNewResource} />)
 
@@ -71,7 +166,7 @@ describe('SyncEditor component', () => {
         const { rerender } = render(<SyncEditor {...propsNewResource} />)
 
         // make sure yaml matches
-        let input = screen.getByRole('textbox', {
+        const input = screen.getByRole('textbox', {
             name: /monaco/i,
         }) as HTMLTextAreaElement
         await waitFor(() => expect(input).not.toHaveValue(''))
@@ -180,113 +275,25 @@ describe('SyncEditor component', () => {
         expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
     })
 
-    it('validator validation', async () => {
-        const clone = cloneDeep(propsNewResource)
+    // it('keyboard', async () => {
+    //     render(<SyncEditor {...propsExistingResource} />)
 
-        // case 'required':
-        // case 'const':
-        // case 'pattern':
-        // case 'validateName':
-        // case 'validateDep':
-        // case 'validateLabel':
-        // case 'enum':
-        // case 'type':
+    //     // make sure yaml matches
+    //     const input = screen.getByRole('textbox', {
+    //         name: /monaco/i,
+    //     }) as HTMLTextAreaElement
+    //     await waitFor(() => expect(input).not.toHaveValue(''))
+    //     expect(input).toHaveMultilineValue(existingResourceYaml)
+    //     await new Promise((resolve) => setTimeout(resolve, 500))
+    //     screen.logTestingPlaygroundURL()
 
-        clone.resources = [
-            {
-                apiVersion: 'policy.open-cluster-management.io/v1',
-                kind: 'Policy',
-                metadata: {
-                    nam: '-test', //required-- must have 'name' not 'nam'
-                    namespace: '-default', // validateName --must not start with -
-                    constTest: 'Testee', // const test -- must be Test
-                    enumTest: 'xst', // enum test -- must be ['ost', 'vmw']
-                    typeTest: 3, //type test--must be string
-                    validateLabelTest: '1234567890123456789012345678901234567890123456789012345678901234567890', //validateLabel--must be less then 63 chars
-                    kind: 'IamPolicy', // 'validateDep' --IamPolicy cannot have namespace
-                    patternTest: 'abcd', // must match pattern
-                    immutableTest: 1234, // sematxci errors ignored on immutable lines
-                },
-            },
-        ]
-        clone.schema = {
-            type: 'object',
-            properties: {
-                apiVersion: {
-                    type: 'string',
-                },
-                kind: {
-                    const: 'Policy',
-                },
-                metadata: {
-                    type: 'object',
-                    properties: {
-                        name: {
-                            validateName: true,
-                        },
-                        namespace: {
-                            validateName: true,
-                        },
-                        constTest: {
-                            const: 'Test',
-                        },
-                        enumTest: {
-                            enum: ['ost', 'vmw'],
-                        },
-                        typeTest: {
-                            type: 'string',
-                        },
-                        validateLabelTest: {
-                            validateLabel: true,
-                        },
-                        validateDepTest: {
-                            validateDep: true,
-                        },
-                        patternTest: {
-                            pattern: '[%d] [%p] [application-ui] [%c] %m',
-                        },
-                    },
-                    validateDep: true,
-                    required: ['name', 'namespace'],
-                },
-            },
-            required: ['apiVersion', 'metadata', 'kind'],
-        }
-        clone.immutables = ['*.metadata.immutableTest']
-        render(<SyncEditor {...clone} />)
-
-        // make sure yaml matches
-        const input = screen.getByRole('textbox', {
-            name: /monaco/i,
-        }) as HTMLTextAreaElement
-        await waitFor(() => expect(input).not.toHaveValue(''))
-
-        // >>>SEMANTIC ERRORS
-        let decorators = JSON.parse(input.dataset['decorators'] || '')
-        //console.log(util.inspect(decorators, { depth: null }))
-        expect(decorators).toEqual(semanticErrors)
-
-        // >>>SYNTAX ERROR--type 'abc' over colon in 'kind:'
-        const text = 'kind:'
-        const i = input.value.indexOf(text) + text.length - 1
-        input.setSelectionRange(i, i + 1)
-        userEvent.type(input, 'abc')
-        await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-        decorators = JSON.parse(input.dataset['decorators'] || '')
-        //console.log(util.inspect(decorators, { depth: null }))
-        expect(decorators).toEqual(syntaxError)
-
-        // await new Promise((resolve) => setTimeout(resolve, 1500))
-        // screen.logTestingPlaygroundURL()
-
-        // // key events
-        // userEvent.click(input)
-        // userEvent.type(input, 'hello2')
-        // userEvent.tab()
-        // userEvent.click(input)
-        // userEvent.type(input, '{esc}')
-        // expect(input).toHaveValue('')
-    })
+    //     // try typing on immutable
+    //     const text = 'name: test'
+    //     const i = input.value.indexOf(text)
+    //     input.setSelectionRange(i, i)
+    //     fireEvent.keyDown(input, { key: 'A', code: 'KeyA' })
+    //     // userEvent.type(input, 'newthing')
+    // })
 })
 
 const propsNewResource: SyncEditorProps = {

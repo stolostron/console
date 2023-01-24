@@ -154,10 +154,10 @@ const MonacoEditor = (props: {
                         break
                 }
             },
-            onKeyDown: () => {},
-            onClick: (e) => {
-                const f = e
+            onKeyDown: (handler) => {
+                editorMockRef.current.onKeyDown = handler
             },
+            onClick: () => {},
             onMouseDown: (handler) => {
                 editorMockRef.current.onMouseDown = handler
             },
