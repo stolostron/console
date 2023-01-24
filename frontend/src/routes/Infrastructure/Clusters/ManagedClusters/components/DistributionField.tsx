@@ -265,6 +265,38 @@ export function DistributionField(props: {
         />
       </>
     )
+  } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
+    // HYPERSHIFT UPGRADE IN PROGRESS
+    const image = props.hostedCluster?.status?.version?.desired.image || ''
+    const versionNum = getVersionFromReleaseImage(image) || ''
+
+    return (
+      <>
+        <div>{props.cluster?.distribution.displayVersion}</div>
+        <AcmInlineStatus
+          type={StatusType.progress}
+          status={t('upgrade.upgrading.version', {
+            version: openshiftText + ' ' + versionNum || '',
+          })}
+          popover={
+            props.cluster?.consoleURL
+              ? {
+                  headerContent: t('upgrade.upgrading'),
+                  bodyContent: t('upgrade.upgrading.message', {
+                    clusterName: props.cluster?.name,
+                    version: versionNum,
+                  }),
+                  footerContent: (
+                    <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
+                      {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                    </a>
+                  ),
+                }
+              : undefined
+          }
+        />
+      </>
+    )
   } else if (props.cluster?.distribution.upgradeInfo?.isUpgrading) {
     // OCP UPGRADE IN PROGRESS
     return (
