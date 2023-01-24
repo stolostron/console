@@ -10,21 +10,21 @@ const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
 
 describe('Cluster creation control data for AZR', () => {
-    it('generates correctly', () => {
-        expect(getControlDataAZR(t, handleModalToggle, true, true, false)).toMatchSnapshot()
-    })
+  it('generates correctly', () => {
+    expect(getControlDataAZR(t, handleModalToggle, true, true, false)).toMatchSnapshot()
+  })
 
-    it('generates correctly with SNO enabled', () => {
-        expect(getControlDataAZR(t, handleModalToggle, true, true, true)).toMatchSnapshot()
-    })
+  it('generates correctly with SNO enabled', () => {
+    expect(getControlDataAZR(t, handleModalToggle, true, true, true)).toMatchSnapshot()
+  })
 
-    it('generates correctly for MCE', () => {
-        expect(getControlDataAZR(t, handleModalToggle, true, false, false)).toMatchSnapshot()
-    })
+  it('generates correctly for MCE', () => {
+    expect(getControlDataAZR(t, handleModalToggle, true, false, false)).toMatchSnapshot()
+  })
 
-    it('generates correctly for cluster pools', () => {
-        expect(
-            fixupControlsForClusterPool(getControlDataAZRClusterPool(t, handleModalToggle, false, false), t)
-        ).toMatchSnapshot()
-    })
+  it('generates correctly for cluster pools', () => {
+    expect(
+      fixupControlsForClusterPool(getControlDataAZRClusterPool(t, handleModalToggle, false, false), t)
+    ).toMatchSnapshot()
+  })
 })

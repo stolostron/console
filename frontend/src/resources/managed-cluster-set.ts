@@ -12,21 +12,21 @@ export type ManagedClusterSetKindType = 'ManagedClusterSet'
 export const submarinerBrokerNamespaceAnnotation = 'cluster.open-cluster-management.io/submariner-broker-ns'
 
 export const isGlobalClusterSet = (managedClusterSet: ManagedClusterSet | undefined): boolean =>
-    managedClusterSet?.metadata?.name === 'global'
+  managedClusterSet?.metadata?.name === 'global'
 
 export const ManagedClusterSetDefinition: IResourceDefinition = {
-    apiVersion: ManagedClusterSetApiVersion,
-    kind: ManagedClusterSetKind,
+  apiVersion: ManagedClusterSetApiVersion,
+  kind: ManagedClusterSetKind,
 }
 
 export interface ManagedClusterSet extends IResource {
-    apiVersion: ManagedClusterSetApiVersionType
-    kind: ManagedClusterSetKindType
-    metadata: Metadata
-    spec?: {}
-    status?: {
-        conditions: V1CustomResourceDefinitionCondition[]
-    }
+  apiVersion: ManagedClusterSetApiVersionType
+  kind: ManagedClusterSetKindType
+  metadata: Metadata
+  spec?: {}
+  status?: {
+    conditions: V1CustomResourceDefinitionCondition[]
+  }
 }
 
 export const managedClusterSetLabel = 'cluster.open-cluster-management.io/clusterset'

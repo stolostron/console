@@ -8,27 +8,27 @@ export const PolicyReportKind = 'PolicyReport'
 export type PolicyReportKindType = 'PolicyReport'
 
 export interface PolicyReport {
-    apiVersion: PolicyReportApiVersionType
-    kind: PolicyReportKindType
-    metadata: Metadata
-    results: PolicyReportResults[]
-    scope?: {
-        kind: string
-        name: string
-        namespace: string
-    }
+  apiVersion: PolicyReportApiVersionType
+  kind: PolicyReportKindType
+  metadata: Metadata
+  results: PolicyReportResults[]
+  scope?: {
+    kind: string
+    name: string
+    namespace: string
+  }
 }
 
 export interface PolicyReportResults {
-    policy: string
-    message: string
-    scored: boolean
-    source: string
-    category: string
-    result: string
-    properties: {
-        created_at: string
-        total_risk: string
-        component: string
-    }
+  policy: string
+  message: string
+  scored: boolean
+  source: string
+  category: string
+  result: string
+  properties: {
+    created_at: string
+    total_risk: string
+    component: string
+  }
 }

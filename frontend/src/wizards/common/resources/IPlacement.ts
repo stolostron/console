@@ -15,16 +15,16 @@ A slice of PlacementDecisions with label cluster.open-cluster-management.io/plac
 If a ManagedCluster is selected and added into the PlacementDecisions, other components may apply workload on it; once it is removed from the PlacementDecisions, the workload applied on this ManagedCluster should be evicted accordingly.
 */
 export type IPlacement = IResource & {
-    metadata?: { name?: string; namespace?: string }
-    spec?: {
-        /** 
+  metadata?: { name?: string; namespace?: string }
+  spec?: {
+    /** 
         ClusterSets represent the ManagedClusterSets from which theManagedClusters are selected. If the slice is empty,
         ManagedClusters will be selected from the ManagedClusterSets bound to the placement namespace, otherwise 
         ManagedClusters will be selected from the intersection of this slice and the ManagedClusterSets bound to the placement namespace.
          */
-        clusterSets?: string[]
+    clusterSets?: string[]
 
-        /**
+    /**
             NumberOfClusters represents the desired number of
             ManagedClusters to be selected which meet the placement
             requirements. 1) If not specified, all ManagedClusters which
@@ -40,27 +40,27 @@ export type IPlacement = IResource & {
             will be selected, and the status of condition
             `PlacementConditionSatisfied` will be    set to false;
         */
-        numberOfClusters?: number
+    numberOfClusters?: number
 
-        /**
+    /**
         Predicates represent a slice of predicates to select ManagedClusters.
         The predicates are ORed.
          */
-        predicates?: Predicate[]
-    }
+    predicates?: Predicate[]
+  }
 }
 
 export interface Predicate {
-    /** RequiredClusterSelector represents a selector of ManagedClusters by label and claim. */
-    requiredClusterSelector?: {
-        /** LabelSelector represents a selector of ManagedClusters by label */
-        labelSelector?: {
-            matchLabels?: { [key: string]: string }
-            matchExpressions?: IExpression[]
-        }
-        /** ClaimSelector represents a selector of ManagedClusters by clusterClaims in status */
-        claimSelector?: {
-            matchExpressions?: IExpression[]
-        }
+  /** RequiredClusterSelector represents a selector of ManagedClusters by label and claim. */
+  requiredClusterSelector?: {
+    /** LabelSelector represents a selector of ManagedClusters by label */
+    labelSelector?: {
+      matchLabels?: { [key: string]: string }
+      matchExpressions?: IExpression[]
     }
+    /** ClaimSelector represents a selector of ManagedClusters by clusterClaims in status */
+    claimSelector?: {
+      matchExpressions?: IExpression[]
+    }
+  }
 }

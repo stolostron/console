@@ -5,14 +5,14 @@ import AnsibleAutomationsPage from './AnsibleAutomations'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
 
 export default function Automations() {
-    return (
-        <Switch>
-            <Route exact path={NavigationPath.addAnsibleAutomation} component={AnsibleAutomationsFormPage} />
-            <Route exact path={NavigationPath.editAnsibleAutomation} component={AnsibleAutomationsFormPage} />
-            <Route exact path={NavigationPath.ansibleAutomations} component={AnsibleAutomationsPage} />
-            <Route path="*">
-                <Redirect to={NavigationPath.ansibleAutomations} />
-            </Route>
-        </Switch>
-    )
+  return (
+    <Switch>
+      <Route exact path={NavigationPath.addAnsibleAutomation} component={AnsibleAutomationsFormPage} />
+      <Route exact path={NavigationPath.editAnsibleAutomation} component={AnsibleAutomationsFormPage} />
+      <Route exact path={NavigationPath.ansibleAutomations} component={AnsibleAutomationsPage} />
+      <Route path="*">
+        <Redirect to={NavigationPath.ansibleAutomations} />
+      </Route>
+    </Switch>
+  )
 }

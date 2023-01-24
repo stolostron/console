@@ -54,41 +54,41 @@ spec:
 `
 
 describe('NetworkForm', () => {
-    const handleChange = jest.fn()
-    const onNext = jest.fn()
-    const Component = () => {
-        return (
-            <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-                    <Route path={NavigationPath.createCluster}>
-                        <NetworkForm
-                            templateYAML={templateYAML}
-                            key={'key'}
-                            control={{
-                                active: false,
-                                onNext,
-                                step: {
-                                    title: {
-                                        isComplete: false,
-                                    },
-                                },
-                            }}
-                            handleChange={handleChange}
-                        />{' '}
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
+  const handleChange = jest.fn()
+  const onNext = jest.fn()
+  const Component = () => {
+    return (
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+          <Route path={NavigationPath.createCluster}>
+            <NetworkForm
+              templateYAML={templateYAML}
+              key={'key'}
+              control={{
+                active: false,
+                onNext,
+                step: {
+                  title: {
+                    isComplete: false,
+                  },
+                },
+              }}
+              handleChange={handleChange}
+            />{' '}
+          </Route>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
 
-    test('it sets default form values', () => {
-        const initialValues = getDefaultNetworkFormValues(templateYAML, true, false)
-        expect(initialValues).toMatchSnapshot()
-    })
+  test('it sets default form values', () => {
+    const initialValues = getDefaultNetworkFormValues(templateYAML, true, false)
+    expect(initialValues).toMatchSnapshot()
+  })
 
-    test('it renders', async () => {
-        const { container } = render(<Component />)
-        // waitForText('ai:API server publishing strategy')
-        expect(container).toMatchSnapshot()
-    })
+  test('it renders', async () => {
+    const { container } = render(<Component />)
+    // waitForText('ai:API server publishing strategy')
+    expect(container).toMatchSnapshot()
+  })
 })

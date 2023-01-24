@@ -2,10 +2,10 @@
 
 // define some custom expects
 declare namespace jest {
-    interface Matchers<R> {
-        hasMissingMocks(): R
-        hasUnusedMocks(): R
-        hasNoMissingNocks(): R
-        hasNoPendingNocks(): R
-    }
+  interface Matchers<R> {
+    hasMissingMocks(): R
+    hasUnusedMocks(): R
+    hasNoMissingNocks(): R
+    hasNoPendingNocks(): R
+  }
 }

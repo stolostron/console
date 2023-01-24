@@ -15,19 +15,19 @@ import _ from 'lodash'
 import { getWrappedNodeLabel } from './utilities'
 
 export const getNodeDescription = (node) => {
-    const { layout = {} } = node
+  const { layout = {} } = node
 
-    let description = getWrappedNodeLabel((node && node.name) || '', 12, 2)
-    if (_.get(node, 'type', '') === 'cluster' && _.get(node, 'specs.clusterNames', []).length > 1) {
-        description = '' //don't show cluster names if more than 1
-    }
+  let description = getWrappedNodeLabel((node && node.name) || '', 12, 2)
+  if (_.get(node, 'type', '') === 'cluster' && _.get(node, 'specs.clusterNames', []).length > 1) {
+    description = '' //don't show cluster names if more than 1
+  }
 
-    // hubs are drawn bigger
-    if (layout.isMajorHub) {
-        layout.scale = 1.6
-    } else if (layout.isMinorHub) {
-        layout.scale = 1.4
-    }
+  // hubs are drawn bigger
+  if (layout.isMajorHub) {
+    layout.scale = 1.6
+  } else if (layout.isMinorHub) {
+    layout.scale = 1.4
+  }
 
-    return description
+  return description
 }

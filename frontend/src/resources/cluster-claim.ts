@@ -10,20 +10,20 @@ export const ClusterClaimKind = 'ClusterClaim'
 export type ClusterClaimKindType = 'ClusterClaim'
 
 export const ClusterClaimDefinition: IResourceDefinition = {
-    apiVersion: ClusterClaimApiVersion,
-    kind: ClusterClaimKind,
+  apiVersion: ClusterClaimApiVersion,
+  kind: ClusterClaimKind,
 }
 
 export interface ClusterClaim extends IResource {
-    apiVersion: ClusterClaimApiVersionType
-    kind: ClusterClaimKindType
-    metadata: Metadata
-    spec?: {
-        clusterPoolName: string
-        lifetime?: string
-        namespace?: string
-    }
-    status?: {
-        conditions: V1CustomResourceDefinitionCondition[]
-    }
+  apiVersion: ClusterClaimApiVersionType
+  kind: ClusterClaimKindType
+  metadata: Metadata
+  spec?: {
+    clusterPoolName: string
+    lifetime?: string
+    namespace?: string
+  }
+  status?: {
+    conditions: V1CustomResourceDefinitionCondition[]
+  }
 }

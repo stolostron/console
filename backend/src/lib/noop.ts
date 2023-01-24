@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 
 export function noop(): void {
-    // Do nothing
+  // Do nothing
 }

@@ -6,40 +6,40 @@ import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo
 import { getBackendUrl, getCookie } from '../../../../resources'
 
 const httpLink = new HttpLink({
-    uri: () => `${getBackendUrl()}/proxy/search`,
+  uri: () => `${getBackendUrl()}/proxy/search`,
 })
 
 const csrfHeaderLink = new ApolloLink((operation, forward) => {
-    const csrfToken = getCookie('csrf-token')
-    if (csrfToken) {
-        operation.setContext(({ headers = {} }) => ({
-            headers: {
-                ...headers,
-                'X-CSRFToken': csrfToken,
-            },
-        }))
-    }
+  const csrfToken = getCookie('csrf-token')
+  if (csrfToken) {
+    operation.setContext(({ headers = {} }) => ({
+      headers: {
+        ...headers,
+        'X-CSRFToken': csrfToken,
+      },
+    }))
+  }
 
-    return forward(operation)
+  return forward(operation)
 })
 
 export const searchClient = new ApolloClient({
-    connectToDevTools: process.env.NODE_ENV === 'development',
-    link: from([csrfHeaderLink, httpLink]),
-    cache: new InMemoryCache(),
-    credentials: 'same-origin',
+  connectToDevTools: process.env.NODE_ENV === 'development',
+  link: from([csrfHeaderLink, httpLink]),
+  cache: new InMemoryCache(),
+  credentials: 'same-origin',
 
-    defaultOptions: {
-        watchQuery: {
-            fetchPolicy: 'network-only',
-            errorPolicy: 'all',
-        },
-        query: {
-            fetchPolicy: 'network-only',
-            errorPolicy: 'all',
-        },
-        mutate: {
-            errorPolicy: 'all',
-        },
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only',
+      errorPolicy: 'all',
     },
+    query: {
+      fetchPolicy: 'network-only',
+      errorPolicy: 'all',
+    },
+    mutate: {
+      errorPolicy: 'all',
+    },
+  },
 })

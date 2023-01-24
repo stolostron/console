@@ -3,14 +3,14 @@
 import { useTranslation as useReactI18NextTranslation, Trans as ReactTrans } from 'react-i18next'
 
 export function useTranslation() {
-    return useReactI18NextTranslation(process.env.TRANSLATION_NAMESPACE)
+  return useReactI18NextTranslation(process.env.TRANSLATION_NAMESPACE)
 }
 
 export function Trans(props: any) {
-    const { t } = useTranslation()
-    return (
-        <ReactTrans {...props} t={t}>
-            {props.children}
-        </ReactTrans>
-    )
+  const { t } = useTranslation()
+  return (
+    <ReactTrans {...props} t={t}>
+      {props.children}
+    </ReactTrans>
+  )
 }

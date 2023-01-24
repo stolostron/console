@@ -8,29 +8,29 @@ import { AcmModal } from '../../../../../ui-components'
 import { NodePoolForm } from './NodePoolForm'
 
 export interface IManageNodePoolNodesModalProps {
-    close: () => void
-    open: true
-    hostedCluster: HostedClusterK8sResource
-    clusterImages?: ClusterImageSetK8sResource[]
-    refNodepool?: NodePool
-    nodepool?: NodePool
+  close: () => void
+  open: true
+  hostedCluster: HostedClusterK8sResource
+  clusterImages?: ClusterImageSetK8sResource[]
+  refNodepool?: NodePool
+  nodepool?: NodePool
 }
 
 export function ManageNodePoolNodesModal(props: IManageNodePoolNodesModalProps | { open: false }) {
-    const { t } = useTranslation()
+  const { t } = useTranslation()
 
-    if (props.open === false) {
-        return <></>
-    }
+  if (props.open === false) {
+    return <></>
+  }
 
-    return (
-        <AcmModal variant={ModalVariant.medium} title={t('Manage node pool')} isOpen={true} onClose={props.close}>
-            <NodePoolForm
-                hostedCluster={props.hostedCluster}
-                nodepool={props.nodepool}
-                refNodepool={props.refNodepool}
-                close={props.close}
-            />
-        </AcmModal>
-    )
+  return (
+    <AcmModal variant={ModalVariant.medium} title={t('Manage node pool')} isOpen={true} onClose={props.close}>
+      <NodePoolForm
+        hostedCluster={props.hostedCluster}
+        nodepool={props.nodepool}
+        refNodepool={props.refNodepool}
+        close={props.close}
+      />
+    </AcmModal>
+  )
 }

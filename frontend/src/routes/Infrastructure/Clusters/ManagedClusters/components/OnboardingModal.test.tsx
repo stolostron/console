@@ -6,39 +6,39 @@ import { waitForText } from '../../../../../lib/test-util'
 import { OnboardingModal } from './OnboardingModal'
 
 describe('OnboardingModal open', () => {
-    beforeEach(async () => {
-        render(
-            <MemoryRouter>
-                <OnboardingModal open={true} close={() => {}} />
-            </MemoryRouter>
-        )
+  beforeEach(async () => {
+    render(
+      <MemoryRouter>
+        <OnboardingModal open={true} close={() => {}} />
+      </MemoryRouter>
+    )
 
-        await waitForText('Managing clusters')
-    })
+    await waitForText('Managing clusters')
+  })
 
-    it('should render OnboardingModal', async () => {
-        expect(screen.getByTestId('clustersOnboardingModal')).toHaveAttribute(
-            'data-ouia-component-id',
-            'clustersOnboardingModal'
-        )
-        expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
-        expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
-        expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)
-    })
+  it('should render OnboardingModal', async () => {
+    expect(screen.getByTestId('clustersOnboardingModal')).toHaveAttribute(
+      'data-ouia-component-id',
+      'clustersOnboardingModal'
+    )
+    expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
+    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
+    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)
+  })
 })
 
 describe('OnboardingModal closed', () => {
-    beforeEach(async () => {
-        render(
-            <MemoryRouter>
-                <OnboardingModal open={false} close={() => {}} />
-            </MemoryRouter>
-        )
-    })
+  beforeEach(async () => {
+    render(
+      <MemoryRouter>
+        <OnboardingModal open={false} close={() => {}} />
+      </MemoryRouter>
+    )
+  })
 
-    it('should render OnboardingModal', async () => {
-        expect(screen.queryAllByText('Import an existing cluster').length).toBe(0)
-        expect(screen.queryAllByText('Connect your cloud provider').length).toBe(0)
-        expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(0)
-    })
+  it('should render OnboardingModal', async () => {
+    expect(screen.queryAllByText('Import an existing cluster').length).toBe(0)
+    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(0)
+    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(0)
+  })
 })

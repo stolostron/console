@@ -5,13 +5,13 @@ import { getBackendUrl, getRequest } from '../resources'
 export const usernameUrl = '/username'
 
 export type IUsernameResult = {
-    body: {
-        username: string
-    }
-    statusCode: number
+  body: {
+    username: string
+  }
+  statusCode: number
 }
 
 export function getUsername() {
-    const url = getBackendUrl() + usernameUrl
-    return getRequest<IUsernameResult>(url)
+  const url = getBackendUrl() + usernameUrl
+  return getRequest<IUsernameResult>(url)
 }

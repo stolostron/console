@@ -6,26 +6,26 @@ import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmMultiSelect } from './AcmMultiSelect'
 
 export default {
-    title: 'MultiSelect',
-    component: AcmMultiSelect,
+  title: 'MultiSelect',
+  component: AcmMultiSelect,
 }
 
 export const MultiSelect = () => {
-    const [value, setValue] = useState<string[]>()
+  const [value, setValue] = useState<string[]>()
 
-    return (
-        <AcmForm>
-            <AcmMultiSelect label="MultiSelect" id="multiselect" value={value} onChange={setValue}>
-                <SelectOption key="option-1" value="option-1">
-                    Option 1
-                </SelectOption>
-                <SelectOption key="option-2" value="option-2">
-                    Option 2
-                </SelectOption>
-                <SelectOption key="option-3" value="option-3">
-                    Option 3
-                </SelectOption>
-            </AcmMultiSelect>
-        </AcmForm>
-    )
+  return (
+    <AcmForm>
+      <AcmMultiSelect label="MultiSelect" id="multiselect" value={value} onChange={setValue}>
+        <SelectOption key="option-1" value="option-1">
+          Option 1
+        </SelectOption>
+        <SelectOption key="option-2" value="option-2">
+          Option 2
+        </SelectOption>
+        <SelectOption key="option-3" value="option-3">
+          Option 3
+        </SelectOption>
+      </AcmMultiSelect>
+    </AcmForm>
+  )
 }

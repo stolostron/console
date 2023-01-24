@@ -9,7 +9,7 @@ export const StatusKind = 'Status'
 export type StatusKindType = 'Status'
 
 export interface Status extends V1Status {
-    apiVersion: StatusApiVersionType
-    kind: StatusKindType
-    status: 'Success' | 'Failure'
+  apiVersion: StatusApiVersionType
+  kind: StatusKindType
+  status: 'Success' | 'Failure'
 }

@@ -10,9 +10,9 @@ export const PlacementBindingKind = 'PlacementBinding'
 export type PlacementBindingKindType = 'PlacementBinding'
 
 export interface PlacementBinding extends IResource {
-    apiVersion: PlacementBindingApiVersionType
-    kind: PlacementBindingKindType
-    metadata: Metadata
-    placementRef: ResourceRef
-    subjects?: ResourceRef[] | null
+  apiVersion: PlacementBindingApiVersionType
+  kind: PlacementBindingKindType
+  metadata: Metadata
+  placementRef: ResourceRef
+  subjects?: ResourceRef[] | null
 }

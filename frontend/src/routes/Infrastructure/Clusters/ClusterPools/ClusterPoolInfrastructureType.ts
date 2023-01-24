@@ -6,8 +6,8 @@ const clusterPoolInfrastructureTypes = [Provider.aws, Provider.azure, Provider.g
 export type ClusterPoolInfrastructureType = typeof clusterPoolInfrastructureTypes[number]
 
 export const isClusterPoolInfrastructureType = (
-    infrastructureType: string
+  infrastructureType: string
 ): infrastructureType is ClusterPoolInfrastructureType =>
-    (clusterPoolInfrastructureTypes as unknown as string[]).includes(infrastructureType)
+  (clusterPoolInfrastructureTypes as unknown as string[]).includes(infrastructureType)
 
 export const CLUSTER_POOL_INFRA_TYPE_PARAM = 'type'

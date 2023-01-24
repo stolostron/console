@@ -8,21 +8,17 @@ import { EditArgoApplicationSet } from './CreateApplication/EditArgoApplicationS
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 export default function Applications() {
-    return (
-        <Switch>
-            <Route path={NavigationPath.createApplicationArgo} component={CreateApplicationArgo} />
-            <Route path={NavigationPath.editApplicationArgo} component={EditArgoApplicationSet} />
-            <Route
-                exact
-                path={NavigationPath.createApplicationSubscription}
-                component={CreateSubscriptionApplicationPage}
-            />
-            <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
-            <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
-            <Route path={NavigationPath.applications} component={ApplicationsPage} />
-            <Route path="*">
-                <Redirect to={NavigationPath.applications} />
-            </Route>
-        </Switch>
-    )
+  return (
+    <Switch>
+      <Route path={NavigationPath.createApplicationArgo} component={CreateApplicationArgo} />
+      <Route path={NavigationPath.editApplicationArgo} component={EditArgoApplicationSet} />
+      <Route exact path={NavigationPath.createApplicationSubscription} component={CreateSubscriptionApplicationPage} />
+      <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
+      <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
+      <Route path={NavigationPath.applications} component={ApplicationsPage} />
+      <Route path="*">
+        <Redirect to={NavigationPath.applications} />
+      </Route>
+    </Switch>
+  )
 }

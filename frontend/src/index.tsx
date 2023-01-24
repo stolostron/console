@@ -10,10 +10,10 @@ import App from './App'
 import '@patternfly/patternfly/patternfly-charts-theme-dark.css'
 
 ReactDOM.render(
-    <StrictMode>
-        <Suspense fallback={<Fragment />}>
-            <App />
-        </Suspense>
-    </StrictMode>,
-    document.getElementById('root')
+  <StrictMode>
+    <Suspense fallback={<Fragment />}>
+      <App />
+    </Suspense>
+  </StrictMode>,
+  document.getElementById('root')
 )

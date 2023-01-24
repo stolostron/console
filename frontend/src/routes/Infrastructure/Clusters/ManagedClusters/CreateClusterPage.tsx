@@ -7,12 +7,12 @@ import { CLUSTER_INFRA_TYPE_PARAM, isClusterInfrastructureType } from './Cluster
 import { CreateClusterCatalog } from './CreateClusterCatalog/CreateClusterCatalog'
 
 export function CreateClusterPage() {
-    const { search } = useLocation()
-    const searchParams = useMemo(() => new URLSearchParams(search), [search])
-    const infrastructureType = (searchParams.get(CLUSTER_INFRA_TYPE_PARAM) || '').toLowerCase()
-    return isClusterInfrastructureType(infrastructureType) ? (
-        <CreateCluster infrastructureType={infrastructureType} />
-    ) : (
-        <CreateClusterCatalog />
-    )
+  const { search } = useLocation()
+  const searchParams = useMemo(() => new URLSearchParams(search), [search])
+  const infrastructureType = (searchParams.get(CLUSTER_INFRA_TYPE_PARAM) || '').toLowerCase()
+  return isClusterInfrastructureType(infrastructureType) ? (
+    <CreateCluster infrastructureType={infrastructureType} />
+  ) : (
+    <CreateClusterCatalog />
+  )
 }

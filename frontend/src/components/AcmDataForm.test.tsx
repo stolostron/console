@@ -4,17 +4,15 @@ const t = i18next.t.bind(i18next)
 import { generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
 
 describe('ACMDataForm', () => {
-    describe('generalValidationMessage', () => {
-        test('generalValidationMessage should render the expected string', () => {
-            expect(generalValidationMessage(t)).toEqual('You must fix the issues with fields before you can proceed.')
-        })
+  describe('generalValidationMessage', () => {
+    test('generalValidationMessage should render the expected string', () => {
+      expect(generalValidationMessage(t)).toEqual('You must fix the issues with fields before you can proceed.')
     })
+  })
 
-    describe('requiredValidationMessage', () => {
-        test('requiredValidationMessage should render the expected string', () => {
-            expect(requiredValidationMessage(t)).toEqual(
-                'You must fill out all required fields before you can proceed.'
-            )
-        })
+  describe('requiredValidationMessage', () => {
+    test('requiredValidationMessage should render the expected string', () => {
+      expect(requiredValidationMessage(t)).toEqual('You must fill out all required fields before you can proceed.')
     })
+  })
 })

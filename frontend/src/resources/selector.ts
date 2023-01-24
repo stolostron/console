@@ -3,67 +3,67 @@
 import { IResource } from './resource'
 
 export interface MatchExpressions {
-    key: string
-    operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
-    values?: string[]
+  key: string
+  operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
+  values?: string[]
 }
 export interface Selector {
-    matchExpressions?: MatchExpressions[]
-    matchLabels?: Record<string, string>
+  matchExpressions?: MatchExpressions[]
+  matchLabels?: Record<string, string>
 }
 
 export function resourceMatchesSelector(resource: IResource, selector: Selector) {
-    const { matchLabels, matchExpressions } = selector
-    const labels = resource.metadata?.labels ?? {}
+  const { matchLabels, matchExpressions } = selector
+  const labels = resource.metadata?.labels ?? {}
 
-    if (matchLabels) {
-        for (const label in matchLabels) {
-            const value = matchLabels[label]
-            if (labels[label] !== value) {
-                return false
-            }
-        }
+  if (matchLabels) {
+    for (const label in matchLabels) {
+      const value = matchLabels[label]
+      if (labels[label] !== value) {
+        return false
+      }
     }
+  }
 
-    if (matchExpressions) {
-        for (const expression of matchExpressions) {
-            const { key, operator, values } = expression
-            switch (operator) {
-                case 'In': {
-                    const labelValue = labels[key]
-                    if (typeof values === 'string') {
-                        if (values !== labelValue) {
-                            return false
-                        }
-                    } else if (Array.isArray(values)) {
-                        if (!values.includes(labelValue)) {
-                            return false
-                        }
-                    }
-                    break
-                }
-                case 'NotIn': {
-                    const labelValue = labels[key]
-                    if (typeof values === 'string') {
-                        if (values === labelValue) {
-                            return false
-                        }
-                    } else if (Array.isArray(values)) {
-                        if (values.includes(labelValue)) {
-                            return false
-                        }
-                    }
-                    break
-                }
-                case 'Exists':
-                    if (!(key in labels)) return false
-                    break
-                case 'DoesNotExist':
-                    if (key in labels) return false
-                    break
+  if (matchExpressions) {
+    for (const expression of matchExpressions) {
+      const { key, operator, values } = expression
+      switch (operator) {
+        case 'In': {
+          const labelValue = labels[key]
+          if (typeof values === 'string') {
+            if (values !== labelValue) {
+              return false
             }
+          } else if (Array.isArray(values)) {
+            if (!values.includes(labelValue)) {
+              return false
+            }
+          }
+          break
         }
+        case 'NotIn': {
+          const labelValue = labels[key]
+          if (typeof values === 'string') {
+            if (values === labelValue) {
+              return false
+            }
+          } else if (Array.isArray(values)) {
+            if (values.includes(labelValue)) {
+              return false
+            }
+          }
+          break
+        }
+        case 'Exists':
+          if (!(key in labels)) return false
+          break
+        case 'DoesNotExist':
+          if (key in labels) return false
+          break
+      }
     }
+  }
 
-    return true
+  return true
 }
