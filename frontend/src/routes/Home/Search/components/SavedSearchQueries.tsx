@@ -2,13 +2,13 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import {
-    EmptyState,
-    EmptyStateBody,
-    EmptyStateIcon,
-    PageSection,
-    Stack,
-    StackItem,
-    Title,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
+  PageSection,
+  Stack,
+  StackItem,
+  Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useState } from 'react'
@@ -26,166 +26,156 @@ import { ShareSearchModal } from './Modals/ShareSearchModal'
 import { useSuggestedQueryTemplates } from './SuggestedQueryTemplates'
 
 export default function SavedSearchQueries(props: {
-    savedSearches: SavedSearch[]
-    setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
-    userPreference?: UserPreference
+  savedSearches: SavedSearch[]
+  setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
+  userPreference?: UserPreference
 }) {
-    const { savedSearches, setSelectedSearch, userPreference } = props
-    const { t } = useTranslation()
-    const history = useHistory()
-    const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
-    const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
-    const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
+  const { savedSearches, setSelectedSearch, userPreference } = props
+  const { t } = useTranslation()
+  const history = useHistory()
+  const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
+  const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
+  const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-    const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
-    // combine the suggested queries and saved queries
-    const input = [
-        ...savedSearches.map((query) => convertStringToQuery(query.searchText)),
-        ...suggestedQueryTemplates.map((query: { searchText: string }) => convertStringToQuery(query.searchText)),
-    ]
-    const { data, error, loading } = useSearchResultCountQuery({
-        variables: { input: input },
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    })
+  const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
+  // combine the suggested queries and saved queries
+  const input = [
+    ...savedSearches.map((query) => convertStringToQuery(query.searchText)),
+    ...suggestedQueryTemplates.map((query: { searchText: string }) => convertStringToQuery(query.searchText)),
+  ]
+  const { data, error, loading } = useSearchResultCountQuery({
+    variables: { input: input },
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+  })
 
-    const handleKeyPress = useCallback(
-        (KeyboardEvent: React.KeyboardEvent, query: SavedSearch) => {
-            if (KeyboardEvent.key === 'Enter' || KeyboardEvent.key === ' ') {
-                updateBrowserUrl(history, query.searchText)
-                setSelectedSearch(query.name)
-            }
-        },
-        [history, setSelectedSearch]
+  const handleKeyPress = useCallback(
+    (KeyboardEvent: React.KeyboardEvent, query: SavedSearch) => {
+      if (KeyboardEvent.key === 'Enter' || KeyboardEvent.key === ' ') {
+        updateBrowserUrl(history, query.searchText)
+        setSelectedSearch(query.name)
+      }
+    },
+    [history, setSelectedSearch]
+  )
+
+  if (loading) {
+    return (
+      <PageSection>
+        <AcmExpandableWrapper withCount={false} expandable={false}>
+          <AcmCountCard key={1} loading />
+          <AcmCountCard key={2} loading />
+          <AcmCountCard key={3} loading />
+        </AcmExpandableWrapper>
+      </PageSection>
     )
-
-    if (loading) {
-        return (
-            <PageSection>
-                <AcmExpandableWrapper withCount={false} expandable={false}>
-                    <AcmCountCard key={1} loading />
-                    <AcmCountCard key={2} loading />
-                    <AcmCountCard key={3} loading />
-                </AcmExpandableWrapper>
-            </PageSection>
-        )
-    } else if (error) {
-        return (
-            <PageSection>
-                <EmptyState>
-                    <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
-                    <Title size="lg" headingLevel="h4">
-                        {t('Query error related to saved search results.')}
-                    </Title>
-                    <EmptyStateBody>
-                        <Stack>
-                            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
-                            <StackItem>{error ? error.message : ''}</StackItem>
-                        </Stack>
-                    </EmptyStateBody>
-                </EmptyState>
-            </PageSection>
-        )
-    } else if (!loading && !error && (!data || !data.searchResult)) {
-        return <Fragment />
-    } else {
-        return (
-            <PageSection>
-                {editSavedSearch && (
-                    <SaveAndEditSearchModal
-                        setSelectedSearch={setSelectedSearch}
-                        savedSearch={editSavedSearch}
-                        onClose={() => setEditSavedSearch(undefined)}
-                        savedSearchQueries={savedSearches}
-                        userPreference={userPreference}
-                    />
-                )}
-                {shareSearch && (
-                    <ShareSearchModal shareSearch={shareSearch} onClose={() => setShareSearch(undefined)} />
-                )}
-                {deleteSearch && (
-                    <DeleteSearchModal
-                        onClose={() => setDeleteSearch(undefined)}
-                        searchToDelete={deleteSearch}
-                        userPreference={userPreference}
-                    />
-                )}
-                {savedSearches.length > 0 && (
-                    <AcmExpandableWrapper
-                        maxHeight={'16.5rem'}
-                        headerLabel={t('Saved searches')}
-                        withCount={false}
-                        expandable={true}
-                    >
-                        {savedSearches.map((savedSearch, index) => {
-                            return (
-                                <AcmCountCard
-                                    key={parseInt(savedSearch.id)}
-                                    cardHeader={{
-                                        hasIcon: false,
-                                        title: savedSearch.name,
-                                        description: savedSearch.description ?? '',
-                                        actions: [
-                                            {
-                                                text: t('Edit'),
-                                                handleAction: () => setEditSavedSearch(savedSearch),
-                                            },
-                                            {
-                                                text: t('Share'),
-                                                handleAction: () => setShareSearch(savedSearch),
-                                            },
-                                            {
-                                                text: t('Delete'),
-                                                handleAction: () => setDeleteSearch(savedSearch),
-                                            },
-                                        ],
-                                    }}
-                                    onCardClick={() => {
-                                        updateBrowserUrl(history, savedSearch.searchText)
-                                        setSelectedSearch(savedSearch.name)
-                                    }}
-                                    count={data?.searchResult?.[index]?.count ?? 0}
-                                    countTitle={t('Results')}
-                                    onKeyPress={(KeyboardEvent: React.KeyboardEvent) =>
-                                        handleKeyPress(KeyboardEvent, savedSearch)
-                                    }
-                                />
-                            )
-                        })}
-                    </AcmExpandableWrapper>
-                )}
-                <AcmExpandableWrapper
-                    headerLabel={t('Suggested search templates')}
-                    withCount={false}
-                    expandable={false}
-                >
-                    {suggestedQueryTemplates.map((query, index) => {
-                        return (
-                            <AcmCountCard
-                                key={index}
-                                cardHeader={{
-                                    hasIcon: true,
-                                    title: query.name,
-                                    description: query.description,
-                                    actions: [
-                                        {
-                                            text: t('Share'),
-                                            handleAction: () => setShareSearch(query),
-                                        },
-                                    ],
-                                }}
-                                onCardClick={() => {
-                                    updateBrowserUrl(history, query.searchText)
-                                }}
-                                count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
-                                countTitle={t('Results')}
-                                onKeyPress={(KeyboardEvent: React.KeyboardEvent) =>
-                                    handleKeyPress(KeyboardEvent, query)
-                                }
-                            />
-                        )
-                    })}
-                </AcmExpandableWrapper>
-            </PageSection>
-        )
-    }
+  } else if (error) {
+    return (
+      <PageSection>
+        <EmptyState>
+          <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+          <Title size="lg" headingLevel="h4">
+            {t('Query error related to saved search results.')}
+          </Title>
+          <EmptyStateBody>
+            <Stack>
+              <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+              <StackItem>{error ? error.message : ''}</StackItem>
+            </Stack>
+          </EmptyStateBody>
+        </EmptyState>
+      </PageSection>
+    )
+  } else if (!loading && !error && (!data || !data.searchResult)) {
+    return <Fragment />
+  } else {
+    return (
+      <PageSection>
+        {editSavedSearch && (
+          <SaveAndEditSearchModal
+            setSelectedSearch={setSelectedSearch}
+            savedSearch={editSavedSearch}
+            onClose={() => setEditSavedSearch(undefined)}
+            savedSearchQueries={savedSearches}
+            userPreference={userPreference}
+          />
+        )}
+        {shareSearch && <ShareSearchModal shareSearch={shareSearch} onClose={() => setShareSearch(undefined)} />}
+        {deleteSearch && (
+          <DeleteSearchModal
+            onClose={() => setDeleteSearch(undefined)}
+            searchToDelete={deleteSearch}
+            userPreference={userPreference}
+          />
+        )}
+        {savedSearches.length > 0 && (
+          <AcmExpandableWrapper
+            maxHeight={'16.5rem'}
+            headerLabel={t('Saved searches')}
+            withCount={false}
+            expandable={true}
+          >
+            {savedSearches.map((savedSearch, index) => {
+              return (
+                <AcmCountCard
+                  key={parseInt(savedSearch.id)}
+                  cardHeader={{
+                    hasIcon: false,
+                    title: savedSearch.name,
+                    description: savedSearch.description ?? '',
+                    actions: [
+                      {
+                        text: t('Edit'),
+                        handleAction: () => setEditSavedSearch(savedSearch),
+                      },
+                      {
+                        text: t('Share'),
+                        handleAction: () => setShareSearch(savedSearch),
+                      },
+                      {
+                        text: t('Delete'),
+                        handleAction: () => setDeleteSearch(savedSearch),
+                      },
+                    ],
+                  }}
+                  onCardClick={() => {
+                    updateBrowserUrl(history, savedSearch.searchText)
+                    setSelectedSearch(savedSearch.name)
+                  }}
+                  count={data?.searchResult?.[index]?.count ?? 0}
+                  countTitle={t('Results')}
+                  onKeyPress={(KeyboardEvent: React.KeyboardEvent) => handleKeyPress(KeyboardEvent, savedSearch)}
+                />
+              )
+            })}
+          </AcmExpandableWrapper>
+        )}
+        <AcmExpandableWrapper headerLabel={t('Suggested search templates')} withCount={false} expandable={false}>
+          {suggestedQueryTemplates.map((query, index) => {
+            return (
+              <AcmCountCard
+                key={index}
+                cardHeader={{
+                  hasIcon: true,
+                  title: query.name,
+                  description: query.description,
+                  actions: [
+                    {
+                      text: t('Share'),
+                      handleAction: () => setShareSearch(query),
+                    },
+                  ],
+                }}
+                onCardClick={() => {
+                  updateBrowserUrl(history, query.searchText)
+                }}
+                count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
+                countTitle={t('Results')}
+                onKeyPress={(KeyboardEvent: React.KeyboardEvent) => handleKeyPress(KeyboardEvent, query)}
+              />
+            )
+          })}
+        </AcmExpandableWrapper>
+      </PageSection>
+    )
+  }
 }

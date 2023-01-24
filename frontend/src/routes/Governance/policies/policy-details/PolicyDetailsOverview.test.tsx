@@ -8,67 +8,67 @@ import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 
 import {
-    mockPolicy,
-    mockPlacementBindings,
-    mockPlacementDecision,
-    mockPlacements,
-    mockPolicySets,
-    mockPendingPolicy,
+  mockPolicy,
+  mockPlacementBindings,
+  mockPlacementDecision,
+  mockPlacements,
+  mockPolicySets,
+  mockPendingPolicy,
 } from '../../governance.sharedMocks'
 
 describe('Policy Details Results', () => {
-    beforeEach(async () => {
-        nockIgnoreRBAC()
-        nockIgnoreApiPaths()
-    })
-    test('Should render Policy Details Results Page content correctly', async () => {
-        render(
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(placementsState, mockPlacements)
-                    snapshot.set(policySetsState, [mockPolicySets[0]])
-                    snapshot.set(placementBindingsState, mockPlacementBindings)
-                    snapshot.set(placementDecisionsState, mockPlacementDecision)
-                }}
-            >
-                <MemoryRouter>
-                    <PolicyDetailsOverview policy={mockPolicy[0]} />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  test('Should render Policy Details Results Page content correctly', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsOverview policy={mockPolicy[0]} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
 
-        // wait page load
-        await waitForText('policy-set-with-1-placement-policy')
+    // wait page load
+    await waitForText('policy-set-with-1-placement-policy')
 
-        // verify decsription card items
-        await waitForText('test')
-        await waitForText('Enabled')
-        await waitForText('inform')
+    // verify decsription card items
+    await waitForText('test')
+    await waitForText('Enabled')
+    await waitForText('inform')
 
-        // verify placement table
-        await waitForText('policy-set-with-1-placement')
-        await waitForText('Without violations:')
-    })
+    // verify placement table
+    await waitForText('policy-set-with-1-placement')
+    await waitForText('Without violations:')
+  })
 
-    test('Should render Policy Details Page content correctly for pending policy', async () => {
-        render(
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(placementsState, mockPlacements)
-                    snapshot.set(policySetsState, [mockPolicySets[0]])
-                    snapshot.set(placementBindingsState, mockPlacementBindings)
-                    snapshot.set(placementDecisionsState, mockPlacementDecision)
-                }}
-            >
-                <MemoryRouter>
-                    <PolicyDetailsOverview policy={mockPendingPolicy[0]} />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
+  test('Should render Policy Details Page content correctly for pending policy', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsOverview policy={mockPendingPolicy[0]} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
 
-        // wait page load
-        await waitForText('policy-set-with-1-placement-policy')
+    // wait page load
+    await waitForText('policy-set-with-1-placement-policy')
 
-        await waitForText('Pending:')
-    })
+    await waitForText('Pending:')
+  })
 })

@@ -6,4 +6,4 @@ export type ApplicationListColumn = ExtensionDeclaration<'acm.application/list/c
 
 // Type guards
 export const isApplicationListColumn = (e: Extension): e is ApplicationListColumn =>
-    e.type === 'acm.application/list/column'
+  e.type === 'acm.application/list/column'

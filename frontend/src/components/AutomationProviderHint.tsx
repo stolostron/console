@@ -9,81 +9,75 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 const WORKFLOW_SUPPORT_VERSION = '2.2.1'
 
 export function AutomationProviderHint(props: {
-    component: 'hint' | 'alert'
-    className?: string
-    /**
-     * Indicates no hint is required when the operator is not installed, but an upgrade hint may be displayed if workflow support is required and not met.
-     * Useful if a hint is already visible but the user is about to add an automation template that requires workflow job templates. */
-    operatorNotRequired?: boolean
-    /** Indicates whether to show an upgrade notice if installed operator version does not support workflow job templates.
-     * If not defined, defaults to true when any automation template uses workflow job templates. */
-    workflowSupportRequired?: boolean
+  component: 'hint' | 'alert'
+  className?: string
+  /**
+   * Indicates no hint is required when the operator is not installed, but an upgrade hint may be displayed if workflow support is required and not met.
+   * Useful if a hint is already visible but the user is about to add an automation template that requires workflow job templates. */
+  operatorNotRequired?: boolean
+  /** Indicates whether to show an upgrade notice if installed operator version does not support workflow job templates.
+   * If not defined, defaults to true when any automation template uses workflow job templates. */
+  workflowSupportRequired?: boolean
 }) {
-    const { ansibleOperatorSubscriptionsValue, clusterCuratorSupportedCurationsValue, clusterCuratorTemplatesValue } =
-        useSharedSelectors()
-    const ansibleOperators = useRecoilValue(ansibleOperatorSubscriptionsValue)
-    const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-    const clusterCuratorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
+  const { ansibleOperatorSubscriptionsValue, clusterCuratorSupportedCurationsValue, clusterCuratorTemplatesValue } =
+    useSharedSelectors()
+  const ansibleOperators = useRecoilValue(ansibleOperatorSubscriptionsValue)
+  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+  const clusterCuratorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
 
-    const workflowJobTemplatesInUse = clusterCuratorTemplates.some((template) =>
-        supportedCurations.some((curation) =>
-            (['prehook', 'posthook'] as const).some((hookType) =>
-                template?.spec?.[curation]?.[hookType]?.some((hook) => hook.type === 'Workflow')
-            )
-        )
+  const workflowJobTemplatesInUse = clusterCuratorTemplates.some((template) =>
+    supportedCurations.some((curation) =>
+      (['prehook', 'posthook'] as const).some((hookType) =>
+        template?.spec?.[curation]?.[hookType]?.some((hook) => hook.type === 'Workflow')
+      )
     )
+  )
 
-    const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
-    const showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
-    const showUpgradePrompt =
-        !!ansibleOperators.length &&
-        workflowSupportRequired &&
-        !showInstallPrompt &&
-        !ansibleOperators.some((operator) => {
-            try {
-                const version = coerce(operator?.status?.installedCSV)
-                return version && gte(version, WORKFLOW_SUPPORT_VERSION)
-            } catch (err) {
-                return false // assume too old
-            }
-        })
+  const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
+  const showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
+  const showUpgradePrompt =
+    !!ansibleOperators.length &&
+    workflowSupportRequired &&
+    !showInstallPrompt &&
+    !ansibleOperators.some((operator) => {
+      try {
+        const version = coerce(operator?.status?.installedCSV)
+        return version && gte(version, WORKFLOW_SUPPORT_VERSION)
+      } catch (err) {
+        return false // assume too old
+      }
+    })
 
-    const { t } = useTranslation()
+  const { t } = useTranslation()
 
-    const title = showInstallPrompt ? t('Operator required') : t('Operator upgrade required')
-    const message = showInstallPrompt
-        ? t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
-        : t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
-    const linkTarget = showInstallPrompt
-        ? '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-        : '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'
-    const link = (
-        <Link to={linkTarget} target={'_blank'}>
-            <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
-                {showInstallPrompt ? t('Install the operator') : t('View installed operators')}
-            </Button>
-        </Link>
-    )
+  const title = showInstallPrompt ? t('Operator required') : t('Operator upgrade required')
+  const message = showInstallPrompt
+    ? t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
+    : t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  const linkTarget = showInstallPrompt
+    ? '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+    : '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'
+  const link = (
+    <Link to={linkTarget} target={'_blank'}>
+      <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
+        {showInstallPrompt ? t('Install the operator') : t('View installed operators')}
+      </Button>
+    </Link>
+  )
 
-    return (
-        <>
-            {(showInstallPrompt || showUpgradePrompt) &&
-                (component === 'hint' ? (
-                    <Hint className={className}>
-                        <HintBody>{message}</HintBody>
-                        <HintFooter>{link}</HintFooter>
-                    </Hint>
-                ) : (
-                    <Alert
-                        className={className}
-                        isInline
-                        title={title}
-                        actionLinks={link}
-                        variant={AlertVariant.danger}
-                    >
-                        {message}
-                    </Alert>
-                ))}
-        </>
-    )
+  return (
+    <>
+      {(showInstallPrompt || showUpgradePrompt) &&
+        (component === 'hint' ? (
+          <Hint className={className}>
+            <HintBody>{message}</HintBody>
+            <HintFooter>{link}</HintFooter>
+          </Hint>
+        ) : (
+          <Alert className={className} isInline title={title} actionLinks={link} variant={AlertVariant.danger}>
+            {message}
+          </Alert>
+        ))}
+    </>
+  )
 }

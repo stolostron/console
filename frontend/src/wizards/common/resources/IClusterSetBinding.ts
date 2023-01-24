@@ -2,7 +2,7 @@
 import { IResource } from '@patternfly-labs/react-form-wizard'
 
 export type IClusterSetBinding = IResource & {
-    spec?: {
-        clusterSet?: string
-    }
+  spec?: {
+    clusterSet?: string
+  }
 }

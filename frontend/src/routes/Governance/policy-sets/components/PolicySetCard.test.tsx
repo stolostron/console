@@ -7,51 +7,51 @@ import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../
 import PolicySetCard from './PolicySetCard'
 
 const policySet: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1beta1',
-    kind: 'PolicySet',
-    metadata: {
-        annotations: {
-            'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"policy.open-cluster-management.io/v1","kind":"PolicySet","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"description":"Policy set with a single Placement and PlacementBinding.","policies":["policy-set-with-1-placement-policy-1","policy-set-with-1-placement-policy-2"]}}\n',
-        },
-        creationTimestamp: '2022-02-23T12:34:35Z',
-        name: 'policy-set-with-1-placement',
-        namespace: 'test',
-        uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+  apiVersion: 'policy.open-cluster-management.io/v1beta1',
+  kind: 'PolicySet',
+  metadata: {
+    annotations: {
+      'kubectl.kubernetes.io/last-applied-configuration':
+        '{"apiVersion":"policy.open-cluster-management.io/v1","kind":"PolicySet","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"description":"Policy set with a single Placement and PlacementBinding.","policies":["policy-set-with-1-placement-policy-1","policy-set-with-1-placement-policy-2"]}}\n',
     },
-    spec: {
-        description: 'Policy set with a single Placement and PlacementBinding.',
-        policies: ['policy-set-with-1-placement-policy-1', 'policy-set-with-1-placement-policy-2'],
-    },
-    status: {
-        compliant: 'Compliant',
-        placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        statusMessage: 'All policies are reporting status',
-    },
+    creationTimestamp: '2022-02-23T12:34:35Z',
+    name: 'policy-set-with-1-placement',
+    namespace: 'test',
+    uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+  },
+  spec: {
+    description: 'Policy set with a single Placement and PlacementBinding.',
+    policies: ['policy-set-with-1-placement-policy-1', 'policy-set-with-1-placement-policy-2'],
+  },
+  status: {
+    compliant: 'Compliant',
+    placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
+    statusMessage: 'All policies are reporting status',
+  },
 }
 
 const policySetPending: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1beta1',
-    kind: 'PolicySet',
-    metadata: {
-        annotations: {
-            'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"policy.open-cluster-management.io/v1","kind":"PolicySet","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"description":"Policy set with a single Placement and PlacementBinding.","policies":["policy-set-with-1-placement-policy-1","policy-set-with-1-placement-policy-2"]}}\n',
-        },
-        creationTimestamp: '2022-02-23T12:34:35Z',
-        name: 'policy-set-with-1-placement',
-        namespace: 'test',
-        uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+  apiVersion: 'policy.open-cluster-management.io/v1beta1',
+  kind: 'PolicySet',
+  metadata: {
+    annotations: {
+      'kubectl.kubernetes.io/last-applied-configuration':
+        '{"apiVersion":"policy.open-cluster-management.io/v1","kind":"PolicySet","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"description":"Policy set with a single Placement and PlacementBinding.","policies":["policy-set-with-1-placement-policy-1","policy-set-with-1-placement-policy-2"]}}\n',
     },
-    spec: {
-        description: 'Policy set with a single Placement and PlacementBinding.',
-        policies: ['policy-set-with-1-placement-policy-1', 'policy-set-with-1-placement-policy-2'],
-    },
-    status: {
-        compliant: 'Pending',
-        placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        statusMessage: 'Policies awaiting pending dependencies: policy-pending',
-    },
+    creationTimestamp: '2022-02-23T12:34:35Z',
+    name: 'policy-set-with-1-placement',
+    namespace: 'test',
+    uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+  },
+  spec: {
+    description: 'Policy set with a single Placement and PlacementBinding.',
+    policies: ['policy-set-with-1-placement-policy-1', 'policy-set-with-1-placement-policy-2'],
+  },
+  status: {
+    compliant: 'Pending',
+    placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
+    statusMessage: 'Policies awaiting pending dependencies: policy-pending',
+  },
 }
 
 export const mockPolicySets: PolicySet[] = []
@@ -60,55 +60,55 @@ export const mockPlacementRules: PlacementRule[] = []
 export const mockPlacementBindings: PlacementBinding[] = []
 
 describe('Policy Set Card', () => {
-    test('Should render Policy Set Card content correctly', async () => {
-        render(
-            <RecoilRoot>
-                <MemoryRouter>
-                    <PolicySetCard
-                        policySet={policySet}
-                        selectedCardID={''}
-                        setSelectedCardID={() => {}}
-                        canEditPolicySet={true}
-                        canDeletePolicySet={true}
-                    />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
+  test('Should render Policy Set Card content correctly', async () => {
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySet}
+            selectedCardID={''}
+            setSelectedCardID={() => {}}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
 
-        // wait card title - PolicySet name
-        await waitForText('policy-set-with-1-placement')
-        // wait card desc - PolicySet desc
-        await waitForText('Policy set with a single Placement and PlacementBinding.')
-        // wait card compliance status
-        await waitForText('No violations')
-        // wait status message
-        await waitForText('All policies are reporting status')
-    })
+    // wait card title - PolicySet name
+    await waitForText('policy-set-with-1-placement')
+    // wait card desc - PolicySet desc
+    await waitForText('Policy set with a single Placement and PlacementBinding.')
+    // wait card compliance status
+    await waitForText('No violations')
+    // wait status message
+    await waitForText('All policies are reporting status')
+  })
 })
 
 describe('Policy Set Card for Pending policy', () => {
-    test('Should render Policy Set Card content correctly', async () => {
-        render(
-            <RecoilRoot>
-                <MemoryRouter>
-                    <PolicySetCard
-                        policySet={policySetPending}
-                        selectedCardID={''}
-                        setSelectedCardID={() => {}}
-                        canEditPolicySet={true}
-                        canDeletePolicySet={true}
-                    />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
+  test('Should render Policy Set Card content correctly', async () => {
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySetPending}
+            selectedCardID={''}
+            setSelectedCardID={() => {}}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
 
-        // wait card title - PolicySet name
-        await waitForText('policy-set-with-1-placement')
-        // wait card desc - PolicySet desc
-        await waitForText('Policy set with a single Placement and PlacementBinding.')
-        // wait card compliance status
-        await waitForText('Pending')
-        // wait status message
-        await waitForText('Policies awaiting pending dependencies: policy-pending')
-    })
+    // wait card title - PolicySet name
+    await waitForText('policy-set-with-1-placement')
+    // wait card desc - PolicySet desc
+    await waitForText('Policy set with a single Placement and PlacementBinding.')
+    // wait card compliance status
+    await waitForText('Pending')
+    // wait status message
+    await waitForText('Policies awaiting pending dependencies: policy-pending')
+  })
 })

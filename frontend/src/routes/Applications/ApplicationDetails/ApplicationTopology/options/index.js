@@ -20,24 +20,24 @@ import { updateNodeIcons, updateNodeStatus } from './status.js'
 import { getAllFilters, getAvailableFilters, getSearchFilter, filterNodes } from './filtering.js'
 
 export const getOptions = () => {
-    return {
-        typeToShapeMap: defaultShapes,
-        diagramOptions: {
-            showLineLabels: true, // show labels on lines
-            showGroupTitles: false, // show titles over sections
-        },
-        computeNodeStatus,
-        getNodeDescription,
-        getNodeTitle,
-        getSectionTitles,
-        getNodeDetails,
-        updateNodeStatus,
-        updateNodeIcons,
-        getAllFilters,
-        getAvailableFilters,
-        getSearchFilter,
-        filterNodes,
-        getConnectedLayoutOptions,
-        getUnconnectedLayoutOptions,
-    }
+  return {
+    typeToShapeMap: defaultShapes,
+    diagramOptions: {
+      showLineLabels: true, // show labels on lines
+      showGroupTitles: false, // show titles over sections
+    },
+    computeNodeStatus,
+    getNodeDescription,
+    getNodeTitle,
+    getSectionTitles,
+    getNodeDetails,
+    updateNodeStatus,
+    updateNodeIcons,
+    getAllFilters,
+    getAvailableFilters,
+    getSearchFilter,
+    filterNodes,
+    getConnectedLayoutOptions,
+    getUnconnectedLayoutOptions,
+  }
 }

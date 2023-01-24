@@ -23,183 +23,183 @@ import HelmIcom from '../../logos/HelmIcon.svg'
 import ObjectStore from '../../logos/ObjectStore.svg'
 
 export const loadExistingNamespaces = (t) => {
-    return {
-        query: () => {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const namespaces = await listProjects().promise
-                    resolve(namespaces)
-                } catch (err) {
-                    reject(err)
-                }
-            })
-        },
-        loadingDesc: t('Loading namespaces...'),
-        setAvailable: setAvailableNSSpecs.bind(null),
-    }
+  return {
+    query: () => {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const namespaces = await listProjects().promise
+          resolve(namespaces)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    loadingDesc: t('Loading namespaces...'),
+    setAvailable: setAvailableNSSpecs.bind(null),
+  }
 }
 
 export const updateNameControls = (nameControl, globalControl) => {
-    const channelsControl = globalControl.find(({ id }) => id === 'channels')
-    channelsControl?.active.forEach((subscription) => {
-        const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
-        if (!placementCheckbox?.active) {
-            const rule = subscription.find(({ id }) => id === 'selectedRuleName')
-            if (rule?.active) rule.active = undefined
-        }
-    })
+  const channelsControl = globalControl.find(({ id }) => id === 'channels')
+  channelsControl?.active.forEach((subscription) => {
+    const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
+    if (!placementCheckbox?.active) {
+      const rule = subscription.find(({ id }) => id === 'selectedRuleName')
+      if (rule?.active) rule.active = undefined
+    }
+  })
 }
 
 export const updateNSControls = (nsControl, globalControl) => {
-    const { active, available = [] } = nsControl
+  const { active, available = [] } = nsControl
 
-    const userDefinedNSControl = globalControl.find(({ id }) => id === 'userDefinedNamespace')
+  const userDefinedNSControl = globalControl.find(({ id }) => id === 'userDefinedNamespace')
 
-    userDefinedNSControl.active = available.includes(active) ? '' : active
-    return updateControlsForNS(nsControl, nsControl, globalControl)
+  userDefinedNSControl.active = available.includes(active) ? '' : active
+  return updateControlsForNS(nsControl, nsControl, globalControl)
 }
 
 export const controlData = (isLocalCluster, handleModalToggle, t) => {
-    return [
+  return [
+    {
+      id: 'showSecrets',
+      type: 'hidden',
+      active: false,
+    },
+    {
+      name: t('creation.app.name'),
+      tooltip: t('tooltip.creation.app.name'),
+      id: 'name',
+      type: 'text',
+      editing: { disabled: true }, // if editing existing app, disable this field
+      onSelect: updateNameControls,
+      validation: {
+        constraint: VALID_DNS_LABEL,
+        notification: t('import.form.invalid.dns.label'),
+        required: true,
+      },
+      reverse: 'Application[0].metadata.name',
+    },
+    {
+      name: t('creation.app.namespace'),
+      tooltip: t('tooltip.creation.app.namespace'),
+      id: 'namespace',
+      type: 'combobox',
+      fetchAvailable: loadExistingNamespaces(t),
+      editing: { disabled: true }, // if editing existing app, disable this field
+      onSelect: updateNSControls,
+      validation: {
+        constraint: VALID_DNS_LABEL,
+        notification: t('import.form.invalid.dns.label'),
+        required: true,
+      },
+      reverse: 'Application[0].metadata.namespace',
+    },
+    {
+      id: 'userDefinedNamespace',
+      type: 'hidden',
+      active: '',
+    },
+    {
+      id: 'selfLink',
+      type: 'hidden',
+      active: '',
+    },
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  channels  /////////////////////////////////////
+    {
+      id: 'channelSection',
+      type: 'section',
+      title: t('creation.app.channels'),
+      collapsable: true,
+      collapsed: false,
+    },
+    ///////////////////////  channels  /////////////////////////////////////
+    {
+      id: 'channels',
+      type: 'group',
+      prompts: {
+        nameId: 'channelPrompt',
+        baseName: t('resource'),
+        addPrompt: t('creation.app.add.channel'),
+        deletePrompt: t('creation.app.delete.channel'),
+      },
+      discover: discoverGroupsFromSource,
+      shift: shiftTemplateObject,
+      controlData: [
         {
-            id: 'showSecrets',
-            type: 'hidden',
-            active: false,
+          id: 'channel',
+          type: 'section',
+          title: t('creation.app.channel.title'),
+          collapsable: true,
+          collapsed: false,
+          subgroup: true,
+          info: getSharedSubscriptionWarning,
+          editing: { editMode: true },
+        },
+        ///////////////////////  channel name  /////////////////////////////////////
+        {
+          id: 'channelPrompt',
+          type: 'hidden',
+          active: '',
         },
         {
-            name: t('creation.app.name'),
-            tooltip: t('tooltip.creation.app.name'),
-            id: 'name',
-            type: 'text',
-            editing: { disabled: true }, // if editing existing app, disable this field
-            onSelect: updateNameControls,
-            validation: {
-                constraint: VALID_DNS_LABEL,
-                notification: t('import.form.invalid.dns.label'),
-                required: true,
+          id: 'selfLinks',
+          type: 'hidden',
+          active: '',
+        },
+        {
+          id: 'channelType',
+          type: 'cards',
+          sort: false,
+          collapseCardsControlOnSelect: true,
+          scrollViewToTopOnSelect: true,
+          title: t('creation.app.channel.type'),
+          collapsable: true,
+          collapsed: false,
+          available: [
+            {
+              id: 'github',
+              logo: <GitAltIcon />,
+              title: t('channel.type.git'),
+              tooltip: t('tooltip.creation.app.channel.git'),
+              change: {
+                insertControlData: gitChannelData(isLocalCluster, handleModalToggle, t),
+              },
             },
-            reverse: 'Application[0].metadata.name',
-        },
-        {
-            name: t('creation.app.namespace'),
-            tooltip: t('tooltip.creation.app.namespace'),
-            id: 'namespace',
-            type: 'combobox',
-            fetchAvailable: loadExistingNamespaces(t),
-            editing: { disabled: true }, // if editing existing app, disable this field
-            onSelect: updateNSControls,
-            validation: {
-                constraint: VALID_DNS_LABEL,
-                notification: t('import.form.invalid.dns.label'),
-                required: true,
+            {
+              id: 'helmrepo',
+              logo: <HelmIcom />,
+              title: t('channel.type.helmrepo'),
+              tooltip: t('tooltip.channel.type.helmrepo'),
+              change: {
+                insertControlData: helmReleaseChannelData(isLocalCluster, t),
+              },
             },
-            reverse: 'Application[0].metadata.namespace',
-        },
-        {
-            id: 'userDefinedNamespace',
-            type: 'hidden',
-            active: '',
-        },
-        {
-            id: 'selfLink',
-            type: 'hidden',
-            active: '',
-        },
-        ////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////  channels  /////////////////////////////////////
-        {
-            id: 'channelSection',
-            type: 'section',
-            title: t('creation.app.channels'),
-            collapsable: true,
-            collapsed: false,
-        },
-        ///////////////////////  channels  /////////////////////////////////////
-        {
-            id: 'channels',
-            type: 'group',
-            prompts: {
-                nameId: 'channelPrompt',
-                baseName: t('resource'),
-                addPrompt: t('creation.app.add.channel'),
-                deletePrompt: t('creation.app.delete.channel'),
+            {
+              id: 'objectstore',
+              logo: <ObjectStore />,
+              title: t('channel.type.objectbucket'),
+              tooltip: t('tooltip.channel.type.objectbucket'),
+              change: {
+                insertControlData: objectstoreChannelData(isLocalCluster, t),
+              },
             },
-            discover: discoverGroupsFromSource,
-            shift: shiftTemplateObject,
-            controlData: [
-                {
-                    id: 'channel',
-                    type: 'section',
-                    title: t('creation.app.channel.title'),
-                    collapsable: true,
-                    collapsed: false,
-                    subgroup: true,
-                    info: getSharedSubscriptionWarning,
-                    editing: { editMode: true },
-                },
-                ///////////////////////  channel name  /////////////////////////////////////
-                {
-                    id: 'channelPrompt',
-                    type: 'hidden',
-                    active: '',
-                },
-                {
-                    id: 'selfLinks',
-                    type: 'hidden',
-                    active: '',
-                },
-                {
-                    id: 'channelType',
-                    type: 'cards',
-                    sort: false,
-                    collapseCardsControlOnSelect: true,
-                    scrollViewToTopOnSelect: true,
-                    title: t('creation.app.channel.type'),
-                    collapsable: true,
-                    collapsed: false,
-                    available: [
-                        {
-                            id: 'github',
-                            logo: <GitAltIcon />,
-                            title: t('channel.type.git'),
-                            tooltip: t('tooltip.creation.app.channel.git'),
-                            change: {
-                                insertControlData: gitChannelData(isLocalCluster, handleModalToggle, t),
-                            },
-                        },
-                        {
-                            id: 'helmrepo',
-                            logo: <HelmIcom />,
-                            title: t('channel.type.helmrepo'),
-                            tooltip: t('tooltip.channel.type.helmrepo'),
-                            change: {
-                                insertControlData: helmReleaseChannelData(isLocalCluster, t),
-                            },
-                        },
-                        {
-                            id: 'objectstore',
-                            logo: <ObjectStore />,
-                            title: t('channel.type.objectbucket'),
-                            tooltip: t('tooltip.channel.type.objectbucket'),
-                            change: {
-                                insertControlData: objectstoreChannelData(isLocalCluster, t),
-                            },
-                        },
-                        {
-                            id: 'other',
-                            logo: <UnknownIcon />,
-                            title: t('channel.type.other'),
-                            tooltip: t('tooltip.channel.type.other'),
-                            hidden: true, // only show this if editing existing app
-                            change: {
-                                insertControlData: otherChannelData(isLocalCluster, t),
-                            },
-                        },
-                    ],
-                    active: '',
-                    validation: {},
-                },
-            ],
+            {
+              id: 'other',
+              logo: <UnknownIcon />,
+              title: t('channel.type.other'),
+              tooltip: t('tooltip.channel.type.other'),
+              hidden: true, // only show this if editing existing app
+              change: {
+                insertControlData: otherChannelData(isLocalCluster, t),
+              },
+            },
+          ],
+          active: '',
+          validation: {},
         },
-    ]
+      ],
+    },
+  ]
 }

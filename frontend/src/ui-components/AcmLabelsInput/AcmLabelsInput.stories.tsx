@@ -6,29 +6,29 @@ import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLabelsInput } from './AcmLabelsInput'
 
 export default {
-    title: 'LabelsInput',
-    component: AcmLabelsInput,
-    argTypes: {
-        isDisabled: { control: 'boolean' },
-    },
+  title: 'LabelsInput',
+  component: AcmLabelsInput,
+  argTypes: {
+    isDisabled: { control: 'boolean' },
+  },
 }
 
 export const LabelsInput = (args: any) => {
-    const [value, setValue] = useState<Record<string, string> | undefined>({})
-    return (
-        <AcmPageCard>
-            <AcmForm>
-                <AcmLabelsInput
-                    label="Labels Input"
-                    id="labels-input"
-                    isDisabled={args.isDisabled}
-                    value={value}
-                    onChange={setValue}
-                    buttonLabel="Add label"
-                    placeholder="Enter key=value, then press enter, space, or comma"
-                />
-            </AcmForm>
-        </AcmPageCard>
-    )
+  const [value, setValue] = useState<Record<string, string> | undefined>({})
+  return (
+    <AcmPageCard>
+      <AcmForm>
+        <AcmLabelsInput
+          label="Labels Input"
+          id="labels-input"
+          isDisabled={args.isDisabled}
+          value={value}
+          onChange={setValue}
+          buttonLabel="Add label"
+          placeholder="Enter key=value, then press enter, space, or comma"
+        />
+      </AcmForm>
+    </AcmPageCard>
+  )
 }
 LabelsInput.args = { isDisabled: false }

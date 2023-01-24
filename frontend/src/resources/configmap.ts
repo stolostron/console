@@ -10,13 +10,13 @@ export const ConfigMapKind = 'ConfigMap'
 export type ConfigMapKindType = 'ConfigMap'
 
 export const ConfigMapDefinition: IResourceDefinition = {
-    apiVersion: ConfigMapApiVersion,
-    kind: ConfigMapKind,
+  apiVersion: ConfigMapApiVersion,
+  kind: ConfigMapKind,
 }
 
 export interface ConfigMap extends IResource {
-    apiVersion: ConfigMapApiVersionType
-    kind: ConfigMapKindType
-    metadata: Metadata
-    data?: Record<string, any>
+  apiVersion: ConfigMapApiVersionType
+  kind: ConfigMapKindType
+  metadata: Metadata
+  data?: Record<string, any>
 }

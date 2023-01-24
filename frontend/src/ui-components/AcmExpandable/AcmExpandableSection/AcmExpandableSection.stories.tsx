@@ -3,10 +3,10 @@
 import { AcmExpandableSection } from './AcmExpandableSection'
 
 export default {
-    title: 'Expandable',
-    component: AcmExpandableSection,
+  title: 'Expandable',
+  component: AcmExpandableSection,
 }
 
 export const ExpandableSection = () => (
-    <AcmExpandableSection label="Expandable Label">Expandable Content</AcmExpandableSection>
+  <AcmExpandableSection label="Expandable Label">Expandable Content</AcmExpandableSection>
 )

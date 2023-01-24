@@ -22,76 +22,76 @@ export const ClusterRoleBindingKind = 'ClusterRoleBinding'
 export type ClusterRoleBindingKindType = 'ClusterRoleBinding'
 
 export const UserDefinition: IResourceDefinition = {
-    apiVersion: UserApiVersion,
-    kind: UserKind,
+  apiVersion: UserApiVersion,
+  kind: UserKind,
 }
 
 export const GroupDefinition: IResourceDefinition = {
-    apiVersion: UserApiVersion,
-    kind: GroupKind,
+  apiVersion: UserApiVersion,
+  kind: GroupKind,
 }
 
 export const ClusterRoleDefinition: IResourceDefinition = {
-    apiVersion: RbacApiVersion,
-    kind: ClusterRoleKind,
+  apiVersion: RbacApiVersion,
+  kind: ClusterRoleKind,
 }
 
 export const ClusterRoleBindingDefinition: IResourceDefinition = {
-    apiVersion: RbacApiVersion,
-    kind: ClusterRoleBindingKind,
+  apiVersion: RbacApiVersion,
+  kind: ClusterRoleBindingKind,
 }
 
 export interface User {
-    apiVersion: UserApiVersionType
-    kind: UserKindType
-    metadata: Metadata
-    identities: string[]
-    groups: string[]
+  apiVersion: UserApiVersionType
+  kind: UserKindType
+  metadata: Metadata
+  identities: string[]
+  groups: string[]
 }
 
 export interface Group {
-    apiVersion: UserApiVersionType
-    kind: GroupKindType
-    metadata: Metadata
-    users: string[]
+  apiVersion: UserApiVersionType
+  kind: GroupKindType
+  metadata: Metadata
+  users: string[]
 }
 
 export interface ClusterRole {
-    apiVersion: RbacApiVersionType
-    kind: ClusterRoleKindType
-    metadata: Metadata
-    rules: {
-        verbs: string[]
-        apiGroups: string[]
-        resources: string[]
-        resourceNames: string[]
-    }[]
+  apiVersion: RbacApiVersionType
+  kind: ClusterRoleKindType
+  metadata: Metadata
+  rules: {
+    verbs: string[]
+    apiGroups: string[]
+    resources: string[]
+    resourceNames: string[]
+  }[]
 }
 
 export interface ClusterRoleBinding {
-    apiVersion: RbacApiVersionType
-    kind: ClusterRoleBindingKindType
-    metadata: Metadata
-    subjects: {
-        kind: 'User' | 'Group'
-        apiGroup: 'rbac.authorization.k8s.io'
-        name: string
-    }[]
-    roleRef: {
-        apiGroup: 'rbac.authorization.k8s.io'
-        kind: ClusterRoleKindType
-        name: string
-    }
+  apiVersion: RbacApiVersionType
+  kind: ClusterRoleBindingKindType
+  metadata: Metadata
+  subjects: {
+    kind: 'User' | 'Group'
+    apiGroup: 'rbac.authorization.k8s.io'
+    name: string
+  }[]
+  roleRef: {
+    apiGroup: 'rbac.authorization.k8s.io'
+    kind: ClusterRoleKindType
+    name: string
+  }
 }
 
 export function listClusterRoleBindings() {
-    return listResources<ClusterRoleBinding>(ClusterRoleBindingDefinition)
+  return listResources<ClusterRoleBinding>(ClusterRoleBindingDefinition)
 }
 
 export function listUsers() {
-    return listResources<User>(UserDefinition)
+  return listResources<User>(UserDefinition)
 }
 
 export function listGroups() {
-    return listResources<Group>(GroupDefinition)
+  return listResources<Group>(GroupDefinition)
 }

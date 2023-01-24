@@ -12,288 +12,288 @@ import { updateBrowserUrl } from '../urlQuery'
 import { convertStringToTags, DropdownSuggestionsProps, Searchbar } from './Searchbar'
 
 export const BlankSearchbar = () => {
-    const [currentQuery, setCurrentQuery] = useState('')
+  const [currentQuery, setCurrentQuery] = useState('')
 
-    const suggestions: DropdownSuggestionsProps[] = useMemo(() => {
-        const tags = convertStringToTags(currentQuery)
-        const lastTag = tags[tags.length - 1]
-        if (!lastTag || !lastTag.name.endsWith(':')) {
-            return [
-                {
-                    id: 'id-suggestions-label',
-                    key: 'key-suggestions-label',
-                    name: 'Filters',
-                    kind: 'filter',
-                    disabled: true,
-                },
-                {
-                    id: 'id-kind',
-                    key: 'key-kind',
-                    name: 'kind',
-                    kind: 'filter',
-                },
-                {
-                    id: 'id-name',
-                    key: 'key-name',
-                    name: 'name',
-                    kind: 'filter',
-                },
-                {
-                    id: 'id-namespace',
-                    key: 'key-namespace',
-                    name: 'namespace',
-                    kind: 'filter',
-                },
-            ]
-        }
-        if (lastTag && lastTag.name.includes('kind:')) {
-            return [
-                { id: '1', name: 'Values', kind: 'label', disabled: true },
-                { id: '2', name: 'Pod', kind: 'value' },
-                { id: '3', name: 'Deployment', kind: 'value' },
-                { id: '4', name: 'Cluster', kind: 'value' },
-                { id: '7', name: 'Application', kind: 'value' },
-            ]
-        } else if (lastTag && lastTag.name.includes('name:')) {
-            return [
-                { id: '1', name: 'Values', kind: 'label', disabled: true },
-                { id: '2', name: 'name1', kind: 'value' },
-                { id: '3', name: 'name2', kind: 'value' },
-                { id: '4', name: 'name3', kind: 'value' },
-            ]
-        } else if (lastTag && lastTag.name.includes('namespace:')) {
-            return [
-                { id: '1', name: 'Values', kind: 'label', disabled: true },
-                { id: '2', name: 'namespace1', kind: 'value' },
-                { id: '3', name: 'namespace2', kind: 'value' },
-                { id: '4', name: 'namespace3', kind: 'value' },
-            ]
-        }
-        return [{ id: '1', name: 'No filters', kind: 'label', disabled: true }]
-    }, [currentQuery])
+  const suggestions: DropdownSuggestionsProps[] = useMemo(() => {
+    const tags = convertStringToTags(currentQuery)
+    const lastTag = tags[tags.length - 1]
+    if (!lastTag || !lastTag.name.endsWith(':')) {
+      return [
+        {
+          id: 'id-suggestions-label',
+          key: 'key-suggestions-label',
+          name: 'Filters',
+          kind: 'filter',
+          disabled: true,
+        },
+        {
+          id: 'id-kind',
+          key: 'key-kind',
+          name: 'kind',
+          kind: 'filter',
+        },
+        {
+          id: 'id-name',
+          key: 'key-name',
+          name: 'name',
+          kind: 'filter',
+        },
+        {
+          id: 'id-namespace',
+          key: 'key-namespace',
+          name: 'namespace',
+          kind: 'filter',
+        },
+      ]
+    }
+    if (lastTag && lastTag.name.includes('kind:')) {
+      return [
+        { id: '1', name: 'Values', kind: 'label', disabled: true },
+        { id: '2', name: 'Pod', kind: 'value' },
+        { id: '3', name: 'Deployment', kind: 'value' },
+        { id: '4', name: 'Cluster', kind: 'value' },
+        { id: '7', name: 'Application', kind: 'value' },
+      ]
+    } else if (lastTag && lastTag.name.includes('name:')) {
+      return [
+        { id: '1', name: 'Values', kind: 'label', disabled: true },
+        { id: '2', name: 'name1', kind: 'value' },
+        { id: '3', name: 'name2', kind: 'value' },
+        { id: '4', name: 'name3', kind: 'value' },
+      ]
+    } else if (lastTag && lastTag.name.includes('namespace:')) {
+      return [
+        { id: '1', name: 'Values', kind: 'label', disabled: true },
+        { id: '2', name: 'namespace1', kind: 'value' },
+        { id: '3', name: 'namespace2', kind: 'value' },
+        { id: '4', name: 'namespace3', kind: 'value' },
+      ]
+    }
+    return [{ id: '1', name: 'No filters', kind: 'label', disabled: true }]
+  }, [currentQuery])
 
-    return (
-        <RecoilRoot>
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={[]}>
-                    <Searchbar
-                        loadingSuggestions={false}
-                        queryString={''}
-                        saveSearchTooltip={''}
-                        setSaveSearch={() => {}}
-                        suggestions={suggestions}
-                        currentQueryCallback={(updatedQuery) => {
-                            setCurrentQuery(updatedQuery)
-                        }}
-                        toggleInfoModal={() => null}
-                        updateBrowserUrl={updateBrowserUrl}
-                        savedSearchQueries={[
-                            {
-                                description: '',
-                                id: '1234567890',
-                                name: 'All pods',
-                                searchText: 'kind:Pod',
-                            },
-                        ]}
-                    />
-                </MockedProvider>
-            </Router>
-        </RecoilRoot>
-    )
+  return (
+    <RecoilRoot>
+      <Router history={createBrowserHistory()}>
+        <MockedProvider mocks={[]}>
+          <Searchbar
+            loadingSuggestions={false}
+            queryString={''}
+            saveSearchTooltip={''}
+            setSaveSearch={() => {}}
+            suggestions={suggestions}
+            currentQueryCallback={(updatedQuery) => {
+              setCurrentQuery(updatedQuery)
+            }}
+            toggleInfoModal={() => null}
+            updateBrowserUrl={updateBrowserUrl}
+            savedSearchQueries={[
+              {
+                description: '',
+                id: '1234567890',
+                name: 'All pods',
+                searchText: 'kind:Pod',
+              },
+            ]}
+          />
+        </MockedProvider>
+      </Router>
+    </RecoilRoot>
+  )
 }
 
 const LoadingSearchbar = () => (
-    <RecoilRoot>
-        <Router history={createBrowserHistory()}>
-            <MockedProvider mocks={[]}>
-                <Searchbar
-                    loadingSuggestions={true}
-                    queryString={''}
-                    saveSearchTooltip={''}
-                    setSaveSearch={() => {}}
-                    suggestions={[
-                        {
-                            id: 'id-suggestions-label',
-                            name: 'Filters',
-                            kind: 'filter',
-                            disabled: true,
-                        },
-                    ]}
-                    currentQueryCallback={(query: string) => query}
-                    toggleInfoModal={() => null}
-                    updateBrowserUrl={updateBrowserUrl}
-                    savedSearchQueries={[
-                        {
-                            description: '',
-                            id: '1234567890',
-                            name: 'All pods',
-                            searchText: 'kind:Pod',
-                        },
-                    ]}
-                />
-            </MockedProvider>
-        </Router>
-    </RecoilRoot>
+  <RecoilRoot>
+    <Router history={createBrowserHistory()}>
+      <MockedProvider mocks={[]}>
+        <Searchbar
+          loadingSuggestions={true}
+          queryString={''}
+          saveSearchTooltip={''}
+          setSaveSearch={() => {}}
+          suggestions={[
+            {
+              id: 'id-suggestions-label',
+              name: 'Filters',
+              kind: 'filter',
+              disabled: true,
+            },
+          ]}
+          currentQueryCallback={(query: string) => query}
+          toggleInfoModal={() => null}
+          updateBrowserUrl={updateBrowserUrl}
+          savedSearchQueries={[
+            {
+              description: '',
+              id: '1234567890',
+              name: 'All pods',
+              searchText: 'kind:Pod',
+            },
+          ]}
+        />
+      </MockedProvider>
+    </Router>
+  </RecoilRoot>
 )
 
 const PrefilledSearchbar = () => (
-    <RecoilRoot>
-        <Router history={createBrowserHistory()}>
-            <MockedProvider mocks={[]}>
-                <Searchbar
-                    loadingSuggestions={false}
-                    queryString={'kind:Pod name:name1'}
-                    saveSearchTooltip={''}
-                    setSaveSearch={() => {}}
-                    suggestions={[
-                        {
-                            id: 'id-suggestions-label',
-                            name: 'Filters',
-                            kind: 'filter',
-                            disabled: true,
-                        },
-                        {
-                            id: 'id-cluster',
-                            name: 'cluster',
-                            kind: 'filter',
-                        },
-                        {
-                            id: 'id-kind',
-                            name: 'kind',
-                            kind: 'filter',
-                        },
-                        {
-                            id: 'id-name',
-                            name: 'name',
-                            kind: 'filter',
-                        },
-                        {
-                            id: 'id-namespace',
-                            name: 'namespace',
-                            kind: 'filter',
-                        },
-                    ]}
-                    currentQueryCallback={(query: string) => query}
-                    toggleInfoModal={() => null}
-                    updateBrowserUrl={updateBrowserUrl}
-                    savedSearchQueries={[
-                        {
-                            description: '',
-                            id: '1234567890',
-                            name: 'All pods',
-                            searchText: 'kind:Pod',
-                        },
-                    ]}
-                />
-            </MockedProvider>
-        </Router>
-    </RecoilRoot>
+  <RecoilRoot>
+    <Router history={createBrowserHistory()}>
+      <MockedProvider mocks={[]}>
+        <Searchbar
+          loadingSuggestions={false}
+          queryString={'kind:Pod name:name1'}
+          saveSearchTooltip={''}
+          setSaveSearch={() => {}}
+          suggestions={[
+            {
+              id: 'id-suggestions-label',
+              name: 'Filters',
+              kind: 'filter',
+              disabled: true,
+            },
+            {
+              id: 'id-cluster',
+              name: 'cluster',
+              kind: 'filter',
+            },
+            {
+              id: 'id-kind',
+              name: 'kind',
+              kind: 'filter',
+            },
+            {
+              id: 'id-name',
+              name: 'name',
+              kind: 'filter',
+            },
+            {
+              id: 'id-namespace',
+              name: 'namespace',
+              kind: 'filter',
+            },
+          ]}
+          currentQueryCallback={(query: string) => query}
+          toggleInfoModal={() => null}
+          updateBrowserUrl={updateBrowserUrl}
+          savedSearchQueries={[
+            {
+              description: '',
+              id: '1234567890',
+              name: 'All pods',
+              searchText: 'kind:Pod',
+            },
+          ]}
+        />
+      </MockedProvider>
+    </Router>
+  </RecoilRoot>
 )
 
 describe('Searchbar tests', () => {
-    it('convertStringToTags correctly returns an empty array when searchText is empty', () => {
-        const result = convertStringToTags('')
-        expect(result).toMatchSnapshot()
-    })
+  it('convertStringToTags correctly returns an empty array when searchText is empty', () => {
+    const result = convertStringToTags('')
+    expect(result).toMatchSnapshot()
+  })
 
-    it('convertStringToTags correctly returns an array of tags', () => {
-        const result = convertStringToTags('kind:Pod name:testPod')
-        expect(result).toMatchSnapshot()
-    })
+  it('convertStringToTags correctly returns an array of tags', () => {
+    const result = convertStringToTags('kind:Pod name:testPod')
+    expect(result).toMatchSnapshot()
+  })
 
-    it('Searchbar should render in loading state', async () => {
-        render(<LoadingSearchbar />)
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
-        await waitFor(() => expect(screen.queryByText('Loading...')).toBeTruthy())
-    })
+  it('Searchbar should render in loading state', async () => {
+    render(<LoadingSearchbar />)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
+    await waitFor(() => expect(screen.queryByText('Loading...')).toBeTruthy())
+  })
 
-    it('Searchbar should render correctly with prefilled query', async () => {
-        const { getByText } = render(<PrefilledSearchbar />)
-        expect(getByText('kind:Pod')).toBeInTheDocument()
-    })
+  it('Searchbar should render correctly with prefilled query', async () => {
+    const { getByText } = render(<PrefilledSearchbar />)
+    expect(getByText('kind:Pod')).toBeInTheDocument()
+  })
 
-    it('Searchbar should render correctly and add a search via typing', async () => {
-        render(<BlankSearchbar />)
+  it('Searchbar should render correctly and add a search via typing', async () => {
+    render(<BlankSearchbar />)
 
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
 
-        userEvent.type(searchbar, 'name ')
-        userEvent.type(searchbar, 'name1 ')
+    userEvent.type(searchbar, 'name ')
+    userEvent.type(searchbar, 'name1 ')
 
-        expect(screen.queryByText('name:name1')).toBeInTheDocument()
-    })
+    expect(screen.queryByText('name:name1')).toBeInTheDocument()
+  })
 
-    it.skip('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
-        render(<BlankSearchbar />)
+  it.skip('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
+    render(<BlankSearchbar />)
 
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
 
-        // Select the 'name' dropdown suggestion item
-        const nameFilterSuggestion = screen.getByText('name1')
-        expect(nameFilterSuggestion).toBeTruthy()
-        userEvent.click(nameFilterSuggestion)
+    // Select the 'name' dropdown suggestion item
+    const nameFilterSuggestion = screen.getByText('name1')
+    expect(nameFilterSuggestion).toBeTruthy()
+    userEvent.click(nameFilterSuggestion)
 
-        await waitFor(() => expect(screen.queryByText('name values')).toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByText('name values')).toBeInTheDocument())
 
-        // Select the 'name' dropdown suggestion item
-        const nameValueSuggestion = screen.getByText('name1')
-        expect(nameValueSuggestion).toBeTruthy()
-        userEvent.click(nameValueSuggestion)
+    // Select the 'name' dropdown suggestion item
+    const nameValueSuggestion = screen.getByText('name1')
+    expect(nameValueSuggestion).toBeTruthy()
+    userEvent.click(nameValueSuggestion)
 
-        await waitFor(() => expect(screen.queryByText('name:name1')).toBeInTheDocument())
-    })
+    await waitFor(() => expect(screen.queryByText('name:name1')).toBeInTheDocument())
+  })
 
-    it('Searchbar should correctly delete existing tags', async () => {
-        render(<PrefilledSearchbar />)
+  it('Searchbar should correctly delete existing tags', async () => {
+    render(<PrefilledSearchbar />)
 
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
 
-        fireEvent.keyDown(searchbar, { key: 'Backspace', code: 'Backspace' })
+    fireEvent.keyDown(searchbar, { key: 'Backspace', code: 'Backspace' })
 
-        expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
-        expect(screen.queryByText('kind:Pod')).toBeInTheDocument()
-    })
+    expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
+    expect(screen.queryByText('kind:Pod')).toBeInTheDocument()
+  })
 
-    it('Searchbar should correctly delete existing tags when clean all button is clicked', async () => {
-        render(<PrefilledSearchbar />)
+  it('Searchbar should correctly delete existing tags when clean all button is clicked', async () => {
+    render(<PrefilledSearchbar />)
 
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
 
-        const clearAllBtn = screen.getByLabelText('Clear button for chips and input')
-        expect(clearAllBtn).toBeTruthy()
-        userEvent.click(clearAllBtn)
+    const clearAllBtn = screen.getByLabelText('Clear button for chips and input')
+    expect(clearAllBtn).toBeTruthy()
+    userEvent.click(clearAllBtn)
 
-        expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
-        expect(screen.queryByText('kind:Pod')).not.toBeInTheDocument()
-    })
+    expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
+    expect(screen.queryByText('kind:Pod')).not.toBeInTheDocument()
+  })
 
-    it('Searchbar should correctly delete existing comma separated tags', async () => {
-        render(<PrefilledSearchbar />)
+  it('Searchbar should correctly delete existing comma separated tags', async () => {
+    render(<PrefilledSearchbar />)
 
-        const searchbar = screen.getByLabelText('Search input')
-        expect(searchbar).toBeTruthy()
-        userEvent.click(searchbar)
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
 
-        userEvent.type(searchbar, 'name ')
-        userEvent.type(searchbar, 'name2')
-        fireEvent.keyDown(searchbar, { key: 'Enter', code: 'Enter' })
-        expect(screen.queryByText('name:name1,name2')).toBeInTheDocument()
+    userEvent.type(searchbar, 'name ')
+    userEvent.type(searchbar, 'name2')
+    fireEvent.keyDown(searchbar, { key: 'Enter', code: 'Enter' })
+    expect(screen.queryByText('name:name1,name2')).toBeInTheDocument()
 
-        const nameChipDeleteBtn = screen.queryAllByLabelText('delete-chip')
-        expect(nameChipDeleteBtn[1]).toBeTruthy()
-        userEvent.click(nameChipDeleteBtn[1])
+    const nameChipDeleteBtn = screen.queryAllByLabelText('delete-chip')
+    expect(nameChipDeleteBtn[1]).toBeTruthy()
+    userEvent.click(nameChipDeleteBtn[1])
 
-        expect(screen.queryByText('name:name1,name2')).not.toBeInTheDocument()
-        expect(screen.queryByText('name:name1')).toBeInTheDocument()
-    })
+    expect(screen.queryByText('name:name1,name2')).not.toBeInTheDocument()
+    expect(screen.queryByText('name:name1')).toBeInTheDocument()
+  })
 })

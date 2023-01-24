@@ -5,54 +5,54 @@ import { CSSProperties, useState } from 'react'
 
 // Do not detect dark theme automatically in production for standalone
 if (process.env.NODE_ENV === 'development') {
-    let theme = localStorage.getItem('theme')
-    if (!theme) {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            theme = 'dark'
-        } else {
-            theme = 'light'
-        }
-    }
-    if (theme === 'dark') {
-        setDarkTheme()
+  let theme = localStorage.getItem('theme')
+  if (!theme) {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      theme = 'dark'
     } else {
-        setLightTheme()
+      theme = 'light'
     }
+  }
+  if (theme === 'dark') {
+    setDarkTheme()
+  } else {
+    setLightTheme()
+  }
 }
 
 function toggleTheme() {
-    if (document.documentElement.classList.contains('pf-theme-dark')) {
-        setLightTheme(true)
-    } else {
-        setDarkTheme(true)
-    }
+  if (document.documentElement.classList.contains('pf-theme-dark')) {
+    setLightTheme(true)
+  } else {
+    setDarkTheme(true)
+  }
 }
 
 export function setLightTheme(save?: boolean) {
-    document.documentElement.classList.remove('pf-theme-dark')
-    if (save) {
-        localStorage.setItem('theme', 'light')
-    }
+  document.documentElement.classList.remove('pf-theme-dark')
+  if (save) {
+    localStorage.setItem('theme', 'light')
+  }
 }
 
 function setDarkTheme(save?: boolean) {
-    document.documentElement.classList.add('pf-theme-dark')
-    if (save) {
-        localStorage.setItem('theme', 'dark')
-    }
+  document.documentElement.classList.add('pf-theme-dark')
+  if (save) {
+    localStorage.setItem('theme', 'dark')
+  }
 }
 
 export function ThemeSwitcher(props: { style?: CSSProperties }) {
-    const [light, setLight] = useState(!document.documentElement.classList.contains('pf-theme-dark'))
-    return (
-        <Button
-            onClick={() => {
-                toggleTheme()
-                setLight(!document.documentElement.classList.contains('pf-theme-dark'))
-            }}
-            variant="plain"
-            icon={light ? <SunIcon /> : <MoonIcon />}
-            style={{ ...props.style }}
-        />
-    )
+  const [light, setLight] = useState(!document.documentElement.classList.contains('pf-theme-dark'))
+  return (
+    <Button
+      onClick={() => {
+        toggleTheme()
+        setLight(!document.documentElement.classList.contains('pf-theme-dark'))
+      }}
+      variant="plain"
+      icon={light ? <SunIcon /> : <MoonIcon />}
+      style={{ ...props.style }}
+    />
+  )
 }
