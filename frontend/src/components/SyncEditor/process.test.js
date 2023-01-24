@@ -23,13 +23,13 @@ describe('Test process.ts', () => {
     }
 
     it('should not have any protected ranges when Uid siblings are editable', () => {
-        const monacoRef = { current: { Range: jest.fn() } }
+        const monacoRef = { Range: jest.fn() }
         const { protectedRanges } = processUserWrapper(monacoRef, policyYamlWithUid, true)
         expect(protectedRanges).toEqual([])
     })
 
     it('should have protected ranges when Uid siblings are not editable', () => {
-        const monacoRef = { current: { Range: jest.fn() } }
+        const monacoRef = { Range: jest.fn() }
         const { protectedRanges } = processUserWrapper(monacoRef, policyYamlWithUid, false)
         expect(protectedRanges).toHaveLength(3) // name, namespace, and uid
     })
