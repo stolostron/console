@@ -39,7 +39,7 @@ export const decorate = (
     // add decorations to editor
     const hasErrors = errors.length > 0
     const handles = getResourceEditorDecorations(editorRef, hasErrors).map((decoration: { id: any }) => decoration.id)
-    editorRef.current.deltaDecorations(handles, decorations)
+    editorRef?.deltaDecorations(handles, decorations)
 
     // scroll to best line to show
     if (!editorHasFocus) {
@@ -54,7 +54,7 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
         const start = range.startLineNumber
         const end = range.endLineNumber - 1
         decorations.push({
-            range: new monacoRef.current.Range(start, 1, end, 132),
+            range: new monacoRef.Range(start, 1, end, 132),
             options: {
                 inlineClassName: 'protectedDecoration',
                 description: 'resource-editor',
@@ -66,7 +66,7 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
 const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations: any[]) => {
     filteredRows?.forEach((row) => {
         decorations.push({
-            range: new monacoRef.current.Range(row, 0, row, 132),
+            range: new monacoRef.Range(row, 0, row, 132),
             options: {
                 after: { content: '\u200b', inlineClassName: 'inline-folded' },
                 description: 'resource-editor',
@@ -82,7 +82,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
         if (linePos && start !== 0) {
             // error in margin
             decorations.push({
-                range: new monacoRef.current.Range(start, 0, start, 132),
+                range: new monacoRef.Range(start, 0, start, 132),
                 options: {
                     isWholeLine: true,
                     glyphMarginClassName: isWarning ? 'warningDecoration' : 'errorDecoration',
@@ -94,7 +94,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
             })
 
             // squiggly line under error
-            const range = new monacoRef.current.Range(
+            const range = new monacoRef.Range(
                 start,
                 linePos?.start?.col ?? 0,
                 linePos?.end?.line ?? start,
@@ -130,7 +130,7 @@ const addChangeDecorations = (
         const obj: any = get(change.mappings, $a)
         if (obj) {
             decorations.push({
-                range: new monacoRef.current.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
+                range: new monacoRef.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
@@ -141,7 +141,7 @@ const addChangeDecorations = (
             })
             if ($f != null && $f.toString().length < 32 && !obj.$s) {
                 decorations.push({
-                    range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
+                    range: new monacoRef.Range(obj.$r, 0, obj.$r, 132),
                     options: {
                         after: { content: `  # ${$f}`, inlineClassName: 'protectedDecoration' },
                         description: 'resource-editor',
@@ -156,7 +156,7 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
     // clear resource-editor decorations
     // don't filter protectedDecoration if there are errors because parser doesn't know where protected
     // areas are so only previous decorations do
-    const model = editorRef.current?.getModel()
+    const model = editorRef?.getModel()
     return model.getAllDecorations().filter(
         (decoration: {
             options: {
@@ -172,7 +172,7 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
 }
 
 const scrollToChangeDecoration = (editorRef: any, errors: any[], decorations: any[]) => {
-    const editor = editorRef.current
+    const editor = editorRef
     const visibleRange = editor.getVisibleRanges()[0]
     if (visibleRange) {
         // if any errors and not in visible range, and first error isn't visible, scroll to it

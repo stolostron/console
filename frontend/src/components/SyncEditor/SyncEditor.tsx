@@ -43,32 +43,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         syncs,
         filters,
         readonly,
-        mock,
         onStatusChange,
         onEditorChange,
         onClose,
     } = props
     const pageRef = useRef<HTMLDivElement>(null)
-    const editorRef = useRef<any | null>(null)
-    const monacoRef = useRef<any | null>(null)
-    if (mock) {
-        if (!monacoRef.current) {
-            monacoRef.current = {
-                editor: {
-                    setTheme: () => {},
-                },
-                languages: {
-                    registerHoverProvider: () => {},
-                },
-            }
-            editorRef.current = {
-                getModel: () => {},
-                onMouseDown: () => {},
-                onKeyDown: () => {},
-                onDidBlurEditorWidget: () => {},
-            }
-        }
-    }
+    const [editorRef, setEditorRef] = useState<any | null>(null)
+    const [monacoRef, setMonacoRef] = useState<any | null>(null)
     const editorHadFocus = useRef(false)
     const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
     const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
@@ -167,9 +148,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             }
         )
 
-        editorRef.current = editor
+        setEditorRef(editor)
+        setMonacoRef(monaco)
         window.getEditorValue = () => editor.getValue()
-        monacoRef.current = monaco
     }
 
     // clear our the getEditorValue method
@@ -180,16 +161,20 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }, [])
 
     useEffect(() => {
-        monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
-    }, [readonly])
+        if (editorRef) {
+            monacoRef.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
+        }
+    }, [editorRef, readonly])
 
     // prevent editor from flashing when typing in form
     useEffect(() => {
-        const model = editorRef.current.getModel()
-        model?.onDidChangeContent(() => {
-            model?.forceTokenization(model?.getLineCount())
-        })
-    }, [])
+        if (editorRef) {
+            const model = editorRef.getModel()
+            model?.onDidChangeContent(() => {
+                model?.forceTokenization(model?.getLineCount())
+            })
+        }
+    }, [editorRef])
 
     const onMouseDown = useCallback(
         debounce((e) => {
@@ -206,99 +191,110 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         [filteredRows, showFiltered]
     )
     useEffect(() => {
-        if (mouseDownHandle) {
-            mouseDownHandle.dispose()
+        if (editorRef) {
+            if (mouseDownHandle) {
+                mouseDownHandle.dispose()
+            }
+            const handle = editorRef.onMouseDown(onMouseDown)
+            setMouseDownHandle(handle)
         }
-        const handle = editorRef.current.onMouseDown(onMouseDown)
-        setMouseDownHandle(handle)
-    }, [filteredRows, showFiltered])
+    }, [filteredRows, showFiltered, editorRef])
 
     // show tooltips over errors
     useEffect(() => {
-        if (hoverProviderHandle) {
-            hoverProviderHandle.dispose()
-        }
-        const handle = monacoRef.current.languages.registerHoverProvider('yaml', {
-            provideHover: (_model: any, position: any) => {
-                return new Promise((resolve) => {
-                    squigglyTooltips.forEach(
-                        (tip: { range: { containsPosition: (arg0: any) => any }; message: string }) => {
-                            if (tip.range.containsPosition(position)) {
-                                return resolve({ contents: [{ value: '```html\n' + tip.message + ' \n```' }] })
+        if (monacoRef) {
+            if (hoverProviderHandle) {
+                hoverProviderHandle.dispose()
+            }
+            const handle = monacoRef.languages.registerHoverProvider('yaml', {
+                provideHover: (_model: any, position: any) => {
+                    return new Promise((resolve) => {
+                        squigglyTooltips.forEach(
+                            (tip: { range: { containsPosition: (arg0: any) => any }; message: string }) => {
+                                if (tip.range.containsPosition(position)) {
+                                    return resolve({ contents: [{ value: '```html\n' + tip.message + ' \n```' }] })
+                                }
                             }
-                        }
-                    )
-                    return resolve([])
-                })
-            },
-        })
-        setHoverProviderHandle(handle)
-    }, [squigglyTooltips])
+                        )
+                        return resolve([])
+                    })
+                },
+            })
+            setHoverProviderHandle(handle)
+        }
+    }, [squigglyTooltips, monacoRef])
 
     // prevent user from changing protected text
     useEffect(() => {
-        if (keyDownHandle) {
-            keyDownHandle.dispose()
-        }
-        const handle = editorRef.current.onKeyDown(
-            (e: {
-                code: string
-                ctrlKey: boolean
-                metaKey: boolean
-                stopPropagation: () => void
-                preventDefault: () => void
-            }) => {
-                const selections = editorRef.current.getSelections()
-                // if user presses enter, add new key: below this line
-                let endOfLineEnter = false
-                if (e.code === 'Enter') {
-                    const editor = editorRef.current
-                    const model = editor.getModel()
-                    const pos = editor.getPosition()
-                    const thisLine = model.getLineContent(pos.lineNumber)
-                    endOfLineEnter = thisLine.length < pos.column
-                }
-                if (
-                    // if user clicks on readonly area, ignore
-                    !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
-                    e.code !== 'ArrowDown' &&
-                    e.code !== 'ArrowUp' &&
-                    e.code !== 'ArrowLeft' &&
-                    e.code !== 'ArrowRight' &&
-                    !endOfLineEnter &&
-                    !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
-                        return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
-                    })
-                ) {
-                    e.stopPropagation()
-                    e.preventDefault()
-                }
+        if (editorRef) {
+            if (keyDownHandle) {
+                keyDownHandle.dispose()
             }
-        )
-        setKeyDownHandle(handle)
-    }, [prohibited])
+            const handle = editorRef.onKeyDown(
+                (e: {
+                    code: string
+                    ctrlKey: boolean
+                    metaKey: boolean
+                    stopPropagation: () => void
+                    preventDefault: () => void
+                }) => {
+                    const selections = editorRef.getSelections()
+                    // if user presses enter, add new key: below this line
+                    let endOfLineEnter = false
+                    if (e.code === 'Enter') {
+                        const editor = editorRef
+                        const model = editor.getModel()
+                        const pos = editor.getPosition()
+                        const thisLine = model.getLineContent(pos.lineNumber)
+                        endOfLineEnter = thisLine.length < pos.column
+                    }
+                    if (
+                        // if user clicks on readonly area, ignore
+                        !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
+                        e.code !== 'ArrowDown' &&
+                        e.code !== 'ArrowUp' &&
+                        e.code !== 'ArrowLeft' &&
+                        e.code !== 'ArrowRight' &&
+                        !endOfLineEnter &&
+                        !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
+                            return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
+                        })
+                    ) {
+                        e.stopPropagation()
+                        e.preventDefault()
+                    }
+                }
+            )
+            setKeyDownHandle(handle)
+        }
+    }, [prohibited, editorRef])
 
     // if editor loses focus, do form changes immediately
     useEffect(() => {
-        editorRef.current.onDidBlurEditorWidget(() => {
-            const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
-            const activeId = document.activeElement?.id as string
-            if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
-                setClickedOnFilteredLine(false)
-                setEditorHasFocus(false)
-            }
-        })
-    }, [setClickedOnFilteredLine, setEditorHasFocus])
+        if (editorRef) {
+            editorRef.onDidBlurEditorWidget(() => {
+                const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
+                const activeId = document.activeElement?.id as string
+                if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
+                    setClickedOnFilteredLine(false)
+                    setEditorHasFocus(false)
+                }
+            })
+        }
+    }, [setClickedOnFilteredLine, setEditorHasFocus, editorRef])
 
     // react to changes from form
     useEffect(() => {
+        if (!editorRef) {
+            return
+        }
         // debounce changes from form
         const formChange = () => {
             if (editorHasFocus) {
                 return
             }
             // parse/validate/secrets
-            const model = editorRef.current?.getModel()
+            const model = editorRef.getModel()
             const {
                 yaml,
                 protectedRanges,
@@ -340,10 +336,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             // update yaml in editor
             model.resources = cloneDeep(change.resources)
             const saveDecorations = getResourceEditorDecorations(editorRef, false)
-            const viewState = editorRef.current?.saveViewState()
+            const viewState = editorRef.saveViewState()
             model.setValue(yaml)
-            editorRef.current?.restoreViewState(viewState)
-            editorRef.current.deltaDecorations([], saveDecorations)
+            editorRef.restoreViewState(viewState)
+            editorRef.deltaDecorations([], saveDecorations)
             setHasRedo(false)
             setHasUndo(false)
 
@@ -396,6 +392,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         clickedOnFilteredLine,
         changeStack,
         JSON.stringify(immutables),
+        editorRef,
     ])
 
     // react to changes from user editing yaml
@@ -476,16 +473,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             }
 
             // undo/redo enable
-            const model = editorRef.current?.getModel()
-            const editStacks = model?._undoRedoService._editStacks
-            setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
-            setHasUndo(editStacks?.values()?.next()?.value?.hasPastElements())
+            if (editorRef) {
+                const model = editorRef.getModel()
+                const editStacks = model?._undoRedoService?._editStacks
+                setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
+                setHasUndo(editStacks?.values()?.next()?.value?.hasPastElements())
+            }
         }
     }
 
     const debouncedEditorChange = useMemo(
         () => debounce(editorChanged, 300),
-        [lastChange, lastFormComparison, userEdits]
+        [lastChange, lastFormComparison, userEdits, editorRef]
     )
 
     useEffect(() => {
@@ -524,8 +523,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         if (statusChanges && onStatusChange) {
             const { changes, errors, redactedChange } = statusChanges
-            const editor = editorRef?.current
-            const monaco = monacoRef?.current
+            const editor = editorRef
+            const monaco = monacoRef
 
             // report just errors and user changes
             onStatusChange({
@@ -534,7 +533,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
             })
         }
-    }, [statusChanges])
+    }, [statusChanges, editorRef, monacoRef])
 
     const toolbarControls = useMemo(() => {
         return (
@@ -550,7 +549,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                             toolTipText="Undo"
                             isDisabled={!hasUndo}
                             onClick={() => {
-                                editorRef?.current.trigger('source', 'undo')
+                                editorRef?.trigger('source', 'undo')
                             }}
                         />
                     )}
@@ -563,7 +562,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                             toolTipText="Redo"
                             isDisabled={!hasRedo}
                             onClick={() => {
-                                editorRef?.current.trigger('source', 'redo')
+                                editorRef?.trigger('source', 'redo')
                             }}
                         />
                     )}
@@ -574,7 +573,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         aria-label="Find"
                         toolTipText="Find"
                         onClick={() => {
-                            editorRef?.current.trigger('source', 'actions.find')
+                            editorRef?.trigger('source', 'actions.find')
                         }}
                     />
                     {/* secrets */}
@@ -596,9 +595,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         aria-label="Copy to clipboard"
                         disabled={false}
                         onClick={() => {
-                            const selectedText = editorRef.current
-                                .getModel()
-                                .getValueInRange(editorRef.current.getSelection())
+                            const selectedText = editorRef?.getModel().getValueInRange(editorRef?.getSelection())
                             navigator.clipboard.writeText(
                                 selectedText.length === 0 ? lastUnredactedChange?.yaml : selectedText
                             )
@@ -623,7 +620,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 </div>
             </>
         )
-    }, [hasUndo, hasRedo, showSecrets, copyHint])
+    }, [hasUndo, hasRedo, showSecrets, copyHint, editorRef])
 
     useResizeObserver(pageRef, (entry) => {
         const { width } = entry.contentRect
@@ -636,7 +633,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (variant === 'toolbar') {
             height -= 36
         }
-        editorRef?.current?.layout({ width, height })
+        editorRef?.layout({ width, height })
         setShowCondensed(width < 500)
     })
 

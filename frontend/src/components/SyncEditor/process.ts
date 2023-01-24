@@ -236,7 +236,7 @@ const process = (
             if (value && value.$p) {
                 const range = get(mappings, getPathArray(value.$p))
                 if (range?.$r) {
-                    protectedRanges.push(new monacoRef.current.Range(range.$r, 0, range.$r + range.$l, 0))
+                    protectedRanges.push(new monacoRef.Range(range.$r, 0, range.$r + range.$l, 0))
                 }
             }
         })
