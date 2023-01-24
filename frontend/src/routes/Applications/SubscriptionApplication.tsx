@@ -75,9 +75,18 @@ export default function CreateSubscriptionApplicationPage() {
     const onControlChange = useCallback(
         (control: any) => {
             if (control.id === 'connection') {
-                if (newSecret && control.setActive) {
-                    control.setActive(newSecret.metadata.name)
+                const { grpNum } = control
+                if (newSecret && control.setActive && grpNum) {
+                    // tried and not working...
+                    // control.group.active[grpNum].setActive()
                 }
+
+                // if (newSecret && control.setActive) {
+                //     const test = control.groupControlData[0]
+                //     if (test.active === test.grpNum) {
+                //     }
+                //     // control.setActive(newSecret.metadata.name)
+                // }
             }
         },
         [newSecret]
