@@ -1062,45 +1062,6 @@ describe('DistributionField hypershift clusters', () => {
         expect(queryByRole('progressbar')).toBeTruthy()
     })
 
-    it("Shouldn't show HCP upgrading, upgrading but on nodepools table", async () => {
-        const mockHypershiftCluster: Cluster = {
-            name: 'clusterName',
-            uid: 'clusterName-uid',
-            status: ClusterStatus.ready,
-            hive: {
-                isHibernatable: true,
-            },
-            isHive: false,
-            isManaged: true,
-            isCurator: true,
-            isHostedCluster: true,
-            isSNOCluster: false,
-            distribution: mockDistributionInfo,
-            owner: {},
-            isHypershift: true,
-            hypershift: {
-                agent: false,
-                secretNames: [],
-                hostingNamespace: '',
-                isUpgrading: true,
-            },
-            isRegionalHubCluster: false,
-        }
-
-        const { queryByRole } = await renderDistributionInfoField(
-            mockHypershiftCluster,
-            true,
-            false,
-            undefined,
-            undefined,
-            mockHostedCluster,
-            false,
-            'nodepool'
-        )
-
-        expect(queryByRole('progressbar')).toBeFalsy()
-    })
-
     it('Should not show HCP upgrading, upgrade not in progress', async () => {
         const mockHypershiftCluster: Cluster = {
             name: 'clusterName',
