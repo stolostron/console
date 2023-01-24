@@ -5,50 +5,50 @@ import userEvent from '@testing-library/user-event'
 
 const revealFn = jest.fn()
 describe('SyncDiff tests', () => {
-    beforeEach(() => {
-        jest.clearAllMocks()
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('happy path', async () => {
+    render(<SyncDiff {...props} />)
+
+    expect(
+      screen.getByRole('cell', {
+        name: /10/i,
+      })
+    ).toBeInTheDocument()
+
+    const cell = screen.getByRole('cell', {
+      name: /data : 1234/i,
     })
+    expect(cell).toBeInTheDocument()
 
-    test('happy path', async () => {
-        render(<SyncDiff {...props} />)
-
-        expect(
-            screen.getByRole('cell', {
-                name: /10/i,
-            })
-        ).toBeInTheDocument()
-
-        const cell = screen.getByRole('cell', {
-            name: /data : 1234/i,
-        })
-        expect(cell).toBeInTheDocument()
-
-        userEvent.click(cell)
-        expect(revealFn).toHaveBeenCalledTimes(1)
-    })
+    userEvent.click(cell)
+    expect(revealFn).toHaveBeenCalledTimes(1)
+  })
 })
 
 const props: { stateChanges: SyncDiffType; errorMessage: string } = {
-    stateChanges: {
-        warnings: [],
-        errors: [],
-        changes: [
-            {
-                type: 'N',
-                line: 10,
-                path: ['Secret', 0, 'metadata', 'labels', 'data'],
-                length: 1,
-                latest: ['data: 1234'],
-                reveal: revealFn,
-            },
-            {
-                type: 'E',
-                line: 14,
-                path: ['Secret', 0, 'metadata', 'labels', 'datax'],
-                length: 1,
-                latest: ['datax: 1234'],
-            },
-        ],
-    },
-    errorMessage: '',
+  stateChanges: {
+    warnings: [],
+    errors: [],
+    changes: [
+      {
+        type: 'N',
+        line: 10,
+        path: ['Secret', 0, 'metadata', 'labels', 'data'],
+        length: 1,
+        latest: ['data: 1234'],
+        reveal: revealFn,
+      },
+      {
+        type: 'E',
+        line: 14,
+        path: ['Secret', 0, 'metadata', 'labels', 'datax'],
+        length: 1,
+        latest: ['datax: 1234'],
+      },
+    ],
+  },
+  errorMessage: '',
 }
