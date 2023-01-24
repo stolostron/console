@@ -74,6 +74,19 @@ let consoleWarnings: any[] = []
 let consoleErrors: any[] = []
 
 expect.extend({
+  toHaveMultilineValue(received, expected: string) {
+    received = received.value || received
+    return {
+      pass: expected.trim().localeCompare(received.trim()) === 0,
+      message: () =>
+        'expect(received).toHaveMultilineValue(expected):' +
+        diff(expected, received, {
+          contextLines: 3,
+          expand: false,
+        }),
+    }
+  },
+
   hasNoMissingNocks() {
     const msgs: string[] = []
     const pass: boolean = missingNocks.length === 0
