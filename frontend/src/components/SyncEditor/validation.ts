@@ -108,7 +108,7 @@ export function validate(
         requiredTypes[kind]--
         let d: number = get(kindMap, kind, 0)
         // determine validation for this resource
-        let validator = validators[0].validator
+        let validator = validators[0]?.validator
         if (validators.length > 1) {
             validator = validatorMap[kind]?.validator
             if (!validator && kind) {

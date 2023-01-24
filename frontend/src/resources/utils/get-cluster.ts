@@ -225,6 +225,7 @@ export type Cluster = {
         nodePools?: NodePoolK8sResource[]
         secretNames: string[]
         hostingNamespace: string
+        isUpgrading?: boolean
     }
 }
 
@@ -447,6 +448,7 @@ export function getCluster(
                       hostedCluster.spec?.pullSecret?.name || '',
                   ].filter((name) => !!name),
                   hostingNamespace: hostedCluster.metadata?.namespace || '',
+                  isUpgrading: getHCUpgradeStatus(hostedCluster),
               }
             : undefined,
     }
@@ -1197,7 +1199,7 @@ export function getClusterStatus(
             mcStatus =
                 activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
         }
-    } else if (hostedCluster) {
+    } else if (hostedCluster && !clusterAvailable) {
         // HC import
         const hcConditions = hostedCluster.status?.conditions ?? []
         const HostedClusterReadyStatus = hcConditions.find(
@@ -1208,14 +1210,11 @@ export function getClusterStatus(
 
         if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
             mcStatus = ClusterStatus.importing
-            if (clusterAvailable) {
-                mcStatus = ClusterStatus.ready
-            } else {
-                const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
-                if (mcConditionAvailable) {
-                    mcStatus = ClusterStatus.unknown
-                    statusMessage = mcConditionAvailable?.message
-                }
+
+            const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
+            if (mcConditionAvailable) {
+                mcStatus = ClusterStatus.unknown
+                statusMessage = mcConditionAvailable?.message
             }
         }
     } else {
@@ -1274,5 +1273,25 @@ export function getIsRegionalHubCluster(managedCluster?: ManagedCluster) {
         return true
     } else {
         return false
+    }
+}
+
+//Return true if HC is upgrading, false if HS is not upgrading, undefined if no info
+export function getHCUpgradeStatus(hostedCluster?: HostedClusterK8sResource) {
+    //Check whether the required version fields exist
+    if (
+        hostedCluster?.status?.version?.desired.image !== undefined ||
+        hostedCluster?.status?.version?.history !== undefined
+    ) {
+        const desiredVersion = hostedCluster?.status?.version?.desired.image
+
+        const pastVersions = hostedCluster?.status?.version?.history
+
+        const mostRecentVersion = pastVersions[0].image
+        //If desired version is > current version and progressing, HC is currently updating
+
+        return desiredVersion !== mostRecentVersion || pastVersions[0].state === 'Partial'
+    } else {
+        return
     }
 }

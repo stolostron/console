@@ -305,7 +305,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
                 _.get(node, 'specs.searchClusters', []),
                 (cls) => _.get(cls, 'name') === clusterName
             )
-            const isOffline = searchCluster && _.get(searchCluster, '_clusterNamespace', '').length > 1
+            const isOffline = searchCluster && _.get(searchCluster, 'ManagedClusterConditionAvailable', '') === 'False'
             nsForCluster.forEach((nsName) => {
                 details.push({
                     labelValue: nsName,

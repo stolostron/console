@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
     ButtonVariant,
     ExpandableSectionToggle,
@@ -82,7 +82,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     const nodePoolsProgressID = `${window.location.href}node-pools-progress`
     localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
     const [expanded, setExpanded] = useState(localStorage.getItem(nodePoolsProgressID) === 'show')
-    const { hostedCluster } = useContext(ClusterContext)
+    const { cluster, hostedCluster } = useContext(ClusterContext)
     const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
     const toggleAddNodepoolModal = useCallback(
         () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
@@ -96,6 +96,16 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     useEffect(() => {
         checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
     }, [namespaces])
+
+    const addNodePoolStatusMessage = useMemo(() => {
+        if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {
+            return t('Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.')
+        }
+        if (cluster?.hypershift?.isUpgrading) {
+            return t('Node pools cannot be added during hosted cluster upgrade.')
+        }
+        return t('rbac.unauthorized')
+    }, [hostedCluster?.spec?.platform?.type, cluster?.hypershift?.isUpgrading, t])
 
     return (
         <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
@@ -138,16 +148,11 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                                     children={t('Add node pool')}
                                     variant={ButtonVariant.link}
                                     onClick={toggleAddNodepoolModal}
-                                    tooltip={
-                                        hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
-                                            ? t(
-                                                  'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
-                                              )
-                                            : t('rbac.unauthorized')
-                                    }
+                                    tooltip={addNodePoolStatusMessage}
                                     isDisabled={
                                         hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
-                                        !canCreateNodepool
+                                        !canCreateNodepool ||
+                                        cluster?.hypershift?.isUpgrading
                                     }
                                 />
                             </FlexItem>

@@ -12,8 +12,14 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+    KlusterletAddonConfig,
     patchResource,
     unpackSecret,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
 } from '../../../../../resources'
 import { AcmAlert, AcmButton, AcmToastContext } from '../../../../../ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -78,6 +84,47 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             },
         }
 
+        const klusterletAddonConfig: KlusterletAddonConfig = {
+            apiVersion: KlusterletAddonConfigApiVersion,
+            kind: KlusterletAddonConfigKind,
+            metadata: {
+                name: hdName,
+                namespace: hdName,
+            },
+            spec: {
+                clusterName: hdName!,
+                clusterNamespace: hdName!,
+                clusterLabels: {
+                    cloud: 'Amazon',
+                    vendor: 'Openshift',
+                },
+                applicationManager: {
+                    enabled: false,
+                    argocdCluster: false,
+                },
+                policyController: {
+                    enabled: true,
+                },
+                searchCollector: {
+                    enabled: true,
+                },
+                certPolicyController: {
+                    enabled: true,
+                },
+                iamPolicyController: {
+                    enabled: true,
+                },
+            },
+        }
+
+        const clusterNameSpace: Namespace = {
+            apiVersion: NamespaceApiVersion,
+            kind: NamespaceKind,
+            metadata: {
+                name: hdName,
+            },
+        }
+
         const updateAnnotations = {
             'cluster.open-cluster-management.io/managedcluster-name': hdName,
             'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
@@ -103,6 +150,13 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         patchResource(selectedHostedClusterResource as IResource, [
             { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
         ])
+
+        //Create namespace for addons if it doesn't already exist
+        try {
+            createResource(clusterNameSpace as IResource)
+        } catch (err) {}
+
+        createResource(klusterletAddonConfig as IResource)
     }
 
     if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {

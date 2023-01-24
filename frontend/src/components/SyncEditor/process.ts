@@ -52,7 +52,8 @@ export const processForm = (
     readonly: boolean,
     userEdits: ChangeType[],
     validators: any,
-    currentEditorValue: string
+    currentEditorValue: string,
+    editableUidSiblings: boolean | undefined
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -99,7 +100,8 @@ export const processForm = (
             readonly,
             validators,
             currentEditorValue,
-            false
+            false,
+            editableUidSiblings
         ),
     }
 }
@@ -115,7 +117,8 @@ export const processUser = (
     immutables: (string | string[])[] | undefined,
     readonly: boolean,
     validators: any,
-    currentEditorValue: string
+    currentEditorValue: string,
+    editableUidSiblings: boolean | undefined
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
@@ -142,7 +145,8 @@ export const processUser = (
             readonly,
             validators,
             currentEditorValue,
-            true
+            true,
+            editableUidSiblings
         ),
     }
 }
@@ -161,7 +165,8 @@ const process = (
     readonly: boolean,
     validators: any,
     currentEditorValue: string,
-    editorHasFocus: boolean
+    editorHasFocus: boolean,
+    editableUidSiblings: boolean | undefined
 ) => {
     // restore hidden secret values
     let { mappings, parsed, resources, paths } = getMappings(documents)
@@ -231,7 +236,7 @@ const process = (
     const protectedRanges: any[] = []
     if (!isEmpty(parsed)) {
         const allImmutables = immutables ? getMatchingValues(immutables, paths) : []
-        const uidSiblings = getUidSiblings(paths, mappings)
+        const uidSiblings = editableUidSiblings ? [] : getUidSiblings(paths, mappings)
         ;[...allSecrets, ...uidSiblings, ...allImmutables].forEach((value) => {
             if (value && value.$p) {
                 const range = get(mappings, getPathArray(value.$p))

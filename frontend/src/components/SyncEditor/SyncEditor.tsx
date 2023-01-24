@@ -23,6 +23,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
     secrets?: (string | string[])[]
     filters?: (string | string[])[]
     immutables?: (string | string[])[]
+    editableUidSiblings?: boolean
     syncs?: unknown
     readonly?: boolean
     mock?: boolean
@@ -39,6 +40,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         schema,
         secrets,
         immutables,
+        editableUidSiblings,
         code,
         syncs,
         filters,
@@ -316,7 +318,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 readonly === true,
                 userEdits,
                 validationRef.current,
-                model.getValue()
+                model.getValue(),
+                editableUidSiblings
             )
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
@@ -417,7 +420,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 immutables,
                 readonly === true,
                 validationRef.current,
-                value
+                value,
+                editableUidSiblings
             )
             setLastUnredactedChange(unredactedChange)
             setProhibited(protectedRanges)

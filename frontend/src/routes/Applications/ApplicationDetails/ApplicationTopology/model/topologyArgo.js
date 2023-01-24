@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get, uniq, uniqBy } from 'lodash'
-import { getClusterName, addClusters } from './utils'
+import { getClusterName, addClusters, processMultiples } from './utils'
 import { createReplicaChild } from './topologySubscription'
 
 export function getArgoTopology(application, argoData, managedClusters) {
@@ -76,8 +76,16 @@ export function getArgoTopology(application, argoData, managedClusters) {
     )
     const resources = get(application, 'app.status.resources', [])
 
-    resources.forEach((deployable) => {
-        const { name: deployableName, namespace: deployableNamespace, kind, version, group } = deployable
+    processMultiples(resources).forEach((deployable) => {
+        const {
+            name: deployableName,
+            namespace: deployableNamespace,
+            kind,
+            version,
+            group,
+            resourceCount,
+            resources: deployableResources,
+        } = deployable
         const type = kind.toLowerCase()
 
         const memberId = `member--member--deployable--member--clusters--${getClusterName(
@@ -113,6 +121,8 @@ export function getArgoTopology(application, argoData, managedClusters) {
                 parent: {
                     clusterId,
                 },
+                resources: deployableResources,
+                resourceCount: resourceCount || 0 + clusterNames.length,
             },
         }
 

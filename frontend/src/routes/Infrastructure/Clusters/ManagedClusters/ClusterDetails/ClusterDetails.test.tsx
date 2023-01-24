@@ -85,6 +85,12 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
 } from '../../../../../resources'
 import {
     MultiClusterEngine,
@@ -890,6 +896,47 @@ const mockManagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnSearch,
 ]
 
+const mockKlusterletAddonConfig: KlusterletAddonConfig = {
+    apiVersion: KlusterletAddonConfigApiVersion,
+    kind: KlusterletAddonConfigKind,
+    metadata: {
+        name: 'hostedCluster1',
+        namespace: 'hostedCluster1',
+    },
+    spec: {
+        clusterName: 'hostedCluster1',
+        clusterNamespace: 'hostedCluster1',
+        clusterLabels: {
+            cloud: 'Amazon',
+            vendor: 'Openshift',
+        },
+        applicationManager: {
+            enabled: false,
+            argocdCluster: false,
+        },
+        policyController: {
+            enabled: true,
+        },
+        searchCollector: {
+            enabled: true,
+        },
+        certPolicyController: {
+            enabled: true,
+        },
+        iamPolicyController: {
+            enabled: true,
+        },
+    },
+}
+
+const mockNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: 'hostedCluster1',
+    },
+}
+
 const mockHostedCluster1: HostedClusterK8sResource = {
     apiVersion: HostedClusterApiVersion,
     kind: HostedClusterKind,
@@ -1508,6 +1555,8 @@ describe('ClusterDetails with not found', () => {
 
         const mockImportHostedCluster = [
             nockCreate(createManagedcluster1, createManagedcluster1),
+            nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfig),
+            nockCreate(mockNamespace, mockNamespace),
             nockPatch(mockHostedCluster1 as IResource, [
                 {
                     op: 'replace',
@@ -1519,12 +1568,12 @@ describe('ClusterDetails with not found', () => {
                 },
             ]),
         ]
+
         userEvent.click(
             screen.getByRole('button', {
                 name: /import cluster/i,
             })
         )
-
         await waitForNocks(mockImportHostedCluster)
     })
 })

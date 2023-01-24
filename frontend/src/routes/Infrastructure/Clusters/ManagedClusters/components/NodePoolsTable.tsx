@@ -240,6 +240,16 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         [getNodepoolStatus, getAutoscaling]
     )
 
+    const addNodePoolStatusMessage = useMemo(() => {
+        if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {
+            return t('Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.')
+        }
+        if (cluster?.hypershift?.isUpgrading) {
+            return t('Node pools cannot be added during hosted cluster upgrade.')
+        }
+        return t('rbac.unauthorized')
+    }, [hostedCluster?.spec?.platform?.type, cluster?.hypershift?.isUpgrading, t])
+
     const transformedNodepoolItems = useMemo(
         () => nodePools.map(generateTransformedData),
         [nodePools, generateTransformedData]
@@ -263,7 +273,10 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                             nodepool,
                         })
                 },
-                isDisabled: !canPatchNodepool,
+                tooltip: cluster?.hypershift?.isUpgrading
+                    ? t('Node pools cannot be managed during hosted cluster upgrade.')
+                    : '',
+                isDisabled: !canPatchNodepool || cluster?.hypershift?.isUpgrading,
             })
 
             actions.push({
@@ -284,7 +297,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
             return actions
         },
-        [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool]
+        [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool, cluster?.hypershift?.isUpgrading]
     )
 
     useEffect(() => {
@@ -304,19 +317,22 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 children={t('Add node pool')}
                 variant={ButtonVariant.secondary}
                 onClick={toggleAddNodepoolModal}
-                tooltip={
-                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
-                        ? t(
-                              'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
-                          )
-                        : t('rbac.unauthorized')
-                }
+                tooltip={addNodePoolStatusMessage}
                 isDisabled={
-                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS || !canCreateNodepool
+                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
+                    !canCreateNodepool ||
+                    cluster?.hypershift?.isUpgrading
                 }
             />
         ),
-        [toggleAddNodepoolModal, hostedCluster?.spec?.platform?.type, t, canCreateNodepool]
+        [
+            toggleAddNodepoolModal,
+            hostedCluster?.spec?.platform?.type,
+            t,
+            canCreateNodepool,
+            cluster?.hypershift?.isUpgrading,
+            addNodePoolStatusMessage,
+        ]
     )
 
     return (
@@ -345,13 +361,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                                 click: () => toggleAddNodepoolModal(),
                                 isDisabled:
                                     hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS ||
-                                    !canCreateNodepool,
-                                tooltip:
-                                    hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS
-                                        ? t(
-                                              'Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.'
-                                          )
-                                        : t('rbac.unauthorized'),
+                                    !canCreateNodepool ||
+                                    cluster?.hypershift?.isUpgrading,
+                                tooltip: addNodePoolStatusMessage,
                                 variant: ButtonVariant.secondary,
                             },
                         ]}
