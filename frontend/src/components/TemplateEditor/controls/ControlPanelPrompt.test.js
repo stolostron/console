@@ -10,35 +10,33 @@ import i18n from 'i18next'
 const t = i18n.t.bind(i18n)
 
 export const control = {
-    name: 'Name',
-    tooltip: 'Application name',
-    controlData: [],
-    id: 'name',
-    type: 'text',
-    prompts: {
-        prompt: 'Add credential',
-        type: 'link',
-        url: 'mylink',
-        positionBottomRight: true,
-        id: 'add-provider-connection',
-    },
+  name: 'Name',
+  tooltip: 'Application name',
+  controlData: [],
+  id: 'name',
+  type: 'text',
+  prompts: {
+    prompt: 'Add credential',
+    type: 'link',
+    url: 'mylink',
+    positionBottomRight: true,
+    id: 'add-provider-connection',
+  },
 }
 const fn = jest.fn()
 
 describe('ControlPanelPrompt component', () => {
-    it('renders as expected', () => {
-        const Component = () => {
-            return (
-                <ControlPanelPrompt key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
-            )
-        }
+  it('renders as expected', () => {
+    const Component = () => {
+      return <ControlPanelPrompt key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
+    }
 
-        const { asFragment, rerender } = render(<Component />)
-        expect(asFragment()).toMatchSnapshot()
-        control.prompts.type = ''
-        rerender(<Component />)
-        expect(asFragment()).toMatchSnapshot()
-        control.prompts = undefined
-        rerender(<Component />)
-    })
+    const { asFragment, rerender } = render(<Component />)
+    expect(asFragment()).toMatchSnapshot()
+    control.prompts.type = ''
+    rerender(<Component />)
+    expect(asFragment()).toMatchSnapshot()
+    control.prompts = undefined
+    rerender(<Component />)
+  })
 })

@@ -6,11 +6,11 @@ import Clusters from './Clusters'
 import './ClustersPlugin.css'
 
 export default function ClustersPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <Clusters />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <Clusters />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

@@ -9,12 +9,12 @@ export const HelmReleaseKind = 'HelmRelease'
 export type HelmReleaseKindType = 'HelmRelease'
 
 export const HelmReleaseDefinition: IResourceDefinition = {
-    apiVersion: HelmReleaseApiVersion,
-    kind: HelmReleaseKind,
+  apiVersion: HelmReleaseApiVersion,
+  kind: HelmReleaseKind,
 }
 
 export interface HelmRelease extends IResource {
-    apiVersion: HelmReleaseApiVersionType
-    kind: HelmReleaseKindType
-    metadata: Metadata
+  apiVersion: HelmReleaseApiVersionType
+  kind: HelmReleaseKindType
+  metadata: Metadata
 }

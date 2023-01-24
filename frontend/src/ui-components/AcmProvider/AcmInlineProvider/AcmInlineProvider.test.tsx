@@ -6,11 +6,11 @@ import { AcmInlineProvider } from './AcmInlineProvider'
 import { Provider, ProviderLongTextMap } from '../'
 
 describe('AcmInlineProvider', () => {
-    Object.values(Provider).forEach((provider) => {
-        test(`renders - ${provider}`, async () => {
-            const { container, queryAllByText } = render(<AcmInlineProvider provider={provider} />)
-            expect(queryAllByText(ProviderLongTextMap[provider])).toBeTruthy()
-            expect(await axe(container)).toHaveNoViolations()
-        })
+  Object.values(Provider).forEach((provider) => {
+    test(`renders - ${provider}`, async () => {
+      const { container, queryAllByText } = render(<AcmInlineProvider provider={provider} />)
+      expect(queryAllByText(ProviderLongTextMap[provider])).toBeTruthy()
+      expect(await axe(container)).toHaveNoViolations()
     })
+  })
 })

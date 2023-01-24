@@ -10,20 +10,14 @@ const otherYAMLTabs = []
 const handleTabChange = jest.fn
 
 describe('EditorHeader component', () => {
-    it('renders as expected', () => {
-        const fn = jest.fn()
-        const Component = () => {
-            return (
-                <EditorHeader
-                    otherYAMLTabs={otherYAMLTabs}
-                    handleTabChange={handleTabChange}
-                    type={type}
-                    i18n={fn}
-                    title=""
-                />
-            )
-        }
-        const { asFragment } = render(<Component />)
-        expect(asFragment()).toMatchSnapshot()
-    })
+  it('renders as expected', () => {
+    const fn = jest.fn()
+    const Component = () => {
+      return (
+        <EditorHeader otherYAMLTabs={otherYAMLTabs} handleTabChange={handleTabChange} type={type} i18n={fn} title="" />
+      )
+    }
+    const { asFragment } = render(<Component />)
+    expect(asFragment()).toMatchSnapshot()
+  })
 })

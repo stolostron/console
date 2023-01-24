@@ -6,32 +6,32 @@ import { configureAxe } from 'jest-axe'
 
 import { AcmInlineStatus, StatusType } from './AcmInlineStatus'
 const axe = configureAxe({
-    rules: {
-        'aria-progressbar-name': { enabled: false },
-    },
+  rules: {
+    'aria-progressbar-name': { enabled: false },
+  },
 })
 
 describe('AcmInlineStatus', () => {
-    Object.values(StatusType).forEach((type) => {
-        test(`has zero accessibility defects - (${type})`, async () => {
-            const { container } = render(<AcmInlineStatus type={type} status="foobar" />)
-            expect(await axe(container)).toHaveNoViolations()
-        })
+  Object.values(StatusType).forEach((type) => {
+    test(`has zero accessibility defects - (${type})`, async () => {
+      const { container } = render(<AcmInlineStatus type={type} status="foobar" />)
+      expect(await axe(container)).toHaveNoViolations()
     })
-    test('should allow a popover window on click', async () => {
-        const { getByText } = render(
-            <AcmInlineStatus
-                type={StatusType.healthy}
-                status="foobar"
-                popover={{
-                    headerContent: 'Header',
-                    bodyContent: 'Some information about the status here.',
-                    footerContent: <a href="#">Status link</a>,
-                }}
-            />
-        )
-        expect(getByText('foobar')).toBeInTheDocument()
-        userEvent.click(getByText('foobar'))
-        await waitFor(() => expect(getByText('Header')).toBeInTheDocument())
-    })
+  })
+  test('should allow a popover window on click', async () => {
+    const { getByText } = render(
+      <AcmInlineStatus
+        type={StatusType.healthy}
+        status="foobar"
+        popover={{
+          headerContent: 'Header',
+          bodyContent: 'Some information about the status here.',
+          footerContent: <a href="#">Status link</a>,
+        }}
+      />
+    )
+    expect(getByText('foobar')).toBeInTheDocument()
+    userEvent.click(getByText('foobar'))
+    await waitFor(() => expect(getByText('Header')).toBeInTheDocument())
+  })
 })

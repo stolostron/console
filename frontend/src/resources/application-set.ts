@@ -10,41 +10,41 @@ export const ApplicationSetKind = 'ApplicationSet'
 export type ApplicationSetKindType = 'ApplicationSet'
 
 export const ApplicationSetDefinition: IResourceDefinition = {
-    apiVersion: ApplicationSetApiVersion,
-    kind: ApplicationSetKind,
+  apiVersion: ApplicationSetApiVersion,
+  kind: ApplicationSetKind,
 }
 
 export interface ApplicationSet extends IResource {
-    apiVersion: ApplicationSetApiVersionType
-    kind: ApplicationSetKindType
-    metadata: Metadata
-    spec: {
-        generators?: {
-            clusterDecisionResource?: {
-                configMapRef?: string
-                labelSelector?: Selector
-                requeueAfterSeconds?: number
-            }
-        }[]
-        template?: {
-            metadata?: Metadata
-            spec?: {
-                destination?: {
-                    namespace: string
-                    server: string
-                }
-                project: string
-                source: {
-                    path?: string
-                    repoURL: string
-                    targetRevision?: string
-                    chart?: string
-                }
-                syncPolicy?: any
-            }
+  apiVersion: ApplicationSetApiVersionType
+  kind: ApplicationSetKindType
+  metadata: Metadata
+  spec: {
+    generators?: {
+      clusterDecisionResource?: {
+        configMapRef?: string
+        labelSelector?: Selector
+        requeueAfterSeconds?: number
+      }
+    }[]
+    template?: {
+      metadata?: Metadata
+      spec?: {
+        destination?: {
+          namespace: string
+          server: string
         }
+        project: string
+        source: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+        }
+        syncPolicy?: any
+      }
     }
-    transformed?: {
-        clusterCount?: string
-    }
+  }
+  transformed?: {
+    clusterCount?: string
+  }
 }

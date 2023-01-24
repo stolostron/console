@@ -5,6 +5,6 @@ export const HostedClusterApiVersion = 'hypershift.openshift.io/v1alpha1'
 export const HostedClusterKind = 'HostedCluster'
 
 export const HostedClusterDefinition: IResourceDefinition = {
-    apiVersion: HostedClusterApiVersion,
-    kind: HostedClusterKind,
+  apiVersion: HostedClusterApiVersion,
+  kind: HostedClusterKind,
 }

@@ -15,94 +15,94 @@ export type ClusterCuratorKindType = 'ClusterCurator'
 export type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
 
 export const ClusterCuratorDefinition: IResourceDefinition = {
-    apiVersion: ClusterCuratorApiVersion,
-    kind: ClusterCuratorKind,
+  apiVersion: ClusterCuratorApiVersion,
+  kind: ClusterCuratorKind,
 }
 
 export interface ClusterCurator {
-    apiVersion: ClusterCuratorApiVersionType
-    kind: ClusterCuratorKindType
-    metadata: Metadata
-    spec?: {
-        desiredCuration?: Curation
-        install?: {
-            towerAuthSecret?: string
-            prehook?: ClusterCuratorAnsibleJob[]
-            posthook?: ClusterCuratorAnsibleJob[]
-        }
-        upgrade?: {
-            desiredUpdate?: string
-            channel?: string
-            upstream?: string
-            towerAuthSecret?: string
-            prehook?: ClusterCuratorAnsibleJob[]
-            posthook?: ClusterCuratorAnsibleJob[]
-        }
-        scale?: {
-            towerAuthSecret?: string
-            prehook?: ClusterCuratorAnsibleJob[]
-            posthook?: ClusterCuratorAnsibleJob[]
-        }
-        destroy?: {
-            towerAuthSecret?: string
-            prehook?: ClusterCuratorAnsibleJob[]
-            posthook?: ClusterCuratorAnsibleJob[]
-        }
+  apiVersion: ClusterCuratorApiVersionType
+  kind: ClusterCuratorKindType
+  metadata: Metadata
+  spec?: {
+    desiredCuration?: Curation
+    install?: {
+      towerAuthSecret?: string
+      prehook?: ClusterCuratorAnsibleJob[]
+      posthook?: ClusterCuratorAnsibleJob[]
     }
-    status?: {
-        conditions: V1CustomResourceDefinitionCondition[]
+    upgrade?: {
+      desiredUpdate?: string
+      channel?: string
+      upstream?: string
+      towerAuthSecret?: string
+      prehook?: ClusterCuratorAnsibleJob[]
+      posthook?: ClusterCuratorAnsibleJob[]
     }
+    scale?: {
+      towerAuthSecret?: string
+      prehook?: ClusterCuratorAnsibleJob[]
+      posthook?: ClusterCuratorAnsibleJob[]
+    }
+    destroy?: {
+      towerAuthSecret?: string
+      prehook?: ClusterCuratorAnsibleJob[]
+      posthook?: ClusterCuratorAnsibleJob[]
+    }
+  }
+  status?: {
+    conditions: V1CustomResourceDefinitionCondition[]
+  }
 }
 
 export interface ClusterCuratorAnsibleJob {
-    name: string
-    type?: AnsibleJobTemplateType
-    extra_vars?: Record<string, string>
+  name: string
+  type?: AnsibleJobTemplateType
+  extra_vars?: Record<string, string>
 }
 
 export function createClusterCurator(clusterCurator: ClusterCurator) {
-    set(clusterCurator, 'metadata.labels["open-cluster-management"]', 'curator')
-    return createResource<ClusterCurator>(clusterCurator)
+  set(clusterCurator, 'metadata.labels["open-cluster-management"]', 'curator')
+  return createResource<ClusterCurator>(clusterCurator)
 }
 
 export function getClusterCurator(metadata: { name: string; namespace: string }) {
-    return getResource<ClusterCurator>({ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind, metadata })
+  return getResource<ClusterCurator>({ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind, metadata })
 }
 
 export function listClusterCurators() {
-    return listResources<ClusterCurator>({
-        apiVersion: ClusterCuratorApiVersion,
-        kind: ClusterCuratorKind,
-    })
+  return listResources<ClusterCurator>({
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+  })
 }
 
 export function getTemplateJobsNum(clusterCurator: ClusterCurator) {
-    let num = 0
-    if (clusterCurator.spec?.upgrade?.prehook) num += clusterCurator.spec?.upgrade?.prehook.length
-    if (clusterCurator.spec?.upgrade?.posthook) num += clusterCurator.spec?.upgrade?.posthook.length
-    if (clusterCurator.spec?.install?.prehook) num += clusterCurator.spec?.install?.prehook.length
-    if (clusterCurator.spec?.install?.posthook) num += clusterCurator.spec?.install?.posthook.length
-    if (clusterCurator.spec?.scale?.prehook) num += clusterCurator.spec?.scale?.prehook.length
-    if (clusterCurator.spec?.scale?.posthook) num += clusterCurator.spec?.scale?.posthook.length
-    if (clusterCurator.spec?.destroy?.prehook) num += clusterCurator.spec?.destroy?.prehook.length
-    if (clusterCurator.spec?.destroy?.posthook) num += clusterCurator.spec?.destroy?.posthook.length
+  let num = 0
+  if (clusterCurator.spec?.upgrade?.prehook) num += clusterCurator.spec?.upgrade?.prehook.length
+  if (clusterCurator.spec?.upgrade?.posthook) num += clusterCurator.spec?.upgrade?.posthook.length
+  if (clusterCurator.spec?.install?.prehook) num += clusterCurator.spec?.install?.prehook.length
+  if (clusterCurator.spec?.install?.posthook) num += clusterCurator.spec?.install?.posthook.length
+  if (clusterCurator.spec?.scale?.prehook) num += clusterCurator.spec?.scale?.prehook.length
+  if (clusterCurator.spec?.scale?.posthook) num += clusterCurator.spec?.scale?.posthook.length
+  if (clusterCurator.spec?.destroy?.prehook) num += clusterCurator.spec?.destroy?.prehook.length
+  if (clusterCurator.spec?.destroy?.posthook) num += clusterCurator.spec?.destroy?.posthook.length
 
-    return num
+  return num
 }
 
 export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentialName: string) {
-    const copy = JSON.parse(JSON.stringify(template)) as ClusterCurator
+  const copy = JSON.parse(JSON.stringify(template)) as ClusterCurator
 
-    if (!copy.spec) copy.spec = {}
-    if (!copy.spec.install) copy.spec.install = {}
-    if (!copy.spec.upgrade) copy.spec.upgrade = {}
-    if (!copy.spec.scale) copy.spec.scale = {}
-    if (!copy.spec.destroy) copy.spec.destroy = {}
+  if (!copy.spec) copy.spec = {}
+  if (!copy.spec.install) copy.spec.install = {}
+  if (!copy.spec.upgrade) copy.spec.upgrade = {}
+  if (!copy.spec.scale) copy.spec.scale = {}
+  if (!copy.spec.destroy) copy.spec.destroy = {}
 
-    if (!copy.spec.install.towerAuthSecret) copy.spec.install.towerAuthSecret = ansibleCredentialName
-    if (!copy.spec.upgrade.towerAuthSecret) copy.spec.upgrade.towerAuthSecret = ansibleCredentialName
-    if (!copy.spec.scale.towerAuthSecret) copy.spec.scale.towerAuthSecret = ansibleCredentialName
-    if (!copy.spec.destroy.towerAuthSecret) copy.spec.destroy.towerAuthSecret = ansibleCredentialName
+  if (!copy.spec.install.towerAuthSecret) copy.spec.install.towerAuthSecret = ansibleCredentialName
+  if (!copy.spec.upgrade.towerAuthSecret) copy.spec.upgrade.towerAuthSecret = ansibleCredentialName
+  if (!copy.spec.scale.towerAuthSecret) copy.spec.scale.towerAuthSecret = ansibleCredentialName
+  if (!copy.spec.destroy.towerAuthSecret) copy.spec.destroy.towerAuthSecret = ansibleCredentialName
 
-    return replaceResource<ClusterCurator>(copy)
+  return replaceResource<ClusterCurator>(copy)
 }

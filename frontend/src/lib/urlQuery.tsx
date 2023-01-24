@@ -25,47 +25,47 @@
  * Example response: {"initialFilters":{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]},"initialSearch":"some text goes here","initialSort":{"index":0,"direction":"asc"},"initialPage":5,"initialPerPage":10}
  * */
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
-    const initialFilters: { [key: string]: string[] } = {}
-    let initialSearch = ''
-    let initialSort: { index: number; direction: 'asc' | 'desc' } = { index: 0, direction: 'asc' }
-    let initialPage = 1
-    let initialPerPage = 10
-    const urlparams = new URLSearchParams(decodeURIComponent(urlSearch))
-    const entries = urlparams.entries()
-    let entry = entries.next()
-    while (!entry.done) {
-        const key = entry.value[0]
-        const value = entry.value[1]
-        switch (key) {
-            case 'search':
-                initialSearch = value
-                break
-            case 'sort':
-                initialSort = {
-                    index: Number.isInteger(Number(value)) ? Math.abs(Number(value)) : 0,
-                    direction: value.startsWith('-') ? 'asc' : 'desc',
-                }
-                break
-            case 'page':
-                if (Number.isInteger(Number(value))) {
-                    initialPage = Number(value)
-                }
-                break
-            case 'perPage':
-                if (Number.isInteger(Number(value))) {
-                    initialPerPage = Number(value)
-                }
-                break
-            default:
-                // If the key doesn't match one of the above we assume it is a filter key
-                if (!initialFilters[key]) {
-                    initialFilters[key] = [value]
-                } else {
-                    initialFilters[key].push(value)
-                }
+  const initialFilters: { [key: string]: string[] } = {}
+  let initialSearch = ''
+  let initialSort: { index: number; direction: 'asc' | 'desc' } = { index: 0, direction: 'asc' }
+  let initialPage = 1
+  let initialPerPage = 10
+  const urlparams = new URLSearchParams(decodeURIComponent(urlSearch))
+  const entries = urlparams.entries()
+  let entry = entries.next()
+  while (!entry.done) {
+    const key = entry.value[0]
+    const value = entry.value[1]
+    switch (key) {
+      case 'search':
+        initialSearch = value
+        break
+      case 'sort':
+        initialSort = {
+          index: Number.isInteger(Number(value)) ? Math.abs(Number(value)) : 0,
+          direction: value.startsWith('-') ? 'asc' : 'desc',
         }
-        entry = entries.next()
+        break
+      case 'page':
+        if (Number.isInteger(Number(value))) {
+          initialPage = Number(value)
+        }
+        break
+      case 'perPage':
+        if (Number.isInteger(Number(value))) {
+          initialPerPage = Number(value)
+        }
+        break
+      default:
+        // If the key doesn't match one of the above we assume it is a filter key
+        if (!initialFilters[key]) {
+          initialFilters[key] = [value]
+        } else {
+          initialFilters[key].push(value)
+        }
     }
+    entry = entries.next()
+  }
 
-    return { initialFilters, initialSearch, initialSort, initialPage, initialPerPage }
+  return { initialFilters, initialSearch, initialSort, initialPage, initialPerPage }
 }

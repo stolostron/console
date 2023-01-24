@@ -10,20 +10,20 @@ export const ClusterImageSetKind = 'ClusterImageSet'
 export type ClusterImageSetKindType = 'ClusterImageSet'
 
 export const ClusterImageSetDefinition: IResourceDefinition = {
-    apiVersion: ClusterImageSetApiVersion,
-    kind: ClusterImageSetKind,
+  apiVersion: ClusterImageSetApiVersion,
+  kind: ClusterImageSetKind,
 }
 
 export type ClusterImageSet = {
-    apiVersion: ClusterImageSetApiVersionType
-    kind: ClusterImageSetKindType
-    metadata: Metadata
-    spec?: { releaseImage: string }
+  apiVersion: ClusterImageSetApiVersionType
+  kind: ClusterImageSetKindType
+  metadata: Metadata
+  spec?: { releaseImage: string }
 }
 
 export function listClusterImageSets() {
-    return listResources<ClusterImageSet>({
-        apiVersion: ClusterImageSetApiVersion,
-        kind: ClusterImageSetKind,
-    })
+  return listResources<ClusterImageSet>({
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+  })
 }

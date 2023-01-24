@@ -6,11 +6,11 @@ import InfraEnvironments from './InfraEnvironments'
 import './InfraEnvironmentsPlugin.css'
 
 export default function InfraEnvironmentsPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <InfraEnvironments />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <InfraEnvironments />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

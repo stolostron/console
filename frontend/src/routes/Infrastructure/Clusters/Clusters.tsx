@@ -16,25 +16,25 @@ import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
 
 export default function Clusters() {
-    return (
-        <Switch>
-            <Route exact path={NavigationPath.createBMControlPlane} component={CreateControlPlane} />
-            <Route exact path={NavigationPath.createAWSControlPlane} component={CreateAWSControlPlane} />
-            <Route exact path={NavigationPath.createAWSCLI} component={HypershiftAWSCLI} />
+  return (
+    <Switch>
+      <Route exact path={NavigationPath.createBMControlPlane} component={CreateControlPlane} />
+      <Route exact path={NavigationPath.createAWSControlPlane} component={CreateAWSControlPlane} />
+      <Route exact path={NavigationPath.createAWSCLI} component={HypershiftAWSCLI} />
 
-            <Route exact path={NavigationPath.createDiscoverHost} component={CreateDiscoverHost} />
-            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-            <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-            <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
-            <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
-            <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfigPage} />
-            <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfigPage} />
-            <Route path={NavigationPath.clusters} component={ClustersPage} />
-            <Route path="*">
-                <Redirect to={NavigationPath.clusters} />
-            </Route>
-        </Switch>
-    )
+      <Route exact path={NavigationPath.createDiscoverHost} component={CreateDiscoverHost} />
+      <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+      <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+      <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+      <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+      <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
+      <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
+      <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfigPage} />
+      <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfigPage} />
+      <Route path={NavigationPath.clusters} component={ClustersPage} />
+      <Route path="*">
+        <Redirect to={NavigationPath.clusters} />
+      </Route>
+    </Switch>
+  )
 }

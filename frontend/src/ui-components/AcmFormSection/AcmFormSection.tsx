@@ -7,46 +7,42 @@ import { Fragment } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export type AcmFormSectionProps = Omit<TitleProps, 'headingLevel'> & {
-    title: string
-    tooltip?: string
-    spacing?: boolean
+  title: string
+  tooltip?: string
+  spacing?: boolean
 }
 
 export function AcmFormSection(props: AcmFormSectionProps) {
-    const isFullWidthPage = useMediaQuery('(min-width: 1200px)', { noSsr: true })
+  const isFullWidthPage = useMediaQuery('(min-width: 1200px)', { noSsr: true })
 
-    /* istanbul ignore next */
-    const marginTop = props.spacing ? (isFullWidthPage ? '24px' : '16px') : undefined
-    const { t } = useTranslation()
-    return (
-        <Split style={{ marginTop }}>
-            <SplitItem>
-                <Title {...props} headingLevel="h2" size="xl">
-                    {props.title}
-                </Title>
-            </SplitItem>
-            {props.tooltip && (
-                <SplitItem>
-                    <Fragment>
-                        &nbsp;
-                        <Popover
-                            id={`${props.id}-label-help-popover`}
-                            headerContent={'labelHelpTitle'}
-                            bodyContent={'labelHelp'}
-                        >
-                            <Button
-                                variant="plain"
-                                id={`${props.id}-label-help-button`}
-                                aria-label={t('More info')}
-                                onClick={/* istanbul ignore next */ (e) => e.preventDefault()}
-                                className="pf-c-form__group-label-help"
-                            >
-                                <HelpIcon noVerticalAlign size="sm" />
-                            </Button>
-                        </Popover>
-                    </Fragment>
-                </SplitItem>
-            )}
-        </Split>
-    )
+  /* istanbul ignore next */
+  const marginTop = props.spacing ? (isFullWidthPage ? '24px' : '16px') : undefined
+  const { t } = useTranslation()
+  return (
+    <Split style={{ marginTop }}>
+      <SplitItem>
+        <Title {...props} headingLevel="h2" size="xl">
+          {props.title}
+        </Title>
+      </SplitItem>
+      {props.tooltip && (
+        <SplitItem>
+          <Fragment>
+            &nbsp;
+            <Popover id={`${props.id}-label-help-popover`} headerContent={'labelHelpTitle'} bodyContent={'labelHelp'}>
+              <Button
+                variant="plain"
+                id={`${props.id}-label-help-button`}
+                aria-label={t('More info')}
+                onClick={/* istanbul ignore next */ (e) => e.preventDefault()}
+                className="pf-c-form__group-label-help"
+              >
+                <HelpIcon noVerticalAlign size="sm" />
+              </Button>
+            </Popover>
+          </Fragment>
+        </SplitItem>
+      )}
+    </Split>
+  )
 }

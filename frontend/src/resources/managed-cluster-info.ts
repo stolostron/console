@@ -10,74 +10,74 @@ export const ManagedClusterInfoKind = 'ManagedClusterInfo'
 export type ManagedClusterInfoKindType = 'ManagedClusterInfo'
 
 export const ManagedClusterInfoDefinition: IResourceDefinition = {
-    apiVersion: ManagedClusterInfoApiVersion,
-    kind: ManagedClusterInfoKind,
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
 }
 
 export interface NodeInfo {
-    name?: string
-    labels?: { [key: string]: string }
-    capacity?: { cpu: string; memory: string }
-    conditions?: {
-        status: string
-        type: string
-    }[]
+  name?: string
+  labels?: { [key: string]: string }
+  capacity?: { cpu: string; memory: string }
+  conditions?: {
+    status: string
+    type: string
+  }[]
 }
 export type OCPVersionRelease = {
-    version: string
-    image: string
-    url?: string
-    channels?: string[]
+  version: string
+  image: string
+  url?: string
+  channels?: string[]
 }
 export type OpenShiftDistributionInfo = {
-    version: string
-    channel?: string
-    availableUpdates: string[]
-    versionAvailableUpdates?: OCPVersionRelease[]
-    desired?: OCPVersionRelease
-    desiredVersion: string
-    upgradeFailed: boolean
+  version: string
+  channel?: string
+  availableUpdates: string[]
+  versionAvailableUpdates?: OCPVersionRelease[]
+  desired?: OCPVersionRelease
+  desiredVersion: string
+  upgradeFailed: boolean
 }
 
 export interface ManagedClusterInfo extends IResource {
-    apiVersion: ManagedClusterInfoApiVersionType
-    kind: ManagedClusterInfoKindType
-    metadata: Metadata
-    spec?: {
-        loggingCA?: string
-        masterEndpoint?: string
+  apiVersion: ManagedClusterInfoApiVersionType
+  kind: ManagedClusterInfoKindType
+  metadata: Metadata
+  spec?: {
+    loggingCA?: string
+    masterEndpoint?: string
+  }
+  status?: {
+    conditions?: V1CustomResourceDefinitionCondition[]
+    version?: string
+    kubeVendor?: string
+    cloudVendor?: string
+    clusterID?: string
+    distributionInfo?: {
+      type: string
+      ocp: OpenShiftDistributionInfo
     }
-    status?: {
-        conditions?: V1CustomResourceDefinitionCondition[]
-        version?: string
-        kubeVendor?: string
-        cloudVendor?: string
-        clusterID?: string
-        distributionInfo?: {
-            type: string
-            ocp: OpenShiftDistributionInfo
-        }
-        consoleURL?: string
-        nodeList?: NodeInfo[]
-        loggingEndpoint?: {
-            ip: string
-            hostname?: string
-            nodeName?: string
-            targetRef?: {
-                kind?: string
-                namespace?: string
-                name?: string
-                uid?: string
-                apiVersion?: string
-                resourceVersion?: string
-                fieldPath?: string
-            }
-        }
-        loggingPort?: {
-            name?: string
-            port: number
-            protocol?: string
-            appProtocol?: string
-        }
+    consoleURL?: string
+    nodeList?: NodeInfo[]
+    loggingEndpoint?: {
+      ip: string
+      hostname?: string
+      nodeName?: string
+      targetRef?: {
+        kind?: string
+        namespace?: string
+        name?: string
+        uid?: string
+        apiVersion?: string
+        resourceVersion?: string
+        fieldPath?: string
+      }
     }
+    loggingPort?: {
+      name?: string
+      port: number
+      protocol?: string
+      appProtocol?: string
+    }
+  }
 }

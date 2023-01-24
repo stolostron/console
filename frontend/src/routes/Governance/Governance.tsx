@@ -13,21 +13,21 @@ import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
 
 export default function Governance() {
-    return (
-        <Switch>
-            <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
-            <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
-            <Route exact path={NavigationPath.createPolicyAutomation} render={() => <CreatePolicyAutomation />} />
-            <Route exact path={NavigationPath.editPolicyAutomation} render={() => <EditPolicyAutomation />} />
-            <Route path={NavigationPath.policyTemplateDetails} component={PolicyTemplateDetailsPage} />
-            <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
-            <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
-            <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
-            <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-            <Route path={NavigationPath.governance} component={GovernancePage} />
-            <Route path="*">
-                <Redirect to={NavigationPath.governance} />
-            </Route>
-        </Switch>
-    )
+  return (
+    <Switch>
+      <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
+      <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
+      <Route exact path={NavigationPath.createPolicyAutomation} render={() => <CreatePolicyAutomation />} />
+      <Route exact path={NavigationPath.editPolicyAutomation} render={() => <EditPolicyAutomation />} />
+      <Route path={NavigationPath.policyTemplateDetails} component={PolicyTemplateDetailsPage} />
+      <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
+      <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
+      <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
+      <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
+      <Route path={NavigationPath.governance} component={GovernancePage} />
+      <Route path="*">
+        <Redirect to={NavigationPath.governance} />
+      </Route>
+    </Switch>
+  )
 }

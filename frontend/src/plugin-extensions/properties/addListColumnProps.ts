@@ -3,15 +3,15 @@
 import { ITransform } from '@patternfly/react-table'
 
 export type ApplicationListColumnProps = {
-    /** the header of the column */
-    header: string
+  /** the header of the column */
+  header: string
 
-    tooltip?: React.ReactNode
+  tooltip?: React.ReactNode
 
-    transforms?: ITransform[]
+  transforms?: ITransform[]
 
-    cellTransforms?: ITransform[]
+  cellTransforms?: ITransform[]
 
-    /** component type*/
-    cell: React.ComponentType<{ resource?: any }>
+  /** component type*/
+  cell: React.ComponentType<{ resource?: any }>
 }

@@ -44,8 +44,10 @@ const config: Config.InitialOptions = {
     coverageDirectory: './coverage',
     coverageReporters: ['text-summary', 'html', ['lcov', { projectRoot: '../' }]],
     collectCoverageFrom: [
-        '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
-        '<rootDir>/src/*.{tsx,ts,jsx,js}',
+        //'<rootDir>/src/components/SyncEditor/SyncDiff.tsx',
+        '<rootDir>/src/components/SyncEditor/*.{tsx,ts,jsx,js}',
+        // '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
+        // '<rootDir>/src/*.{tsx,ts,jsx,js}',
         '!<rootDir>/src/**/*.stories.tsx',
         '!<rootDir>/src/ui-components/**/index.ts',
         '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',

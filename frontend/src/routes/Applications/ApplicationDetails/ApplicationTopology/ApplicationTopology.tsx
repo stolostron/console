@@ -15,141 +15,141 @@ import './components/Drawer.css'
 import './components/Toolbar.css'
 
 export type ArgoAppDetailsContainerData = {
-    page: number
-    startIdx: number
-    argoAppSearchToggle: boolean
-    expandSectionToggleMap: Set<number>
-    selected?: any
-    selectedArgoAppList: []
-    isLoading: boolean
+  page: number
+  startIdx: number
+  argoAppSearchToggle: boolean
+  expandSectionToggleMap: Set<number>
+  selected?: any
+  selectedArgoAppList: []
+  isLoading: boolean
 }
 
 export type ClusterDetailsContainerData = {
-    page: number
-    startIdx: number
-    clusterSearchToggle: boolean
-    isSelectOpen: boolean
-    expandSectionToggleMap: any
-    clusterID?: string
-    selected?: any
-    selectedClusterList: any[]
+  page: number
+  startIdx: number
+  clusterSearchToggle: boolean
+  isSelectOpen: boolean
+  expandSectionToggleMap: any
+  clusterID?: string
+  selected?: any
+  selectedClusterList: any[]
 }
 
 export function ApplicationTopologyPageContent(props: {
-    applicationData: ApplicationDataType | undefined
-    channelControl: {
-        allChannels: string[]
-        activeChannel: string | undefined
-        setActiveChannel: (channel: string) => void
-    }
+  applicationData: ApplicationDataType | undefined
+  channelControl: {
+    allChannels: string[]
+    activeChannel: string | undefined
+    setActiveChannel: (channel: string) => void
+  }
 }) {
-    const { t } = useTranslation()
-    const {
-        applicationData = {
-            refreshTime: undefined,
-            application: undefined,
-            appData: undefined,
-            topology: undefined,
-            statuses: undefined,
-        },
-        channelControl,
-    } = props
-    const { refreshTime, application, appData, topology, statuses } = applicationData
+  const { t } = useTranslation()
+  const {
+    applicationData = {
+      refreshTime: undefined,
+      application: undefined,
+      appData: undefined,
+      topology: undefined,
+      statuses: undefined,
+    },
+    channelControl,
+  } = props
+  const { refreshTime, application, appData, topology, statuses } = applicationData
 
-    const { setDrawerContext } = useContext(AcmDrawerContext)
-    const [options] = useState<any>(getOptions())
-    const [elements, setElements] = useState<{
-        nodes: any[]
-        links: any[]
-    }>({ nodes: [], links: [] })
+  const { setDrawerContext } = useContext(AcmDrawerContext)
+  const [options] = useState<any>(getOptions())
+  const [elements, setElements] = useState<{
+    nodes: any[]
+    links: any[]
+  }>({ nodes: [], links: [] })
 
-    const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
-        page: 1,
-        startIdx: 0,
-        argoAppSearchToggle: false,
-        expandSectionToggleMap: new Set(),
-        selected: undefined,
-        selectedArgoAppList: [],
-        isLoading: false,
-    })
+  const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
+    page: 1,
+    startIdx: 0,
+    argoAppSearchToggle: false,
+    expandSectionToggleMap: new Set(),
+    selected: undefined,
+    selectedArgoAppList: [],
+    isLoading: false,
+  })
 
-    const [clusterDetailsContainerData, setClusterDetailsContainerData] = useState<ClusterDetailsContainerData>({
-        page: 1,
-        startIdx: 0,
-        clusterSearchToggle: false,
-        isSelectOpen: false,
-        expandSectionToggleMap: new Set(),
-        clusterID: undefined,
-        selected: undefined,
-        selectedClusterList: [],
-    })
+  const [clusterDetailsContainerData, setClusterDetailsContainerData] = useState<ClusterDetailsContainerData>({
+    page: 1,
+    startIdx: 0,
+    clusterSearchToggle: false,
+    isSelectOpen: false,
+    expandSectionToggleMap: new Set(),
+    clusterID: undefined,
+    selected: undefined,
+    selectedClusterList: [],
+  })
 
-    const handleErrorMsg = () => {
-        //show toast message in parent container
+  const handleErrorMsg = () => {
+    //show toast message in parent container
+  }
+
+  const setDrawerContent = (
+    title: string,
+    isInline: boolean,
+    isResizable: boolean,
+    disableDrawerHead: boolean,
+    drawerPanelBodyHasNoPadding: boolean,
+    panelContent: React.ReactNode | React.ReactNode[],
+    closeDrawer: boolean
+  ) => {
+    if (closeDrawer) {
+      setDrawerContext(undefined)
+    } else {
+      setDrawerContext({
+        isExpanded: true,
+        onCloseClick: () => setDrawerContext(undefined),
+        title,
+        panelContent,
+        isInline,
+        panelContentProps: { minSize: '20%' },
+        isResizable,
+        disableDrawerHead,
+        drawerPanelBodyHasNoPadding,
+      })
     }
+  }
 
-    const setDrawerContent = (
-        title: string,
-        isInline: boolean,
-        isResizable: boolean,
-        disableDrawerHead: boolean,
-        drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[],
-        closeDrawer: boolean
-    ) => {
-        if (closeDrawer) {
-            setDrawerContext(undefined)
-        } else {
-            setDrawerContext({
-                isExpanded: true,
-                onCloseClick: () => setDrawerContext(undefined),
-                title,
-                panelContent,
-                isInline,
-                panelContentProps: { minSize: '20%' },
-                isResizable,
-                disableDrawerHead,
-                drawerPanelBodyHasNoPadding,
-            })
-        }
+  const argoAppDetailsContainerControl = {
+    argoAppDetailsContainerData,
+    handleArgoAppDetailsContainerUpdate: setArgoAppDetailsContainerData,
+    handleErrorMsg,
+  }
+
+  const clusterDetailsContainerControl = {
+    clusterDetailsContainerData,
+    handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
+  }
+
+  const processActionLink = (resource: any, toggleLoading: boolean) => {
+    processResourceActionLink(resource, toggleLoading, t)
+  }
+
+  const canUpdateStatuses = !!statuses
+  useEffect(() => {
+    if (application && appData && topology) {
+      setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTime])
 
-    const argoAppDetailsContainerControl = {
-        argoAppDetailsContainerData,
-        handleArgoAppDetailsContainerUpdate: setArgoAppDetailsContainerData,
-        handleErrorMsg,
-    }
-
-    const clusterDetailsContainerControl = {
-        clusterDetailsContainerData,
-        handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
-    }
-
-    const processActionLink = (resource: any, toggleLoading: boolean) => {
-        processResourceActionLink(resource, toggleLoading, t)
-    }
-
-    const canUpdateStatuses = !!statuses
-    useEffect(() => {
-        if (application && appData && topology) {
-            setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refreshTime])
-
-    return (
-        <>
-            <DrawerShapes />
-            <Topology
-                elements={elements}
-                processActionLink={processActionLink}
-                canUpdateStatuses={canUpdateStatuses}
-                argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                clusterDetailsContainerControl={clusterDetailsContainerControl}
-                channelControl={channelControl}
-                options={options}
-                setDrawerContent={setDrawerContent}
-            />
-        </>
-    )
+  return (
+    <>
+      <DrawerShapes />
+      <Topology
+        elements={elements}
+        processActionLink={processActionLink}
+        canUpdateStatuses={canUpdateStatuses}
+        argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+        clusterDetailsContainerControl={clusterDetailsContainerControl}
+        channelControl={channelControl}
+        options={options}
+        setDrawerContent={setDrawerContent}
+      />
+    </>
+  )
 }

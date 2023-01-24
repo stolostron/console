@@ -10,29 +10,29 @@ export const ClusterManagementAddOnKind = 'ClusterManagementAddOn'
 export type ClusterManagementAddOnKindType = 'ClusterManagementAddOn'
 
 export const ClusterManagementAddOnDefinition: IResourceDefinition = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
+  apiVersion: ClusterManagementAddOnApiVersion,
+  kind: ClusterManagementAddOnKind,
 }
 
 export interface ClusterManagementAddOn extends IResource {
-    apiVersion: ClusterManagementAddOnApiVersionType
-    kind: ClusterManagementAddOnKindType
-    metadata: Metadata
-    spec: {
-        addOnMeta?: {
-            displayName: string
-            description: string
-        }
-        addOnConfiguration?: {
-            crdName: string
-            crName: string
-        }
+  apiVersion: ClusterManagementAddOnApiVersionType
+  kind: ClusterManagementAddOnKindType
+  metadata: Metadata
+  spec: {
+    addOnMeta?: {
+      displayName: string
+      description: string
     }
+    addOnConfiguration?: {
+      crdName: string
+      crName: string
+    }
+  }
 }
 
 export function listClusterManagementAddOns() {
-    return listClusterResources<ClusterManagementAddOn>({
-        apiVersion: ClusterManagementAddOnApiVersion,
-        kind: ClusterManagementAddOnKind,
-    })
+  return listClusterResources<ClusterManagementAddOn>({
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+  })
 }

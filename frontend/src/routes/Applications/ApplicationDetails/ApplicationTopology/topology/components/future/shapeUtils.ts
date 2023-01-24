@@ -18,84 +18,84 @@ export const DEFAULT_DECORATOR_RADIUS = 12
 export const DEFAULT_DECORATOR_PADDING = 4
 
 export interface ShapeProps {
-    className?: string
-    element: Node
-    width: number
-    height: number
-    filter?: string
-    sides?: number
-    cornerRadius?: number
-    dndDropRef?: (node: SVGElement | null) => void
+  className?: string
+  element: Node
+  width: number
+  height: number
+  filter?: string
+  sides?: number
+  cornerRadius?: number
+  dndDropRef?: (node: SVGElement | null) => void
 }
 
 const quadrantRadians = (quadrant: TopologyQuadrant): number => {
-    switch (quadrant) {
-        case TopologyQuadrant.upperRight:
-            return UPPER_RIGHT_RADIANS
-        case TopologyQuadrant.lowerRight:
-            return LOWER_RIGHT_RADIANS
-        case TopologyQuadrant.upperLeft:
-            return UPPER_LEFT_RADIANS
-        case TopologyQuadrant.lowerLeft:
-            return LOWER_LEFT_RADIANS
-    }
-    return UPPER_RIGHT_RADIANS
+  switch (quadrant) {
+    case TopologyQuadrant.upperRight:
+      return UPPER_RIGHT_RADIANS
+    case TopologyQuadrant.lowerRight:
+      return LOWER_RIGHT_RADIANS
+    case TopologyQuadrant.upperLeft:
+      return UPPER_LEFT_RADIANS
+    case TopologyQuadrant.lowerLeft:
+      return LOWER_LEFT_RADIANS
+  }
+  return UPPER_RIGHT_RADIANS
 }
 
 export const getPointsForSides = (numSides: number, size: number, padding = 0): PointTuple[] => {
-    const points: PointTuple[] = []
-    const angle = TWO_PI / numSides
-    const radius = size / 2
+  const points: PointTuple[] = []
+  const angle = TWO_PI / numSides
+  const radius = size / 2
 
-    for (let point = 0; point < numSides; point++) {
-        points.push([
-            radius + (radius - padding) * Math.cos(angle * point),
-            radius + (radius - padding) * Math.sin(angle * point),
-        ])
-    }
+  for (let point = 0; point < numSides; point++) {
+    points.push([
+      radius + (radius - padding) * Math.cos(angle * point),
+      radius + (radius - padding) * Math.sin(angle * point),
+    ])
+  }
 
-    return points
+  return points
 }
 
 export const getDefaultShapeDecoratorCenter = (quadrant: TopologyQuadrant, node: Node): { x: number; y: number } => {
-    const { width, height } = node.getDimensions()
-    const shape = node.getNodeShape()
-    const nodeCenterX = width / 2
-    const nodeCenterY = height / 2
-    const deltaX = width / 2
-    const deltaY = height / 2
+  const { width, height } = node.getDimensions()
+  const shape = node.getNodeShape()
+  const nodeCenterX = width / 2
+  const nodeCenterY = height / 2
+  const deltaX = width / 2
+  const deltaY = height / 2
 
-    if (shape) {
-        return {
-            x: nodeCenterX + Math.cos(quadrantRadians(quadrant)) * deltaX,
-            y: nodeCenterY + Math.sin(quadrantRadians(quadrant)) * deltaY,
-        }
+  if (shape) {
+    return {
+      x: nodeCenterX + Math.cos(quadrantRadians(quadrant)) * deltaX,
+      y: nodeCenterY + Math.sin(quadrantRadians(quadrant)) * deltaY,
     }
-    switch (quadrant) {
-        case TopologyQuadrant.upperRight:
-            return {
-                x: nodeCenterX + deltaX,
-                y: nodeCenterY - deltaY,
-            }
-        case TopologyQuadrant.lowerRight:
-            return {
-                x: nodeCenterX + deltaX,
-                y: nodeCenterY + deltaY,
-            }
-        case TopologyQuadrant.upperLeft:
-            return {
-                x: nodeCenterX - (deltaX * 2) / 3,
-                y: nodeCenterY - (deltaY * 2) / 3,
-            }
-        case TopologyQuadrant.lowerLeft:
-            return {
-                x: nodeCenterX - deltaX,
-                y: nodeCenterY + deltaY,
-            }
-        default:
-            return {
-                x: nodeCenterX,
-                y: nodeCenterY,
-            }
-    }
+  }
+  switch (quadrant) {
+    case TopologyQuadrant.upperRight:
+      return {
+        x: nodeCenterX + deltaX,
+        y: nodeCenterY - deltaY,
+      }
+    case TopologyQuadrant.lowerRight:
+      return {
+        x: nodeCenterX + deltaX,
+        y: nodeCenterY + deltaY,
+      }
+    case TopologyQuadrant.upperLeft:
+      return {
+        x: nodeCenterX - (deltaX * 2) / 3,
+        y: nodeCenterY - (deltaY * 2) / 3,
+      }
+    case TopologyQuadrant.lowerLeft:
+      return {
+        x: nodeCenterX - deltaX,
+        y: nodeCenterY + deltaY,
+      }
+    default:
+      return {
+        x: nodeCenterX,
+        y: nodeCenterY,
+      }
+  }
 }

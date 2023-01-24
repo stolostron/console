@@ -9,12 +9,12 @@ export const CronJobKind = 'CronJob'
 export type CronJobKindType = 'CronJob'
 
 export const CronJobDefinition: IResourceDefinition = {
-    apiVersion: CronJobApiVersion,
-    kind: CronJobKind,
+  apiVersion: CronJobApiVersion,
+  kind: CronJobKind,
 }
 
 export interface CronJob extends IResource {
-    apiVersion: CronJobApiVersionType
-    kind: CronJobKindType
-    metadata: Metadata
+  apiVersion: CronJobApiVersionType
+  kind: CronJobKindType
+  metadata: Metadata
 }

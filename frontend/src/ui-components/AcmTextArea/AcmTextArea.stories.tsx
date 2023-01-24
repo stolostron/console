@@ -5,16 +5,16 @@ import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmTextArea } from './AcmTextArea'
 
 export default {
-    title: 'TextArea',
-    component: AcmTextArea,
+  title: 'TextArea',
+  component: AcmTextArea,
 }
 
 export const TextArea = () => {
-    const [value, setValue] = useState<string>()
+  const [value, setValue] = useState<string>()
 
-    return (
-        <AcmForm>
-            <AcmTextArea label="Label" id="123" value={value} onChange={setValue} />
-        </AcmForm>
-    )
+  return (
+    <AcmForm>
+      <AcmTextArea label="Label" id="123" value={value} onChange={setValue} />
+    </AcmForm>
+  )
 }

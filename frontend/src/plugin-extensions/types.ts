@@ -2,6 +2,6 @@
 import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 
 export type AcmExtension = Partial<{
-    applicationAction: ApplicationActionProps[]
-    applicationListColumn: ApplicationListColumnProps[]
+  applicationAction: ApplicationActionProps[]
+  applicationListColumn: ApplicationListColumnProps[]
 }>
