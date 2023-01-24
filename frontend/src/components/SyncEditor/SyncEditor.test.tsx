@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { SyncEditor, SyncEditorProps } from './SyncEditor'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -275,25 +275,25 @@ describe('SyncEditor component', () => {
         expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
     })
 
-    // it('keyboard', async () => {
-    //     render(<SyncEditor {...propsExistingResource} />)
+    it.skip('keyboard', async () => {
+        render(<SyncEditor {...propsExistingResource} />)
 
-    //     // make sure yaml matches
-    //     const input = screen.getByRole('textbox', {
-    //         name: /monaco/i,
-    //     }) as HTMLTextAreaElement
-    //     await waitFor(() => expect(input).not.toHaveValue(''))
-    //     expect(input).toHaveMultilineValue(existingResourceYaml)
-    //     await new Promise((resolve) => setTimeout(resolve, 500))
-    //     screen.logTestingPlaygroundURL()
+        // make sure yaml matches
+        const input = screen.getByRole('textbox', {
+            name: /monaco/i,
+        }) as HTMLTextAreaElement
+        await waitFor(() => expect(input).not.toHaveValue(''))
+        expect(input).toHaveMultilineValue(existingResourceYaml)
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        screen.logTestingPlaygroundURL()
 
-    //     // try typing on immutable
-    //     const text = 'name: test'
-    //     const i = input.value.indexOf(text)
-    //     input.setSelectionRange(i, i)
-    //     fireEvent.keyDown(input, { key: 'A', code: 'KeyA' })
-    //     // userEvent.type(input, 'newthing')
-    // })
+        // try typing on immutable
+        const text = 'name: test'
+        const i = input.value.indexOf(text)
+        input.setSelectionRange(i, i)
+        fireEvent.keyDown(input, { key: 'A', code: 'KeyA' })
+        // userEvent.type(input, 'newthing')
+    })
 })
 
 const propsNewResource: SyncEditorProps = {
