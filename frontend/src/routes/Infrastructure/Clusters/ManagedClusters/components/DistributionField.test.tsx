@@ -21,7 +21,7 @@ import {
   ResourceAttributes,
 } from '../../../../../resources'
 import { createBrowserHistory } from 'history'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
@@ -30,6 +30,7 @@ import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } 
 import { DistributionField } from './DistributionField'
 import { Router } from 'react-router-dom'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import userEvent from '@testing-library/user-event'
 
 import '@testing-library/jest-dom'
 
@@ -821,7 +822,7 @@ describe('DistributionField hypershift clusters', () => {
     labels: { abc: '123' },
     nodes: undefined,
     kubeApiServer: '',
-    consoleURL: '',
+    consoleURL: 'some url',
     hive: {
       isHibernatable: true,
       clusterPool: undefined,
@@ -868,7 +869,7 @@ describe('DistributionField hypershift clusters', () => {
       labels: { abc: '123' },
       nodes: undefined,
       kubeApiServer: '',
-      consoleURL: '',
+      consoleURL: 'some url',
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -1174,6 +1175,28 @@ describe('DistributionField hypershift clusters', () => {
     )
 
     expect(queryAllByText(/upgrading cluster/i).length).toBe(1)
+    expect(queryByRole('progressbar')).toBeTruthy()
+  })
+
+  it('Should have cluster name and version in popover', async () => {
+    const { getByText, queryAllByText, queryByRole } = await renderDistributionInfoField(
+      mockHypershiftCluster,
+      true,
+      false,
+      undefined,
+      undefined,
+      mockHostedCluster,
+      false
+    )
+
+    //await new Promise((resolve) => setTimeout(resolve, 500)) // makes sure everything is finished
+    //screen.logTestingPlaygroundURL()
+
+    await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22/i }))
+    await waitFor(() =>
+      expect(getByText(/upgrading hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument()
+    )
+    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 })
