@@ -31,6 +31,8 @@ import { DistributionField } from './DistributionField'
 import { Router } from 'react-router-dom'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 
+import '@testing-library/jest-dom'
+
 const mockDistributionInfo: DistributionInfo = {
   ocp: {
     version: '1.2.3',
@@ -801,26 +803,48 @@ describe('DistributionField hypershift clusters', () => {
   }
 
   const mockHypershiftCluster: Cluster = {
-    name: 'clusterName',
-    uid: 'clusterName-uid',
+    name: 'hypershift-cluster1',
+    displayName: 'hypershift-cluster1',
+    namespace: 'clusters',
+    uid: 'hypershift-cluster1-uid',
+    provider: undefined,
     status: ClusterStatus.ready,
+    distribution: {
+      ocp: {
+        version: '4.11.12',
+        availableUpdates: [],
+        desiredVersion: '4.11.12',
+        upgradeFailed: false,
+      },
+      isManagedOpenShift: false,
+    },
+    labels: { abc: '123' },
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
     hive: {
       isHibernatable: true,
+      clusterPool: undefined,
+      secrets: {
+        installConfig: '',
+      },
+    },
+    hypershift: {
+      agent: false,
+      hostingNamespace: 'clusters',
+      nodePools: mockNodepools,
+      secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+      isUpgrading: true,
     },
     isHive: false,
     isManaged: true,
     isCurator: true,
     isHostedCluster: true,
-    isSNOCluster: false,
-    distribution: mockDistributionInfo,
-    owner: {},
     isHypershift: true,
-    hypershift: {
-      agent: false,
-      secretNames: [],
-      hostingNamespace: '',
-      isUpgrading: true,
-    },
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
     isRegionalHubCluster: false,
   }
 
@@ -1009,7 +1033,7 @@ describe('DistributionField hypershift clusters', () => {
   })
 
   it('Should show HCP upgrading, managed clusters page', async () => {
-    const { queryByRole } = await renderDistributionInfoField(
+    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
       false,
@@ -1020,11 +1044,12 @@ describe('DistributionField hypershift clusters', () => {
       'managedclusterpage'
     )
 
+    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
   it('Should show HCP upgrading, hosted cluster page', async () => {
-    const { queryByRole } = await renderDistributionInfoField(
+    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
       false,
@@ -1034,6 +1059,8 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       'hostedcluster'
     )
+
+    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1062,7 +1089,7 @@ describe('DistributionField hypershift clusters', () => {
       isRegionalHubCluster: false,
     }
 
-    const { queryByRole } = await renderDistributionInfoField(
+    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
       false,
@@ -1072,11 +1099,12 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
+    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
   it("Shouldn't show HCP upgrading, upgrading but on nodepools table", async () => {
-    const { queryByRole } = await renderDistributionInfoField(
+    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
       false,
@@ -1087,6 +1115,7 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
+    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 })
