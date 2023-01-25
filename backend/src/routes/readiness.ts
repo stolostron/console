@@ -6,8 +6,8 @@ import { getOauthInfoPromise } from './oauth'
 
 // The kubelet uses readiness probes to know when a container is ready to start accepting traffic
 export async function readiness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    if (!isLive) return respondInternalServerError(req, res)
-    const oauthInfo = await getOauthInfoPromise()
-    if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
-    return respondOK(req, res)
+  if (!isLive) return respondInternalServerError(req, res)
+  const oauthInfo = await getOauthInfoPromise()
+  if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
+  return respondOK(req, res)
 }

@@ -14,66 +14,64 @@ import { onToggle } from '../utils/utils'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 type HostedClusterProgressProps = {
-    hostedCluster: HostedClusterK8sResource
+  hostedCluster: HostedClusterK8sResource
 }
 
 const HostedClusterProgress = ({ hostedCluster }: HostedClusterProgressProps) => {
-    const { t } = useTranslation()
-    const { cluster } = useContext(ClusterContext)
-    const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
-    localStorage.getItem(hostedClusterProgressID) ?? localStorage.setItem(hostedClusterProgressID, 'show')
-    const [expanded, setExpanded] = useState(localStorage.getItem(hostedClusterProgressID) === 'show')
+  const { t } = useTranslation()
+  const { cluster } = useContext(ClusterContext)
+  const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
+  localStorage.getItem(hostedClusterProgressID) ?? localStorage.setItem(hostedClusterProgressID, 'show')
+  const [expanded, setExpanded] = useState(localStorage.getItem(hostedClusterProgressID) === 'show')
 
-    const hostedClusterAvailable =
-        hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
+  const hostedClusterAvailable =
+    hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
 
-    return (
-        <ProgressStep icon={hostedClusterAvailable ? <CheckCircleIcon color={okColor.value} /> : <Spinner size="md" />}>
-            <Stack hasGutter>
-                <StackItem>
-                    <ExpandableSectionToggle
-                        isExpanded={expanded}
-                        onToggle={() => onToggle(hostedClusterProgressID, expanded, setExpanded)}
-                        className="nodepool-progress-item__header"
-                    >
-                        {t('Control plane')}
-                    </ExpandableSectionToggle>
-                </StackItem>
-                {expanded && (
-                    <>
-                        <StackItem className="nodepool-progress-item__body">
-                            <DistributionField
-                                cluster={cluster}
-                                clusterCurator={undefined}
-                                hostedCluster={hostedCluster}
-                                resource={'hostedcluster'}
-                            />
-                        </StackItem>
-                        <StackItem className="nodepool-progress-item__body">
-                            <ConditionsTable conditions={hostedCluster?.status?.conditions} />
-                        </StackItem>
-                        <StackItem className="nodepool-progress-item__body">
-                            <AcmButton
-                                variant="link"
-                                isInline
-                                onClick={() =>
-                                    launchToOCP(
-                                        `k8s/ns/${hostedCluster?.metadata?.namespace || ''}-${
-                                            hostedCluster?.metadata?.name || ''
-                                        }/pods`
-                                    )
-                                }
-                                icon={<ExternalLinkAltIcon />}
-                                iconPosition="right"
-                            >
-                                {t('Control plane pods')}
-                            </AcmButton>
-                        </StackItem>
-                    </>
-                )}
-            </Stack>
-        </ProgressStep>
-    )
+  return (
+    <ProgressStep icon={hostedClusterAvailable ? <CheckCircleIcon color={okColor.value} /> : <Spinner size="md" />}>
+      <Stack hasGutter>
+        <StackItem>
+          <ExpandableSectionToggle
+            isExpanded={expanded}
+            onToggle={() => onToggle(hostedClusterProgressID, expanded, setExpanded)}
+            className="nodepool-progress-item__header"
+          >
+            {t('Control plane')}
+          </ExpandableSectionToggle>
+        </StackItem>
+        {expanded && (
+          <>
+            <StackItem className="nodepool-progress-item__body">
+              <DistributionField
+                cluster={cluster}
+                clusterCurator={undefined}
+                hostedCluster={hostedCluster}
+                resource={'hostedcluster'}
+              />
+            </StackItem>
+            <StackItem className="nodepool-progress-item__body">
+              <ConditionsTable conditions={hostedCluster?.status?.conditions} />
+            </StackItem>
+            <StackItem className="nodepool-progress-item__body">
+              <AcmButton
+                variant="link"
+                isInline
+                onClick={() =>
+                  launchToOCP(
+                    `k8s/ns/${hostedCluster?.metadata?.namespace || ''}-${hostedCluster?.metadata?.name || ''}/pods`
+                  )
+                }
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
+              >
+                {t('Control plane pods')}
+              </AcmButton>
+            </StackItem>
+          </>
+        )}
+      </Stack>
+    </ProgressStep>
+  )
 }
 
 export default HostedClusterProgress

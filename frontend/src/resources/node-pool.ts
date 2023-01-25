@@ -9,44 +9,44 @@ export const NodePoolKind = 'NodePool'
 export type NodePoolKindType = 'NodePool'
 
 export const NodePoolDefinition: IResourceDefinition = {
-    apiVersion: NodePoolApiVersion,
-    kind: NodePoolKind,
+  apiVersion: NodePoolApiVersion,
+  kind: NodePoolKind,
 }
 
 export interface NodePool extends IResource {
-    apiVersion: NodePoolApiVersionType
-    kind: NodePoolKindType
-    metadata: Metadata
-    spec: {
-        clusterName: string
-        management: any
-        platform: {
-            aws?: {
-                instanceProfile: string
-                instanceType: string
-                rootVolume: {
-                    size: number
-                    type: string
-                }
-                securityGroups: any[]
-                subnet: {
-                    id: string
-                }
-            }
-            type: string
+  apiVersion: NodePoolApiVersionType
+  kind: NodePoolKindType
+  metadata: Metadata
+  spec: {
+    clusterName: string
+    management: any
+    platform: {
+      aws?: {
+        instanceProfile: string
+        instanceType: string
+        rootVolume: {
+          size: number
+          type: string
         }
-        release: {
-            image: string
+        securityGroups: any[]
+        subnet: {
+          id: string
         }
-        replicas: number
+      }
+      type: string
     }
-    status?: {
-        conditions?: {
-            type: string
-            status: string
-            reason: string
-            message: string
-        }[]
-        version: string
+    release: {
+      image: string
     }
+    replicas: number
+  }
+  status?: {
+    conditions?: {
+      type: string
+      status: string
+      reason: string
+      message: string
+    }[]
+    version: string
+  }
 }

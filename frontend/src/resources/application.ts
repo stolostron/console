@@ -11,27 +11,27 @@ export const ApplicationKind = 'Application'
 export type ApplicationKindType = 'Application'
 
 export const ApplicationDefinition: IResourceDefinition = {
-    apiVersion: ApplicationApiVersion,
-    kind: ApplicationKind,
+  apiVersion: ApplicationApiVersion,
+  kind: ApplicationKind,
 }
 
 export const DiscoveredArgoApplicationDefinition: IResourceDefinition = {
-    apiVersion: ApplicationSetApiVersion,
-    kind: ApplicationKind,
+  apiVersion: ApplicationSetApiVersion,
+  kind: ApplicationKind,
 }
 
 export interface Application extends IResource {
-    apiVersion: ApplicationApiVersionType
-    kind: ApplicationKindType
-    metadata: Metadata
-    spec: {
-        componentKinds: {
-            group: string
-            kind: string
-        }[]
-        selector?: Selector | null
-    }
-    transformed?: {
-        clusterCount?: string
-    }
+  apiVersion: ApplicationApiVersionType
+  kind: ApplicationKindType
+  metadata: Metadata
+  spec: {
+    componentKinds: {
+      group: string
+      kind: string
+    }[]
+    selector?: Selector | null
+  }
+  transformed?: {
+    clusterCount?: string
+  }
 }

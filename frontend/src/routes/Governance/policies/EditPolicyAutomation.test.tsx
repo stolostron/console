@@ -8,87 +8,87 @@ import { nockAnsibleTower, nockIgnoreApiPaths, nockIgnoreRBAC /*nockPatch*/, noc
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicyAutomation } from './EditPolicyAutomation'
 import {
-    mockAnsibleCredential,
-    mockAnsibleCredentialWorkflow,
-    mockPolicy,
-    mockPolicyAutomation,
-    mockSecret,
-    mockSubscriptionOperator,
-    mockTemplateList,
-    mockTemplateWorkflowList,
+  mockAnsibleCredential,
+  mockAnsibleCredentialWorkflow,
+  mockPolicy,
+  mockPolicyAutomation,
+  mockSecret,
+  mockSubscriptionOperator,
+  mockTemplateList,
+  mockTemplateWorkflowList,
 } from '../governance.sharedMocks'
 import { SubscriptionOperator } from '../../../resources'
 import { waitForNocks } from '../../../lib/test-util'
 
 function EditPolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[] }) {
-    const actualPath = NavigationPath.editPolicyAutomation
-        .replace(':namespace', mockPolicy[0].metadata.namespace as string)
-        .replace(':name', mockPolicy[0].metadata.name as string)
-    return (
-        <RecoilRoot
-            initializeState={(snapshot) => {
-                snapshot.set(policyAutomationState, [mockPolicyAutomation])
-                snapshot.set(secretsState, [mockSecret])
-                snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
-            }}
-        >
-            <MemoryRouter initialEntries={[actualPath]}>
-                <Route
-                    path={NavigationPath.editPolicyAutomation}
-                    component={(props: any) => <EditPolicyAutomation {...props} />}
-                />
-            </MemoryRouter>
-        </RecoilRoot>
-    )
+  const actualPath = NavigationPath.editPolicyAutomation
+    .replace(':namespace', mockPolicy[0].metadata.namespace as string)
+    .replace(':name', mockPolicy[0].metadata.name as string)
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(policyAutomationState, [mockPolicyAutomation])
+        snapshot.set(secretsState, [mockSecret])
+        snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+      }}
+    >
+      <MemoryRouter initialEntries={[actualPath]}>
+        <Route
+          path={NavigationPath.editPolicyAutomation}
+          component={(props: any) => <EditPolicyAutomation {...props} />}
+        />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
 }
 
 describe('Edit Policy Automation', () => {
-    beforeEach(async () => {
-        nockIgnoreRBAC()
-        nockIgnoreApiPaths()
-    })
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
 
-    test('can edit policy automation', async () => {
-        render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
-        nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+  test('can edit policy automation', async () => {
+    render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
+    nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        expect(screen.getByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
-        expect(screen.getByText('ansible-test-secret')).toBeInTheDocument()
-        expect(screen.getByText('test-job-pre-install')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
+    expect(screen.getByText('ansible-test-secret')).toBeInTheDocument()
+    expect(screen.getByText('test-job-pre-install')).toBeInTheDocument()
 
-        // modify ansible job and schedule
-        screen.getByText('test-job-pre-install').click()
-        screen.getByRole('option', { name: 'test-job-post-install' }).click()
-        screen.getByText('Once').click()
-        screen.getByRole('option', { name: 'Disabled' }).click()
-        screen.getByRole('button', { name: 'Next' }).click()
+    // modify ansible job and schedule
+    screen.getByText('test-job-pre-install').click()
+    screen.getByRole('option', { name: 'test-job-post-install' }).click()
+    screen.getByText('Once').click()
+    screen.getByRole('option', { name: 'Disabled' }).click()
+    screen.getByRole('button', { name: 'Next' }).click()
 
-        //  review
+    //  review
 
-        const mockPolicyAutomationUpdate = [
-            nockPatch(
-                mockPolicyAutomation,
-                [
-                    { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
-                    { op: 'replace', path: '/spec/mode', value: 'disabled' },
-                ],
-                undefined,
-                204,
-                { dryRun: 'All' }
-            ), //dry run
-            nockPatch(mockPolicyAutomation, [
-                { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
-                { op: 'replace', path: '/spec/mode', value: 'disabled' },
-            ]),
-        ]
-        screen.getByRole('button', { name: 'Submit' }).click()
-        await waitForNocks(mockPolicyAutomationUpdate)
-    })
+    const mockPolicyAutomationUpdate = [
+      nockPatch(
+        mockPolicyAutomation,
+        [
+          { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
+          { op: 'replace', path: '/spec/mode', value: 'disabled' },
+        ],
+        undefined,
+        204,
+        { dryRun: 'All' }
+      ), //dry run
+      nockPatch(mockPolicyAutomation, [
+        { op: 'replace', path: '/spec/automationDef/name', value: 'test-job-post-install' },
+        { op: 'replace', path: '/spec/mode', value: 'disabled' },
+      ]),
+    ]
+    screen.getByRole('button', { name: 'Submit' }).click()
+    await waitForNocks(mockPolicyAutomationUpdate)
+  })
 
-    test('can cancel editing policy automation', async () => {
-        render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
-        screen.getByRole('button', { name: 'Cancel' }).click()
-    })
+  test('can cancel editing policy automation', async () => {
+    render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
+    screen.getByRole('button', { name: 'Cancel' }).click()
+  })
 })

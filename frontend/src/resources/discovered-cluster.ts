@@ -10,40 +10,40 @@ export const DiscoveredClusterKind = 'DiscoveredCluster'
 export type DiscoveredClusterKindType = 'DiscoveredCluster'
 
 export const DiscoveredClusterDefinition: IResourceDefinition = {
-    apiVersion: DiscoveredClusterApiVersion,
-    kind: DiscoveredClusterKind,
+  apiVersion: DiscoveredClusterApiVersion,
+  kind: DiscoveredClusterKind,
 }
 
 export interface DiscoveredCluster extends IResource {
-    apiVersion: DiscoveredClusterApiVersionType
-    kind: DiscoveredClusterKindType
-    metadata: Metadata
-    spec: {
-        name: string
-        console: string
-        apiUrl?: string
-        displayName: string
-        creationTimestamp?: string
-        activityTimestamp: string
-        openshiftVersion: string
-        cloudProvider: string
-        status: string
-        type?: string
-        isManagedCluster?: boolean
-        credential?: {
-            apiVersion: string
-            kind: string
-            name: string
-            namespace: string
-            resourceVersion: string
-            uid: string
-        }
+  apiVersion: DiscoveredClusterApiVersionType
+  kind: DiscoveredClusterKindType
+  metadata: Metadata
+  spec: {
+    name: string
+    console: string
+    apiUrl?: string
+    displayName: string
+    creationTimestamp?: string
+    activityTimestamp: string
+    openshiftVersion: string
+    cloudProvider: string
+    status: string
+    type?: string
+    isManagedCluster?: boolean
+    credential?: {
+      apiVersion: string
+      kind: string
+      name: string
+      namespace: string
+      resourceVersion: string
+      uid: string
     }
+  }
 }
 
 export function listDiscoveredClusters() {
-    return listResources<DiscoveredCluster>({
-        apiVersion: DiscoveredClusterApiVersion,
-        kind: DiscoveredClusterKind,
-    })
+  return listResources<DiscoveredCluster>({
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
+  })
 }

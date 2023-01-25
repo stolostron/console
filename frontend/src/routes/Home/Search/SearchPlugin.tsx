@@ -4,11 +4,11 @@ import { PluginContextProvider } from '../../../components/PluginContextProvider
 import Search from './Search'
 
 export default function SearchPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <Search />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <Search />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

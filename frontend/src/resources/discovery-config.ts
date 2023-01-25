@@ -10,45 +10,45 @@ export const DiscoveryConfigKind = 'DiscoveryConfig'
 export type DiscoveryConfigKindType = 'DiscoveryConfig'
 
 export const DiscoveryConfigDefinition: IResourceDefinition = {
-    apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind,
+  apiVersion: DiscoveryConfigApiVersion,
+  kind: DiscoveryConfigKind,
 }
 
 export interface DiscoveryConfig extends IResource {
-    apiVersion: DiscoveryConfigApiVersionType
-    kind: DiscoveryConfigKindType
-    metadata: Metadata
-    spec: {
-        filters?: {
-            lastActive?: number
-            openShiftVersions?: string[]
-        }
-        credential: string
+  apiVersion: DiscoveryConfigApiVersionType
+  kind: DiscoveryConfigKindType
+  metadata: Metadata
+  spec: {
+    filters?: {
+      lastActive?: number
+      openShiftVersions?: string[]
     }
+    credential: string
+  }
 }
 
 export function listDiscoveryConfigs() {
-    return listResources<DiscoveryConfig>({
-        apiVersion: DiscoveryConfigApiVersion,
-        kind: DiscoveryConfigKind,
-    })
+  return listResources<DiscoveryConfig>({
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+  })
 }
 
 export function createDiscoveryConfig(discoveryConfig: DiscoveryConfig) {
-    return createResource<DiscoveryConfig>(discoveryConfig)
+  return createResource<DiscoveryConfig>(discoveryConfig)
 }
 
 export function replaceDiscoveryConfig(discoveryConfig: DiscoveryConfig) {
-    return replaceResource<DiscoveryConfig>(discoveryConfig)
+  return replaceResource<DiscoveryConfig>(discoveryConfig)
 }
 
 export function getDiscoveryConfig(metadata: { name: string; namespace: string }) {
-    return getResource<DiscoveryConfig>({
-        apiVersion: DiscoveryConfigApiVersion,
-        kind: DiscoveryConfigKind,
-        metadata,
-        spec: {
-            credential: '',
-        },
-    })
+  return getResource<DiscoveryConfig>({
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+    metadata,
+    spec: {
+      credential: '',
+    },
+  })
 }

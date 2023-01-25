@@ -8,17 +8,17 @@ import { waitForText } from '../../../lib/test-util'
 import { ClustersPage } from './ClustersPage'
 
 describe('Cluster Management', () => {
-    test('Discovery Feature Flag Enabled', async () => {
-        nockIgnoreRBAC()
-        nockIgnoreApiPaths()
-        render(
-            <RecoilRoot>
-                <MemoryRouter>
-                    <ClustersPage />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-        await waitForText('Cluster list')
-        await waitForText('Discovered clusters')
-    })
+  test('Discovery Feature Flag Enabled', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <ClustersPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Cluster list')
+    await waitForText('Discovered clusters')
+  })
 })

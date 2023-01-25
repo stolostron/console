@@ -9,12 +9,12 @@ export const NamespaceKind = 'Namespace'
 export type NamespaceKindType = 'Namespace'
 
 export interface Namespace extends IResource {
-    apiVersion: NamespaceApiVersionType
-    kind: NamespaceKindType
-    metadata: Metadata
+  apiVersion: NamespaceApiVersionType
+  kind: NamespaceKindType
+  metadata: Metadata
 }
 
 export const NamespaceDefinition: IResourceDefinition = {
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
+  apiVersion: NamespaceApiVersion,
+  kind: NamespaceKind,
 }

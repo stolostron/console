@@ -4,11 +4,11 @@ import { PluginContextProvider } from '../../../components/PluginContextProvider
 import OverviewPage from './OverviewPage'
 
 export default function OverviewPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <OverviewPage />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <OverviewPage />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

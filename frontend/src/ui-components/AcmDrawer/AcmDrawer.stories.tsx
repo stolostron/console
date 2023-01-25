@@ -9,111 +9,107 @@ import { AcmLabelsInput } from '../AcmLabelsInput/AcmLabelsInput'
 import { AcmPage } from '../AcmPage/AcmPage'
 
 export default {
-    title: 'Drawer',
-    component: AcmDrawer,
+  title: 'Drawer',
+  component: AcmDrawer,
 }
 
 export const Drawer = () => {
-    const [isExpanded, setIsExpanded] = useState<boolean>(false)
-    const [labels, setLabels] = useState<Record<string, string> | undefined>({
-        cloud: 'Amazon',
-        clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
-        name: 'local-cluster',
-        vendor: 'OpenShift',
-    })
-    return (
-        <>
-            <AcmDrawer
-                title="Edit Labels"
-                isExpanded={isExpanded}
-                onCloseClick={() => setIsExpanded(false)}
-                panelContent={
-                    <div>
-                        <p>
-                            Labels help you organize and select resources. Adding labels allows you to query for objects
-                            by using the labels. Selecting labels during policy and application creation allows you to
-                            distribute your resources to different clusters that share common labels.
-                        </p>
-                        <AcmForm style={{ marginTop: '24px' }}>
-                            <AcmLabelsInput
-                                label="local-cluster labels"
-                                id="labels-input"
-                                value={labels}
-                                onChange={(labels) => setLabels(labels)}
-                                buttonLabel="Add label"
-                            />
-                        </AcmForm>
-                        <ActionGroup style={{ marginTop: '24px' }}>
-                            <AcmButton onClick={() => setIsExpanded(!isExpanded)}>Save</AcmButton>
-                            <AcmButton onClick={() => setIsExpanded(!isExpanded)} variant={ButtonVariant.link}>
-                                Cancel
-                            </AcmButton>
-                        </ActionGroup>
-                    </div>
-                }
-            >
-                <div style={{ height: '100vh' }}>
-                    <AcmButton onClick={() => setIsExpanded(!isExpanded)}>Open drawer</AcmButton>
-                </div>
-            </AcmDrawer>
-        </>
-    )
+  const [isExpanded, setIsExpanded] = useState<boolean>(false)
+  const [labels, setLabels] = useState<Record<string, string> | undefined>({
+    cloud: 'Amazon',
+    clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
+    name: 'local-cluster',
+    vendor: 'OpenShift',
+  })
+  return (
+    <>
+      <AcmDrawer
+        title="Edit Labels"
+        isExpanded={isExpanded}
+        onCloseClick={() => setIsExpanded(false)}
+        panelContent={
+          <div>
+            <p>
+              Labels help you organize and select resources. Adding labels allows you to query for objects by using the
+              labels. Selecting labels during policy and application creation allows you to distribute your resources to
+              different clusters that share common labels.
+            </p>
+            <AcmForm style={{ marginTop: '24px' }}>
+              <AcmLabelsInput
+                label="local-cluster labels"
+                id="labels-input"
+                value={labels}
+                onChange={(labels) => setLabels(labels)}
+                buttonLabel="Add label"
+              />
+            </AcmForm>
+            <ActionGroup style={{ marginTop: '24px' }}>
+              <AcmButton onClick={() => setIsExpanded(!isExpanded)}>Save</AcmButton>
+              <AcmButton onClick={() => setIsExpanded(!isExpanded)} variant={ButtonVariant.link}>
+                Cancel
+              </AcmButton>
+            </ActionGroup>
+          </div>
+        }
+      >
+        <div style={{ height: '100vh' }}>
+          <AcmButton onClick={() => setIsExpanded(!isExpanded)}>Open drawer</AcmButton>
+        </div>
+      </AcmDrawer>
+    </>
+  )
 }
 
 export const DrawerUsingAcmPageContext = () => {
-    const [labels, setLabels] = useState<Record<string, string> | undefined>({
-        cloud: 'Amazon',
-        clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
-        name: 'local-cluster',
-        vendor: 'OpenShift',
-    })
-    return (
-        <AcmPage header={<Fragment />} hasDrawer={true}>
-            <AcmDrawerContext.Consumer>
-                {({ setDrawerContext }) => (
-                    <div style={{ height: '100vh' }}>
-                        <AcmButton
-                            onClick={() =>
-                                setDrawerContext({
-                                    isExpanded: true,
-                                    title: 'Edit labels',
-                                    onCloseClick: () => setDrawerContext(undefined),
-                                    panelContent: (
-                                        <div>
-                                            <p>
-                                                Labels help you organize and select resources. Adding labels allows you
-                                                to query for objects by using the labels. Selecting labels during policy
-                                                and application creation allows you to distribute your resources to
-                                                different clusters that share common labels.
-                                            </p>
-                                            <AcmForm style={{ marginTop: '24px' }}>
-                                                <AcmLabelsInput
-                                                    label="local-cluster labels"
-                                                    id="labels-input"
-                                                    value={labels}
-                                                    onChange={(labels) => setLabels(labels)}
-                                                    buttonLabel="Add label"
-                                                />
-                                            </AcmForm>
-                                            <ActionGroup style={{ marginTop: '24px' }}>
-                                                <AcmButton onClick={() => setDrawerContext(undefined)}>Save</AcmButton>
-                                                <AcmButton
-                                                    onClick={() => setDrawerContext(undefined)}
-                                                    variant={ButtonVariant.link}
-                                                >
-                                                    Cancel
-                                                </AcmButton>
-                                            </ActionGroup>
-                                        </div>
-                                    ),
-                                })
-                            }
-                        >
-                            Open drawer
+  const [labels, setLabels] = useState<Record<string, string> | undefined>({
+    cloud: 'Amazon',
+    clusterID: '1b1ghj3c-3a94-4fd3-awec-f3asdfsdff3',
+    name: 'local-cluster',
+    vendor: 'OpenShift',
+  })
+  return (
+    <AcmPage header={<Fragment />} hasDrawer={true}>
+      <AcmDrawerContext.Consumer>
+        {({ setDrawerContext }) => (
+          <div style={{ height: '100vh' }}>
+            <AcmButton
+              onClick={() =>
+                setDrawerContext({
+                  isExpanded: true,
+                  title: 'Edit labels',
+                  onCloseClick: () => setDrawerContext(undefined),
+                  panelContent: (
+                    <div>
+                      <p>
+                        Labels help you organize and select resources. Adding labels allows you to query for objects by
+                        using the labels. Selecting labels during policy and application creation allows you to
+                        distribute your resources to different clusters that share common labels.
+                      </p>
+                      <AcmForm style={{ marginTop: '24px' }}>
+                        <AcmLabelsInput
+                          label="local-cluster labels"
+                          id="labels-input"
+                          value={labels}
+                          onChange={(labels) => setLabels(labels)}
+                          buttonLabel="Add label"
+                        />
+                      </AcmForm>
+                      <ActionGroup style={{ marginTop: '24px' }}>
+                        <AcmButton onClick={() => setDrawerContext(undefined)}>Save</AcmButton>
+                        <AcmButton onClick={() => setDrawerContext(undefined)} variant={ButtonVariant.link}>
+                          Cancel
                         </AcmButton>
+                      </ActionGroup>
                     </div>
-                )}
-            </AcmDrawerContext.Consumer>
-        </AcmPage>
-    )
+                  ),
+                })
+              }
+            >
+              Open drawer
+            </AcmButton>
+          </div>
+        )}
+      </AcmDrawerContext.Consumer>
+    </AcmPage>
+  )
 }

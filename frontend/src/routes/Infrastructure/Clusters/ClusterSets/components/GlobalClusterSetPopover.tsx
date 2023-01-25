@@ -7,19 +7,19 @@ import { DOC_LINKS, viewDocumentation } from '../../../../../lib/doc-util'
 import { AcmButton } from '../../../../../ui-components'
 
 export function GlobalClusterSetPopover() {
-    const { t } = useTranslation()
-    return (
-        <Popover
-            bodyContent={
-                <>
-                    <Trans i18nKey="learn.global.clusterSet" components={{ bold: <strong /> }} />
-                    <TextContent>{viewDocumentation(DOC_LINKS.GLOBAL_CLUSTER_SET, t)}</TextContent>
-                </>
-            }
-        >
-            <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
-                <OutlinedQuestionCircleIcon />
-            </AcmButton>
-        </Popover>
-    )
+  const { t } = useTranslation()
+  return (
+    <Popover
+      bodyContent={
+        <>
+          <Trans i18nKey="learn.global.clusterSet" components={{ bold: <strong /> }} />
+          <TextContent>{viewDocumentation(DOC_LINKS.GLOBAL_CLUSTER_SET, t)}</TextContent>
+        </>
+      }
+    >
+      <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
+        <OutlinedQuestionCircleIcon />
+      </AcmButton>
+    </Popover>
+  )
 }

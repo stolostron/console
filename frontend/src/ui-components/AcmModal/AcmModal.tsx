@@ -5,22 +5,22 @@ import { Modal, ModalProps } from '@patternfly/react-core'
 import { AcmAlertProvider, AcmAlertContext } from '../AcmAlert/AcmAlert'
 
 export function AcmModal(props: ModalProps) {
-    return (
-        <AcmAlertProvider>
-            <AcmModalContent {...props} />
-        </AcmAlertProvider>
-    )
+  return (
+    <AcmAlertProvider>
+      <AcmModalContent {...props} />
+    </AcmAlertProvider>
+  )
 }
 
 function AcmModalContent(props: ModalProps) {
-    const alertContext = useContext(AcmAlertContext)
+  const alertContext = useContext(AcmAlertContext)
 
-    useEffect(() => {
-        if (!props.isOpen) {
-            alertContext.clearAlerts()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.isOpen])
+  useEffect(() => {
+    if (!props.isOpen) {
+      alertContext.clearAlerts()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.isOpen])
 
-    return <Modal {...props} ref={null} />
+  return <Modal {...props} ref={null} />
 }

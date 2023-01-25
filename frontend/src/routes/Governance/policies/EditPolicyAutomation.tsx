@@ -14,97 +14,97 @@ import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
 
 export function WizardSyncEditor() {
-    const resources = useItem() // Wizard framework sets this context
-    const { update } = useData() // Wizard framework sets this context
-    const { t } = useTranslation()
-    return (
-        <SyncEditor
-            editorTitle={t('Automation YAML')}
-            variant="toolbar"
-            filters={['*.metadata.managedFields']}
-            resources={resources}
-            schema={schema}
-            onEditorChange={(changes: { resources: any[] }): void => {
-                update(changes?.resources)
-            }}
-        />
-    )
+  const resources = useItem() // Wizard framework sets this context
+  const { update } = useData() // Wizard framework sets this context
+  const { t } = useTranslation()
+  return (
+    <SyncEditor
+      editorTitle={t('Automation YAML')}
+      variant="toolbar"
+      filters={['*.metadata.managedFields']}
+      resources={resources}
+      schema={schema}
+      onEditorChange={(changes: { resources: any[] }): void => {
+        update(changes?.resources)
+      }}
+    />
+  )
 }
 
 function getWizardSyncEditor() {
-    return <WizardSyncEditor />
+  return <WizardSyncEditor />
 }
 
 export function EditPolicyAutomation() {
-    const { t } = useTranslation()
-    const params = useParams<{ namespace: string; name: string }>()
-    const { name, namespace } = params
-    const history = useHistory()
-    const { configMapsState, policyAutomationState, secretsState, usePolicies } = useSharedAtoms()
-    const policies = usePolicies()
-    const [secrets] = useRecoilState(secretsState)
-    const [configMaps] = useRecoilState(configMapsState)
-    const [policyAutomations] = useRecoilState(policyAutomationState)
-    const toast = useContext(AcmToastContext)
-    const currentPolicy = useMemo(
-        () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
-        [policies, name, namespace]
-    )
+  const { t } = useTranslation()
+  const params = useParams<{ namespace: string; name: string }>()
+  const { name, namespace } = params
+  const history = useHistory()
+  const { configMapsState, policyAutomationState, secretsState, usePolicies } = useSharedAtoms()
+  const policies = usePolicies()
+  const [secrets] = useRecoilState(secretsState)
+  const [configMaps] = useRecoilState(configMapsState)
+  const [policyAutomations] = useRecoilState(policyAutomationState)
+  const toast = useContext(AcmToastContext)
+  const currentPolicy = useMemo(
+    () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
+    [policies, name, namespace]
+  )
 
-    const currentPolicyAutomation = policyAutomations.find((policyAutomation: PolicyAutomation) => {
-        return (
-            policyAutomation.metadata.name!.replace('-policy-automation', '') === name &&
-            policyAutomation.metadata.namespace === namespace
-        )
-    })
-    const credentials = useMemo(
-        () =>
-            secrets.filter(
-                (secret: Secret) =>
-                    secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] &&
-                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-            ),
-        [secrets]
-    )
-
-    if (currentPolicyAutomation === undefined) {
-        return <LoadingPage />
-    }
-
+  const currentPolicyAutomation = policyAutomations.find((policyAutomation: PolicyAutomation) => {
     return (
-        <PolicyAutomationWizard
-            title={t('Edit policy automation')}
-            editMode={EditMode.Edit}
-            policy={currentPolicy ?? {}}
-            yamlEditor={getWizardSyncEditor}
-            credentials={credentials}
-            createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
-            resource={currentPolicyAutomation}
-            onCancel={() => history.push(NavigationPath.policies)}
-            configMaps={configMaps}
-            onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t, currentPolicyAutomation)}
-            getAnsibleJobsCallback={async (credential: any) => {
-                const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
-                const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
-
-                return new Promise((resolve, reject) => {
-                    const ansibleJobs = listAnsibleTowerJobs(host, token)
-                    ansibleJobs.promise
-                        .then((response) => {
-                            if (response) {
-                                let templateList: string[] = []
-                                if (response?.results) {
-                                    templateList = response.results!.map((job) => job.name!)
-                                }
-                                resolve(templateList)
-                            }
-                        })
-                        .catch(() => {
-                            reject(t('Error getting Ansible jobs'))
-                        })
-                })
-            }}
-        />
+      policyAutomation.metadata.name!.replace('-policy-automation', '') === name &&
+      policyAutomation.metadata.namespace === namespace
     )
+  })
+  const credentials = useMemo(
+    () =>
+      secrets.filter(
+        (secret: Secret) =>
+          secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+          !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] &&
+          !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+      ),
+    [secrets]
+  )
+
+  if (currentPolicyAutomation === undefined) {
+    return <LoadingPage />
+  }
+
+  return (
+    <PolicyAutomationWizard
+      title={t('Edit policy automation')}
+      editMode={EditMode.Edit}
+      policy={currentPolicy ?? {}}
+      yamlEditor={getWizardSyncEditor}
+      credentials={credentials}
+      createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
+      resource={currentPolicyAutomation}
+      onCancel={() => history.push(NavigationPath.policies)}
+      configMaps={configMaps}
+      onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t, currentPolicyAutomation)}
+      getAnsibleJobsCallback={async (credential: any) => {
+        const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
+        const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
+
+        return new Promise((resolve, reject) => {
+          const ansibleJobs = listAnsibleTowerJobs(host, token)
+          ansibleJobs.promise
+            .then((response) => {
+              if (response) {
+                let templateList: string[] = []
+                if (response?.results) {
+                  templateList = response.results!.map((job) => job.name!)
+                }
+                resolve(templateList)
+              }
+            })
+            .catch(() => {
+              reject(t('Error getting Ansible jobs'))
+            })
+        })
+      }}
+    />
+  )
 }

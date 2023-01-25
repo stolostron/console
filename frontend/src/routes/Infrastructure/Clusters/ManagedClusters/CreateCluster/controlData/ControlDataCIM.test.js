@@ -10,10 +10,10 @@ const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
 
 describe('Cluster creation control data for CIM', () => {
-    it('generates correctly', () => {
-        expect(getControlDataCIM(t, handleModalToggle, <Warning />, true)).toMatchSnapshot()
-    })
-    it('generates correctly for MCE', () => {
-        expect(getControlDataCIM(t, handleModalToggle, <Warning />, false)).toMatchSnapshot()
-    })
+  it('generates correctly', () => {
+    expect(getControlDataCIM(t, handleModalToggle, <Warning />, true)).toMatchSnapshot()
+  })
+  it('generates correctly for MCE', () => {
+    expect(getControlDataCIM(t, handleModalToggle, <Warning />, false)).toMatchSnapshot()
+  })
 })

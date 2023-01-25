@@ -19,7 +19,7 @@ export type IPlacementBinding = IResource
 // }
 
 export interface IPlacementSubject {
-    name?: string
-    kind?: string
-    apiGroup?: string
+  name?: string
+  kind?: string
+  apiGroup?: string
 }

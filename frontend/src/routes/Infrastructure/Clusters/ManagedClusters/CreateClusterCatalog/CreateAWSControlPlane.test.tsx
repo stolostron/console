@@ -7,25 +7,25 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
 
 describe('CreateControlPlane', () => {
-    const Component = () => {
-        return (
-            <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createAWSControlPlane]}>
-                    <Route path={NavigationPath.createAWSControlPlane}>
-                        <CreateAWSControlPlane />
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
+  const Component = () => {
+    return (
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.createAWSControlPlane]}>
+          <Route path={NavigationPath.createAWSControlPlane}>
+            <CreateAWSControlPlane />
+          </Route>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
 
-    test('can click hosted', async () => {
-        render(<Component />)
-        await clickByTestId('hosted')
-    })
+  test('can click hosted', async () => {
+    render(<Component />)
+    await clickByTestId('hosted')
+  })
 
-    test('can click standalone', async () => {
-        render(<Component />)
-        await clickByTestId('standalone')
-    })
+  test('can click standalone', async () => {
+    render(<Component />)
+    await clickByTestId('standalone')
+  })
 })

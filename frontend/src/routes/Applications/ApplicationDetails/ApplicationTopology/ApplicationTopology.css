@@ -34,6 +34,15 @@
     fill: #fff;
 }
 
+.pf-topology__node__icon_reverse {
+    fill: #fff;
+    stroke: 'none';
+}
+
+:root:where(.pf-theme-dark) .pf-topology__node__icon_reverse {
+    fill: #000;
+}
+
 .pf-topology__node__icon__stroke {
     stroke: #000;
 }

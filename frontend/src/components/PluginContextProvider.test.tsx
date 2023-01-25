@@ -5,13 +5,13 @@ import { waitForNotText, waitForText } from '../lib/test-util'
 import { PluginContextProvider } from './PluginContextProvider'
 
 const TestPluginContextProvider = () => {
-    return <PluginContextProvider>Main Content</PluginContextProvider>
+  return <PluginContextProvider>Main Content</PluginContextProvider>
 }
 
 describe('PluginContextProvider', () => {
-    it('does not render content without resolved context provider extension', async () => {
-        render(<TestPluginContextProvider />)
-        await waitForText('Loading')
-        await waitForNotText('Main Content')
-    })
+  it('does not render content without resolved context provider extension', async () => {
+    render(<TestPluginContextProvider />)
+    await waitForText('Loading')
+    await waitForNotText('Main Content')
+  })
 })

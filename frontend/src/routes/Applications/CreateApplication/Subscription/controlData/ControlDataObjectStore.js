@@ -16,88 +16,88 @@ import { loadExistingChannels, updateChannelControls, channelSimplified } from '
 import placementData from './ControlDataPlacement'
 
 const objectstoreChannelData = (isLocalCluster, t) => {
-    return [
-        ///////////////////////  Objectstore  /////////////////////////////////////
-        {
-            id: 'channelNamespaceExists',
-            type: 'hidden',
-            active: true,
-        },
-        {
-            id: 'channelName',
-            type: 'hidden',
-            active: '',
-        },
-        {
-            id: 'channelNamespace',
-            type: 'hidden',
-            active: '',
-        },
-        {
-            name: t('creation.app.objectstore.url'),
-            tooltip: t('tooltip.creation.app.objectstore.url'),
-            id: 'objectstoreURL',
-            type: 'combobox',
-            active: '',
-            placeholder: t('app.enter.select.objectstore.url'),
-            available: [],
-            validation: getURLValidator(t),
-            fetchAvailable: loadExistingChannels('objectbucket', t),
-            reverse: 'Channel[0].spec.pathname',
-            onSelect: updateChannelControls,
-            simplified: channelSimplified,
-        },
-        {
-            name: t('creation.app.objectstore.secret'),
-            tooltip: t('tooltip.creation.app.objectstore.secret'),
-            id: 'objectstoreSecret',
-            type: 'hidden',
-            active: '',
-            available: [],
-            disabled: true,
-        },
-        {
-            name: t('creation.app.objectstore.accesskey'),
-            tooltip: t('tooltip.creation.app.objectstore.accesskey'),
-            id: 'accessKey',
-            type: 'text',
-            editing: { hidden: true }, // if editing existing app, hide this field initially
-            active: '',
-            encode: true,
-            placeholder: t('app.enter.accesskey'),
-        },
-        {
-            name: t('creation.app.objectstore.secretkey'),
-            tooltip: t('tooltip.creation.app.objectstore.secretkey'),
-            id: 'secretKey',
-            type: 'password',
-            editing: { hidden: true }, // if editing existing app, hide this field initially
-            encode: true,
-            active: '',
-            placeholder: t('app.enter.secretkey'),
-        },
-        {
-            name: t('creation.app.objectstore.region'),
-            tooltip: t('tooltip.creation.app.objectstore.region'),
-            id: 'region',
-            type: 'text',
-            editing: { hidden: true }, // if editing existing app, hide this field initially
-            encode: true,
-            active: '',
-            placeholder: t('app.enter.region'),
-        },
-        {
-            name: t('creation.app.objectstore.subfolder'),
-            tooltip: t('tooltip.creation.app.objectstore.subfolder'),
-            id: 'subfolder',
-            type: 'text',
-            active: '',
-            placeholder: t('app.enter.subfolder'),
-            reverse: ['Subscription[0].metadata.annotations["apps.open-cluster-management.io/bucket-path"]'],
-        },
+  return [
+    ///////////////////////  Objectstore  /////////////////////////////////////
+    {
+      id: 'channelNamespaceExists',
+      type: 'hidden',
+      active: true,
+    },
+    {
+      id: 'channelName',
+      type: 'hidden',
+      active: '',
+    },
+    {
+      id: 'channelNamespace',
+      type: 'hidden',
+      active: '',
+    },
+    {
+      name: t('creation.app.objectstore.url'),
+      tooltip: t('tooltip.creation.app.objectstore.url'),
+      id: 'objectstoreURL',
+      type: 'combobox',
+      active: '',
+      placeholder: t('app.enter.select.objectstore.url'),
+      available: [],
+      validation: getURLValidator(t),
+      fetchAvailable: loadExistingChannels('objectbucket', t),
+      reverse: 'Channel[0].spec.pathname',
+      onSelect: updateChannelControls,
+      simplified: channelSimplified,
+    },
+    {
+      name: t('creation.app.objectstore.secret'),
+      tooltip: t('tooltip.creation.app.objectstore.secret'),
+      id: 'objectstoreSecret',
+      type: 'hidden',
+      active: '',
+      available: [],
+      disabled: true,
+    },
+    {
+      name: t('creation.app.objectstore.accesskey'),
+      tooltip: t('tooltip.creation.app.objectstore.accesskey'),
+      id: 'accessKey',
+      type: 'text',
+      editing: { hidden: true }, // if editing existing app, hide this field initially
+      active: '',
+      encode: true,
+      placeholder: t('app.enter.accesskey'),
+    },
+    {
+      name: t('creation.app.objectstore.secretkey'),
+      tooltip: t('tooltip.creation.app.objectstore.secretkey'),
+      id: 'secretKey',
+      type: 'password',
+      editing: { hidden: true }, // if editing existing app, hide this field initially
+      encode: true,
+      active: '',
+      placeholder: t('app.enter.secretkey'),
+    },
+    {
+      name: t('creation.app.objectstore.region'),
+      tooltip: t('tooltip.creation.app.objectstore.region'),
+      id: 'region',
+      type: 'text',
+      editing: { hidden: true }, // if editing existing app, hide this field initially
+      encode: true,
+      active: '',
+      placeholder: t('app.enter.region'),
+    },
+    {
+      name: t('creation.app.objectstore.subfolder'),
+      tooltip: t('tooltip.creation.app.objectstore.subfolder'),
+      id: 'subfolder',
+      type: 'text',
+      active: '',
+      placeholder: t('app.enter.subfolder'),
+      reverse: ['Subscription[0].metadata.annotations["apps.open-cluster-management.io/bucket-path"]'],
+    },
 
-        ...placementData(isLocalCluster, t),
-    ]
+    ...placementData(isLocalCluster, t),
+  ]
 }
 
 export default objectstoreChannelData

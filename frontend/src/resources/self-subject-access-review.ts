@@ -10,54 +10,54 @@ export const SelfSubjectAccessReviewKind = 'SelfSubjectAccessReview'
 export type SelfSubjectAccessReviewType = 'SelfSubjectAccessReview'
 
 export const SelfSubjectAccessReviewDefinition: IResourceDefinition = {
-    apiVersion: SelfSubjectAccessReviewApiVersion,
-    kind: SelfSubjectAccessReviewKind,
+  apiVersion: SelfSubjectAccessReviewApiVersion,
+  kind: SelfSubjectAccessReviewKind,
 }
 
 export interface SelfSubjectAccessReview extends IResource {
-    apiVersion: SelfSubjectAccessReviewApiVersionType
-    kind: SelfSubjectAccessReviewType
-    metadata: Metadata
-    spec: {
-        resourceAttributes: ResourceAttributes
-        user?: string
-    }
-    status?: {
-        allowed: boolean
-        denied?: boolean
-        evaluationError?: string
-        reason?: string
-    }
+  apiVersion: SelfSubjectAccessReviewApiVersionType
+  kind: SelfSubjectAccessReviewType
+  metadata: Metadata
+  spec: {
+    resourceAttributes: ResourceAttributes
+    user?: string
+  }
+  status?: {
+    allowed: boolean
+    denied?: boolean
+    evaluationError?: string
+    reason?: string
+  }
 }
 
 export type ResourceAttributes = {
-    name?: string
-    namespace?: string
-    resource: string
-    verb: string
-    group?: string
-    version?: string
-    subresource?: string
+  name?: string
+  namespace?: string
+  resource: string
+  verb: string
+  group?: string
+  version?: string
+  subresource?: string
 }
 
 export function createSubjectAccessReview(resourceAttributes: Promise<ResourceAttributes> | ResourceAttributes) {
-    const resources = Promise.resolve(resourceAttributes).then(
-        (resourceAttributes): SelfSubjectAccessReview => ({
-            apiVersion: SelfSubjectAccessReviewApiVersion,
-            kind: SelfSubjectAccessReviewKind,
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        })
-    )
-    return createResource<SelfSubjectAccessReview>(resources)
+  const resources = Promise.resolve(resourceAttributes).then(
+    (resourceAttributes): SelfSubjectAccessReview => ({
+      apiVersion: SelfSubjectAccessReviewApiVersion,
+      kind: SelfSubjectAccessReviewKind,
+      metadata: {},
+      spec: {
+        resourceAttributes,
+      },
+    })
+  )
+  return createResource<SelfSubjectAccessReview>(resources)
 }
 
 export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {
-    const results = resourceAttributes.map((resource) => createSubjectAccessReview(resource))
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
+  const results = resourceAttributes.map((resource) => createSubjectAccessReview(resource))
+  return {
+    promise: Promise.allSettled(results.map((result) => result.promise)),
+    abort: () => results.forEach((result) => result.abort()),
+  }
 }

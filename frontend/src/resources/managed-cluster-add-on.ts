@@ -9,32 +9,32 @@ export const ManagedClusterAddOnKind = 'ManagedClusterAddOn'
 export type ManagedClusterAddOnKindType = 'ManagedClusterAddOn'
 
 export const ManagedClusterAddOnDefinition: IResourceDefinition = {
-    apiVersion: ManagedClusterAddOnApiVersion,
-    kind: ManagedClusterAddOnKind,
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
 }
 
 export interface ManagedClusterAddOn extends IResource {
-    apiVersion: ManagedClusterAddOnApiVersionType
-    kind: ManagedClusterAddOnKindType
-    metadata: Metadata
-    spec: {
-        installNamespace?: string
+  apiVersion: ManagedClusterAddOnApiVersionType
+  kind: ManagedClusterAddOnKindType
+  metadata: Metadata
+  spec: {
+    installNamespace?: string
+  }
+  status?: {
+    conditions: {
+      lastTransitionTime?: Date
+      message?: string
+      reason?: string
+      status: string
+      type: string
+    }[]
+    addOnMeta: {
+      displayName: string
+      description: string
     }
-    status?: {
-        conditions: {
-            lastTransitionTime?: Date
-            message?: string
-            reason?: string
-            status: string
-            type: string
-        }[]
-        addOnMeta: {
-            displayName: string
-            description: string
-        }
-        addOnConfiguration: {
-            crdName: string
-            crName: string
-        }
+    addOnConfiguration: {
+      crdName: string
+      crName: string
     }
+  }
 }

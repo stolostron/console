@@ -9,12 +9,12 @@ export const DeploymentKind = 'Deployment'
 export type DeploymentKindType = 'Deployment'
 
 export interface Deployment extends IResource {
-    apiVersion: DeploymentApiVersionType
-    kind: DeploymentKindType
-    metadata: Metadata
+  apiVersion: DeploymentApiVersionType
+  kind: DeploymentKindType
+  metadata: Metadata
 }
 
 export const DeploymentDefinition: IResourceDefinition = {
-    apiVersion: DeploymentApiVersion,
-    kind: DeploymentKind,
+  apiVersion: DeploymentApiVersion,
+  kind: DeploymentKind,
 }

@@ -10,23 +10,23 @@ export const MultiClusterHubKind = 'MultiClusterHub'
 export type MultiClusterHubKindType = 'MultiClusterHub'
 
 export const MultiClusterHubDefinition: IResourceDefinition = {
-    apiVersion: MultiClusterHubApiVersion,
-    kind: MultiClusterHubKind,
+  apiVersion: MultiClusterHubApiVersion,
+  kind: MultiClusterHubKind,
 }
 
 export interface MultiClusterHub extends IResource {
-    apiVersion: MultiClusterHubApiVersionType
-    kind: MultiClusterHubKindType
-    metadata: Metadata
-    spec?: {}
-    status: {
-        currentVersion: string
-    }
+  apiVersion: MultiClusterHubApiVersionType
+  kind: MultiClusterHubKindType
+  metadata: Metadata
+  spec?: {}
+  status: {
+    currentVersion: string
+  }
 }
 
 export function listMultiClusterHubs() {
-    return listResources<MultiClusterHub>({
-        apiVersion: MultiClusterHubApiVersion,
-        kind: MultiClusterHubKind,
-    })
+  return listResources<MultiClusterHub>({
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+  })
 }

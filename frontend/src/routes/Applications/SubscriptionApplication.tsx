@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import {
-    AcmErrorBoundary,
-    AcmPage,
-    AcmPageContent,
-    AcmPageHeader,
-    AcmToastContext,
-    Provider,
+  AcmErrorBoundary,
+  AcmPage,
+  AcmPageContent,
+  AcmPageHeader,
+  AcmToastContext,
+  Provider,
 } from '../../ui-components'
 import Handlebars from 'handlebars'
 import { Location } from 'history'
@@ -24,16 +24,16 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { useSearchParams } from '../../lib/search'
 import { NavigationPath } from '../../NavigationPath'
 import {
-    ApplicationKind,
-    IResource,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    reconcileResources,
-    Secret,
-    SubscriptionKind,
-    unpackProviderConnection,
-    updateAppResources,
+  ApplicationKind,
+  IResource,
+  ProviderConnection,
+  ProviderConnectionApiVersion,
+  ProviderConnectionKind,
+  reconcileResources,
+  Secret,
+  SubscriptionKind,
+  unpackProviderConnection,
+  updateAppResources,
 } from '../../resources'
 import './style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
@@ -52,397 +52,384 @@ import { GetProjects } from '../../components/GetProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
 interface CreationStatus {
-    status: string
-    messages: any[] | null
+  status: string
+  messages: any[] | null
 }
 
 // where to put Create/Cancel buttons
 const Portals = Object.freeze({
-    editBtn: 'edit-button-portal-id',
-    createBtn: 'create-button-portal-id',
-    cancelBtn: 'cancel-button-portal-id',
+  editBtn: 'edit-button-portal-id',
+  createBtn: 'create-button-portal-id',
+  cancelBtn: 'cancel-button-portal-id',
 })
 
 export default function CreateSubscriptionApplicationPage() {
-    const { t } = useTranslation()
-    const [title, setTitle] = useState<string>(t('Create application'))
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [newSecret, setNewSecret] = useState<Secret>()
-    const { secretsState } = useSharedAtoms()
-    const [secrets] = useRecoilState(secretsState)
-    const { projects } = GetProjects()
+  const { t } = useTranslation()
+  const [title, setTitle] = useState<string>(t('Create application'))
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newSecret, setNewSecret] = useState<Secret>()
+  const { secretsState } = useSharedAtoms()
+  const [secrets] = useRecoilState(secretsState)
+  const { projects } = GetProjects()
 
-    const onControlChange = useCallback(
-        (control: any) => {
-            if (control.id === 'connection') {
-                if (newSecret && control.setActive) {
-                    control.setActive(newSecret.metadata.name)
-                }
-            }
-        },
-        [newSecret]
-    )
-
-    // if a connection is added outside of wizard, add it to connection selection
-    const [connectionControl, setConnectionControl] = useState()
-    useEffect(() => {
-        if (connectionControl) {
-            setAvailableConnections(
-                connectionControl,
-                secrets.filter(
-                    (secret) =>
-                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] ||
-                        !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
-                )
-            )
-            onControlChange(connectionControl)
+  const onControlChange = useCallback(
+    (control: any) => {
+      if (control.id === 'connection') {
+        if (newSecret && control.setActive) {
+          control.setActive(newSecret.metadata.name)
         }
-    }, [connectionControl, onControlChange, secrets])
+      }
+    },
+    [newSecret]
+  )
 
-    // create portals for buttons in header
-    const switches = (
-        <div className="switch-controls">
-            <div id={Portals.editBtn} />
-        </div>
-    )
-
-    const portals = (
-        <div className="portal-controls">
-            <div id={Portals.cancelBtn} />
-            <div id={Portals.createBtn} />
-        </div>
-    )
-
-    const handleModalToggle = () => {
-        setIsModalOpen(!isModalOpen)
+  // if a connection is added outside of wizard, add it to connection selection
+  const [connectionControl, setConnectionControl] = useState()
+  useEffect(() => {
+    if (connectionControl) {
+      setAvailableConnections(
+        connectionControl,
+        secrets.filter(
+          (secret) =>
+            !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] ||
+            !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+        )
+      )
+      onControlChange(connectionControl)
     }
+  }, [connectionControl, onControlChange, secrets])
 
-    return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={title}
-                    breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }]}
-                    switches={switches}
-                    actions={portals}
-                />
-            }
-        >
-            <AcmErrorBoundary>
-                <AcmPageContent id="create-cluster-pool">
-                    <PageSection variant="light" type="wizard">
-                        <Modal
-                            variant={ModalVariant.large}
-                            showClose={false}
-                            isOpen={isModalOpen}
-                            aria-labelledby="modal-wizard-label"
-                            aria-describedby="modal-wizard-description"
-                            onClose={handleModalToggle}
-                            hasNoBodyWrapper
-                        >
-                            <CredentialsForm
-                                namespaces={projects}
-                                isEditing={false}
-                                isViewing={false}
-                                credentialsType={Provider.ansible}
-                                handleModalToggle={handleModalToggle}
-                                hideYaml={true}
-                                newCredentialCallback={setNewSecret}
-                            />
-                        </Modal>
-                        {CreateSubscriptionApplication(
-                            setTitle,
-                            handleModalToggle,
-                            setConnectionControl,
-                            onControlChange
-                        )}
-                    </PageSection>
-                </AcmPageContent>
-            </AcmErrorBoundary>
-        </AcmPage>
-    )
+  // create portals for buttons in header
+  const switches = (
+    <div className="switch-controls">
+      <div id={Portals.editBtn} />
+    </div>
+  )
+
+  const portals = (
+    <div className="portal-controls">
+      <div id={Portals.cancelBtn} />
+      <div id={Portals.createBtn} />
+    </div>
+  )
+
+  const handleModalToggle = () => {
+    setIsModalOpen(!isModalOpen)
+  }
+
+  return (
+    <AcmPage
+      header={
+        <AcmPageHeader
+          title={title}
+          breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }]}
+          switches={switches}
+          actions={portals}
+        />
+      }
+    >
+      <AcmErrorBoundary>
+        <AcmPageContent id="create-cluster-pool">
+          <PageSection variant="light" type="wizard">
+            <Modal
+              variant={ModalVariant.large}
+              showClose={false}
+              isOpen={isModalOpen}
+              aria-labelledby="modal-wizard-label"
+              aria-describedby="modal-wizard-description"
+              onClose={handleModalToggle}
+              hasNoBodyWrapper
+            >
+              <CredentialsForm
+                namespaces={projects}
+                isEditing={false}
+                isViewing={false}
+                credentialsType={Provider.ansible}
+                handleModalToggle={handleModalToggle}
+                hideYaml={true}
+                newCredentialCallback={setNewSecret}
+              />
+            </Modal>
+            {CreateSubscriptionApplication(setTitle, handleModalToggle, setConnectionControl, onControlChange)}
+          </PageSection>
+        </AcmPageContent>
+      </AcmErrorBoundary>
+    </AcmPage>
+  )
 }
 
 export function CreateSubscriptionApplication(
-    setTitle: Dispatch<SetStateAction<string>>,
-    handleModalToggle: () => void,
-    setConnectionControl: Dispatch<SetStateAction<undefined>>,
-    onControlChange: (control: any) => void
+  setTitle: Dispatch<SetStateAction<string>>,
+  handleModalToggle: () => void,
+  setConnectionControl: Dispatch<SetStateAction<undefined>>,
+  onControlChange: (control: any) => void
 ) {
-    const history = useHistory()
-    const { t } = useTranslation()
-    const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
-        useSharedAtoms()
-    const toastContext = useContext(AcmToastContext)
-    const [secrets] = useRecoilState(secretsState)
-    const providerConnections = secrets.map(unpackProviderConnection)
-    const ansibleCredentials = providerConnections.filter(
-        (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
-    )
+  const history = useHistory()
+  const { t } = useTranslation()
+  const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
+    useSharedAtoms()
+  const toastContext = useContext(AcmToastContext)
+  const [secrets] = useRecoilState(secretsState)
+  const providerConnections = secrets.map(unpackProviderConnection)
+  const ansibleCredentials = providerConnections.filter(
+    (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+  )
 
-    const clusters = useAllClusters()
-    const localCluster = clusters.find(
-        (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
-    )
-    const isLocalCluster = localCluster ? true : false
+  const clusters = useAllClusters()
+  const localCluster = clusters.find(
+    (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
+  )
+  const isLocalCluster = localCluster ? true : false
 
-    // create button
-    const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }) => {
-        if (resourceJSON) {
-            const { createResources } = resourceJSON
-            setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            // change create cluster to create application
-            const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            reconcileResources(createResources as IResource[], [])
-                .then(() => {
-                    toastContext.addAlert({
-                        title: t('Application created'),
-                        message: t('{{name}} was successfully created.', {
-                            name: _.get(applicationResourceJSON, 'metadata.name', ''),
-                        }),
-                        type: 'success',
-                        autoClose: true,
-                    })
-                    history.push(
-                        NavigationPath.applicationOverview
-                            .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
-                            .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
-                    )
-                })
-                .catch((err) => {
-                    const errorInfo = getErrorInfo(err, t)
-                    toastContext.addAlert({
-                        type: 'danger',
-                        title: errorInfo.title,
-                        message: errorInfo.message,
-                    })
-                })
-        }
-    }
-    function handleCreate(resourceJSON: { createResources: IResource[] }) {
-        if (resourceJSON) {
-            // create ansible secrets if any are used and not yet available in the app ns
-            // get all subscriptions using an ansible provider
-            const { createResources } = resourceJSON
-            const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            const subsUsingAnsible = resourceJSON.createResources.filter(
-                (resource) => resource.kind === SubscriptionKind && _.get(resource, 'spec.hooksecretref.name')
-            )
-            if (subsUsingAnsible) {
-                const uniqueAnsibleSecretNames = Array.from(
-                    new Set([..._.map(subsUsingAnsible, 'spec.hooksecretref.name')])
-                )
-                uniqueAnsibleSecretNames.forEach((name) => {
-                    // check if a secret with this name already exists in the app ns
-                    const existingSecret = ansibleCredentials.find((ac) => {
-                        return (
-                            ac.metadata.name === name &&
-                            ac.metadata.namespace === applicationResourceJSON?.metadata?.namespace
-                        )
-                    })
-                    if (!existingSecret) {
-                        const originalAnsibleSecret = ansibleCredentials.find((ac) => ac.metadata.name === name)
-                        const ansibleSecret: ProviderConnection = {
-                            apiVersion: ProviderConnectionApiVersion,
-                            kind: ProviderConnectionKind,
-                            metadata: {
-                                name,
-                                namespace: applicationResourceJSON?.metadata?.namespace,
-                                labels: {
-                                    'cluster.open-cluster-management.io/type': 'ans',
-                                    'cluster.open-cluster-management.io/copiedFromNamespace':
-                                        originalAnsibleSecret?.metadata.namespace!,
-                                    'cluster.open-cluster-management.io/copiedFromSecretName':
-                                        originalAnsibleSecret?.metadata.name!,
-                                },
-                            },
-                            stringData: _.get(originalAnsibleSecret, 'stringData', {}),
-                            type: 'Opaque',
-                        }
-                        // add resource
-                        createResources.push(ansibleSecret)
-                    }
-                })
-            }
-
-            if (editApplication) {
-                // set resourceVersion
-                createResources.forEach((resource) => {
-                    const name = resource.metadata?.name
-                    const namespace = resource.metadata?.namespace
-                    let resourceVersion
-                    if (name && namespace) {
-                        switch (resource.kind) {
-                            case 'Application':
-                                resourceVersion = getResourceVersion(applications, name, namespace)
-                                break
-                            case 'Subscription':
-                                resourceVersion = getResourceVersion(subscriptions, name, namespace)
-                                break
-                            case 'PlacementRule':
-                                resourceVersion = getResourceVersion(placementRules, name, namespace)
-                                break
-                        }
-                        _.set(resource, 'metadata.resourceVersion', resourceVersion)
-                    }
-                })
-
-                updateAppResources(createResources)
-                    .then(() => {
-                        toastContext.addAlert({
-                            title: t('Application updated'),
-                            message: t('{{name}} was successfully updated.', {
-                                name: _.get(applicationResourceJSON, 'metadata.name', ''),
-                            }),
-                            type: 'success',
-                            autoClose: true,
-                        })
-                        redirectRoute()
-                    })
-                    .catch((err) => {
-                        const errorInfo = getErrorInfo(err, t)
-                        toastContext.addAlert({
-                            type: 'danger',
-                            title: errorInfo.title,
-                            message: errorInfo.message,
-                        })
-                    })
-            } else {
-                createResource(resourceJSON).catch((err) => {
-                    const errorInfo = getErrorInfo(err, t)
-                    toastContext.addAlert({
-                        type: 'danger',
-                        title: errorInfo.title,
-                        message: errorInfo.message,
-                    })
-                })
-            }
-        }
-    }
-
-    function getResourceVersion(resources: IResource[], name: string, namespace: string) {
-        const selectedResource = resources.find((resource: IResource) => {
-            return resource?.metadata?.name === name && resource?.metadata?.namespace === namespace
+  // create button
+  const [creationStatus, setCreationStatus] = useState<CreationStatus>()
+  const createResource = async (resourceJSON: { createResources: any[] }) => {
+    if (resourceJSON) {
+      const { createResources } = resourceJSON
+      setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
+      // change create cluster to create application
+      const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+      reconcileResources(createResources as IResource[], [])
+        .then(() => {
+          toastContext.addAlert({
+            title: t('Application created'),
+            message: t('{{name}} was successfully created.', {
+              name: _.get(applicationResourceJSON, 'metadata.name', ''),
+            }),
+            type: 'success',
+            autoClose: true,
+          })
+          history.push(
+            NavigationPath.applicationOverview
+              .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
+              .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
+          )
         })
-        const resourceVersion = _.get(selectedResource, 'metadata.resourceVersion')
-        return resourceVersion
+        .catch((err) => {
+          const errorInfo = getErrorInfo(err, t)
+          toastContext.addAlert({
+            type: 'danger',
+            title: errorInfo.title,
+            message: errorInfo.message,
+          })
+        })
     }
-
-    // cancel button
-    const cancelCreate = () => {
-        redirectRoute()
-    }
-
-    const redirectRoute = () => {
-        if (searchParams.get('context') === 'applications') {
-            history.push(NavigationPath.applications)
-        } else {
-            history.push(
-                NavigationPath.applicationOverview
-                    .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
-                    .replace(':name', editApplication?.selectedAppName ?? '')
-            )
-        }
-    }
-
-    function getEditApplication(location: Location) {
-        const pathname = location.pathname
-        if (pathname.includes('/edit/subscription')) {
-            const params = pathname.replace(/(.*)edit\/subscription\//, '')
-            const [namespace, name] = params.split('/')
-            if (name && namespace) {
-                return {
-                    selectedAppName: name,
-                    selectedAppNamespace: namespace,
-                }
+  }
+  function handleCreate(resourceJSON: { createResources: IResource[] }) {
+    if (resourceJSON) {
+      // create ansible secrets if any are used and not yet available in the app ns
+      // get all subscriptions using an ansible provider
+      const { createResources } = resourceJSON
+      const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+      const subsUsingAnsible = resourceJSON.createResources.filter(
+        (resource) => resource.kind === SubscriptionKind && _.get(resource, 'spec.hooksecretref.name')
+      )
+      if (subsUsingAnsible) {
+        const uniqueAnsibleSecretNames = Array.from(new Set([..._.map(subsUsingAnsible, 'spec.hooksecretref.name')]))
+        uniqueAnsibleSecretNames.forEach((name) => {
+          // check if a secret with this name already exists in the app ns
+          const existingSecret = ansibleCredentials.find((ac) => {
+            return ac.metadata.name === name && ac.metadata.namespace === applicationResourceJSON?.metadata?.namespace
+          })
+          if (!existingSecret) {
+            const originalAnsibleSecret = ansibleCredentials.find((ac) => ac.metadata.name === name)
+            const ansibleSecret: ProviderConnection = {
+              apiVersion: ProviderConnectionApiVersion,
+              kind: ProviderConnectionKind,
+              metadata: {
+                name,
+                namespace: applicationResourceJSON?.metadata?.namespace,
+                labels: {
+                  'cluster.open-cluster-management.io/type': 'ans',
+                  'cluster.open-cluster-management.io/copiedFromNamespace': originalAnsibleSecret?.metadata.namespace!,
+                  'cluster.open-cluster-management.io/copiedFromSecretName': originalAnsibleSecret?.metadata.name!,
+                },
+              },
+              stringData: _.get(originalAnsibleSecret, 'stringData', {}),
+              type: 'Opaque',
             }
-        }
-        return null
-    }
+            // add resource
+            createResources.push(ansibleSecret)
+          }
+        })
+      }
 
-    //compile template
-    const template = Handlebars.compile(createTemplate)
-    Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
-    Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
-    Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
-    Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
-    Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
-    const [fetchControl, setFetchControl] = useState<any>(null)
-    const [applications] = useRecoilState(applicationsState)
-    const [ansibleJob] = useRecoilState(ansibleJobState)
-    const [subscriptions] = useRecoilState(subscriptionsState)
-    const [channels] = useRecoilState(channelsState)
-    const [placementRules] = useRecoilState(placementRulesState)
-    const location = useLocation()
-    const editApplication = getEditApplication(location)
-    const searchParams = useSearchParams()
-    useEffect(() => {
-        if (editApplication) {
-            const { selectedAppName, selectedAppNamespace } = editApplication
-            const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
-            const fetchApplication = async () => {
-                // get application object from recoil states
-                const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
-                    applications,
-                    ansibleJob,
-                    subscriptions,
-                    channels,
-                    placementRules,
-                })
-
-                setFetchControl({
-                    resources: getApplicationResources(application),
-                    isLoaded: true,
-                })
-            }
-            fetchApplication()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    function onControlInitialize(control: any) {
-        switch (control.id) {
-            case 'connection':
-                setConnectionControl(control)
+      if (editApplication) {
+        // set resourceVersion
+        createResources.forEach((resource) => {
+          const name = resource.metadata?.name
+          const namespace = resource.metadata?.namespace
+          let resourceVersion
+          if (name && namespace) {
+            switch (resource.kind) {
+              case 'Application':
+                resourceVersion = getResourceVersion(applications, name, namespace)
                 break
-        }
+              case 'Subscription':
+                resourceVersion = getResourceVersion(subscriptions, name, namespace)
+                break
+              case 'PlacementRule':
+                resourceVersion = getResourceVersion(placementRules, name, namespace)
+                break
+            }
+            _.set(resource, 'metadata.resourceVersion', resourceVersion)
+          }
+        })
+
+        updateAppResources(createResources)
+          .then(() => {
+            toastContext.addAlert({
+              title: t('Application updated'),
+              message: t('{{name}} was successfully updated.', {
+                name: _.get(applicationResourceJSON, 'metadata.name', ''),
+              }),
+              type: 'success',
+              autoClose: true,
+            })
+            redirectRoute()
+          })
+          .catch((err) => {
+            const errorInfo = getErrorInfo(err, t)
+            toastContext.addAlert({
+              type: 'danger',
+              title: errorInfo.title,
+              message: errorInfo.message,
+            })
+          })
+      } else {
+        createResource(resourceJSON).catch((err) => {
+          const errorInfo = getErrorInfo(err, t)
+          toastContext.addAlert({
+            type: 'danger',
+            title: errorInfo.title,
+            message: errorInfo.message,
+          })
+        })
+      }
     }
+  }
 
-    useEffect(() => {
-        if (editApplication) {
-            const { selectedAppName } = editApplication
-            setTitle(selectedAppName)
-        }
-    }, [editApplication, setTitle])
+  function getResourceVersion(resources: IResource[], name: string, namespace: string) {
+    const selectedResource = resources.find((resource: IResource) => {
+      return resource?.metadata?.name === name && resource?.metadata?.namespace === namespace
+    })
+    const resourceVersion = _.get(selectedResource, 'metadata.resourceVersion')
+    return resourceVersion
+  }
 
-    const createControl = {
-        createResource: handleCreate,
-        cancelCreate,
-        pauseCreate: () => {},
-        creationStatus: creationStatus?.status,
-        creationMsg: creationStatus?.messages,
+  // cancel button
+  const cancelCreate = () => {
+    redirectRoute()
+  }
+
+  const redirectRoute = () => {
+    if (searchParams.get('context') === 'applications') {
+      history.push(NavigationPath.applications)
+    } else {
+      history.push(
+        NavigationPath.applicationOverview
+          .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
+          .replace(':name', editApplication?.selectedAppName ?? '')
+      )
     }
+  }
 
-    const isFetchControl = editApplication ? fetchControl : true
+  function getEditApplication(location: Location) {
+    const pathname = location.pathname
+    if (pathname.includes('/edit/subscription')) {
+      const params = pathname.replace(/(.*)edit\/subscription\//, '')
+      const [namespace, name] = params.split('/')
+      if (name && namespace) {
+        return {
+          selectedAppName: name,
+          selectedAppNamespace: namespace,
+        }
+      }
+    }
+    return null
+  }
 
-    return (
-        isFetchControl && (
-            <TemplateEditor
-                type={'application'}
-                title={t('application.create.yaml')}
-                monacoEditor={<MonacoEditor />}
-                controlData={getControlData(isLocalCluster, handleModalToggle, t)}
-                template={template}
-                portals={Portals}
-                fetchControl={fetchControl}
-                createControl={createControl}
-                onControlInitialize={onControlInitialize}
-                onControlChange={onControlChange}
-                logging={process.env.NODE_ENV !== 'production'}
-                i18n={t}
-            />
-        )
+  //compile template
+  const template = Handlebars.compile(createTemplate)
+  Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
+  Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
+  Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
+  Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
+  Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
+  const [fetchControl, setFetchControl] = useState<any>(null)
+  const [applications] = useRecoilState(applicationsState)
+  const [ansibleJob] = useRecoilState(ansibleJobState)
+  const [subscriptions] = useRecoilState(subscriptionsState)
+  const [channels] = useRecoilState(channelsState)
+  const [placementRules] = useRecoilState(placementRulesState)
+  const location = useLocation()
+  const editApplication = getEditApplication(location)
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (editApplication) {
+      const { selectedAppName, selectedAppNamespace } = editApplication
+      const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
+      const fetchApplication = async () => {
+        // get application object from recoil states
+        const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+          applications,
+          ansibleJob,
+          subscriptions,
+          channels,
+          placementRules,
+        })
+
+        setFetchControl({
+          resources: getApplicationResources(application),
+          isLoaded: true,
+        })
+      }
+      fetchApplication()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function onControlInitialize(control: any) {
+    switch (control.id) {
+      case 'connection':
+        setConnectionControl(control)
+        break
+    }
+  }
+
+  useEffect(() => {
+    if (editApplication) {
+      const { selectedAppName } = editApplication
+      setTitle(selectedAppName)
+    }
+  }, [editApplication, setTitle])
+
+  const createControl = {
+    createResource: handleCreate,
+    cancelCreate,
+    pauseCreate: () => {},
+    creationStatus: creationStatus?.status,
+    creationMsg: creationStatus?.messages,
+  }
+
+  const isFetchControl = editApplication ? fetchControl : true
+
+  return (
+    isFetchControl && (
+      <TemplateEditor
+        type={'application'}
+        title={t('application.create.yaml')}
+        monacoEditor={<MonacoEditor />}
+        controlData={getControlData(isLocalCluster, handleModalToggle, t)}
+        template={template}
+        portals={Portals}
+        fetchControl={fetchControl}
+        createControl={createControl}
+        onControlInitialize={onControlInitialize}
+        onControlChange={onControlChange}
+        logging={process.env.NODE_ENV !== 'production'}
+        i18n={t}
+      />
     )
+  )
 }

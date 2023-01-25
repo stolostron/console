@@ -6,45 +6,45 @@ import { getResource, Secret, SecretApiVersion, SecretKind } from '../../../../.
 const { ClusterCredentials } = CIM
 
 type ClusterDeploymentCredentialsProps = {
-    cluster: CIM.Cluster
-    consoleUrl: string
-    namespace: string
-    adminPasswordSecretRefName: string
+  cluster: CIM.Cluster
+  consoleUrl: string
+  namespace: string
+  adminPasswordSecretRefName: string
 }
 
 const ClusterDeploymentCredentials: React.FC<ClusterDeploymentCredentialsProps> = ({
-    cluster,
-    consoleUrl,
-    namespace,
-    adminPasswordSecretRefName,
+  cluster,
+  consoleUrl,
+  namespace,
+  adminPasswordSecretRefName,
 }) => {
-    const [credentials, setCredentials] = useState({})
+  const [credentials, setCredentials] = useState({})
 
-    useEffect(() => {
-        const fetchCredentials = async () => {
-            try {
-                const secret = await getResource<Secret>({
-                    apiVersion: SecretApiVersion,
-                    kind: SecretKind,
-                    metadata: {
-                        name: adminPasswordSecretRefName,
-                        namespace,
-                    },
-                }).promise
-                setCredentials({
-                    username: atob(secret.data?.username || ''),
-                    password: atob(secret.data?.password || ''),
-                })
-            } catch (e) {
-                console.error('Failed to fetch adminPasswordSecret secret.', e)
-            }
-        }
-        if (['installed', 'adding-hosts'].includes(cluster.status)) {
-            fetchCredentials()
-        }
-    }, [cluster.status, adminPasswordSecretRefName, namespace])
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      try {
+        const secret = await getResource<Secret>({
+          apiVersion: SecretApiVersion,
+          kind: SecretKind,
+          metadata: {
+            name: adminPasswordSecretRefName,
+            namespace,
+          },
+        }).promise
+        setCredentials({
+          username: atob(secret.data?.username || ''),
+          password: atob(secret.data?.password || ''),
+        })
+      } catch (e) {
+        console.error('Failed to fetch adminPasswordSecret secret.', e)
+      }
+    }
+    if (['installed', 'adding-hosts'].includes(cluster.status)) {
+      fetchCredentials()
+    }
+  }, [cluster.status, adminPasswordSecretRefName, namespace])
 
-    return <ClusterCredentials cluster={cluster} credentials={{ ...credentials, consoleUrl }} />
+  return <ClusterCredentials cluster={cluster} credentials={{ ...credentials, consoleUrl }} />
 }
 
 export default ClusterDeploymentCredentials
