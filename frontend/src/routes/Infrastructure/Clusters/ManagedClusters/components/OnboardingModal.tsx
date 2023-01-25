@@ -143,7 +143,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
           </AcmExpandableSection>
         </GridItem>
       </Grid>
-      {/* <div style={{ paddingTop: '24px' }} /> */}
     </AcmModal>
   )
 }
