@@ -1,3 +1,7 @@
-.pf-c-modal-box.onboardingmodalclass.pf-m-md .pf-c-modal-box__footer {
-    padding: 0px;
+.pf-c-expandable-section__content {
+  margin: 0px;
+}
+
+.pf-c-modal-box > .pf-c-button + * {
+  margin-right: 0px;
 }
