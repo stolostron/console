@@ -811,9 +811,9 @@ describe('DistributionField hypershift clusters', () => {
     status: ClusterStatus.ready,
     distribution: {
       ocp: {
-        version: '4.11.12',
+        version: '4.11.21',
         availableUpdates: [],
-        desiredVersion: '4.11.12',
+        desiredVersion: '4.11.21',
         upgradeFailed: false,
       },
       isManagedOpenShift: false,
@@ -1044,7 +1044,7 @@ describe('DistributionField hypershift clusters', () => {
       'managedclusterpage'
     )
 
-    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1060,7 +1060,7 @@ describe('DistributionField hypershift clusters', () => {
       'hostedcluster'
     )
 
-    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1089,7 +1089,7 @@ describe('DistributionField hypershift clusters', () => {
       isRegionalHubCluster: false,
     }
 
-    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+    const { queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
       false,
@@ -1099,7 +1099,6 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
@@ -1115,7 +1114,66 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
-    expect(queryAllByText(/upgrading to openshift 4\.11\.22/i).length).toBe(0)
+    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
+  })
+
+  it('Should show upgrading but with unavailable version num', async () => {
+    const mockHostedCluster: HostedClusterK8sResource = {
+      apiVersion: HostedClusterApiVersion,
+      kind: HostedClusterKind,
+      spec: {
+        dns: {
+          baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+          image: 'randomimage',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2022-12-17T22:14:15Z',
+            message: 'The hosted control plane is available',
+            observedGeneration: 4,
+            reason: 'HostedClusterAsExpected',
+            status: 'True',
+            type: 'Available',
+          },
+        ],
+        version: {
+          desired: {
+            image: '',
+          },
+          history: [
+            {
+              completionTime: '',
+              image: '',
+              startedTime: '2022-10-24T20:34:08Z',
+              state: 'Partial',
+              verified: false,
+              version: '',
+            },
+          ],
+          observedGeneration: 2,
+        },
+      },
+    }
+    const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+      mockHypershiftCluster,
+      true,
+      false,
+      undefined,
+      undefined,
+      mockHostedCluster,
+      false
+    )
+
+    expect(queryAllByText(/upgrading cluster/i).length).toBe(1)
+    expect(queryByRole('progressbar')).toBeTruthy()
   })
 })
