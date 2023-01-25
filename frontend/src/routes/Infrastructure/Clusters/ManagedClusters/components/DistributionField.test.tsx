@@ -32,8 +32,6 @@ import { Router } from 'react-router-dom'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 
-import '@testing-library/jest-dom'
-
 const mockDistributionInfo: DistributionInfo = {
   ocp: {
     version: '1.2.3',
@@ -1188,9 +1186,6 @@ describe('DistributionField hypershift clusters', () => {
       mockHostedCluster,
       false
     )
-
-    //await new Promise((resolve) => setTimeout(resolve, 500)) // makes sure everything is finished
-    //screen.logTestingPlaygroundURL()
 
     await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22/i }))
     await waitFor(() =>
