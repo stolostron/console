@@ -108,8 +108,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             style={{
               width: '100%',
               height: '100%',
-              padding: 0,
-              fontSize: 'var(--pf-global--icon--FontSize--md)',
             }}
           >
             <Link
@@ -117,6 +115,9 @@ export function OnboardingModal(props: IOnboardingModalProps) {
               to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}
               onClick={() => {
                 props.close()
+              }}
+              style={{
+                marginBottom: '0.5em',
               }}
             >
               {t('Get started with on-premise host inventory')}
@@ -133,10 +134,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     )
                   : window.open(DOC_BASE_PATH, '_blank')
               }
-              style={{
-                padding: '0',
-                fontSize: 'var(--pf-global--icon--FontSize--md)',
-              }}
             >
               {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
             </AcmButton>
