@@ -35,7 +35,10 @@ export function CreateCredentialsCatalog() {
         id: id || provider,
         icon: <AcmIcon icon={ProviderIconMap[provider]} />,
         title: ProviderLongTextMap[provider],
-        onClick: nextStep(getTypedCreateCredentialsPath(provider)),
+        onClick:
+          provider === Provider.aws
+            ? nextStep(NavigationPath.addAWSType)
+            : nextStep(getTypedCreateCredentialsPath(provider)),
       })),
     ]
     return newCards
