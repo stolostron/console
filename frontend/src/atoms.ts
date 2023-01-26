@@ -1,70 +1,70 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-    AgentClusterInstallK8sResource,
-    AgentK8sResource,
-    AgentServiceConfigK8sResource,
-    AgentMachineK8sResource,
-    BareMetalHostK8sResource,
-    HostedClusterK8sResource,
-    InfraEnvK8sResource,
-    InfrastructureK8sResource,
-    NMStateK8sResource,
-    NodePoolK8sResource,
-    ClusterVersionK8sResource,
-    StorageClassK8sResource,
+  AgentClusterInstallK8sResource,
+  AgentK8sResource,
+  AgentServiceConfigK8sResource,
+  AgentMachineK8sResource,
+  BareMetalHostK8sResource,
+  HostedClusterK8sResource,
+  InfraEnvK8sResource,
+  InfrastructureK8sResource,
+  NMStateK8sResource,
+  NodePoolK8sResource,
+  ClusterVersionK8sResource,
+  StorageClassK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { atom, useRecoilValue } from 'recoil'
 import {
-    AnsibleJob,
-    Application,
-    ApplicationSet,
-    ArgoApplication,
-    CertificateSigningRequest,
-    Channel,
-    ClusterClaim,
-    ClusterCurator,
-    ClusterDeployment,
-    ClusterImageSet,
-    ClusterManagementAddOn,
-    ClusterPool,
-    ClusterProvision,
-    ConfigMap,
-    CustomResourceDefinition,
-    DiscoveredCluster,
-    DiscoveryConfig,
-    GitOpsCluster,
-    HelmRelease,
-    IResource,
-    MachinePool,
-    ManagedCluster,
-    ManagedClusterAddOn,
-    ManagedClusterInfo,
-    ManagedClusterSet,
-    ManagedClusterSetBinding,
-    MultiClusterEngine,
-    MultiClusterHub,
-    Namespace,
-    OCPAppResource,
-    Placement,
-    PlacementBinding,
-    PlacementDecision,
-    PlacementRule,
-    Policy,
-    PolicyAutomation,
-    PolicyReport,
-    PolicySet,
-    Secret,
-    SubmarinerConfig,
-    Subscription,
-    SubscriptionOperator,
-    SubscriptionReport,
-    UserPreference,
+  AnsibleJob,
+  Application,
+  ApplicationSet,
+  ArgoApplication,
+  CertificateSigningRequest,
+  Channel,
+  ClusterClaim,
+  ClusterCurator,
+  ClusterDeployment,
+  ClusterImageSet,
+  ClusterManagementAddOn,
+  ClusterPool,
+  ClusterProvision,
+  ConfigMap,
+  CustomResourceDefinition,
+  DiscoveredCluster,
+  DiscoveryConfig,
+  GitOpsCluster,
+  HelmRelease,
+  IResource,
+  MachinePool,
+  ManagedCluster,
+  ManagedClusterAddOn,
+  ManagedClusterInfo,
+  ManagedClusterSet,
+  ManagedClusterSetBinding,
+  MultiClusterEngine,
+  MultiClusterHub,
+  Namespace,
+  OCPAppResource,
+  Placement,
+  PlacementBinding,
+  PlacementDecision,
+  PlacementRule,
+  Policy,
+  PolicyAutomation,
+  PolicyReport,
+  PolicySet,
+  Secret,
+  SubmarinerConfig,
+  Subscription,
+  SubscriptionOperator,
+  SubscriptionReport,
+  UserPreference,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
-    return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
+  return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 
 // throttle events delay
@@ -133,42 +133,42 @@ export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
 export interface Settings {
-    LOG_LEVEL?: string
-    SAVED_SEARCH_LIMIT?: string
-    ansibleIntegration?: 'enabled' | 'disabled'
-    singleNodeOpenshift?: 'enabled' | 'disabled'
-    awsPrivateWizardStep?: 'enabled' | 'disabled'
+  LOG_LEVEL?: string
+  SAVED_SEARCH_LIMIT?: string
+  ansibleIntegration?: 'enabled' | 'disabled'
+  singleNodeOpenshift?: 'enabled' | 'disabled'
+  awsPrivateWizardStep?: 'enabled' | 'disabled'
 }
 
 export interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
-    object: {
-        kind: string
-        apiVersion: string
-        metadata: {
-            name: string
-            namespace: string
-            resourceVersion: string
-        }
+  type: 'ADDED' | 'DELETED' | 'MODIFIED'
+  object: {
+    kind: string
+    apiVersion: string
+    metadata: {
+      name: string
+      namespace: string
+      resourceVersion: string
     }
+  }
 }
 
 export interface SettingsEvent {
-    type: 'SETTINGS'
-    settings: Record<string, string>
+  type: 'SETTINGS'
+  settings: Record<string, string>
 }
 
 export type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function usePolicies() {
-    const policies = useRecoilValue(policiesState)
-    return useMemo(
-        () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
-        [policies]
-    )
+  const policies = useRecoilValue(policiesState)
+  return useMemo(
+    () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
+    [policies]
+  )
 }
 
 export function useSavedSearchLimit() {
-    const settings = useRecoilValue(settingsState)
-    return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }

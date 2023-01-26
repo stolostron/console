@@ -9,13 +9,13 @@ export const SubscriptionReportKind = 'SubscriptionReport'
 export type SubscriptionReportKindType = 'SubscriptionReport'
 
 export const SubscriptionReportDefinition: IResourceDefinition = {
-    apiVersion: SubscriptionReportApiVersion,
-    kind: SubscriptionReportKind,
+  apiVersion: SubscriptionReportApiVersion,
+  kind: SubscriptionReportKind,
 }
 
 export interface SubscriptionReport extends IResource {
-    apiVersion: SubscriptionReportApiVersionType
-    kind: SubscriptionReportKindType
-    metadata: Metadata
-    spec: {}
+  apiVersion: SubscriptionReportApiVersionType
+  kind: SubscriptionReportKindType
+  metadata: Metadata
+  spec: {}
 }

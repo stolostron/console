@@ -3,8 +3,8 @@
 import { launchToOCP } from './ocp-utils'
 
 describe('launchToOCP', () => {
-    test('launchToOCP newtab true', () => {
-        // These are the default values
-        expect(launchToOCP('/blah')).toEqual(undefined)
-    })
+  test('launchToOCP newtab true', () => {
+    // These are the default values
+    expect(launchToOCP('/blah')).toEqual(undefined)
+  })
 })

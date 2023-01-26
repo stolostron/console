@@ -4,11 +4,11 @@ import { LoadPluginData } from '../../components/LoadPluginData'
 import Applications from './Applications'
 
 export default function ApplicationsPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <Applications />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <Applications />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

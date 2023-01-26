@@ -9,12 +9,12 @@ export const StatefulSetKind = 'StatefulSet'
 export type StatefulSetKindType = 'StatefulSet'
 
 export const StatefulSetDefinition: IResourceDefinition = {
-    apiVersion: StatefulSetApiVersion,
-    kind: StatefulSetKind,
+  apiVersion: StatefulSetApiVersion,
+  kind: StatefulSetKind,
 }
 
 export interface StatefulSet extends IResource {
-    apiVersion: StatefulSetApiVersionType
-    kind: StatefulSetKindType
-    metadata: Metadata
+  apiVersion: StatefulSetApiVersionType
+  kind: StatefulSetKindType
+  metadata: Metadata
 }

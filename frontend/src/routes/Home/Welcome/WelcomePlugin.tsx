@@ -3,9 +3,9 @@ import { PluginContextProvider } from '../../../components/PluginContextProvider
 import Welcome from './Welcome'
 
 export default function WelcomePlugin() {
-    return (
-        <PluginContextProvider>
-            <Welcome />
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <Welcome />
+    </PluginContextProvider>
+  )
 }

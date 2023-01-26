@@ -7,25 +7,25 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateDiscoverHost } from './CreateDiscoverHost'
 
 describe('CreateDiscoverHost', () => {
-    const Component = () => {
-        return (
-            <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createDiscoverHost]}>
-                    <Route path={NavigationPath.createDiscoverHost}>
-                        <CreateDiscoverHost />
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
+  const Component = () => {
+    return (
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.createDiscoverHost]}>
+          <Route path={NavigationPath.createDiscoverHost}>
+            <CreateDiscoverHost />
+          </Route>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
 
-    test('can click existinghost', async () => {
-        render(<Component />)
-        await clickByTestId('existinghost')
-    })
+  test('can click existinghost', async () => {
+    render(<Component />)
+    await clickByTestId('existinghost')
+  })
 
-    test('can click discover', async () => {
-        render(<Component />)
-        await clickByTestId('discover')
-    })
+  test('can click discover', async () => {
+    render(<Component />)
+    await clickByTestId('discover')
+  })
 })

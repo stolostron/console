@@ -23,27 +23,27 @@ const Applications = lazy(() => import('./routes/Applications/Applications'))
 const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 const lazyComps = [
-    WelcomePage,
-    OverviewPage,
-    Search,
-    Clusters,
-    Automations,
-    InfraEnvironments,
-    Governance,
-    Applications,
-    Credentials,
+  WelcomePage,
+  OverviewPage,
+  Search,
+  Clusters,
+  Automations,
+  InfraEnvironments,
+  Governance,
+  Applications,
+  Credentials,
 ]
 
 function App(props: any) {
-    return <div>{props.component}</div>
+  return <div>{props.component}</div>
 }
 
 it('renders lazy components', async () => {
-    for (const component of lazyComps) {
-        render(
-            <Suspense fallback="test loading">
-                <App {...component} />
-            </Suspense>
-        )
-    }
+  for (const component of lazyComps) {
+    render(
+      <Suspense fallback="test loading">
+        <App {...component} />
+      </Suspense>
+    )
+  }
 })

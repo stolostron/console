@@ -4,11 +4,11 @@ import { PluginContextProvider } from '../../../components/PluginContextProvider
 import Automations from './Automations'
 
 export default function AutomationsPlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <Automations />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <Automations />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

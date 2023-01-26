@@ -13,41 +13,41 @@ export const PlacementKind = 'Placement'
 export type PlacementKindType = 'Placement'
 
 export const PlacementDefinition: IResourceDefinition = {
-    apiVersion: PlacementApiVersionAlpha,
-    kind: PlacementKind,
+  apiVersion: PlacementApiVersionAlpha,
+  kind: PlacementKind,
 }
 
 export interface Placement extends IResource {
-    apiVersion: PlacementApiVersionAlphaType | PlacementApiVersionBetaType
-    kind: PlacementKindType
-    metadata: Metadata
-    spec: {
-        numberOfClusters?: number
-        clusterSets?: Array<string>
-        predicates?: PlacementPredicates[]
+  apiVersion: PlacementApiVersionAlphaType | PlacementApiVersionBetaType
+  kind: PlacementKindType
+  metadata: Metadata
+  spec: {
+    numberOfClusters?: number
+    clusterSets?: Array<string>
+    predicates?: PlacementPredicates[]
 
-        clusterSelector?: Selector | null
-    }
-    status?: PlacementStatus
+    clusterSelector?: Selector | null
+  }
+  status?: PlacementStatus
 }
 
 export interface PlacementPredicates {
-    requiredClusterSelector: PlacementRequiredClusterSelector
-    clusterName?: string
+  requiredClusterSelector: PlacementRequiredClusterSelector
+  clusterName?: string
 }
 
 export interface PlacementRequiredClusterSelector {
-    labelSelector?: Selector
-    claimSelector?: Selector
+  labelSelector?: Selector
+  claimSelector?: Selector
 }
 
 export interface PlacementStatus {
-    conditions: Array<{
-        lastTransitionTime: Date
-        message: string
-        reason: string
-        status: string
-        type: string
-    }>
-    numberOfSelectedClusters?: number
+  conditions: Array<{
+    lastTransitionTime: Date
+    message: string
+    reason: string
+    status: string
+    type: string
+  }>
+  numberOfSelectedClusters?: number
 }

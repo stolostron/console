@@ -3,14 +3,14 @@
 import { AcmExpandableCard } from './AcmExpandableCard'
 
 export default {
-    title: 'Expandable',
-    component: AcmExpandableCard,
+  title: 'Expandable',
+  component: AcmExpandableCard,
 }
 
 export const ExpandableCard = () => {
-    return (
-        <AcmExpandableCard title="Status">
-            <div>Hello</div>
-        </AcmExpandableCard>
-    )
+  return (
+    <AcmExpandableCard title="Status">
+      <div>Hello</div>
+    </AcmExpandableCard>
+  )
 }

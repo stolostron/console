@@ -5,16 +5,16 @@ import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmTextInput } from './AcmTextInput'
 
 export default {
-    title: 'TextInput',
-    component: AcmTextInput,
+  title: 'TextInput',
+  component: AcmTextInput,
 }
 
 export const TextInput = () => {
-    const [value, setValue] = useState<string>()
+  const [value, setValue] = useState<string>()
 
-    return (
-        <AcmForm>
-            <AcmTextInput label="Label" id="123" value={value} onChange={setValue} />
-        </AcmForm>
-    )
+  return (
+    <AcmForm>
+      <AcmTextInput label="Label" id="123" value={value} onChange={setValue} />
+    </AcmForm>
+  )
 }

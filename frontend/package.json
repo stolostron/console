@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
+        "start:hot": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --hot=true --stats-children",
         "storybook": "start-storybook -p 9000",
         "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc": "tsc --noEmit",
@@ -157,6 +158,7 @@
         "eslint-plugin-react": "7.30.1",
         "eslint-plugin-react-hooks": "4.6.0",
         "file-loader": "6.2.0",
+        "fork-ts-checker-webpack-plugin": "6.5.2",
         "handlebars-loader": "^1.7.3",
         "html-webpack-plugin": "^5.5.0",
         "i18next-parser": "6.5.0",
@@ -328,7 +330,7 @@
     },
     "prettier": {
         "printWidth": 120,
-        "tabWidth": 4,
+        "tabWidth": 2,
         "semi": false,
         "singleQuote": true
     }

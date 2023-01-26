@@ -9,18 +9,18 @@ export const GitOpsClusterKind = 'GitOpsCluster'
 export type GitOpsClusterKindType = 'GitOpsCluster'
 
 export const GitopsClusterDefinition: IResourceDefinition = {
-    apiVersion: GitOpsClusterApiVersion,
-    kind: GitOpsClusterKind,
+  apiVersion: GitOpsClusterApiVersion,
+  kind: GitOpsClusterKind,
 }
 
 export interface GitOpsCluster {
-    apiVersion: GitOpsClusterApiVersionType
-    kind: GitOpsClusterKindType
-    metadata: Metadata
-    spec?: {
-        argoServer?: {
-            argoNamespace: string
-            cluster?: string
-        }
+  apiVersion: GitOpsClusterApiVersionType
+  kind: GitOpsClusterKindType
+  metadata: Metadata
+  spec?: {
+    argoServer?: {
+      argoNamespace: string
+      cluster?: string
     }
+  }
 }

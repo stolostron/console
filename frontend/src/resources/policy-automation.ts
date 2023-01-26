@@ -9,28 +9,28 @@ export const PolicyAutomationKind = 'PolicyAutomation'
 export type PolicyAutomationKindType = 'PolicyAutomation'
 
 export const PolicyAutomationDefinition: IResourceDefinition = {
-    apiVersion: PolicyAutomationApiVersion,
-    kind: PolicyAutomationKind,
+  apiVersion: PolicyAutomationApiVersion,
+  kind: PolicyAutomationKind,
 }
 export interface PolicyAutomation {
-    apiVersion: PolicyAutomationApiVersionType
-    kind: PolicyAutomationKindType
-    metadata: Metadata
-    spec: PolicyAutomationSpec
+  apiVersion: PolicyAutomationApiVersionType
+  kind: PolicyAutomationKindType
+  metadata: Metadata
+  spec: PolicyAutomationSpec
 }
 
 export interface PolicyAutomationSpec {
-    automationDef: AutomationDef
-    mode: 'disabled' | 'everyEvent' | 'once'
-    policyRef: string
-    eventHook?: 'noncompliant'
-    rescanAfter?: string
-    delayAfterRunSeconds?: number
+  automationDef: AutomationDef
+  mode: 'disabled' | 'everyEvent' | 'once'
+  policyRef: string
+  eventHook?: 'noncompliant'
+  rescanAfter?: string
+  delayAfterRunSeconds?: number
 }
 
 interface AutomationDef {
-    name: string
-    secret: string
-    type?: string
-    extra_vars?: Record<string, string>
+  name: string
+  secret: string
+  type?: string
+  extra_vars?: Record<string, string>
 }

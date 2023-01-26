@@ -12,25 +12,25 @@ export type BrokerKindType = 'Broker'
 export const defaultBrokerName = 'submariner-broker'
 
 export const BrokerDefinition: IResourceDefinition = {
-    apiVersion: BrokerApiVersion,
-    kind: BrokerKind,
+  apiVersion: BrokerApiVersion,
+  kind: BrokerKind,
 }
 
 export interface Broker extends IResource {
-    apiVersion: BrokerApiVersionType
-    kind: BrokerKindType
-    metadata: Metadata
-    spec?: {
-        defaultGlobalnetClusterSize?: number
-        globalnetCIDRRange?: string
-        globalnetEnabled?: boolean
-    }
+  apiVersion: BrokerApiVersionType
+  kind: BrokerKindType
+  metadata: Metadata
+  spec?: {
+    defaultGlobalnetClusterSize?: number
+    globalnetCIDRRange?: string
+    globalnetEnabled?: boolean
+  }
 }
 
 export function getBroker(metadata: { name: string; namespace: string }) {
-    return getResource<Broker>({
-        apiVersion: BrokerApiVersion,
-        kind: BrokerKind,
-        metadata,
-    })
+  return getResource<Broker>({
+    apiVersion: BrokerApiVersion,
+    kind: BrokerKind,
+    metadata,
+  })
 }

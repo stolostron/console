@@ -6,15 +6,15 @@ import { ViewEditCredentialsFormPage } from './CredentialsForm'
 import CredentialsPage from './CredentialsPage'
 
 export default function Credentials() {
-    return (
-        <Switch>
-            <Route exact path={NavigationPath.addCredentials} component={CreateCredentialsPage} />
-            <Route exact path={NavigationPath.editCredentials} component={ViewEditCredentialsFormPage} />
-            <Route exact path={NavigationPath.viewCredentials} component={ViewEditCredentialsFormPage} />
-            <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-            <Route path="*">
-                <Redirect to={NavigationPath.credentials} />
-            </Route>
-        </Switch>
-    )
+  return (
+    <Switch>
+      <Route exact path={NavigationPath.addCredentials} component={CreateCredentialsPage} />
+      <Route exact path={NavigationPath.editCredentials} component={ViewEditCredentialsFormPage} />
+      <Route exact path={NavigationPath.viewCredentials} component={ViewEditCredentialsFormPage} />
+      <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+      <Route path="*">
+        <Redirect to={NavigationPath.credentials} />
+      </Route>
+    </Switch>
+  )
 }

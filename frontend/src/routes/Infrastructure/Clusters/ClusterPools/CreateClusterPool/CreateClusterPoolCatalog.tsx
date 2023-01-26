@@ -9,102 +9,102 @@ import { AcmIcon, AcmPage, Provider, ProviderIconMap, ProviderLongTextMap } from
 import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 
 export function CreateClusterPoolCatalog() {
-    const [t] = useTranslation()
-    const { search } = useLocation()
-    const { nextStep, back, cancel } = useBackCancelNavigation()
-    const { secretsState } = useSharedAtoms()
-    const [secrets] = useRecoilState(secretsState)
-    const credentials = useMemo(
-        () =>
-            secrets.filter(
-                (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined
-            ),
-        [secrets]
-    )
+  const [t] = useTranslation()
+  const { search } = useLocation()
+  const { nextStep, back, cancel } = useBackCancelNavigation()
+  const { secretsState } = useSharedAtoms()
+  const [secrets] = useRecoilState(secretsState)
+  const credentials = useMemo(
+    () =>
+      secrets.filter(
+        (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined
+      ),
+    [secrets]
+  )
 
-    const getCredentialLabels = useCallback(
-        (provider: Provider) => {
-            return credentials.filter(
-                (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/type'] === provider
-            ).length > 0
-                ? [{ label: t('Saved credentials'), color: CatalogColor.green }]
-                : undefined
+  const getCredentialLabels = useCallback(
+    (provider: Provider) => {
+      return credentials.filter(
+        (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/type'] === provider
+      ).length > 0
+        ? [{ label: t('Saved credentials'), color: CatalogColor.green }]
+        : undefined
+    },
+    [credentials, t]
+  )
+
+  const cards = useMemo(() => {
+    const getTypedCreateClusterPoolPath = (infrastructureType: ClusterPoolInfrastructureType) => {
+      const urlParams = new URLSearchParams(search)
+      urlParams.append(CLUSTER_POOL_INFRA_TYPE_PARAM, infrastructureType)
+      return {
+        pathname: NavigationPath.createClusterPool,
+        search: urlParams.toString(),
+      }
+    }
+
+    const getProviderCard = (
+      id: string,
+      provider: Provider & ClusterPoolInfrastructureType,
+      description: string
+    ): ICatalogCard => ({
+      id,
+      icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+      title: ProviderLongTextMap[provider],
+      items: [
+        {
+          type: CatalogCardItemType.Description,
+          description,
         },
-        [credentials, t]
-    )
+      ],
+      labels: getCredentialLabels(provider),
+      onClick: nextStep(getTypedCreateClusterPoolPath(provider)),
+    })
 
-    const cards = useMemo(() => {
-        const getTypedCreateClusterPoolPath = (infrastructureType: ClusterPoolInfrastructureType) => {
-            const urlParams = new URLSearchParams(search)
-            urlParams.append(CLUSTER_POOL_INFRA_TYPE_PARAM, infrastructureType)
-            return {
-                pathname: NavigationPath.createClusterPool,
-                search: urlParams.toString(),
-            }
-        }
+    const newCards: ICatalogCard[] = [
+      getProviderCard(
+        'aws',
+        Provider.aws,
+        t('A Red Hat OpenShift clusterpool that is running in your AWS subscription.')
+      ),
+      getProviderCard(
+        'google',
+        Provider.gcp,
+        t('A Red Hat OpenShift clusterpool that is running in your Google Cloud subscription.')
+      ),
+      getProviderCard(
+        'azure',
+        Provider.azure,
+        t('A Red Hat OpenShift clusterpool that is running in your Azure subscription.')
+      ),
+    ]
+    return newCards
+  }, [nextStep, getCredentialLabels, search, t])
 
-        const getProviderCard = (
-            id: string,
-            provider: Provider & ClusterPoolInfrastructureType,
-            description: string
-        ): ICatalogCard => ({
-            id,
-            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-            title: ProviderLongTextMap[provider],
-            items: [
-                {
-                    type: CatalogCardItemType.Description,
-                    description,
-                },
-            ],
-            labels: getCredentialLabels(provider),
-            onClick: nextStep(getTypedCreateClusterPoolPath(provider)),
-        })
+  const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
-        const newCards: ICatalogCard[] = [
-            getProviderCard(
-                'aws',
-                Provider.aws,
-                t('A Red Hat OpenShift clusterpool that is running in your AWS subscription.')
-            ),
-            getProviderCard(
-                'google',
-                Provider.gcp,
-                t('A Red Hat OpenShift clusterpool that is running in your Google Cloud subscription.')
-            ),
-            getProviderCard(
-                'azure',
-                Provider.azure,
-                t('A Red Hat OpenShift clusterpool that is running in your Azure subscription.')
-            ),
-        ]
-        return newCards
-    }, [nextStep, getCredentialLabels, search, t])
+  const breadcrumbs = useMemo(
+    () => [{ label: t('Cluster pools'), to: NavigationPath.clusterPools }, { label: t('Infrastructure') }],
+    [t]
+  )
 
-    const keyFn = useCallback((card: ICatalogCard) => card.id, [])
-
-    const breadcrumbs = useMemo(
-        () => [{ label: t('Cluster pools'), to: NavigationPath.clusterPools }, { label: t('Infrastructure') }],
-        [t]
-    )
-
-    return (
-        <AcmPage
-            header={
-                <PageHeader
-                    title={t('Infrastructure')}
-                    description={t('Choose your infrastructure provider.')}
-                    breadcrumbs={breadcrumbs}
-                />
-            }
-        >
-            <ItemView
-                items={cards}
-                itemKeyFn={keyFn}
-                itemToCardFn={(card) => card}
-                onBack={back(NavigationPath.clusterPools)}
-                onCancel={cancel(NavigationPath.clusterPools)}
-            />
-        </AcmPage>
-    )
+  return (
+    <AcmPage
+      header={
+        <PageHeader
+          title={t('Infrastructure')}
+          description={t('Choose your infrastructure provider.')}
+          breadcrumbs={breadcrumbs}
+        />
+      }
+    >
+      <ItemView
+        items={cards}
+        itemKeyFn={keyFn}
+        itemToCardFn={(card) => card}
+        onBack={back(NavigationPath.clusterPools)}
+        onCancel={cancel(NavigationPath.clusterPools)}
+      />
+    </AcmPage>
+  )
 }

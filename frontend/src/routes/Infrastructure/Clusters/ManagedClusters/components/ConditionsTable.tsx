@@ -8,60 +8,57 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import './ConditionsTable.css'
 
 type ConditionsTableProps = {
-    conditions?: {
-        status: string
-        type: string
-        message: string
-    }[]
+  conditions?: {
+    status: string
+    type: string
+    message: string
+  }[]
 }
 
 const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
-    const { t } = useTranslation()
-    const okIcon = <CheckCircleIcon color={okColor.value} />
-    return (
-        <TableComposable variant="compact">
-            <Thead>
-                <Tr>
-                    <Th width={25}>{t('Condition')}</Th>
-                    <Th>{t('Message')}</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
-                {conditions?.map((c) => {
-                    let icon = <UnknownIcon />
-                    if (c.status === 'True') {
-                        if (c.type === 'Progressing') {
-                            icon = <InProgressIcon size="sm" />
-                        } else if (c.type === 'Degraded') {
-                            icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
-                        } else {
-                            icon = okIcon
-                        }
-                    } else if (c.status === 'False') {
-                        if (c.type === 'Progressing' || c.type === 'Degraded') {
-                            icon = okIcon
-                        } else {
-                            icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
-                        }
-                    }
-                    return (
-                        <Tr key={c.type} className="hypershift-conditions-table__no-border">
-                            <Td>
-                                <Flex
-                                    alignItems={{ default: 'alignItemsCenter' }}
-                                    spaceItems={{ default: 'spaceItemsXs' }}
-                                >
-                                    <FlexItem>{icon}</FlexItem>
-                                    <FlexItem>{c.type}</FlexItem>
-                                </Flex>
-                            </Td>
-                            <Td span={8}>{c.message}</Td>
-                        </Tr>
-                    )
-                })}
-            </Tbody>
-        </TableComposable>
-    )
+  const { t } = useTranslation()
+  const okIcon = <CheckCircleIcon color={okColor.value} />
+  return (
+    <TableComposable variant="compact">
+      <Thead>
+        <Tr>
+          <Th width={25}>{t('Condition')}</Th>
+          <Th>{t('Message')}</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {conditions?.map((c) => {
+          let icon = <UnknownIcon />
+          if (c.status === 'True') {
+            if (c.type === 'Progressing') {
+              icon = <InProgressIcon size="sm" />
+            } else if (c.type === 'Degraded') {
+              icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
+            } else {
+              icon = okIcon
+            }
+          } else if (c.status === 'False') {
+            if (c.type === 'Progressing' || c.type === 'Degraded') {
+              icon = okIcon
+            } else {
+              icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
+            }
+          }
+          return (
+            <Tr key={c.type} className="hypershift-conditions-table__no-border">
+              <Td>
+                <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsXs' }}>
+                  <FlexItem>{icon}</FlexItem>
+                  <FlexItem>{c.type}</FlexItem>
+                </Flex>
+              </Td>
+              <Td span={8}>{c.message}</Td>
+            </Tr>
+          )
+        })}
+      </Tbody>
+    </TableComposable>
+  )
 }
 
 export default ConditionsTable
