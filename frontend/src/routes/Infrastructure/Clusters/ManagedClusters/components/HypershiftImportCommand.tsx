@@ -84,16 +84,18 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             },
         }
 
+        const clusterNameString = hdName?.replace(/\./g, '-') //replace all periods with '-'
+
         const klusterletAddonConfig: KlusterletAddonConfig = {
             apiVersion: KlusterletAddonConfigApiVersion,
             kind: KlusterletAddonConfigKind,
             metadata: {
                 name: hdName,
-                namespace: hdName,
+                namespace: clusterNameString,
             },
             spec: {
                 clusterName: hdName!,
-                clusterNamespace: hdName!,
+                clusterNamespace: clusterNameString!,
                 clusterLabels: {
                     cloud: 'Amazon',
                     vendor: 'Openshift',
@@ -121,7 +123,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             apiVersion: NamespaceApiVersion,
             kind: NamespaceKind,
             metadata: {
-                name: hdName,
+                name: clusterNameString,
             },
         }
 
@@ -156,7 +158,9 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             createResource(clusterNameSpace as IResource)
         } catch (err) {}
 
-        createResource(klusterletAddonConfig as IResource)
+        try {
+            createResource(klusterletAddonConfig as IResource)
+        } catch (err) {}
     }
 
     if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {
