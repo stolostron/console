@@ -95,7 +95,7 @@ class ControlPanelSingleSelect extends React.Component {
                   placeholderText={placeholder}
                   isDisabled={disabled}
                   data-testid={`select-${controlId}`}
-                  footer={footer}
+                  footer={React.cloneElement(footer, { control })}
                 >
                   {available.map((item, inx) => {
                     /* eslint-disable-next-line react/no-array-index-key */

@@ -67,24 +67,26 @@ export default function CreateSubscriptionApplicationPage() {
   const { t } = useTranslation()
   const [title, setTitle] = useState<string>(t('Create application'))
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [toggledControl, setToggledControl] = useState<any>()
   const [newSecret, setNewSecret] = useState<Secret>()
   const { secretsState } = useSharedAtoms()
   const [secrets] = useRecoilState(secretsState)
   const { projects } = GetProjects()
 
+  const [connectionControl, setConnectionControl] = useState()
   const onControlChange = useCallback(
     (control: any) => {
       if (control.id === 'connection') {
-        if (newSecret && control.setActive) {
-          control.setActive(newSecret.metadata.name)
+        if (newSecret && toggledControl?.setActive && toggledControl.newSecretNew !== newSecret.metadata.name) {
+          toggledControl.setActive(newSecret.metadata.name)
+          toggledControl.newSecretNew = newSecret.metadata.name
         }
       }
     },
-    [newSecret]
+    [newSecret, toggledControl]
   )
 
   // if a connection is added outside of wizard, add it to connection selection
-  const [connectionControl, setConnectionControl] = useState()
   useEffect(() => {
     if (connectionControl) {
       setAvailableConnections(
@@ -115,6 +117,11 @@ export default function CreateSubscriptionApplicationPage() {
 
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
+  }
+
+  const handleModalToggleWithContext = (control: any) => {
+    setToggledControl(control)
+    handleModalToggle()
   }
 
   return (
@@ -150,7 +157,12 @@ export default function CreateSubscriptionApplicationPage() {
                 newCredentialCallback={setNewSecret}
               />
             </Modal>
-            {CreateSubscriptionApplication(setTitle, handleModalToggle, setConnectionControl, onControlChange)}
+            {CreateSubscriptionApplication(
+              setTitle,
+              handleModalToggleWithContext,
+              setConnectionControl,
+              onControlChange
+            )}
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
@@ -160,7 +172,7 @@ export default function CreateSubscriptionApplicationPage() {
 
 export function CreateSubscriptionApplication(
   setTitle: Dispatch<SetStateAction<string>>,
-  handleModalToggle: () => void,
+  handleModalToggleWithContext: (affectedControl: any) => void,
   setConnectionControl: Dispatch<SetStateAction<undefined>>,
   onControlChange: (control: any) => void
 ) {
@@ -420,7 +432,7 @@ export function CreateSubscriptionApplication(
         type={'application'}
         title={t('application.create.yaml')}
         monacoEditor={<MonacoEditor />}
-        controlData={getControlData(isLocalCluster, handleModalToggle, t)}
+        controlData={getControlData(isLocalCluster, handleModalToggleWithContext, t)}
         template={template}
         portals={Portals}
         fetchControl={fetchControl}
