@@ -8,58 +8,54 @@ import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 import { TFunction } from 'i18next'
 
 const ControlPanelFormGroup = (props: {
-    children: ReactNode
-    control: any
-    controlData: any
-    controlId: string
-    showTip?: boolean
-    i18n: TFunction
+  children: ReactNode
+  control: any
+  controlData: any
+  controlId: string
+  showTip?: boolean
+  i18n: TFunction
 }) => {
-    const { controlId, control, controlData, showTip, children, i18n } = props
-    const { name, exception, opaque, tooltip, tip, validation = {}, icon } = control
-    const { info } = useDynamicPropertyValues(control, controlData, i18n, ['info'])
-    return (
-        <React.Fragment>
-            <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
-                <FormGroup
-                    id={`${controlId}-label`}
-                    label={name}
-                    isRequired={validation.required}
-                    fieldId={controlId}
-                    helperText={info}
-                    helperTextInvalid={exception}
-                    validated={exception ? 'error' : info ? 'default' : undefined}
-                    labelIcon={
-                        /* istanbul ignore next */
-                        tooltip ? (
-                            <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
-                                <>
-                                    <button
-                                        id={`${controlId}-label-help-button`}
-                                        aria-label={i18n('More info')}
-                                        onClick={(e) => e.preventDefault()}
-                                        className="pf-c-form__group-label-help"
-                                    >
-                                        <HelpIcon noVerticalAlign />
-                                    </button>
-                                    {icon ? (
-                                        <div style={{ display: 'inline-block', marginLeft: '20px' }}>{icon}</div>
-                                    ) : null}
-                                </>
-                            </Popover>
-                        ) : (
-                            <React.Fragment />
-                        )
-                    }
-                >
-                    {children}
-                    {(showTip === undefined || showTip === true) && tip && (
-                        <div style={{ fontSize: '14px' }}>{tip}</div>
-                    )}
-                </FormGroup>
-            </div>
-        </React.Fragment>
-    )
+  const { controlId, control, controlData, showTip, children, i18n } = props
+  const { name, exception, opaque, tooltip, tip, validation = {}, icon } = control
+  const { info } = useDynamicPropertyValues(control, controlData, i18n, ['info'])
+  return (
+    <React.Fragment>
+      <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
+        <FormGroup
+          id={`${controlId}-label`}
+          label={name}
+          isRequired={validation.required}
+          fieldId={controlId}
+          helperText={info}
+          helperTextInvalid={exception}
+          validated={exception ? 'error' : info ? 'default' : undefined}
+          labelIcon={
+            /* istanbul ignore next */
+            tooltip ? (
+              <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
+                <>
+                  <button
+                    id={`${controlId}-label-help-button`}
+                    aria-label={i18n('More info')}
+                    onClick={(e) => e.preventDefault()}
+                    className="pf-c-form__group-label-help"
+                  >
+                    <HelpIcon noVerticalAlign />
+                  </button>
+                  {icon ? <div style={{ display: 'inline-block', marginLeft: '20px' }}>{icon}</div> : null}
+                </>
+              </Popover>
+            ) : (
+              <React.Fragment />
+            )
+          }
+        >
+          {children}
+          {(showTip === undefined || showTip === true) && tip && <div style={{ fontSize: '14px' }}>{tip}</div>}
+        </FormGroup>
+      </div>
+    </React.Fragment>
+  )
 }
 
 export default ControlPanelFormGroup

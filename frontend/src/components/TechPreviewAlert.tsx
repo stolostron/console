@@ -4,35 +4,35 @@ import { BellIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../lib/acm-i18next'
 
 export function TechPreviewAlert(props: { i18nKey: string; docHref: string; disableBottomPadding?: boolean }) {
-    return (
-        <Alert
-            style={{ marginBottom: props.disableBottomPadding ? undefined : '16px' }}
-            customIcon={<BellIcon />}
-            isInline
-            variant="warning"
-            title={
-                <Trans
-                    i18nKey={props.i18nKey}
-                    components={{
-                        bold: <strong />,
-                        a: (
-                            <a
-                                href={props.docHref}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ textDecoration: 'underline', color: 'inherit' }}
-                            >
-                                {}
-                            </a>
-                        ),
-                    }}
-                />
-            }
+  return (
+    <Alert
+      style={{ marginBottom: props.disableBottomPadding ? undefined : '16px' }}
+      customIcon={<BellIcon />}
+      isInline
+      variant="warning"
+      title={
+        <Trans
+          i18nKey={props.i18nKey}
+          components={{
+            bold: <strong />,
+            a: (
+              <a
+                href={props.docHref}
+                target="_blank"
+                rel="noreferrer"
+                style={{ textDecoration: 'underline', color: 'inherit' }}
+              >
+                {}
+              </a>
+            ),
+          }}
         />
-    )
+      }
+    />
+  )
 }
 
 export function DevPreviewLabel() {
-    const { t } = useTranslation()
-    return <Label color="orange">{t('cluster.create.developer.preview')}</Label>
+  const { t } = useTranslation()
+  return <Label color="orange">{t('cluster.create.developer.preview')}</Label>
 }

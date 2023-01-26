@@ -4,18 +4,18 @@ import { action } from 'mobx'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
-    TopologyView,
-    TopologyControlBar,
-    createTopologyControlButtons,
-    defaultControlButtonsOptions,
-    VisualizationSurface,
-    SELECTION_EVENT,
-    SelectionEventListener,
-    useEventListener,
-    Controller,
-    Visualization,
-    VisualizationProvider,
-    isNode,
+  TopologyView,
+  TopologyControlBar,
+  createTopologyControlButtons,
+  defaultControlButtonsOptions,
+  VisualizationSurface,
+  SELECTION_EVENT,
+  SelectionEventListener,
+  useEventListener,
+  Controller,
+  Visualization,
+  VisualizationProvider,
+  isNode,
 } from '@patternfly/react-topology'
 import { ToolbarItem, Split, SplitItem } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
@@ -36,201 +36,193 @@ import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
 
 export interface TopologyProps {
-    elements: {
-        activeChannel?: string
-        channels?: string[]
-        nodes: any[]
-        links: any[]
-    }
-    channelControl: {
-        allChannels: string[]
-        activeChannel: string | undefined
-        setActiveChannel: (channel: string) => void
-    }
-    argoAppDetailsContainerControl: {
-        argoAppDetailsContainerData: ArgoAppDetailsContainerData
-        handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
-        handleErrorMsg: () => void
-    }
-    clusterDetailsContainerControl: {
-        clusterDetailsContainerData: ClusterDetailsContainerData
-        handleClusterDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ClusterDetailsContainerData>>
-    }
-    options: any
-    setDrawerContent: (
-        title: string,
-        isInline: boolean,
-        isResizable: boolean,
-        disableDrawerHead: boolean,
-        drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[],
-        closeDrawer: boolean
-    ) => void
-    canUpdateStatuses?: boolean
-    disableRenderConstraint?: boolean
-    processActionLink?: (resource: any, toggleLoading: boolean) => void
+  elements: {
+    activeChannel?: string
+    channels?: string[]
+    nodes: any[]
+    links: any[]
+  }
+  channelControl: {
+    allChannels: string[]
+    activeChannel: string | undefined
+    setActiveChannel: (channel: string) => void
+  }
+  argoAppDetailsContainerControl: {
+    argoAppDetailsContainerData: ArgoAppDetailsContainerData
+    handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
+    handleErrorMsg: () => void
+  }
+  clusterDetailsContainerControl: {
+    clusterDetailsContainerData: ClusterDetailsContainerData
+    handleClusterDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ClusterDetailsContainerData>>
+  }
+  options: any
+  setDrawerContent: (
+    title: string,
+    isInline: boolean,
+    isResizable: boolean,
+    disableDrawerHead: boolean,
+    drawerPanelBodyHasNoPadding: boolean,
+    panelContent: React.ReactNode | React.ReactNode[],
+    closeDrawer: boolean
+  ) => void
+  canUpdateStatuses?: boolean
+  disableRenderConstraint?: boolean
+  processActionLink?: (resource: any, toggleLoading: boolean) => void
 }
 
 interface TopologyViewComponentsProps {
-    controller: Controller
-    topologyProps: TopologyProps
+  controller: Controller
+  topologyProps: TopologyProps
 }
 
 export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ controller, topologyProps }) => {
-    const { t } = useTranslation()
-    const {
-        processActionLink,
-        argoAppDetailsContainerControl,
-        clusterDetailsContainerControl,
-        channelControl,
-        setDrawerContent,
-        options,
-        elements,
-    } = topologyProps
-    const [selectedIds, setSelectedIds] = useState<string[]>()
+  const { t } = useTranslation()
+  const {
+    processActionLink,
+    argoAppDetailsContainerControl,
+    clusterDetailsContainerControl,
+    channelControl,
+    setDrawerContent,
+    options,
+    elements,
+  } = topologyProps
+  const [selectedIds, setSelectedIds] = useState<string[]>()
 
-    useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
-        setSelectedIds(ids)
-        const selectedNodeId = head(ids)
-        const getLayoutNodes = () => {
-            return controller
-                .getElements()
-                .filter((n) => isNode(n))
-                .map((n) => {
-                    return n.getData()
-                })
-        }
+  useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
+    setSelectedIds(ids)
+    const selectedNodeId = head(ids)
+    const getLayoutNodes = () => {
+      return controller
+        .getElements()
+        .filter((n) => isNode(n))
+        .map((n) => {
+          return n.getData()
+        })
+    }
 
-        selectedNodeId
-            ? setDrawerContent(
-                  t('Details'),
-                  false, // inline
-                  true, // resizable
-                  true, // no drawerhead
-                  true, // no padding for drawerpanelbody
-                  <DetailsView
-                      options={options}
-                      getLayoutNodes={getLayoutNodes}
-                      selectedNodeId={selectedNodeId}
-                      processActionLink={processActionLink}
-                      nodes={elements.nodes}
-                      clusterDetailsContainerControl={clusterDetailsContainerControl}
-                      argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                      activeFilters={{}}
-                      t={t}
-                  />,
-                  false
-              )
-            : setDrawerContent('Close', false, true, true, true, undefined, true)
-    })
+    selectedNodeId
+      ? setDrawerContent(
+          t('Details'),
+          false, // inline
+          true, // resizable
+          true, // no drawerhead
+          true, // no padding for drawerpanelbody
+          <DetailsView
+            options={options}
+            getLayoutNodes={getLayoutNodes}
+            selectedNodeId={selectedNodeId}
+            processActionLink={processActionLink}
+            nodes={elements.nodes}
+            clusterDetailsContainerControl={clusterDetailsContainerControl}
+            argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+            activeFilters={{}}
+            t={t}
+          />,
+          false
+        )
+      : setDrawerContent('Close', false, true, true, true, undefined, true)
+  })
 
-    const channelChanger = (
-        <Split>
-            <SplitItem>
-                {channelControl?.allChannels?.length > 1 && (
-                    <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
-                )}
-            </SplitItem>
-        </Split>
-    )
+  const channelChanger = (
+    <Split>
+      <SplitItem>
+        {channelControl?.allChannels?.length > 1 && (
+          <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
+        )}
+      </SplitItem>
+    </Split>
+  )
 
-    const viewToolbar = (
-        <>
-            <ToolbarItem>{channelChanger}</ToolbarItem>
-            <div style={{ position: 'absolute', right: '30px' }}>
-                <ToolbarItem style={{ marginLeft: 'auto', marginRight: 0 }}>
-                    <div className="diagram-title">
-                        <span
-                            className="how-to-read-text"
-                            tabIndex={0}
-                            onClick={() => {
-                                setDrawerContent(
-                                    t('How to read topology'),
-                                    false,
-                                    false,
-                                    false,
-                                    false,
-                                    <LegendView t={t} />,
-                                    false
-                                )
-                            }}
-                            onKeyPress={noop}
-                            role="button"
-                        >
-                            {t('How to read topology')}
-                            <svg className="how-to-read-icon">
-                                <use href={'#drawerShapes__sidecar'} />
-                            </svg>
-                        </span>
-                    </div>
-                </ToolbarItem>
-            </div>
-        </>
-    )
+  const viewToolbar = (
+    <>
+      <ToolbarItem>{channelChanger}</ToolbarItem>
+      <div style={{ position: 'absolute', right: '30px' }}>
+        <ToolbarItem style={{ marginLeft: 'auto', marginRight: 0 }}>
+          <div className="diagram-title">
+            <span
+              className="how-to-read-text"
+              tabIndex={0}
+              onClick={() => {
+                setDrawerContent(t('How to read topology'), false, false, false, false, <LegendView t={t} />, false)
+              }}
+              onKeyPress={noop}
+              role="button"
+            >
+              {t('How to read topology')}
+              <svg className="how-to-read-icon">
+                <use href={'#drawerShapes__sidecar'} />
+              </svg>
+            </span>
+          </div>
+        </ToolbarItem>
+      </div>
+    </>
+  )
 
-    return (
-        <TopologyView
-            className="app-topology-view"
-            controlBar={
-                <TopologyControlBar
-                    controlButtons={createTopologyControlButtons({
-                        ...defaultControlButtonsOptions,
-                        zoomInTip: t('Zoom In'),
-                        zoomInAriaLabel: t('Zoom In'),
-                        zoomInCallback: action(() => {
-                            controller.getGraph().scaleBy(4 / 3)
-                        }),
-                        zoomOutTip: t('Zoom Out'),
-                        zoomOutAriaLabel: t('Zoom Out'),
-                        zoomOutCallback: action(() => {
-                            controller.getGraph().scaleBy(0.75)
-                        }),
-                        fitToScreenTip: t('Fit to Screen'),
-                        fitToScreenAriaLabel: t('Fit to Screen'),
-                        fitToScreenCallback: action(() => {
-                            controller.getGraph().fit(160)
-                        }),
-                        resetViewTip: t('Reset View'),
-                        resetViewAriaLabel: t('Reset View'),
-                        resetViewCallback: action(() => {
-                            controller.getGraph().reset()
-                            controller.getGraph().layout()
-                        }),
-                        legend: false,
-                    })}
-                />
-            }
-            viewToolbar={viewToolbar}
-        >
-            <VisualizationSurface state={{ selectedIds }} />
-        </TopologyView>
-    )
+  return (
+    <TopologyView
+      className="app-topology-view"
+      controlBar={
+        <TopologyControlBar
+          controlButtons={createTopologyControlButtons({
+            ...defaultControlButtonsOptions,
+            zoomInTip: t('Zoom In'),
+            zoomInAriaLabel: t('Zoom In'),
+            zoomInCallback: action(() => {
+              controller.getGraph().scaleBy(4 / 3)
+            }),
+            zoomOutTip: t('Zoom Out'),
+            zoomOutAriaLabel: t('Zoom Out'),
+            zoomOutCallback: action(() => {
+              controller.getGraph().scaleBy(0.75)
+            }),
+            fitToScreenTip: t('Fit to Screen'),
+            fitToScreenAriaLabel: t('Fit to Screen'),
+            fitToScreenCallback: action(() => {
+              controller.getGraph().fit(160)
+            }),
+            resetViewTip: t('Reset View'),
+            resetViewAriaLabel: t('Reset View'),
+            resetViewCallback: action(() => {
+              controller.getGraph().reset()
+              controller.getGraph().layout()
+            }),
+            legend: false,
+          })}
+        />
+      }
+      viewToolbar={viewToolbar}
+    >
+      <VisualizationSurface state={{ selectedIds }} />
+    </TopologyView>
+  )
 }
 
 export const Topology = (props: TopologyProps) => {
-    const controllerRef = useRef<Controller>()
-    let controller = controllerRef.current
-    if (!controller) {
-        controller = controllerRef.current = new Visualization()
-        controller.registerLayoutFactory(layoutFactory)
-        controller.registerComponentFactory(componentFactory)
-    }
-    controller.fromModel(getLayoutModel(props.elements))
-    // 4.86 controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
+  const controllerRef = useRef<Controller>()
+  let controller = controllerRef.current
+  if (!controller) {
+    controller = controllerRef.current = new Visualization()
+    controller.registerLayoutFactory(layoutFactory)
+    controller.registerComponentFactory(componentFactory)
+  }
+  controller.fromModel(getLayoutModel(props.elements))
+  // 4.86 controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
 
-    return (
-        <VisualizationProvider controller={controller}>
-            <NodeIcons />
-            <NodeStatusIcons />
-            {!props.canUpdateStatuses && (
-                <svg width="0" height="0">
-                    <symbol className="spinner" viewBox="0 0 40 40" id="nodeStatusIcon_spinner">
-                        <circle cx="20" cy="20" r="18" fill="white"></circle>
-                        <circle className="swirly" cx="20" cy="20" r="18"></circle>
-                    </symbol>
-                </svg>
-            )}
-            <TopologyViewComponents controller={controller} topologyProps={props} />
-        </VisualizationProvider>
-    )
+  return (
+    <VisualizationProvider controller={controller}>
+      <NodeIcons />
+      <NodeStatusIcons />
+      {!props.canUpdateStatuses && (
+        <svg width="0" height="0">
+          <symbol className="spinner" viewBox="0 0 40 40" id="nodeStatusIcon_spinner">
+            <circle cx="20" cy="20" r="18" fill="white"></circle>
+            <circle className="swirly" cx="20" cy="20" r="18"></circle>
+          </symbol>
+        </svg>
+      )}
+      <TopologyViewComponents controller={controller} topologyProps={props} />
+    </VisualizationProvider>
+  )
 }

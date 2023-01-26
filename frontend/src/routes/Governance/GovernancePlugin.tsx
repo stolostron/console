@@ -4,11 +4,11 @@ import { PluginContextProvider } from '../../components/PluginContextProvider'
 import Governance from './Governance'
 
 export default function GovernancePlugin() {
-    return (
-        <PluginContextProvider>
-            <LoadPluginData>
-                <Governance />
-            </LoadPluginData>
-        </PluginContextProvider>
-    )
+  return (
+    <PluginContextProvider>
+      <LoadPluginData>
+        <Governance />
+      </LoadPluginData>
+    </PluginContextProvider>
+  )
 }

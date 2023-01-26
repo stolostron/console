@@ -9,12 +9,12 @@ export const JobKind = 'Job'
 export type JobKindType = 'Job'
 
 export interface Job extends IResource {
-    apiVersion: JobApiVersionType
-    kind: JobKindType
-    metadata: Metadata
+  apiVersion: JobApiVersionType
+  kind: JobKindType
+  metadata: Metadata
 }
 
 export const JobDefinition: IResourceDefinition = {
-    apiVersion: JobApiVersion,
-    kind: JobKind,
+  apiVersion: JobApiVersion,
+  kind: JobKind,
 }

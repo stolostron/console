@@ -9,15 +9,15 @@ export const ManagedClusterSetBindingKind = 'ManagedClusterSetBinding'
 export type ManagedClusterSetBindingKindType = 'ManagedClusterSetBinding'
 
 export const ManagedClusterSetBindingDefinition: IResourceDefinition = {
-    apiVersion: ManagedClusterSetBindingApiVersion,
-    kind: ManagedClusterSetBindingKind,
+  apiVersion: ManagedClusterSetBindingApiVersion,
+  kind: ManagedClusterSetBindingKind,
 }
 
 export interface ManagedClusterSetBinding extends IResource {
-    apiVersion: ManagedClusterSetBindingApiVersionType
-    kind: ManagedClusterSetBindingKindType
-    metadata: Metadata
-    spec: {
-        clusterSet: string
-    }
+  apiVersion: ManagedClusterSetBindingApiVersionType
+  kind: ManagedClusterSetBindingKindType
+  metadata: Metadata
+  spec: {
+    clusterSet: string
+  }
 }

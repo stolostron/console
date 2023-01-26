@@ -9,19 +9,19 @@ export const CustomResourceDefinitionKind = 'CustomResourceDefinition'
 export type CustomResourceDefinitionKindType = 'CustomResourceDefinition'
 
 export const CustomResourceDefinitionDefinition: IResourceDefinition = {
-    apiVersion: CustomResourceDefinitionApiVersion,
-    kind: CustomResourceDefinitionKind,
+  apiVersion: CustomResourceDefinitionApiVersion,
+  kind: CustomResourceDefinitionKind,
 }
 
 export interface CustomResourceDefinition extends IResource {
-    apiVersion: CustomResourceDefinitionApiVersionType
-    kind: CustomResourceDefinitionKindType
-    metadata: Metadata
-    spec: {
-        group: string
-        names: {
-            kind: string
-            plural: string
-        }
+  apiVersion: CustomResourceDefinitionApiVersionType
+  kind: CustomResourceDefinitionKindType
+  metadata: Metadata
+  spec: {
+    group: string
+    names: {
+      kind: string
+      plural: string
     }
+  }
 }

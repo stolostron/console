@@ -7,25 +7,25 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateControlPlane } from './CreateControlPlane'
 
 describe('CreateControlPlane', () => {
-    const Component = () => {
-        return (
-            <RecoilRoot>
-                <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
-                    <Route path={NavigationPath.createBMControlPlane}>
-                        <CreateControlPlane />
-                    </Route>
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-    }
+  const Component = () => {
+    return (
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
+          <Route path={NavigationPath.createBMControlPlane}>
+            <CreateControlPlane />
+          </Route>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
 
-    test('can click hosted', async () => {
-        render(<Component />)
-        await clickByTestId('hosted')
-    })
+  test('can click hosted', async () => {
+    render(<Component />)
+    await clickByTestId('hosted')
+  })
 
-    test('can click standalone', async () => {
-        render(<Component />)
-        await clickByTestId('standalone')
-    })
+  test('can click standalone', async () => {
+    render(<Component />)
+    await clickByTestId('standalone')
+  })
 })

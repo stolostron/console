@@ -11,50 +11,50 @@ const { HTTP2_HEADER_AUTHORIZATION } = constants
 
 // The kubelet uses liveness probes to know when to restart a container.
 export async function liveness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    if (!isLive) return respondInternalServerError(req, res)
-    const oauthInfo = await getOauthInfoPromise()
-    if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
-    return respondOK(req, res)
+  if (!isLive) return respondInternalServerError(req, res)
+  const oauthInfo = await getOauthInfoPromise()
+  if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
+  return respondOK(req, res)
 }
 
 export let isLive = true
 
 export function setDead(): void {
-    if (isLive) {
-        logger.warn('liveness set to false')
-        isLive = false
-    }
+  if (isLive) {
+    logger.warn('liveness set to false')
+    isLive = false
+  }
 }
 
 const agent = new Agent({ rejectUnauthorized: false })
 
 export async function apiServerPing(): Promise<void> {
-    const msg = 'kube api server ping failed'
-    try {
-        const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
-            headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${getServiceAccountToken()}` },
-            agent,
-        })
-        if (response.status !== 200) {
-            const { status } = response
-            logger.error({ msg, response: { status } })
-            setDead()
-        }
-        void response.blob()
-    } catch (err) {
-        if (err instanceof FetchError) {
-            logger.error({ msg, error: err.message })
-            if (err.errno === 'ENOTFOUND' || err.code === 'ENOTFOUND') {
-                setDead()
-            }
-        } else if (err instanceof Error) {
-            logger.error({ msg, error: err.message })
-        } else {
-            logger.error({ msg, err: err as unknown })
-        }
+  const msg = 'kube api server ping failed'
+  try {
+    const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
+      headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${getServiceAccountToken()}` },
+      agent,
+    })
+    if (response.status !== 200) {
+      const { status } = response
+      logger.error({ msg, response: { status } })
+      setDead()
     }
+    void response.blob()
+  } catch (err) {
+    if (err instanceof FetchError) {
+      logger.error({ msg, error: err.message })
+      if (err.errno === 'ENOTFOUND' || err.code === 'ENOTFOUND') {
+        setDead()
+      }
+    } else if (err instanceof Error) {
+      logger.error({ msg, error: err.message })
+    } else {
+      logger.error({ msg, err: err as unknown })
+    }
+  }
 }
 
 if (process.env.NODE_ENV === 'production') {
-    setInterval(apiServerPing, 30 * 1000).unref()
+  setInterval(apiServerPing, 30 * 1000).unref()
 }

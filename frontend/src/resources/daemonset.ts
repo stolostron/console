@@ -9,12 +9,12 @@ export const DaemonSetKind = 'DaemonSet'
 export type DaemonSetKindType = 'DaemonSet'
 
 export interface DaemonSet extends IResource {
-    apiVersion: DaemonSetApiVersionType
-    kind: DaemonSetKindType
-    metadata: Metadata
+  apiVersion: DaemonSetApiVersionType
+  kind: DaemonSetKindType
+  metadata: Metadata
 }
 
 export const DaemonSetDefinition: IResourceDefinition = {
-    apiVersion: DaemonSetApiVersion,
-    kind: DaemonSetKind,
+  apiVersion: DaemonSetApiVersion,
+  kind: DaemonSetKind,
 }

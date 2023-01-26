@@ -11,52 +11,52 @@ export const PlacementRuleKind = 'PlacementRule'
 export type PlacementRuleKindType = 'PlacementRule'
 
 export const PlacementRuleDefinition: IResourceDefinition = {
-    apiVersion: PlacementRuleApiVersion,
-    kind: PlacementRuleKind,
+  apiVersion: PlacementRuleApiVersion,
+  kind: PlacementRuleKind,
 }
 
 export interface PlacementRule extends IResource {
-    apiVersion: PlacementRuleApiVersionType
-    kind: PlacementRuleKindType
-    metadata: Metadata
-    spec: PlacementRuleSpec
-    status?: PlacementRuleStatus
+  apiVersion: PlacementRuleApiVersionType
+  kind: PlacementRuleKindType
+  metadata: Metadata
+  spec: PlacementRuleSpec
+  status?: PlacementRuleStatus
 }
 
 export interface PlacementRuleSpec {
-    clusterReplicas?: number
-    clusterConditions?: {
-        status: string
-        type: string
-    }[]
-    clusterSelector?: Selector | null
+  clusterReplicas?: number
+  clusterConditions?: {
+    status: string
+    type: string
+  }[]
+  clusterSelector?: Selector | null
 }
 
 export interface PlacementRuleStatus {
-    decisions?: {
-        clusterName: string
-        clusterNamespace: string
-    }[]
+  decisions?: {
+    clusterName: string
+    clusterNamespace: string
+  }[]
 }
 
 export function listPlacementRules(namespace: string) {
-    if (!namespace) {
-        return {
-            promise: Promise.resolve([]),
-            abort: () => {},
-        }
-    }
-    const result = listResources<PlacementRule>({
-        apiVersion: PlacementRuleApiVersion,
-        kind: PlacementRuleKind,
-        metadata: {
-            namespace,
-        },
-    })
+  if (!namespace) {
     return {
-        promise: result.promise.then((placementRules) => {
-            return placementRules
-        }),
-        abort: result.abort,
+      promise: Promise.resolve([]),
+      abort: () => {},
     }
+  }
+  const result = listResources<PlacementRule>({
+    apiVersion: PlacementRuleApiVersion,
+    kind: PlacementRuleKind,
+    metadata: {
+      namespace,
+    },
+  })
+  return {
+    promise: result.promise.then((placementRules) => {
+      return placementRules
+    }),
+    abort: result.abort,
+  }
 }

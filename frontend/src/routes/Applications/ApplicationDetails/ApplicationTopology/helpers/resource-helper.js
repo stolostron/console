@@ -13,11 +13,11 @@
 import queryString from 'query-string'
 
 export const getEditLink = ({ name, namespace, kind, apiVersion, cluster = 'local-cluster' }) => {
-    return `/multicloud/home/search/resources/yaml?${queryString.stringify({
-        cluster,
-        name,
-        namespace,
-        kind,
-        apiversion: apiVersion,
-    })}`
+  return `/multicloud/home/search/resources/yaml?${queryString.stringify({
+    cluster,
+    name,
+    namespace,
+    kind,
+    apiversion: apiVersion,
+  })}`
 }

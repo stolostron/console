@@ -9,28 +9,28 @@ export const ClusterProvisionKind = 'ClusterProvision'
 export type ClusterProvisionKindType = 'ClusterProvision'
 
 export const ClusterProvisionDefinition: IResourceDefinition = {
-    apiVersion: ClusterProvisionApiVersion,
-    kind: ClusterProvisionKind,
+  apiVersion: ClusterProvisionApiVersion,
+  kind: ClusterProvisionKind,
 }
 
 export interface ClusterProvision {
-    apiVersion: ClusterProvisionApiVersionType
-    kind: ClusterProvisionKindType
-    metadata: Metadata
-    spec?: {
-        attempt: number
-        clusterDeploymentRef: {
-            name: string
-        }
-        installLog: string
+  apiVersion: ClusterProvisionApiVersionType
+  kind: ClusterProvisionKindType
+  metadata: Metadata
+  spec?: {
+    attempt: number
+    clusterDeploymentRef: {
+      name: string
     }
-    status?: {
-        conditions: {
-            lastTransitionTime?: string
-            message?: string
-            reason?: string
-            status: string
-            type: string
-        }[]
-    }
+    installLog: string
+  }
+  status?: {
+    conditions: {
+      lastTransitionTime?: string
+      message?: string
+      reason?: string
+      status: string
+      type: string
+    }[]
+  }
 }

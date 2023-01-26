@@ -25,58 +25,58 @@ mockNMStateConfigInfraEnv.metadata.name = infraEnvName
 mockNMStateConfigInfraEnv.metadata.namespace = infraEnvName
 
 const Component = () => {
-    return (
-        <RecoilRoot
-            initializeState={(snapshot) => {
-                snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
-                snapshot.set(nmStateConfigsState, [mockNMStateConfigInfraEnv])
-            }}
-        >
-            <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
-                <Route
-                    component={(props: any) => {
-                        const newProps = { ...props }
-                        newProps.match = props.match || { params: {} }
-                        newProps.match.params.name = infraEnvName
-                        newProps.match.params.namespace = infraEnvName
-                        return <InfraEnvironmentDetailsPage {...newProps} />
-                    }}
-                />
-            </MemoryRouter>
-        </RecoilRoot>
-    )
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
+        snapshot.set(nmStateConfigsState, [mockNMStateConfigInfraEnv])
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
+        <Route
+          component={(props: any) => {
+            const newProps = { ...props }
+            newProps.match = props.match || { params: {} }
+            newProps.match.params.name = infraEnvName
+            newProps.match.params.namespace = infraEnvName
+            return <InfraEnvironmentDetailsPage {...newProps} />
+          }}
+        />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
 }
 
 describe('Infrastructure Environment Details page', () => {
-    beforeEach(() => nockIgnoreApiPaths())
-    test('can render', async () => {
-        const initialNocks = [nockGet(mockPullSecret as IResource)]
-        render(<Component />)
-        await waitForText('ai:Environment details')
-        await waitForNocks(initialNocks)
+  beforeEach(() => nockIgnoreApiPaths())
+  test('can render', async () => {
+    const initialNocks = [nockGet(mockPullSecret as IResource)]
+    render(<Component />)
+    await waitForText('ai:Environment details')
+    await waitForNocks(initialNocks)
 
-        // The Overview tab
-        await waitForText('ai:Infrastructure Environment name')
+    // The Overview tab
+    await waitForText('ai:Infrastructure Environment name')
 
-        // Open discovery ISO dialog
-        await clickHostAction('With Discovery ISO')
+    // Open discovery ISO dialog
+    await clickHostAction('With Discovery ISO')
 
-        // Discovery ISO config dialog
-        await clickByText('ai:Generate Discovery ISO')
+    // Discovery ISO config dialog
+    await clickByText('ai:Generate Discovery ISO')
 
-        // Discovery ISO download state
-        await waitForText('ai:Discovery ISO is ready to be downloaded')
-        await waitForText('ai:Download Discovery ISO')
+    // Discovery ISO download state
+    await waitForText('ai:Discovery ISO is ready to be downloaded')
+    await waitForText('ai:Download Discovery ISO')
 
-        // note: the input-element ID is auto-generated
-        // await waitForTestId('text-input-1')
-        // await waitFor(() => expect(getByTestId('text-input-1')).toHaveValue(mockInfraEnv1.status.isoDownloadURL))
+    // note: the input-element ID is auto-generated
+    // await waitForTestId('text-input-1')
+    // await waitFor(() => expect(getByTestId('text-input-1')).toHaveValue(mockInfraEnv1.status.isoDownloadURL))
 
-        await clickByText('ai:Close')
-        await waitForNotText('ai:Download Discovery ISO')
+    await clickByText('ai:Close')
+    await waitForNotText('ai:Download Discovery ISO')
 
-        // The Hosts tab
-        await clickByText('Hosts')
-        await waitForText('ai:Hosts may take a few minutes to appear here after booting.')
-    })
+    // The Hosts tab
+    await clickByText('Hosts')
+    await waitForText('ai:Hosts may take a few minutes to appear here after booting.')
+  })
 })

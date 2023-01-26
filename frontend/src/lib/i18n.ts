@@ -10,29 +10,29 @@ import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
 
 i18n
-    // pass the i18n instance to react-i18next
-    .use(initReactI18next)
-    // detect user language
-    // learn more: https://github.com/i18next/i18next-browser-languageDetector
-    .use(LanguageDetector)
-    // fetch json files
-    // learn more: https://github.com/i18next/i18next-http-backend
-    .use(HttpApi)
-    // init i18next
-    .init({
-        backend: {
-            loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
-        },
-        compatibilityJSON: 'v3',
-        fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
-        keySeparator: false, // this repo will use single level json
-        interpolation: {
-            escapeValue: false, // react handles this already
-        },
-        defaultNS: 'translation', // the default file for strings when using useTranslation, etc
-        nsSeparator: '~',
-        supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
-        simplifyPluralSuffix: true,
-    })
+  // pass the i18n instance to react-i18next
+  .use(initReactI18next)
+  // detect user language
+  // learn more: https://github.com/i18next/i18next-browser-languageDetector
+  .use(LanguageDetector)
+  // fetch json files
+  // learn more: https://github.com/i18next/i18next-http-backend
+  .use(HttpApi)
+  // init i18next
+  .init({
+    backend: {
+      loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
+    },
+    compatibilityJSON: 'v3',
+    fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
+    keySeparator: false, // this repo will use single level json
+    interpolation: {
+      escapeValue: false, // react handles this already
+    },
+    defaultNS: 'translation', // the default file for strings when using useTranslation, etc
+    nsSeparator: '~',
+    supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
+    simplifyPluralSuffix: true,
+  })
 
 export default i18n
