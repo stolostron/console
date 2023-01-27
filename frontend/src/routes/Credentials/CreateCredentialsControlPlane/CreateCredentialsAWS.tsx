@@ -12,8 +12,8 @@ import {
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
-import { AcmPage, Provider } from '../../../ui-components'
-import { getTypedCreateClusterPath } from '../../Infrastructure/Clusters/ManagedClusters/ClusterInfrastructureType'
+import { AcmIcon, AcmIconVariant, AcmPage, Provider } from '../../../ui-components'
+import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
@@ -21,12 +21,13 @@ export function CreateCredentialsAWS() {
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
       {
-        id: 'hosted',
-        title: t('Standard'),
+        id: 'aws-standard',
+        title: t('Amazon Web Services'),
+        icon: <AcmIcon icon={AcmIconVariant.aws} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('TBD'),
+            description: t('Access key ID, Secret access key'),
           },
           {
             type: CatalogCardItemType.List,
@@ -35,19 +36,19 @@ export function CreateCredentialsAWS() {
             items: [],
           },
         ],
-        onClick: nextStep(NavigationPath.createAWSCLI),
-        badgeList: [],
+        onClick: nextStep(getTypedCreateCredentialsPath(Provider.aws)),
       },
       {
-        id: 'bucket',
-        title: t('S3 Bucket'),
+        id: 'aws-bucket',
+        title: t('Amazon Web Services'),
+        icon: <AcmIcon icon={AcmIconVariant.awss3} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('TBD'),
+            description: t('S3 Bucket'),
           },
         ],
-        onClick: nextStep(getTypedCreateClusterPath(Provider.aws)),
+        onClick: nextStep(getTypedCreateCredentialsPath(Provider.awss3)),
       },
     ]
     return newCards
@@ -58,8 +59,8 @@ export function CreateCredentialsAWS() {
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Credentials'), to: NavigationPath.credentials },
-      { label: t('Credential type'), to: NavigationPath.addCredentials },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }) },
+      { label: t('Type'), to: NavigationPath.addCredentials },
+      { label: t('AWS credential type') },
     ]
     return newBreadcrumbs
   }, [t])
@@ -68,8 +69,8 @@ export function CreateCredentialsAWS() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Control plane type - {{hcType}}', { hcType: 'AWS' })}
-          description={t('Choose a control plane type for your credential.')}
+          title={t('Amazon Web Services credential type')}
+          description={t('Choose your AWS credential type.')}
           breadcrumbs={breadcrumbs}
         />
       }

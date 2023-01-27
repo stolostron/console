@@ -11,7 +11,7 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import _, { noop } from 'lodash'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -156,7 +156,6 @@ export function CredentialsForm(
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
-
   const history = useHistory()
   const { back, cancel } = useBackCancelNavigation()
 
@@ -188,6 +187,9 @@ export function CredentialsForm(
     () => providerConnection?.stringData?.aws_secret_access_key ?? ''
   )
 
+  const [bucket_name, setBucketName] = useState(() => providerConnection?.stringData?.bucket ?? '')
+  // const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
+
   // Azure Cloud State
   const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
     () => providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
@@ -200,6 +202,8 @@ export function CredentialsForm(
   const [cloudName, setCloudName] = useState<CloudNames | string>(
     providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
   )
+
+  const isAWSS3 = credentialsType === Provider.awss3
 
   function getDisconnectedDocLink(credentialsType: Provider) {
     switch (credentialsType) {
@@ -300,6 +304,10 @@ export function CredentialsForm(
   // Red Hat Cloud
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
+  const s3values = useMemo(
+    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
+    []
+  )
   function stateToData() {
     const stringData: ProviderConnectionStringData = {}
     const secret: ProviderConnection = {
@@ -340,6 +348,9 @@ export function CredentialsForm(
         stringData.httpsProxy = httpsProxy
         stringData.noProxy = noProxy
         stringData.additionalTrustBundle = additionalTrustBundle
+        break
+      case Provider.awss3:
+        stringData.bucket = bucket_name
         break
       case Provider.azure:
         stringData.baseDomainResourceGroupName = baseDomainResourceGroupName
@@ -509,6 +520,13 @@ export function CredentialsForm(
     </Fragment>
   )
 
+  useEffect(() => {
+    if (isAWSS3) {
+      setName(s3values.name)
+      setNamespace(s3values.namespace)
+    }
+  }, [isAWSS3, s3values])
+
   const formData: FormData = {
     title,
     titleTooltip,
@@ -542,11 +560,11 @@ export function CredentialsForm(
             label: t('Credential name'),
             placeholder: t('Enter the name for the credential'),
             labelHelp: t('The name for the credential.'),
-            value: name,
+            value: isAWSS3 ? s3values.name : name,
             onChange: setName,
             validation: (value) => validateKubernetesDnsName(value, t),
             isRequired: true,
-            isDisabled: isEditing,
+            isDisabled: isEditing || isAWSS3,
             isHidden: !credentialsType,
           },
           {
@@ -562,7 +580,7 @@ export function CredentialsForm(
               id: namespace,
               value: namespace,
             })),
-            isDisabled: isEditing,
+            isDisabled: isEditing || isAWSS3,
             isHidden: !credentialsType,
           },
           {
@@ -643,6 +661,44 @@ export function CredentialsForm(
             onChange: setAwsSecretAccessKeyID,
             isRequired: true,
             isSecret: true,
+          },
+        ],
+      },
+      {
+        type: 'Section',
+        title: t('Bucket'),
+        wizardTitle: t('Enter bucket information'),
+        inputs: [
+          {
+            id: 'bucket_name',
+            type: 'Text',
+            label: t('Bucket name'),
+            placeholder: t('Enter your bucket name'),
+            isHidden: credentialsType !== Provider.awss3,
+            value: bucket_name,
+            onChange: setBucketName,
+            isRequired: true,
+          },
+          {
+            id: 'credentials',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'Text',
+            label: t('Secret access key'),
+            placeholder: t('Enter your credentials'),
+            labelHelp: t(
+              'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
+            ),
+            value: aws_secret_access_key,
+            onChange: setAwsSecretAccessKeyID,
+            isRequired: true,
+            isSecret: true,
+          },
+          {
+            id: 'Region',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'Select',
+            placeholder: t('Select region'),
+            isRequired: true,
           },
         ],
       },

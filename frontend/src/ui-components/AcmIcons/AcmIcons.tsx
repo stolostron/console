@@ -10,6 +10,7 @@ import OpenCurrentTabIcon from './OpenCurrentTabIcon'
 import OpenNewTabIcon from './OpenNewTabIcon'
 import AcmTemplateIcon from './TemplateIcon'
 import AWSIcon from './AWSIcon'
+import AWSS3Icon from './AWSS3Icon'
 import AzureIcon from './AzureIcon'
 import BrokenLinkIcon from './BrokenLinkIcon'
 import CloudIcon from './CloudIcon'
@@ -30,6 +31,7 @@ export enum AcmIconVariant {
   brokenlink = 'brokenlink',
   redhat = 'redhat',
   aws = 'aws',
+  awss3 = 'awss3',
   gcp = 'gcp',
   azure = 'azure',
   ocp = 'ocp',
@@ -62,6 +64,8 @@ export function AcmIcon(props: { icon: AcmIconVariant } & SVGIconProps) {
       return <RedHatIcon {...props} />
     case AcmIconVariant.aws:
       return <AWSIcon {...props} />
+    case AcmIconVariant.awss3:
+      return <AWSS3Icon {...props} />
     case AcmIconVariant.gcp:
       return <GCPIcon {...props} />
     case AcmIconVariant.azure:
