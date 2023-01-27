@@ -19,7 +19,6 @@ import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
-import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -776,14 +775,6 @@ export const appendWarning = (warning, controlData) => {
     type: 'custom',
     component: warning,
   })
-}
-
-export const insertToggleModalFunction = (handleToggleModal, controlData) => {
-  const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
-
-  if (currentConnectionComponentIdx > -1) {
-    controlData[currentConnectionComponentIdx].footer = <CreateCredentialModal handleModalToggle={handleToggleModal} />
-  }
 }
 
 export const disabledForFirstInGroup = (control) => {

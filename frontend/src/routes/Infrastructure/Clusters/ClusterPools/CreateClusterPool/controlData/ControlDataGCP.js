@@ -16,7 +16,6 @@ import {
   onChangeConnection,
   addSnoText,
   architectureData,
-  insertToggleModalFunction,
   onImageChange,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -292,7 +291,7 @@ export const getControlDataGCP = (t, handleModalToggle, includeAutomation = true
       },
       available: [],
       onSelect: onChangeConnection,
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterPoolDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -485,9 +484,6 @@ export const getControlDataGCP = (t, handleModalToggle, includeAutomation = true
   }
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
-  }
-  if (handleModalToggle) {
-    insertToggleModalFunction(handleModalToggle, controlData)
   }
   return controlData
 }

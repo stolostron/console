@@ -13,7 +13,6 @@ import {
   onChangeSNO,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   clusterDetailsControlData,
   disabledForFirstInGroup,
 } from './ControlDataHelpers'
@@ -57,7 +56,7 @@ export const getControlDataRHV = (
       },
       available: [],
       encode: ['cacertificate'],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -349,7 +348,7 @@ export const getControlDataRHV = (
     ...proxyControlData(t),
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
+
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

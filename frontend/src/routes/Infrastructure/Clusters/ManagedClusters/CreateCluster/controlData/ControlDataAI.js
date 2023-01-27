@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import DetailsForm from '../components/assisted-installer/DetailsForm'
-import { automationControlData, appendKlusterletAddonConfig, insertToggleModalFunction } from './ControlDataHelpers'
+import { automationControlData, appendKlusterletAddonConfig } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonConfig = true) => {
@@ -38,7 +38,7 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
         required: false,
       },
       available: [],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     {
       id: 'ai',
@@ -78,7 +78,6 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
   ]
 
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   return controlData
 }
 
