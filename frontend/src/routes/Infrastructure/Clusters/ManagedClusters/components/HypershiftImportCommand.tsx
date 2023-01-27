@@ -67,7 +67,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     if (!match) {
       //Invalid hostname
       //throw error, don't import cluster
-      const errorInfo = getErrorInfo('Invalid name, unable to import cluster', t)
+      const errorInfo = getErrorInfo(t('invalidclustername.message'), t)
       toastContext.addAlert({
         type: 'danger',
         title: errorInfo.title,
