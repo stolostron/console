@@ -72,6 +72,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         type: 'danger',
         title: errorInfo.title,
         message: errorInfo.message,
+        autoClose: true,
       })
       return
     }

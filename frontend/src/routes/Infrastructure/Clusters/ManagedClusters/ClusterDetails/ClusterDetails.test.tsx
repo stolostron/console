@@ -900,12 +900,12 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
   apiVersion: KlusterletAddonConfigApiVersion,
   kind: KlusterletAddonConfigKind,
   metadata: {
-    name: 'hostedCluster1',
-    namespace: 'hostedCluster1',
+    name: 'hostedcluster1',
+    namespace: 'hostedcluster1',
   },
   spec: {
-    clusterName: 'hostedCluster1',
-    clusterNamespace: 'hostedCluster1',
+    clusterName: 'hostedcluster1',
+    clusterNamespace: 'hostedcluster1',
     clusterLabels: {
       cloud: 'Amazon',
       vendor: 'Openshift',
@@ -933,7 +933,7 @@ const mockNamespace: Namespace = {
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
   metadata: {
-    name: 'hostedCluster1',
+    name: 'hostedcluster1',
   },
 }
 
@@ -941,7 +941,7 @@ const mockHostedCluster1: HostedClusterK8sResource = {
   apiVersion: HostedClusterApiVersion,
   kind: HostedClusterKind,
   metadata: {
-    name: 'hostedCluster1',
+    name: 'hostedcluster1',
     namespace: clusterName,
   },
   spec: {
@@ -1130,8 +1130,8 @@ const mockSecret: Secret = {
   apiVersion: SecretApiVersion,
   kind: SecretKind,
   metadata: {
-    namespace: 'hostedCluster1',
-    name: 'hostedCluster1-import',
+    namespace: 'hostedcluster1',
+    name: 'hostedcluster1-import',
   },
 }
 
@@ -1222,10 +1222,10 @@ const createManagedcluster1: ManagedCluster = {
     labels: {
       cloud: 'auto-detect',
       'cluster.open-cluster-management.io/clusterset': 'default',
-      name: 'hostedCluster1',
+      name: 'hostedcluster1',
       vendor: 'OpenShift',
     },
-    name: 'hostedCluster1',
+    name: 'hostedcluster1',
   },
   spec: {
     hubAcceptsClient: true,
@@ -1562,8 +1562,8 @@ describe('ClusterDetails with not found', () => {
           op: 'replace',
           path: '/metadata/annotations',
           value: {
-            'cluster.open-cluster-management.io/managedcluster-name': 'hostedCluster1',
-            'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hostedCluster1',
+            'cluster.open-cluster-management.io/managedcluster-name': 'hostedcluster1',
+            'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hostedcluster1',
           },
         },
       ]),
