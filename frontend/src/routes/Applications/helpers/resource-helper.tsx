@@ -143,15 +143,7 @@ export const getClusterList = (
   managedClusters: Cluster[]
 ) => {
   // managed resources using search to fetch
-  const ocpAppResourceKinds = [
-    CronJobKind,
-    DaemonSetKind,
-    DeploymentKind,
-    DeploymentConfigKind,
-    JobKind,
-    StatefulSetKind,
-  ]
-  if (ocpAppResourceKinds.includes(resource.kind)) {
+  if (isOCPAppResourceKind(resource.kind)) {
     const clusterSet = new Set<string>()
     if (resource.status.cluster) {
       clusterSet.add(resource.status.cluster)
@@ -213,13 +205,26 @@ export const normalizeRepoType = (type: string) => {
 
 export const groupByRepoType = (repos: any) => _.groupBy(repos, (repo) => normalizeRepoType(repo.type))
 
+export function isOCPAppResourceKind(kind: string) {
+  const ocpAppResourceKinds = [
+    CronJobKind,
+    DaemonSetKind,
+    DeploymentKind,
+    DeploymentConfigKind,
+    JobKind,
+    StatefulSetKind,
+  ]
+
+  return ocpAppResourceKinds.includes(kind)
+}
+
 export function getClusterCountString(
   t: TFunction,
   clusterCount: ClusterCount,
   clusterList?: string[],
   resource?: IResource
 ) {
-  if (resource && isArgoApp(resource)) {
+  if (resource && (isArgoApp(resource) || isOCPAppResourceKind(resource.kind))) {
     return clusterList?.length ? clusterList[0] : t('None')
   } else if (clusterCount.remoteCount && clusterCount.localPlacement) {
     return t('{{remoteCount}} Remote, 1 Local', { remoteCount: clusterCount.remoteCount })
@@ -233,6 +238,9 @@ export function getClusterCountString(
 }
 
 export function getClusterCountSearchLink(resource: IResource, clusterCount: ClusterCount, clusterList?: string[]) {
+  if (isOCPAppResourceKind(resource.kind)) {
+    return undefined
+  }
   if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
     return undefined
   }
