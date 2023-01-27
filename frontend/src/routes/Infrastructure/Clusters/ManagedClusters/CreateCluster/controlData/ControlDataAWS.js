@@ -17,6 +17,7 @@ import {
   onImageChange,
   proxyControlData,
   disabledForFirstInGroup,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import {
   getAlphanumericValidator,
@@ -848,7 +849,7 @@ export const getControlDataAWS = (
         required: true,
       },
       onSelect: onImageChange,
-      reverse: 'ClusterDeployment[0].spec.provisioning.imageSetRef.name',
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
