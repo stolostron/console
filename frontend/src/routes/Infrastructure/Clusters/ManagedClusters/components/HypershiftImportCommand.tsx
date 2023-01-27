@@ -61,6 +61,21 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   function importHostedControlPlaneCluster() {
     const hdName = selectedHostedClusterResource.metadata?.name
     const hdNamespace = selectedHostedClusterResource.metadata?.namespace
+
+    const match = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(hdName!)
+
+    if (!match) {
+      //Invalid hostname
+      //throw error, don't import cluster
+      const errorInfo = getErrorInfo('Invalid name, unable to import cluster', t)
+      toastContext.addAlert({
+        type: 'danger',
+        title: errorInfo.title,
+        message: errorInfo.message,
+      })
+      return
+    }
+
     const managedClusterResource: ManagedCluster = {
       apiVersion: ManagedClusterApiVersion,
       kind: ManagedClusterKind,
@@ -84,18 +99,16 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       },
     }
 
-    const clusterNameString = hdName?.replace(/\./g, '-') //replace all periods with '-'
-
     const klusterletAddonConfig: KlusterletAddonConfig = {
       apiVersion: KlusterletAddonConfigApiVersion,
       kind: KlusterletAddonConfigKind,
       metadata: {
         name: hdName,
-        namespace: clusterNameString,
+        namespace: hdName,
       },
       spec: {
         clusterName: hdName!,
-        clusterNamespace: clusterNameString!,
+        clusterNamespace: hdName!,
         clusterLabels: {
           cloud: 'Amazon',
           vendor: 'Openshift',
@@ -123,7 +136,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       apiVersion: NamespaceApiVersion,
       kind: NamespaceKind,
       metadata: {
-        name: clusterNameString,
+        name: hdName,
       },
     }
 
