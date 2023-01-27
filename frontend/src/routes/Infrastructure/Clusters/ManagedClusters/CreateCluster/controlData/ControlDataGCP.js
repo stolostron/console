@@ -18,6 +18,7 @@ import {
   architectureData,
   appendKlusterletAddonConfig,
   onImageChange,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -317,6 +318,7 @@ export const getControlDataGCP = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {

@@ -19,6 +19,7 @@ import {
   networkingControlData,
   clusterDetailsControlData,
   disabledForFirstInGroup,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -80,6 +81,7 @@ export const getControlDataVMW = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
