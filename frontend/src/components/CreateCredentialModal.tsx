@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ContextSelectorFooter } from '@patternfly/react-core'
-import { Fragment } from 'react'
+import { Fragment, useCallback } from 'react'
 
 import { useTranslation } from '../lib/acm-i18next'
 export interface ICreateCredentialModalProps {
@@ -12,20 +12,12 @@ export function CreateCredentialModal(props: ICreateCredentialModalProps) {
   const { t } = useTranslation()
   const { control, handleModalToggle } = props
 
+  const clickHandler = useCallback(() => handleModalToggle(control), [control, handleModalToggle])
+
   return (
     <Fragment>
       <ContextSelectorFooter>
-        <Button
-          onClick={
-            control
-              ? () => {
-                  handleModalToggle(control)
-                }
-              : handleModalToggle
-          }
-          variant="link"
-          isInline
-        >
+        <Button onClick={clickHandler} variant="link" isInline>
           {t('Add credential')}
         </Button>
       </ContextSelectorFooter>
