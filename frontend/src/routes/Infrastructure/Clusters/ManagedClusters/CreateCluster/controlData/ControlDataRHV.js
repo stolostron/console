@@ -74,6 +74,7 @@ export const getControlDataRHV = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
+      reverse: 'ClusterDeployment[0].spec.provisioning.imageSetRef.name',
     },
     //Always Hidden
     {

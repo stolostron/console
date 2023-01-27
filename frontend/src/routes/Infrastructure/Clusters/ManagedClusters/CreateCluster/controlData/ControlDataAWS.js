@@ -848,6 +848,7 @@ export const getControlDataAWS = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: 'ClusterDeployment[0].spec.provisioning.imageSetRef.name',
     },
     //Always Hidden
     {

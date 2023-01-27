@@ -81,6 +81,7 @@ export const getControlDataVMW = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: 'ClusterDeployment[0].spec.provisioning.imageSetRef.name',
     },
     //Always Hidden
     {
