@@ -4,19 +4,24 @@ import { Fragment } from 'react'
 
 import { useTranslation } from '../lib/acm-i18next'
 export interface ICreateCredentialModalProps {
-  control: any
+  control?: any
   handleModalToggle: (affectedControl: any) => void
 }
 
 export function CreateCredentialModal(props: ICreateCredentialModalProps) {
   const { t } = useTranslation()
+  const { control, handleModalToggle } = props
 
   return (
     <Fragment>
       <ContextSelectorFooter>
         <Button
           onClick={() => {
-            props.handleModalToggle(props.control)
+            if (control) {
+              handleModalToggle(control)
+            } else {
+              handleModalToggle()
+            }
           }}
           variant="link"
           isInline
