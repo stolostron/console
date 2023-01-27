@@ -9,7 +9,6 @@ import {
   disabledForFirstInGroup,
   getSimplifiedImageName,
   getWorkerName,
-  insertToggleModalFunction,
   isHidden_SNO,
   isHidden_lt_OCP48,
   networkingControlData,
@@ -492,7 +491,7 @@ export const getControlDataAZR = (
         required: true,
       },
       available: [],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ///////////////////////  imageset  /////////////////////////////////////
@@ -718,7 +717,6 @@ export const getControlDataAZR = (
     addSnoText(controlData, t)
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

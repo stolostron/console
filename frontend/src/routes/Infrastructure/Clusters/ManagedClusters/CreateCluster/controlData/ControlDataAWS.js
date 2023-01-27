@@ -8,7 +8,6 @@ import {
   clusterDetailsControlData,
   getSimplifiedImageName,
   getWorkerName,
-  insertToggleModalFunction,
   isHidden_SNO,
   isHidden_lt_OCP48,
   networkingControlData,
@@ -829,7 +828,7 @@ export const getControlDataAWS = (
       },
       available: [],
       providerId: 'aws',
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
       onSelect: onChangeConnection,
     },
     ...clusterDetailsControlData(t),
@@ -1079,7 +1078,6 @@ export const getControlDataAWS = (
     controlData.push(...automationControlData(t))
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   return controlData
 }
 

@@ -2,12 +2,7 @@
 import DetailsForm from '../components/assisted-installer/hypershift/DetailsForm'
 import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm'
-import {
-  automationControlData,
-  appendKlusterletAddonConfig,
-  appendWarning,
-  insertToggleModalFunction,
-} from './ControlDataHelpers'
+import { automationControlData, appendKlusterletAddonConfig, appendWarning } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 export const getControlDataHypershift = (
@@ -50,7 +45,7 @@ export const getControlDataHypershift = (
         required: false,
       },
       available: [],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     {
       id: 'hypershift',
@@ -91,7 +86,6 @@ export const getControlDataHypershift = (
     },
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (warning) {
     appendWarning(warning, controlData)
   }

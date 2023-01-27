@@ -15,7 +15,6 @@ import {
   addSnoText,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   onImageChange,
   networkingControlData,
   clusterDetailsControlData,
@@ -63,7 +62,7 @@ export const getControlDataVMW = (
       available: [],
       onSelect: onChangeConnection,
       encode: ['cacertificate'],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -358,7 +357,6 @@ export const getControlDataVMW = (
     addSnoText(controlData, t)
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

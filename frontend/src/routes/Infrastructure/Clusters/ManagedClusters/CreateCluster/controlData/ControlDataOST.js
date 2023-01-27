@@ -19,7 +19,6 @@ import {
   addSnoText,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   onImageChange,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -63,7 +62,7 @@ export const getControlDataOST = (
       },
       available: [],
       onSelect: onChangeConnection,
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +343,6 @@ export const getControlDataOST = (
     addSnoText(controlData, t)
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }
