@@ -16,13 +16,13 @@ export function CreateCredentialModal(props: ICreateCredentialModalProps) {
     <Fragment>
       <ContextSelectorFooter>
         <Button
-          onClick={() => {
-            if (control) {
-              handleModalToggle(control)
-            } else {
-              handleModalToggle()
-            }
-          }}
+          onClick={
+            control
+              ? () => {
+                  handleModalToggle(control)
+                }
+              : handleModalToggle
+          }
           variant="link"
           isInline
         >
