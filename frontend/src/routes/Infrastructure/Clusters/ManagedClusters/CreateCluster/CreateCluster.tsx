@@ -354,7 +354,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }, [infrastructureType, isInfraEnvAvailable, t])
 
-  let controlData: any[]
+  let controlData: any[] = []
   const breadcrumbs = [
     { text: t('Clusters'), to: NavigationPath.clusters },
     { text: t('Infrastructure'), to: NavigationPath.createCluster },
