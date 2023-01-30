@@ -22,6 +22,7 @@ export interface ProviderConnectionStringData {
 
   // AWS S3
   bucket?: string
+  credentials?: string
   region?: string
 
   // Azure

@@ -36,6 +36,7 @@ import {
   validatePrivateSshKey,
   validatePublicSshKey,
   validateRequiredPrefix,
+  validateS3Credential,
   validateVCenterServer,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
@@ -52,6 +53,7 @@ import {
 } from '../../resources'
 import schema from './schema.json'
 import { CredentialsType } from './CredentialsType'
+import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -188,7 +190,8 @@ export function CredentialsForm(
   )
 
   const [bucket_name, setBucketName] = useState(() => providerConnection?.stringData?.bucket ?? '')
-  // const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
+  const [aws_s3_credentials, setAwsS3Credentials] = useState(() => providerConnection?.stringData?.credentials ?? '')
+  const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
 
   // Azure Cloud State
   const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
@@ -351,6 +354,8 @@ export function CredentialsForm(
         break
       case Provider.awss3:
         stringData.bucket = bucket_name
+        stringData.credentials = aws_s3_credentials
+        stringData.region = aws_s3_region
         break
       case Provider.azure:
         stringData.baseDomainResourceGroupName = baseDomainResourceGroupName
@@ -682,21 +687,27 @@ export function CredentialsForm(
           {
             id: 'credentials',
             isHidden: credentialsType !== Provider.awss3,
-            type: 'Text',
-            label: t('Secret access key'),
+            type: 'TextArea',
+            label: t('Credentials'),
             placeholder: t('Enter your credentials'),
-            labelHelp: t(
-              'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
-            ),
-            value: aws_secret_access_key,
-            onChange: setAwsSecretAccessKeyID,
+            labelHelp: t('You use access keys to sign programmatic requests that you make to AWS. '),
+            value: aws_s3_credentials,
+            onChange: setAwsS3Credentials,
+            validation: (value) => validateS3Credential(value, t),
             isRequired: true,
             isSecret: true,
           },
           {
-            id: 'Region',
+            id: 'region',
             isHidden: credentialsType !== Provider.awss3,
             type: 'Select',
+            label: t('Region'),
+            options: _.keys(awsRegions).map((region) => ({
+              id: region,
+              value: region,
+            })),
+            value: aws_s3_region,
+            onChange: setAwsS3Region,
             placeholder: t('Select region'),
             isRequired: true,
           },
@@ -1425,6 +1436,7 @@ export function CredentialsForm(
       mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
       hideYaml={hideYaml}
       secrets={[
+        '*.stringData.credentials',
         '*.stringData.pullSecret',
         '*.stringData.aws_secret_access_key',
         '*.stringData.ssh-privatekey',

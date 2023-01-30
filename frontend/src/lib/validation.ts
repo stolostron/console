@@ -380,3 +380,15 @@ export function validateCidr(value: string, t: TFunction) {
   }
   return t('Value must be a valid IPv4 CIDR.')
 }
+
+const validS3Credential = new RegExp(
+  '[[a-zA-Z]+]((.|\\n)*)aws_access_key_id=[A-Za-z0-9]+((.|\\n)*)aws_secret_access_key=[A-Za-z0-9]+'
+)
+export function validateS3Credential(value: string, t: TFunction) {
+  if (value) {
+    if (!validS3Credential.test(value)) {
+      return t('Must be valid AWS credentials.')
+    }
+  }
+  return undefined
+}
