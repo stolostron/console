@@ -505,24 +505,11 @@
 }
 .temptifly-controls-delete-button,
 .creation-view-controls-delete-button {
-    cursor: pointer;
-    color: #3d70b2;
     display: flex;
     position: absolute;
     top: 16px;
     right: 10px;
     z-index: 100;
-}
-.temptifly-controls-delete-button svg,
-.creation-view-controls-delete-button svg {
-    margin: 0 6px;
-    width: 16px;
-    height: 16px;
-    fill: #3d70b2;
-}
-.temptifly-controls-delete-button:focus,
-.creation-view-controls-delete-button:focus {
-    outline: none;
 }
 .temptifly-controls-add-combobox,
 .creation-view-controls-add-combobox {

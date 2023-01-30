@@ -9,6 +9,7 @@ import {
   getURLValidator,
   getAlphanumericValidator,
   getNoProxyValidator,
+  getSourcePath,
 } from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
@@ -19,7 +20,6 @@ import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
-import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -325,6 +325,14 @@ export const onImageChange = (control, controlData) => {
       setActive('OpenShiftSDN')
     }
   }
+}
+
+export const reverseImageSet = (control, templateObject) => {
+  const active = _.get(templateObject, getSourcePath('ClusterDeployment[0].spec.provisioning.imageSetRef.name'))
+  if (active && !control.active) {
+    control.active = active.$v
+  }
+  return control
 }
 
 export const clusterDetailsControlData = (t) => {
@@ -776,14 +784,6 @@ export const appendWarning = (warning, controlData) => {
     type: 'custom',
     component: warning,
   })
-}
-
-export const insertToggleModalFunction = (handleToggleModal, controlData) => {
-  const currentConnectionComponentIdx = controlData.findIndex((control) => control.id === 'connection')
-
-  if (currentConnectionComponentIdx > -1) {
-    controlData[currentConnectionComponentIdx].footer = <CreateCredentialModal handleModalToggle={handleToggleModal} />
-  }
 }
 
 export const disabledForFirstInGroup = (control) => {

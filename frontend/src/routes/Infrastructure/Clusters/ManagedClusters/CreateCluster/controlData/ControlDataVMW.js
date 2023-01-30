@@ -15,11 +15,11 @@ import {
   addSnoText,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   onImageChange,
   networkingControlData,
   clusterDetailsControlData,
   disabledForFirstInGroup,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -63,7 +63,7 @@ export const getControlDataVMW = (
       available: [],
       onSelect: onChangeConnection,
       encode: ['cacertificate'],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +81,7 @@ export const getControlDataVMW = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
@@ -358,7 +359,6 @@ export const getControlDataVMW = (
     addSnoText(controlData, t)
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

@@ -17,8 +17,8 @@ import {
   addSnoText,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   onImageChange,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -299,7 +299,7 @@ export const getControlDataGCP = (
       },
       available: [],
       onSelect: onChangeConnection,
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
 
     ...clusterDetailsControlData(t),
@@ -318,6 +318,7 @@ export const getControlDataGCP = (
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
@@ -492,7 +493,6 @@ export const getControlDataGCP = (
     addSnoText(controlData, t)
   }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

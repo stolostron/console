@@ -8,7 +8,6 @@ import {
   disabledForFirstInGroup,
   getSimplifiedImageName,
   getWorkerName,
-  insertToggleModalFunction,
   isHidden_SNO,
   isHidden_lt_OCP48,
   networkingControlData,
@@ -16,6 +15,7 @@ import {
   onChangeSNO,
   onImageChange,
   proxyControlData,
+  reverseImageSet,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { getAlphanumericValidator, getNumericValidator } from '../../../../../../components/TemplateEditor'
 
@@ -484,7 +484,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
         required: true,
       },
       available: [],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterPoolDetailsControlData(t),
     ///////////////////////  imageset  /////////////////////////////////////
@@ -501,6 +501,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
@@ -711,9 +712,6 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
   }
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
-  }
-  if (handleModalToggle) {
-    insertToggleModalFunction(handleModalToggle, controlData)
   }
   return controlData
 }

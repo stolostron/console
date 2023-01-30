@@ -66,15 +66,6 @@ export const PreviousIcon = () => (
   </svg>
 )
 
-export const TrashIcon = () => (
-  <svg width="16px" height="16px" viewBox="0 0 16 24" version="1.1" role="presentation">
-    <g>
-      <path d="M4 0h8v2H4zM0 3v4h1v17h14V7h1V3H0zm13 18H3V8h10v13z" />
-      <path d="M5 10h2v9H5zm4 0h2v9H9z" />
-    </g>
-  </svg>
-)
-
 export const AddIcon = () => (
   <svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" role="presentation">
     <g>

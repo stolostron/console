@@ -7,6 +7,7 @@ import '@testing-library/jest-dom'
 import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
 import 'jest-axe/extend-expect'
+import { diff } from 'jest-diff'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -73,6 +74,19 @@ let consoleWarnings: any[] = []
 let consoleErrors: any[] = []
 
 expect.extend({
+  toHaveMultilineValue(received, expected: string) {
+    received = received.value || received
+    return {
+      pass: expected.trim().localeCompare(received.trim()) === 0,
+      message: () =>
+        'expect(received).toHaveMultilineValue(expected):' +
+        diff(expected, received, {
+          contextLines: 3,
+          expand: false,
+        }),
+    }
+  },
+
   hasNoMissingNocks() {
     const msgs: string[] = []
     const pass: boolean = missingNocks.length === 0

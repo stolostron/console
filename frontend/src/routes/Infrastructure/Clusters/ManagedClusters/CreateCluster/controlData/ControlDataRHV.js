@@ -13,9 +13,9 @@ import {
   onChangeSNO,
   architectureData,
   appendKlusterletAddonConfig,
-  insertToggleModalFunction,
   clusterDetailsControlData,
   disabledForFirstInGroup,
+  reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -57,7 +57,7 @@ export const getControlDataRHV = (
       },
       available: [],
       encode: ['cacertificate'],
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +74,7 @@ export const getControlDataRHV = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
@@ -349,7 +350,7 @@ export const getControlDataRHV = (
     ...proxyControlData(t),
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
-  insertToggleModalFunction(handleModalToggle, controlData)
+
   if (includeAutomation) {
     return [...controlData, ...automationControlData(t)]
   }

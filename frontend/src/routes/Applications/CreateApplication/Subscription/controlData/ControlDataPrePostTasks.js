@@ -13,15 +13,8 @@
 
 import { getSharedSubscriptionWarning } from './utils'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
-import { insertToggleModalFunction } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
 const getControlDataPrePostTasks = (handleModalToggle, t) => {
-  const controlData = prePostTasks(t)
-  insertToggleModalFunction(handleModalToggle, controlData)
-  return controlData
-}
-
-const prePostTasks = (t) => {
   return [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  pre/post jobs  /////////////////////////////////////
@@ -46,7 +39,7 @@ const prePostTasks = (t) => {
       available: [],
       reverse: 'Subscription[0].spec.hooksecretref.name',
       validation: {},
-      footer: <CreateCredentialModal />,
+      footer: (control) => <CreateCredentialModal handleModalToggle={() => handleModalToggle(control)} />,
     },
   ]
 }

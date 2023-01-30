@@ -7,7 +7,6 @@ import {
   disabledForFirstInGroup,
   getSimplifiedImageName,
   getWorkerName,
-  insertToggleModalFunction,
   isHidden_SNO,
   isHidden_lt_OCP48,
   networkingControlData,
@@ -15,6 +14,7 @@ import {
   onChangeSNO,
   onImageChange,
   proxyControlData,
+  reverseImageSet,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import {
   getAlphanumericValidator,
@@ -816,7 +816,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
       available: [],
       providerId: 'aws',
       onSelect: onChangeConnection,
-      footer: <CreateCredentialModal />,
+      footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterPoolDetailsControlData(t),
     ////////////////////////////////////////////////////////////////////////////////////
@@ -834,6 +834,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
         required: true,
       },
       onSelect: onImageChange,
+      reverse: reverseImageSet,
     },
     //Always Hidden
     {
@@ -1059,9 +1060,6 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
       awsRegions = { ...awsRegions, ...awsGovRegions }
       regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
     }
-  }
-  if (handleModalToggle) {
-    insertToggleModalFunction(handleModalToggle, controlData)
   }
   return controlData
 }

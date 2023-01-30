@@ -3,7 +3,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Alert } from '@patternfly/react-core'
+import { Alert, Button } from '@patternfly/react-core'
+import { TrashIcon } from '@patternfly/react-icons'
 import classNames from 'classnames'
 import ControlPanelAccordion from './ControlPanelAccordion'
 import ControlPanelTextInput from './ControlPanelTextInput'
@@ -21,7 +22,7 @@ import ControlPanelWizard from './ControlPanelWizard'
 import ControlPanelPrompt from './ControlPanelPrompt'
 import ControlPanelSkeleton from './ControlPanelSkeleton'
 import '../css/control-panel.css'
-import { TrashIcon, AddIcon } from '../icons/Icons'
+import { AddIcon } from '../icons/Icons'
 
 class ControlPanel extends React.Component {
   static propTypes = {
@@ -729,17 +730,17 @@ class ControlPanel extends React.Component {
       }
     }
     return (
-      <div
+      <Button
+        variant="plain"
         className="creation-view-controls-delete-button"
         tabIndex="0"
-        role={'button'}
         title={deletePrompt}
         aria-label={deletePrompt}
         onClick={handleGroupChange}
         onKeyPress={handleGroupChangeKey}
       >
         <TrashIcon />
-      </div>
+      </Button>
     )
   }
 
