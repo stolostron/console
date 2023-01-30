@@ -34,6 +34,7 @@ export const ProviderShortTextMap = {
   [Provider.ansible]: 'ANS',
   [Provider.openstack]: 'OpenStack',
   [Provider.aws]: 'Amazon',
+  [Provider.awss3]: 'Amazon S3',
   [Provider.gcp]: 'Google',
   [Provider.azure]: 'Microsoft',
   [Provider.ibm]: 'IBM',
