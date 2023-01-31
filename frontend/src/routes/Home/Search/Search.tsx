@@ -9,6 +9,7 @@ export default function Search() {
     <Switch>
       <Route exact path={NavigationPath.resources} component={DetailsPage} />
       <Route path={NavigationPath.resourceYAML} component={DetailsPage} />
+      <Route path={NavigationPath.resourceRelated} component={DetailsPage} />
       <Route path={NavigationPath.resourceLogs} component={DetailsPage} />
       <Route exact path={NavigationPath.search} component={SearchPage} />
       <Route path="*">
