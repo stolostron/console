@@ -148,7 +148,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
           <Alert
             variant={'warning'}
             isInline={true}
-            title={t('The related resource search criteria matched too many resources, the results are truncated.')}
+            title={t('Search result limit reached. Your query results are truncated.')}
           />
         ) : null}
         <PageSection isFilled={false} variant={'light'}>
