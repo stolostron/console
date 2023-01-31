@@ -2085,6 +2085,7 @@
     "Search placement": "Search placement",
     "Search placement rule": "Search placement rule",
     "Search resource": "Search resource",
+    "Search result limit reached. Your query results are truncated.": "Search result limit reached. Your query results are truncated.",
     "Search subscription": "Search subscription",
     "search.filter.errors.title": "An unexpected error occurred.",
     "search.filter.info.title": "Configuration alert",

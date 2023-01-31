@@ -11,6 +11,7 @@ import { getResource } from '../../../../resources/utils/resource-request'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import DetailsOverviewPage from './DetailsOverviewPage'
 import LogsPage from './LogsPage'
+import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
 import YAMLPage from './YAMLPage'
 
 function getResourceParams() {
@@ -53,7 +54,7 @@ export default function DetailsPage() {
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
 
   useEffect(() => {
-    if (resourceVersion !== resource?.metadata.resourceVersion) {
+    if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
       /* istanbul ignore else */
       if (cluster === 'local-cluster') {
         getResource<IResource>({
@@ -85,7 +86,16 @@ export default function DetailsPage() {
           })
       }
     }
-  }, [cluster, kind, apiversion, name, namespace, resourceVersion, resource?.metadata.resourceVersion])
+  }, [
+    cluster,
+    kind,
+    apiversion,
+    name,
+    namespace,
+    resourceVersion,
+    resource?.metadata.resourceVersion,
+    resource?.metadata.name,
+  ])
 
   useEffect(() => {
     setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
@@ -132,6 +142,9 @@ export default function DetailsPage() {
               <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
                 <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>YAML</Link>
               </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
+                <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>Related resources</Link>
+              </AcmSecondaryNavItem>
               {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
                 <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
                   <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>Logs</Link>
@@ -163,6 +176,9 @@ export default function DetailsPage() {
             apiversion={apiversion}
             setResourceVersion={setResourceVersion}
           />
+        </Route>
+        <Route exact path={NavigationPath.resourceRelated}>
+          <RelatedResourceDetailsTab cluster={cluster} resource={resource} />
         </Route>
         {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
           <Route path={NavigationPath.resourceLogs}>
