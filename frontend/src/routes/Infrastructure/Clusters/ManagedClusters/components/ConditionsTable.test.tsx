@@ -32,6 +32,8 @@ const conditions: any = [
   },
 ]
 
+const handleModalToggle = () => {}
+
 const conditionsWithDegradeFalse: any = [
   {
     lastTransitionTime: '2022-08-31T18:55:06Z',
@@ -54,7 +56,7 @@ const conditionsWithDegradeFalse: any = [
 describe('ConditionsTable', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    render(<ConditionsTable conditions={conditions} />)
+    render(<ConditionsTable handleModalToggle={handleModalToggle} conditions={conditions} />)
   })
 
   it('should render conditions table', async () => {
@@ -65,7 +67,7 @@ describe('ConditionsTable', () => {
 describe('ConditionsTable no conditions', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    render(<ConditionsTable conditions={[]} />)
+    render(<ConditionsTable handleModalToggle={handleModalToggle} conditions={[]} />)
   })
 
   it('should render conditions table with no conditions', async () => {
@@ -76,7 +78,7 @@ describe('ConditionsTable no conditions', () => {
 describe('ConditionsTable conditions undefined', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    render(<ConditionsTable conditions={undefined} />)
+    render(<ConditionsTable handleModalToggle={handleModalToggle} conditions={undefined} />)
   })
 
   it('should render conditions table with conditions undefined', async () => {
@@ -87,7 +89,7 @@ describe('ConditionsTable conditions undefined', () => {
 describe('ConditionsTable conditions degraded false', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    render(<ConditionsTable conditions={conditionsWithDegradeFalse} />)
+    render(<ConditionsTable handleModalToggle={handleModalToggle} conditions={conditionsWithDegradeFalse} />)
   })
 
   it('should render conditions table with degraded false', async () => {
