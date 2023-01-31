@@ -1397,6 +1397,7 @@
     "Hosted cluster requires a manual import.": "Hosted cluster requires a manual import.",
     "Hosted control plane": "Hosted control plane",
     "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.",
+    "Hosted control plane operator and hypershift add-on must be enabled in order to continue": "Hosted control plane operator and hypershift add-on must be enabled in order to continue",
     "Hosted control plane operator must be enabled in order to continue": "Hosted control plane operator must be enabled in order to continue",
     "hostInfraEnvCounts": "$t(hostCount, {\"count\": {{hostCount}} }) in $t(infraEnvCount, {\"count\": {{infraEnvCount}} })",
     "hosts": "hosts",

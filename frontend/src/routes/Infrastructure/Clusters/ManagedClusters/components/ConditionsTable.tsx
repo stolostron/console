@@ -3,6 +3,7 @@ import { Flex, FlexItem } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon, InProgressIcon } from '@patternfly/react-icons'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { global_palette_green_500 as okColor, global_danger_color_100 as dangerColor } from '@patternfly/react-tokens'
+import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
 import './ConditionsTable.css'
@@ -13,9 +14,10 @@ type ConditionsTableProps = {
     type: string
     message: string
   }[]
+  handleModalToggle: () => void
 }
 
-const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
+const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps) => {
   const { t } = useTranslation()
   const okIcon = <CheckCircleIcon color={okColor.value} />
   return (
@@ -28,6 +30,7 @@ const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
       </Thead>
       <Tbody>
         {conditions?.map((c) => {
+          let createCredentialModal = undefined
           let icon = <UnknownIcon />
           if (c.status === 'True') {
             if (c.type === 'Progressing') {
@@ -42,8 +45,12 @@ const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
               icon = okIcon
             } else {
               icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
+              if (c.type === 'ValidOIDCConfiguration') {
+                createCredentialModal = <CreateCredentialModal handleModalToggle={handleModalToggle} />
+              }
             }
           }
+
           return (
             <Tr key={c.type} className="hypershift-conditions-table__no-border">
               <Td>
@@ -52,7 +59,9 @@ const ConditionsTable = ({ conditions }: ConditionsTableProps) => {
                   <FlexItem>{c.type}</FlexItem>
                 </Flex>
               </Td>
-              <Td span={8}>{c.message}</Td>
+              <Td span={8}>
+                {c.message} {createCredentialModal}
+              </Td>
             </Tr>
           )
         })}

@@ -7,7 +7,7 @@ import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { CIM } from 'openshift-assisted-ui-lib'
 
-const HypershiftClusterDetails: React.FC = () => {
+const HypershiftClusterDetails = (props: { handleModalToggle: () => void }) => {
   const { t } = useTranslation()
   const { hostedCluster } = useContext(ClusterContext)
   const { waitForAll } = useSharedRecoil()
@@ -31,6 +31,7 @@ const HypershiftClusterDetails: React.FC = () => {
               hostedCluster={hostedCluster}
               nodePools={clusterNodePools}
               clusterImages={clusterImageSets as CIM.ClusterImageSetK8sResource[]}
+              handleModalToggle={props.handleModalToggle}
             />
           </AcmExpandableCard>
         </div>
