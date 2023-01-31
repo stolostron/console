@@ -37,7 +37,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             'related',
             []
         )
-        related = [...new Set([...relatedFrist, ...relatedSecond])]
+        related = Array.from(new Set([...relatedFrist, ...relatedSecond]))
     } else {
         related = _.get(mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])), 'related', [])
     }

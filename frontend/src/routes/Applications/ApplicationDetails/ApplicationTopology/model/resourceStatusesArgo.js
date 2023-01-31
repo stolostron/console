@@ -183,7 +183,7 @@ export const getArgoSecret = (appData, resourceStatuses = {}) => {
         const argoAppNS = _.uniqBy(_.map(allApps, 'namespace'))
         if (argoAppNS.length > 0) {
             const query = convertStringToQuery(
-                `kind:secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster='true'`
+                `kind:secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster=true`
             )
             return searchClient.query({
                 query: SearchResultRelatedItemsDocument,
