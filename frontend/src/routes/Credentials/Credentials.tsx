@@ -2,7 +2,7 @@
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateCredentialsPage } from './CreateCredentials'
-import { CreateCredentialsAWS } from './CreateCredentialsControlPlane/CreateCredentialsAWS'
+import { CreateCredentialsAWS } from './CreateCredentialsType/CreateCredentialsAWS'
 import { ViewEditCredentialsFormPage } from './CredentialsForm'
 import CredentialsPage from './CredentialsPage'
 

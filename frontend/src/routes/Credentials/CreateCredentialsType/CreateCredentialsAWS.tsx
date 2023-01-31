@@ -1,13 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
-  getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
   ItemView,
   PageHeader,
-  PatternFlyColor,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -28,12 +25,6 @@ export function CreateCredentialsAWS() {
           {
             type: CatalogCardItemType.Description,
             description: t('Access key ID, Secret access key'),
-          },
-          {
-            type: CatalogCardItemType.List,
-            title: t(''),
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
-            items: [],
           },
         ],
         onClick: nextStep(getTypedCreateCredentialsPath(Provider.aws)),

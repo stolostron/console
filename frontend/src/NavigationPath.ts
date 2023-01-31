@@ -119,7 +119,7 @@ export enum NavigationPath {
   // Credentials
   credentials = '/multicloud/credentials',
   addCredentials = '/multicloud/credentials/create',
-  addAWSType = '/multicloud/credentials/create/aws/control-plane',
+  addAWSType = '/multicloud/credentials/create/aws/type',
   editCredentials = '/multicloud/credentials/edit/:namespace/:name',
   viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 
