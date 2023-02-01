@@ -50,7 +50,6 @@ exports[`ControlPanelTreeSelect component renders as expected 1`] = `
             id="controlId"
           >
             <div
-              aria-label="Choose an item"
               class="tf--list-box"
               role="listbox"
               tabindex="0"
@@ -58,7 +57,6 @@ exports[`ControlPanelTreeSelect component renders as expected 1`] = `
               <div
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Open menu"
                 class="pf-c-form-control input"
                 data-toggle="true"
                 role="button"
@@ -68,7 +66,6 @@ exports[`ControlPanelTreeSelect component renders as expected 1`] = `
                 <input
                   aria-controls="controlId-creation.app.name-"
                   aria-expanded="true"
-                  aria-label="ListBox input field"
                   autocomplete="new-password"
                   class="pf-c-combo-control"
                   data-testid="tree-controlId"
@@ -83,7 +80,6 @@ exports[`ControlPanelTreeSelect component renders as expected 1`] = `
                   role="button"
                   style="color: rgb(106, 110, 115);"
                   tabindex="0"
-                  title="Clear selected item"
                 >
                   <svg
                     aria-hidden="true"
@@ -105,17 +101,13 @@ exports[`ControlPanelTreeSelect component renders as expected 1`] = `
                   tabindex="0"
                 >
                   <svg
-                    alt="Open menu"
-                    aria-label="Open menu"
                     fill-rule="evenodd"
                     height="5"
                     role="img"
                     viewBox="0 0 10 5"
                     width="10"
                   >
-                    <title>
-                      Close menu
-                    </title>
+                    <title />
                     <path
                       d="M0 0l5 4.998L10 0z"
                     />

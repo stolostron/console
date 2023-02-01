@@ -50,7 +50,6 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
             id="controlId-group"
           >
             <div
-              aria-label="Choose an item"
               class="tf--list-box"
               role="listbox"
               tabindex="0"
@@ -58,7 +57,6 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
               <div
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Open menu"
                 class=""
                 data-toggle="true"
                 role="button"
@@ -71,7 +69,6 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
                   <input
                     aria-controls="controlId-creation.app.name-false"
                     aria-expanded="true"
-                    aria-label="ListBox input field"
                     autocomplete="off"
                     class="pf-c-combo-control pf-c-form-control"
                     data-testid="combo-controlId"
@@ -87,17 +84,13 @@ exports[`ControlPanelComboBox component renders as expected 1`] = `
                   tabindex="0"
                 >
                   <svg
-                    alt="Open menu"
-                    aria-label="Open menu"
                     fill-rule="evenodd"
                     height="5"
                     role="img"
                     viewBox="0 0 10 5"
                     width="10"
                   >
-                    <title>
-                      Close menu
-                    </title>
+                    <title />
                     <path
                       d="M0 0l5 4.998L10 0z"
                     />
