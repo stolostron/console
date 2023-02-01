@@ -39,14 +39,16 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
         values: [cluster],
       },
       {
-        property: 'namespace',
-        values: [namespace],
-      },
-      {
         property: 'name',
         values: [name],
       },
     ]
+    if (namespace && namespace !== '') {
+      filters.push({
+        property: 'namespace',
+        values: [namespace],
+      })
+    }
     if (apiGroup && apiGroup !== '') {
       filters.push({
         property: 'apigroup',
