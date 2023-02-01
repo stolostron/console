@@ -4,7 +4,7 @@ import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '..
 import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
 import { useTranslation } from '../../lib/acm-i18next'
-import { queryRemoteArgoApps, queryOCPAppResources } from '../../lib/search'
+import { queryRemoteArgoApps, queryOCPAppResources, queryEmpty } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { useSetRecoilState, useSharedAtoms } from '../../shared-recoil'
@@ -21,12 +21,25 @@ export default function ApplicationsPage() {
 
   const { discoveredApplicationsState, discoveredOCPAppResourcesState } = useSharedAtoms()
 
+  const appTableFilter: any = window.localStorage.getItem('acm-table-filter.applicationTable') || '{}'
+  const appTableFilterItems = JSON.parse(appTableFilter)['table-filter-type-acm-application-label'] || []
+  const loadOCPResources =
+    !(
+      appTableFilterItems.includes('argoproj.io/ApplicationSet') ||
+      appTableFilterItems.includes('argoproj.io/Application') ||
+      appTableFilterItems.includes('app.k8s.io/Application')
+    ) ||
+    appTableFilterItems.includes('openshiftapps') ||
+    appTableFilterItems.includes('openshift-default') ||
+    appTableFilterItems.includes('fluxapps')
+
   const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
     startPolling: startPollingOCPResources,
-  } = useQuery(queryOCPAppResources)
+    stopPolling: stopPollingOCPResources,
+  } = useQuery(loadOCPResources ? queryOCPAppResources : queryEmpty)
   const [timedOut, setTimedOut] = useState<boolean>()
   const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)
   const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
@@ -35,9 +48,14 @@ export default function ApplicationsPage() {
     if (applicationsMatch.isExact) {
       // No need to poll for Advanced configuration page
       startPolling()
-      startPollingOCPResources()
+      if (loadingOCPResources) {
+        startPollingOCPResources()
+      }
     }
-  }, [applicationsMatch, startPolling, startPollingOCPResources])
+    if (!loadingOCPResources) {
+      stopPollingOCPResources
+    }
+  }, [applicationsMatch, loadingOCPResources, startPolling, startPollingOCPResources, stopPollingOCPResources])
 
   useEffect(() => {
     const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
