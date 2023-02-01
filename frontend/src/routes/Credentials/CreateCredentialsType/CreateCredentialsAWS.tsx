@@ -31,24 +31,24 @@ export function CreateCredentialsAWS() {
     const newCards: ICatalogCard[] = [
       {
         id: 'aws-standard',
-        title: t('Amazon Web Services'),
+        title: t('Openshift'),
         icon: <AcmIcon icon={AcmIconVariant.aws} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('Access key ID, Secret access key'),
+            description: t('AWS Credential'),
           },
         ],
         onClick: nextStep(getTypedCreateCredentialsPath(Provider.aws)),
       },
       {
         id: 'aws-bucket',
-        title: t('Amazon Web Services'),
+        title: t('Hosted Cluster OIDC'),
         icon: <AcmIcon icon={AcmIconVariant.awss3} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('S3 Bucket'),
+            description: t('Amazon S3'),
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
