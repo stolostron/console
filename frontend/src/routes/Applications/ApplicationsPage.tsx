@@ -53,7 +53,7 @@ export default function ApplicationsPage() {
       }
     }
     if (!loadingOCPResources) {
-      stopPollingOCPResources
+      stopPollingOCPResources()
     }
   }, [applicationsMatch, loadingOCPResources, startPolling, startPollingOCPResources, stopPollingOCPResources])
 
