@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { SVGIconProps } from '@patternfly/react-icons/dist/js/createIcon'
-import AnsibleTowerIcon from '@patternfly/react-icons/dist/js/icons/ansibeTower-icon'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
@@ -23,6 +22,7 @@ import IBMLogoIcon from './IBMLogoIcon'
 import HybridIcon from './HybridIcon'
 import AlibabaIcon from './AlibabaIcon'
 import KubeVirtIcon from './KubeVirtIcon'
+import AnsibleIcon from './AnsibleIcon'
 
 export enum AcmIconVariant {
   template = 'template',
@@ -85,7 +85,7 @@ export function AcmIcon(props: { icon: AcmIconVariant } & SVGIconProps) {
     case AcmIconVariant.openNewTab:
       return <OpenNewTabIcon {...props} />
     case AcmIconVariant.ansible:
-      return <AnsibleTowerIcon {...props} color="#EE0000" />
+      return <AnsibleIcon {...props} />
     case AcmIconVariant.ibmlogo:
       return <IBMLogoIcon {...props} />
     case AcmIconVariant.hybrid:
