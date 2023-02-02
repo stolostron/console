@@ -25,7 +25,7 @@
         "event-stream": "4.0.1",
         "find-my-way": "5.6.0",
         "get-value": "3.0.1",
-        "got": "11.8.5",
+        "got": "^12.5.3",
         "node-fetch": "2.6.7",
         "pino": "7.11.0",
         "pluralize": "8.0.0",
