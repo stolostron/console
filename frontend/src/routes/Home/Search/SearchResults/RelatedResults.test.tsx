@@ -11,16 +11,17 @@ import { useState } from 'react'
 import { Router } from 'react-router-dom'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
-import RelatedResultsTiles from './RelatedResultsTiles'
+import RelatedResults from './RelatedResults'
 
-describe('RelatedResultsTiles', () => {
+describe('RelatedResults', () => {
   const RelatedTiles = () => {
     const [selectedKinds, setSelectedKinds] = useState<string[]>([])
     return (
-      <RelatedResultsTiles
-        currentQuery={'kind:pod'}
-        selectedKinds={selectedKinds}
-        setSelectedKinds={setSelectedKinds}
+      <RelatedResults
+        currentQuery={'kind:Pod'}
+        selectedRelatedKinds={selectedKinds}
+        setSelectedRelatedKinds={setSelectedKinds}
+        setDeleteResource={() => {}}
       />
     )
   }
@@ -37,7 +38,7 @@ describe('RelatedResultsTiles', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -59,10 +60,10 @@ describe('RelatedResultsTiles', () => {
       </Router>
     )
     // Test the loading state while apollo query finishes
-    expect(screen.getAllByTestId('acmtile-loading')).toHaveLength(4)
+    expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
-    // Test that the component has rendered correctly with data
+    // Test that the component has rendered with an error
     await waitFor(() => expect(screen.queryByText('Error getting related count data')).toBeTruthy())
   })
 
@@ -78,7 +79,7 @@ describe('RelatedResultsTiles', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -92,17 +93,17 @@ describe('RelatedResultsTiles', () => {
               {
                 related: [
                   {
-                    kind: 'cluster',
+                    kind: 'Cluster',
                     count: 1,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'node',
+                    kind: 'Node',
                     count: 6,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'secret',
+                    kind: 'Secret',
                     count: 203,
                     __typename: 'SearchRelatedResult',
                   },
@@ -123,18 +124,18 @@ describe('RelatedResultsTiles', () => {
       </Router>
     )
     // Test the loading state while apollo query finishes
-    expect(screen.getAllByTestId('acmtile-loading')).toHaveLength(4)
+    expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
-    const secretTile = screen.getByTestId('related-tile-secret')
+    const secretTile = screen.getByTestId('Secret-2')
     await waitFor(() => expect(secretTile).toBeTruthy())
-    expect(secretTile).toHaveAttribute('aria-selected', 'false')
+    expect(secretTile).toHaveAttribute('aria-expanded', 'false')
 
     // selected the secret related tile
     userEvent.click(secretTile)
 
     // Check to see if the selection was successful
-    await waitFor(() => expect(secretTile).toHaveAttribute('aria-selected', 'true'))
+    await waitFor(() => expect(secretTile).toHaveAttribute('aria-expanded', 'true'))
   })
 })
