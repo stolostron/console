@@ -27,6 +27,7 @@ export type SearchQuery = {
         input: {
             filters: { property: string; values: string[] | string }[]
             relatedKinds?: string[]
+            limit?: number
         }[]
     }
     query: string
@@ -88,11 +89,25 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
                             values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
                         },
                     ],
+                    limit: 6500,
                 },
             ],
         },
         query: searchFilterQuery,
     })
+}
+
+// Used when need to maintain same number of hooks called
+export function queryEmpty(): IRequestResult<ISearchResult> {
+    const abortController = new AbortController()
+    return {
+        promise: Promise.resolve<ISearchResult>({
+            data: {
+                searchResult: [],
+            },
+        }),
+        abort: () => abortController.abort(),
+    }
 }
 
 export function useSearchParams() {
