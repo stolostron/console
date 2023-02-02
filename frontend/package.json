@@ -1,338 +1,338 @@
 {
-    "name": "frontend",
-    "version": "0.0.1",
-    "private": true,
-    "scripts": {
-        "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
-        "start:hot": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --hot=true --stats-children",
-        "storybook": "start-storybook -p 9000",
-        "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
-        "tsc": "tsc --noEmit",
-        "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
-        "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
-        "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
-        "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
-        "check": "npm run tsc",
-        "clean": "rm -rf coverage build",
-        "test": "npm run jest --",
-        "jest": "jest",
-        "jest:update-snapshot": "jest --updateSnapshot",
-        "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
-        "lint:fix": "npm run lint -- --fix",
-        "prettier": "prettier --check src public",
-        "prettier:fix": "prettier --write src public",
-        "i18n": "i18next --fail-on-warnings",
-        "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
-        "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
-        "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
-        "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
-        "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin"
+  "name": "frontend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
+    "start:hot": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --hot=true --stats-children",
+    "storybook": "start-storybook -p 9000",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
+    "tsc": "tsc --noEmit",
+    "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
+    "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
+    "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
+    "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
+    "check": "npm run tsc",
+    "clean": "rm -rf coverage build",
+    "test": "npm run jest --",
+    "jest": "jest",
+    "jest:update-snapshot": "jest --updateSnapshot",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "lint:fix": "npm run lint -- --fix",
+    "prettier": "prettier --check src public",
+    "prettier:fix": "prettier --write src public",
+    "i18n": "i18next --fail-on-warnings",
+    "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
+    "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
+    "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
+    "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
+    "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin"
+  },
+  "dependencies": {
+    "@apollo/client": "3.5.10",
+    "@babel/runtime": "7.18.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@kubernetes/client-node": "^0.18.0",
+    "@mui/material": "^5.11.1",
+    "@mui/styles": "^5.11.1",
+    "@octokit/rest": "19.0.3",
+    "@octokit/types": "6.40.0",
+    "@patternfly-labs/react-form-wizard": "^1.13.0",
+    "@patternfly/patternfly": "4.196.7",
+    "@patternfly/react-charts": "^6.74.3",
+    "@patternfly/react-code-editor": "4.65.1",
+    "@patternfly/react-core": "4.221.11",
+    "@patternfly/react-icons": "4.75.1",
+    "@patternfly/react-log-viewer": "4.87.21",
+    "@patternfly/react-table": "4.90.3",
+    "@patternfly/react-topology": "4.38.5",
+    "@react-hook/resize-observer": "1.2.5",
+    "@redhat-cloud-services/rule-components": "^3.2.5",
+    "@reduxjs/toolkit": "1.8.x",
+    "@stolostron/react-data-view": "^1.4.0",
+    "ajv": "8.11.0",
+    "axios": "0.27.2",
+    "cidr-tools": "4.3.0",
+    "debounce": "1.2.1",
+    "deep-diff": "1.0.2",
+    "diff": "5.1.0",
+    "fast-json-patch": "3.1.1",
+    "file-saver": "^2.0.2",
+    "formik-pf": "0.0.1-alpha8",
+    "fuse.js": "6.6.2",
+    "get-value": "3.0.1",
+    "graphql": "16.4.0",
+    "handlebars": "4.7.7",
+    "i18next": "21.7.1",
+    "i18next-browser-languagedetector": "6.1.4",
+    "i18next-http-backend": "1.4.0",
+    "ip-cidr": "2.1.5",
+    "js-yaml": "4.1.0",
+    "lodash": "4.17.21",
+    "moment": "2.29.4",
+    "moment-timezone": "^0.5.37",
+    "monaco-editor": "0.20.0",
+    "react-monaco-editor": "0.41.x",
+    "object-hash": "3.0.0",
+    "openshift-assisted-ui-lib": "^2.7.9-cim",
+    "ramda": "0.28.0",
+    "react-error-boundary": "3.1.4",
+    "react-masonry-css": "1.0.16",
+    "screenfull": "^6.0.2",
+    "set-value": "^4.1.0",
+    "string-similarity": "4.0.4",
+    "svg.js": "2.7.1",
+    "uuid": "8.3.2",
+    "validator": "13.7.0",
+    "whatwg-fetch": "3.6.2",
+    "yaml": "1.10.2",
+    "yup": "0.32.11"
+  },
+  "devDependencies": {
+    "@babel/core": "7.18.9",
+    "@babel/plugin-transform-runtime": "7.18.9",
+    "@babel/preset-env": "7.18.9",
+    "@babel/preset-react": "7.18.6",
+    "@babel/preset-typescript": "7.18.6",
+    "@openshift-console/dynamic-plugin-sdk": "0.0.3",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.6",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
+    "@sentry/browser": "6.19.7",
+    "@storybook/addon-a11y": "^6.5.9",
+    "@storybook/addon-actions": "^6.5.9",
+    "@storybook/addon-essentials": "^6.5.9",
+    "@storybook/addon-storysource": "^6.5.9",
+    "@storybook/builder-webpack5": "^6.5.9",
+    "@storybook/core-common": "^6.5.9",
+    "@storybook/manager-webpack5": "^6.5.9",
+    "@storybook/react": "^6.5.9",
+    "@svgr/webpack": "6.2.1",
+    "@testing-library/jest-dom": "5.16.4",
+    "@testing-library/react": "12.1.5",
+    "@testing-library/user-event": "12.8.3",
+    "@types/compression-webpack-plugin": "9.0.0",
+    "@types/copy-webpack-plugin": "8.0.1",
+    "@types/css-minimizer-webpack-plugin": "3.2.0",
+    "@types/debounce": "1.2.1",
+    "@types/deep-diff": "1.0.1",
+    "@types/diff": "5.0.2",
+    "@types/file-saver": "^2.0.5",
+    "@types/get-value": "3.0.2",
+    "@types/jest": "28.1.6",
+    "@types/jest-axe": "3.5.4",
+    "@types/js-yaml": "4.0.5",
+    "@types/lodash": "4.14.182",
+    "@types/mini-css-extract-plugin": "2.5.0",
+    "@types/node": "17.0.45",
+    "@types/object-hash": "2.2.1",
+    "@types/react": "17.0.47",
+    "@types/react-dom": "17",
+    "@types/react-router-dom": "5.3.3",
+    "@types/semver": "^7.3.13",
+    "@types/set-value": "^4.0.1",
+    "@types/string-similarity": "4.0.0",
+    "@types/testing-library__jest-dom": "5.14.5",
+    "@types/validator": "13.7.4",
+    "@types/webpack-bundle-analyzer": "4.4.1",
+    "@types/webpack-dev-server": "4.7.1",
+    "@typescript-eslint/eslint-plugin": "5.30.7",
+    "@typescript-eslint/parser": "5.30.7",
+    "babel-jest": "28.1.3",
+    "babel-loader": "8.2.5",
+    "browserify-fs": "1.0.0",
+    "buffer": "6.0.3",
+    "bundle-loader": "^0.5.6",
+    "comment-json": "4.2.2",
+    "compression-webpack-plugin": "10.0.0",
+    "concurrently": "7.2.2",
+    "copy-webpack-plugin": "11.0.0",
+    "crypto": "1.0.1",
+    "crypto-browserify": "3.12.0",
+    "css-loader": "6.7.1",
+    "css-minimizer-webpack-plugin": "4.0.0",
+    "eslint": "8.20.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "26.6.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-react": "7.30.1",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "file-loader": "6.2.0",
+    "fork-ts-checker-webpack-plugin": "6.5.2",
+    "handlebars-loader": "^1.7.3",
+    "html-webpack-plugin": "^5.5.0",
+    "i18next-parser": "6.5.0",
+    "identity-obj-proxy": "3.0.0",
+    "jest": "28.1.3",
+    "jest-axe": "6.0.0",
+    "jest-diff": "29.3.1",
+    "jest-environment-jsdom": "28.1.3",
+    "jest-fetch-mock": "3.0.3",
+    "jest-raw-loader": "1.0.1",
+    "jest-sonar-reporter": "2.0.0",
+    "jest-watch-typeahead": "2.0.0",
+    "json-loader": "0.5.7",
+    "merge-jsons-webpack-plugin": "2.0.1",
+    "mini-css-extract-plugin": "2.6.1",
+    "monaco-editor-webpack-plugin": "1.9.0",
+    "nock": "13.2.8",
+    "node-util": "0.0.6",
+    "null-loader": "4.0.1",
+    "path-browserify": "1.0.1",
+    "prettier": "2.7.1",
+    "process": "0.11.10",
+    "query-string": "7.1.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-hot-loader": "^4.13.0",
+    "react-i18next": "11.16.9",
+    "react-redux": "7.2.8",
+    "react-refresh": "0.14.0",
+    "react-refresh-typescript": "2.0.7",
+    "react-router-dom": "5.3.3",
+    "react-tagsinput": "3.19.x",
+    "recoil": "0.7.4",
+    "redux": "4.2.0",
+    "redux-thunk": "2.4.1",
+    "reselect": "4.1.6",
+    "sass": "1.53.0",
+    "sass-loader": "13.0.2",
+    "stacktrace-js": "2.0.2",
+    "stream-browserify": "3.0.0",
+    "style-loader": "3.3.1",
+    "swr": "1.3.0",
+    "ts-import-plugin": "2.0.0",
+    "ts-jest": "28.0.7",
+    "ts-loader": "9.3.1",
+    "ts-node": "10.9.1",
+    "tsconfig-paths": "4.0.0",
+    "tsconfig-paths-webpack-plugin": "^3.5.2",
+    "type-fest": "2.16.0",
+    "typescript": "4.6.4",
+    "v8-compile-cache": "2.3.0",
+    "webpack": "5.73.0",
+    "webpack-bundle-analyzer": "4.5.0",
+    "webpack-cli": "4.10.0",
+    "webpack-dev-server": "4.9.3"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
     },
-    "dependencies": {
-        "@apollo/client": "3.5.10",
-        "@babel/runtime": "7.18.9",
-        "@emotion/react": "^11.10.5",
-        "@emotion/styled": "^11.10.5",
-        "@kubernetes/client-node": "^0.18.0",
-        "@mui/material": "^5.11.1",
-        "@mui/styles": "^5.11.1",
-        "@octokit/rest": "19.0.3",
-        "@octokit/types": "6.40.0",
-        "@patternfly-labs/react-form-wizard": "^1.13.0",
-        "@patternfly/patternfly": "4.196.7",
-        "@patternfly/react-charts": "^6.74.3",
-        "@patternfly/react-code-editor": "4.65.1",
-        "@patternfly/react-core": "4.221.11",
-        "@patternfly/react-icons": "4.75.1",
-        "@patternfly/react-log-viewer": "4.87.21",
-        "@patternfly/react-table": "4.90.3",
-        "@patternfly/react-topology": "4.38.5",
-        "@react-hook/resize-observer": "1.2.5",
-        "@redhat-cloud-services/rule-components": "^3.2.5",
-        "@reduxjs/toolkit": "1.8.x",
-        "@stolostron/react-data-view": "^1.4.0",
-        "ajv": "8.11.0",
-        "axios": "0.27.2",
-        "cidr-tools": "4.3.0",
-        "debounce": "1.2.1",
-        "deep-diff": "1.0.2",
-        "diff": "5.1.0",
-        "fast-json-patch": "3.1.1",
-        "file-saver": "^2.0.2",
-        "formik-pf": "0.0.1-alpha8",
-        "fuse.js": "6.6.2",
-        "get-value": "3.0.1",
-        "graphql": "16.4.0",
-        "handlebars": "4.7.7",
-        "i18next": "21.7.1",
-        "i18next-browser-languagedetector": "6.1.4",
-        "i18next-http-backend": "1.4.0",
-        "ip-cidr": "2.1.5",
-        "js-yaml": "4.1.0",
-        "lodash": "4.17.21",
-        "moment": "2.29.4",
-        "moment-timezone": "^0.5.37",
-        "monaco-editor": "0.33.0",
-        "object-hash": "3.0.0",
-        "openshift-assisted-ui-lib": "^2.7.9-cim",
-        "ramda": "0.28.0",
-        "react-error-boundary": "3.1.4",
-        "react-masonry-css": "1.0.16",
-        "screenfull": "^6.0.2",
-        "set-value": "^4.1.0",
-        "string-similarity": "4.0.4",
-        "svg.js": "2.7.1",
-        "uuid": "8.3.2",
-        "validator": "13.7.0",
-        "whatwg-fetch": "3.6.2",
-        "yaml": "1.10.2",
-        "yup": "0.32.11"
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:jest/recommended",
+      "plugin:react-hooks/recommended",
+      "prettier"
+    ],
+    "plugins": [
+      "react",
+      "@typescript-eslint",
+      "jest",
+      "react-hooks",
+      "prettier"
+    ],
+    "env": {
+      "browser": true,
+      "node": true
     },
-    "devDependencies": {
-        "@babel/core": "7.18.9",
-        "@babel/plugin-transform-runtime": "7.18.9",
-        "@babel/preset-env": "7.18.9",
-        "@babel/preset-react": "7.18.6",
-        "@babel/preset-typescript": "7.18.6",
-        "@openshift-console/dynamic-plugin-sdk": "0.0.3",
-        "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.6",
-        "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
-        "@sentry/browser": "6.19.7",
-        "@storybook/addon-a11y": "^6.5.9",
-        "@storybook/addon-actions": "^6.5.9",
-        "@storybook/addon-essentials": "^6.5.9",
-        "@storybook/addon-storysource": "^6.5.9",
-        "@storybook/builder-webpack5": "^6.5.9",
-        "@storybook/core-common": "^6.5.9",
-        "@storybook/manager-webpack5": "^6.5.9",
-        "@storybook/react": "^6.5.9",
-        "@svgr/webpack": "6.2.1",
-        "@testing-library/jest-dom": "5.16.4",
-        "@testing-library/react": "12.1.5",
-        "@testing-library/user-event": "12.8.3",
-        "@types/compression-webpack-plugin": "9.0.0",
-        "@types/copy-webpack-plugin": "8.0.1",
-        "@types/css-minimizer-webpack-plugin": "3.2.0",
-        "@types/debounce": "1.2.1",
-        "@types/deep-diff": "1.0.1",
-        "@types/diff": "5.0.2",
-        "@types/file-saver": "^2.0.5",
-        "@types/get-value": "3.0.2",
-        "@types/jest": "28.1.6",
-        "@types/jest-axe": "3.5.4",
-        "@types/js-yaml": "4.0.5",
-        "@types/lodash": "4.14.182",
-        "@types/mini-css-extract-plugin": "2.5.0",
-        "@types/node": "17.0.45",
-        "@types/object-hash": "2.2.1",
-        "@types/react": "17.0.47",
-        "@types/react-dom": "17",
-        "@types/react-router-dom": "5.3.3",
-        "@types/semver": "^7.3.13",
-        "@types/set-value": "^4.0.1",
-        "@types/string-similarity": "4.0.0",
-        "@types/testing-library__jest-dom": "5.14.5",
-        "@types/validator": "13.7.4",
-        "@types/webpack-bundle-analyzer": "4.4.1",
-        "@types/webpack-dev-server": "4.7.1",
-        "@typescript-eslint/eslint-plugin": "5.30.7",
-        "@typescript-eslint/parser": "5.30.7",
-        "babel-jest": "28.1.3",
-        "babel-loader": "8.2.5",
-        "browserify-fs": "1.0.0",
-        "buffer": "6.0.3",
-        "bundle-loader": "^0.5.6",
-        "comment-json": "4.2.2",
-        "compression-webpack-plugin": "10.0.0",
-        "concurrently": "7.2.2",
-        "copy-webpack-plugin": "11.0.0",
-        "crypto": "1.0.1",
-        "crypto-browserify": "3.12.0",
-        "css-loader": "6.7.1",
-        "css-minimizer-webpack-plugin": "4.0.0",
-        "eslint": "8.20.0",
-        "eslint-config-prettier": "8.5.0",
-        "eslint-plugin-import": "^2.26.0",
-        "eslint-plugin-jest": "26.6.0",
-        "eslint-plugin-prettier": "4.2.1",
-        "eslint-plugin-react": "7.30.1",
-        "eslint-plugin-react-hooks": "4.6.0",
-        "file-loader": "6.2.0",
-        "fork-ts-checker-webpack-plugin": "6.5.2",
-        "handlebars-loader": "^1.7.3",
-        "html-webpack-plugin": "^5.5.0",
-        "i18next-parser": "6.5.0",
-        "identity-obj-proxy": "3.0.0",
-        "jest": "28.1.3",
-        "jest-axe": "6.0.0",
-        "jest-diff": "29.3.1",
-        "jest-environment-jsdom": "28.1.3",
-        "jest-fetch-mock": "3.0.3",
-        "jest-raw-loader": "1.0.1",
-        "jest-sonar-reporter": "2.0.0",
-        "jest-watch-typeahead": "2.0.0",
-        "json-loader": "0.5.7",
-        "merge-jsons-webpack-plugin": "2.0.1",
-        "mini-css-extract-plugin": "2.6.1",
-        "monaco-editor-webpack-plugin": "7.0.1",
-        "nock": "13.2.8",
-        "node-util": "0.0.6",
-        "null-loader": "4.0.1",
-        "path-browserify": "1.0.1",
-        "prettier": "2.7.1",
-        "process": "0.11.10",
-        "query-string": "7.1.1",
-        "react": "17.0.2",
-        "react-dom": "17.0.2",
-        "react-hot-loader": "^4.13.0",
-        "react-i18next": "11.16.9",
-        "react-monaco-editor": "0.48.0",
-        "react-redux": "7.2.8",
-        "react-refresh": "0.14.0",
-        "react-refresh-typescript": "2.0.7",
-        "react-router-dom": "5.3.3",
-        "react-tagsinput": "3.19.x",
-        "recoil": "0.7.4",
-        "redux": "4.2.0",
-        "redux-thunk": "2.4.1",
-        "reselect": "4.1.6",
-        "sass": "1.53.0",
-        "sass-loader": "13.0.2",
-        "stacktrace-js": "2.0.2",
-        "stream-browserify": "3.0.0",
-        "style-loader": "3.3.1",
-        "swr": "1.3.0",
-        "ts-import-plugin": "2.0.0",
-        "ts-jest": "28.0.7",
-        "ts-loader": "9.3.1",
-        "ts-node": "10.9.1",
-        "tsconfig-paths": "4.0.0",
-        "tsconfig-paths-webpack-plugin": "^3.5.2",
-        "type-fest": "2.16.0",
-        "typescript": "4.6.4",
-        "v8-compile-cache": "2.3.0",
-        "webpack": "5.73.0",
-        "webpack-bundle-analyzer": "4.5.0",
-        "webpack-cli": "4.10.0",
-        "webpack-dev-server": "4.9.3"
-    },
-    "eslintConfig": {
-        "parser": "@typescript-eslint/parser",
-        "parserOptions": {
-            "project": "./tsconfig.json"
-        },
-        "extends": [
-            "eslint:recommended",
-            "plugin:@typescript-eslint/recommended",
-            "plugin:jest/recommended",
-            "plugin:react-hooks/recommended",
-            "prettier"
-        ],
-        "plugins": [
-            "react",
-            "@typescript-eslint",
-            "jest",
-            "react-hooks",
-            "prettier"
-        ],
-        "env": {
-            "browser": true,
-            "node": true
-        },
-        "rules": {
-            "react/jsx-key": 1,
-            "prettier/prettier": "error",
-            "@typescript-eslint/no-non-null-assertion": "off",
-            "react/react-in-jsx-scope": "off",
-            "@typescript-eslint/explicit-module-boundary-types": "off",
-            "jest/expect-expect": "off",
-            "@typescript-eslint/no-floating-promises": [
-                "off",
-                {
-                    "ignoreVoid": true
-                }
-            ],
-            "@typescript-eslint/no-misused-promises": [
-                "error",
-                {
-                    "checksVoidReturn": false
-                }
-            ],
-            "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-            "jest/no-disabled-tests": "off",
-            "no-async-promise-executor": "off",
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-empty-function": "off",
-            "jest/no-identical-title": "off",
-            "@typescript-eslint/ban-types": "off",
-            "no-empty": "off",
-            "no-constant-condition": "off",
-            "jest/no-export": "off",
-            "@typescript-eslint/no-extra-semi": "off",
-            "@typescript-eslint/no-restricted-imports": [
-                "error",
-                {
-                    "paths": [
-                        {
-                            "name": "react-i18next",
-                            "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next"
-                        },
-                        {
-                            "name": "recoil",
-                            "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
-                        },
-                        {
-                            "name": "@patternfly/react-core",
-                            "importNames": [
-                                "Truncate"
-                            ],
-                            "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead"
-                        }
-                    ],
-                    "patterns": [
-                        {
-                            "group": [
-                                "**/atoms",
-                                "**/selectors"
-                            ],
-                            "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot"
-                        }
-                    ]
-                }
-            ]
-        },
-        "overrides": [
-            {
-                "files": [
-                    "**/*.test.ts?"
-                ],
-                "rules": {
-                    "@typescript-eslint/no-restricted-imports": "off"
-                }
-            }
-        ],
-        "settings": {
-            "react": {
-                "version": "detect"
-            }
+    "rules": {
+      "react/jsx-key": 1,
+      "prettier/prettier": "error",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "jest/expect-expect": "off",
+      "@typescript-eslint/no-floating-promises": [
+        "off",
+        {
+          "ignoreVoid": true
         }
+      ],
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          "checksVoidReturn": false
+        }
+      ],
+      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+      "jest/no-disabled-tests": "off",
+      "no-async-promise-executor": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-function": "off",
+      "jest/no-identical-title": "off",
+      "@typescript-eslint/ban-types": "off",
+      "no-empty": "off",
+      "no-constant-condition": "off",
+      "jest/no-export": "off",
+      "@typescript-eslint/no-extra-semi": "off",
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          "paths": [
+            {
+              "name": "react-i18next",
+              "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+            },
+            {
+              "name": "recoil",
+              "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
+            },
+            {
+              "name": "@patternfly/react-core",
+              "importNames": [
+                "Truncate"
+              ],
+              "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead"
+            }
+          ],
+          "patterns": [
+            {
+              "group": [
+                "**/atoms",
+                "**/selectors"
+              ],
+              "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot"
+            }
+          ]
+        }
+      ]
     },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
+    "overrides": [
+      {
+        "files": [
+          "**/*.test.ts?"
         ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "prettier": {
-        "printWidth": 120,
-        "tabWidth": 2,
-        "semi": false,
-        "singleQuote": true
+        "rules": {
+          "@typescript-eslint/no-restricted-imports": "off"
+        }
+      }
+    ],
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
     }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  }
 }
