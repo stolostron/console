@@ -286,9 +286,9 @@ export function getClustersSummaryForPolicySet(
 }
 
 export function resolveExternalStatus(policy: Policy) {
-  const knownExternalManagers = ['multicluster-operators-subscription', 'argocd-application-controller']
+  const knownExternalManagerPatterns = [/^multicluster-operators-subscription$/, /argocd/]
   const managedFields = policy.metadata.managedFields ?? []
-  return managedFields.some((mf) => knownExternalManagers.includes(mf.manager ?? 'none'))
+  return managedFields.some((mf) => knownExternalManagerPatterns.some((p) => p.test(mf.manager ?? 'none')))
 }
 
 function getHelmReleaseMap(helmReleases: HelmRelease[]) {
