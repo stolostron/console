@@ -364,6 +364,7 @@ export const mockSearchQueryOCPApplications = {
             values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
           },
         ],
+        limit: 6500,
       },
     ],
   },
