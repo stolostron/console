@@ -378,11 +378,6 @@ export const clusterDetailsControlData = (t) => {
             type: 'hidden',
             active: false,
         },
-        {
-            active: '',
-            id: 'reconcilePause',
-            type: 'hidden',
-        },
     ]
 }
 
@@ -685,6 +680,11 @@ export const automationControlData = (t) => {
             id: 'toweraccess-destroy',
             type: 'hidden',
             active: '',
+        },
+        {
+            active: '',
+            id: 'reconcilePause',
+            type: 'hidden',
         },
     ]
 }
