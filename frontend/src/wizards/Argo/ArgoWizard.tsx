@@ -92,7 +92,7 @@ interface ApplicationSet {
   }
 }
 
-interface ArgoWizardProps {
+export interface ArgoWizardProps {
   breadcrumb?: { label: string; to?: string }[]
   applicationSets?: ApplicationSet[]
   createClusterSetCallback?: () => void
@@ -131,6 +131,7 @@ interface ArgoWizardProps {
 }
 
 export function ArgoWizard(props: ArgoWizardProps) {
+  window.propShot(props)
   function onlyUnique(value: any, index: any, self: string | any[]) {
     return self.indexOf(value) === index
   }
