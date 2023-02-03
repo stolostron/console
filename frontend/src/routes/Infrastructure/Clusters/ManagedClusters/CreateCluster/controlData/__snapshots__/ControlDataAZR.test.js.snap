@@ -79,11 +79,6 @@ Array [
     "type": "hidden",
   },
   Object {
-    "active": "",
-    "id": "reconcilePause",
-    "type": "hidden",
-  },
-  Object {
     "fetchAvailable": Object {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
@@ -1461,6 +1456,11 @@ Array [
     "id": "toweraccess-destroy",
     "type": "hidden",
   },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
+    "type": "hidden",
+  },
 ]
 `;
 
@@ -1540,11 +1540,6 @@ Array [
   Object {
     "active": false,
     "id": "showSecrets",
-    "type": "hidden",
-  },
-  Object {
-    "active": "",
-    "id": "reconcilePause",
     "type": "hidden",
   },
   Object {
@@ -2923,6 +2918,11 @@ Array [
   Object {
     "active": "",
     "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
     "type": "hidden",
   },
 ]
@@ -4403,11 +4403,6 @@ Array [
     "type": "hidden",
   },
   Object {
-    "active": "",
-    "id": "reconcilePause",
-    "type": "hidden",
-  },
-  Object {
     "fetchAvailable": Object {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
@@ -5783,6 +5778,11 @@ Array [
   Object {
     "active": "",
     "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
     "type": "hidden",
   },
 ]
