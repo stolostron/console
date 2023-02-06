@@ -9,7 +9,7 @@ import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 
 import './HypershiftClusterInstallProgress.css'
-import { createContext, useState } from 'react'
+import { createContext, useLayoutEffect, useState } from 'react'
 
 type HypershiftClusterInstallProgressProps = {
   hostedCluster: HostedClusterK8sResource
@@ -22,10 +22,24 @@ export const NodePoolTableWidthContext = createContext(1024)
 const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
   const [width, setWidth] = useState<number>(1024)
 
-  setWidth(1024)
+  //const ref = useRef <HTMLHeadingElement>(null)
+
+  //setWidth(1024)
+  function useWindowSize() {
+    useLayoutEffect(() => {
+      function updateSize() {
+        setWidth(window.innerWidth * 0.7)
+      }
+      window.addEventListener('resize', updateSize)
+      updateSize()
+      return () => window.removeEventListener('resize', updateSize)
+    }, [])
+  }
+
+  useWindowSize()
 
   return (
-    <Stack hasGutter>
+    <Stack ref={ref} hasGutter>
       <StackItem>
         <ProgressStepper isVertical>
           <HostedClusterProgress hostedCluster={hostedCluster} />
