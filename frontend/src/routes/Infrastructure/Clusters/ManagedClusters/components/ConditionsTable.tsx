@@ -24,8 +24,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
   const arrayForSort = conditions && [...conditions]
   const priority = ['False', 'Unknown', 'True']
 
-  const sortedConditions =
-    arrayForSort && arrayForSort.sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status))
+  const sortedConditions = arrayForSort?.sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status))
 
   const outliers = sortedConditions?.filter(
     (condition) => condition.status === 'False' && condition.reason === 'AsExpected'
