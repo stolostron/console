@@ -1,4 +1,5 @@
 // Copyright Contributors to the Open Cluster Management project
+import { ApolloError } from '@apollo/client'
 import {
   Accordion,
   AccordionContent,
@@ -24,9 +25,7 @@ import {
   DeleteResourceModal,
   IDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
-import { convertStringToQuery } from '../search-helper'
-import { searchClient } from '../search-sdk/search-client'
-import { useSearchResultItemsLazyQuery } from '../search-sdk/search-sdk'
+import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { GetRowActions, ISearchResult } from './utils'
@@ -138,8 +137,14 @@ function SearchResultTables(props: {
   )
 }
 
-export default function SearchResults(props: { currentQuery: string; preSelectedRelatedResources: string[] }) {
-  const { currentQuery, preSelectedRelatedResources } = props
+export default function SearchResults(props: {
+  currentQuery: string
+  error: ApolloError | undefined
+  loading: boolean
+  data: SearchResultItemsQuery | undefined
+  preSelectedRelatedResources: string[]
+}) {
+  const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -148,10 +153,6 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     preSelectedRelatedResources.length > 0 ? true : false
   )
 
-  const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
-    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-  })
-
   useEffect(() => {
     // If the current search query changes -> hide related resources
     if (preSelectedRelatedResources.length === 0) {
@@ -159,19 +160,6 @@ export default function SearchResults(props: { currentQuery: string; preSelected
       setSelectedRelatedKinds([])
     }
   }, [preSelectedRelatedResources])
-
-  useEffect(() => {
-    if (!called) {
-      fireSearchQuery({
-        variables: { input: [convertStringToQuery(currentQuery)] },
-      })
-    } else {
-      refetch &&
-        refetch({
-          input: [convertStringToQuery(currentQuery)],
-        })
-    }
-  }, [fireSearchQuery, currentQuery, called, refetch])
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
