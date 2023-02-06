@@ -18,10 +18,10 @@ import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
-import { useTranslation } from '../../../../lib/acm-i18next'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -47,6 +47,7 @@ type SearchbarProps = {
   toggleInfoModal: () => void
   updateBrowserUrl: (history: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
+  refetchSearch: any
 }
 
 export const convertStringToTags = (searchText: string) => {
@@ -74,6 +75,7 @@ export function Searchbar(props: SearchbarProps) {
     updateBrowserUrl,
     queryString,
     savedSearchQueries,
+    refetchSearch,
   } = props
   const history = useHistory()
   const [inputValue, setInputValue] = useState('')
@@ -416,6 +418,7 @@ export function Searchbar(props: SearchbarProps) {
           variant="plain"
           onClick={() => {
             if (currentQuery !== '' && !currentQuery.endsWith(':')) {
+              refetchSearch()
               updateBrowserUrl(history, currentQuery)
               setMenuIsOpen(false)
             }
