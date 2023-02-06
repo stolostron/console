@@ -19,7 +19,7 @@ type HypershiftClusterInstallProgressProps = {
 
 export const NodePoolTableWidthContext = createContext(1024)
 
-const percentWidth = 0.95
+const percentWidth = 0.9
 
 const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
   const [width, setWidth] = useState<number>(1024)
@@ -27,13 +27,12 @@ const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: Hypershift
   const nodePoolTableWidthRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    if (nodePoolTableWidthRef.current?.clientWidth) setWidth(nodePoolTableWidthRef.current.clientWidth * percentWidth)
+    setWidth(nodePoolTableWidthRef.current.clientWidth * percentWidth)
   }, [])
 
   useEffect(() => {
     function handleWindowResize() {
-      if (nodePoolTableWidthRef.current?.clientWidth)
-        setWidth(nodePoolTableWidthRef.current?.clientWidth * percentWidth)
+      setWidth(nodePoolTableWidthRef.current?.clientWidth * percentWidth)
     }
 
     window.addEventListener('resize', handleWindowResize)
