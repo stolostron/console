@@ -29,6 +29,9 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         icon: <ImportIcon />,
         text: t('Import an existing cluster'),
         link: NavigationPath.importCluster,
+        style: {
+          paddingLeft: '24px',
+        },
       },
       {
         id: 'onboardingconnectbutton',
@@ -41,6 +44,9 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         icon: <ConnectedIcon />,
         text: t('Discover hosts to create host inventory'),
         link: NavigationPath.infraEnvironments,
+        style: {
+          paddingRight: '24px',
+        },
       },
     ],
     [t]
@@ -58,9 +64,10 @@ export function OnboardingModal(props: IOnboardingModalProps) {
       ouiaId="clustersOnboardingModal"
       isOpen={true}
       onClose={props.close}
-      className="onboardingmodalclass"
+      className="onboarding-modal-class"
+      style={{ padding: '0px' }}
     >
-      <Grid>
+      <Grid style={{ paddingLeft: '24px', paddingTop: '24px', paddingRight: '24px' }}>
         <GridItem span={3}>
           <MainIcon />
         </GridItem>
@@ -81,7 +88,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
       </Grid>
       <Grid hasGutter>
         {cards.map((card) => (
-          <GridItem key={card.id} span={4}>
+          <GridItem key={card.id} span={4} style={card.style}>
             <Link key={card.id} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
               <Card id={card.id} key={card.id} isSelectable isFlat>
                 <CardBody style={{ minHeight: '160px' }}>
@@ -102,42 +109,47 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             </Link>
           </GridItem>
         ))}
-        <GridItem>
-          <AcmExpandableSection
-            label={t('Want to learn more?')}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <Link
-              key="gettingstarted"
-              to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}
-              onClick={() => {
-                props.close()
-              }}
+        <GridItem style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)' }}>
+          <div className="onboarding-modal-footer">
+            <AcmExpandableSection
+              label={t('Want to learn more?')}
               style={{
-                marginBottom: '0.5em',
+                width: '100%',
+                height: '100%',
+                paddingLeft: '24px',
+                paddingTop: '10px',
+                paddingBottom: '10px',
               }}
             >
-              {t('Get started with on-premise host inventory')}
-            </Link>
-            <AcmButton
-              variant="link"
-              icon={<ExternalLinkAltIcon />}
-              iconPosition="right"
-              isInline
-              onClick={() =>
-                !isACMAvailable
-                  ? launchToOCP(
-                      'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-                    )
-                  : window.open(DOC_BASE_PATH, '_blank')
-              }
-            >
-              {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
-            </AcmButton>
-          </AcmExpandableSection>
+              <Link
+                key="gettingstarted"
+                to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}
+                onClick={() => {
+                  props.close()
+                }}
+                style={{
+                  marginBottom: '0.5em',
+                }}
+              >
+                {t('Get started with on-premise host inventory')}
+              </Link>
+              <AcmButton
+                variant="link"
+                icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                iconPosition="right"
+                isInline
+                onClick={() =>
+                  !isACMAvailable
+                    ? launchToOCP(
+                        'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                      )
+                    : window.open(DOC_BASE_PATH, '_blank')
+                }
+              >
+                {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
+              </AcmButton>
+            </AcmExpandableSection>
+          </div>
         </GridItem>
       </Grid>
     </AcmModal>
