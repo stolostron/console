@@ -10,6 +10,7 @@ import './ConditionsTable.css'
 
 type ConditionsTableProps = {
   conditions?: {
+    reason: string
     status: string
     type: string
     message: string
@@ -20,6 +21,25 @@ type ConditionsTableProps = {
 const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps) => {
   const { t } = useTranslation()
   const okIcon = <CheckCircleIcon color={okColor.value} />
+  const arrayForSort = conditions && [...conditions]
+  const priority = ['False', 'Unknown', 'True']
+
+  const sortedConditions =
+    arrayForSort && arrayForSort.sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status))
+
+  const outliers = sortedConditions?.filter(
+    (condition) => condition.status === 'False' && condition.reason === 'AsExpected'
+  )
+
+  outliers?.forEach((outlier) => {
+    sortedConditions?.push(
+      ...sortedConditions.splice(
+        sortedConditions.findIndex((v) => v === outlier),
+        1
+      )
+    )
+  })
+
   return (
     <TableComposable variant="compact">
       <Thead>
@@ -29,7 +49,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
         </Tr>
       </Thead>
       <Tbody>
-        {conditions?.map((c) => {
+        {sortedConditions?.map((c) => {
           let createCredentialModal = undefined
           let icon = <UnknownIcon />
           if (c.status === 'True') {
