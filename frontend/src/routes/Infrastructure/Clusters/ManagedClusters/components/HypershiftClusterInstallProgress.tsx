@@ -9,7 +9,7 @@ import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 
 import './HypershiftClusterInstallProgress.css'
-import { createContext, useLayoutEffect, useState } from 'react'
+import { createContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type HypershiftClusterInstallProgressProps = {
   hostedCluster: HostedClusterK8sResource
@@ -19,37 +19,44 @@ type HypershiftClusterInstallProgressProps = {
 
 export const NodePoolTableWidthContext = createContext(1024)
 
+const percentWidth = 0.95
+
 const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
   const [width, setWidth] = useState<number>(1024)
 
-  //const ref = useRef <HTMLHeadingElement>(null)
+  const nodePoolTableWidthRef = useRef<HTMLDivElement>(null)
 
-  //setWidth(1024)
-  function useWindowSize() {
-    useLayoutEffect(() => {
-      function updateSize() {
-        setWidth(window.innerWidth * 0.7)
-      }
-      window.addEventListener('resize', updateSize)
-      updateSize()
-      return () => window.removeEventListener('resize', updateSize)
-    }, [])
-  }
+  useLayoutEffect(() => {
+    if (nodePoolTableWidthRef.current?.clientWidth) setWidth(nodePoolTableWidthRef.current.clientWidth * percentWidth)
+  }, [])
 
-  useWindowSize()
+  useEffect(() => {
+    function handleWindowResize() {
+      if (nodePoolTableWidthRef.current?.clientWidth)
+        setWidth(nodePoolTableWidthRef.current?.clientWidth * percentWidth)
+    }
+
+    window.addEventListener('resize', handleWindowResize)
+
+    return () => {
+      window.removeEventListener('resize', handleWindowResize)
+    }
+  }, [])
 
   return (
-    <Stack ref={ref} hasGutter>
-      <StackItem>
-        <ProgressStepper isVertical>
-          <HostedClusterProgress hostedCluster={hostedCluster} />
-        </ProgressStepper>
-        <ProgressStepper isVertical>
-          <NodePoolTableWidthContext.Provider value={width}>
-            <NodePoolsProgress {...rest} />
-          </NodePoolTableWidthContext.Provider>
-        </ProgressStepper>
-      </StackItem>
+    <Stack hasGutter>
+      <div id="hypershift-cluster-install-progress" ref={nodePoolTableWidthRef}>
+        <StackItem>
+          <ProgressStepper isVertical>
+            <HostedClusterProgress hostedCluster={hostedCluster} />
+          </ProgressStepper>
+          <ProgressStepper isVertical>
+            <NodePoolTableWidthContext.Provider value={width}>
+              <NodePoolsProgress {...rest} />
+            </NodePoolTableWidthContext.Provider>
+          </ProgressStepper>
+        </StackItem>
+      </div>
     </Stack>
   )
 }
