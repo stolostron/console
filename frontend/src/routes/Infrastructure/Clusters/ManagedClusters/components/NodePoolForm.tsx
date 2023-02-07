@@ -243,6 +243,18 @@ export function NodePoolForm(props: {
     },
   }
 
+  //Checks if minor version of image is >= 11
+  const isValidImage = (version: string | undefined) => {
+    if (!version) {
+      return false
+    }
+    const versionParts = version.split('.')
+    if (Number(versionParts[1]) < 11) {
+      return false
+    }
+    return true
+  }
+
   // nodepool version need to be within n-2 and cannot be greater than hostedcluster
   const isWithinTwoVersions = (cpVersion: string | undefined, npVersion: string | undefined) => {
     if (!cpVersion || !npVersion) {
@@ -269,7 +281,7 @@ export function NodePoolForm(props: {
       const availableImages = getOCPVersions(props.clusterImages)
       const filteredImages: any[] = []
       availableImages.forEach((image) => {
-        if (image.version <= ver && isWithinTwoVersions(ver, image.version)) {
+        if (image.version <= ver && isWithinTwoVersions(ver, image.version) && isValidImage(image.version)) {
           filteredImages.push(image)
         }
       })
