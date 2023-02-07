@@ -174,7 +174,6 @@ export default function PolicySetCard(props: {
         </CardHeader>
         <CardBody>
           <Stack hasGutter>
-            {console.log('here', policySet)}
             {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
             <DescriptionList>
               {(policySet.status?.compliant || policySet.status?.statusMessage) && (
