@@ -39,7 +39,6 @@ import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
-const savedSearches = 'Saved searches'
 const useStyles = makeStyles({
   actionGroup: {
     backgroundColor: 'var(--pf-global--BackgroundColor--100)',
@@ -299,6 +298,8 @@ export default function SearchPage() {
     presetSearchQuery = '',
     preSelectedRelatedResources = [], // used to show any related resource on search page navigation
   } = transformBrowserUrlToSearchString(window.location.search || '')
+  const { t } = useTranslation()
+  const savedSearches = t('Saved searches')
   const { userPreferencesState } = useSharedAtoms()
   const [userPreferences] = useRecoilState(userPreferencesState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearches)
@@ -307,7 +308,6 @@ export default function SearchPage() {
   const [queryErrors, setQueryErrors] = useState(false)
   const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  const { t } = useTranslation()
 
   const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,

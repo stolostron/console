@@ -279,7 +279,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   )
                 }
               />
-              {showFormErrors && mode === 'form' && formHasErrors(formData) && (
+              {showFormErrors && mode === 'form' && formHasErrors(t, formData) && (
                 <PageSection variant="light" style={{ paddingTop: 0 }}>
                   <AlertGroup>
                     {formHasRequiredErrors(formData) ? (
@@ -397,7 +397,7 @@ export function AcmDataFormDefault(props: {
         <FormSection key="editor-changes">
           <Title headingLevel="h2">{t('Other YAML changes')}</Title>
           <FormGroup fieldId="diffs">
-            <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
+            <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
           </FormGroup>
         </FormSection>
       )}
@@ -411,7 +411,7 @@ export function AcmDataFormDefault(props: {
                 <Button
                   onClick={() => {
                     setShowFormErrors(true)
-                    if (!formHasErrors(formData)) {
+                    if (!formHasErrors(t, formData)) {
                       try {
                         const result = formData.submit()
                         if ((result as unknown) instanceof Promise) {
@@ -427,7 +427,7 @@ export function AcmDataFormDefault(props: {
                     }
                   }}
                   variant="primary"
-                  isDisabled={(showFormErrors && formHasErrors(formData)) || isSubmitting}
+                  isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
                   isLoading={isSubmitting}
                 >
                   {submitText}
@@ -465,7 +465,7 @@ export function AcmDataFormWizard(props: {
 
   function createStep(section: Section | SectionGroup): WizardStep | undefined {
     if (sectionHidden(section)) return undefined
-    const hasError = showFormErrors && sectionHasErrors(section)
+    const hasError = showFormErrors && sectionHasErrors(t, section)
 
     return {
       id: section.title,
@@ -520,7 +520,7 @@ export function AcmDataFormWizard(props: {
     name: 'Review',
     component: (
       <Form>
-        {showFormErrors && formHasErrors(formData) && (
+        {showFormErrors && formHasErrors(t, formData) && (
           <AlertGroup>
             {formHasRequiredErrors(formData) ? (
               <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
@@ -534,7 +534,7 @@ export function AcmDataFormWizard(props: {
           <FormSection key="editor-changes">
             <Title headingLevel="h2">{t('Other YAML changes')}</Title>
             <FormGroup fieldId="diffs">
-              <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
+              <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
             </FormGroup>
           </FormSection>
         )}
@@ -581,11 +581,12 @@ export function AcmDataFormWizard(props: {
                       }
                       return showSectionErrors
                     })
-                    if (sectionHasErrors(section)) return
+                    if (sectionHasErrors(t, section)) return
                     onNext()
                   }}
                   isDisabled={
-                    ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(section)) || isSubmitting
+                    ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
+                    isSubmitting
                   }
                 >
                   {formData.nextLabel}
@@ -615,7 +616,7 @@ export function AcmDataFormWizard(props: {
                     <ActionListItem>
                       <Button
                         onClick={() => {
-                          if (!formHasErrors(formData)) {
+                          if (!formHasErrors(t, formData)) {
                             try {
                               const result = formData.submit()
                               if ((result as unknown) instanceof Promise) {
@@ -631,7 +632,7 @@ export function AcmDataFormWizard(props: {
                           }
                         }}
                         variant="primary"
-                        isDisabled={(showFormErrors && formHasErrors(formData)) || isSubmitting}
+                        isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
                         isLoading={isSubmitting}
                       >
                         {submitText}
@@ -899,10 +900,11 @@ export function AcmDataFormInputs(props: {
   mode?: 'form' | 'wizard' | 'details'
 }): JSX.Element {
   const { inputs, showFormErrors, isReadOnly } = props
+  const { t } = useTranslation()
   return (
     <Fragment>
       {inputs?.map((input) => {
-        const error: string | undefined = inputError(input)
+        const error: string | undefined = inputError(t, input)
         const validated = showFormErrors && error !== undefined ? 'error' : undefined
         return (
           <Fragment key={input.id}>
@@ -1256,23 +1258,23 @@ function anyInputHasValue(inputs?: Input[]) {
   return false
 }
 
-function formHasErrors(formData: FormData) {
+function formHasErrors(t: TFunction, formData: FormData) {
   for (const section of formData.sections) {
-    if (sectionHasErrors(section)) return true
+    if (sectionHasErrors(t, section)) return true
   }
   return false
 }
 
-function sectionHasErrors(section?: SectionGroup | Section) {
+function sectionHasErrors(t: TFunction, section?: SectionGroup | Section) {
   if (!section) return false
   switch (section.type) {
     case 'Section':
-      if (inputsHaveErrors(section.inputs)) return true
+      if (inputsHaveErrors(t, section.inputs)) return true
       break
     case 'SectionGroup':
       if (section.sections) {
         for (const group of section.sections) {
-          if (sectionHasErrors(group)) return true
+          if (sectionHasErrors(t, group)) return true
         }
       }
       break
@@ -1304,27 +1306,31 @@ function sectionHasRequiredErrors(formSection?: Section | SectionGroup) {
   return false
 }
 
-const requiredMessage = 'This is a required field.'
-
 function inputsHaveRequiredErrors(inputs?: Input[]) {
   if (!inputs) return false
   for (const input of inputs) {
-    if (inputError(input) === requiredMessage) return true
+    if (inputHasRequiredError(input)) return true
   }
   return false
 }
 
-function inputsHaveErrors(inputs?: Input[]) {
+function inputHasRequiredError(input: Input) {
+  if (input.isHidden) return false
+  if (input.isRequired && !inputHasValue(input)) return true
+  return false
+}
+
+function inputsHaveErrors(t: TFunction, inputs?: Input[]) {
   if (!inputs) return false
   for (const input of inputs) {
-    if (inputError(input)) return true
+    if (inputError(t, input)) return true
   }
   return false
 }
 
-function inputError(input: Input): string | undefined {
+function inputError(t: TFunction, input: Input): string | undefined {
   if (input.isHidden) return undefined
-  if (input.isRequired && !inputHasValue(input)) return requiredMessage
+  if (inputHasRequiredError(input)) return t('This is a required field.')
   return input.validation ? input.validation(input.value as never) : undefined
 }
 
