@@ -986,6 +986,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       )}
       {showToolbar && (
         <Toolbar
+          clearFiltersButtonText={t('Clear all filters')}
           key={filtersHash} // reset state if filters change
           clearAllFilters={clearSearchAndFilters}
           collapseListedFiltersBreakpoint={'lg'}

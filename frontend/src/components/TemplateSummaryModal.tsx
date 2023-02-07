@@ -124,7 +124,7 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
   const { t } = useTranslation()
 
   return curatorJobs && curatorJobs.length > 0 ? (
-    <TableComposable aria-label="Simple table" variant={'compact'}>
+    <TableComposable aria-label={t('Simple table')} variant={'compact'}>
       <Thead>
         <Tr>
           <Th style={{ padding: '0px 0px 8px 0px' }}>{stage}</Th>

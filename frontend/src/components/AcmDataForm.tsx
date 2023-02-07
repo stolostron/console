@@ -397,7 +397,7 @@ export function AcmDataFormDefault(props: {
         <FormSection key="editor-changes">
           <Title headingLevel="h2">{t('Other YAML changes')}</Title>
           <FormGroup fieldId="diffs">
-            <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
+            <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
           </FormGroup>
         </FormSection>
       )}
@@ -534,7 +534,7 @@ export function AcmDataFormWizard(props: {
           <FormSection key="editor-changes">
             <Title headingLevel="h2">{t('Other YAML changes')}</Title>
             <FormGroup fieldId="diffs">
-              <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
+              <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
             </FormGroup>
           </FormSection>
         )}
@@ -899,10 +899,11 @@ export function AcmDataFormInputs(props: {
   mode?: 'form' | 'wizard' | 'details'
 }): JSX.Element {
   const { inputs, showFormErrors, isReadOnly } = props
+  const { t } = useTranslation()
   return (
     <Fragment>
       {inputs?.map((input) => {
-        const error: string | undefined = inputError(input)
+        const error: string | undefined = inputError(t, input)
         const validated = showFormErrors && error !== undefined ? 'error' : undefined
         return (
           <Fragment key={input.id}>
@@ -1304,13 +1305,17 @@ function sectionHasRequiredErrors(formSection?: Section | SectionGroup) {
   return false
 }
 
-const requiredMessage = 'This is a required field.'
-
 function inputsHaveRequiredErrors(inputs?: Input[]) {
   if (!inputs) return false
   for (const input of inputs) {
-    if (inputError(input) === requiredMessage) return true
+    if (inputHasRequiredError(input)) return true
   }
+  return false
+}
+
+function inputHasRequiredError(input: Input) {
+  if (input.isHidden) return false
+  if (input.isRequired && !inputHasValue(input)) return true
   return false
 }
 
@@ -1322,9 +1327,9 @@ function inputsHaveErrors(inputs?: Input[]) {
   return false
 }
 
-function inputError(input: Input): string | undefined {
+function inputError(t: TFunction, input: Input): string | undefined {
   if (input.isHidden) return undefined
-  if (input.isRequired && !inputHasValue(input)) return requiredMessage
+  if (inputHasRequiredError(input)) return t('This is a required field.')
   return input.validation ? input.validation(input.value as never) : undefined
 }
 

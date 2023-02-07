@@ -8,10 +8,11 @@ import { NavigationPath } from '../../../NavigationPath'
 
 export function PolicySetViolationsCard() {
   const violations = usePolicySetViolations()
+  const { t } = useTranslation()
   return (
     <ViolationsCard
-      title="Policy set violations"
-      description="Overview of policy set violations"
+      title={t('Policy set violations')}
+      description={t('Overview of policy set violations')}
       noncompliant={violations.noncompliant}
       compliant={violations.compliant}
       pending={violations.pending}

@@ -331,10 +331,10 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         <Text component={TextVariants.p}>
           <Split hasGutter>
             <SplitItem>
-              <strong>{policySetClusters.length}</strong>&nbsp; clusters
+              <strong>{policySetClusters.length}</strong>&nbsp; {t('clusters')}
             </SplitItem>
             <SplitItem>
-              <strong>{policySetPolicies.length}</strong>&nbsp; policies
+              <strong>{policySetPolicies.length}</strong>&nbsp; {t('policies')}
             </SplitItem>
           </Split>
         </Text>
