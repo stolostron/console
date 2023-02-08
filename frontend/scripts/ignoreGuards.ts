@@ -1,4 +1,5 @@
 #!/usr/bin/env ts-node
+/* Copyright Contributors to the Open Cluster Management project */
 
 import * as fs from 'fs'
 import ts from 'typescript'
