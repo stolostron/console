@@ -183,11 +183,20 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
           <div>
             <ul>
               {props.selected.map((child) => {
+                const filteredChildren: any[] = []
+                if (child.subChildResources) {
+                  child.subChildResources.forEach((sub: any) => {
+                    if (!sub.includes(child.name)) {
+                      filteredChildren.push(sub)
+                    }
+                  })
+                }
+
                 return (
                   <div className="remove-app-modal-content-data" key={child.id}>
                     <li>
                       {child.label}
-                      {child.subChildResources && child.subChildResources.length > 0 && (
+                      {filteredChildren.length > 0 && (
                         <div className="sub-child-resource-content">
                           <div>
                             <ExclamationTriangleIcon />
@@ -196,7 +205,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                             <p>
                               {props.t('This subscription deploys the following resources, which will be removed:')}
                             </p>
-                            <p>{child.subChildResources.join(', ')}</p>
+                            <p>{filteredChildren.join(', ')}</p>
                           </div>
                         </div>
                       )}
