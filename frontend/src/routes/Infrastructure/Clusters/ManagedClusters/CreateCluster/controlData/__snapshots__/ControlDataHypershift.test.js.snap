@@ -167,6 +167,11 @@ Array [
     "id": "toweraccess-destroy",
     "type": "hidden",
   },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
+    "type": "hidden",
+  },
 ]
 `;
 
@@ -335,6 +340,11 @@ Array [
   Object {
     "active": "",
     "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
     "type": "hidden",
   },
 ]

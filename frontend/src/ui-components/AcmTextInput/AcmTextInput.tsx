@@ -3,6 +3,7 @@
 import { Button, FormGroup, Popover, TextInput, TextInputProps } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
 type AcmTextInputProps = TextInputProps & {
@@ -18,6 +19,7 @@ export function AcmTextInput(props: AcmTextInputProps) {
   const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
   const [error, setError] = useState<string>('')
   const { validation, labelHelp, labelHelpTitle, helperText, ...textInputProps } = props
+  const { t } = useTranslation()
 
   useLayoutEffect(() => {
     let error: string | undefined = undefined
@@ -25,7 +27,7 @@ export function AcmTextInput(props: AcmTextInputProps) {
     if (props.hidden !== true) {
       if (props.isRequired) {
         if (!props.value || (typeof props.value === 'string' && props.value.trim() === '')) {
-          error = 'Required'
+          error = t('Required')
         }
       }
       if (!error && validation) {

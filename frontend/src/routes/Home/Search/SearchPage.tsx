@@ -29,12 +29,16 @@ import SavedSearchQueries from './components/SavedSearchQueries'
 import { Searchbar } from './components/Searchbar'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
-import { useGetMessagesQuery, useSearchCompleteQuery, useSearchSchemaQuery } from './search-sdk/search-sdk'
+import {
+  useGetMessagesQuery,
+  useSearchCompleteQuery,
+  useSearchResultItemsLazyQuery,
+  useSearchSchemaQuery,
+} from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
-const savedSearches = 'Saved searches'
 const useStyles = makeStyles({
   actionGroup: {
     backgroundColor: 'var(--pf-global--BackgroundColor--100)',
@@ -95,9 +99,18 @@ function RenderSearchBar(props: {
   setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
   savedSearchQueries: SavedSearch[]
   userPreference?: UserPreference
+  refetchSearch: any
+  searchQueryLoading: boolean
 }) {
-  const { presetSearchQuery, queryErrors, savedSearchQueries, setQueryErrors, setSelectedSearch, userPreference } =
-    props
+  const {
+    presetSearchQuery,
+    queryErrors,
+    savedSearchQueries,
+    setQueryErrors,
+    setSelectedSearch,
+    userPreference,
+    refetchSearch,
+  } = props
   const { t } = useTranslation()
   const history = useHistory()
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
@@ -199,6 +212,7 @@ function RenderSearchBar(props: {
           toggleInfoModal={toggle}
           updateBrowserUrl={updateBrowserUrl}
           savedSearchQueries={savedSearchQueries}
+          refetchSearch={refetchSearch}
         />
         {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
       </PageSection>
@@ -284,13 +298,44 @@ export default function SearchPage() {
     presetSearchQuery = '',
     preSelectedRelatedResources = [], // used to show any related resource on search page navigation
   } = transformBrowserUrlToSearchString(window.location.search || '')
+  const { t } = useTranslation()
+  const savedSearches = t('Saved searches')
   const { userPreferencesState } = useSharedAtoms()
   const [userPreferences] = useRecoilState(userPreferencesState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearches)
+  const [searchQueryLoading, setSearchQueryLoading] = useState(false)
+  const [searchQueryError, setSearchQueryError] = useState<ApolloError | undefined>()
   const [queryErrors, setQueryErrors] = useState(false)
   const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  const { t } = useTranslation()
+
+  const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+  })
+
+  useEffect(() => {
+    if (presetSearchQuery !== '') {
+      if (!called) {
+        fireSearchQuery({
+          variables: { input: [convertStringToQuery(presetSearchQuery)] },
+        })
+      } else {
+        refetch &&
+          refetch({
+            input: [convertStringToQuery(presetSearchQuery)],
+          })
+      }
+    }
+  }, [fireSearchQuery, presetSearchQuery, called, refetch])
+
+  useEffect(() => {
+    setSearchQueryLoading(loading)
+  }, [loading])
+
+  useEffect(() => {
+    setSearchQueryError(error)
+  }, [error])
+
   useEffect(() => {
     getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
   }, [userPreferences])
@@ -336,10 +381,18 @@ export default function SearchPage() {
           setQueryErrors={setQueryErrors}
           savedSearchQueries={userSavedSearches}
           userPreference={userPreference}
+          refetchSearch={refetch}
+          searchQueryLoading={searchQueryLoading}
         />
         {!queryErrors &&
           (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
-            <SearchResults currentQuery={presetSearchQuery} preSelectedRelatedResources={preSelectedRelatedResources} />
+            <SearchResults
+              currentQuery={presetSearchQuery}
+              error={searchQueryError}
+              loading={searchQueryLoading}
+              data={data}
+              preSelectedRelatedResources={preSelectedRelatedResources}
+            />
           ) : (
             <SavedSearchQueries
               savedSearches={userSavedSearches}

@@ -13,6 +13,7 @@ import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   variant?: string
@@ -111,6 +112,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
+  const { t } = useTranslation()
 
   // compile schema(s) just once
   const validationRef = useRef<unknown>()
@@ -538,8 +540,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="undo-button"
               icon={<UndoIcon />}
-              aria-label="Undo"
-              toolTipText="Undo"
+              aria-label={t('Undo')}
+              toolTipText={t('Undo')}
               isDisabled={!hasUndo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'undo')
@@ -551,8 +553,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="redo-button"
               icon={<RedoIcon />}
-              aria-label="Redo"
-              toolTipText="Redo"
+              aria-label={t('Redo')}
+              toolTipText={t('Redo')}
               isDisabled={!hasRedo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'redo')
@@ -563,8 +565,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           <CodeEditorControl
             id="search-button"
             icon={<SearchIcon />}
-            aria-label="Find"
-            toolTipText="Find"
+            aria-label={t('Find')}
+            toolTipText={t('Find')}
             onClick={() => {
               editorRef?.current.trigger('source', 'actions.find')
             }}
@@ -574,8 +576,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="secret-button"
               icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-              aria-label="Show Secrets"
-              toolTipText="Show Secrets"
+              aria-label={t('Show Secrets')}
+              toolTipText={t('Show Secrets')}
               onClick={() => {
                 setShowSecrets(!showSecrets)
               }}
@@ -585,7 +587,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           <ClipboardCopyButton
             id="copy-button"
             textId="code-content"
-            aria-label="Copy to clipboard"
+            aria-label={t('Copy to clipboard')}
             disabled={false}
             onClick={() => {
               const selectedText = editorRef.current.getModel().getValueInRange(editorRef.current.getSelection())
@@ -601,7 +603,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             {copyHint}
           </ClipboardCopyButton>
           {!!onClose && (
-            <CodeEditorControl icon={<CloseIcon />} aria-label="Close" toolTipText="Close" onClick={onClose || noop} />
+            <CodeEditorControl
+              icon={<CloseIcon />}
+              aria-label={t('Close')}
+              toolTipText={t('Close')}
+              onClick={onClose || noop}
+            />
           )}
         </div>
       </>

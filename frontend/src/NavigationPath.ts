@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 import { LocationDescriptor } from 'history'
 import { useMemo } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
 import { generatePath } from 'react-router'
+import { useHistory, useLocation } from 'react-router-dom'
 import { Cluster } from './resources'
 
 export const getClusterNavPath = (
@@ -34,6 +34,7 @@ export enum NavigationPath {
   search = '/multicloud/home/search',
   resources = '/multicloud/home/search/resources',
   resourceYAML = '/multicloud/home/search/resources/yaml',
+  resourceRelated = '/multicloud/home/search/resources/related',
   resourceLogs = '/multicloud/home/search/resources/logs',
 
   // Infrastructure

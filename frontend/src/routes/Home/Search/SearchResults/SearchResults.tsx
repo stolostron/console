@@ -1,5 +1,10 @@
 // Copyright Contributors to the Open Cluster Management project
+import { ApolloError } from '@apollo/client'
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionToggle,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
@@ -20,23 +25,26 @@ import {
   DeleteResourceModal,
   IDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
-import { convertStringToQuery } from '../search-helper'
-import { searchClient } from '../search-sdk/search-client'
-import { useSearchResultItemsLazyQuery } from '../search-sdk/search-sdk'
+import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
-import RelatedResultsTables from './RelatedResultsTables'
-import RelatedResultsTiles from './RelatedResultsTiles'
-import { GetRowActions, ISearchResult, SearchResultExpandableCard } from './utils'
+import RelatedResults from './RelatedResults'
+import { GetRowActions, ISearchResult } from './utils'
 
-function SearchResultTables(props: {
-  data: ISearchResult[]
+function RenderAccordionItem(props: {
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  kindSearchResultItems: Record<string, ISearchResult[]>
+  kind: string
+  idx: number
+  defaultIsExpanded: boolean
 }) {
-  const { data, currentQuery, setDeleteResource } = props
+  const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
-
+  const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
+
+  const accordionItemKey = `${kind}-${idx}`
+  const items = kindSearchResultItems[kind]
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
@@ -50,95 +58,108 @@ function SearchResultTables(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={GetRowActions(
-            kind,
-            t('Delete {{resourceKind}}', { resourceKind: kind }),
-            currentQuery,
-            false,
-            setDeleteResource
-          )}
+          rowActions={GetRowActions(kind, currentQuery, false, setDeleteResource, t)}
         />
       )
     },
     [currentQuery, setDeleteResource, searchDefinitions, t]
   )
 
-  const kindSearchResultItems: Record<string, ISearchResult[]> = {}
-  for (const searchResultItem of data) {
-    const existing = kindSearchResultItems[searchResultItem.kind]
-    if (!existing) {
-      kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
-    } else {
-      kindSearchResultItems[searchResultItem.kind].push(searchResultItem)
-    }
-  }
-  const kinds = Object.keys(kindSearchResultItems)
-
   return (
-    <Fragment>
-      {data.length >= 1000 ? (
-        <PageSection>
-          <AcmAlert
-            noClose={true}
-            variant={'warning'}
-            isInline={true}
-            title={t(
-              'The search criteria matched too many resources, the results are truncated. Add more conditions to your search.'
-            )}
-          />
-        </PageSection>
-      ) : null}
-      <Stack hasGutter>
-        {kinds.sort().map((kind: string) => {
-          const items = kindSearchResultItems[kind]
-          return (
-            <SearchResultExpandableCard
-              key={`results-table-${kind}`}
-              title={`${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items.length})`}
-              renderContent={() => renderContent(kind, items)}
-              defaultExpanded={kinds.length === 1}
-            />
-          )
-        })}
-      </Stack>
-    </Fragment>
+    <AccordionItem key={`${kind}-accordion-item`}>
+      <AccordionToggle
+        onClick={() => {
+          setIsExpanded(!isExpanded)
+        }}
+        isExpanded={isExpanded}
+        id={accordionItemKey}
+      >
+        <span style={{ flexDirection: 'row' }}>
+          <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            {kind}
+            <div
+              style={{
+                marginLeft: '10px',
+                fontSize: 'var(--pf-global--FontSize--sm)',
+                color: 'var(--pf-global--Color--200)',
+              }}
+            >
+              {`(${items.length})`}
+            </div>
+          </span>
+        </span>
+      </AccordionToggle>
+      <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kind, items)}</AccordionContent>
+    </AccordionItem>
   )
 }
 
-export default function SearchResults(props: { currentQuery: string; preSelectedRelatedResources: string[] }) {
-  const { currentQuery, preSelectedRelatedResources } = props
+function SearchResultTables(props: {
+  data: ISearchResult[]
+  currentQuery: string
+  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+}) {
+  const { data, currentQuery, setDeleteResource } = props
+
+  const { kindSearchResultItems, kinds } = useMemo(() => {
+    const kindSearchResultItems: Record<string, ISearchResult[]> = {}
+    for (const searchResultItem of data) {
+      const existing = kindSearchResultItems[searchResultItem.kind]
+      if (!existing) {
+        kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
+      } else {
+        kindSearchResultItems[searchResultItem.kind].push(searchResultItem)
+      }
+    }
+    const kinds = Object.keys(kindSearchResultItems)
+    return { kindSearchResultItems, kinds }
+  }, [data])
+
+  return (
+    <PageSection isFilled={false} variant={'light'}>
+      <Accordion isBordered asDefinitionList={true}>
+        {kinds.sort().map((kind: string, idx: number) => {
+          const accordionItemKey = `${kind}-${idx}`
+          return (
+            <RenderAccordionItem
+              key={accordionItemKey}
+              currentQuery={currentQuery}
+              setDeleteResource={setDeleteResource}
+              kindSearchResultItems={kindSearchResultItems}
+              kind={kind}
+              idx={idx}
+              defaultIsExpanded={kinds.length === 1}
+            />
+          )
+        })}
+      </Accordion>
+    </PageSection>
+  )
+}
+
+export default function SearchResults(props: {
+  currentQuery: string
+  error: ApolloError | undefined
+  loading: boolean
+  data: SearchResultItemsQuery | undefined
+  preSelectedRelatedResources: string[]
+}) {
+  const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
-  const [selectedKinds, setSelectedKinds] = useState<string[]>(preSelectedRelatedResources)
+  const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
     // If the url has a preselected related resource -> automatically show the selected related resource tables - otherwise hide the section
     preSelectedRelatedResources.length > 0 ? true : false
   )
 
-  const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
-    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-  })
-
   useEffect(() => {
     // If the current search query changes -> hide related resources
     if (preSelectedRelatedResources.length === 0) {
       setShowRelatedResources(false)
-      setSelectedKinds([])
+      setSelectedRelatedKinds([])
     }
   }, [preSelectedRelatedResources])
-
-  useEffect(() => {
-    if (!called) {
-      fireSearchQuery({
-        variables: { input: [convertStringToQuery(currentQuery)] },
-      })
-    } else {
-      refetch &&
-        refetch({
-          input: [convertStringToQuery(currentQuery)],
-        })
-    }
-  }, [fireSearchQuery, currentQuery, called, refetch])
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
@@ -191,36 +212,43 @@ export default function SearchResults(props: { currentQuery: string; preSelected
         currentQuery={deleteResource.currentQuery}
         relatedResource={deleteResource.relatedResource}
       />
-      <PageSection>
+      <PageSection style={{ paddingTop: '0' }}>
         <Stack hasGutter>
-          <div style={{ display: 'flex', alignItems: 'baseline' }}>
-            <ExpandableSection
-              onToggle={() => setShowRelatedResources(!showRelatedResources)}
-              isExpanded={showRelatedResources}
-              toggleText={!showRelatedResources ? t('Show related resources') : t('Hide related resources')}
-            />
-            <Tooltip
-              content={t(
-                'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
+          {searchResultItems.length >= 1000 ? (
+            <AcmAlert
+              noClose={true}
+              variant={'warning'}
+              isInline={true}
+              title={t(
+                'Search result limit reached. Your query results are truncated, add more filter conditions to your query.'
               )}
-            >
-              <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
-            </Tooltip>
-          </div>
-          {showRelatedResources && (
-            <RelatedResultsTiles
-              currentQuery={currentQuery}
-              selectedKinds={selectedKinds}
-              setSelectedKinds={setSelectedKinds}
             />
-          )}
-          {showRelatedResources && selectedKinds.length > 0 && (
-            <RelatedResultsTables
-              currentQuery={currentQuery}
-              selectedKinds={selectedKinds}
-              setDeleteResource={setDeleteResource}
-            />
-          )}
+          ) : null}
+
+          <PageSection isFilled={false} variant={'light'}>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <ExpandableSection
+                onToggle={() => setShowRelatedResources(!showRelatedResources)}
+                isExpanded={showRelatedResources}
+                toggleText={!showRelatedResources ? t('Show related resources') : t('Hide related resources')}
+              />
+              <Tooltip
+                content={t(
+                  'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
+                )}
+              >
+                <OutlinedQuestionCircleIcon color={'var(--pf-global--Color--200)'} />
+              </Tooltip>
+            </div>
+            {showRelatedResources && (
+              <RelatedResults
+                currentQuery={currentQuery}
+                selectedRelatedKinds={selectedRelatedKinds}
+                setSelectedRelatedKinds={setSelectedRelatedKinds}
+                setDeleteResource={setDeleteResource}
+              />
+            )}
+          </PageSection>
           <SearchResultTables
             data={searchResultItems}
             currentQuery={currentQuery}

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
+import { ApolloError } from '@apollo/client'
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
@@ -15,6 +16,24 @@ import {
 import SearchResults from './SearchResults'
 
 describe('SearchResults Page', () => {
+  it('should render page in loading state', async () => {
+    render(
+      <Router history={createBrowserHistory()}>
+        <MockedProvider mocks={[]}>
+          <SearchResults
+            currentQuery={'kind:Pod testCluster'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={true}
+            data={{}}
+          />
+        </MockedProvider>
+      </Router>
+    )
+    // Test the loading state while apollo query finishes
+    expect(screen.getByText('Loading')).toBeInTheDocument()
+  })
+
   it('should render page with correct data from search WITH keyword', async () => {
     const mocks = [
       {
@@ -27,7 +46,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -46,7 +65,7 @@ describe('SearchResults Page', () => {
                     container: 'installer',
                     created: '2021-01-04T14:53:52Z',
                     hostIP: '10.0.128.203',
-                    kind: 'pod',
+                    kind: 'Pod',
                     name: 'testPod',
                     namespace: 'testNamespace',
                     podIP: '10.129.0.40',
@@ -66,16 +85,43 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:pod testCluster'} preSelectedRelatedResources={[]} />
+          <SearchResults
+            currentQuery={'kind:Pod testCluster'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Pod')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
   })
 
   it('should render page with correct data from search WITHOUT keyword', async () => {
@@ -90,7 +136,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -104,17 +150,17 @@ describe('SearchResults Page', () => {
               {
                 related: [
                   {
-                    kind: 'cluster',
+                    kind: 'Cluster',
                     count: 1,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'node',
+                    kind: 'Node',
                     count: 6,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'secret',
+                    kind: 'Secret',
                     count: 203,
                     __typename: 'SearchRelatedResult',
                   },
@@ -135,7 +181,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -149,17 +195,17 @@ describe('SearchResults Page', () => {
               {
                 related: [
                   {
-                    kind: 'cluster',
+                    kind: 'Cluster',
                     count: 1,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'node',
+                    kind: 'Node',
                     count: 6,
                     __typename: 'SearchRelatedResult',
                   },
                   {
-                    kind: 'secret',
+                    kind: 'Secret',
                     count: 203,
                     __typename: 'SearchRelatedResult',
                   },
@@ -180,7 +226,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -199,7 +245,7 @@ describe('SearchResults Page', () => {
                     container: 'installer',
                     created: '2021-01-04T14:53:52Z',
                     hostIP: '10.0.128.203',
-                    kind: 'pod',
+                    kind: 'Pod',
                     name: 'testPod',
                     namespace: 'testNamespace',
                     podIP: '10.129.0.40',
@@ -219,16 +265,43 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={[]} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered search result table correctly
-    await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Pod')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('testPod')).toBeTruthy())
 
     // Test the related resources section is hidden behind expandable section and click
@@ -247,7 +320,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -261,18 +334,8 @@ describe('SearchResults Page', () => {
               {
                 related: [
                   {
-                    kind: 'cluster',
-                    count: 1,
-                    __typename: 'SearchRelatedResult',
-                  },
-                  {
-                    kind: 'node',
-                    count: 6,
-                    __typename: 'SearchRelatedResult',
-                  },
-                  {
-                    kind: 'secret',
-                    count: 203,
+                    kind: 'Node',
+                    count: 2,
                     __typename: 'SearchRelatedResult',
                   },
                 ],
@@ -292,10 +355,10 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
-                relatedKinds: ['node'],
+                relatedKinds: ['Node'],
                 limit: 1000,
               },
             ],
@@ -307,7 +370,7 @@ describe('SearchResults Page', () => {
               {
                 related: [
                   {
-                    kind: 'node',
+                    kind: 'Node',
                     items: [
                       {
                         apiversion: 'v1',
@@ -315,8 +378,20 @@ describe('SearchResults Page', () => {
                         cluster: 'testCluster',
                         cpu: 4,
                         created: '2021-01-04T14:42:49Z',
-                        kind: 'node',
+                        kind: 'Node',
                         name: 'testNode',
+                        osImage: 'Red Hat Enterprise Linux CoreOS 45.82.202008290529-0 (Ootpa)',
+                        role: 'master',
+                        _uid: 'testing-search-related-results-node',
+                      },
+                      {
+                        apiversion: 'v1',
+                        architecture: 'amd64',
+                        cluster: 'testCluster',
+                        cpu: 4,
+                        created: '2021-01-04T14:42:49Z',
+                        kind: 'Node',
+                        name: 'testNode1',
                         osImage: 'Red Hat Enterprise Linux CoreOS 45.82.202008290529-0 (Ootpa)',
                         role: 'master',
                         _uid: 'testing-search-related-results-node',
@@ -341,7 +416,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -360,7 +435,7 @@ describe('SearchResults Page', () => {
                     container: 'installer',
                     created: '2021-01-04T14:53:52Z',
                     hostIP: '10.0.128.203',
-                    kind: 'pod',
+                    kind: 'Pod',
                     name: 'testPod',
                     namespace: 'testNamespace',
                     podIP: '10.129.0.40',
@@ -386,7 +461,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -405,7 +480,7 @@ describe('SearchResults Page', () => {
                     container: 'installer',
                     created: '2021-01-04T14:53:52Z',
                     hostIP: '10.0.128.203',
-                    kind: 'pod',
+                    kind: 'Pod',
                     name: 'testPod',
                     namespace: 'testNamespace',
                     podIP: '10.129.0.40',
@@ -425,17 +500,45 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={['Node']}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getAllByText('Loading')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('Pod (1)')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('Related Node (1)')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Pod')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Node')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(2)')).toBeTruthy())
   })
 
   it('should render page with errors', async () => {
@@ -450,7 +553,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -473,10 +576,10 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
-                relatedKinds: ['node'],
+                relatedKinds: ['Node'],
                 limit: 1000,
               },
             ],
@@ -497,7 +600,7 @@ describe('SearchResults Page', () => {
                 filters: [
                   {
                     property: 'kind',
-                    values: ['pod'],
+                    values: ['Pod'],
                   },
                 ],
                 limit: 1000,
@@ -514,12 +617,16 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={['Node']}
+            error={{ message: 'Error getting search data' } as ApolloError}
+            loading={false}
+            data={{}}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getAllByText('Loading')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered errors correctly
