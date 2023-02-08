@@ -170,6 +170,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           )
         }
         isOpen={isOpen}
+        isPlain={props.isPlain}
       />
     </TooltipWrapper>
   )
