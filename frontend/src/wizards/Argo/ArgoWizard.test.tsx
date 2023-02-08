@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
-//import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { render, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
