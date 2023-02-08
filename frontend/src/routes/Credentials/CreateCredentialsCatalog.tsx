@@ -51,7 +51,7 @@ export function CreateCredentialsCatalog() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(
-    () => [{ label: t('Credentials'), to: NavigationPath.credentials }, { label: t('Credential type') }],
+    () => [{ label: t('Credentials'), to: NavigationPath.credentials }, { label: t('Infrastructure provider') }],
     [t]
   )
 
@@ -59,8 +59,8 @@ export function CreateCredentialsCatalog() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Credential type')}
-          description={t('Choose your credential type.')}
+          title={t('Infrastructure provider')}
+          description={t('Choose your infrastructure provider.')}
           breadcrumbs={breadcrumbs}
           titleHelp={
             <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">

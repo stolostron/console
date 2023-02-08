@@ -65,7 +65,6 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
             } else {
               icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
               if (c.type === 'ValidOIDCConfiguration') {
-                // TBD need to decide where to put it
                 createCredentialModal = <CreateCredentialModal handleModalToggle={handleModalToggle} />
               }
             }

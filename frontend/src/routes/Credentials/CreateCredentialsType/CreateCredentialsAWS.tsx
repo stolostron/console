@@ -71,8 +71,8 @@ export function CreateCredentialsAWS() {
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Credentials'), to: NavigationPath.credentials },
-      { label: t('Type'), to: NavigationPath.addCredentials },
-      { label: t('AWS credential type') },
+      { label: t('Infrastructure provider'), to: NavigationPath.addCredentials },
+      { label: t('AWS credential') },
     ]
     return newBreadcrumbs
   }, [t])
@@ -81,8 +81,8 @@ export function CreateCredentialsAWS() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Amazon Web Services credential type')}
-          description={t('Choose your AWS credential type.')}
+          title={t('Amazon Web Services credential')}
+          description={t('Choose your AWS credential.')}
           breadcrumbs={breadcrumbs}
         />
       }

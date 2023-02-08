@@ -8,6 +8,8 @@ import {
   CodeBlockCode,
   List,
   ListItem,
+  Modal,
+  ModalVariant,
   Page,
   Text,
   TextContent,
@@ -15,9 +17,13 @@ import {
 } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
+import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
+import { GetProjects } from '../../../../../../../../components/GetProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
+import { Provider } from '../../../../../../../../ui-components'
+import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
 import './css/HypershiftAWSCLI.css'
 
 export function HypershiftAWSCLI() {
@@ -30,6 +36,9 @@ export function HypershiftAWSCLI() {
   ]
 
   const [copied, setCopied] = useState(false)
+  const [isModalOpenAws, setIsModalOpenAws] = useState(false)
+  const [isModalOpenAwsBucket, setIsModalOpenAwsBucket] = useState(false)
+  const { projects } = GetProjects()
 
   const code = `# Set environment variables
 REGION="us-east-1"
@@ -45,6 +54,13 @@ hypershift create cluster aws
   --region $REGION \\`
 
   const helperCommand = `hypershift create cluster aws --help`
+  const handleModalToggleAws = () => {
+    setIsModalOpenAws(!isModalOpenAws)
+  }
+
+  const handleModalToggleAwsBucket = () => {
+    setIsModalOpenAwsBucket(!isModalOpenAwsBucket)
+  }
 
   const onClick = (text: string) => {
     navigator.clipboard.writeText(text.toString())
@@ -71,6 +87,42 @@ hypershift create cluster aws
 
   return (
     <Page>
+      <Modal
+        variant={ModalVariant.large}
+        showClose={false}
+        isOpen={isModalOpenAws}
+        aria-labelledby="modal-wizard-label"
+        aria-describedby="modal-wizard-description"
+        onClose={handleModalToggleAws}
+        hasNoBodyWrapper
+      >
+        <CredentialsForm
+          namespaces={projects}
+          isEditing={false}
+          isViewing={false}
+          credentialsType={Provider.aws}
+          handleModalToggle={handleModalToggleAws}
+          hideYaml={true}
+        />
+      </Modal>
+      <Modal
+        variant={ModalVariant.large}
+        showClose={false}
+        isOpen={isModalOpenAwsBucket}
+        aria-labelledby="modal-wizard-label"
+        aria-describedby="modal-wizard-description"
+        onClose={handleModalToggleAwsBucket}
+        hasNoBodyWrapper
+      >
+        <CredentialsForm
+          namespaces={projects}
+          isEditing={false}
+          isViewing={false}
+          credentialsType={Provider.awss3}
+          handleModalToggle={handleModalToggleAwsBucket}
+          hideYaml={true}
+        />
+      </Modal>
       <PageHeader
         title={t('Create cluster')}
         breadcrumbs={breadcrumbs}
@@ -103,16 +155,23 @@ hypershift create cluster aws
           </ListItem>
           <ListItem icon={<span className="ocm-icons">2</span>}>
             <TextContent>
-              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) Credentials')}</Text>
+              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) credential')}</Text>
               <Text component={TextVariants.p}>
-                {t('Use your existing AWS credentials, or create new AWS credentials.')}
-              </Text>
-              <Text component={TextVariants.a} href={`${NavigationPath.addCredentials}?type=aws`} target="_blank">
-                {t('Click here to open the Credentials wizard.')}
+                {t('Create a new or update an existing AWS credential.')}
+                <CreateCredentialModal handleModalToggle={handleModalToggleAws} />
               </Text>
             </TextContent>
           </ListItem>
           <ListItem icon={<span className="ocm-icons">3</span>}>
+            <TextContent>
+              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) S3 bucket credential')}</Text>
+              <Text component={TextVariants.p}>
+                {t('Create a new or update an existing AWS S3 bucket credential.')}
+                <CreateCredentialModal handleModalToggle={handleModalToggleAwsBucket} />
+              </Text>
+            </TextContent>
+          </ListItem>
+          <ListItem icon={<span className="ocm-icons">4</span>}>
             <TextContent>
               <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane command')}</Text>
               <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>

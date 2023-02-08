@@ -539,13 +539,13 @@ export function CredentialsForm(
     sections: [
       {
         type: 'Section',
-        title: credentialsType ? t('Basic information') : t('Credential type'),
+        title: credentialsType ? t('Basic information') : t('Infrastructure provider'),
         wizardTitle: t('Enter the basic credentials information'),
         inputs: [
           {
             id: 'credentialsType',
             type: 'Select',
-            label: t('Credential type'),
+            label: t('Infrastructure provider'),
             value: credentialsType,
             onChange: noop,
             options: [
@@ -558,6 +558,23 @@ export function CredentialsForm(
             ],
             isRequired: false, // always pre-filled
             isDisabled: true, // always pre-filled
+          },
+          {
+            id: 'disable-alert',
+            type: 'Alert',
+            label: '',
+            labelHelpTitle: t('Credential name and Namespace are predefined as below for HyperShift add-on'),
+            variant: 'info',
+            reactNode: (
+              <Fragment>
+                <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noreferrer">
+                  {t('Learn more')}
+                </a>
+              </Fragment>
+            ),
+            value: '',
+            onChange: () => {},
+            isHidden: credentialsType !== Provider.awss3,
           },
           {
             id: 'credentialsName',

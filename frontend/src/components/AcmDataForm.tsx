@@ -796,6 +796,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
           </DescriptionListDescription>
         </DescriptionListGroup>
       )
+    case 'Alert':
     case 'TextNumber':
     case 'Number':
       return (
@@ -1225,6 +1226,14 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
 
     case 'OrderedItems': {
       return <OrderedItemsInput input={input} validated={validated} isReadOnly={isReadOnly} />
+    }
+
+    case 'Alert': {
+      return (
+        <Alert isInline variant={input.variant} title={input.labelHelpTitle}>
+          {input.reactNode}
+        </Alert>
+      )
     }
   }
 }
