@@ -90,10 +90,10 @@ export default function PoliciesPage() {
   const tableItems: PolicyTableItem[] = useMemo(() => {
     return policies.map((policy) => {
       const isExternal = resolveExternalStatus(policy)
-      let source: string | JSX.Element = 'Local'
+      let source: string | JSX.Element = t('Local')
       if (isExternal) {
         const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-        source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
+        source = policySource ? getSource(policySource, isExternal, t) : t('Managed Externally')
       }
       return {
         policy,
