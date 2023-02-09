@@ -11,7 +11,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import './OnboardingModal.css'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
+import { DOC_HOME } from '../../../../../lib/doc-util'
 
 export interface IOnboardingModalProps {
     close: () => void
@@ -83,7 +83,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                                 ? launchToOCP(
                                       'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
                                   )
-                                : window.open(DOC_BASE_PATH, '_blank')
+                                : window.open(DOC_HOME, '_blank')
                         }
                         style={{
                             padding: '0',
