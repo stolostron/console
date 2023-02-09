@@ -93,7 +93,7 @@ export default function PoliciesPage() {
       let source: string | JSX.Element = t('Local')
       if (isExternal) {
         const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-        source = policySource ? getSource(policySource, isExternal, t) : t('Managed Externally')
+        source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
       }
       return {
         policy,
