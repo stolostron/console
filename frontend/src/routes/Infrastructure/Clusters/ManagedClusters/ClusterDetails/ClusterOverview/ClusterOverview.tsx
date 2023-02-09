@@ -395,6 +395,7 @@ export function ClusterOverviewPageContent(props: {
             credentialsType={Provider.awss3}
             handleModalToggle={handleModalToggle}
             hideYaml={true}
+            isHosted={true}
           />
         </Modal>
       </Fragment>

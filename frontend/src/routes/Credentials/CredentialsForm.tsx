@@ -150,11 +150,20 @@ export function CredentialsForm(
     handleModalToggle?: () => void
     hideYaml?: boolean
     newCredentialCallback?: any
+    isHosted?: boolean
   } & ProviderConnectionOrCredentialsType
 ) {
   const { t } = useTranslation()
-  const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback } =
-    props
+  const {
+    namespaces,
+    providerConnection,
+    isEditing,
+    isViewing,
+    handleModalToggle,
+    hideYaml,
+    newCredentialCallback,
+    isHosted,
+  } = props
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
@@ -205,8 +214,6 @@ export function CredentialsForm(
   const [cloudName, setCloudName] = useState<CloudNames | string>(
     providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
   )
-
-  const isAWSS3 = credentialsType === Provider.awss3
 
   function getDisconnectedDocLink(credentialsType: Provider) {
     switch (credentialsType) {
@@ -307,10 +314,13 @@ export function CredentialsForm(
   // Red Hat Cloud
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
+  // AWS S3 bucket
   const s3values = useMemo(
     () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
     []
   )
+  const [isHostedControlPlane, setIsHostedControlPlane] = useState<boolean>(isHosted || false)
+
   function stateToData() {
     const stringData: ProviderConnectionStringData = {}
     const secret: ProviderConnection = {
@@ -526,11 +536,14 @@ export function CredentialsForm(
   )
 
   useEffect(() => {
-    if (isAWSS3) {
+    if (isHostedControlPlane) {
       setName(s3values.name)
       setNamespace(s3values.namespace)
+    } else {
+      setName('')
+      setNamespace('')
     }
-  }, [isAWSS3, s3values])
+  }, [isHostedControlPlane, s3values])
 
   const formData: FormData = {
     title,
@@ -560,10 +573,22 @@ export function CredentialsForm(
             isDisabled: true, // always pre-filled
           },
           {
+            id: 'hostedControlPlane',
+            type: 'Checkbox',
+            label: t('For Hosted Control Plane'),
+            value: isHostedControlPlane,
+            onChange: (value: boolean) => {
+              setIsHostedControlPlane(value)
+            },
+            isDisabled: isHosted,
+            isHidden: credentialsType !== Provider.awss3,
+          },
+
+          {
             id: 'disable-alert',
             type: 'Alert',
             label: '',
-            labelHelpTitle: t('Credential name and Namespace are predefined as below for HyperShift add-on'),
+            labelHelpTitle: t('Credential name and namespace are predefined as below for HyperShift add-on'),
             variant: 'info',
             reactNode: (
               <Fragment>
@@ -574,7 +599,7 @@ export function CredentialsForm(
             ),
             value: '',
             onChange: () => {},
-            isHidden: credentialsType !== Provider.awss3,
+            isHidden: !isHostedControlPlane,
           },
           {
             id: 'credentialsName',
@@ -582,11 +607,11 @@ export function CredentialsForm(
             label: t('Credential name'),
             placeholder: t('Enter the name for the credential'),
             labelHelp: t('The name for the credential.'),
-            value: isAWSS3 ? s3values.name : name,
+            value: name,
             onChange: setName,
             validation: (value) => validateKubernetesDnsName(value, t),
             isRequired: true,
-            isDisabled: isEditing || isAWSS3,
+            isDisabled: isEditing || isHostedControlPlane,
             isHidden: !credentialsType,
           },
           {
@@ -602,7 +627,7 @@ export function CredentialsForm(
               id: namespace,
               value: namespace,
             })),
-            isDisabled: isEditing || isAWSS3,
+            isDisabled: isEditing || isHostedControlPlane,
             isHidden: !credentialsType,
           },
           {
