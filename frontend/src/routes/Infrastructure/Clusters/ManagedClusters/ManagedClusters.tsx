@@ -12,12 +12,14 @@ import {
   AcmPageContent,
   AcmTable,
   compareStrings,
+  getNodeStatusLabel,
   IAcmTableAction,
   IAcmTableButtonAction,
   IAcmTableColumn,
   ITableFilter,
   Provider,
   ProviderLongTextMap,
+  StatusType,
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
@@ -411,7 +413,6 @@ export function ClustersTable(props: {
             label: ProviderLongTextMap[key],
             value: key,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
       },
@@ -421,12 +422,42 @@ export function ClustersTable(props: {
         options: Object.keys(ClusterStatus)
           .map((status) => ({
             label: getClusterStatusLabel(status as ClusterStatus, t),
-            value: getClusterStatusLabel(status as ClusterStatus, t),
+            value: status,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) =>
-          selectedValues.includes(getClusterStatusLabel(cluster.status as ClusterStatus, t)),
+        tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.status),
+      },
+      {
+        id: 'nodes',
+        label: t('table.nodes'),
+        options: Object.keys(StatusType)
+          .map((status) => ({
+            label: getNodeStatusLabel(status as StatusType, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case StatusType.healthy:
+                if (cluster.nodes?.ready) {
+                  return true
+                }
+                break
+              case StatusType.danger:
+                if (cluster.nodes?.unhealthy) {
+                  return true
+                }
+                break
+              case StatusType.unknown:
+                if (cluster.nodes?.unknown) {
+                  return true
+                }
+                break
+            }
+          }
+          return false
+        },
       },
     ]
   }, [t])

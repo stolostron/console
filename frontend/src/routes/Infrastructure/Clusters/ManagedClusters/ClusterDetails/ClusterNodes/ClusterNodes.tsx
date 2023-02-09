@@ -6,6 +6,7 @@ import {
   AcmPageContent,
   AcmTable,
   compareNumbers,
+  getNodeStatusLabel,
   IAcmTableColumn,
   StatusType,
 } from '../../../../../../ui-components'
@@ -125,21 +126,18 @@ export function NodesPoolsTable() {
       cell: (node) => {
         const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
         let type: StatusType
-        let status: string
         switch (readyCondition?.status) {
           case 'True':
             type = StatusType.healthy
-            status = t('node.status.ready')
             break
           case 'False':
             type = StatusType.danger
-            status = t('node.status.unhealthy')
             break
           case 'Unknown':
           default:
             type = StatusType.unknown
-            status = t('node.status.unknown')
         }
+        const status = getNodeStatusLabel(type, t)
         return <AcmInlineStatus type={type} status={status} />
       },
     },
