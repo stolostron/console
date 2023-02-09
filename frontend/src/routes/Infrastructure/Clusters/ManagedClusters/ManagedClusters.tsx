@@ -52,6 +52,7 @@ import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
+import { AcmInlineAddonStatusGroup } from '../../../../ui-components/AcmInlineStatus/AcmInlineAddonStatus'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -203,6 +204,7 @@ export function ClustersTable(props: {
   const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn()
   const clusterNodesColumn = useClusterNodesColumn()
+  const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
 
   const modalColumns = useMemo(
@@ -220,6 +222,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
       {
         header: '',
@@ -238,6 +241,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
     ]
   )
@@ -628,6 +632,30 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
         />
       ) : (
         '-'
+      )
+    },
+  }
+}
+
+export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  const { clusterManagementAddonsState, managedClusterAddonsState } = useSharedAtoms()
+  const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+  const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
+
+  return {
+    header: t('Add-ons'),
+    sort: 'addons',
+    cell: (cluster) => {
+      const filteredClusterAddons = managedClusterAddons.filter(
+        (addon) => addon.metadata.namespace === cluster.namespace
+      )
+
+      return (
+        <AcmInlineAddonStatusGroup
+          clusterManagementAddOns={clusterManagementAddons}
+          managedClusterAddOns={filteredClusterAddons}
+        />
       )
     },
   }
