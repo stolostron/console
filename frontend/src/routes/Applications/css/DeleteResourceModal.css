@@ -89,7 +89,7 @@
     margin-right: 5px;
 }
 .sub-child-resource-content {
-    display: inline-flex;
+    display: flex;
     color: #152935;
     line-height: 21px;
 }
