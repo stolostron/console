@@ -21,9 +21,12 @@ import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../components/AutomationProviderHint'
 
-export function PolicyAutomationWizard(props: {
+export interface PolicyAutomationWizardProps {
   title: string
-  breadcrumb?: { label: string; to?: string }[]
+  breadcrumb?: {
+    label: string
+    to?: string
+  }[]
   policy: IResource
   credentials: IResource[]
   configMaps?: ConfigMap[]
@@ -34,7 +37,9 @@ export function PolicyAutomationWizard(props: {
   onSubmit: WizardSubmit
   onCancel: WizardCancel
   getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
-}) {
+}
+
+export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
   const ansibleCredentials = useMemo(
     () =>
       props.credentials.filter(

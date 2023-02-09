@@ -92,7 +92,7 @@ interface ApplicationSet {
   }
 }
 
-interface ArgoWizardProps {
+export interface ArgoWizardProps {
   breadcrumb?: { label: string; to?: string }[]
   applicationSets?: ApplicationSet[]
   createClusterSetCallback?: () => void
