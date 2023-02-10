@@ -7,6 +7,8 @@ import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+  Addon,
+  AddonStatus,
   Cluster,
   ClusterStatus,
   ManagedClusterInfo,
@@ -27,12 +29,14 @@ import {
   colorThemes,
   Provider,
 } from '../../../ui-components'
+import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../Search/search-sdk/search-sdk'
 
 function getClusterSummary(
   clusters: Cluster[],
+  allAddons: { [id: string]: Addon[] },
   selectedCloud: string,
   setSelectedCloud: Dispatch<SetStateAction<string>>
 ) {
@@ -79,6 +83,32 @@ function getClusterSummary(
         } else {
           prev.offline = prev.offline + 1
         }
+
+        // addon statuses
+        allAddons[curr.name].forEach(({ status }) => {
+          switch (status) {
+            case AddonStatus.Available:
+              prev.addons.healthy.cnt = prev.addons.healthy.cnt + 1
+              prev.addons.healthy.clusters.add(curr.name)
+              break
+            case AddonStatus.Degraded:
+              prev.addons.danger.cnt = prev.addons.danger.cnt + 1
+              prev.addons.danger.clusters.add(curr.name)
+              break
+            case AddonStatus.Progressing:
+              prev.addons.progress.cnt = prev.addons.progress.cnt + 1
+              prev.addons.progress.clusters.add(curr.name)
+              break
+            case AddonStatus.Disabled:
+              prev.addons.pending.cnt = prev.addons.pending.cnt + 1
+              prev.addons.pending.clusters.add(curr.name)
+              break
+            default:
+              prev.addons.Unknown.cnt = prev.addons.Unknown.cnt + 1
+              prev.addons.Unknown.clusters.add(curr.name)
+              break
+          }
+        })
       }
       return prev
     },
@@ -87,6 +117,13 @@ function getClusterSummary(
       regions: new Set(),
       ready: 0,
       offline: 0,
+      addons: {
+        healthy: { cnt: 0, clusters: new Set() },
+        danger: { cnt: 0, clusters: new Set() },
+        progress: { cnt: 0, clusters: new Set() },
+        pending: { cnt: 0, clusters: new Set() },
+        Unknown: { cnt: 0, clusters: new Set() },
+      },
       providerCounts: {},
       providers: [],
       clusterNames: new Set(),
@@ -160,6 +197,13 @@ export default function OverviewPage() {
     regions: new Set(),
     ready: 0,
     offline: 0,
+    addons: {
+      healthy: { cnt: 0, clusters: new Set() },
+      danger: { cnt: 0, clusters: new Set() },
+      progress: { cnt: 0, clusters: new Set() },
+      pending: { cnt: 0, clusters: new Set() },
+      Unknown: { cnt: 0, clusters: new Set() },
+    },
     providers: [],
   })
   const allClusters: Cluster[] = useAllClusters()
@@ -173,6 +217,8 @@ export default function OverviewPage() {
       }
     })
   }, [allClusters])
+
+  const allAddons = useClusterAddons()
 
   const nonCompliantClusters = useMemo(() => {
     const nonCompliantClustersSet = new Set<string>()
@@ -221,12 +267,13 @@ export default function OverviewPage() {
 
   // Process data from API.
   useEffect(() => {
-    const { kubernetesTypes, regions, ready, offline, providers, clusterNames } = getClusterSummary(
+    const { kubernetesTypes, regions, ready, offline, providers, clusterNames, addons } = getClusterSummary(
       clusters || [],
+      allAddons,
       selectedCloud,
       setSelectedCloud
     )
-    setSummaryData({ kubernetesTypes, regions, ready, offline, providers })
+    setSummaryData({ kubernetesTypes, regions, ready, offline, addons, providers })
 
     if (selectedCloud === '') {
       if (!_.isEqual(selectedClusterNames, [])) {
@@ -235,7 +282,7 @@ export default function OverviewPage() {
     } else if (!_.isEqual(selectedClusterNames, Array.from(clusterNames))) {
       setSelectedClusterNames(Array.from(clusterNames))
     }
-  }, [clusters, selectedCloud, searchData, selectedClusterNames])
+  }, [clusters, selectedCloud, searchData, selectedClusterNames, allAddons])
 
   const {
     policyReportCriticalCount,
@@ -285,7 +332,8 @@ export default function OverviewPage() {
     }
   }, [policyReports, selectedClusterNames, clusters])
 
-  const { kubernetesTypes, regions, ready, offline, providers } = summaryData
+  const { kubernetesTypes, regions, ready, offline, addons, providers } = summaryData
+  const { healthy, danger, progress, pending, Unknown } = addons
   const provider = providers.find((p: any) => p.provider === selectedCloud)
   const cloudLabelFilter: string =
     selectedCloud === ''
@@ -381,23 +429,23 @@ export default function OverviewPage() {
 
   // TODO: Breaks url if length of selectedClustersFilter is too big.
   // Issue: https://github.com/open-cluster-management/backlog/issues/7087
-  function buildClusterComplianceLinks(clusterNames: Array<string> = []): string {
+  function buildClusterLinks(clusterNames: Array<string> = [], related: string): string {
     return `${NavigationPath.search}?filters={"textsearch":"kind:Cluster${
       clusterNames.length > 0 ? `%20name:${clusterNames.join(',')}` : ''
-    }"}&showrelated=Policy`
+    }"}&showrelated=${related}`
   }
   const complianceData = useMemo(() => {
     return [
       {
         key: t('With violations'),
         value: nonCompliantClusters.size,
-        link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
+        link: buildClusterLinks(Array.from(nonCompliantClusters), 'Policy'),
       },
       {
         key: t('Without violations'),
         value: compliantClusters.length,
         isPrimary: true,
-        link: buildClusterComplianceLinks(compliantClusters),
+        link: buildClusterLinks(compliantClusters, 'Policy'),
       },
     ]
   }, [compliantClusters, nonCompliantClusters, t])
@@ -417,6 +465,37 @@ export default function OverviewPage() {
       },
     ]
   }, [cloudLabelFilter, offline, ready, t])
+
+  const clusterAddonData = useMemo(() => {
+    return [
+      {
+        key: t('Degraded'),
+        value: danger.cnt,
+        link: buildClusterLinks(Array.from(danger.clusters), 'ClusterManagementAddOn'),
+      },
+      {
+        key: t('Progressing'),
+        value: progress.cnt,
+        link: buildClusterLinks(Array.from(progress.clusters), 'ClusterManagementAddOn'),
+      },
+      {
+        key: t('Pending'),
+        value: pending.cnt,
+        link: buildClusterLinks(Array.from(pending.clusters), 'ClusterManagementAddOn'),
+      },
+      {
+        key: t('Unknown'),
+        value: Unknown.cnt,
+        link: buildClusterLinks(Array.from(Unknown.clusters), 'ClusterManagementAddOn'),
+      },
+      {
+        key: t('Available'),
+        value: healthy.cnt,
+        isPrimary: true,
+        link: buildClusterLinks(Array.from(healthy.clusters), 'ClusterManagementAddOn'),
+      },
+    ]
+  }, [healthy, danger, progress, pending, Unknown, t])
 
   const policyReportData = useMemo(() => {
     return [
@@ -518,6 +597,13 @@ export default function OverviewPage() {
                     subTitle: clustersWithIssuesCount === 1 ? t('Cluster with issues') : t('Clusters with issues'),
                   }}
                   colorScale={colorThemes.criticalImportantModerateLow}
+                />
+                <AcmDonutChart
+                  title={t('Cluster add-ons')}
+                  description={t('Overview of cluster add-ons')}
+                  loading={!clusterAddonData}
+                  data={clusterAddonData}
+                  colorScale={colorThemes.criticalImportantPendingSuccess}
                 />
               </AcmMasonry>
             </Stack>

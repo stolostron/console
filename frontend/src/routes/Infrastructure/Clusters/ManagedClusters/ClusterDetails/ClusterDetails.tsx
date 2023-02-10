@@ -24,7 +24,6 @@ import {
   getCluster,
   getResource,
   ManagedCluster,
-  mapAddons,
   ResourceError,
   SecretDefinition,
 } from '../../../../../resources'
@@ -48,6 +47,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
+import { useClusterAddons } from '../../ClusterSets/components/useClusterAddons'
 
 export const ClusterContext = createContext<{
   readonly cluster?: Cluster
@@ -80,7 +80,6 @@ export default function ClusterDetailsPage({
     clusterClaimsState,
     clusterCuratorsState,
     clusterDeploymentsState,
-    clusterManagementAddonsState,
     hostedClustersState,
     infraEnvironmentsState,
     managedClusterAddonsState,
@@ -94,7 +93,6 @@ export default function ClusterDetailsPage({
     managedClusterInfos,
     certificateSigningRequests,
     managedClusterAddons,
-    clusterManagementAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
@@ -109,7 +107,6 @@ export default function ClusterDetailsPage({
       managedClusterInfosState,
       certificateSigningRequestsState,
       managedClusterAddonsState,
-      clusterManagementAddonsState,
       clusterClaimsState,
       clusterCuratorsState,
       agentClusterInstallsState,
@@ -128,7 +125,7 @@ export default function ClusterDetailsPage({
     (mci) => mci.metadata?.name === name && mci.metadata?.namespace === name
   )
   const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata?.namespace === name)
-  const addons = mapAddons(clusterManagementAddons, clusterAddons)
+  const addons = useClusterAddons(name)[name]
 
   const clusterClaim = clusterClaims.find(
     (cc) =>

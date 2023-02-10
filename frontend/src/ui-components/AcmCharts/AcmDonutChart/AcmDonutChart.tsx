@@ -143,10 +143,18 @@ const importantColorClass = 'var(--pf-chart-color-orange-300)'
 const moderateColorClass = 'var(--pf-chart-color-gold-300)'
 const lowColorClass = 'var(--pf-chart-color-blue-200)'
 const successColorClass = 'var(--pf-chart-color-black-100)'
+const unknownColorClass = 'var(--pf-chart-color-black-300)'
 
 export const colorThemes = {
   criticalImportantSuccess: [criticalColorClass, importantColorClass, successColorClass],
   criticalSuccess: [criticalColorClass, successColorClass],
   criticalLowSuccess: [criticalColorClass, moderateColorClass, successColorClass],
   criticalImportantModerateLow: [criticalColorClass, importantColorClass, moderateColorClass, lowColorClass],
+  criticalImportantPendingSuccess: [
+    criticalColorClass,
+    lowColorClass,
+    importantColorClass,
+    unknownColorClass,
+    successColorClass,
+  ],
 }
