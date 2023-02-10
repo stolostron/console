@@ -3,7 +3,6 @@
 import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
 import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
-import { clusterManagementAddonsState } from '../../../../../atoms'
 
 export function useAllClusters() {
   const { waitForAll } = useSharedRecoil()
@@ -13,6 +12,7 @@ export function useAllClusters() {
     managedClusterInfosState,
     certificateSigningRequestsState,
     managedClusterAddonsState,
+    clusterManagementAddonsState,
     clusterClaimsState,
     clusterCuratorsState,
     agentClusterInstallsState,
@@ -67,6 +67,7 @@ export function useAllClusters() {
       certificateSigningRequests,
       managedClusters,
       managedClusterAddons,
+      clusterManagementAddOns,
       clusterClaims,
       clusterCurators,
       agentClusterInstalls,

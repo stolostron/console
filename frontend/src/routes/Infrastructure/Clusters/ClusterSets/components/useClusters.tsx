@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { clusterManagementAddonsState } from '../../../../../atoms'
 import {
   Cluster,
   ClusterDeployment,
@@ -24,6 +23,7 @@ export function useClusters(
     clusterClaimsState,
     clusterDeploymentsState,
     managedClusterAddonsState,
+    clusterManagementAddonsState,
     managedClusterInfosState,
     managedClustersState,
     agentClusterInstallsState,
