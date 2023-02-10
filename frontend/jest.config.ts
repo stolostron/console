@@ -25,11 +25,17 @@ const config: Config.InitialOptions = {
   globals: {
     'ts-jest': {
       isolatedModules: true,
+      tsconfig: '<rootDir>/tsconfig.dev.json',
     },
   },
   transform: {
-    '^.+\\.jsx?$': 'babel-jest',
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.[jt]sx?$': [
+      'ts-jest',
+      {
+        isolatedModules: true,
+        tsconfig: '<rootDir>/tsconfig.dev.json',
+      },
+    ],
     '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
     // '^.+\\.hbs$': 'jest-raw-loader',
     '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
