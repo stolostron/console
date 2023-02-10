@@ -135,6 +135,11 @@ Array [
     "type": "hidden",
   },
   Object {
+    "active": "",
+    "id": "reconcilePause",
+    "type": "hidden",
+  },
+  Object {
     "comment": "Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.",
     "disableEditorOnSuccess": true,
     "disablePreviousControlsOnSuccess": true,
@@ -295,6 +300,11 @@ Array [
   Object {
     "active": "",
     "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  Object {
+    "active": "",
+    "id": "reconcilePause",
     "type": "hidden",
   },
   Object {
