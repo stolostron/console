@@ -266,7 +266,7 @@ const Component = () => (
     <ClusterSetContext.Provider
       value={{
         clusterSet: mockManagedClusterSet,
-        clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
+        clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], [], []),
         clusterPools: [],
         submarinerAddons: undefined,
         clusterSetBindings: undefined,

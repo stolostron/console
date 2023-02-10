@@ -20,12 +20,12 @@ import { ManagedCluster } from '../managed-cluster'
 import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
-import { AddonStatus } from './get-addons'
+import { AddonStatus, getDisplayStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
-import { HypershiftCloudPlatformType } from '..'
+import { ClusterManagementAddOn, HypershiftCloudPlatformType } from '..'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,
@@ -193,6 +193,7 @@ export type Cluster = {
   distribution?: DistributionInfo
   acmDistribution?: ACMDistributionInfo
   labels?: Record<string, string>
+  addons?: Addons
   nodes?: Nodes
   kubeApiServer?: string
   consoleURL?: string
@@ -253,6 +254,14 @@ export type Nodes = {
   nodeList: NodeInfo[]
 }
 
+export type Addons = {
+  available: number
+  progressing: number
+  degraded: number
+  unknown: number
+  addonList: ManagedClusterAddOn[]
+}
+
 export type UpgradeInfo = {
   isUpgrading: boolean
   isReadyUpdates: boolean
@@ -294,6 +303,7 @@ export function mapClusters(
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
   managedClusterAddOns: ManagedClusterAddOn[] = [],
+  clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
   agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
@@ -330,6 +340,7 @@ export function mapClusters(
       certificateSigningRequests,
       managedCluster,
       addons,
+      clusterManagementAddOn,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -346,6 +357,7 @@ export function getCluster(
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
   managedClusterAddOns: ManagedClusterAddOn[],
+  clusterManagementAddOns: ClusterManagementAddOn[],
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -412,6 +424,7 @@ export function getCluster(
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
     acmDistribution: acmDistributionInfo,
     acmConsoleURL: getACMConsoleURL(acmDistributionInfo.version, consoleURL),
+    addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
@@ -935,6 +948,36 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
     }
   })
   return { nodeList, ready, unhealthy, unknown }
+}
+
+export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: ClusterManagementAddOn[]) {
+  let available = 0
+  let progressing = 0
+  let degraded = 0
+  let unknown = 0
+
+  clusterManagementAddons?.forEach((cma) => {
+    const addonStatus = getDisplayStatus(cma, addons)
+    switch (addonStatus) {
+      case AddonStatus.Available:
+        available++
+        break
+      case AddonStatus.Progressing:
+        progressing++
+        break
+      case AddonStatus.Degraded:
+        degraded++
+        break
+      case AddonStatus.Unknown:
+        unknown++
+        break
+      case AddonStatus.Disabled:
+      default:
+        break
+    }
+  })
+
+  return { addonList: addons, available, progressing, degraded, unknown }
 }
 
 export function getClusterStatus(
