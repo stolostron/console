@@ -642,7 +642,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
     header: t('Add-ons'),
     sort: 'addons',
     cell: (cluster) => {
-      return cluster.addons!.addonList!.length > 0 ? (
+      return cluster.addons!.addonList.length > 0 ? (
         <AcmInlineStatusGroup
           healthy={cluster.addons!.available}
           danger={cluster.addons!.degraded}
