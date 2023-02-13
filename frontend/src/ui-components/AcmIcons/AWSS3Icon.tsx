@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// import './aws-icon.css'
 import { Fragment } from 'react'
 import { createAcmIcon } from './createAcmIcon'
 
