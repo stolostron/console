@@ -648,6 +648,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
           danger={cluster.addons!.degraded}
           progress={cluster.addons!.progressing}
           unknown={cluster.addons!.unknown}
+          groupId="add-ons"
         />
       ) : (
         '-'

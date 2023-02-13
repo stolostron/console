@@ -956,6 +956,13 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
   let degraded = 0
   let unknown = 0
 
+  console.log(
+    'Managed Cluster Addon list preview: ',
+    addons,
+    '- Cluster management addon preview: ',
+    clusterManagementAddons
+  )
+
   clusterManagementAddons?.forEach((cma) => {
     const addonStatus = getDisplayStatus(cma, addons)
     switch (addonStatus) {
