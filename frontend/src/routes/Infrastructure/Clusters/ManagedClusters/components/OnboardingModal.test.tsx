@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { DOC_BASE_PATH } from '../../../../../lib/doc-util'
+import { DOC_HOME } from '../../../../../lib/doc-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { OnboardingModal } from './OnboardingModal'
 
@@ -45,7 +45,7 @@ describe('OnboardingModal open', () => {
         name: /learn more about red hat advanced cluster management for kubernetes/i,
       })
     )
-    expect(window.open).toHaveBeenCalledWith(DOC_BASE_PATH, '_blank')
+    expect(window.open).toHaveBeenCalledWith(DOC_HOME, '_blank')
   })
 })
 

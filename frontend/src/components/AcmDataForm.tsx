@@ -131,7 +131,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const isHorizontal = props.isHorizontal ?? false
   const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
   const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>()
-  const [copyHint, setCopyHint] = useState<ReactNode>(<span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>)
+  const [copyHint, setCopyHint] = useState<ReactNode>(
+    <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
+  )
 
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
@@ -181,14 +183,14 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                         <ClipboardCopyButton
                           id="copy-button"
                           textId="code-content"
-                          aria-label="Copy to clipboard"
+                          aria-label={t('Copy to clipboard')}
                           onClick={() => {
                             navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
                               <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
                             )
                             setTimeout(() => {
-                              setCopyHint(<span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>)
+                              setCopyHint(<span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>)
                             }, 800)
                           }}
                           exitDelay={600}
@@ -517,7 +519,7 @@ export function AcmDataFormWizard(props: {
 
   steps.push({
     id: 'review',
-    name: 'Review',
+    name: t('Review'),
     component: (
       <Form>
         {showFormErrors && formHasErrors(t, formData) && (
