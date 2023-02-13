@@ -88,24 +88,24 @@ function getClusterSummary(
         allAddons[curr.name].forEach(({ status }) => {
           switch (status) {
             case AddonStatus.Available:
-              prev.addons.healthy.cnt = prev.addons.healthy.cnt + 1
+              prev.addons.healthy.count = prev.addons.healthy.count + 1
               prev.addons.healthy.clusters.add(curr.name)
               break
             case AddonStatus.Degraded:
-              prev.addons.danger.cnt = prev.addons.danger.cnt + 1
+              prev.addons.danger.count = prev.addons.danger.count + 1
               prev.addons.danger.clusters.add(curr.name)
               break
             case AddonStatus.Progressing:
-              prev.addons.progress.cnt = prev.addons.progress.cnt + 1
+              prev.addons.progress.count = prev.addons.progress.count + 1
               prev.addons.progress.clusters.add(curr.name)
               break
             case AddonStatus.Disabled:
-              prev.addons.pending.cnt = prev.addons.pending.cnt + 1
+              prev.addons.pending.count = prev.addons.pending.count + 1
               prev.addons.pending.clusters.add(curr.name)
               break
             default:
-              prev.addons.Unknown.cnt = prev.addons.Unknown.cnt + 1
-              prev.addons.Unknown.clusters.add(curr.name)
+              prev.addons.unknown.count = prev.addons.unknown.count + 1
+              prev.addons.unknown.clusters.add(curr.name)
               break
           }
         })
@@ -118,11 +118,11 @@ function getClusterSummary(
       ready: 0,
       offline: 0,
       addons: {
-        healthy: { cnt: 0, clusters: new Set() },
-        danger: { cnt: 0, clusters: new Set() },
-        progress: { cnt: 0, clusters: new Set() },
-        pending: { cnt: 0, clusters: new Set() },
-        Unknown: { cnt: 0, clusters: new Set() },
+        healthy: { count: 0, clusters: new Set() },
+        danger: { count: 0, clusters: new Set() },
+        progress: { count: 0, clusters: new Set() },
+        pending: { count: 0, clusters: new Set() },
+        unknown: { count: 0, clusters: new Set() },
       },
       providerCounts: {},
       providers: [],
@@ -198,11 +198,11 @@ export default function OverviewPage() {
     ready: 0,
     offline: 0,
     addons: {
-      healthy: { cnt: 0, clusters: new Set() },
-      danger: { cnt: 0, clusters: new Set() },
-      progress: { cnt: 0, clusters: new Set() },
-      pending: { cnt: 0, clusters: new Set() },
-      Unknown: { cnt: 0, clusters: new Set() },
+      healthy: { count: 0, clusters: new Set() },
+      danger: { count: 0, clusters: new Set() },
+      progress: { count: 0, clusters: new Set() },
+      pending: { count: 0, clusters: new Set() },
+      unknown: { count: 0, clusters: new Set() },
     },
     providers: [],
   })
@@ -333,7 +333,7 @@ export default function OverviewPage() {
   }, [policyReports, selectedClusterNames, clusters])
 
   const { kubernetesTypes, regions, ready, offline, addons, providers } = summaryData
-  const { healthy, danger, progress, pending, Unknown } = addons
+  const { healthy, danger, progress, pending, unknown } = addons
   const provider = providers.find((p: any) => p.provider === selectedCloud)
   const cloudLabelFilter: string =
     selectedCloud === ''
@@ -429,7 +429,7 @@ export default function OverviewPage() {
 
   // TODO: Breaks url if length of selectedClustersFilter is too big.
   // Issue: https://github.com/open-cluster-management/backlog/issues/7087
-  function buildClusterLinks(clusterNames: Array<string> = [], related: string): string {
+  function buildClusterLinks(clusterNames: Array<string> = [], related = 'Policy'): string {
     return `${NavigationPath.search}?filters={"textsearch":"kind:Cluster${
       clusterNames.length > 0 ? `%20name:${clusterNames.join(',')}` : ''
     }"}&showrelated=${related}`
@@ -470,32 +470,32 @@ export default function OverviewPage() {
     return [
       {
         key: t('Degraded'),
-        value: danger.cnt,
+        value: danger.count,
         link: buildClusterLinks(Array.from(danger.clusters), 'ClusterManagementAddOn'),
       },
       {
         key: t('Progressing'),
-        value: progress.cnt,
+        value: progress.count,
         link: buildClusterLinks(Array.from(progress.clusters), 'ClusterManagementAddOn'),
       },
       {
         key: t('Pending'),
-        value: pending.cnt,
+        value: pending.count,
         link: buildClusterLinks(Array.from(pending.clusters), 'ClusterManagementAddOn'),
       },
       {
         key: t('Unknown'),
-        value: Unknown.cnt,
-        link: buildClusterLinks(Array.from(Unknown.clusters), 'ClusterManagementAddOn'),
+        value: unknown.count,
+        link: buildClusterLinks(Array.from(unknown.clusters), 'ClusterManagementAddOn'),
       },
       {
         key: t('Available'),
-        value: healthy.cnt,
+        value: healthy.count,
         isPrimary: true,
         link: buildClusterLinks(Array.from(healthy.clusters), 'ClusterManagementAddOn'),
       },
     ]
-  }, [healthy, danger, progress, pending, Unknown, t])
+  }, [healthy, danger, progress, pending, unknown, t])
 
   const policyReportData = useMemo(() => {
     return [
@@ -603,7 +603,7 @@ export default function OverviewPage() {
                   description={t('Overview of cluster add-ons')}
                   loading={!clusterAddonData}
                   data={clusterAddonData}
-                  colorScale={colorThemes.criticalImportantPendingSuccess}
+                  colorScale={colorThemes.criticalLowImportantUnknownSuccess}
                 />
               </AcmMasonry>
             </Stack>
