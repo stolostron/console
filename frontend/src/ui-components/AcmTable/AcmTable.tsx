@@ -1361,7 +1361,7 @@ function TableColumnFilters<T>(props: {
           onSelect={(
             _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
             selection: SelectOptionObject
-          ) => onFilterSelect(selection)}
+          ) => onFilterSelect(selection as FilterSelectOptionObject)}
           selections={Object.keys(toolbarFilterIds).reduce(
             (acc: string[], val: string) => acc.concat(toolbarFilterIds[val]),
             []
