@@ -22,7 +22,6 @@ export function useClusters(
     certificateSigningRequestsState,
     clusterClaimsState,
     clusterDeploymentsState,
-    managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
     agentClusterInstallsState,
@@ -36,7 +35,6 @@ export function useClusters(
     clusterDeployments,
     managedClusterInfos,
     certificateSigningRequests,
-    managedClusterAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
@@ -48,7 +46,6 @@ export function useClusters(
       clusterDeploymentsState,
       managedClusterInfosState,
       certificateSigningRequestsState,
-      managedClusterAddonsState,
       clusterClaimsState,
       clusterCuratorsState,
       agentClusterInstallsState,
@@ -102,7 +99,6 @@ export function useClusters(
     ])
   )
   const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
-  const groupManagedClusterAddons = managedClusterAddons.filter((mca) => clusterNames.includes(mca.metadata.namespace))
 
   const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
 
@@ -111,7 +107,6 @@ export function useClusters(
     groupManagedClusterInfos,
     certificateSigningRequests,
     groupManagedClusters,
-    groupManagedClusterAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
