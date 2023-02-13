@@ -129,6 +129,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 }}
                 style={{
                   marginBottom: '0.5em',
+                  paddingRight: '5em',
                 }}
               >
                 {t('Get started with on-premise host inventory')}
