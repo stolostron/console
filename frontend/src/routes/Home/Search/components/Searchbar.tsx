@@ -102,7 +102,12 @@ export function Searchbar(props: SearchbarProps) {
     }, [currentQuery, savedSearchLimit, savedSearchQueries])
 
     /** callback for updating the inputValue state in this component so that the input can be controlled */
-    const handleInputChange = (value: string) => {
+    const handleInputChange = (input: any) => {
+        // **Note: PatternFly change the fn signature
+        // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
+        // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
+        // both cases need to be handled for backwards compatibility
+        const value = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
         const delimiters = [' ', ':', ',']
         if (delimiters.indexOf(value) < 0) {
             // Delimiters are only used to enter chips - do not allow for entry in input
