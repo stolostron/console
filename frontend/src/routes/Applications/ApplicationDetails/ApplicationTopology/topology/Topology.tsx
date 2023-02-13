@@ -97,13 +97,11 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
   useEffect(startPolling, [startPolling])
   useEffect(() => {
-    if (data) {
-      const { items } = data[0].data.searchResult[0]
-      const clusterWithDisabledSearch = items.map((item: { name: string }) => item.name)
-      const found = clusterNames.some((r) => clusterWithDisabledSearch.includes(r))
-      if (found) {
-        setIsSearchDisabled(true)
-      }
+    const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
+    const clusterWithDisabledSearch = clustersWithSearchDisabled.map((item: { name: string }) => item.name)
+    const found = clusterNames.some((r) => clusterWithDisabledSearch.includes(r))
+    if (found) {
+      setIsSearchDisabled(true)
     }
   }, [data, clusterNames])
 
