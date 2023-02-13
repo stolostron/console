@@ -2,13 +2,12 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { Label, LabelGroup } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
 import { useMemo } from 'react'
-import { TFunction } from 'i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -1544,26 +1543,7 @@ export function FormatPolicyReportPolicies(item: any) {
   if (item.rules) {
     const policyArray = item.rules.split('; ')
     const policiesToHide = policyArray.slice(2)
-    return (
-      <LabelGroup collapsedText={`${policiesToHide.length} more`} expandedText={'Show less'} numLabels={2}>
-        {policyArray.map((policy: any, index: number) => {
-          return (
-            <Label
-              style={{ backgroundColor: '#fff', padding: '0 .25rem 0 0' }}
-              key={policy}
-              render={({ content }) => (
-                <div>
-                  {content}
-                  {index < policyArray.length - 1 && ', '}
-                </div>
-              )}
-            >
-              {policy}
-            </Label>
-          )
-        })}
-      </LabelGroup>
-    )
+    return <AcmLabels labels={policyArray} collapse={policiesToHide} />
   }
   return '-'
 }
