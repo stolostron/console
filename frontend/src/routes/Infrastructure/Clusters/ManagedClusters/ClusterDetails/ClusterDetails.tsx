@@ -92,7 +92,6 @@ export default function ClusterDetailsPage({
     clusterDeployments,
     managedClusterInfos,
     certificateSigningRequests,
-    managedClusterAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
