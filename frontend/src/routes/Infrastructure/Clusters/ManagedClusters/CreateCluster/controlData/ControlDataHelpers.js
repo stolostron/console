@@ -9,6 +9,7 @@ import {
     getURLValidator,
     getAlphanumericValidator,
     getNoProxyValidator,
+    getSourcePath,
 } from '../../../../../../components/TemplateEditor'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
@@ -325,6 +326,13 @@ export const onImageChange = (control, controlData) => {
             setActive('OpenShiftSDN')
         }
     }
+}
+export const reverseImageSet = (control, templateObject) => {
+    const active = _.get(templateObject, getSourcePath('ClusterDeployment[0].spec.provisioning.imageSetRef.name'))
+    if (active && !control.active) {
+        control.active = active.$v
+    }
+    return control
 }
 
 export const clusterDetailsControlData = (t) => {
