@@ -39,24 +39,24 @@ export function CreateCredentialsAWS() {
     const newCards: ICatalogCard[] = [
       {
         id: 'aws-standard',
-        title: t('Red Hat OpenShift'),
+        title: t('Amazon Web Services'),
         icon: <AcmIcon icon={AcmIconVariant.aws} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('AWS Credential'),
+            description: t('Red Hat OpenShift Provisioning'),
           },
         ],
         onClick: nextStep(getTypedCreateCredentialsPath(Provider.aws)),
       },
       {
         id: 'aws-bucket',
-        title: t('Hosted Cluster OIDC'),
+        title: t('S3 Bucket'),
         icon: <AcmIcon icon={AcmIconVariant.awss3} />,
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('Amazon S3'),
+            description: t('Hosted cluster OIDC and more'),
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
