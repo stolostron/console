@@ -46,10 +46,6 @@ export function CreateAWSControlPlane() {
         onClick: nextStep(NavigationPath.createAWSCLI),
         badgeList: [
           {
-            badge: t('Technology preview'),
-            badgeColor: CatalogColor.orange,
-          },
-          {
             badge: t('CLI-based'),
             badgeColor: CatalogColor.purple,
           },

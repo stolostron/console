@@ -254,6 +254,7 @@ window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?:
   const dataMap = {}
   const funcMocks: string[] = []
   let nockIgnoreRBAC = false
+  let nockIgnoreApiPaths = false
   fetches.forEach(({ method, url, reqBody, resBody }) => {
     // get if local and what pathname is
     let isLocalhost
@@ -270,38 +271,45 @@ window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?:
       reqBody
     ))
 
-    // eslint-disable-next-line prefer-const
-    ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
-      method,
-      isLocalhost,
-      isList,
-      inlineComment,
-      kind,
-      isSearch
-    ))
+    if (!url.endsWith('apiPaths')) {
+      // eslint-disable-next-line prefer-const
+      ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
+        method,
+        isLocalhost,
+        isList,
+        inlineComment,
+        kind,
+        isSearch
+      ))
 
-    nockIgnoreRBAC = getNockShotFunctions(
-      kind,
-      getNockShotName,
-      dataMap,
-      prefix,
-      reqBody,
-      resBody,
-      resource,
-      unfiltered,
-      inlineComment,
-      method,
-      isLocalhost,
-      isList,
-      funcMocks,
-      origin,
-      pathname,
-      nockIgnoreRBAC,
-      isSearch
-    )
+      nockIgnoreRBAC = getNockShotFunctions(
+        kind,
+        getNockShotName,
+        dataMap,
+        prefix,
+        reqBody,
+        resBody,
+        resource,
+        unfiltered,
+        inlineComment,
+        method,
+        isLocalhost,
+        isList,
+        funcMocks,
+        origin,
+        pathname,
+        nockIgnoreRBAC,
+        isSearch
+      )
+    } else {
+      nockIgnoreApiPaths = true
+    }
   })
   if (nockIgnoreRBAC) {
     funcMocks.unshift('    nockIgnoreRBAC()  //approve all RBAC checks')
+  }
+  if (nockIgnoreApiPaths) {
+    funcMocks.unshift('    nockIgnoreApiPaths()  //ignore /apiPaths')
   }
   return { dataMocks: dumpNockShotData(dataMap), funcMocks: funcMocks }
 }
@@ -427,7 +435,7 @@ const getResource = (url: any, reqBody: any) => {
   if (isSearch) {
     kind = 'search'
   } else {
-    if (isLocalhost) {
+    if (isLocalhost && !url.endsWith('apiPaths')) {
       url = url.split('?')[0] // strip any queries
       const [, rest] = url.split('/api') //assume they're all api calls
       const parts = rest.split('/')

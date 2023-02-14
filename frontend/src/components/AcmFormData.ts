@@ -69,6 +69,12 @@ export interface InputBase<T> {
   prompt?: { text: string; linkType: LinkType; callback: () => void }
 }
 
+export interface AlertInput extends InputBase<string> {
+  reactNode?: ReactNode
+  variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
+  type: 'Alert'
+}
+
 export interface TextInput extends InputBase<string> {
   type: 'Text'
   isSecret?: boolean
@@ -158,6 +164,7 @@ export interface FormDataOrderedInput<T = any> extends InputBase<T[]> {
 }
 
 export type Input =
+  | AlertInput
   | TextInput
   | TextNumberInput
   | TextArea

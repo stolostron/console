@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockGet } from '../../../../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../../../../lib/test-metadata'
 import { clickByText, waitForNocks, waitForTestId, waitForText } from '../../../../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
@@ -22,11 +22,12 @@ describe('HypershiftAWSCLI', () => {
   }
 
   test('should show all the steps', async () => {
+    nockIgnoreApiPaths()
     const initialNocks = [nockGet(mockOpenShiftConsoleConfigMap)]
     render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Prerequisite')
-    await waitForText('Amazon Web Services (AWS) Credentials')
+    await waitForText('Amazon Web Services (AWS) credential')
     await waitForText('Running the Hosted Control Plane command')
     // find code block
     await waitForTestId('code-content')

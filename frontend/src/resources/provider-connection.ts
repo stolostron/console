@@ -20,6 +20,11 @@ export interface ProviderConnectionStringData {
   aws_access_key_id?: string
   aws_secret_access_key?: string
 
+  // AWS S3
+  bucket?: string
+  credentials?: string
+  region?: string
+
   // Azure
   baseDomainResourceGroupName?: string
   ['osServicePrincipal.json']?: string

@@ -15,9 +15,10 @@ import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 type HostedClusterProgressProps = {
   hostedCluster: HostedClusterK8sResource
+  handleModalToggle: () => void
 }
 
-const HostedClusterProgress = ({ hostedCluster }: HostedClusterProgressProps) => {
+const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClusterProgressProps) => {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
@@ -50,7 +51,7 @@ const HostedClusterProgress = ({ hostedCluster }: HostedClusterProgressProps) =>
               />
             </StackItem>
             <StackItem className="nodepool-progress-item__body">
-              <ConditionsTable conditions={hostedCluster?.status?.conditions} />
+              <ConditionsTable conditions={hostedCluster?.status?.conditions} handleModalToggle={handleModalToggle} />
             </StackItem>
             <StackItem className="nodepool-progress-item__body">
               <AcmButton
