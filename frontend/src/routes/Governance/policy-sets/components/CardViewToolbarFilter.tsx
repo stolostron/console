@@ -57,49 +57,29 @@ export default function CardViewToolbarFilter(props: {
           {
             key: 'violation',
             label: t('With violation'),
-            filter: (policySet: PolicySet) => {
-              if (policySet.status && policySet.status.compliant) {
-                return policySet.status.compliant === 'NonCompliant'
-              }
-              return false
-            },
+            complianceValue: 'NonCompliant',
           },
           {
             key: 'no-violation',
             label: t('Without violation'),
-            filter: (policySet: PolicySet) => {
-              if (policySet.status && policySet.status.compliant) {
-                return policySet.status.compliant === 'Compliant'
-              }
-              return false
-            },
+            complianceValue: 'Compliant',
           },
           {
             key: 'pending',
             label: t('Pending'),
-            filter: (policySet: PolicySet) => {
-              if (policySet.status && policySet.status.compliant) {
-                return policySet.status.compliant === 'Pending'
-              }
-              return false
-            },
+            complianceValue: 'Pending',
           },
           {
             key: 'no-status',
             label: t('No status'),
-            filter: (policySet: PolicySet) => {
-              if (!policySet.status) {
-                return true
-              }
-              return policySet.status && policySet.status.compliant === undefined
-            },
+            complianceValue: undefined,
           },
-        ].map(({ key, label, filter }) => (
+        ].map(({ key, label, complianceValue }) => (
           <SelectOption key={key} inputId={key} value={key}>
             <div className={classes.filterOption}>
               {label}
               <Badge className={classes.filterOptionBadge} key={`${key}-count`} isRead>
-                {policySets.filter(filter).length}
+                {policySets.filter((policySet: PolicySet) => policySet?.status?.compliant === complianceValue).length}
               </Badge>
             </div>
           </SelectOption>
