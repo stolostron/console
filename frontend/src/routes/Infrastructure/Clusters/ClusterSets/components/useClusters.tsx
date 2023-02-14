@@ -107,7 +107,7 @@ export function useClusters(
   const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
 
   const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
-
+  console.log('mapClusters')
   const clusters: Cluster[] = mapClusters(
     groupClusterDeployments,
     groupManagedClusterInfos,
