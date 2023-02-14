@@ -998,13 +998,13 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-argo',
-            text: 'ApplicationSet',
+            text: t('ApplicationSet'),
             isDisabled: false,
             path: NavigationPath.createApplicationArgo,
           },
           {
             id: 'create-subscription',
-            text: 'Subscription',
+            text: t('Subscription'),
             isDisabled: false,
             path: NavigationPath.createApplicationSubscription,
           },
