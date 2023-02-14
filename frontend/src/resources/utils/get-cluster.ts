@@ -20,10 +20,11 @@ import { ManagedCluster } from '../managed-cluster'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { getLatest } from './utils'
+import { AddonStatus, getDisplayStatus } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
-import { HypershiftCloudPlatformType } from '..'
+import { ClusterManagementAddOn, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,
@@ -190,6 +191,7 @@ export type Cluster = {
   provider?: Provider
   distribution?: DistributionInfo
   acmDistribution?: ACMDistributionInfo
+  addons?: Addons
   labels?: Record<string, string>
   nodes?: Nodes
   kubeApiServer?: string
@@ -251,6 +253,14 @@ export type Nodes = {
   nodeList: NodeInfo[]
 }
 
+export type Addons = {
+  available: number
+  progressing: number
+  degraded: number
+  unknown: number
+  addonList: ManagedClusterAddOn[]
+}
+
 export type UpgradeInfo = {
   isUpgrading: boolean
   isReadyUpdates: boolean
@@ -291,6 +301,8 @@ export function mapClusters(
   managedClusterInfos: ManagedClusterInfo[] = [],
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
+  managedClusterAddOns: ManagedClusterAddOn[] = [],
+  clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
   agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
@@ -312,6 +324,7 @@ export function mapClusters(
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
     const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+    const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstalls.find(
@@ -325,6 +338,8 @@ export function mapClusters(
       clusterDeployment,
       certificateSigningRequests,
       managedCluster,
+      addons,
+      clusterManagementAddOn,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -340,6 +355,8 @@ export function getCluster(
   clusterDeployment: ClusterDeployment | undefined,
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
+  managedClusterAddOns: ManagedClusterAddOn[],
+  clusterManagementAddOns: ClusterManagementAddOn[],
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -405,6 +422,7 @@ export function getCluster(
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
     acmDistribution: acmDistributionInfo,
     acmConsoleURL: getACMConsoleURL(acmDistributionInfo.version, consoleURL),
+    addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
@@ -928,6 +946,36 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
     }
   })
   return { nodeList, ready, unhealthy, unknown }
+}
+
+export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: ClusterManagementAddOn[]) {
+  let available = 0
+  let progressing = 0
+  let degraded = 0
+  let unknown = 0
+
+  clusterManagementAddons?.forEach((cma) => {
+    const addonStatus = getDisplayStatus(cma, addons)
+    switch (addonStatus) {
+      case AddonStatus.Available:
+        available++
+        break
+      case AddonStatus.Progressing:
+        progressing++
+        break
+      case AddonStatus.Degraded:
+        degraded++
+        break
+      case AddonStatus.Unknown:
+        unknown++
+        break
+      case AddonStatus.Disabled:
+      default:
+        break
+    }
+  })
+
+  return { addonList: addons, available, progressing, degraded, unknown }
 }
 
 export function getClusterStatus(
