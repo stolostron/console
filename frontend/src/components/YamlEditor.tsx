@@ -42,7 +42,7 @@ export default function YAMLEditor(props: {
         if (process.env.NODE_ENV === 'test') return
         /* istanbul ignore if */
         if (resourceYAML && defaultScrollToLine) {
-            editorRef.current?.revealLineNearTop(defaultScrollToLine)
+            editorRef.current?.setSelection(new monaco.Range(0, 0, 0, 0))
         }
     }, [resourceYAML, defaultScrollToLine])
 
@@ -71,7 +71,7 @@ export default function YAMLEditor(props: {
                     .run()
                     .then(() => {
                         if (defaultScrollToLine) {
-                            editorRef.current?.revealLineNearTop(defaultScrollToLine)
+                            editorRef.current?.setSelection(new monaco.Range(0, 0, 0, 0))
                         } else {
                             editorRef.current?.setScrollTop(Math.abs(top ?? 0))
                         }
