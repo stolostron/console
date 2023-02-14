@@ -1313,7 +1313,6 @@
     "Failed to get job names from Ansible": "Failed to get job names from Ansible",
     "False": "False",
     "Filter": "Filter",
-    "Filter select error: Incorrect selection type": "Filter select error: Incorrect selection type",
     "Filters": "Filters",
     "Find": "Find",
     "Find by name": "Find by name",
