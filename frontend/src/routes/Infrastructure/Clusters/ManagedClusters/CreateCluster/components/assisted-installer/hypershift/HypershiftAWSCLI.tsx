@@ -57,7 +57,7 @@ hypershift create cluster aws
         <ClipboardCopyButton
           id={`${id}-copy`}
           textId={id}
-          aria-label="Copy to clipboard"
+          aria-label={t('Copy to clipboard')}
           onClick={() => onClick(code)}
           exitDelay={copied ? 1500 : 600}
           maxWidth="110px"

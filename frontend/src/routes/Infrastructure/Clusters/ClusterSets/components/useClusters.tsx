@@ -105,7 +105,6 @@ export function useClusters(
     ])
   )
   const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
-  const groupManagedClusterAddons = managedClusterAddons.filter((mca) => clusterNames.includes(mca.metadata.namespace))
 
   const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
 
@@ -114,7 +113,7 @@ export function useClusters(
     groupManagedClusterInfos,
     certificateSigningRequests,
     groupManagedClusters,
-    groupManagedClusterAddons,
+    managedClusterAddons,
     clusterManagementAddons,
     clusterClaims,
     clusterCurators,

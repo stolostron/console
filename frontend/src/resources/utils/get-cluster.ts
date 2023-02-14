@@ -17,7 +17,6 @@ import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator } from '../cluster-curator'
 import { ClusterDeployment } from '../cluster-deployment'
 import { ManagedCluster } from '../managed-cluster'
-import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { AddonStatus, getDisplayStatus } from './get-addons'
@@ -25,7 +24,7 @@ import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
-import { ClusterManagementAddOn, HypershiftCloudPlatformType } from '..'
+import { ClusterManagementAddOn, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,
@@ -323,9 +322,9 @@ export function mapClusters(
     const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
     const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
-    const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
     const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+    const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstalls.find(
@@ -370,7 +369,6 @@ export function getCluster(
     managedClusterInfo,
     certificateSigningRequests,
     managedCluster,
-    managedClusterAddOns,
     clusterCurator,
     agentClusterInstall,
     clusterClaim,
@@ -992,7 +990,6 @@ export function getClusterStatus(
   managedClusterInfo: ManagedClusterInfo | undefined,
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
-  managedClusterAddOns: ManagedClusterAddOn[],
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
   clusterClaim: ClusterClaim | undefined,
@@ -1253,10 +1250,7 @@ export function getClusterStatus(
     }
   } else {
     if (clusterAvailable) {
-      const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
-        checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
-      )
-      mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
+      mcStatus = ClusterStatus.ready
     } else {
       const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
       const managedClusterAvailableConditionMessage = mcConditions.find(
