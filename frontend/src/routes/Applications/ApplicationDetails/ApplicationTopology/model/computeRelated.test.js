@@ -3788,7 +3788,7 @@ describe('addDiagramDetails', () => {
                         },
                     },
                     subscriptionModel: {
-                        'feng-bz-subscription-1-local-cluster': [
+                        'feng-bz-subscription-1-local-cluster-feng-bz': [
                             {
                                 _gitbranch: 'master',
                                 _gitpath: 'resources17',
@@ -3810,7 +3810,7 @@ describe('addDiagramDetails', () => {
                                 timeWindow: 'none',
                             },
                         ],
-                        'feng-bz-subscription-1-local-local-cluster': [
+                        'feng-bz-subscription-1-local-local-cluster-feng-bz': [
                             {
                                 _gitbranch: 'master',
                                 _gitpath: 'resources17',
