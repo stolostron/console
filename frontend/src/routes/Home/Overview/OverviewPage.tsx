@@ -498,39 +498,32 @@ export default function OverviewPage() {
   }, [healthy, danger, progress, pending, unknown, t])
 
   const policyReportData = useMemo(() => {
+    const getLink = (type: any, count: number) => {
+      return `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20${type}%3A${
+        count > 0 ? '>' : '='
+      }0"}`
+    }
     return [
       {
         key: t('Critical'),
         value: policyReportCriticalCount,
         isPrimary: true,
-        link:
-          policyReportCriticalCount > 0
-            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20critical%3A>0"}`
-            : undefined,
+        link: getLink('critical', policyReportCriticalCount),
       },
       {
         key: t('Important'),
         value: policyReportImportantCount,
-        link:
-          policyReportImportantCount > 0
-            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20important%3A>0"}`
-            : undefined,
+        link: getLink('important', policyReportImportantCount),
       },
       {
         key: t('Moderate'),
         value: policyReportModerateCount,
-        link:
-          policyReportModerateCount > 0
-            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20moderate%3A>0"}`
-            : undefined,
+        link: getLink('moderate', policyReportModerateCount),
       },
       {
         key: t('Low'),
         value: policyReportLowCount,
-        link:
-          policyReportLowCount > 0
-            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20low%3A>0"}`
-            : undefined,
+        link: getLink('low', policyReportLowCount),
       },
     ]
   }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
