@@ -423,9 +423,12 @@ export const addResourceToModel = (resourceMapObject, kind, relatedKind, nameWit
     resourceType === 'project'
       ? _.get(resourceMapObject, `specs.projectModel`, {})
       : _.get(resourceMapObject, `specs.${kind.toLowerCase()}Model`, {})
-  const kindList = kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] || []
+  const modelKey = relatedKind.namespace
+    ? `${nameWithoutChartRelease}-${relatedKind.cluster}-${relatedKind.namespace}`
+    : `${nameWithoutChartRelease}-${relatedKind.cluster}`
+  const kindList = kindModel[modelKey] || []
   kindList.push(relatedKind)
-  kindModel[`${nameWithoutChartRelease}-${relatedKind.cluster}`] = kindList
+  kindModel[modelKey] = kindList
   _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind.toLowerCase()}Model`, kindModel)
 }
 
@@ -600,10 +603,14 @@ export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) 
 //generic function to write location info
 export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction, t) => {
   const resourceName = _.get(node, 'name', '')
+  const resourceNamespace = _.get(node, 'namespace')
   const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
   const locationDetails = []
-  const resourcesForCluster = resourceMap[`${resourceName}-${clusterName}`] || []
+  const modelKey = resourceNamespace
+    ? `${resourceName}-${clusterName}-${resourceNamespace}`
+    : `${resourceName}-${clusterName}`
+  const resourcesForCluster = resourceMap[modelKey] || []
   const typeObject = _.find(resourcesForCluster, (obj) => _.get(obj, 'namespace', '') === targetNS)
   if (typeObject) {
     getDetailsFunction(node, typeObject, locationDetails, t, clusterName)

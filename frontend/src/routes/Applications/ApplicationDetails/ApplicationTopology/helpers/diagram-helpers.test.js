@@ -1233,7 +1233,7 @@ describe('addNodeServiceLocation 1', () => {
     id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-service--service--mortgage-app-deploy',
     specs: {
       serviceModel: {
-        'mortgage-app-deploy-possiblereptile': [
+        'mortgage-app-deploy-possiblereptile-default': [
           {
             namespace: 'default',
             clusterIP: '1.1',
