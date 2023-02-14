@@ -15,6 +15,7 @@ import {
     onChangeSNO,
     onImageChange,
     proxyControlData,
+    reverseImageSet,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import {
     getAlphanumericValidator,
@@ -834,6 +835,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
                 required: true,
             },
             onSelect: onImageChange,
+            reverse: reverseImageSet,
         },
         //Always Hidden
         {

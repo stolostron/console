@@ -17,6 +17,7 @@ import {
     onChangeSNO,
     onImageChange,
     proxyControlData,
+    reverseImageSet,
 } from './ControlDataHelpers'
 import { getAlphanumericValidator, getNumericValidator } from '../../../../../../components/TemplateEditor'
 
@@ -509,6 +510,7 @@ export const getControlDataAZR = (
                 required: true,
             },
             onSelect: onImageChange,
+            reverse: reverseImageSet,
         },
         //Always Hidden
         {

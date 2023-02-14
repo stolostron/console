@@ -18,6 +18,7 @@ import {
     architectureData,
     insertToggleModalFunction,
     onImageChange,
+    reverseImageSet,
 } from '../../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
@@ -310,6 +311,7 @@ export const getControlDataGCP = (t, handleModalToggle, includeAutomation = true
                 required: true,
             },
             onSelect: onImageChange,
+            reverse: reverseImageSet,
         },
         //Always Hidden
         {
