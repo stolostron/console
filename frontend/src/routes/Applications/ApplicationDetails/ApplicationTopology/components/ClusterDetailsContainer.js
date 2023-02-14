@@ -344,15 +344,16 @@ class ClusterDetailsContainer extends Component {
 
     mapClusterStatusToIcon = (status) => {
         let icon = 'checkmark'
-
+        const notReadyStatus = ['resuming', 'creating', 'stopping', 'unknown']
+        debugger
         if (status.toLowerCase() === 'pendingimport' || status.toLowerCase() === 'detaching') {
             icon = 'pending'
-        } else if (status.toLowerCase() === 'notaccepted') {
+        } else if (status.toLowerCase() === 'notaccepted' || notReadyStatus.includes(status.toLowerCase())) {
             icon = 'warning'
         } else if (status.toLowerCase() === 'offline') {
             icon = 'failure'
         }
-
+        
         return icon
     }
 
