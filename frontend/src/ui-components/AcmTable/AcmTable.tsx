@@ -1310,10 +1310,6 @@ function TableColumnFilters<T>(props: {
               key={key}
               inputId={key}
               value={createFilterSelectOptionObject(filter.filter.id, option.option.value)}
-              isChecked={
-                /* istanbul ignore next */
-                toolbarFilterIds[filter.filter.id]?.indexOf(option.option.value) > -1 ?? false
-              }
             >
               <div className={classes.filterOption}>
                 {option.option.label}
@@ -1328,6 +1324,14 @@ function TableColumnFilters<T>(props: {
     ))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, items, toolbarFilterIds])
+
+  const selections = useMemo(() => {
+    return Object.keys(toolbarFilterIds).reduce(
+      (acc: FilterSelectOptionObject[], filterId: string) =>
+        acc.concat(toolbarFilterIds[filterId].map((value) => createFilterSelectOptionObject(filterId, value))),
+      []
+    )
+  }, [toolbarFilterIds])
 
   return (
     <ToolbarItem>
@@ -1362,11 +1366,9 @@ function TableColumnFilters<T>(props: {
             _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
             selection: SelectOptionObject
           ) => onFilterSelect(selection as FilterSelectOptionObject)}
-          selections={Object.keys(toolbarFilterIds).reduce(
-            (acc: string[], val: string) => acc.concat(toolbarFilterIds[val]),
-            []
-          )}
+          selections={selections}
           isOpen={isOpen}
+          isGrouped
           placeholderText={
             <div>
               <FilterIcon className={classes.filterLabelMargin} />
