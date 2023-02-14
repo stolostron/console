@@ -21,6 +21,7 @@ import {
     appendKlusterletAddonConfig,
     insertToggleModalFunction,
     onImageChange,
+    reverseImageSet,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -81,6 +82,7 @@ export const getControlDataOST = (
                 required: true,
             },
             onSelect: onImageChange,
+            reverse: reverseImageSet,
         },
         //Always Hidden
         {

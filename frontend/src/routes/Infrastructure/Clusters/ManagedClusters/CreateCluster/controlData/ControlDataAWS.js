@@ -17,6 +17,7 @@ import {
     onImageChange,
     proxyControlData,
     disabledForFirstInGroup,
+    reverseImageSet,
 } from './ControlDataHelpers'
 import {
     getAlphanumericValidator,
@@ -848,6 +849,7 @@ export const getControlDataAWS = (
                 required: true,
             },
             onSelect: onImageChange,
+            reverse: reverseImageSet,
         },
         //Always Hidden
         {
