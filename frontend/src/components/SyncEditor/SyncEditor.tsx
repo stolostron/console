@@ -481,9 +481,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
             // undo/redo enable
             const model = editorRef.current?.getModel()
-            const editStacks = model?._undoRedoService._editStacks
-            setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
-            setHasUndo(editStacks?.values()?.next()?.value?.hasPastElements())
+            setHasRedo(model['_commandManager'].future.length > 0)
+            setHasUndo(model['_commandManager'].past.length > 0)
         }
     }
 
