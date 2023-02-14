@@ -78,6 +78,13 @@ export function EditPolicyAutomation() {
       editMode={EditMode.Edit}
       policy={currentPolicy ?? {}}
       yamlEditor={getWizardSyncEditor}
+      breadcrumb={[
+        { label: t('Policies'), to: '.' },
+        {
+          label: params?.name ?? '',
+          to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
+        },
+      ]}
       credentials={credentials}
       createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
       resource={currentPolicyAutomation}

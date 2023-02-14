@@ -90,6 +90,7 @@ export function CreateApplicationArgo() {
       namespaces={availableNamespace}
       applicationSets={applicationSets}
       placements={placements}
+      breadcrumb={[{ label: t('Applications'), to: '.' }, { label: t('Create ApplicationSet') }]}
       clusters={managedClusters}
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}

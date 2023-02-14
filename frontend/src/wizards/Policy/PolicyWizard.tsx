@@ -58,6 +58,7 @@ export function PolicyWizard(props: {
   resources?: IResource[]
   defaultPlacementKind?: 'Placement' | 'PlacementRule'
   yamlEditor?: () => ReactNode
+  breadcrumb?: { label: string; to?: string }[]
   gitSource?: string
   onSubmit: WizardSubmit
   onCancel: WizardCancel
@@ -77,6 +78,7 @@ export function PolicyWizard(props: {
       )}
       yamlEditor={props.yamlEditor}
       onSubmit={props.onSubmit}
+      breadcrumb={props.breadcrumb}
       onCancel={props.onCancel}
       editMode={props.editMode}
       defaultData={

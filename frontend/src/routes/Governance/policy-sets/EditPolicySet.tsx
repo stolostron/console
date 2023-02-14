@@ -38,7 +38,8 @@ function getWizardSyncEditor() {
 export function EditPolicySet() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name?: string } = useParams()
+  const params = useParams<{ namespace: string; name: string }>()
+  const { name } = params
   const history = useHistory()
   const {
     managedClusterSetBindingsState,
@@ -87,6 +88,7 @@ export function EditPolicySet() {
       clusters={managedClusters}
       placements={placements}
       namespaces={namespaceNames}
+      breadcrumb={[{ label: t('Policy sets'), to: NavigationPath.policySets }, { label: name }]}
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}

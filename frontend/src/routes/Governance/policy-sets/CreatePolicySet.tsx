@@ -59,6 +59,7 @@ export function CreatePolicySet() {
       policies={policies}
       clusters={managedClusters}
       placements={placements}
+      breadcrumb={[{ label: t('Policy sets'), to: '.' }, { label: t('Create policy set') }]}
       namespaces={namespaceNames}
       placementRules={placementRules}
       yamlEditor={getWizardSyncEditor}

@@ -73,6 +73,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
+      breadcrumb={[{ label: t('Policies'), to: '.' }, { label: t('Create policy') }]}
       onCancel={() => history.push(NavigationPath.policies)}
       onSubmit={(data) => {
         const resources = data as IResource[]
