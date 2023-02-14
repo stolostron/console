@@ -352,7 +352,6 @@ class ClusterDetailsContainer extends Component {
         } else if (status.toLowerCase() === 'offline') {
             icon = 'failure'
         }
-        
         return icon
     }
 
