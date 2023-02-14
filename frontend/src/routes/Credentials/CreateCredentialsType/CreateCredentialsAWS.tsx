@@ -7,31 +7,39 @@ import {
   ItemView,
   PageHeader,
 } from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { listMultiClusterEngines } from '../../../resources'
 import { AcmIcon, AcmIconVariant, AcmPage, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
-  const { customResourceDefinitionsState, managedClusterAddonsState } = useSharedAtoms()
-  const [crds] = useRecoilState(customResourceDefinitionsState)
-  const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
-  const hypershiftAddon = managedClusterAddOns.find(
-    (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
-  )
 
-  const isHypershiftEnabled =
-    crds.some(({ metadata }) => metadata.name === 'hostedclusters.hypershift.openshift.io') && hypershiftAddon
+  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
+  useEffect(() => {
+    const getHypershiftStatus = async () => {
+      try {
+        const [multiClusterEngine] = await listMultiClusterEngines().promise
+        const components = multiClusterEngine.spec?.overrides.components
+        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
+        const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
+        setIsHypershiftEnabled((hypershiftLocalHosting?.enabled && hypershiftPreview?.enabled) as boolean)
+      } catch {
+        // nothing to do
+      }
+    }
+    getHypershiftStatus()
+  }, [])
+
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
       {
         id: 'aws-standard',
-        title: t('Openshift'),
+        title: t('Red Hat OpenShift'),
         icon: <AcmIcon icon={AcmIconVariant.aws} />,
         items: [
           {
@@ -54,7 +62,7 @@ export function CreateCredentialsAWS() {
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
         alertTitle: isHypershiftEnabled
           ? undefined
-          : t('Hosted control plane operator and hypershift add-on must be enabled in order to continue'),
+          : t('Hosted control plane operator must be enabled in order to continue'),
         alertVariant: 'info',
         alertContent: (
           <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noopener noreferrer">

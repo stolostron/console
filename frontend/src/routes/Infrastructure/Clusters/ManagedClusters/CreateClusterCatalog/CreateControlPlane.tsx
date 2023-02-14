@@ -2,7 +2,6 @@
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
-  CatalogColor,
   getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
@@ -10,21 +9,33 @@ import {
   PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { listMultiClusterEngines } from '../../../../../resources'
 import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
-  const { customResourceDefinitionsState } = useSharedAtoms()
-  const [crds] = useRecoilState(customResourceDefinitionsState)
 
-  const isHypershiftEnabled = crds.some(({ metadata }) => metadata.name === 'hostedclusters.hypershift.openshift.io')
+  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
+  useEffect(() => {
+    const getHypershiftStatus = async () => {
+      try {
+        const [multiClusterEngine] = await listMultiClusterEngines().promise
+        const components = multiClusterEngine.spec?.overrides.components
+        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
+        const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
+        setIsHypershiftEnabled((hypershiftLocalHosting?.enabled && hypershiftPreview?.enabled) as boolean)
+      } catch {
+        // nothing to do
+      }
+    }
+    getHypershiftStatus()
+  }, [])
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
@@ -62,8 +73,6 @@ export function CreateControlPlane() {
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
         ),
-        badge: t('Technology preview'),
-        badgeColor: CatalogColor.orange,
       },
       {
         id: 'standalone',
