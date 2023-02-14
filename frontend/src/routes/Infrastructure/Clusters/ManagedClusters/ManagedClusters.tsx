@@ -203,6 +203,7 @@ export function ClustersTable(props: {
   const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn()
   const clusterNodesColumn = useClusterNodesColumn()
+  const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
 
   const modalColumns = useMemo(
@@ -220,6 +221,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
       {
         header: '',
@@ -238,6 +240,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
     ]
   )
@@ -625,6 +628,27 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
           healthy={cluster.nodes!.ready}
           danger={cluster.nodes!.unhealthy}
           unknown={cluster.nodes!.unknown}
+        />
+      ) : (
+        '-'
+      )
+    },
+  }
+}
+
+export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  return {
+    header: t('Add-ons'),
+    sort: 'addons',
+    cell: (cluster) => {
+      return cluster.addons!.addonList.length > 0 ? (
+        <AcmInlineStatusGroup
+          healthy={cluster.addons!.available}
+          danger={cluster.addons!.degraded}
+          progress={cluster.addons!.progressing}
+          unknown={cluster.addons!.unknown}
+          groupId="add-ons"
         />
       ) : (
         '-'

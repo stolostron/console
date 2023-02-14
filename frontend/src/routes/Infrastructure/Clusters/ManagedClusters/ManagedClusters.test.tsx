@@ -8,7 +8,9 @@ import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
+  clusterManagementAddonsState,
   hostedClustersState,
+  managedClusterAddonsState,
   managedClusterInfosState,
   managedClustersState,
 } from '../../../../atoms'
@@ -25,6 +27,7 @@ import {
   waitForNock,
   waitForNocks,
   waitForNotText,
+  waitForTestId,
   waitForText,
 } from '../../../../lib/test-util'
 import {
@@ -34,9 +37,15 @@ import {
   ClusterDeployment,
   ClusterDeploymentApiVersion,
   ClusterDeploymentKind,
+  ClusterManagementAddOn,
+  ClusterManagementAddOnApiVersion,
+  ClusterManagementAddOnKind,
   HostedClusterApiVersion,
   HostedClusterKind,
   ManagedCluster,
+  ManagedClusterAddOn,
+  ManagedClusterAddOnApiVersion,
+  ManagedClusterAddOnKind,
   ManagedClusterApiVersion,
   ManagedClusterDefinition,
   ManagedClusterInfo,
@@ -401,6 +410,55 @@ const mockHostedCluster1: HostedClusterK8sResource = {
   },
 }
 
+const mockManagedClusterAddon: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'application-manager',
+    namespace: 'managed-cluster-1',
+  },
+  spec: {
+    installNamespace: 'open-cluster-management-agent-addon',
+  },
+  status: {
+    conditions: [
+      {
+        lastTransitionTime: undefined,
+        message: 'application-manager add-on is available.',
+        reason: 'ManagedClusterAddOnLeaseUpdated',
+        status: 'True',
+        type: 'Available',
+      },
+    ],
+    addOnMeta: {
+      displayName: '',
+      description: '',
+    },
+    addOnConfiguration: {
+      crdName: '',
+      crName: '',
+    },
+  },
+}
+
+const mockClusterManagementAddon: ClusterManagementAddOn = {
+  apiVersion: ClusterManagementAddOnApiVersion,
+  kind: ClusterManagementAddOnKind,
+  metadata: {
+    name: 'application-manager',
+  },
+  spec: {
+    addOnMeta: {
+      displayName: 'Application Manager',
+      description: 'Synchronizes application on the managed clusters from the hub',
+    },
+    addOnConfiguration: {
+      crdName: '',
+      crName: '',
+    },
+  },
+}
+
 const mockHostedClusters: HostedClusterK8sResource[] = [mockHostedCluster0, mockHostedCluster1]
 
 function getClusterCuratorCreateResourceAttributes(name: string) {
@@ -431,6 +489,8 @@ describe('Clusters Page', () => {
           snapshot.set(clusterDeploymentsState, mockClusterDeployments)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddon])
+          snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
         }}
       >
         <MemoryRouter>
@@ -439,6 +499,11 @@ describe('Clusters Page', () => {
       </RecoilRoot>
     )
     await waitForText(mockManagedCluster0.metadata.name!, true)
+  })
+
+  test('should render node column', () => {
+    waitForText('Add-ons')
+    waitForTestId('add-ons')
   })
 
   test('should be able to delete cluster using row action', async () => {
