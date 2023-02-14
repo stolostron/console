@@ -121,34 +121,39 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 paddingBottom: '10px',
               }}
             >
-              <Link
-                key="gettingstarted"
-                to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}
-                onClick={() => {
-                  props.close()
-                }}
-                style={{
-                  marginBottom: '0.5em',
-                  paddingRight: '5em',
-                }}
-              >
-                {t('Get started with on-premise host inventory')}
-              </Link>
-              <AcmButton
-                variant="link"
-                icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
-                iconPosition="right"
-                isInline
-                onClick={() =>
-                  !isACMAvailable
-                    ? launchToOCP(
-                        'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-                      )
-                    : window.open(DOC_HOME, '_blank')
-                }
-              >
-                {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
-              </AcmButton>
+              <ul style={{ padding: 0, listStyleType: 'none' }}>
+                <li>
+                  <Link
+                    key="gettingstarted"
+                    to={`${NavigationPath.managedClusters}?quickstart=host-inventory`}
+                    onClick={() => {
+                      props.close()
+                    }}
+                    style={{
+                      marginBottom: '0.5em',
+                    }}
+                  >
+                    {t('Get started with on-premise host inventory')}
+                  </Link>
+                </li>
+                <li>
+                  <AcmButton
+                    variant="link"
+                    icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                    iconPosition="right"
+                    isInline
+                    onClick={() =>
+                      !isACMAvailable
+                        ? launchToOCP(
+                            'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                          )
+                        : window.open(DOC_HOME, '_blank')
+                    }
+                  >
+                    {t('Learn more about Red Hat Advanced Cluster Management for Kubernetes')}
+                  </AcmButton>
+                </li>
+              </ul>
             </AcmExpandableSection>
           </div>
         </GridItem>
