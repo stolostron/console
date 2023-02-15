@@ -191,18 +191,16 @@ Array [
   Object {
     "available": Array [
       "amd64",
+      "arm64",
+      "s390x",
+      "ppc641e",
     ],
     "cacheUserValueKey": "create.cluster.architecture",
     "id": "architecture",
     "name": "CPU architecture",
     "placeholder": "Enter CPU architecture",
     "tooltip": "Determines the CPU instruction set architecture of the machines in the pool. Only set this value when the architecture of the managed cluster is different from the architecture of the hub.",
-    "type": "combobox",
-    "validation": Object {
-      "notification": "Value must be alphanumeric.",
-      "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
-    },
+    "type": "singleselect",
   },
   Object {
     "controlData": Array [
@@ -1269,18 +1267,16 @@ Array [
   Object {
     "available": Array [
       "amd64",
+      "arm64",
+      "s390x",
+      "ppc641e",
     ],
     "cacheUserValueKey": "create.cluster.architecture",
     "id": "architecture",
     "name": "CPU architecture",
     "placeholder": "Enter CPU architecture",
     "tooltip": "Determines the CPU instruction set architecture of the machines in the pool. Only set this value when the architecture of the managed cluster is different from the architecture of the hub.",
-    "type": "combobox",
-    "validation": Object {
-      "notification": "Value must be alphanumeric.",
-      "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
-    },
+    "type": "singleselect",
   },
   Object {
     "controlData": Array [
@@ -2372,18 +2368,16 @@ Array [
   Object {
     "available": Array [
       "amd64",
+      "arm64",
+      "s390x",
+      "ppc641e",
     ],
     "cacheUserValueKey": "create.cluster.architecture",
     "id": "architecture",
     "name": "CPU architecture",
     "placeholder": "Enter CPU architecture",
     "tooltip": "Determines the CPU instruction set architecture of the machines in the pool. Only set this value when the architecture of the managed cluster is different from the architecture of the hub.",
-    "type": "combobox",
-    "validation": Object {
-      "notification": "Value must be alphanumeric.",
-      "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
-    },
+    "type": "singleselect",
   },
   Object {
     "controlData": Array [
@@ -3357,18 +3351,16 @@ Array [
   Object {
     "available": Array [
       "amd64",
+      "arm64",
+      "s390x",
+      "ppc641e",
     ],
     "cacheUserValueKey": "create.cluster.architecture",
     "id": "architecture",
     "name": "CPU architecture",
     "placeholder": "Enter CPU architecture",
     "tooltip": "Determines the CPU instruction set architecture of the machines in the pool. Only set this value when the architecture of the managed cluster is different from the architecture of the hub.",
-    "type": "combobox",
-    "validation": Object {
-      "notification": "Value must be alphanumeric.",
-      "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
-    },
+    "type": "singleselect",
   },
   Object {
     "controlData": Array [
