@@ -451,6 +451,7 @@ export function ClustersTable(props: {
                 return false
             }
           }
+          return false
         },
       },
       {
@@ -479,6 +480,7 @@ export function ClustersTable(props: {
                 return false
             }
           }
+          return false
         },
       },
     ]
