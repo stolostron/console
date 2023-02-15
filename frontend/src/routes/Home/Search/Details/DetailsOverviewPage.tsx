@@ -20,7 +20,7 @@ import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, useHistory } from 'react-router-dom'
 import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { IResource, OwnerReference } from '../../../../resources'
@@ -350,12 +350,7 @@ export default function DetailsOverviewPage(props: {
         <PageSection variant={'light'}>
           <Stack hasGutter>
             <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
-              <Trans
-                i18nKey="search.resource.details"
-                values={{
-                  resource: resource.kind,
-                }}
-              />
+              {t('search.resource.details', { resource: resource.kind })}
             </Text>
             <DescriptionList
               columnModifier={{
