@@ -15,13 +15,18 @@ type HypershiftClusterInstallProgressProps = {
   hostedCluster: HostedClusterK8sResource
   nodePools: NodePoolK8sResource[]
   clusterImages: ClusterImageSetK8sResource[]
+  handleModalToggle: () => void
 }
 
 export const NodePoolTableWidthContext = createContext(1024)
 
 const percentWidth = 0.9
 
-const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
+const HypershiftClusterInstallProgress = ({
+  hostedCluster,
+  handleModalToggle,
+  ...rest
+}: HypershiftClusterInstallProgressProps) => {
   const [width, setWidth] = useState<number>(1024)
 
   const nodePoolTableWidthRef = useRef<HTMLDivElement>(null)
@@ -50,7 +55,7 @@ const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: Hypershift
       <div id="hypershift-cluster-install-progress" ref={nodePoolTableWidthRef}>
         <StackItem>
           <ProgressStepper isVertical>
-            <HostedClusterProgress hostedCluster={hostedCluster} />
+            <HostedClusterProgress hostedCluster={hostedCluster} handleModalToggle={handleModalToggle} />
           </ProgressStepper>
           <ProgressStepper isVertical>
             <NodePoolTableWidthContext.Provider value={width}>

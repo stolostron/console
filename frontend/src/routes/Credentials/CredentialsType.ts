@@ -4,6 +4,7 @@ import { Provider } from '../../ui-components'
 const credentialsTypes = [
   Provider.ansible,
   Provider.aws,
+  Provider.awss3,
   Provider.azure,
   Provider.gcp,
   Provider.hostinventory,

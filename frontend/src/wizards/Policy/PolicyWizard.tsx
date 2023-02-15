@@ -198,6 +198,7 @@ export function PolicyWizard(props: {
                 labelHelp={t(
                   'The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).'
                 )}
+                placeholder={t('Add')}
               />
               <StringsMapInput
                 id="categories"
@@ -210,6 +211,7 @@ export function PolicyWizard(props: {
                 labelHelp={t(
                   'A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards.'
                 )}
+                placeholder={t('Add')}
               />
               <StringsMapInput
                 id="controls"
@@ -222,6 +224,7 @@ export function PolicyWizard(props: {
                 labelHelp={t(
                   'The name of the security control that is being checked. For example, the certificate policy controller.'
                 )}
+                placeholder={t('Add')}
               />
             </Section>
           </WizItemSelector>

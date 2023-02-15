@@ -7,6 +7,8 @@ import { clickByText, waitForText } from '../../../../../lib/test-util'
 import HostedClusterProgress from './HostedClusterProgress'
 import { RecoilRoot } from 'recoil'
 
+const handleModalToggle = () => {}
+
 const hostedCluster: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
   kind: 'HostedCluster',
@@ -214,7 +216,7 @@ describe('HostedClusterProgress', () => {
     nockIgnoreRBAC()
     render(
       <RecoilRoot>
-        <HostedClusterProgress hostedCluster={hostedCluster} />
+        <HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster} />
       </RecoilRoot>
     )
   })
@@ -229,7 +231,7 @@ describe('HostedClusterProgress click launchToOCP link', () => {
     nockIgnoreRBAC()
     render(
       <RecoilRoot>
-        <HostedClusterProgress hostedCluster={hostedCluster2} />
+        <HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster2} />
       </RecoilRoot>
     )
   })
