@@ -23,6 +23,7 @@
   "{{name}} was successfully created.": "{{name}} was successfully created.",
   "{{name}} was successfully updated.": "{{name}} was successfully updated.",
   "{{names}} were successfully synced.": "{{names}} were successfully synced.",
+  "{{remaining}} more": "{{remaining}} more",
   "{{remoteCount}} Remote": "{{remoteCount}} Remote",
   "{{remoteCount}} Remote, 1 Local": "{{remoteCount}} Remote, 1 Local",
   "< Back to all {{resourceType}} resources": "< Back to all {{resourceType}} resources",
