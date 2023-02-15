@@ -35,6 +35,8 @@ describe('PolicyAutomationWizard tests', () => {
   test('create policy automation', async () => {
     const { container } = render(<Component {...props} />)
 
+    await waitFor(() => expect(screen.getByText(/select the ansible credential/i)).toBeInTheDocument())
+
     userEvent.click(
       screen.getByRole('button', {
         name: /options menu/i,

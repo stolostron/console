@@ -2150,6 +2150,7 @@
   "Select pod": "Select pod",
   "Select region": "Select region",
   "Select severity": "Select severity",
+  "Select the Ansible credential": "Select the Ansible credential",
   "Select the Argo server": "Select the Argo server",
   "Select the cluster sets": "Select the cluster sets",
   "Select the existing placement": "Select the existing placement",

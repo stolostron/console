@@ -103,7 +103,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
         }
       }
     >
-      <Step label="Automation" id="automation-step">
+      <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint
           component="alert"
           workflowSupportRequired={
@@ -122,6 +122,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
             id="secret"
             label={t('Ansible credential')}
             path="spec.automationDef.secret"
+            placeholder={t('Select the Ansible credential')}
             options={ansibleCredentialNames}
             onValueChange={(value, item) => {
               if ((item as IPolicyAutomation).spec?.automationDef?.name) {
