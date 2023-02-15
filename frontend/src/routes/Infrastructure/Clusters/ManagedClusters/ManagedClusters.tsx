@@ -30,12 +30,14 @@ import { canUser } from '../../../../lib/rbac-util'
 import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
   addonPathKey,
+  AddonStatus,
   addonTextKey,
   Cluster,
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterStatus,
+  getAddonStatusLabel,
   getClusterStatusLabel,
   ManagedClusterDefinition,
   patchResource,
@@ -440,23 +442,43 @@ export function ClustersTable(props: {
           for (const value of selectedValues) {
             switch (value) {
               case StatusType.healthy:
-                if (cluster.nodes?.ready) {
-                  return true
-                }
-                break
+                return !!cluster.nodes?.ready
               case StatusType.danger:
-                if (cluster.nodes?.unhealthy) {
-                  return true
-                }
-                break
+                return !!cluster.nodes?.unhealthy
               case StatusType.unknown:
-                if (cluster.nodes?.unknown) {
-                  return true
-                }
-                break
+                return !!cluster.nodes?.unknown
+              default:
+                return false
             }
           }
-          return false
+        },
+      },
+      {
+        id: 'add-ons',
+        label: t('Add-ons'),
+        options: Object.keys(AddonStatus)
+          .map((status) => ({
+            label: getAddonStatusLabel(status as AddonStatus, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case AddonStatus.Available:
+                return !!cluster.addons?.available
+              case AddonStatus.Degraded:
+                return !!cluster.addons?.degraded
+              case AddonStatus.Disabled:
+                return false
+              case AddonStatus.Progressing:
+                return !!cluster.addons?.progressing
+              case AddonStatus.Unknown:
+                return !!cluster.addons?.unknown
+              default:
+                return false
+            }
+          }
         },
       },
     ]
