@@ -88,7 +88,7 @@ export function EditPolicySet() {
       clusters={managedClusters}
       placements={placements}
       namespaces={namespaceNames}
-      breadcrumb={[{ label: t('Policy sets'), to: NavigationPath.policySets }, { label: name }]}
+      breadcrumb={[{ text: t('Policy sets'), to: NavigationPath.policySets }, { text: name }]}
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}

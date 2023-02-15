@@ -29,9 +29,10 @@ import { validateKubernetesResourceName } from '../../lib/validation'
 import { PlacementSection } from '../Placement/PlacementSection'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
+import { AcmBreadcrumb } from '../../ui-components'
 
 export interface PolicySetWizardProps {
-  breadcrumb?: { label: string; to?: string }[]
+  breadcrumb?: { text: string; to?: string }[]
   title: string
   namespaces: string[]
   policies: IResource[]
@@ -83,104 +84,106 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
   })
 
   return (
-    <WizardPage
-      wizardStrings={translatedWizardStrings}
-      title={props.title}
-      breadcrumb={props.breadcrumb}
-      onSubmit={props.onSubmit}
-      onCancel={props.onCancel}
-      editMode={props.editMode}
-      defaultData={
-        props.resources ?? [
-          {
-            ...PolicySetType,
-            metadata: { name: '', namespace: '' },
-            spec: { description: '', policies: [] },
-          },
-          {
-            ...PlacementRuleType,
-            metadata: { name: '', namespace: '' },
-            spec: {
-              clusterSelector: { matchExpressions: [] },
-              clusterConditions: [],
+    <>
+      <AcmBreadcrumb breadcrumb={props.breadcrumb} standalone={true} />
+      <WizardPage
+        wizardStrings={translatedWizardStrings}
+        title={props.title}
+        onSubmit={props.onSubmit}
+        onCancel={props.onCancel}
+        editMode={props.editMode}
+        defaultData={
+          props.resources ?? [
+            {
+              ...PolicySetType,
+              metadata: { name: '', namespace: '' },
+              spec: { description: '', policies: [] },
             },
-          },
-          {
-            ...PlacementBindingType,
-            metadata: { name: '', namespace: '' },
-            placementRef: { apiGroup: PlacementRuleApiGroup, kind: PlacementRuleKind, name: '' },
-            subjects: [{ apiGroup: PolicySetApiGroup, kind: PolicySetKind, name: '' }],
-          } as IResource,
-        ]
-      }
-      yamlEditor={props.yamlEditor}
-    >
-      <Step label={t('Details')} id="details-step">
-        {props.editMode !== EditMode.Edit && (
-          <Fragment>
-            <Sync kind={PolicySetKind} path="metadata.name" suffix="-placement" />
-            <Sync kind={PolicySetKind} path="metadata.name" suffix="-placement" />
-            <Sync
-              kind={PolicySetKind}
-              path="metadata.name"
-              targetKind={PlacementBindingKind}
-              targetPath="subjects.0.name"
-            />
-          </Fragment>
-        )}
-        <Sync kind={PolicySetKind} path="metadata.namespace" />
-        <Section label={t('Details')}>
-          <WizItemSelector selectKey="kind" selectValue={PolicySetKind}>
-            <ItemContext.Consumer>
-              {(item: IResource) => (
-                <Fragment>
-                  <WizTextInput
-                    label={t('Name')}
-                    placeholder={t('Enter the name')}
-                    path="metadata.name"
-                    id="name"
-                    required
-                    validation={validateKubernetesResourceName}
-                    readonly={item.metadata?.uid !== undefined}
-                  />
-                  <WizTextArea
-                    label={t('Description')}
-                    placeholder={t('Enter the description')}
-                    path="spec.description"
-                  />
-                  <WizSingleSelect
-                    label={t('Namespace')}
-                    placeholder={t('Select the namespace')}
-                    path="metadata.namespace"
-                    id="namespace"
-                    required
-                    options={props.namespaces}
-                    readonly={item.metadata?.uid !== undefined}
-                  />
-                </Fragment>
-              )}
-            </ItemContext.Consumer>
-          </WizItemSelector>
-        </Section>
-      </Step>
-      <Step label={t('Policies')} id="policies-step">
-        <PoliciesSection policies={virtualPolicies} />
-      </Step>
-      <Step label={t('Placement')} id="placement-step">
-        <PlacementSection
-          existingClusterSets={props.clusterSets}
-          existingClusterSetBindings={props.clusterSetBindings}
-          createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
-          bindingSubjectKind={PolicySetKind}
-          bindingSubjectApiGroup={PolicySetApiGroup}
-          existingPlacements={props.placements}
-          existingPlacementRules={props.placementRules}
-          defaultPlacementKind={props.defaultPlacementKind ?? PlacementRuleKind}
-          clusters={props.clusters}
-          withoutOnlineClusterCondition
-        />
-      </Step>
-    </WizardPage>
+            {
+              ...PlacementRuleType,
+              metadata: { name: '', namespace: '' },
+              spec: {
+                clusterSelector: { matchExpressions: [] },
+                clusterConditions: [],
+              },
+            },
+            {
+              ...PlacementBindingType,
+              metadata: { name: '', namespace: '' },
+              placementRef: { apiGroup: PlacementRuleApiGroup, kind: PlacementRuleKind, name: '' },
+              subjects: [{ apiGroup: PolicySetApiGroup, kind: PolicySetKind, name: '' }],
+            } as IResource,
+          ]
+        }
+        yamlEditor={props.yamlEditor}
+      >
+        <Step label={t('Details')} id="details-step">
+          {props.editMode !== EditMode.Edit && (
+            <Fragment>
+              <Sync kind={PolicySetKind} path="metadata.name" suffix="-placement" />
+              <Sync kind={PolicySetKind} path="metadata.name" suffix="-placement" />
+              <Sync
+                kind={PolicySetKind}
+                path="metadata.name"
+                targetKind={PlacementBindingKind}
+                targetPath="subjects.0.name"
+              />
+            </Fragment>
+          )}
+          <Sync kind={PolicySetKind} path="metadata.namespace" />
+          <Section label={t('Details')}>
+            <WizItemSelector selectKey="kind" selectValue={PolicySetKind}>
+              <ItemContext.Consumer>
+                {(item: IResource) => (
+                  <Fragment>
+                    <WizTextInput
+                      label={t('Name')}
+                      placeholder={t('Enter the name')}
+                      path="metadata.name"
+                      id="name"
+                      required
+                      validation={validateKubernetesResourceName}
+                      readonly={item.metadata?.uid !== undefined}
+                    />
+                    <WizTextArea
+                      label={t('Description')}
+                      placeholder={t('Enter the description')}
+                      path="spec.description"
+                    />
+                    <WizSingleSelect
+                      label={t('Namespace')}
+                      placeholder={t('Select the namespace')}
+                      path="metadata.namespace"
+                      id="namespace"
+                      required
+                      options={props.namespaces}
+                      readonly={item.metadata?.uid !== undefined}
+                    />
+                  </Fragment>
+                )}
+              </ItemContext.Consumer>
+            </WizItemSelector>
+          </Section>
+        </Step>
+        <Step label={t('Policies')} id="policies-step">
+          <PoliciesSection policies={virtualPolicies} />
+        </Step>
+        <Step label={t('Placement')} id="placement-step">
+          <PlacementSection
+            existingClusterSets={props.clusterSets}
+            existingClusterSetBindings={props.clusterSetBindings}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
+            bindingSubjectKind={PolicySetKind}
+            bindingSubjectApiGroup={PolicySetApiGroup}
+            existingPlacements={props.placements}
+            existingPlacementRules={props.placementRules}
+            defaultPlacementKind={props.defaultPlacementKind ?? PlacementRuleKind}
+            clusters={props.clusters}
+            withoutOnlineClusterCondition
+          />
+        </Step>
+      </WizardPage>
+    </>
   )
 }
 

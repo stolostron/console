@@ -112,12 +112,12 @@ export function EditArgoApplicationSet() {
       ansibleCredentials={availableAnsibleCredentials}
       argoServers={availableArgoNS}
       breadcrumb={[
-        { label: t('Policies'), to: NavigationPath.policies },
+        { text: t('Policies'), to: NavigationPath.policies },
         {
-          label: name,
+          text: name,
           to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
         },
-        { label: t('Create policy automation') },
+        { text: t('Create policy automation') },
       ]}
       namespaces={availableNamespace}
       applicationSets={applicationSets}

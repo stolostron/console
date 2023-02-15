@@ -119,7 +119,7 @@ export function EditPolicy() {
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
-      breadcrumb={[{ label: t('Policies'), to: NavigationPath.policies }, { label: name }]}
+      breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: name }]}
       editMode={EditMode.Edit}
       resources={existingResources}
       gitSource={gitSource}

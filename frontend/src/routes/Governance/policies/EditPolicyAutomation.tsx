@@ -79,9 +79,9 @@ export function EditPolicyAutomation() {
       policy={currentPolicy ?? {}}
       yamlEditor={getWizardSyncEditor}
       breadcrumb={[
-        { label: t('Policies'), to: '.' },
+        { text: t('Policies'), to: '.' },
         {
-          label: params?.name ?? '',
+          text: params?.name ?? '',
           to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
         },
       ]}
