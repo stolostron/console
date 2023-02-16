@@ -13,11 +13,11 @@ import {
   WizTableSelect,
   WizTextArea,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizTextInput,
   Sync,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { NavigationPath } from '../../NavigationPath'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
@@ -31,7 +31,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
 
 export interface PolicySetWizardProps {
-  breadcrumb?: { label: string; to?: string }[]
+  breadcrumb?: { text: string; to?: string }[]
   title: string
   namespaces: string[]
   policies: IResource[]
@@ -84,6 +84,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 
   return (
     <WizardPage
+      id="policy-set-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}

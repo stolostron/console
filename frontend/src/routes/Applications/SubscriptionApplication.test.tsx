@@ -306,7 +306,7 @@ describe('Create Subscription Application page', () => {
     window.scrollBy = () => {}
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Create application')
+    await waitForText('Create application', true)
     const cancelButton = screen.getByRole('button', {
       name: /button\.cancel/i,
     })
@@ -319,7 +319,7 @@ describe('Create Subscription Application page', () => {
     window.scrollBy = () => {}
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Create application')
+    await waitForText('Create application', true)
     // fill the form
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
