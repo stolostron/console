@@ -6,7 +6,7 @@
 
   placement:
     placementRef:
-      kind: PlacementRule
+      kind: Placement
 {{#if selectedRuleName}}
       name: {{{selectedRuleName}}}
 {{else}}
@@ -35,8 +35,8 @@
 
 {{#unless existingrule-checkbox}} 
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
 metadata:
   labels:
     app: {{{@root.name}}}
@@ -47,13 +47,19 @@ metadata:
   {{/if}}
 {{#if clusterSelector.mode}}  
 spec:
-  clusterSelector:
-    matchLabels:
-      {{#each clusterSelector.clusterLabelsList}}
-      {{#if validValue}}
-      '{{{labelName}}}': '{{{labelValue}}}'
-      {{/if}}
-      {{/each}} 
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            {{#each clusterSelector.clusterLabelsList}}
+            {{#if validValue}}
+            - key: '{{{labelName}}}'
+              operator: In
+              values: ['{{{labelValue}}}']
+            {{/if}}
+            {{/each}} 
+  clusterSets:
+    - default
 {{else}}
   {{#if online-cluster-only-checkbox}}
 spec:
@@ -68,4 +74,13 @@ spec:
       'local-cluster': 'true'
   {{/if}}
 {{/if}}
+
+---
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  namespace: {{{@root.namespace}}}
+  name: default
+spec:
+  clusterSet: default
 {{/unless}}

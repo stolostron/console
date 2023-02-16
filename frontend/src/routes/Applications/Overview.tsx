@@ -220,6 +220,8 @@ export default function ApplicationsOverview() {
     helmReleaseState,
     namespacesState,
     placementRulesState,
+    placementsState,
+    placementDecisionsState,
     subscriptionsState,
   } = atoms
 
@@ -229,6 +231,8 @@ export default function ApplicationsOverview() {
   const [subscriptions] = useRecoilState(subscriptionsState)
   const [channels] = useRecoilState(channelsState)
   const [placementRules] = useRecoilState(placementRulesState)
+  const [placements] = useRecoilState(placementsState)
+  const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [namespaces] = useRecoilState(namespacesState)
   const [helmReleases] = useRecoilState(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
@@ -299,7 +303,7 @@ export default function ApplicationsOverview() {
       const clusterList = getClusterList(
         tableItem,
         argoApplications,
-        placementRules,
+        placementDecisions,
         subscriptions,
         localCluster,
         managedClusters
@@ -333,7 +337,7 @@ export default function ApplicationsOverview() {
       // Cannot add properties directly to objects in typescript
       return { ...tableItem, ...transformedObject }
     },
-    [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementRules, subscriptions, t]
+    [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
   )
 
   // Combine all application types
@@ -638,7 +642,7 @@ export default function ApplicationsOverview() {
           const clusterList = getClusterList(
             resource,
             argoApplications,
-            placementRules,
+            placementDecisions,
             subscriptions,
             localCluster,
             managedClusters
@@ -695,7 +699,7 @@ export default function ApplicationsOverview() {
       channels,
       getTimeWindow,
       localCluster,
-      placementRules,
+      placementDecisions,
       subscriptions,
       t,
       managedClusters,
@@ -893,7 +897,7 @@ export default function ApplicationsOverview() {
           click: () => {
             const appChildResources =
               resource.kind === ApplicationKind
-                ? getAppChildResources(resource, applications, subscriptions, placementRules, channels)
+                ? getAppChildResources(resource, applications, subscriptions, placementRules, placements, channels)
                 : [[], []]
             const appSetRelatedResources =
               resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
@@ -961,6 +965,7 @@ export default function ApplicationsOverview() {
       canCreateApplication,
       channels,
       history,
+      placements,
       placementRules,
       subscriptions,
       acmExtensions,
