@@ -3,7 +3,7 @@ import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { generatePath, useHistory, useParams } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -79,11 +79,12 @@ export function EditPolicyAutomation() {
       policy={currentPolicy ?? {}}
       yamlEditor={getWizardSyncEditor}
       breadcrumb={[
-        { text: t('Policies'), to: '.' },
+        { text: t('Policies'), to: NavigationPath.policies },
         {
           text: params?.name ?? '',
-          to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
+          to: generatePath(NavigationPath.policyDetails, { name, namespace }),
         },
+        { text: t('Edit policy automation') },
       ]}
       credentials={credentials}
       createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
