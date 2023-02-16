@@ -190,13 +190,10 @@ export function AcmPageCard(props: { children: ReactNode }) {
   )
 }
 
-export function AcmBreadcrumb(props: {
-  breadcrumb?: { text: string; to?: string }[] | undefined
-  standalone?: boolean
-}) {
-  const { breadcrumb, standalone } = props
+export function AcmBreadcrumb(props: { breadcrumb?: { text: string; to?: string }[] | undefined }) {
+  const { breadcrumb } = props
   if (breadcrumb?.length) {
-    const crumbs = () => (
+    return (
       <Breadcrumb>
         {breadcrumb.map((crumb, i) => (
           <BreadcrumbItem key={i}>
@@ -212,18 +209,6 @@ export function AcmBreadcrumb(props: {
           </BreadcrumbItem>
         ))}
       </Breadcrumb>
-    )
-    return standalone ? (
-      <div
-        style={{
-          backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-          padding: '10px 0 0 20px',
-        }}
-      >
-        {crumbs()}
-      </div>
-    ) : (
-      crumbs()
     )
   }
   return null
