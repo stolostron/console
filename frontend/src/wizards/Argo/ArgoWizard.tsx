@@ -26,12 +26,12 @@ import {
   Tile,
   WizTiles,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizCheckbox,
   WizTextInput,
   Sync,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
@@ -93,7 +93,7 @@ interface ApplicationSet {
 }
 
 export interface ArgoWizardProps {
-  breadcrumb?: { label: string; to?: string }[]
+  breadcrumb?: { text: string; to?: string }[]
   applicationSets?: ApplicationSet[]
   createClusterSetCallback?: () => void
   clusters: IResource[]
@@ -223,6 +223,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   return (
     <WizardPage
+      id="application-set-wizard"
       wizardStrings={translatedWizardStrings}
       breadcrumb={props.breadcrumb}
       title={props.resources ? t('Edit application set') : t('Create application set')}

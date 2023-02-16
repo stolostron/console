@@ -63,7 +63,8 @@ export function EditArgoApplicationSet() {
   const history = useHistory()
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name?: string } = useParams()
+  const params: { namespace: string; name: string } = useParams()
+  const { name } = params
   const [applicationSets] = useRecoilState(applicationSetsState)
   const [placements] = useRecoilState(placementsState)
   const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
@@ -110,6 +111,7 @@ export function EditArgoApplicationSet() {
       createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
       ansibleCredentials={availableAnsibleCredentials}
       argoServers={availableArgoNS}
+      breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }, { text: name }]}
       namespaces={availableNamespace}
       applicationSets={applicationSets}
       placements={placements}
