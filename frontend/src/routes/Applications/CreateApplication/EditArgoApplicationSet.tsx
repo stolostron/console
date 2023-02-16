@@ -29,9 +29,10 @@ import schema from './schema.json'
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { t } = useTranslation()
   return (
     <SyncEditor
-      editorTitle={'Application set YAML'}
+      editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
       schema={schema}

@@ -393,7 +393,7 @@ export function Searchbar(props: SearchbarProps) {
           onKeyDown={handleTextInputKeyDown}
           aria-label={t('Search input')}
         >
-          <ChipGroup>
+          <ChipGroup collapsedText={t('{{remaining}} more', { remaining: '${remaining}' })}>
             {searchbarTags.map((searchbarTag, idx) => (
               <Chip
                 key={searchbarTag.id}

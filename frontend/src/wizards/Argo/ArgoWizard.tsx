@@ -304,7 +304,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <Section label={t('General')}>
             <WizTextInput
               path="metadata.name"
-              label={t('ApplicationSet name')}
+              label={t('Name')}
               placeholder={t('Enter the application set name')}
               required
               id="name"
