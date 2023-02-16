@@ -84,6 +84,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 
   return (
     <WizardPage
+      id="policy-set-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}

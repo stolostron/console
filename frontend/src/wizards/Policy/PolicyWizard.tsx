@@ -71,6 +71,7 @@ export function PolicyWizard(props: {
 
   return (
     <WizardPage
+      id="policy-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}

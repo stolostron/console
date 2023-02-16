@@ -223,6 +223,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   return (
     <WizardPage
+      id="application-set-wizard"
       wizardStrings={translatedWizardStrings}
       breadcrumb={props.breadcrumb}
       title={props.resources ? t('Edit application set') : t('Create application set')}

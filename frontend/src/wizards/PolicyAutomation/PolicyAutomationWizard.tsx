@@ -80,6 +80,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
 
   return (
     <WizardPage
+      id="policy-automation-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}

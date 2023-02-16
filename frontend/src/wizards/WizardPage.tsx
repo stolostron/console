@@ -1,20 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Flex,
-  Page,
-  PageSection,
-  PageSectionTypes,
-  PageSectionVariants,
-  Switch,
-  Text,
-  Title,
-} from '@patternfly/react-core'
+import { PageSection, Switch } from '@patternfly/react-core'
 import { ReactNode, useCallback, useState } from 'react'
 import { Wizard, WizardProps } from '@patternfly-labs/react-form-wizard'
-import { Link } from 'react-router-dom'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
 
 export type WizardPageProps = {
   breadcrumb?: { text: string; to?: string }[]
@@ -26,11 +15,10 @@ function getWizardYamlEditor() {
   return <></>
 }
 
-export function WizardPage(props: WizardPageProps) {
-  let { yamlEditor } = props
-  const { breadcrumb } = props
-  if (!yamlEditor) yamlEditor = getWizardYamlEditor
-  const [drawerExpanded, setDrawerExpanded] = useState(props.yaml !== false && localStorage.getItem('yaml') === 'true')
+export function WizardPage(props: { id: string } & WizardPageProps) {
+  const { breadcrumb, children, id, title, description, yaml, yamlEditor = getWizardYamlEditor } = props
+
+  const [drawerExpanded, setDrawerExpanded] = useState(yaml !== false && localStorage.getItem('yaml') === 'true')
   const toggleDrawerExpanded = useCallback(() => {
     setDrawerExpanded((drawerExpanded) => {
       localStorage.setItem('yaml', (!drawerExpanded).toString())
@@ -38,50 +26,34 @@ export function WizardPage(props: WizardPageProps) {
     })
   }, [])
   return (
-    <Page
-      breadcrumb={
-        breadcrumb && (
-          <Breadcrumb>
-            {breadcrumb.map((crumb, i) => (
-              <BreadcrumbItem key={i}>
-                {breadcrumb.length > 1 && i === breadcrumb.length - 1 ? (
-                  <a aria-current="page" className="pf-c-breadcrumb__link pf-m-current">
-                    {crumb.text}
-                  </a>
-                ) : (
-                  <Link to={crumb.to as string} className="pf-c-breadcrumb__link">
-                    {crumb.text}
-                  </Link>
-                )}
-              </BreadcrumbItem>
-            ))}
-          </Breadcrumb>
-        )
-      }
-      isBreadcrumbGrouped
-      additionalGroupedContent={
-        <PageSection variant="light">
-          <Flex alignItems={{ default: 'alignItemsCenter' }} wrap="noWrap" style={{ flexWrap: 'nowrap', gap: 16 }}>
-            <Title headingLevel="h1">{props.title}</Title>
-            {props.yaml !== false && (
+    <AcmPage
+      header={
+        <AcmPageHeader
+          title={title}
+          description={description}
+          breadcrumb={breadcrumb}
+          switches={
+            yaml !== false && (
               <Switch
                 id="yaml-switch"
                 label="YAML"
                 isChecked={drawerExpanded}
                 onChange={() => toggleDrawerExpanded()}
               />
-            )}
-          </Flex>
-          {props.description && <Text component="small">{props.description}</Text>}
-        </PageSection>
+            )
+          }
+        />
       }
-      groupProps={{ sticky: 'top' }}
     >
-      <PageSection type={PageSectionTypes.wizard} variant={PageSectionVariants.light}>
-        <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
-          {props.children}
-        </Wizard>
-      </PageSection>
-    </Page>
+      <AcmErrorBoundary>
+        <AcmPageContent id={id}>
+          <PageSection variant="light" type="wizard">
+            <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
+              {children}
+            </Wizard>
+          </PageSection>
+        </AcmPageContent>
+      </AcmErrorBoundary>
+    </AcmPage>
   )
 }

@@ -64,7 +64,7 @@ export function EditArgoApplicationSet() {
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
   const params: { namespace: string; name: string } = useParams()
-  const { name, namespace } = params
+  const { name } = params
   const [applicationSets] = useRecoilState(applicationSetsState)
   const [placements] = useRecoilState(placementsState)
   const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
@@ -111,14 +111,7 @@ export function EditArgoApplicationSet() {
       createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
       ansibleCredentials={availableAnsibleCredentials}
       argoServers={availableArgoNS}
-      breadcrumb={[
-        { text: t('Policies'), to: NavigationPath.policies },
-        {
-          text: name,
-          to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
-        },
-        { text: t('Create policy automation') },
-      ]}
+      breadcrumb={[{ text: t('Applications'), to: '.' }, { text: name }]}
       namespaces={availableNamespace}
       applicationSets={applicationSets}
       placements={placements}
