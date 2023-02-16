@@ -704,7 +704,7 @@ export const architectureData = (t) => {
       tooltip: t('tooltip.architecture'),
       id: 'architecture',
       type: 'singleselect',
-      available: ['amd64', 'arm64', 's390x', 'ppc641e'],
+      available: ['amd64', 'arm64', 's390x', 'ppc64le'],
       cacheUserValueKey: 'create.cluster.architecture',
     },
   ]
