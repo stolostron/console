@@ -106,17 +106,14 @@ describe('Applications Page', () => {
 
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getByTestId('app.k8s.io/Application')).toBeTruthy()
-    userEvent.click(screen.getByTestId('app.k8s.io/Application'))
+    expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
+    userEvent.click(screen.getByRole('checkbox', { name: /subscription/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    const subscriptionCheckBox = screen.queryByTestId('app.k8s.io/Application')
-    expect(subscriptionCheckBox).toBeNull()
-    const applicationSetType = screen.queryByText(ApplicationSetKind)
-    expect(applicationSetType).toBeNull()
-    const discoveredType = screen.queryByText('Discovered')
-    expect(discoveredType).toBeNull()
+    expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull()
+    expect(screen.queryByText(ApplicationSetKind)).toBeNull()
+    expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
 
     // clear subscription filter
@@ -125,16 +122,14 @@ describe('Applications Page', () => {
     // argo apps
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getByTestId('argoproj.io/Application')).toBeTruthy()
-    userEvent.click(screen.getByTestId('argoproj.io/Application'))
+    expect(screen.getByRole('checkbox', { name: /argo cd/i })).toBeTruthy()
+    userEvent.click(screen.getByRole('checkbox', { name: /argo cd/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    const argoCheckBox = screen.queryByTestId('argoproj.io/Application')
-    expect(argoCheckBox).toBeNull()
-    const applicationType = screen.queryByText(ApplicationKind)
-    expect(applicationType).toBeNull()
-    expect(applicationSetType).toBeNull()
+    expect(screen.queryByRole('checkbox', { name: /argo cd/i })).toBeNull()
+    expect(screen.queryByText(ApplicationKind)).toBeNull()
+    expect(screen.queryByText(ApplicationSetKind)).toBeNull()
     expect(screen.getAllByText('Discovered')).toBeTruthy()
 
     // clear argo filter
@@ -143,15 +138,14 @@ describe('Applications Page', () => {
     // appset
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getByTestId('argoproj.io/ApplicationSet')).toBeTruthy()
-    userEvent.click(screen.getByTestId('argoproj.io/ApplicationSet'))
+    expect(screen.getByRole('checkbox', { name: /application set/i })).toBeTruthy()
+    userEvent.click(screen.getByRole('checkbox', { name: /application set/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    const argoAppSetCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
-    expect(argoAppSetCheckBox).toBeNull()
-    expect(applicationType).toBeNull()
-    expect(discoveredType).toBeNull()
+    expect(screen.queryByRole('checkbox', { name: /application set/i })).toBeNull()
+    expect(screen.queryByText(ApplicationKind)).toBeNull()
+    expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
 
     // clear appset filter
@@ -160,15 +154,14 @@ describe('Applications Page', () => {
     // OCP
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getByTestId('openshiftapps')).toBeTruthy()
-    userEvent.click(screen.getByTestId('openshiftapps'))
+    expect(screen.getByRole('checkbox', { name: /openshift/i })).toBeTruthy()
+    userEvent.click(screen.getByRole('checkbox', { name: /openshift/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    const ocpCheckBox = screen.queryByTestId('openshiftapps')
-    expect(ocpCheckBox).toBeNull()
-    expect(applicationType).toBeNull()
-    expect(discoveredType).toBeNull()
+    expect(screen.queryByRole('checkbox', { name: /openshift/i })).toBeNull()
+    expect(screen.queryByText(ApplicationKind)).toBeNull()
+    expect(screen.queryByText('Discovered')).toBeNull()
 
     // clear openshift filter
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))

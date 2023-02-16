@@ -24,6 +24,7 @@ type AcmInlineStatusGroupProps = {
   detached?: number
   unknown?: number
   showZeroes?: boolean
+  groupId?: string
 }
 
 export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
@@ -37,7 +38,7 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
     }
   }
   return (
-    <LabelGroup defaultIsOpen isClosable={false} numLabels={10}>
+    <LabelGroup defaultIsOpen isClosable={false} numLabels={10} id={props.groupId}>
       {show(props.healthy) && (
         <Label color="green" icon={<CheckCircleIcon />}>
           {props.healthy}

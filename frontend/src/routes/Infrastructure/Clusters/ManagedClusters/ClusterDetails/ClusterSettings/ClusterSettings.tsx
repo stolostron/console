@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Addon, AddonStatus } from '../../../../../../resources'
+import { Addon, AddonStatus, getAddonStatusLabel } from '../../../../../../resources'
 import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
@@ -52,7 +52,7 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
               default:
                 type = StatusType.unknown
             }
-            return <AcmInlineStatus type={type} status={item.status} />
+            return <AcmInlineStatus type={type} status={getAddonStatusLabel(item.status as AddonStatus, t)} />
           },
           search: 'status',
         },

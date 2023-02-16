@@ -2,11 +2,11 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreApiPaths, nockList } from '../../../../../lib/nock-util'
-import { clickByTestId, waitForNocks } from '../../../../../lib/test-util'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { MultiClusterEngine, MultiClusterEngineApiVersion, MultiClusterEngineKind } from '../../../../../resources'
-import { CreateControlPlane } from './CreateControlPlane'
+import { nockIgnoreApiPaths, nockList } from '../../../lib/nock-util'
+import { clickByTestId, waitForNocks } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { MultiClusterEngine, MultiClusterEngineApiVersion, MultiClusterEngineKind } from '../../../resources'
+import { CreateCredentialsAWS } from './CreateCredentialsAWS'
 
 const multiclusterEngine: MultiClusterEngine = {
   apiVersion: MultiClusterEngineApiVersion,
@@ -33,33 +33,34 @@ const multiclusterEngine: MultiClusterEngine = {
 }
 const mockMulticlusterEngine = [multiclusterEngine]
 
-describe('CreateControlPlane', () => {
+describe('CreateCredentialsAWS', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
   })
+
   const Component = () => {
     return (
       <RecoilRoot>
-        <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
-          <Route path={NavigationPath.createBMControlPlane}>
-            <CreateControlPlane />
+        <MemoryRouter initialEntries={[NavigationPath.addAWSType]}>
+          <Route path={NavigationPath.addAWSType}>
+            <CreateCredentialsAWS />
           </Route>
         </MemoryRouter>
       </RecoilRoot>
     )
   }
 
-  test('can click hosted', async () => {
+  test('can click aws', async () => {
     const initialNocks = [nockList(multiclusterEngine, mockMulticlusterEngine)]
     render(<Component />)
     await waitForNocks(initialNocks)
-    await clickByTestId('hosted')
+    await clickByTestId('aws-standard')
   })
 
-  test('can click standalone', async () => {
+  test('can click aws S3', async () => {
     const initialNocks = [nockList(multiclusterEngine, mockMulticlusterEngine)]
     render(<Component />)
     await waitForNocks(initialNocks)
-    await clickByTestId('standalone')
+    await clickByTestId('aws-bucket')
   })
 })

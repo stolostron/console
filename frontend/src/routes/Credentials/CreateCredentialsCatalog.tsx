@@ -8,13 +8,14 @@ import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../
 import { AcmIcon, AcmPage, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
 import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
 
-const getTypedCreateCredentialsPath = (type: CredentialsType): LocationDescriptor<BackCancelState> => ({
+export const getTypedCreateCredentialsPath = (type: CredentialsType): LocationDescriptor<BackCancelState> => ({
   pathname: NavigationPath.addCredentials,
   search: `?${CREDENTIALS_TYPE_PARAM}=${type}`,
 })
 
 const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.aws],
+  [Provider.awss3, 's3'],
   [Provider.azure, 'azure'],
   [Provider.gcp, 'google'],
   [Provider.openstack, 'openstack'],
@@ -31,12 +32,18 @@ export function CreateCredentialsCatalog() {
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
-      ...orderedProviders.map(([provider, id]) => ({
-        id: id || provider,
-        icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-        title: ProviderLongTextMap[provider],
-        onClick: nextStep(getTypedCreateCredentialsPath(provider)),
-      })),
+      ...orderedProviders
+        // does not display AWS s3 card
+        .filter(([id]) => id !== Provider.awss3)
+        .map(([provider, id]) => ({
+          id: id || provider,
+          icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+          title: ProviderLongTextMap[provider],
+          onClick:
+            provider === Provider.aws
+              ? nextStep(NavigationPath.addAWSType)
+              : nextStep(getTypedCreateCredentialsPath(provider)),
+        })),
     ]
     return newCards
   }, [nextStep])
@@ -44,7 +51,7 @@ export function CreateCredentialsCatalog() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(
-    () => [{ label: t('Credentials'), to: NavigationPath.credentials }, { label: t('Credential type') }],
+    () => [{ label: t('Credentials'), to: NavigationPath.credentials }, { label: t('Infrastructure provider') }],
     [t]
   )
 
@@ -52,8 +59,8 @@ export function CreateCredentialsCatalog() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Credential type')}
-          description={t('Choose your credential type.')}
+          title={t('Infrastructure provider')}
+          description={t('Choose your infrastructure provider.')}
           breadcrumbs={breadcrumbs}
           titleHelp={
             <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
