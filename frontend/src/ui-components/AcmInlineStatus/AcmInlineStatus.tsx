@@ -64,6 +64,17 @@ export const getStatusLabel = (status: StatusType, t: TFunction) => {
   }
 }
 
+export const getNodeStatusLabel = (status: StatusType, t: TFunction) => {
+  switch (status) {
+    case StatusType.healthy:
+      return t('node.status.ready')
+    case StatusType.danger:
+      return t('node.status.unhealthy')
+    default:
+      return t('node.status.unknown')
+  }
+}
+
 export function AcmInlineStatus(props: { type: StatusType; status: string | React.ReactNode; popover?: PopoverProps }) {
   const classes = useStyles()
   return (
