@@ -429,23 +429,23 @@ export default function OverviewPage() {
 
   // TODO: Breaks url if length of selectedClustersFilter is too big.
   // Issue: https://github.com/open-cluster-management/backlog/issues/7087
-  function buildClusterLinks(clusterNames: Array<string> = [], related = 'Policy'): string {
+  function buildClusterComplianceLinks(clusterNames: Array<string> = []): string {
     return `${NavigationPath.search}?filters={"textsearch":"kind:Cluster${
       clusterNames.length > 0 ? `%20name:${clusterNames.join(',')}` : ''
-    }"}&showrelated=${related}`
+    }"}&showrelated=Policy`
   }
   const complianceData = useMemo(() => {
     return [
       {
         key: t('With violations'),
         value: nonCompliantClusters.size,
-        link: buildClusterLinks(Array.from(nonCompliantClusters), 'Policy'),
+        link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
       },
       {
         key: t('Without violations'),
         value: compliantClusters.length,
         isPrimary: true,
-        link: buildClusterLinks(compliantClusters, 'Policy'),
+        link: buildClusterComplianceLinks(compliantClusters),
       },
     ]
   }, [compliantClusters, nonCompliantClusters, t])
@@ -466,64 +466,75 @@ export default function OverviewPage() {
     ]
   }, [cloudLabelFilter, offline, ready, t])
 
+  function buildClusterAddonLinks(addonType: string): string {
+    return `${NavigationPath.managedClusters}?addons=${addonType}`
+  }
+
   const clusterAddonData = useMemo(() => {
     return [
       {
         key: t('Degraded'),
         value: danger.count,
-        link: buildClusterLinks(Array.from(danger.clusters), 'ClusterManagementAddOn'),
+        link: buildClusterAddonLinks(AddonStatus.Degraded),
       },
       {
         key: t('Progressing'),
         value: progress.count,
-        link: buildClusterLinks(Array.from(progress.clusters), 'ClusterManagementAddOn'),
+        link: buildClusterAddonLinks(AddonStatus.Progressing),
       },
       {
         key: t('Pending'),
         value: pending.count,
-        link: buildClusterLinks(Array.from(pending.clusters), 'ClusterManagementAddOn'),
+        link: buildClusterAddonLinks(AddonStatus.Disabled),
       },
       {
         key: t('Unknown'),
         value: unknown.count,
-        link: buildClusterLinks(Array.from(unknown.clusters), 'ClusterManagementAddOn'),
+        link: buildClusterAddonLinks(AddonStatus.Unknown),
       },
       {
         key: t('Available'),
         value: healthy.count,
         isPrimary: true,
-        link: buildClusterLinks(Array.from(healthy.clusters), 'ClusterManagementAddOn'),
+        link: buildClusterAddonLinks(AddonStatus.Available),
       },
     ]
   }, [healthy, danger, progress, pending, unknown, t])
 
   const policyReportData = useMemo(() => {
-    const getLink = (type: any, count: number) => {
-      return `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20${type}%3A${
-        count > 0 ? '>' : '='
-      }0"}`
-    }
     return [
       {
         key: t('Critical'),
         value: policyReportCriticalCount,
         isPrimary: true,
-        link: getLink('critical', policyReportCriticalCount),
+        link:
+          policyReportCriticalCount > 0
+            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20critical%3A>0"}`
+            : undefined,
       },
       {
         key: t('Important'),
         value: policyReportImportantCount,
-        link: getLink('important', policyReportImportantCount),
+        link:
+          policyReportImportantCount > 0
+            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20important%3A>0"}`
+            : undefined,
       },
       {
         key: t('Moderate'),
         value: policyReportModerateCount,
-        link: getLink('moderate', policyReportModerateCount),
+        link:
+          policyReportModerateCount > 0
+            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20moderate%3A>0"}`
+            : undefined,
       },
       {
         key: t('Low'),
         value: policyReportLowCount,
-        link: getLink('low', policyReportLowCount),
+        link:
+          policyReportLowCount > 0
+            ? `${NavigationPath.search}?filters={"textsearch":"kind%3APolicyReport%20low%3A>0"}`
+            : undefined,
       },
     ]
   }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
