@@ -20,7 +20,7 @@ module.exports = {
     // Default value to give to empty keys
     // You may also specify a function accepting the locale, namespace, and key as arguments
 
-    indentation: 4,
+    indentation: 2,
     // Indentation of the catalog files
 
     keepRemoved: false,

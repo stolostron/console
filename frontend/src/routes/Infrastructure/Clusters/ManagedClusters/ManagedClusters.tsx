@@ -56,6 +56,7 @@ import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -188,6 +189,7 @@ export function ClustersTable(props: {
   const [hostedClusters] = useRecoilState(hostedClustersState)
 
   const { t } = useTranslation()
+  const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
@@ -520,6 +522,7 @@ export function ClustersTable(props: {
         tableActions={tableActions}
         rowActions={rowActions}
         emptyState={props.emptyState}
+        initialFilters={presets.initialFilters.addons ? { 'add-ons': presets.initialFilters.addons } : undefined}
         filters={filters}
         id="managedClusters"
       />

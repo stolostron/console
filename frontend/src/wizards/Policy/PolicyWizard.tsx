@@ -16,7 +16,6 @@ import {
   StringsMapInput,
   Sync,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizArrayInput,
   WizCheckbox,
@@ -32,6 +31,7 @@ import {
   ItemContext,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { NavigationPath } from '../../NavigationPath'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
@@ -58,6 +58,7 @@ export function PolicyWizard(props: {
   resources?: IResource[]
   defaultPlacementKind?: 'Placement' | 'PlacementRule'
   yamlEditor?: () => ReactNode
+  breadcrumb?: { text: string; to?: string }[]
   gitSource?: string
   onSubmit: WizardSubmit
   onCancel: WizardCancel
@@ -70,8 +71,10 @@ export function PolicyWizard(props: {
 
   return (
     <WizardPage
+      id="policy-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
+      breadcrumb={props.breadcrumb}
       description={t(
         'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls.'
       )}

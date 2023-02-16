@@ -129,14 +129,14 @@ export default function CreateSubscriptionApplicationPage() {
       header={
         <AcmPageHeader
           title={title}
-          breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }]}
+          breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }, { text: title }]}
           switches={switches}
           actions={portals}
         />
       }
     >
       <AcmErrorBoundary>
-        <AcmPageContent id="create-cluster-pool">
+        <AcmPageContent id="subscription-application-editor">
           <PageSection variant="light" type="wizard">
             <Modal
               variant={ModalVariant.large}

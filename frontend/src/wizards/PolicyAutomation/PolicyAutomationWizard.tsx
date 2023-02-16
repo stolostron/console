@@ -9,11 +9,11 @@ import {
   Select,
   Step,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizCheckbox,
   WizNumberInput,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { IResource } from '../common/resources/IResource'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
 import { ConfigMap } from '../../resources'
@@ -24,7 +24,7 @@ import { AutomationProviderHint } from '../../components/AutomationProviderHint'
 export interface PolicyAutomationWizardProps {
   title: string
   breadcrumb?: {
-    label: string
+    text: string
     to?: string
   }[]
   policy: IResource
@@ -80,6 +80,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
 
   return (
     <WizardPage
+      id="policy-automation-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}
@@ -102,7 +103,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
         }
       }
     >
-      <Step label="Automation" id="automation-step">
+      <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint
           component="alert"
           workflowSupportRequired={
@@ -121,6 +122,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
             id="secret"
             label={t('Ansible credential')}
             path="spec.automationDef.secret"
+            placeholder={t('Select the Ansible credential')}
             options={ansibleCredentialNames}
             onValueChange={(value, item) => {
               if ((item as IPolicyAutomation).spec?.automationDef?.name) {
