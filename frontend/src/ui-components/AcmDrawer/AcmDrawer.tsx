@@ -118,6 +118,7 @@ function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObj
     <DrawerPanelContent isResizable={props.isResizable} {...props.panelContentProps}>
       {!props.disableDrawerHead && (
         <DrawerHead>
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
           <div ref={props.drawerRef} tabIndex={0} style={{ fontSize: '24px', outline: 'none' }}>
             {props.title}
           </div>
