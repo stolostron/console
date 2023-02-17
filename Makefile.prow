@@ -13,15 +13,15 @@ build:
 
 .PHONY: check
 check:
-	echo skip
+	npm run check
 
 .PHONY: lint
 lint:
-	echo skip
+	npm run lint
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test
+	npm run test -- --maxWorkers=2
