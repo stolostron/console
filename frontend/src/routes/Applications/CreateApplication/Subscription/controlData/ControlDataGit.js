@@ -14,13 +14,7 @@
 import { VALID_REPOPATH, getURLValidator, getSourcePath } from '../../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
 import getControlDataPrePostTasks from './ControlDataPrePostTasks'
-import {
-  getGitBranches,
-  loadExistingChannels,
-  updateChannelControls,
-  updateGitBranchFolders,
-  channelSimplified,
-} from './utils'
+import { getGitBranches, updateChannelControls, updateGitBranchFolders, channelSimplified } from './utils'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
@@ -149,7 +143,6 @@ const githubChannelData = (isLocalCluster, handleModalToggle, t) => {
       placeholder: t('app.enter.select.github.url'),
       available: [],
       validation: getURLValidator(t),
-      fetchAvailable: loadExistingChannels('git', t),
       reverse: 'Channel[0].spec.pathname',
       onSelect: updateChannelControls,
       simplified: channelSimplified,
