@@ -325,7 +325,7 @@ describe('Create Subscription Application page', () => {
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
     userEvent.click(screen.getByText(/channel\.type\.git/i))
-    await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules)])
     const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
     userEvent.type(githubURL, gitLink)
     userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
@@ -448,7 +448,7 @@ describe('Create Subscription Application page', () => {
 
     // click git card
     userEvent.click(screen.getByText(/channel\.type\.git/i))
-    await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules)])
     const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
     userEvent.type(githubURL, gitLink)
 
