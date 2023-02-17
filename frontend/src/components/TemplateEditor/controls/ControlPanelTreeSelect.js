@@ -14,6 +14,7 @@ class ControlPanelTreeSelect extends React.Component {
         control: PropTypes.object,
         controlId: PropTypes.string,
         handleChange: PropTypes.func,
+        i18n: PropTypes.func,
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -32,41 +33,56 @@ class ControlPanelTreeSelect extends React.Component {
 
         // clicked on a branch in search mode, search for that branch
         if (currentSelection !== undefined && searchText) {
-            const { value, branch } = searchList[currentSelection]
+            const { value, branch, description } = searchList[currentSelection]
             if (!value) {
                 searchText = branch
                 currentSelection = undefined
+            } else if (value && description) {
+                active = `${value}  # ${description}`
+                handleTreeChange({ selectedItem: active })
+                currentSelection = null
+                currentAvailable = []
+                indexes = []
+                isOpen = false
+                searchText = null
             }
         }
 
+        const { isBlurred } = state
         /////////////////////////////////////////////////////////////
         // search mode
         if (searchText && searchText.length) {
             // nothing selected, filter list
             if (currentSelection === undefined) {
-                searchList = []
-                const findText = searchText.toLowerCase()
-                const fillArray = (arry, branchMatch, indent) => {
-                    arry.forEach(({ label, children, value, description }) => {
-                        if (value) {
-                            const instance = `${value} - ${description}`
-                            if (branchMatch || instance.toLowerCase().indexOf(findText) !== -1) {
-                                currentAvailable.push({ instance, indent })
-                                searchList.push({ value, description })
+                if (isBlurred) {
+                    handleTreeChange({ selectedItem: searchText })
+                    searchText = null
+                    isOpen = false
+                } else {
+                    searchList = []
+                    const findText = searchText.toLowerCase()
+                    const fillArray = (arry, branchMatch, indent) => {
+                        arry.forEach(({ label, children, value, description }) => {
+                            if (value) {
+                                const instance = `${value} - ${description}`
+                                if (branchMatch || instance.toLowerCase().indexOf(findText) !== -1) {
+                                    currentAvailable.push({ instance, indent })
+                                    searchList.push({ value, description })
+                                }
+                            } else if (children) {
+                                const beg = currentAvailable.length
+                                const bm = branchMatch || label.toLowerCase().indexOf(findText) !== -1
+                                fillArray(children, bm, indent + 20)
+                                if (currentAvailable.length > beg) {
+                                    currentAvailable.splice(beg, 0, { branch: label, indent })
+                                    searchList.splice(beg, 0, { branch: label })
+                                }
                             }
-                        } else if (children) {
-                            const beg = currentAvailable.length
-                            const bm = branchMatch || label.toLowerCase().indexOf(findText) !== -1
-                            fillArray(children, bm, indent + 20)
-                            if (currentAvailable.length > beg) {
-                                currentAvailable.splice(beg, 0, { branch: label, indent })
-                                searchList.splice(beg, 0, { branch: label })
-                            }
-                        }
-                    })
+                        })
+                    }
+                    fillArray(available, false, 0)
+                    isOpen = true
                 }
-                fillArray(available, false, 0)
-                isOpen = true
             } else {
                 // handle change
                 const { value, description } = searchList[currentSelection]
@@ -80,8 +96,8 @@ class ControlPanelTreeSelect extends React.Component {
         } else {
             /////////////////////////////////////////////////////////////
             // tree mode
-            // get current list using indexes
             if (currentSelection !== undefined) {
+                // get current list using indexes
                 currentSelection -= branches
                 if (currentSelection >= 0) {
                     indexes = cloneDeep(indexes)
@@ -135,6 +151,7 @@ class ControlPanelTreeSelect extends React.Component {
             active,
             currentAvailable,
             currentSelection: undefined,
+            isBlurred: false,
             indexes,
             branches: branchLabels.length,
             isOpen,
@@ -151,31 +168,10 @@ class ControlPanelTreeSelect extends React.Component {
         }
         // create active map
         this.addAvailableMap(props)
-        this.onDocClick = (event) => {
-            const clickedOnToggle = this.parentRef && this.parentRef.contains(event.target)
-            const clickedWithinMenu = this.menuRef && this.menuRef.contains && this.menuRef.contains(event.target)
-            const clickedWithinClear = this.clearRef && this.clearRef.contains && this.clearRef.contains(event.target)
-            const clickedWithinToggle =
-                this.toggleRef && this.toggleRef.contains && this.toggleRef.contains(event.target)
-            if (
-                this.state.isOpen &&
-                !(clickedOnToggle || clickedWithinMenu || clickedWithinClear || clickedWithinToggle)
-            ) {
-                this.setState({ isOpen: false })
-            }
-        }
     }
 
-    componentDidMount() {
-        document.addEventListener('mousedown', this.onDocClick)
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('mousedown', this.onDocClick)
-    }
-
-    setParentRef = (ref) => {
-        this.parentRef = ref
+    setInputRef = (ref) => {
+        this.inputRef = ref
     }
 
     setMenuRef = (ref) => {
@@ -208,7 +204,7 @@ class ControlPanelTreeSelect extends React.Component {
     }
 
     render() {
-        const { controlId, control } = this.props
+        const { controlId, control, controlData, i18n } = this.props
         const { name, availableMap = {}, exception, disabled } = control
         const { isOpen, active, currentAvailable, indexes, searchText } = this.state
         const currentActive = availableMap[active] ? `${active} - ${availableMap[active]}` : active
@@ -218,7 +214,7 @@ class ControlPanelTreeSelect extends React.Component {
             'tf--list-box__menu-icon--open': isOpen,
         })
 
-        const aria = isOpen ? 'Close menu' : 'Open menu'
+        const aria = isOpen ? i18n('Close menu') : i18n('Open menu')
         const key = `${controlId}-${name}-${currentAvailable
             .map(({ branch, instance }) => {
                 return branch || instance
@@ -233,9 +229,19 @@ class ControlPanelTreeSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="creation-view-controls-treeselect">
-                    <ControlPanelFormGroup controlId={controlId} control={control}>
+                    <ControlPanelFormGroup
+                        i18n={i18n}
+                        controlId={controlId}
+                        control={control}
+                        controlData={controlData}
+                    >
                         <div id={controlId}>
-                            <div role="listbox" aria-label="Choose an item" tabIndex="0" className="tf--list-box">
+                            <div
+                                role="listbox"
+                                aria-label={i18n('Choose an item')}
+                                tabIndex="0"
+                                className="tf--list-box"
+                            >
                                 <div
                                     role="button"
                                     className={inputClasses}
@@ -250,12 +256,15 @@ class ControlPanelTreeSelect extends React.Component {
                                 >
                                     <input
                                         className="pf-c-combo-control"
-                                        aria-label="ListBox input field"
-                                        ref={this.setParentRef}
+                                        aria-label={i18n('ListBox input field')}
+                                        ref={this.setInputRef}
                                         spellCheck="false"
                                         role="combobox"
                                         aria-controls={key}
                                         disabled={disabled}
+                                        onKeyUp={this.pressUp.bind(this)}
+                                        onKeyDown={this.pressDown.bind(this)}
+                                        onBlur={this.blur.bind(this)}
                                         aria-expanded="true"
                                         autoComplete="new-password"
                                         id={`${controlId}-input`}
@@ -265,8 +274,24 @@ class ControlPanelTreeSelect extends React.Component {
                                         onFocus={(e) => {
                                             e.target.select()
                                         }}
-                                        onKeyDown={this.pressPress.bind(this)}
-                                        onChange={(evt) => this.setState({ searchText: evt.currentTarget.value })}
+                                        // if user is editing value, strip comment
+                                        onClick={(evt) => {
+                                            if (!searchText) {
+                                                setTimeout(() => {
+                                                    const { target } = evt
+                                                    const { selectionStart: inx } = target
+                                                    if (inx !== 0 && inx === target.selectionEnd) {
+                                                        this.setState({
+                                                            searchText: active,
+                                                        })
+                                                        evt.target.setSelectionRange(inx, inx)
+                                                    }
+                                                }, 0)
+                                            }
+                                        }}
+                                        onChange={(evt) => {
+                                            this.setState({ searchText: evt.currentTarget.value })
+                                        }}
                                         data-testid={`tree-${controlId}`}
                                     />
                                     {!disabled && (
@@ -275,10 +300,9 @@ class ControlPanelTreeSelect extends React.Component {
                                             className="tf--list-box__selection"
                                             tabIndex="0"
                                             style={{ color: '#6a6e73' }}
-                                            title="Clear selected item"
+                                            title={i18n('Clear selected item')}
                                             ref={this.setClearRef}
                                             onClick={this.clickClear.bind(this)}
-                                            onKeyPress={this.pressClear.bind(this)}
                                         >
                                             <TimesCircleIcon aria-hidden />
                                         </div>
@@ -301,14 +325,29 @@ class ControlPanelTreeSelect extends React.Component {
                                                 alt={aria}
                                                 aria-label={aria}
                                             >
-                                                <title>Close menu</title>
+                                                <title>{i18n('Close menu')}</title>
                                                 <path d="M0 0l5 4.998L10 0z" />
                                             </svg>
                                         </div>
                                     )}
                                 </div>
                                 {!disabled && isOpen && (
-                                    <div className="tf--list-box__menu" key={key} id={key} ref={this.setMenuRef}>
+                                    <div
+                                        className="tf--list-box__menu"
+                                        key={key}
+                                        id={key}
+                                        ref={this.setMenuRef}
+                                        onMouseDown={
+                                            /* istanbul ignore next */ () => {
+                                                this.menuClick = true
+                                            }
+                                        }
+                                        onMouseUp={
+                                            /* istanbul ignore next */ () => {
+                                                this.menuClick = false
+                                            }
+                                        }
+                                    >
                                         {currentAvailable.map(({ branch, instance, indent = 0 }, inx) => {
                                             const itemClasses = classNames({
                                                 'tf--list-box__menu-item': true,
@@ -329,7 +368,6 @@ class ControlPanelTreeSelect extends React.Component {
                                                         whiteSpace: 'pre',
                                                     }}
                                                     onClick={this.clickSelect.bind(this, inx)}
-                                                    onKeyPress={this.pressSelect.bind(this, inx)}
                                                 >
                                                     {this.renderLabel(label, searchText)}
                                                 </div>
@@ -361,9 +399,23 @@ class ControlPanelTreeSelect extends React.Component {
         }
     }
 
-    pressPress(e) {
+    blur() {
+        if (!this.menuClick) {
+            this.setState({ isBlurred: true })
+        }
+    }
+
+    pressUp(e) {
+        if (e.key === 'Enter' && this.state.searchText) {
+            this.inputRef.blur()
+        }
+    }
+
+    pressDown(e) {
         if (e.key === 'Escape') {
             this.clickClear()
+        } else if (e.key === 'Tab') {
+            this.setState({ isBlurred: true })
         }
     }
 
@@ -402,20 +454,8 @@ class ControlPanelTreeSelect extends React.Component {
         }
     }
 
-    pressSelect(inx, e) {
-        if (e.key === 'Enter') {
-            this.clickSelect(inx)
-        }
-    }
-
     clickSelect(inx) {
         this.setState({ currentSelection: inx })
-    }
-
-    pressClear(inx, e) {
-        if (e && e.key === 'Enter') {
-            this.clickClear()
-        }
     }
 
     clickClear() {
