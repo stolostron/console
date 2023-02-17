@@ -361,11 +361,6 @@ export const clusterDetailsControlData = [
         type: 'hidden',
         active: false,
     },
-    {
-        active: 1,
-        id: 'installAttemptsLimit',
-        type: 'hidden',
-    },
 ]
 
 export const clusterPoolDetailsControlData = [
@@ -659,6 +654,11 @@ export const automationControlData = [
         id: 'toweraccess-destroy',
         type: 'hidden',
         active: '',
+    },
+    {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
     },
 ]
 
