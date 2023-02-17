@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Octokit } from '@octokit/rest'
 import _ from 'lodash'
-import { getSecret, listResources } from '.'
+import { getSecret } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
@@ -27,13 +27,6 @@ export interface Channel extends IResource {
             name: string
         }
     }
-}
-
-export function listChannels() {
-    return listResources<Channel>({
-        apiVersion: ChannelApiVersion,
-        kind: ChannelKind,
-    })
 }
 
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
