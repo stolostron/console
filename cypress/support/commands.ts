@@ -1,4 +1,7 @@
 /// <reference types="cypress" />
+//
+// Command library
+// imported and executed by e2e support file at the start of each spec
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -35,3 +38,37 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('multiselect', { prevSubject: 'element' }, (subject: JQuery<HTMLElement>, text: string) => {
+  cy.wrap(subject)
+    .click()
+    .get('.pf-c-check')
+    .contains(text)
+    .parent()
+    .within(() => cy.get('[type="checkbox"]').check())
+})
+
+// Login
+// cy.session & cacheAcrossSpecs option will preserve session cache (cookies) across specs
+// 'local-user' is the session id for caching and restoring session
+Cypress.Commands.add('login', () => {
+  cy.session(
+    'local-user',
+    () => {
+      cy.exec('oc whoami -t').then((result) => {
+        cy.setCookie('acm-access-token-cookie', result.stdout)
+      })
+      cy.exec('curl --insecure https://localhost:3000', { timeout: 120000 })
+    },
+    { cacheAcrossSpecs: true }
+  )
+})
+
+Cypress.Commands.add('createNamespace', (namespace: string) => {
+  cy.exec(`oc create namespace ${namespace}`)
+  cy.exec(`oc label namespaces ${namespace} cypress=true`)
+})
+
+Cypress.Commands.add('deleteNamespace', (namespace: string) => {
+  cy.exec(`oc delete namespace ${namespace}`)
+})
