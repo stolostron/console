@@ -58,6 +58,7 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
     <div className={classes.container}>
       <AcmPageCard>
         <EmptyState>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <img src={DestroyedImage} role="presentation" className={classes.image} />
           <div className={classes.body}>
             <Title size="lg" headingLevel="h4">

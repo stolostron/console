@@ -144,6 +144,7 @@ export default function WelcomePage() {
               )}
             </Text>
           </div>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <img src={HeaderGraphic} style={{ height: '180px', paddingRight: 32 }} />
         </div>
       </PageSection>

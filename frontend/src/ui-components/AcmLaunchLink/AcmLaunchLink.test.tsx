@@ -154,6 +154,7 @@ describe('AcmLaunchLink', () => {
   test('renders a link when link text is a tooltip component', async () => {
     const textTooltip = (
       <Tooltip content={<div>I have a tooltip!</div>}>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} style={{ border: '1px dashed' }}>
           Grafana!
         </span>

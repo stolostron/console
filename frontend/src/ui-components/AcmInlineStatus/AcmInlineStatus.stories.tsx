@@ -36,6 +36,7 @@ export const InlineStatusWithPopover = () => {
             headerContent: 'Status header',
             bodyContent: 'Some information about the status here.',
             footerContent: (
+              // eslint-disable-next-line jsx-a11y/anchor-is-valid
               <a href="#">
                 Status link <ExternalLinkAltIcon />
               </a>

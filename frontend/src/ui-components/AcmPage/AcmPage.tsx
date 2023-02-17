@@ -198,6 +198,7 @@ export function AcmBreadcrumb(props: { breadcrumb?: { text: string; to?: string 
         {breadcrumb.map((crumb, i) => (
           <BreadcrumbItem key={i}>
             {breadcrumb.length > 1 && i === breadcrumb.length - 1 ? (
+              // eslint-disable-next-line jsx-a11y/anchor-is-valid
               <a aria-current="page" className="pf-c-breadcrumb__link pf-m-current">
                 {crumb.text}
               </a>
