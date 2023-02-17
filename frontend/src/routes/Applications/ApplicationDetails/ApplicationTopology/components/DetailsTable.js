@@ -60,7 +60,10 @@ class DetailsTable extends Component {
         resources.forEach((resource) => {
             clustersNames.forEach((cluster) => {
                 Array.from(Array(replicaCount)).forEach((_, i) => {
-                    const status = statusMap[`${resource.name}-${cluster}`]
+                    const modelKey = resource.namespace
+                        ? `${resource.name}-${cluster}-${resource.namespace}`
+                        : `${resource.name}-${cluster}`
+                    const status = statusMap[modelKey]
                     available.push({
                         pulse: status && status.length > i ? status[i].pulse : 'orange',
                         name: status && status.length > i ? status[i].name : resource.name,

@@ -1128,7 +1128,7 @@ describe('setResourceDeployStatus 2', () => {
                 },
             },
             serviceModel: {
-                'mortgage-app-svc-possiblereptile': [
+                'mortgage-app-svc-possiblereptile-default': [
                     {
                         cluster: 'possiblereptile',
                         clusterIP: '172.30.140.196',
@@ -1207,7 +1207,7 @@ describe('setResourceDeployStatus 2 with filter green', () => {
                 },
             },
             serviceModel: {
-                'mortgage-app-svc-possiblereptile': [
+                'mortgage-app-svc-possiblereptile-default': [
                     {
                         cluster: 'possiblereptile',
                         clusterIP: '172.30.140.196',
