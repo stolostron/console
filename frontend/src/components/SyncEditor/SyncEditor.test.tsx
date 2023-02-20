@@ -1249,7 +1249,7 @@ const semanticErrors = [
       glyphMarginHoverMessage: {
         value:
           '```html\n' +
-          'Dependencies on configurationpolicies, iampolicies, and certificatepolicies cannot contain a namespace \n' +
+          'Dependencies on ConfigurationPolicies, IamPolicies, and CertificatePolicies cannot contain a namespace \n' +
           '```',
       },
       overviewRuler: { color: '#ff0000', position: 4 },
@@ -1331,7 +1331,7 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: test \n```' },
+      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: Test \n```' },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
@@ -1484,7 +1484,7 @@ const syntaxError = [
           '```html\n' +
           'Implicit map keys need to be followed by map values at line 2, column 1:\n' +
           '\n' +
-          'kindabc policy\n' +
+          'kindabc Policy\n' +
           '^^^^^^^^^^^^^^\n' +
           ' \n' +
           '```',

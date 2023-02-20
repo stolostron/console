@@ -2,6 +2,9 @@
 import { get } from 'lodash'
 import { ErrorType } from './validation'
 
+const startCase = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 export const decorate = (
   isCustomEdit: boolean,
   editorHasFocus: boolean,
@@ -87,7 +90,8 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
         glyphMarginClassName: 'errorDecoration',
         overviewRuler: { color: '#ff0000', position: 4 },
         minimap: { color: '#ff000060', position: 1 },
-        glyphMarginHoverMessage: { value: '```html\n' + message + ' \n```' },
+        glyphMarginHoverMessage: { value: '```html\n' + startCase(message) + ' \n```' },
+        description: 'resource-editor',
       }
       const squiggly = {
         className: 'squiggly-error',
@@ -125,7 +129,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
       })
       squigglyTooltips.push({
         range,
-        message: message.replace(/\^*/g, '').replace(/\n/g, '  '),
+        message: startCase(message.replace(/\^*/g, '')).replace(/\n/g, '  '),
       })
     }
     errors.push({ linePos, message })
@@ -153,6 +157,7 @@ const addChangeDecorations = (
           linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
           overviewRuler: isCustomEdit ? { color: '#0000ff', position: 1 } : {},
           minimap: { color: isCustomEdit ? '#0000ff' : '#c0c0ff', position: 2 },
+          description: 'resource-editor',
         },
       })
       if ($f != null && $f.toString().length < 32 && !obj.$s) {
@@ -160,6 +165,7 @@ const addChangeDecorations = (
           range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
           options: {
             after: { content: `  # ${$f}`, inlineClassName: 'protectedDecoration' },
+            description: 'resource-editor',
           },
         })
       }
