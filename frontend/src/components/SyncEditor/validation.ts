@@ -76,14 +76,14 @@ export const addAjvKeywords = (ajv: Ajv) => {
         !data || (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) && data.length <= 63)
       )
     },
-  }),
-    ajv.addKeyword({
-      keyword: 'deprecatedKind',
-      schemaType: 'string',
-      validate: () => {
-        return false
-      },
-    })
+  })
+  ajv.addKeyword({
+    keyword: 'deprecatedKind',
+    schemaType: 'string',
+    validate: () => {
+      return false
+    },
+  })
 }
 
 //////// syntax errors
