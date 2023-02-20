@@ -1,131 +1,131 @@
 [
-    {
-        "type": "PolicySet",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "PolicySet" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "validateName": true
-                        },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "description": { "type": "string" },
-                        "policies": { "type": "array" }
-                    },
-                    "required": ["description", "policies"]
-                }
+  {
+    "type": "PolicySet",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "PolicySet" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
             },
-            "required": ["apiVersion", "metadata", "kind", "spec"]
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "policies": { "type": "array" }
+          },
+          "required": ["description", "policies"]
         }
-    },
-    {
-        "type": "PlacementRule",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "PlacementRule" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "clusterSelector": {
-                            "type": "object",
-                            "properties": {
-                                "matchExpressions": { "type": "array" }
-                            },
-                            "required": ["matchExpressions"]
-                        }
-                    },
-                    "required": ["clusterSelector"]
-                }
-            },
-            "required": ["apiVersion", "kind", "metadata", "spec"]
-        }
-    },
-    {
-        "type": "Placement",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "Placement" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "clusterSets": { "type": "array" },
-                        "numberOfClusters": { "type": "number" },
-                        "predicates": { "type": "array" }
-                    }
-                }
-            },
-            "required": ["apiVersion", "kind", "metadata", "spec"]
-        }
-    },
-    {
-        "type": "PlacementBinding",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "PlacementBinding" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "placementRef": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "apiGroup": { "type": "string" },
-                        "kind": { "type": "string", "enum": ["Placement", "PlacementRule"] }
-                    },
-                    "required": ["name", "apiGroup", "kind"]
-                },
-                "subjects": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "apiGroup": { "type": "string" },
-                            "kind": { "const": "PolicySet" },
-                            "name": { "validateName": true }
-                        },
-                        "required": ["apiGroup", "kind", "name"]
-                    }
-                }
-            },
-            "required": ["apiVersion", "kind", "metadata", "placementRef", "subjects"]
-        }
+      },
+      "required": ["apiVersion", "metadata", "kind", "spec"]
     }
+  },
+  {
+    "type": "PlacementRule",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "deprecatedKind": "PlacementRule" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "clusterSelector": {
+              "type": "object",
+              "properties": {
+                "matchExpressions": { "type": "array" }
+              },
+              "required": ["matchExpressions"]
+            }
+          },
+          "required": ["clusterSelector"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "Placement",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Placement" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "clusterSets": { "type": "array" },
+            "numberOfClusters": { "type": "number" },
+            "predicates": { "type": "array" }
+          }
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "PlacementBinding",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "PlacementBinding" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "placementRef": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "apiGroup": { "type": "string" },
+            "kind": { "type": "string", "enum": ["Placement", "PlacementRule"] }
+          },
+          "required": ["name", "apiGroup", "kind"]
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "apiGroup": { "type": "string" },
+              "kind": { "const": "PolicySet" },
+              "name": { "validateName": true }
+            },
+            "required": ["apiGroup", "kind", "name"]
+          }
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "placementRef", "subjects"]
+    }
+  }
 ]

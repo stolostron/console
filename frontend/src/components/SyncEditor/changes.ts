@@ -5,6 +5,7 @@ import { get, isEmpty, keyBy, isEqual } from 'lodash'
 import { getPathArray } from './synchronize'
 import { normalize } from './reconcile'
 import { MappingType } from './process'
+import { ErrorType } from './validation'
 
 export interface ChangeType {
   $t: string // type of change (N, E)
@@ -43,7 +44,7 @@ export const getFormChanges = (
   let remainingEdits = []
 
   // changes to yaml
-  if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
+  if (errors.length === 0 || !errors.every(({ errorType }) => errorType !== ErrorType.error)) {
     if (lastChange && lastComparison) {
       yamlChanges = getChanges(false, change, lastChange, comparison, lastComparison)
 
@@ -100,7 +101,7 @@ export const getUserChanges = (
   let changes = [] //lastUserEdits
 
   // changes to yaml
-  if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
+  if (errors.length === 0 || !errors.every(({ errorType }) => errorType !== ErrorType.error)) {
     if (lastChange && lastComparison) {
       // comparison is always made between current user changes and last yaml created by form
       changes = getChanges(true, change, lastChange, comparison, lastComparison)
