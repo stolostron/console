@@ -1628,7 +1628,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
           setIsOpen(false)
         }}
       >
-        {t('Select {{count}} page items', { count: Math.min(props.perPage, props.itemCount) })}
+        {t('Select page ({{count}} items)', { count: Math.min(props.perPage, props.itemCount) })}
       </DropdownItem>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1644,7 +1644,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
           setIsOpen(false)
         }}
       >
-        {t('Select all {{count}} items', { count: props.itemCount })}
+        {t('Select all ({{count}} items)', { count: props.itemCount })}
       </DropdownItem>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

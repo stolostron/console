@@ -44,7 +44,8 @@ function getWizardSyncEditor() {
 export function EditPolicy() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name?: string } = useParams()
+  const params: { namespace?: string; name: string } = useParams()
+  const { name } = params
   const history = useHistory()
   const {
     channelsState,
@@ -118,6 +119,7 @@ export function EditPolicy() {
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
+      breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: name }]}
       editMode={EditMode.Edit}
       resources={existingResources}
       gitSource={gitSource}

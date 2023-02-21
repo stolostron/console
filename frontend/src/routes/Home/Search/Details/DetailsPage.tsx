@@ -137,17 +137,17 @@ export default function DetailsPage() {
           navigation={
             <AcmSecondaryNav>
               <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
-                <Link to={`${NavigationPath.resources}${window.location.search}`}>Details</Link>
+                <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
               </AcmSecondaryNavItem>
               <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
-                <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>YAML</Link>
+                <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
               </AcmSecondaryNavItem>
               <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
-                <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>Related resources</Link>
+                <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>{t('Related resources')}</Link>
               </AcmSecondaryNavItem>
               {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
                 <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                  <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>Logs</Link>
+                  <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
                 </AcmSecondaryNavItem>
               )}
             </AcmSecondaryNav>

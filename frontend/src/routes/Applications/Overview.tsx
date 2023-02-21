@@ -105,14 +105,14 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.kind === ArgoApplicationKind) {
       return t('Discovered')
     } else if (resource.kind === ApplicationSetKind) {
-      return t('ApplicationSet')
+      return t('Application set')
     }
   } else if (isOCPAppResource(resource)) {
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return t('Flux')
     }
-    return t('OpenShift')
+    return 'OpenShift'
   }
   return '-'
 }
@@ -714,7 +714,7 @@ export default function ApplicationsOverview() {
         id: filterId,
         options: [
           {
-            label: t('Application Set'),
+            label: t('Application set'),
             value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
           },
           {
@@ -726,10 +726,10 @@ export default function ApplicationsOverview() {
             value: 'fluxapps',
           },
           {
-            label: t('OpenShift'),
+            label: 'OpenShift',
             value: 'openshiftapps',
           },
-          { label: t('OpenShift-default'), value: 'openshift-default' },
+          { label: t('Default OpenShift'), value: 'openshift-default' },
           {
             label: t('Subscription'),
             value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
@@ -1003,13 +1003,13 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-argo',
-            text: 'ApplicationSet',
+            text: t('Application set'),
             isDisabled: false,
             path: NavigationPath.createApplicationArgo,
           },
           {
             id: 'create-subscription',
-            text: 'Subscription',
+            text: t('Subscription'),
             isDisabled: false,
             path: NavigationPath.createApplicationSubscription,
           },

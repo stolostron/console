@@ -178,12 +178,14 @@ export function Searchbar(props: SearchbarProps) {
 
     /** add a heading to the menu */
     const headingItem = (
+      // eslint-disable-next-line jsx-a11y/aria-role
       <MenuItem role={'search-suggestion-item'} isDisabled itemId={'heading'} key={'heading'}>
         {suggestions[0].name}
       </MenuItem>
     )
 
     let filteredMenuItems = [
+      // eslint-disable-next-line jsx-a11y/aria-role
       <MenuItem role={'search-suggestion-item'} isDisabled key={'loading-suggestion'} itemId={'loading-suggestion'}>
         {t('Loading...')}
       </MenuItem>,
@@ -198,6 +200,7 @@ export function Searchbar(props: SearchbarProps) {
         )
         .map((currentValue) => (
           <MenuItem
+            // eslint-disable-next-line jsx-a11y/aria-role
             role={'search-suggestion-item'}
             itemId={`${currentValue.kind}-${currentValue.id}`}
             key={`${currentValue.kind}-${currentValue.id}`}
@@ -210,6 +213,7 @@ export function Searchbar(props: SearchbarProps) {
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
       const noResultItem = (
+        // eslint-disable-next-line jsx-a11y/aria-role
         <MenuItem role={'search-suggestion-item'} isDisabled itemId={'no-matching-filters'} key={'no-matching-filters'}>
           {t('No matching filters')}
         </MenuItem>
@@ -393,7 +397,7 @@ export function Searchbar(props: SearchbarProps) {
           onKeyDown={handleTextInputKeyDown}
           aria-label={t('Search input')}
         >
-          <ChipGroup>
+          <ChipGroup collapsedText={t('{{remaining}} more', { remaining: '${remaining}' })}>
             {searchbarTags.map((searchbarTag, idx) => (
               <Chip
                 key={searchbarTag.id}

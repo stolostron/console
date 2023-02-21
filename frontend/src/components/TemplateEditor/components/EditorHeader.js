@@ -94,6 +94,7 @@ class EditorHeader extends React.Component {
             className="tf--tabs__nav-item tf--tabs__nav-item--selected"
             onClick={(e) => onClick(e, 0)}
           >
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a className="tf--tabs__nav-link" href="#" role="tab" tabIndex="0" aria-selected="true">
               {type}
             </a>
@@ -108,6 +109,7 @@ class EditorHeader extends React.Component {
                 className="tf--tabs__nav-item"
                 onClick={(e) => onClick(e, inx + 1)}
               >
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a className="tf--tabs__nav-link" href="#" role="tab" tabIndex="0" aria-selected="false">
                   {id}
                 </a>

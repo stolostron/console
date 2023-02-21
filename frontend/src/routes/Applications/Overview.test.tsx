@@ -85,7 +85,7 @@ describe('Applications Page', () => {
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
-    expect(screen.getByText(ApplicationSetKind)).toBeTruthy()
+    expect(screen.getByText('Application set')).toBeTruthy()
 
     // argo app
     expect(screen.getByText(mockArgoApplication1.metadata.name!)).toBeTruthy()
@@ -146,7 +146,7 @@ describe('Applications Page', () => {
     expect(screen.queryByRole('checkbox', { name: /application set/i })).toBeNull()
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
-    expect(screen.getAllByText(ApplicationSetKind)).toBeTruthy()
+    expect(screen.getAllByText('Application set')).toBeTruthy()
 
     // clear appset filter
     userEvent.click(screen.getByRole('button', { name: /close application set/i }))

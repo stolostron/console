@@ -30,7 +30,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     userEvent.type(
       screen.getByRole('textbox', {
-        name: /applicationset name/i,
+        name: /name/i,
       }),
       'testapp'
     )
@@ -200,7 +200,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     userEvent.type(
       screen.getByRole('textbox', {
-        name: /applicationset name/i,
+        name: /name/i,
       }),
       'testapp'
     )

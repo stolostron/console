@@ -285,6 +285,7 @@ class ControlPanelTreeSelect extends React.Component {
                     data-testid={`tree-${controlId}`}
                   />
                   {!disabled && (
+                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                     <div
                       role="button"
                       className="tf--list-box__selection"
@@ -322,6 +323,7 @@ class ControlPanelTreeSelect extends React.Component {
                   )}
                 </div>
                 {!disabled && isOpen && (
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                   <div
                     className="tf--list-box__menu"
                     key={key}
@@ -347,6 +349,7 @@ class ControlPanelTreeSelect extends React.Component {
                       })
                       const label = branch || instance
                       return (
+                        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                         <div
                           role="button"
                           key={label}

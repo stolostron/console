@@ -7,6 +7,8 @@ import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+  Addon,
+  AddonStatus,
   Cluster,
   ClusterStatus,
   ManagedClusterInfo,
@@ -27,12 +29,14 @@ import {
   colorThemes,
   Provider,
 } from '../../../ui-components'
+import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../Search/search-sdk/search-sdk'
 
 function getClusterSummary(
   clusters: Cluster[],
+  allAddons: { [id: string]: Addon[] },
   selectedCloud: string,
   setSelectedCloud: Dispatch<SetStateAction<string>>
 ) {
@@ -79,6 +83,32 @@ function getClusterSummary(
         } else {
           prev.offline = prev.offline + 1
         }
+
+        // addon statuses
+        allAddons[curr.name].forEach(({ status }) => {
+          switch (status) {
+            case AddonStatus.Available:
+              prev.addons.healthy.count = prev.addons.healthy.count + 1
+              prev.addons.healthy.clusters.add(curr.name)
+              break
+            case AddonStatus.Degraded:
+              prev.addons.danger.count = prev.addons.danger.count + 1
+              prev.addons.danger.clusters.add(curr.name)
+              break
+            case AddonStatus.Progressing:
+              prev.addons.progress.count = prev.addons.progress.count + 1
+              prev.addons.progress.clusters.add(curr.name)
+              break
+            case AddonStatus.Disabled:
+              prev.addons.pending.count = prev.addons.pending.count + 1
+              prev.addons.pending.clusters.add(curr.name)
+              break
+            default:
+              prev.addons.unknown.count = prev.addons.unknown.count + 1
+              prev.addons.unknown.clusters.add(curr.name)
+              break
+          }
+        })
       }
       return prev
     },
@@ -87,6 +117,13 @@ function getClusterSummary(
       regions: new Set(),
       ready: 0,
       offline: 0,
+      addons: {
+        healthy: { count: 0, clusters: new Set() },
+        danger: { count: 0, clusters: new Set() },
+        progress: { count: 0, clusters: new Set() },
+        pending: { count: 0, clusters: new Set() },
+        unknown: { count: 0, clusters: new Set() },
+      },
       providerCounts: {},
       providers: [],
       clusterNames: new Set(),
@@ -160,6 +197,13 @@ export default function OverviewPage() {
     regions: new Set(),
     ready: 0,
     offline: 0,
+    addons: {
+      healthy: { count: 0, clusters: new Set() },
+      danger: { count: 0, clusters: new Set() },
+      progress: { count: 0, clusters: new Set() },
+      pending: { count: 0, clusters: new Set() },
+      unknown: { count: 0, clusters: new Set() },
+    },
     providers: [],
   })
   const allClusters: Cluster[] = useAllClusters()
@@ -173,6 +217,8 @@ export default function OverviewPage() {
       }
     })
   }, [allClusters])
+
+  const allAddons = useClusterAddons()
 
   const nonCompliantClusters = useMemo(() => {
     const nonCompliantClustersSet = new Set<string>()
@@ -221,12 +267,13 @@ export default function OverviewPage() {
 
   // Process data from API.
   useEffect(() => {
-    const { kubernetesTypes, regions, ready, offline, providers, clusterNames } = getClusterSummary(
+    const { kubernetesTypes, regions, ready, offline, providers, clusterNames, addons } = getClusterSummary(
       clusters || [],
+      allAddons,
       selectedCloud,
       setSelectedCloud
     )
-    setSummaryData({ kubernetesTypes, regions, ready, offline, providers })
+    setSummaryData({ kubernetesTypes, regions, ready, offline, addons, providers })
 
     if (selectedCloud === '') {
       if (!_.isEqual(selectedClusterNames, [])) {
@@ -235,7 +282,7 @@ export default function OverviewPage() {
     } else if (!_.isEqual(selectedClusterNames, Array.from(clusterNames))) {
       setSelectedClusterNames(Array.from(clusterNames))
     }
-  }, [clusters, selectedCloud, searchData, selectedClusterNames])
+  }, [clusters, selectedCloud, searchData, selectedClusterNames, allAddons])
 
   const {
     policyReportCriticalCount,
@@ -285,7 +332,8 @@ export default function OverviewPage() {
     }
   }, [policyReports, selectedClusterNames, clusters])
 
-  const { kubernetesTypes, regions, ready, offline, providers } = summaryData
+  const { kubernetesTypes, regions, ready, offline, addons, providers } = summaryData
+  const { healthy, danger, progress, pending, unknown } = addons
   const provider = providers.find((p: any) => p.provider === selectedCloud)
   const cloudLabelFilter: string =
     selectedCloud === ''
@@ -418,6 +466,41 @@ export default function OverviewPage() {
     ]
   }, [cloudLabelFilter, offline, ready, t])
 
+  function buildClusterAddonLinks(addonType: string): string {
+    return `${NavigationPath.managedClusters}?addons=${addonType}`
+  }
+
+  const clusterAddonData = useMemo(() => {
+    return [
+      {
+        key: t('Degraded'),
+        value: danger.count,
+        link: buildClusterAddonLinks(AddonStatus.Degraded),
+      },
+      {
+        key: t('Progressing'),
+        value: progress.count,
+        link: buildClusterAddonLinks(AddonStatus.Progressing),
+      },
+      {
+        key: t('Pending'),
+        value: pending.count,
+        link: buildClusterAddonLinks(AddonStatus.Disabled),
+      },
+      {
+        key: t('Unknown'),
+        value: unknown.count,
+        link: buildClusterAddonLinks(AddonStatus.Unknown),
+      },
+      {
+        key: t('Available'),
+        value: healthy.count,
+        isPrimary: true,
+        link: buildClusterAddonLinks(AddonStatus.Available),
+      },
+    ]
+  }, [healthy, danger, progress, pending, unknown, t])
+
   const policyReportData = useMemo(() => {
     return [
       {
@@ -518,6 +601,13 @@ export default function OverviewPage() {
                     subTitle: clustersWithIssuesCount === 1 ? t('Cluster with issues') : t('Clusters with issues'),
                   }}
                   colorScale={colorThemes.criticalImportantModerateLow}
+                />
+                <AcmDonutChart
+                  title={t('Cluster add-ons')}
+                  description={t('Overview of cluster add-ons')}
+                  loading={!clusterAddonData}
+                  data={clusterAddonData}
+                  colorScale={colorThemes.criticalLowImportantUnknownSuccess}
                 />
               </AcmMasonry>
             </Stack>

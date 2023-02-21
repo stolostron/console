@@ -66,6 +66,7 @@ export const Page = (args: {
               args.showTooltip && (
                 <>
                   View all resources
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a href="#" style={{ display: 'block', marginTop: '4px' }}>
                     Learn more
                   </a>

@@ -12,12 +12,14 @@ import {
   AcmPageContent,
   AcmTable,
   compareStrings,
+  getNodeStatusLabel,
   IAcmTableAction,
   IAcmTableButtonAction,
   IAcmTableColumn,
   ITableFilter,
   Provider,
   ProviderLongTextMap,
+  StatusType,
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
@@ -28,12 +30,14 @@ import { canUser } from '../../../../lib/rbac-util'
 import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
   addonPathKey,
+  AddonStatus,
   addonTextKey,
   Cluster,
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterStatus,
+  getAddonStatusLabel,
   getClusterStatusLabel,
   ManagedClusterDefinition,
   patchResource,
@@ -52,6 +56,7 @@ import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -184,6 +189,7 @@ export function ClustersTable(props: {
   const [hostedClusters] = useRecoilState(hostedClustersState)
 
   const { t } = useTranslation()
+  const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
@@ -411,7 +417,6 @@ export function ClustersTable(props: {
             label: ProviderLongTextMap[key],
             value: key,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
       },
@@ -421,12 +426,64 @@ export function ClustersTable(props: {
         options: Object.keys(ClusterStatus)
           .map((status) => ({
             label: getClusterStatusLabel(status as ClusterStatus, t),
-            value: getClusterStatusLabel(status as ClusterStatus, t),
+            value: status,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) =>
-          selectedValues.includes(getClusterStatusLabel(cluster.status as ClusterStatus, t)),
+        tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.status),
+      },
+      {
+        id: 'nodes',
+        label: t('table.nodes'),
+        options: Object.keys(StatusType)
+          .map((status) => ({
+            label: getNodeStatusLabel(status as StatusType, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case StatusType.healthy:
+                return !!cluster.nodes?.ready
+              case StatusType.danger:
+                return !!cluster.nodes?.unhealthy
+              case StatusType.unknown:
+                return !!cluster.nodes?.unknown
+              default:
+                return false
+            }
+          }
+          return false
+        },
+      },
+      {
+        id: 'add-ons',
+        label: t('Add-ons'),
+        options: Object.keys(AddonStatus)
+          .map((status) => ({
+            label: getAddonStatusLabel(status as AddonStatus, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case AddonStatus.Available:
+                return !!cluster.addons?.available
+              case AddonStatus.Degraded:
+                return !!cluster.addons?.degraded
+              case AddonStatus.Disabled:
+                return false
+              case AddonStatus.Progressing:
+                return !!cluster.addons?.progressing
+              case AddonStatus.Unknown:
+                return !!cluster.addons?.unknown
+              default:
+                return false
+            }
+          }
+          return false
+        },
       },
     ]
   }, [t])
@@ -465,6 +522,7 @@ export function ClustersTable(props: {
         tableActions={tableActions}
         rowActions={rowActions}
         emptyState={props.emptyState}
+        initialFilters={presets.initialFilters.addons ? { 'add-ons': presets.initialFilters.addons } : undefined}
         filters={filters}
         id="managedClusters"
       />

@@ -306,7 +306,7 @@ describe('Create Subscription Application page', () => {
     window.scrollBy = () => {}
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Create application')
+    await waitForText('Create application', true)
     const cancelButton = screen.getByRole('button', {
       name: /button\.cancel/i,
     })
@@ -319,13 +319,13 @@ describe('Create Subscription Application page', () => {
     window.scrollBy = () => {}
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Create application')
+    await waitForText('Create application', true)
     // fill the form
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
     userEvent.click(screen.getByText(/channel\.type\.git/i))
-    await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules)])
     const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
     userEvent.type(githubURL, gitLink)
     userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
@@ -448,7 +448,7 @@ describe('Create Subscription Application page', () => {
 
     // click git card
     userEvent.click(screen.getByText(/channel\.type\.git/i))
-    await waitForNocks([nockList(mockChannel1, mockHubChannels), nockList(mockPlacementRule, mockPlacementRules)])
+    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules)])
     const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
     userEvent.type(githubURL, gitLink)
 

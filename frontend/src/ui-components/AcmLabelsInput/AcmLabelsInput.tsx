@@ -53,6 +53,7 @@ export function AcmLabelsInput(props: {
   return (
     <Fragment>
       <FormGroup id={`${props.id}-label`} label={props.label} fieldId={props.id} hidden={props.hidden}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div
           id="label-input-button"
           className="pf-c-form-control"
