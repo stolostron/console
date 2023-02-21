@@ -8,7 +8,7 @@ const DeprecationAlert = () => {
   const { t } = useTranslation()
   return (
     <React.Fragment>
-      <Alert variant="info" isInline title={t('Placement rule deprecation')}>
+      <Alert variant="info" isInline title={t('Placement rule deprecation')} style={{ marginBottom: '10px' }}>
         <p>{t('PlacementRule is deprecated and will not receive updates or fixes. Best practice: Use Placement.')}</p>
       </Alert>
     </React.Fragment>

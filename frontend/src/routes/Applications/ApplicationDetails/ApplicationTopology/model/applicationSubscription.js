@@ -217,28 +217,29 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
 const getAppRules = (rulesMap, allClusters, placementDecisions) => {
   Object.entries(rulesMap).forEach(([namespace, values]) => {
     // stuff rules into subscriptions that use them
-    placementDecisions
-      .filter((placementDecision) => {
-        return get(placementDecision, 'metadata.namespace') === namespace
-      })
-      .forEach((placementDecision) => {
-        const name =
-          placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ||
-          placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule']
-        values.forEach(({ ruleName, subscription }) => {
-          if (name === ruleName) {
-            subscription.rules.push(placementDecision)
-            const clusters = get(placementDecision, 'status.decisions', [])
-            clusters.forEach((cluster) => {
-              // get cluster name
-              const clusterName = get(cluster, 'clusterName')
-              if (clusterName && allClusters.indexOf(clusterName) === -1) {
-                allClusters.push(clusterName)
-              }
-            })
-          }
+    placementDecisions &&
+      placementDecisions
+        .filter((placementDecision) => {
+          return get(placementDecision, 'metadata.namespace') === namespace
         })
-      })
+        .forEach((placementDecision) => {
+          const name =
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ||
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule']
+          values.forEach(({ ruleName, subscription }) => {
+            if (name === ruleName) {
+              subscription.rules.push(placementDecision)
+              const clusters = get(placementDecision, 'status.decisions', [])
+              clusters.forEach((cluster) => {
+                // get cluster name
+                const clusterName = get(cluster, 'clusterName')
+                if (clusterName && allClusters.indexOf(clusterName) === -1) {
+                  allClusters.push(clusterName)
+                }
+              })
+            }
+          })
+        })
   })
 }
 
