@@ -4,6 +4,7 @@ import { PageSection, Switch } from '@patternfly/react-core'
 import { ReactNode, useCallback, useState } from 'react'
 import { Wizard, WizardProps } from '@patternfly-labs/react-form-wizard'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
+import './WizardPage.css'
 
 export type WizardPageProps = {
   breadcrumb?: { text: string; to?: string }[]
@@ -48,9 +49,11 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
       <AcmErrorBoundary>
         <AcmPageContent id={id}>
           <PageSection variant="light" type="wizard">
-            <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
-              {children}
-            </Wizard>
+            <div className="wizard-page">
+              <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
+                {children}
+              </Wizard>
+            </div>
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
