@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import { parseYAML, escapeYAML, getImmutables, getImmutableRows } from './source-utils'
+import { parseYAML, escapeYAML, getDecorationData, getDecorationRows } from './source-utils'
 import { setSourcePaths } from './initialize-control-functions'
 import { caseFn, defaultFn, if_eqFn, if_gtFn, if_neFn, if_orFn, if_truthyFn, switchFn } from '../helpers'
 import get from 'lodash/get'
@@ -91,14 +91,14 @@ export const generateSourceFromTemplate = (template, controlData, otherYAMLTabs)
   }
 
   // what lines should be readonly in editor
-  const immutables = getImmutables(controlData)
-  const immutableRows = getImmutableRows(immutables, templateObject)
+  const decorationData = getDecorationData(controlData)
+  const decorationRows = getDecorationRows(decorationData, templateObject)
 
   return {
     templateYAML: yaml,
     templateObject,
     templateResources: parsed.resources,
-    immutableRows,
+    decorationRows,
   }
 }
 

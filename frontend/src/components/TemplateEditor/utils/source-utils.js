@@ -20,6 +20,11 @@ export const ControlMode = Object.freeze({
   PROMPT_ONLY: 'PROMPT_ONLY',
 })
 
+export const DecorationType = Object.freeze({
+  IMMUTABLE: 'IMMUTABLE',
+  DEPRECATED: 'DEPRECATED',
+})
+
 export const initializeControls = (initialControlData, editor, onControlInitialize, i18n, uniqueGroupID, inGroup) => {
   const controlData = initializeControlData(initialControlData, onControlInitialize, i18n, uniqueGroupID, inGroup)
   initializeControlFunctions(controlData, editor)
@@ -64,28 +69,31 @@ export function reverseTemplate(controlData, templateObject, activeTabId) {
 }
 
 // find immutable paths
-export function getImmutables(controlData, immutables) {
-  immutables = immutables || []
-  const findImmutables = (control, immutables) => {
-    const { type, active = [], immutable } = control
+export function getDecorationData(controlData, decorationData) {
+  decorationData = decorationData || []
+  const findDecorationData = (control, decorationData) => {
+    const { type, active = [], immutable, deprecated } = control
     if (type === 'group') {
       active.forEach((group) => {
         group.forEach((gcontrol) => {
-          findImmutables(gcontrol, immutables)
+          findDecorationData(gcontrol, decorationData)
         })
       })
     } else if (immutable) {
-      immutables.push(immutable)
+      decorationData.push({ ...immutable, decorationType: DecorationType.IMMUTABLE })
+    } else if (deprecated) {
+      decorationData.push({ ...deprecated, decorationType: DecorationType.DEPRECATED })
     }
   }
   controlData.forEach((control) => {
-    findImmutables(control, immutables)
+    findDecorationData(control, decorationData)
   })
-  return immutables
+  return decorationData
 }
 
 // set immutable values
-export function setImmutableValues(immutables, resources) {
+export function setImmutableValues(decorationData, resources) {
+  const immutables = decorationData.filter(({ decorationType }) => decorationType === DecorationType.IMMUTABLE)
   if (immutables.length) {
     // create an array map
     const parsed = {}
@@ -108,16 +116,16 @@ export function setImmutableValues(immutables, resources) {
 }
 
 // get readonly lines in yaml
-export function getImmutableRows(immutables, templateObjects) {
-  const immutableRows = []
-  immutables.forEach(({ path: _path }) => {
-    const path = getSourcePath(_path)
+export function getDecorationRows(decorationData, templateObjects) {
+  const decorationRows = []
+  decorationData.forEach(({ path: _path, decorationType }) => {
+    const path = decorationType === DecorationType.DEPRECATED ? _path : getSourcePath(_path)
     const row = get(templateObjects, path)
     if (row) {
-      immutableRows.push(row)
+      decorationRows.push({ ...row, decorationType })
     }
   })
-  return immutableRows
+  return decorationRows
 }
 
 // reverse control active valuess from template

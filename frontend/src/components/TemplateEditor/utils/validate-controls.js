@@ -111,7 +111,7 @@ export function validateControls(
         editor.decorations = editor.deltaDecorations(editor.decorations, [
           ...editor.errorList,
           ...(editor.changeList || []),
-          ...(editor.immutableList || []),
+          ...(editor.decorationList || []),
         ])
       }
     }, 0)

@@ -884,6 +884,7 @@
   "creation.duplicate.clusterSelector.label": "Duplicated cluster selector label: '{{0}}'",
   "creation.enter.value": "Enter {{0}}",
   "creation.invalid.url": "Value must be a valid URL format.",
+  "creation.deprecated.placementrule": "PlacementRule is deprecated.",
   "creation.missing.clusterSelector.label": "Cluster matching labels section missing label name.",
   "creation.missing.input": "This value is required: '{{0}}'",
   "creation.missing.timeWindow.days": "Select at least one day to create a time window.",

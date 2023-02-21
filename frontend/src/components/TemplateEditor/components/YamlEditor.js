@@ -4,13 +4,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
+import { DecorationType } from '../utils/source-utils'
 
 class YamlEditor extends React.Component {
   static propTypes = {
     addEditor: PropTypes.func,
     editor: PropTypes.element,
     hide: PropTypes.bool,
-    immutableRows: PropTypes.array,
+    decorationRows: PropTypes.array,
     onYamlChange: PropTypes.func,
     readOnly: PropTypes.bool,
     showCondensed: PropTypes.bool,
@@ -124,9 +125,11 @@ class YamlEditor extends React.Component {
       ((e) => {
         // determine readonly ranges
         const prohibited = []
-        const { immutableRows = [] } = this.props
-        immutableRows.forEach((obj) => {
-          prohibited.push(new this.editor.monaco.Range(obj.$r + 1, 0, obj.$r + 1, 132))
+        const { decorationRows = [] } = this.props
+        decorationRows.forEach((obj) => {
+          if (obj.decorationType === DecorationType.IMMUTABLE) {
+            prohibited.push(new this.editor.monaco.Range(obj.$r + 1, 0, obj.$r + 1, 132))
+          }
         })
 
         // if user presses enter, add new key: below this line

@@ -2,7 +2,7 @@
 'use strict'
 
 import { diff } from 'deep-diff'
-import { parseYAML, getInsideObject, getResourceID } from './source-utils'
+import { parseYAML, getInsideObject, getResourceID, DecorationType } from './source-utils'
 import get from 'lodash/get'
 import keyBy from 'lodash/keyBy'
 
@@ -137,7 +137,7 @@ export const highlightChanges = (editor, oldYAML, newYAML, highlightEncoded) => 
       editor.changeList = decorationList
       editor.decorations = editor.deltaDecorations(editor.decorations, [
         ...(editor.errorList || []),
-        ...(editor.immutableList || []),
+        ...(editor.decorationList || []),
         ...editor.changeList,
       ])
     }, 0)
@@ -229,24 +229,41 @@ export const highlightAllChanges = (editors, oldYAML, newYAML, otherYAMLTabs, se
   }
 }
 
-export const highlightImmutables = (editors, immutableRows) => {
+export const highlightDecorations = (editors, decorationRows, i18n) => {
   if (editors.length > 0) {
     const editor = editors[0]
     const decorationList = []
-    immutableRows.forEach((obj) => {
-      decorationList.push({
-        range: new editor.monaco.Range(obj.$r + 1, 0, obj.$r + 1, 132),
-        options: {
-          inlineClassName: 'protectedDecoration',
-        },
+    decorationRows
+      .filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t.decorationType === value.decorationType && t.$r === value.$r)
+      )
+      .forEach((obj) => {
+        const options = {}
+        switch (obj.decorationType) {
+          case DecorationType.DEPRECATED:
+            options.glyphMarginClassName = 'infoDecoration'
+            options.glyphMarginHoverMessage = {
+              value: '```html\n' + i18n('creation.deprecated.placementrule') + ' \n```',
+            }
+            options.overviewRuler = { color: '#2B9AF3' }
+            options.minimap = { color: '#2B9AF360' }
+            break
+          case DecorationType.IMMUTABLE:
+            options.inlineClassName = 'protectedDecoration'
+            break
+        }
+        decorationList.push({
+          range: new editor.monaco.Range(obj.$r + 1, 0, obj.$r + 1, 132),
+          options,
+        })
       })
-    })
     setTimeout(() => {
-      editor.immutableList = decorationList
+      editor.decorationList = decorationList
       editor.decorations = editor.deltaDecorations(editor.decorations, [
         ...(editor.errorList || []),
         ...(editor.changeList || []),
-        ...editor.immutableList,
+        ...editor.decorationList,
       ])
     }, 0)
   }
