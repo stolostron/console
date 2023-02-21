@@ -52,7 +52,10 @@ export function CreatePolicySet() {
   const [managedClusters] = useRecoilState(managedClustersState)
   const [clusterSets] = useRecoilState(managedClusterSetsState)
   const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-  const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+  const namespaceNames = useMemo(
+    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
+    [namespaces]
+  )
   return (
     <PolicySetWizard
       title={t('Create policy set')}
