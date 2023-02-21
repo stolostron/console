@@ -545,20 +545,37 @@ export function CredentialsForm(
     }
   }, [isHostedControlPlane, s3values])
 
+  const breadcrumbs =
+    credentialsType === Provider.aws || credentialsType === Provider.awss3
+      ? [
+          { text: t('Credentials'), to: NavigationPath.credentials },
+          { text: t('Credential Type'), to: NavigationPath.addCredentials },
+          {
+            text: t('AWS credential'),
+            to: NavigationPath.addAWSType,
+          },
+          { text: title },
+        ]
+      : [
+          { text: t('Credentials'), to: NavigationPath.credentials },
+          { text: t('Credential Type'), to: NavigationPath.addCredentials },
+          { text: title },
+        ]
+
   const formData: FormData = {
     title,
     titleTooltip,
-    breadcrumb: [{ text: t('Credentials'), to: NavigationPath.credentials }, { text: title }],
+    breadcrumb: breadcrumbs,
     sections: [
       {
         type: 'Section',
-        title: credentialsType ? t('Basic information') : t('Infrastructure provider'),
+        title: credentialsType ? t('Basic information') : t('Credential type'),
         wizardTitle: t('Enter the basic credentials information'),
         inputs: [
           {
             id: 'credentialsType',
             type: 'Select',
-            label: t('Infrastructure provider'),
+            label: t('Credential type'),
             value: credentialsType,
             onChange: noop,
             options: [

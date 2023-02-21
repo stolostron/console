@@ -154,7 +154,7 @@ export function CredentialsTable(props: {
             ),
           },
           {
-            header: t('Infrastructure provider'),
+            header: t('Credential type'),
             sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
               return compareStrings(getProviderName(a.metadata?.labels), getProviderName(b.metadata?.labels))
             },
