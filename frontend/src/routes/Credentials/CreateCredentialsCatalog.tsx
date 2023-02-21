@@ -59,7 +59,7 @@ export function CreateCredentialsCatalog() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Credential Type')}
+          title={t('Credential type')}
           description={t('Choose your credential type.')}
           breadcrumbs={breadcrumbs}
           titleHelp={

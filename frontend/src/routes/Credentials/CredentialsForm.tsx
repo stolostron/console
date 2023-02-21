@@ -549,7 +549,7 @@ export function CredentialsForm(
     credentialsType === Provider.aws || credentialsType === Provider.awss3
       ? [
           { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential Type'), to: NavigationPath.addCredentials },
+          { text: t('Credential type'), to: NavigationPath.addCredentials },
           {
             text: t('AWS credential'),
             to: NavigationPath.addAWSType,
@@ -558,7 +558,7 @@ export function CredentialsForm(
         ]
       : [
           { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential Type'), to: NavigationPath.addCredentials },
+          { text: t('Credential type'), to: NavigationPath.addCredentials },
           { text: title },
         ]
 
