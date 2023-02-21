@@ -259,7 +259,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   <ActionList>
                     {mode === 'details' && props.edit !== undefined && (
                       <ActionListItem>
-                        <Button onClick={props.edit}>Edit</Button>
+                        <Button onClick={props.edit}>{t('Edit')}</Button>
                       </ActionListItem>
                     )}
                   </ActionList>
