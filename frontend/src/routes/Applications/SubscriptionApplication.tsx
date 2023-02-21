@@ -25,6 +25,7 @@ import { useSearchParams } from '../../lib/search'
 import { NavigationPath } from '../../NavigationPath'
 import {
     ApplicationKind,
+    Channel,
     IResource,
     ProviderConnection,
     ProviderConnectionApiVersion,
@@ -378,6 +379,7 @@ export function CreateSubscriptionApplication(
     const location = useLocation()
     const editApplication = getEditApplication(location)
     const searchParams = useSearchParams()
+
     useEffect(() => {
         if (editApplication) {
             const { selectedAppName, selectedAppNamespace } = editApplication
@@ -403,9 +405,35 @@ export function CreateSubscriptionApplication(
     }, [])
 
     function onControlInitialize(control: any) {
+        const specPathname = 'spec.pathname'
+        const keyFn = (channel: Channel) => {
+            return `${_.get(channel, specPathname, '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
+                channel,
+                'metadata.name',
+                'name'
+            )}]`
+        }
+        const loadExistingChannels = (type: string) => {
+            control.availableData = _.keyBy(
+                _.filter(channels, (channel) => {
+                    return channel.spec.type.toLowerCase().startsWith(type)
+                }),
+                keyFn
+            )
+            control.available = _.map(Object.values(control.availableData), keyFn).sort()
+        }
         switch (control.id) {
             case 'connection':
                 setConnectionControl(control)
+                break
+            case 'githubURL':
+                loadExistingChannels('git')
+                break
+            case 'helmURL':
+                loadExistingChannels('helmrepo')
+                break
+            case 'objectstoreURL':
+                loadExistingChannels('objectbucket')
                 break
         }
     }

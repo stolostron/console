@@ -820,7 +820,6 @@
     "creation.app.insecureSkipVerify.git.tooltip": "Disable server TLS certificate verification for Git server connection.",
     "creation.app.insecureSkipVerify.helm.tooltip": "Disable server TLS certificate verification for Helm server connection.",
     "creation.app.insecureSkipVerify.label": "Disable server certificate verification",
-    "creation.app.loading.channels": "Loading definitions...",
     "creation.app.loading.rules": "Loading placement rules...",
     "creation.app.local.clusters.only": "{{0}} deploys only to local cluster",
     "creation.app.name": "Name",
