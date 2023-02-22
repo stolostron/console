@@ -24,7 +24,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
-      immutables={['PlacementBinding.0.subjects.0.*']}
+      immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
