@@ -75,18 +75,18 @@ export function ViolationsCard(props: {
         }}
         data={[
           {
-            key: t('violation', { count: props.noncompliant }),
+            key: t('violation'),
             value: props.noncompliant,
             isPrimary: true,
             link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=with-violations` : undefined,
           },
           {
-            key: 'pending',
+            key: t('pending'),
             value: props.pending,
             link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
           },
           {
-            key: 'without violations',
+            key: t('without violations'),
             value: props.compliant,
             link: props.compliant > 0 ? `${NavigationPath.policies}?violations=without-violations` : undefined,
           },

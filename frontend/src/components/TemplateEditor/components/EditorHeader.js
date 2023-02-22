@@ -28,6 +28,7 @@ class EditorHeader extends React.Component {
   render() {
     const { children, readOnly, otherYAMLTabs = [], title, handleEditorCommand, i18n } = this.props
     const editorToolbarTitle = i18n('editor.toolbar')
+
     if (readOnly) {
       return (
         <div>
@@ -63,7 +64,12 @@ class EditorHeader extends React.Component {
           <div className="creation-view-yaml-header-tabs">
             {this.renderEditorTabs(otherYAMLTabs)}
             {this.renderShowSecrets()}
-            <ClipboardCopy variant="inline-compact" isBlock onCopy={() => handleEditorCommand('copyAll')} />
+            <ClipboardCopy
+              hoverTip={i18n('Copy to clipboard')}
+              variant="inline-compact"
+              isBlock
+              onCopy={() => handleEditorCommand('copyAll')}
+            />
           </div>
         </div>
       )

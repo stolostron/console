@@ -234,7 +234,7 @@ function ClustersCard() {
   return (
     <div>
       <Card isRounded>
-        <CardTitle>{'Clusters'}</CardTitle>
+        <CardTitle>{t('Clusters')}</CardTitle>
         <CardBody>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
             {clusters.map((cluster) => {
