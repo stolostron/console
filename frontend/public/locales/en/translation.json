@@ -1731,7 +1731,6 @@
   "Next steps: Adding hosts": "Next steps: Adding hosts",
   "No": "No",
   "No {{items}} found": "No {{items}} found",
-  "No applications match your selected filters": "No applications match your selected filters",
   "No Argo route found for namespace {0} on cluster {1}": "No Argo route found for namespace {0} on cluster {1}",
   "No conditions found": "No conditions found",
   "No infrastructure environments yet": "No infrastructure environments yet",

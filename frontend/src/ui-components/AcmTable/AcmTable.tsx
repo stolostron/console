@@ -986,7 +986,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems || filters.length : false
+  const showToolbar = props.showToolbar !== false ? hasItems : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
   const translatedPaginationTitles = usePaginationTitles()
