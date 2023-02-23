@@ -1,14 +1,11 @@
 .add-label-btn {
-    width: 190px;
-    height: 40px;
-    padding: 5px;
-    text-align: center;
-    cursor: pointer;
+  padding: 5px;
+  cursor: pointer;
 }
 .btn-disabled {
-    cursor: not-allowed !important;
+  cursor: not-allowed !important;
 }
 
 .clusterSelector-container .pf-c-accordion__expanded-content-body::after {
-    background-color: unset;
+  background-color: unset;
 }
