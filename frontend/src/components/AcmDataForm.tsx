@@ -187,7 +187,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                           onClick={() => {
                             navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
-                              <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
+                              <span style={{ wordBreak: 'keep-all' }}>{t('Successfully copied to clipboard!')}</span>
                             )
                             setTimeout(() => {
                               setCopyHint(<span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>)

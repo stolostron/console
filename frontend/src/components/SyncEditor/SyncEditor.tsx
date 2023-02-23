@@ -72,10 +72,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
     }
   }
+  const { t } = useTranslation()
   const editorHadFocus = useRef(false)
-  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
-  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
-  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
+  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Copy')}</span>
+  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Selection copied')}</span>
+  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('All copied')}</span>
   const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
   const [prohibited, setProhibited] = useState<any>([])
   const [filteredRows, setFilteredRows] = useState<number[]>([])
@@ -112,7 +113,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
-  const { t } = useTranslation()
 
   // compile schema(s) just once
   const validationRef = useRef<unknown>()
