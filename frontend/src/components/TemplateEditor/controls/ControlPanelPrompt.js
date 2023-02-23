@@ -3,6 +3,7 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Button } from '@patternfly/react-core'
 
 class ControlPanelPrompt extends React.Component {
   static propTypes = {
@@ -32,17 +33,9 @@ class ControlPanelPrompt extends React.Component {
     return (
       <React.Fragment>
         <div className="creation-view-controls-add-value-container bottom-right">
-          <div
-            id={id}
-            className="creation-view-controls-add-button"
-            tabIndex="0"
-            role={'button'}
-            onClick={createPopupWindow}
-            onKeyPress={createPopupWindow}
-          >
+          <Button id={id} variant="link" onClick={createPopupWindow} icon={icon} iconPosition="right">
             {prompt}
-            {icon}
-          </div>
+          </Button>
         </div>
       </React.Fragment>
     )

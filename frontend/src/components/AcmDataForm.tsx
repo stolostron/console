@@ -71,7 +71,7 @@ import {
   EyeSlashIcon,
   HelpIcon,
   PasteIcon,
-  PlusIcon,
+  PlusCircleIcon,
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
@@ -1553,10 +1553,10 @@ function OrderedItemsInput(props: {
         style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
         variant="link"
         isSmall
-        aria-label="Action"
         onClick={() => input.onCreate?.()}
+        icon={<PlusCircleIcon />}
       >
-        <PlusIcon /> &nbsp; {input.placeholder}
+        {input.placeholder}
       </Button>
     </Fragment>
   )

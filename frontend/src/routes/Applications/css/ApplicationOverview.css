@@ -58,9 +58,6 @@
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.pf-c-button.pf-m-link {
-    font-size: var(--pf-global--FontSize--sm);
-}
 
 .argoLinkLoading {
     pointer-events: none;

@@ -723,11 +723,6 @@ class ControlPanel extends React.Component {
     const handleGroupChange = () => {
       this.props.handleGroupChange(control, controlData, this.creationView, inx)
     }
-    const handleGroupChangeKey = (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        handleGroupChange()
-      }
-    }
     return (
       <Button
         variant="plain"
@@ -736,7 +731,6 @@ class ControlPanel extends React.Component {
         title={deletePrompt}
         aria-label={deletePrompt}
         onClick={handleGroupChange}
-        onKeyPress={handleGroupChangeKey}
       >
         <TrashIcon />
       </Button>
@@ -751,27 +745,11 @@ class ControlPanel extends React.Component {
     const handleGroupChange = () => {
       this.props.handleGroupChange(control, controlData, this.creationView)
     }
-    const handleGroupChangeKey = (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        handleGroupChange()
-      }
-    }
+
     return (
-      <div className="creation-view-controls-add-value-container">
-        <div
-          id={`add-${control.id}`}
-          className="creation-view-controls-add-button"
-          tabIndex="0"
-          role={'button'}
-          title={addPrompt}
-          aria-label={addPrompt}
-          onClick={handleGroupChange}
-          onKeyPress={handleGroupChangeKey}
-        >
-          {addPrompt}
-          <PlusCircleIcon className="icon" />
-        </div>
-      </div>
+      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />}>
+        {addPrompt}
+      </Button>
     )
   }
 

@@ -5,7 +5,16 @@
 import { Fragment, Component } from 'react'
 import PropTypes from 'prop-types'
 import { AcmTextInput } from '../../../../../../ui-components'
-import { Radio, FormGroup, Accordion, AccordionItem, AccordionContent, Popover, Button } from '@patternfly/react-core'
+import {
+  Radio,
+  FormGroup,
+  Accordion,
+  AccordionItem,
+  AccordionContent,
+  Popover,
+  Button,
+  ButtonVariant,
+} from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
@@ -107,30 +116,14 @@ export class ClusterSelector extends Component {
                       >
                         {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
                         {hasLabels && (
-                          <div
-                            className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                            tabIndex="0"
-                            role={'button'}
+                          <Button
+                            isDisabled={isReadOnly}
+                            variant={ButtonVariant.link}
                             onClick={() => this.addLabelToList(control, !isReadOnly)}
-                            onKeyPress={this.addLabelKeyPress.bind(this)}
+                            icon={<PlusCircleIcon />}
                           >
-                            <PlusCircleIcon
-                              color="#06c"
-                              key="add-icon"
-                              className="add-label-btn-icon"
-                              style={{ float: 'left', marginLeft: '7px' }}
-                            />
-                            <div
-                              className="add-label-btn-text"
-                              style={{
-                                fontWeight: '700',
-                                fontSize: '14px',
-                                color: '#06c',
-                              }}
-                            >
-                              {i18n('creation.app.settings.selectorClusters.prop.add')}
-                            </div>
-                          </div>
+                            {i18n('creation.app.settings.selectorClusters.prop.add')}
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -215,17 +208,14 @@ export class ClusterSelector extends Component {
                 </div>
 
                 {id !== 0 ? ( // Option to remove added labels
-                  <div
+                  <Button
                     id={id}
-                    className={`remove-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                    style={{ padding: '12px 5px', cursor: 'pointer' }}
-                    tabIndex="0"
-                    role={'button'}
+                    isDisabled={isReadOnly}
+                    variant={ButtonVariant.link}
                     onClick={() => this.removeLabelFromList(control, item, isReadOnly)}
-                    onKeyPress={this.removeLabelKeyPress.bind(this)}
-                  >
-                    <TimesCircleIcon color="#06c" key="remove-icon" />
-                  </div>
+                    aria-label={i18n('Remove label')}
+                    icon={<TimesCircleIcon />}
+                  />
                 ) : (
                   ''
                 )}
@@ -254,12 +244,6 @@ export class ClusterSelector extends Component {
     }
   }
 
-  addLabelKeyPress = (e) => {
-    if (e.type === 'click' || e.key === 'Enter') {
-      this.addLabelToList(this.props.control)
-    }
-  }
-
   removeLabelFromList = (control, item, isReadOnly) => {
     if (!isReadOnly) {
       // Removed labels are no longer valid
@@ -268,12 +252,6 @@ export class ClusterSelector extends Component {
       // Update UI and yaml editor
       this.forceUpdate()
       this.handleChange({})
-    }
-  }
-
-  removeLabelKeyPress = (e) => {
-    if (e.type === 'click' || e.key === 'Enter') {
-      this.removeLabelFromList(this.props.control, { id: e.target.id })
     }
   }
 
