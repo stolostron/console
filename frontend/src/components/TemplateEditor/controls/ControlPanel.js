@@ -4,7 +4,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Alert, Button } from '@patternfly/react-core'
-import { TrashIcon } from '@patternfly/react-icons'
+import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import classNames from 'classnames'
 import ControlPanelAccordion from './ControlPanelAccordion'
 import ControlPanelTextInput from './ControlPanelTextInput'
@@ -22,7 +22,6 @@ import ControlPanelWizard from './ControlPanelWizard'
 import ControlPanelPrompt from './ControlPanelPrompt'
 import ControlPanelSkeleton from './ControlPanelSkeleton'
 import '../css/control-panel.css'
-import { AddIcon } from '../icons/Icons'
 
 class ControlPanel extends React.Component {
   static propTypes = {
@@ -770,7 +769,7 @@ class ControlPanel extends React.Component {
           onKeyPress={handleGroupChangeKey}
         >
           {addPrompt}
-          <AddIcon className="icon" />
+          <PlusCircleIcon className="icon" />
         </div>
       </div>
     )
