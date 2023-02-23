@@ -1111,6 +1111,19 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             </Title>
           </EmptyState>
         </PageSection>
+      ) : items.length === 0 && filters.length ? (
+        <PageSection variant="light" padding={{ default: 'noPadding' }}>
+          <AcmEmptyState
+            title={t('No results found')}
+            message={t('No results match the filter criteria. Clear filters to show results.')}
+            showIcon={false}
+            action={
+              <AcmButton variant="link" onClick={clearSearchAndFilters}>
+                {t('Clear all filters')}
+              </AcmButton>
+            }
+          />
+        </PageSection>
       ) : items.length === 0 ? (
         <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
           {props.emptyState ?? (

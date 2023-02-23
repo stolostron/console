@@ -1033,45 +1033,24 @@ export default function ApplicationsOverview() {
         filters={filters}
         customTableAction={appCreationButton}
         emptyState={
-          filters.length ? (
-            <AcmEmptyState
-              key="appOverviewEmptyState"
-              title={t("No applications match your selected filters")}
-              message={
-                <Text>
-                  <Trans
-                    i18nKey="Click <bold>Create application</bold> to create your resource or clear your filters."
-                    components={{ bold: <strong /> }}
-                  />
-                </Text>
-              }
-              action={
-                <>
-                  {appCreationButton}
-                  <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
-                </>
-              }
-            />
-          ) : (
-            <AcmEmptyState
-              key="appOverviewEmptyState"
-              title={t("You don't have any applications")}
-              message={
-                <Text>
-                  <Trans
-                    i18nKey="Click <bold>Create application</bold> to create your resource."
-                    components={{ bold: <strong /> }}
-                  />
-                </Text>
-              }
-              action={
-                <>
-                  {appCreationButton}
-                  <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
-                </>
-              }
-            />
-          )
+          <AcmEmptyState
+            key="appOverviewEmptyState"
+            title={t("You don't have any applications")}
+            message={
+              <Text>
+                <Trans
+                  i18nKey="Click <bold>Create application</bold> to create your resource."
+                  components={{ bold: <strong /> }}
+                />
+              </Text>
+            }
+            action={
+              <>
+                {appCreationButton}
+                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+              </>
+            }
+          />
         }
         rowActionResolver={rowActionResolver}
       />
