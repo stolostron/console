@@ -1112,18 +1112,81 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </EmptyState>
         </PageSection>
       ) : items.length === 0 && filters.length ? (
-        <PageSection variant="light" padding={{ default: 'noPadding' }}>
-          <AcmEmptyState
-            title={t('No results found')}
-            message={t('No results match the filter criteria. Clear filters to show results.')}
-            showIcon={false}
-            action={
-              <AcmButton variant="link" onClick={clearSearchAndFilters}>
-                {t('Clear all filters')}
-              </AcmButton>
-            }
-          />
-        </PageSection>
+        <Fragment>
+          <div ref={outerDivRef} className={classes.outerDiv}>
+            <div ref={tableDivRef} className={classes.tableDiv}>
+              <Table
+                className={classes.table}
+                cells={columns.map((column) => {
+                  return {
+                    title: column.header,
+                    header: column.tooltip
+                      ? {
+                          info: {
+                            popover: column.tooltip,
+                          },
+                        }
+                      : {},
+                    transforms: [nowrap, ...(column.transforms || []), ...(column.sort ? [sortable] : [])],
+                    cellTransforms: column.cellTransforms || [],
+                    cellFormatters: onCollapse ? [expandable] : [],
+                  }
+                })}
+                rows={rows}
+                rowWrapper={OuiaIdRowWrapper}
+                actionResolver={actionResolver}
+                actions={actions}
+                aria-label={t('Simple Table')}
+                sortBy={adjustedSort}
+                onSort={(_event, index, direction) => updateSort({ index, direction })}
+                onSelect={
+                  /* istanbul ignore next */
+                  rows.length &&
+                  (tableActions?.some(
+                    (action) => action.variant === 'action-group' || action.variant === 'bulk-action'
+                  ) ||
+                    !!props.onSelect)
+                    ? onSelect
+                    : undefined
+                }
+                canSelectAll={false}
+                onCollapse={onCollapse}
+                borders={!props.noBorders}
+                variant={TableVariant.compact}
+                gridBreakPoint={props.gridBreakPoint ?? breakpoint}
+              >
+                <TableHeader />
+                <TableBody />
+              </Table>
+            </div>
+          </div>
+          {!filtered.length && (
+            <PageSection variant="light" padding={{ default: 'noPadding' }}>
+              <AcmEmptyState
+                title={t('No results found')}
+                message={t('No results match the filter criteria. Clear filters to show results.')}
+                showIcon={false}
+                action={
+                  <AcmButton variant="link" onClick={clearSearchAndFilters}>
+                    {t('Clear all filters')}
+                  </AcmButton>
+                }
+              />
+            </PageSection>
+          )}
+          {(!props.autoHidePagination || filtered.length > perPage) && (
+            <Pagination
+              titles={translatedPaginationTitles}
+              itemCount={itemCount}
+              perPage={perPage}
+              page={page}
+              variant={PaginationVariant.bottom}
+              onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
+              onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
+              aria-label={t('Pagination bottom')}
+            />
+          )}
+        </Fragment>
       ) : items.length === 0 ? (
         <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
           {props.emptyState ?? (
