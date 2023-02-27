@@ -28,11 +28,12 @@ echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
 INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}'`
 
-SA_SECRET=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE --selector=app=console-chart,component=serviceaccount -o json | jq -r '.items[0].secrets[] | select (.name | test("-token-")).name')
+SA=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE --selector=app=console-chart,component=serviceaccount -o jsonpath='{.items[0].metadata.name}')
+SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name")
 SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE ${SA_SECRET} -o="jsonpath={.data.token}"`
 
 echo ${SA_TOKEN} > /tmp/tmp_SA_TOKEN
-SA_TOKEN=`cat /tmp/tmp_SA_TOKEN | base64 -d -`
+SA_TOKEN=`cat /tmp/tmp_SA_TOKEN | base64 -d`
 rm /tmp/tmp_SA_TOKEN
 echo TOKEN=$SA_TOKEN >> ./backend/.env
 
@@ -40,6 +41,6 @@ REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirect
 oc patch OAuthClient multicloudingress --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"
 
 # Create route to the search-api service on the target cluster.
-oc create route passthrough search-api --service=search-search-api --insecure-policy=Redirect -n $INSTALLATION_NAMESPACE
+oc get route search-api -n $INSTALLATION_NAMESPACE &>/dev/null || oc create route passthrough search-api --service=search-search-api --insecure-policy=Redirect -n $INSTALLATION_NAMESPACE
 SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE |grep search-api | awk '{print $2}')
 echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
