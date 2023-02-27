@@ -332,7 +332,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                   key={route.title}
                   title={route.title}
                   isExpanded
-                  isActive={!!route.routes.find((route) => location.pathname.startsWith(route.route)}
+                  isActive={!!route.routes.find((route) => location.pathname.startsWith(route.route))}
                 >
                   {route.routes.map((route) => (
                     <NavItem key={route.route} isActive={location.pathname.startsWith(route.route)}>
