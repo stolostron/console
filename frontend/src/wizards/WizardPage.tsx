@@ -48,12 +48,10 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
     >
       <AcmErrorBoundary>
         <AcmPageContent id={id}>
-          <PageSection variant="light" type="wizard">
-            <div className="wizard-page">
-              <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
-                {children}
-              </Wizard>
-            </div>
+          <PageSection variant="light" type="wizard" className="no-drawer-transition">
+            <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
+              {children}
+            </Wizard>
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
