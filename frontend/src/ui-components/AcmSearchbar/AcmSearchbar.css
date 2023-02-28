@@ -65,9 +65,9 @@
     border-bottom: 2px solid var(--pf-global--active-color--100);
 }
 .react-tags__selected {
-        display: inline-flex;
-        overflow: hidden;
-        padding: 4px 8px;
+    display: inline-flex;
+    overflow: hidden;
+    padding: 4px 8px;
 }
 .react-tags__selected-tag {
     padding-right: var(--pf-global--spacer--sm);
