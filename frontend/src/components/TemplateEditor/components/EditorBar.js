@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { SearchInput } from '@patternfly/react-core'
 import '../css/editor-bar.css'
-import { CloseIcon, UndoIcon, RedoIcon, NextIcon, PreviousIcon } from '../icons/Icons'
+import { AngleLeftIcon, AngleRightIcon, CloseIcon, RedoIcon, UndoIcon } from '@patternfly/react-icons'
 
 class EditorButton extends React.Component {
   static propTypes = {
@@ -41,9 +41,9 @@ class EditorButton extends React.Component {
       case 'redo':
         return <RedoIcon />
       case 'next':
-        return <NextIcon />
+        return <AngleRightIcon />
       case 'previous':
-        return <PreviousIcon />
+        return <AngleLeftIcon />
     }
   }
 

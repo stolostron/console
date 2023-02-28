@@ -16,12 +16,6 @@
     margin-bottom: 0;
 }
 
-.temptifly:not(.showWizard) .creation-view-split-container .creation-view-controls-container,
-.temptifly:not(.showWizard) .creation-view-controls-container {
-    margin-top: 20px;
-    margin-left: 20px;
-}
-
 .temptifly:not(.showWizard) .creation-view-split-container.showEditor .creation-view-controls-container {
     padding: 0;
     height: calc(100vh - 210px);
