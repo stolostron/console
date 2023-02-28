@@ -98,7 +98,6 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
   })
 }
 
-
 export function querySearchDisabledManagedClusters(): IRequestResult<ISearchResult> {
   return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
     operationName: 'searchResult',
