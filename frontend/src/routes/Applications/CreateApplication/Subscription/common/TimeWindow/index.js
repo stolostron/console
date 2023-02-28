@@ -259,6 +259,7 @@ export class TimeWindow extends Component {
                         onClick={() => this.addTimeToList(control, modeSelected)}
                         icon={<PlusCircleIcon />}
                         isDisabled={!modeSelected}
+                        isSmall
                       >
                         {i18n('Add another time range')}
                       </Button>
@@ -352,6 +353,7 @@ export class TimeWindow extends Component {
                     onClick={() => this.removeTimeFromList(control, item, modeSelected)}
                     icon={<TimesCircleIcon />}
                     aria-label={i18n('Remove time range')}
+                    isSmall
                   />
                 ) : (
                   ''

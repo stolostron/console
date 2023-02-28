@@ -121,6 +121,7 @@ export class ClusterSelector extends Component {
                             variant={ButtonVariant.link}
                             onClick={() => this.addLabelToList(control, !isReadOnly)}
                             icon={<PlusCircleIcon />}
+                            isSmall
                           >
                             {i18n('creation.app.settings.selectorClusters.prop.add')}
                           </Button>
@@ -215,6 +216,7 @@ export class ClusterSelector extends Component {
                     onClick={() => this.removeLabelFromList(control, item, isReadOnly)}
                     aria-label={i18n('Remove label')}
                     icon={<TimesCircleIcon />}
+                    isSmall
                   />
                 ) : (
                   ''

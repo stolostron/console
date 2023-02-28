@@ -731,6 +731,7 @@ class ControlPanel extends React.Component {
         title={deletePrompt}
         aria-label={deletePrompt}
         onClick={handleGroupChange}
+        isSmall
       >
         <TrashIcon />
       </Button>
@@ -747,7 +748,7 @@ class ControlPanel extends React.Component {
     }
 
     return (
-      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />}>
+      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />} isSmall>
         {addPrompt}
       </Button>
     )
