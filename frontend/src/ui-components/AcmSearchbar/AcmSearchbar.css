@@ -65,9 +65,9 @@
     border-bottom: 2px solid var(--pf-global--active-color--100);
 }
 .react-tags__selected {
-    display: inline-flex;
-    align-items: center;
-    overflow: hidden;
+        display: inline-flex;
+        overflow: hidden;
+        padding: 4px 8px;
 }
 .react-tags__selected-tag {
     padding-right: var(--pf-global--spacer--sm);
@@ -88,6 +88,9 @@
 .react-tags__selected-tag :after {
     content: '\2715';
     margin-left: 8px;
+}
+.react-tags__selected-tag-name {
+    font-size: 12px;
 }
 .react-tags__keyword-tag {
     display: inline-block;
