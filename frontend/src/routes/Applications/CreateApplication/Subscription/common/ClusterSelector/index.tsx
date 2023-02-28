@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { Fragment, useCallback, useState } from 'react'
 import { AcmMultiSelect, AcmTextInput } from '../../../../../../ui-components'
 import {
@@ -141,6 +143,22 @@ const ClusterSelector = (props: {
         })
       }
     })
+
+    // remove deleted cluster set from clusterSetsList
+    const removed = clusterSetsList.filter(
+      (list: { clusterSetName: string }) => !clusterSets.includes(list.clusterSetName)
+    )
+    if (removed) {
+      removed.forEach((list: { clusterSetName: string }) => {
+        clusterSetsList.splice(
+          clusterSetsList.findIndex(function (i: { clusterSetName: string }) {
+            return i === list
+          }),
+          1
+        )
+      })
+    }
+
     handleChange(control)
 
     setSelectedClusterSets(clusterSets)
@@ -313,7 +331,7 @@ const ClusterSelector = (props: {
                   <div className="clusterSelector-labels-section">
                     <div
                       className="labels-section"
-                      style={{ display: 'block', width: '50%' }}
+                      style={{ display: 'block' }}
                       id={`clusterSelector-labels-section-${controlId}`}
                     >
                       <AcmMultiSelect
@@ -362,9 +380,9 @@ export default ClusterSelector
 export const summarize = (control: any, summary: string[]) => {
   const { clusterLabelsList } = control.active || {}
   if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
-    clusterLabelsList.forEach(({ labelName, labelValue }) => {
-      if (labelName && labelValue) {
-        summary.push(`${labelName}=${labelValue}`)
+    clusterLabelsList.forEach((item: { labelValue: string; labelName: string }) => {
+      if (item.labelName && item.labelValue) {
+        summary.push(`${item.labelName}=${item.labelValue}`)
       }
     })
   }
@@ -374,9 +392,9 @@ export const summary = (control: any) => {
   const { clusterLabelsList } = control.active || {}
   if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
     const labels: string[] = []
-    clusterLabelsList.forEach(({ labelName, labelValue }) => {
-      if (labelName && labelValue) {
-        labels.push(`${labelName}=${labelValue}`)
+    clusterLabelsList.forEach((item: { labelValue: string; labelName: string }) => {
+      if (item.labelName && item.labelValue) {
+        labels.push(`${item.labelName}=${item.labelValue}`)
       }
     })
     return [

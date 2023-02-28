@@ -18,7 +18,7 @@ import DeprecationAlert from '../common/DeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules } from '../../../../../resources'
+import { listPlacementRules, listPlacements } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
@@ -33,7 +33,7 @@ export const loadExistingPlacementRules = (t) => {
 
   return {
     query: () => {
-      return listPlacementRules(nsControl.active).promise
+      return Promise.all([listPlacementRules(nsControl.active).promise, listPlacements(nsControl.active).promise])
     },
     variables: (control, globalControl) => {
       nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
@@ -46,7 +46,8 @@ export const loadExistingPlacementRules = (t) => {
 const setAvailableRules = (control, result) => {
   const { loading } = result
   const { data, i18n } = result
-  const placementRules = data
+  const placementRules = data && data[0]
+  const placements = data && data[1]
   control.isLoading = false
   const error = placementRules ? null : result.error
   if (!control.available) {
@@ -63,6 +64,24 @@ const setAvailableRules = (control, result) => {
       control.availableInfo = {}
       const { groupControlData } = control
       const enableHubSelfManagement = getControlByID(groupControlData, 'enableHubSelfManagement')
+
+      const placementKeyFn = (placement) => {
+        let selector = unavailable
+        const placementName = _.get(placement, 'metadata.name', '')
+        const clusterSelector = _.get(placement, 'spec.predicates[0].requiredClusterSelector.labelSelector')
+        if (clusterSelector) {
+          const getLabels = () => {
+            return clusterSelector.matchExpressions
+              .map(({ key, operator, values }) => {
+                return `${key} "${operator}" ${values.join(', ')}`
+              })
+              .join('; ')
+          }
+          selector = i18n('creation.app.clusters.expressions', [placementName, getLabels()])
+        }
+        control.availableInfo[placementName] = selector
+        return placementName
+      }
 
       const keyFn = (rule) => {
         const ruleName = _.get(rule, 'metadata.name', '')
@@ -101,13 +120,29 @@ const setAvailableRules = (control, result) => {
         control.availableInfo[ruleName] = selector
         return ruleName
       }
-      control.availableData = _.keyBy(placementRules, keyFn)
-      control.available = _.map(Object.values(control.availableData), keyFn)
-        .filter((ruleName) => control.availableInfo[ruleName] !== unavailable)
-        .sort()
+
+      let placementRulesAvailableData = {}
+      let placementRulesAvailable = []
+      let placementsAvailableData = {}
+      let placementsAvailable = []
+
+      if (placementRules.length) {
+        placementRulesAvailableData = _.keyBy(placementRules, keyFn)
+        placementRulesAvailable = _.map(Object.values(placementRulesAvailableData), keyFn)
+          .filter((ruleName) => control.availableInfo[ruleName] !== unavailable)
+          .sort()
+      }
+      if (placements.length) {
+        placementsAvailableData = _.keyBy(placements, placementKeyFn)
+        placementsAvailable = _.map(Object.values(placementsAvailableData), placementKeyFn)
+          .filter((placementName) => control.availableInfo[placementName] !== unavailable)
+          .sort()
+      }
+      control.availableData = { ...placementsAvailableData, ...placementRulesAvailableData }
+      control.available = [...placementsAvailable, ...placementRulesAvailable]
       control.info = ''
 
-      // if no existing placement rules...
+      // if no existing placement rules & placements
       const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
       existingRuleControl.disabled = control.available.length === 0
       if (control.available.length === 0) {
