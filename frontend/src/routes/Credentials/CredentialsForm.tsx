@@ -711,7 +711,7 @@ export function CredentialsForm(
         wizardTitle: t('Enter bucket information'),
         inputs: [
           {
-            id: 'bucket_name',
+            id: 'bucketName',
             type: 'Text',
             label: t('Bucket name'),
             placeholder: t('Enter your bucket name'),
