@@ -28,7 +28,7 @@ export default function ApplicationsPage() {
     appTableFilterItems.includes('fluxapps') ||
     !appTableFilterItems.length
 
-  const { data: data, loading: loading, startPolling: startPolling } = useQuery(queryRemoteArgoApps)
+  const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
