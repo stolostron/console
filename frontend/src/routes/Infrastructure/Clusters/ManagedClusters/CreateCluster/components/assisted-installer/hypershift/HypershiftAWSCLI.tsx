@@ -121,7 +121,6 @@ hypershift create cluster aws
           credentialsType={Provider.awss3}
           handleModalToggle={handleModalToggleAwsBucket}
           hideYaml={true}
-          isHosted={true}
         />
       </Modal>
       <PageHeader
