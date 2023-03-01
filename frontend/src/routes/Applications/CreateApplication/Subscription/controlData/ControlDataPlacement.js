@@ -24,8 +24,6 @@ import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'
-const localClusterCheckbox = 'local-cluster-checkbox'
-const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 const unavailable = '-unavailable-'
 
 export const loadExistingPlacementRules = (t) => {
@@ -77,7 +75,7 @@ const setAvailableRules = (control, result) => {
               })
               .join('; ')
           }
-          selector = i18n('creation.app.clusters.expressions', [placementName, getLabels()])
+          selector = i18n('creation.app.clusters.expressions', [placement.kind, placementName, getLabels()])
         }
         control.availableInfo[placementName] = selector
         return placementName
@@ -99,7 +97,7 @@ const setAvailableRules = (control, result) => {
                 })
                 .join('; ')
             }
-            selector = i18n('creation.app.clusters.expressions', [ruleName, getLabels()])
+            selector = i18n('creation.app.clusters.expressions', [rule.kind, ruleName, getLabels()])
           }
         } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
           selector = enableHubSelfManagement?.active
@@ -114,7 +112,7 @@ const setAvailableRules = (control, result) => {
                 })
                 .join('; ')
             }
-            selector = i18n('creation.app.clusters.matching', [ruleName, getLabels()])
+            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getLabels()])
           }
         }
         control.availableInfo[ruleName] = selector
@@ -177,14 +175,10 @@ export const updatePlacementControls = (control) => {
 
   const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
   const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
-  const onlineControl = getControlByID(groupControlData, onlineClusterCheckbox)
-  const localClusterControl = getControlByID(groupControlData, localClusterCheckbox)
 
   // set radio buttons based on what was selected
   clusterSelectorControl && _.set(clusterSelectorControl, 'active.mode', id === clusterSelectorCheckbox)
   existingRuleControl && _.set(existingRuleControl, 'active', id === existingRuleCheckbox)
-  onlineControl && _.set(onlineControl, 'active', id === onlineClusterCheckbox)
-  localClusterControl && _.set(localClusterControl, 'active', id === localClusterCheckbox)
 
   // opaque the existing rules combobox
   const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementrulecombo')
@@ -233,18 +227,12 @@ export const reverseOnline = (control, templateObject) => {
 }
 
 export const summarizeOnline = (control, globalControlData, summary, i18n) => {
-  const localClusterCheckboxControl = getControlByID(control.groupControlData, localClusterCheckbox)
-  const onlineClusterCheckboxControl = getControlByID(control.groupControlData, onlineClusterCheckbox)
   const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
   const existingRuleControl = getControlByID(control.groupControlData, existingRuleCheckbox)
   const existingRuleCombo = getControlByID(control.groupControlData, 'placementrulecombo')
 
   if (_.get(existingRuleControl, 'active', false) === true) {
     summary.push(existingRuleCombo.info)
-  } else if (_.get(localClusterCheckboxControl, 'active', false) === true) {
-    summary.push(i18n('edit.app.localCluster.summary'))
-  } else if (_.get(onlineClusterCheckboxControl, 'active', false) === true) {
-    summary.push(i18n('edit.app.onlineClusters.summary'))
   } else if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
     summarizeClusterSelector(control, [], summary)
   }
@@ -315,33 +303,7 @@ const placementData = (isLocalCluster, t) => {
       onSelect: updatePlacementControls,
       summarize: summarizeSelectorControl,
     },
-    {
-      id: onlineClusterCheckbox,
-      type: 'radio',
-      name: isLocalCluster ? t('creation.app.settings.onlineClusters') : t('creation.app.settings.onlineClustersOnly'),
-      tooltip: isLocalCluster
-        ? t('tooltip.creation.app.settings.onlineClusters')
-        : t('tooltip.creation.app.settings.onlineClustersOnly'),
-      active: false,
-      available: [],
-      onSelect: updatePlacementControls,
-      reverse: reverseOnline,
-      summarize: () => {},
-    },
-    {
-      id: localClusterCheckbox,
-      type: isLocalCluster ? 'radio' : 'hidden',
-      name: t('creation.app.settings.localClusters'),
-      tooltip: t('tooltip.creation.app.settings.localClusters'),
-      onSelect: updatePlacementControls,
-      active: false,
-      available: [],
-      reverse: [
-        'Subscription[0].spec.placement.local',
-        'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
-      ],
-      summarize: () => {},
-    },
+
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  settings  /////////////////////////////////////
     {
