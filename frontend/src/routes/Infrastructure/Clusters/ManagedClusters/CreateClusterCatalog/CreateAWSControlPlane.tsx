@@ -117,32 +117,30 @@ export function CreateAWSControlPlane() {
         onBack={back(NavigationPath.createCluster)}
         onCancel={cancel(NavigationPath.clusters)}
         customCatalogSection={
-          <div>
-            <ExpandableSection
-              style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
-              isExpanded={isDiagramExpanded}
-              onToggle={onDiagramToggle}
-              toggleContent={
-                <>
-                  <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
-                  <AcmButton
-                    variant="link"
-                    icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
-                    iconPosition="right"
-                    isInline
-                    onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
-                    onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
-                    onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
-                  >
-                    {t('Learn more about control plane types')}
-                  </AcmButton>
-                </>
-              }
-              isIndented={true}
-            >
-              <HypershiftDiagram />
-            </ExpandableSection>
-          </div>
+          <ExpandableSection
+            style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+            isExpanded={isDiagramExpanded}
+            onToggle={onDiagramToggle}
+            toggleContent={
+              <>
+                <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
+                <AcmButton
+                  variant="link"
+                  icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                  iconPosition="right"
+                  isInline
+                  onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
+                  onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
+                  onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
+                >
+                  {t('Learn more about control plane types')}
+                </AcmButton>
+              </>
+            }
+            isIndented={true}
+          >
+            <HypershiftDiagram />
+          </ExpandableSection>
         }
       />
     </AcmPage>
