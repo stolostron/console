@@ -22,7 +22,7 @@ describe('AcmCountCard', () => {
         expect(getByTestId('ACM Skeleton Card')).toBeInTheDocument()
     })
 
-    test('has zero accessibility defects', async () => {
+    test('Loading Card - has zero accessibility defects', async () => {
         const { container } = render(<SkeletonCard />)
         expect(await axe(container)).toHaveNoViolations()
     })
@@ -83,7 +83,7 @@ describe('AcmCountCard', () => {
         />
     )
 
-    test('has zero accessibility defects', async () => {
+    test('Suggested Card - has zero accessibility defects', async () => {
         const { container, getAllByLabelText } = render(<SuggestedSearchCardWithActions />)
         expect(await axe(container)).toHaveNoViolations()
         userEvent.click(getAllByLabelText('Actions')[0])
@@ -142,7 +142,7 @@ describe('AcmCountCard', () => {
             isSelectable={true}
         />
     )
-    test('has zero accessibility defects', async () => {
+    test('Saved Search Card - has zero accessibility defects', async () => {
         const { container, getAllByLabelText } = render(<SavedSearchCard />)
         expect(await axe(container)).toHaveNoViolations()
         userEvent.click(getAllByLabelText('Actions')[0])
@@ -175,7 +175,7 @@ describe('AcmCountCard', () => {
         />
     )
 
-    test('has zero accessibility defects', async () => {
+    test('ClustersOverview Card - has zero accessibility defects', async () => {
         const { container } = render(<ClustersOverviewVariantWithDescription />)
         expect(await axe(container)).toHaveNoViolations()
     })
@@ -185,7 +185,7 @@ describe('AcmCountCard', () => {
         expect(getByTestId('ACM Clusters Overview Card Variant')).toBeInTheDocument()
     })
 
-    test('has zero accessibility defects', async () => {
+    test('ClustersOverview Card without desc - has zero accessibility defects', async () => {
         const { container } = render(<ClustersOverviewVariantWithOutDescription />)
         expect(await axe(container)).toHaveNoViolations()
     })

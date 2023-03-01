@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { nockCreate, nockGet, nockSearch } from '../../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockGet, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { SelfSubjectAccessReview } from '../../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
@@ -152,7 +152,7 @@ const mockSearchQuery = {
             },
         ],
     },
-    query: 'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}\n',
+    query: 'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}',
 }
 
 const mockSearchResponse = {
@@ -188,7 +188,8 @@ describe('DeleteResourceModal', () => {
             deleteResourceSelfSubjectAccessRequest,
             deleteResourceSelfSubjectAccessResponse
         )
-        const deleteResourceNock = nockCreate(deleteResourceRequest, deleteResourceResponse)
+        const createMCA = nockCreate(deleteResourceRequest, deleteResourceResponse)
+        const deleteMCA = nockDelete(deleteResourceRequest, deleteResourceResponse)
         const getSuccessfulActionNock = nockGet(getMCAResponse)
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
@@ -208,31 +209,27 @@ describe('DeleteResourceModal', () => {
             />
         )
 
-        await act(async () => {
-            // wait for user access query to finish
-            await waitForNocks([deleteResourceSelfSubjectAccessNock])
+        // wait for user access query to finish
+        await waitForNocks([deleteResourceSelfSubjectAccessNock])
 
-            // find the button and simulate a click
-            const submitButton = screen.getByText('Delete')
-            expect(submitButton).toBeTruthy()
-            userEvent.click(submitButton)
+        // find the button and simulate a click
+        const submitButton = screen.getByText('Delete')
+        expect(submitButton).toBeTruthy()
+        userEvent.click(submitButton)
 
-            // // Wait for delete resource requesets to finish
-            // await waitForNocks([deleteResourceNock])
+        // Wait for MCA to be created
+        await waitForNocks([createMCA])
 
-            // // Mimic the polling requests
-            // await waitForNocks([getSuccessfulActionNock])
-
-            // update the apollo cache
-            await waitFor(() => expect(search.isDone()).toBeTruthy())
-
-            await wait() // Test that the component has rendered correctly
-            await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
-        })
-        // Wait for delete resource requesets to finish
-        await waitForNocks([deleteResourceNock])
-
-        // Mimic the polling requests
+        // Wait for MCA polling to complete
         await waitForNocks([getSuccessfulActionNock])
+
+        // Wait for MCA to be deleted
+        await waitForNocks([deleteMCA])
+
+        // update the apollo cache
+        await waitFor(() => expect(search.isDone()).toBeTruthy())
+
+        await wait() // Test that the component has rendered correctly
+        await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
     })
 })
