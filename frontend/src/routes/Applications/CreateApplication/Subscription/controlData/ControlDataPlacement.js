@@ -199,6 +199,13 @@ export const updateNewRuleControls = (control) => {
   const active = availableData[control.active]
   control.info = availableInfo ? availableInfo[control?.active] : ''
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
+  const isPlacementRule = groupControlData.find(({ id }) => id === 'isPlacementRule')
+  if (control.info.startsWith('PlacementRule')) {
+    isPlacementRule && _.set(isPlacementRule, 'active', true)
+  } else {
+    isPlacementRule && _.set(isPlacementRule, 'active', false)
+  }
+
   selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, 'metadata.name'))
 }
 
@@ -226,7 +233,7 @@ export const reverseOnline = (control, templateObject) => {
   }
 }
 
-export const summarizeOnline = (control, globalControlData, summary, i18n) => {
+export const summarizeOnline = (control, globalControlData, summary) => {
   const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
   const existingRuleControl = getControlByID(control.groupControlData, existingRuleCheckbox)
   const existingRuleCombo = getControlByID(control.groupControlData, 'placementrulecombo')
@@ -273,6 +280,11 @@ const placementData = (isLocalCluster, t) => {
       onSelect: updatePlacementControls,
       active: true,
       summarize: summarizeOnline,
+    },
+    {
+      id: 'isPlacementRule',
+      type: 'hidden',
+      active: false,
     },
     {
       id: 'placementrulecombo',

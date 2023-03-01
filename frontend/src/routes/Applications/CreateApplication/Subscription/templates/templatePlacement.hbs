@@ -6,7 +6,11 @@
 
   placement:
     placementRef:
+    {{#if isPlacementRule}}
+      kind: PlacementRule
+    {{else}}
       kind: Placement
+    {{/if}}
 {{#if selectedRuleName}}
       name: {{{selectedRuleName}}}
 {{else}}
