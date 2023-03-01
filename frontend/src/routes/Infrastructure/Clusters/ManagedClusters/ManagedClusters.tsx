@@ -57,6 +57,7 @@ import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
+import { ClusterAction, clusterSupportsAction } from './utils/cluster-actions'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -258,8 +259,7 @@ export function ClustersTable(props: {
         title: t('managed.upgrade.plural'),
         click: (managedClusters: Array<Cluster>) => {
           if (!managedClusters) return
-          const managedClustersNoHypershift = managedClusters.filter((mc) => !mc.isHostedCluster)
-          setUpgradeClusters(managedClustersNoHypershift)
+          setUpgradeClusters(managedClusters)
         },
         variant: 'bulk-action',
       },
@@ -291,7 +291,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.hibernate'),
             action: t('hibernate'),
             processing: t('hibernating'),
-            resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
             description: t('bulk.message.hibernate'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -326,7 +326,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.resume'),
             action: t('resume'),
             processing: t('resuming'),
-            resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
             description: t('bulk.message.resume'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -363,7 +363,7 @@ export function ClustersTable(props: {
             action: t('detach'),
             plural: t('detachable clusters'),
             processing: t('detaching'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
             description: t('bulk.message.detach'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -387,7 +387,11 @@ export function ClustersTable(props: {
             action: t('destroy'),
             processing: t('destroying'),
             plural: t('destroyable clusters'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter(
+              (cluster) =>
+                clusterSupportsAction(cluster, ClusterAction.Destroy) ||
+                clusterSupportsAction(cluster, ClusterAction.Detach)
+            ),
             description: t('bulk.message.destroy'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,

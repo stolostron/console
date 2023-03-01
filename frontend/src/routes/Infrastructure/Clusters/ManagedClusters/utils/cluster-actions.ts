@@ -24,10 +24,17 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
       return cluster.isManaged && cluster.status !== ClusterStatus.detaching
     case ClusterAction.Upgrade:
       return (
-        !!cluster.name && cluster.status === ClusterStatus.ready && !!cluster.distribution?.upgradeInfo?.isReadyUpdates
+        !!cluster.name &&
+        !cluster.isHostedCluster &&
+        cluster.status === ClusterStatus.ready &&
+        !!cluster.distribution?.upgradeInfo?.isReadyUpdates
       )
     case ClusterAction.SelectChannel:
-      return cluster.status === ClusterStatus.ready && !!cluster.distribution?.upgradeInfo?.isReadySelectChannels
+      return (
+        !!cluster.name &&
+        cluster.status === ClusterStatus.ready &&
+        !!cluster.distribution?.upgradeInfo?.isReadySelectChannels
+      )
     case ClusterAction.Import:
       return cluster.status === ClusterStatus.detached
     case ClusterAction.Hibernate:
@@ -64,7 +71,16 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
     case ClusterAction.DestroyHosted:
       return cluster.isHypershift && !!cluster.hypershift?.agent && cluster.status !== ClusterStatus.destroying
     case ClusterAction.UpdateAutomationTemplate:
-      return !cluster.isHostedCluster
+      return (
+        !!cluster.name && // name is set
+        !!cluster.distribution?.ocp?.version && // is OpenShift
+        cluster.labels?.cloud !== 'auto-detect' && // cloud label is set
+        cluster.status === ClusterStatus.ready && // cluster is ready
+        !cluster.distribution?.isManagedOpenShift && // is not managed OpenShift
+        !cluster.distribution?.upgradeInfo?.isUpgrading && // is not currently upgrading
+        cluster.provider !== Provider.ibm && // is not ROKS
+        !cluster.isHostedCluster // is not HyperShift
+      )
     default:
       return false
   }

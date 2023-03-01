@@ -13,7 +13,6 @@ import {
   ResourceErrorCode,
   SecretDefinition,
   ClusterCuratorKind,
-  ClusterStatus,
 } from '../../../../../resources'
 import { makeStyles } from '@mui/styles'
 import {
@@ -43,6 +42,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { cloneDeep } from 'lodash'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 const useStyles = makeStyles({
   body: {},
@@ -87,27 +87,12 @@ export function UpdateAutomationModal(props: {
     )
   }
 
-  const isupdatable = (cluster: Cluster) => {
-    const isReady = cluster.status === ClusterStatus.ready
-    const isManagedOpenshift = cluster.distribution?.isManagedOpenShift
-    const isOpenshift = !!cluster.distribution?.ocp?.version
-    const isUpgrading = cluster.distribution?.upgradeInfo?.isUpgrading
-    const isRoks = cluster.provider === 'ibm' && isOpenshift
-    const isCloudLabelSet = cluster.labels?.cloud === 'auto-detect'
-    return (
-      !!cluster.name &&
-      !isManagedOpenshift &&
-      isOpenshift &&
-      isReady &&
-      !isUpgrading &&
-      !isRoks &&
-      !isCloudLabelSet &&
-      !cluster.isHostedCluster
-    )
+  const isUpdatable = (cluster: Cluster) => {
+    return clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate)
   }
 
   const updatableClusters = useMemo<Cluster[] | undefined>(
-    () => props.clusters && props.clusters.filter(isupdatable),
+    () => props.clusters && props.clusters.filter(isUpdatable),
     [props.clusters]
   )
 

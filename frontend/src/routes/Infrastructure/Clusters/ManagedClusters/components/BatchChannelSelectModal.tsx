@@ -4,7 +4,6 @@ import {
   Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
-  ClusterStatus,
   createResource,
   IRequestResult,
   patchResource,
@@ -17,11 +16,10 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import './style.css'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 const isChannelSelectable = (c: Cluster) => {
-  const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels
-  const isReady = c.status === ClusterStatus.ready
-  return (!!c.name && isReady && isReadySelectChannels) || false
+  return clusterSupportsAction(c, ClusterAction.SelectChannel)
 }
 
 const setCurrentChannel = (
