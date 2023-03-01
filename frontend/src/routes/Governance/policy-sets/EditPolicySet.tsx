@@ -24,6 +24,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
+      immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
@@ -61,7 +62,10 @@ export function EditPolicySet() {
   const [placementBindings] = useRecoilState(placementBindingsState)
   const [clusterSets] = useRecoilState(managedClusterSetsState)
   const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-  const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+  const namespaceNames = useMemo(
+    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
+    [namespaces]
+  )
   const [existingResources, setExistingResources] = useState<IResource[]>()
   useEffect(() => {
     const policySet = policySets.find(

@@ -30,6 +30,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
+      immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
@@ -72,7 +73,8 @@ export function EditPolicy() {
     () =>
       namespaces
         .filter((namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster'])
-        .map((namespace) => namespace.metadata.name ?? ''),
+        .map((namespace) => namespace.metadata.name ?? '')
+        .sort(),
     [namespaces]
   )
   const [existingResources, setExistingResources] = useState<IResource[]>()

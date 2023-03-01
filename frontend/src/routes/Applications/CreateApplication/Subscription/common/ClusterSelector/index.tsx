@@ -10,6 +10,7 @@ import {
   AccordionContent,
   Popover,
   Button,
+  ButtonVariant,
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
@@ -183,14 +184,14 @@ const ClusterSelector = (props: {
     [forceUpdate]
   )
 
-  const addLabelKeyPress = useCallback(
-    (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        addLabelToList(control)
-      }
-    },
-    [control, addLabelToList]
-  )
+  // const addLabelKeyPress = useCallback(
+  //   (e) => {
+  //     if (e.type === 'click' || e.key === 'Enter') {
+  //       addLabelToList(control)
+  //     }
+  //   },
+  //   [control, addLabelToList]
+  // )
 
   const removeLabelFromList = useCallback(
     (control: { active: any }, item: { id: any }, isReadOnly?: boolean | undefined) => {
@@ -206,14 +207,14 @@ const ClusterSelector = (props: {
     [forceUpdate, handleChange]
   )
 
-  const removeLabelKeyPress = useCallback(
-    (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        removeLabelFromList(control, { id: e.target.id })
-      }
-    },
-    [control, removeLabelFromList]
-  )
+  // const removeLabelKeyPress = useCallback(
+  //   (e) => {
+  //     if (e.type === 'click' || e.key === 'Enter') {
+  //       removeLabelFromList(control, { id: e.target.id })
+  //     }
+  //   },
+  //   [control, removeLabelFromList]
+  // )
 
   const renderClusterLabels = (
     control: { active: { clusterLabelsList: any[] } },
@@ -258,17 +259,15 @@ const ClusterSelector = (props: {
                 </div>
 
                 {id !== 0 ? ( // Option to remove added labels
-                  <div
+                  <Button
                     id={id}
-                    className={`remove-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                    style={{ padding: '12px 5px', cursor: 'pointer' }}
-                    tabIndex={0}
-                    role={'button'}
+                    isDisabled={isReadOnly}
+                    variant={ButtonVariant.link}
                     onClick={() => removeLabelFromList(control, item, isReadOnly)}
-                    onKeyDown={removeLabelKeyPress}
-                  >
-                    <TimesCircleIcon color="#06c" key="remove-icon" />
-                  </div>
+                    aria-label={i18n('Remove label')}
+                    icon={<TimesCircleIcon />}
+                    isSmall
+                  />
                 ) : (
                   ''
                 )}
@@ -351,17 +350,15 @@ const ClusterSelector = (props: {
                       </AcmMultiSelect>
                       {renderClusterLabels(control, isReadOnly, controlId, i18n)}
                       {hasLabels && (
-                        <div
-                          className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                          role={'button'}
-                          tabIndex={0}
+                        <Button
+                          isDisabled={isReadOnly}
+                          variant={ButtonVariant.link}
                           onClick={() => addLabelToList(control, !isReadOnly)}
-                          onKeyDown={addLabelKeyPress}
+                          icon={<PlusCircleIcon />}
+                          isSmall
                         >
-                          <Button variant="link" isInline icon={<PlusCircleIcon />} iconPosition={'left'}>
-                            {i18n('creation.app.settings.selectorClusters.prop.add')}
-                          </Button>
-                        </div>
+                          {i18n('creation.app.settings.selectorClusters.prop.add')}
+                        </Button>
                       )}
                     </div>
                   </div>

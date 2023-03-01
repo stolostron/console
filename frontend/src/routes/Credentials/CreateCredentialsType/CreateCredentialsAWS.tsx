@@ -79,7 +79,7 @@ export function CreateCredentialsAWS() {
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Credentials'), to: NavigationPath.credentials },
-      { label: t('Infrastructure provider'), to: NavigationPath.addCredentials },
+      { label: t('Credential type'), to: NavigationPath.addCredentials },
       { label: t('AWS credential') },
     ]
     return newBreadcrumbs

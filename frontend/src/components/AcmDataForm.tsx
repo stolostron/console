@@ -71,7 +71,7 @@ import {
   EyeSlashIcon,
   HelpIcon,
   PasteIcon,
-  PlusIcon,
+  PlusCircleIcon,
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
@@ -187,7 +187,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                           onClick={() => {
                             navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
-                              <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
+                              <span style={{ wordBreak: 'keep-all' }}>{t('Successfully copied to clipboard!')}</span>
                             )
                             setTimeout(() => {
                               setCopyHint(<span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>)
@@ -259,7 +259,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   <ActionList>
                     {mode === 'details' && props.edit !== undefined && (
                       <ActionListItem>
-                        <Button onClick={props.edit}>Edit</Button>
+                        <Button onClick={props.edit}>{t('Edit')}</Button>
                       </ActionListItem>
                     )}
                   </ActionList>
@@ -1553,10 +1553,10 @@ function OrderedItemsInput(props: {
         style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
         variant="link"
         isSmall
-        aria-label="Action"
         onClick={() => input.onCreate?.()}
+        icon={<PlusCircleIcon />}
       >
-        <PlusIcon /> &nbsp; {input.placeholder}
+        {input.placeholder}
       </Button>
     </Fragment>
   )

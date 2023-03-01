@@ -21,29 +21,6 @@
     padding-right: 71px;
 }
 
-.add-time-btn {
-    width: 220px;
-    height: 40px;
-    padding: 5px;
-    text-align: center;
-    cursor: pointer;
-}
-.btn-disabled {
-    cursor: not-allowed !important;
-}
-.add-time-btn-icon {
-    margin-left: 7px;
-    float: left;
-}
-.add-time-btn-text {
-    font-weight: 600;
-    font-size: 14px;
-    color: #06c;
-}
-.remove-time-btn {
-    padding: 12px 5px;
-    cursor: pointer;
-}
 
 #timeZoneSelect {
     width: 290px;

@@ -57,7 +57,8 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
     () =>
       namespaces
         .filter((namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster'])
-        .map((namespace) => namespace.metadata.name ?? ''),
+        .map((namespace) => namespace.metadata.name ?? '')
+        .sort(),
     [namespaces]
   )
 

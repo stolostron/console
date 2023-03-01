@@ -20,7 +20,7 @@ import { ManagedCluster } from '../managed-cluster'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { getLatest } from './utils'
-import { AddonStatus, getDisplayStatus } from './get-addons'
+import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
@@ -954,9 +954,10 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
   let degraded = 0
   let unknown = 0
 
-  clusterManagementAddons?.forEach((cma) => {
-    const addonStatus = getDisplayStatus(cma, addons)
-    switch (addonStatus) {
+  const addonsStatus = mapAddons(clusterManagementAddons, addons)
+
+  addonsStatus?.forEach((addon) => {
+    switch (addon.status) {
       case AddonStatus.Available:
         available++
         break
