@@ -532,7 +532,7 @@ export function CredentialsForm(
       setName(providerConnection?.metadata.name || s3values.name)
       setNamespace(providerConnection?.metadata.namespace || s3values.namespace)
     }
-  }, [isHostedControlPlane, s3values])
+  }, [isHostedControlPlane, s3values, providerConnection?.metadata.name, providerConnection?.metadata.namespace])
 
   const breadcrumbs =
     credentialsType === Provider.aws || credentialsType === Provider.awss3

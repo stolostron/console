@@ -8,18 +8,18 @@ import {
   PageHeader,
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { managedClusterAddonsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../resources'
-import { useRecoilState } from '../../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmIcon, AcmIconVariant, AcmPage, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const { managedClusterAddonsState } = useSharedAtoms()
   const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
   const hypershiftAddon = managedClusterAddOns.find(
     (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
@@ -44,7 +44,7 @@ export function CreateCredentialsAWS() {
       }
     }
     getHypershiftStatus()
-  }, [])
+  }, [hypershiftAddon?.status?.conditions])
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
