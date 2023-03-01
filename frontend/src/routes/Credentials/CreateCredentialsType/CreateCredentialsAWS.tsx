@@ -8,16 +8,22 @@ import {
   PageHeader,
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { managedClusterAddonsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../resources'
+import { useRecoilState } from '../../../shared-recoil'
 import { AcmIcon, AcmIconVariant, AcmPage, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
+  const hypershiftAddon = managedClusterAddOns.find(
+    (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
+  )
 
   const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
   useEffect(() => {
@@ -27,7 +33,12 @@ export function CreateCredentialsAWS() {
         const components = multiClusterEngine.spec?.overrides.components
         const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
         const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
-        setIsHypershiftEnabled((hypershiftLocalHosting?.enabled && hypershiftPreview?.enabled) as boolean)
+        setIsHypershiftEnabled(
+          (hypershiftLocalHosting?.enabled &&
+            hypershiftPreview?.enabled &&
+            hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')?.status ===
+              'True') as boolean
+        )
       } catch {
         // nothing to do
       }
@@ -62,7 +73,7 @@ export function CreateCredentialsAWS() {
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
         alertTitle: isHypershiftEnabled
           ? undefined
-          : t('Hosted control plane operator must be enabled in order to continue'),
+          : t('Hosted control plane operator and hypershift add-on must be enabled in order to continue'),
         alertVariant: 'info',
         alertContent: (
           <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noopener noreferrer">

@@ -154,16 +154,8 @@ export function CredentialsForm(
   } & ProviderConnectionOrCredentialsType
 ) {
   const { t } = useTranslation()
-  const {
-    namespaces,
-    providerConnection,
-    isEditing,
-    isViewing,
-    handleModalToggle,
-    hideYaml,
-    newCredentialCallback,
-    isHosted,
-  } = props
+  const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback } =
+    props
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
@@ -319,7 +311,7 @@ export function CredentialsForm(
     () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
     []
   )
-  const [isHostedControlPlane, setIsHostedControlPlane] = useState<boolean>(isHosted || false)
+  const isHostedControlPlane = credentialsType === Provider.awss3
 
   function stateToData() {
     const stringData: ProviderConnectionStringData = {}
@@ -537,11 +529,8 @@ export function CredentialsForm(
 
   useEffect(() => {
     if (isHostedControlPlane) {
-      setName(s3values.name)
-      setNamespace(s3values.namespace)
-    } else {
-      setName('')
-      setNamespace('')
+      setName(providerConnection?.metadata.name || s3values.name)
+      setNamespace(providerConnection?.metadata.namespace || s3values.namespace)
     }
   }, [isHostedControlPlane, s3values])
 
@@ -589,18 +578,6 @@ export function CredentialsForm(
             isRequired: false, // always pre-filled
             isDisabled: true, // always pre-filled
           },
-          {
-            id: 'hostedControlPlane',
-            type: 'Checkbox',
-            label: t('For Hosted Control Plane'),
-            value: isHostedControlPlane,
-            onChange: (value: boolean) => {
-              setIsHostedControlPlane(value)
-            },
-            isDisabled: isHosted,
-            isHidden: credentialsType !== Provider.awss3,
-          },
-
           {
             id: 'disable-alert',
             type: 'Alert',
