@@ -7,7 +7,7 @@ import {
   ItemView,
   PageHeader,
 } from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
@@ -23,7 +23,6 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { Divider, ExpandableSection } from '@patternfly/react-core'
-import { useState } from 'react'
 
 type CardData = {
   id: string
