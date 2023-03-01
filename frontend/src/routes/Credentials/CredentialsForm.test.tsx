@@ -28,7 +28,7 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 
-const mockNamespaces: Namespace[] = ['local-cluster', 'namespace1', 'namespace2', 'namespace3'].map((name) => ({
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
   metadata: { name },
@@ -38,7 +38,8 @@ export function createProviderConnection(
   provider: string,
   stringData: ProviderConnectionStringData,
   common = false,
-  name?: string
+  name?: string,
+  namespace?: string
 ): ProviderConnection {
   return {
     apiVersion: ProviderConnectionApiVersion,
@@ -46,7 +47,7 @@ export function createProviderConnection(
     type: 'Opaque',
     metadata: {
       name: name ? name : `${provider}-connection`,
-      namespace: mockNamespaces[0].metadata.name,
+      namespace: namespace ? namespace : mockNamespaces[0].metadata.name,
       labels: {
         'cluster.open-cluster-management.io/type': provider,
         'cluster.open-cluster-management.io/credentials': '',
@@ -129,7 +130,8 @@ describe('add credentials page', () => {
         credentials: '[default]\naws_access_key_id=abc\naws_secret_access_key=efg',
       },
       false,
-      'hypershift-operator-oidc-provider-s3-credentials'
+      'hypershift-operator-oidc-provider-s3-credentials',
+      'local-cluster'
     )
 
     await waitForTestId('credentialsName')
