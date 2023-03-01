@@ -9,7 +9,6 @@ import {
   Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
-  ClusterStatus,
   createResource,
   IRequestResult,
   patchResource,
@@ -18,6 +17,7 @@ import {
 } from '../../../../../resources'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -33,9 +33,7 @@ const compareVersion = (a: string, b: string) => {
 }
 
 const isUpgradeable = (c: Cluster) => {
-  const hasAvailableUpgrades = c.distribution?.upgradeInfo?.isReadyUpdates
-  const isReady = c.status === ClusterStatus.ready
-  return (!!c.name && isReady && hasAvailableUpgrades) || false
+  return clusterSupportsAction(c, ClusterAction.Upgrade)
 }
 
 // setLatestVersions will set a cluster with latest version
