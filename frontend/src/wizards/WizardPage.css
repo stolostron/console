@@ -1,0 +1,3 @@
+.no-drawer-transition .pf-c-drawer__panel {
+  transition: none;
+}

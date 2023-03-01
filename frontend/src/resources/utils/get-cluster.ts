@@ -17,15 +17,14 @@ import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator } from '../cluster-curator'
 import { ClusterDeployment } from '../cluster-deployment'
 import { ManagedCluster } from '../managed-cluster'
-import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
-import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
+import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'i18next'
-import { HypershiftCloudPlatformType } from '..'
+import { ClusterManagementAddOn, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,
@@ -192,6 +191,7 @@ export type Cluster = {
   provider?: Provider
   distribution?: DistributionInfo
   acmDistribution?: ACMDistributionInfo
+  addons?: Addons
   labels?: Record<string, string>
   nodes?: Nodes
   kubeApiServer?: string
@@ -253,6 +253,14 @@ export type Nodes = {
   nodeList: NodeInfo[]
 }
 
+export type Addons = {
+  available: number
+  progressing: number
+  degraded: number
+  unknown: number
+  addonList: ManagedClusterAddOn[]
+}
+
 export type UpgradeInfo = {
   isUpgrading: boolean
   isReadyUpdates: boolean
@@ -294,6 +302,7 @@ export function mapClusters(
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
   managedClusterAddOns: ManagedClusterAddOn[] = [],
+  clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
   agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
@@ -313,9 +322,9 @@ export function mapClusters(
     const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
     const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
-    const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
     const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+    const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstalls.find(
@@ -330,6 +339,7 @@ export function mapClusters(
       certificateSigningRequests,
       managedCluster,
       addons,
+      clusterManagementAddOn,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -346,6 +356,7 @@ export function getCluster(
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
   managedClusterAddOns: ManagedClusterAddOn[],
+  clusterManagementAddOns: ClusterManagementAddOn[],
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -358,7 +369,6 @@ export function getCluster(
     managedClusterInfo,
     certificateSigningRequests,
     managedCluster,
-    managedClusterAddOns,
     clusterCurator,
     agentClusterInstall,
     clusterClaim,
@@ -412,6 +422,7 @@ export function getCluster(
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
     acmDistribution: acmDistributionInfo,
     acmConsoleURL: getACMConsoleURL(acmDistributionInfo.version, consoleURL),
+    addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
@@ -937,12 +948,42 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
   return { nodeList, ready, unhealthy, unknown }
 }
 
+export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: ClusterManagementAddOn[]) {
+  let available = 0
+  let progressing = 0
+  let degraded = 0
+  let unknown = 0
+
+  const addonsStatus = mapAddons(clusterManagementAddons, addons)
+
+  addonsStatus?.forEach((addon) => {
+    switch (addon.status) {
+      case AddonStatus.Available:
+        available++
+        break
+      case AddonStatus.Progressing:
+        progressing++
+        break
+      case AddonStatus.Degraded:
+        degraded++
+        break
+      case AddonStatus.Unknown:
+        unknown++
+        break
+      case AddonStatus.Disabled:
+      default:
+        break
+    }
+  })
+
+  return { addonList: addons, available, progressing, degraded, unknown }
+}
+
 export function getClusterStatus(
   clusterDeployment: ClusterDeployment | undefined,
   managedClusterInfo: ManagedClusterInfo | undefined,
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
-  managedClusterAddOns: ManagedClusterAddOn[],
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
   clusterClaim: ClusterClaim | undefined,
@@ -1203,10 +1244,7 @@ export function getClusterStatus(
     }
   } else {
     if (clusterAvailable) {
-      const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
-        checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
-      )
-      mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
+      mcStatus = ClusterStatus.ready
     } else {
       const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
       const managedClusterAvailableConditionMessage = mcConditions.find(

@@ -13,7 +13,12 @@ import { userPreferencesState } from '../../../atoms'
 import { nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { UserPreference } from '../../../resources/userpreference'
-import { GetMessagesDocument, SearchCompleteDocument, SearchSchemaDocument } from './search-sdk/search-sdk'
+import {
+  GetMessagesDocument,
+  SearchCompleteDocument,
+  SearchResultItemsDocument,
+  SearchSchemaDocument,
+} from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
 
 const mockUserPreferences: UserPreference[] = [
@@ -248,5 +253,113 @@ describe('SearchPage', () => {
 
     // Validate message when managed clusters are disabled. We don't have translation in this context.
     await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
+  })
+
+  it('should render SearchPage with predefined query', async () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ts has issue with deleting location as it is not an optional property. Ignoring as it is immediately readded.
+    delete window.location
+    window.location = {
+      href: 'http://testing.com//multicloud/home/search',
+      search: '?filters={"textsearch":"kind%3APod%20name%3AtestPod"}',
+    } as Location
+
+    const getUsernameNock = nockRequest('/username', getUsernameResponse)
+    const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+        },
+        result: {
+          data: {
+            searchSchema: {
+              allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
+            },
+          },
+        },
+      },
+      {
+        request: {
+          query: GetMessagesDocument,
+        },
+        result: {
+          data: {
+            messages: [],
+          },
+        },
+      },
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['Pod'],
+                  },
+                  {
+                    property: 'name',
+                    values: ['testPod'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    apiversion: 'v1',
+                    cluster: 'testCluster',
+                    container: 'installer',
+                    created: '2021-01-04T14:53:52Z',
+                    hostIP: '10.0.128.203',
+                    kind: 'Pod',
+                    name: 'testPod',
+                    namespace: 'testNamespace',
+                    podIP: '10.129.0.40',
+                    restarts: 0,
+                    startedAt: '2021-01-04T14:53:52Z',
+                    status: 'Completed',
+                    _uid: 'testing-search-results-pod',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(userPreferencesState, mockUserPreferences)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchPage />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
+    )
+
+    // Wait for username resource requests to finish
+    await waitForNocks([getUsernameNock])
+
+    // Test the loading state while apollo query finishes - testing that saved searches card label is not present
+    expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
+    // This wait pauses till apollo query is returning data
+    await wait()
+    // Test that the component has rendered correctly with data
+    await waitFor(() => expect(screen.queryByText('Show related resources')).toBeTruthy())
   })
 })

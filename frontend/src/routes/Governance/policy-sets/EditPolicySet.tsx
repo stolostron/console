@@ -24,6 +24,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
+      immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
@@ -38,7 +39,8 @@ function getWizardSyncEditor() {
 export function EditPolicySet() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name?: string } = useParams()
+  const params = useParams<{ namespace: string; name: string }>()
+  const { name } = params
   const history = useHistory()
   const {
     managedClusterSetBindingsState,
@@ -60,7 +62,10 @@ export function EditPolicySet() {
   const [placementBindings] = useRecoilState(placementBindingsState)
   const [clusterSets] = useRecoilState(managedClusterSetsState)
   const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-  const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+  const namespaceNames = useMemo(
+    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
+    [namespaces]
+  )
   const [existingResources, setExistingResources] = useState<IResource[]>()
   useEffect(() => {
     const policySet = policySets.find(
@@ -87,6 +92,7 @@ export function EditPolicySet() {
       clusters={managedClusters}
       placements={placements}
       namespaces={namespaceNames}
+      breadcrumb={[{ text: t('Policy sets'), to: NavigationPath.policySets }, { text: name }]}
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}

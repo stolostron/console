@@ -25,11 +25,17 @@ const config: Config.InitialOptions = {
   globals: {
     'ts-jest': {
       isolatedModules: true,
+      tsconfig: '<rootDir>/tsconfig.dev.json',
     },
   },
   transform: {
-    '^.+\\.jsx?$': 'babel-jest',
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.[jt]sx?$': [
+      'ts-jest',
+      {
+        isolatedModules: true,
+        tsconfig: '<rootDir>/tsconfig.dev.json',
+      },
+    ],
     '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
     // '^.+\\.hbs$': 'jest-raw-loader',
     '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
@@ -42,7 +48,7 @@ const config: Config.InitialOptions = {
   ci: true,
   collectCoverage: true,
   coverageDirectory: './coverage',
-  coverageReporters: ['text-summary', 'html', ['lcov', { projectRoot: '../' }]],
+  coverageReporters: ['text', 'text-summary', 'html', ['lcov', { projectRoot: '../' }]],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
     '<rootDir>/src/*.{tsx,ts,jsx,js}',

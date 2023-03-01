@@ -894,18 +894,18 @@ describe('AcmTable', () => {
     // Table renders
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
-    expect(getByTestId('male')).toBeInTheDocument()
+    expect(getByTestId('gender-male')).toBeInTheDocument()
 
     // Filtering works
-    userEvent.click(getByTestId('male'))
+    userEvent.click(getByTestId('gender-male'))
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
-    userEvent.click(getByTestId('female'))
+    userEvent.click(getByTestId('gender-female'))
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(2)
 
     // Unselect current options
-    userEvent.click(getByTestId('female'))
+    userEvent.click(getByTestId('gender-female'))
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
-    userEvent.click(getByTestId('male'))
+    userEvent.click(getByTestId('gender-male'))
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
   })
 
@@ -932,16 +932,16 @@ describe('AcmTable', () => {
     // Test deleting chip group
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('male'))
-    userEvent.click(getByTestId('female'))
+    userEvent.click(getByTestId('gender-male'))
+    userEvent.click(getByTestId('gender-female'))
     userEvent.click(getByLabelText('Close chip group'))
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
 
     // test deleting single chip
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('male'))
-    userEvent.click(getByTestId('female'))
+    userEvent.click(getByTestId('gender-male'))
+    userEvent.click(getByTestId('gender-female'))
     userEvent.click(getAllByLabelText('close')[1])
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
     userEvent.click(getAllByLabelText('close')[0])
@@ -950,7 +950,7 @@ describe('AcmTable', () => {
     // test deleting all selected filters
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('male'))
+    userEvent.click(getByTestId('gender-male'))
     userEvent.click(getAllByText('Clear all filters')[1])
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
   })

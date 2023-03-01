@@ -62,7 +62,7 @@ A number of the core NPM package dependencies are published from other repositor
     You need:
 
     - to be connected to a OpenShift 4.x.x cluster
-    - to have Advanced Cluster Management installed on the cluster
+    - to have Red Hat Advanced Cluster Management or multicluster engine for Kubernetes installed on the cluster
 
     ```
     npm run setup

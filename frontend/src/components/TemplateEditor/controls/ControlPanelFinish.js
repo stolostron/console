@@ -26,12 +26,12 @@ class ControlPanelFinish extends React.Component {
   }
 
   render() {
-    const { details, comment, renderNotifications } = this.props
+    const { details, comment, renderNotifications, i18n } = this.props
 
     return (
       <React.Fragment>
         <div>
-          {this.renderDetails(details)}
+          {this.renderDetails(details, i18n)}
           {comment && <Alert variant="warning" isInline title={comment} />}
           {renderNotifications()}
         </div>
@@ -39,7 +39,7 @@ class ControlPanelFinish extends React.Component {
     )
   }
 
-  renderDetails(details) {
+  renderDetails(details, i18n) {
     let step = this.props.startStep + 1
     return (
       <div className="tf--finish-details">
@@ -51,7 +51,7 @@ class ControlPanelFinish extends React.Component {
                   <div className="tf--finish-step-circle">{step++}</div>
                   <div>{title.title}</div>
                 </div>
-                {this.renderSections(sections)}
+                {this.renderSections(sections, i18n)}
               </div>
             )
           } else {
@@ -63,7 +63,7 @@ class ControlPanelFinish extends React.Component {
     )
   }
 
-  renderSections(sections) {
+  renderSections(sections, i18n) {
     const tables = []
     let id
     sections.forEach((section) => {
@@ -83,7 +83,7 @@ class ControlPanelFinish extends React.Component {
           {sections.map(({ content }) => {
             return (
               <div key={id} className="tf--finish-step-section">
-                {this.renderContent(content)}
+                {this.renderContent(content, false, i18n)}
               </div>
             )
           })}
@@ -92,7 +92,7 @@ class ControlPanelFinish extends React.Component {
     )
   }
 
-  renderContent(controlData, divider) {
+  renderContent(controlData, divider, i18n) {
     const key = controlData.map((elem) => elem.id).join(',')
     return (
       <React.Fragment key={key}>
@@ -101,23 +101,23 @@ class ControlPanelFinish extends React.Component {
           const { type, disabled } = control
           switch (type) {
             case 'group':
-              return this.renderGroup(control)
+              return this.renderGroup(control, i18n)
             case 'table':
               return this.renderTable(control)
             default:
-              return disabled ? null : this.renderControl(control)
+              return disabled ? null : this.renderControl(control, i18n)
           }
         })}
       </React.Fragment>
     )
   }
 
-  renderGroup(control) {
+  renderGroup(control, i18n) {
     const { active = [] } = control
     return (
       <React.Fragment key={control.id}>
         {active.map((controlData) => {
-          return this.renderContent(controlData, active.length > 1)
+          return this.renderContent(controlData, active.length > 1, i18n)
         })}
       </React.Fragment>
     )
@@ -178,7 +178,7 @@ class ControlPanelFinish extends React.Component {
     )
   }
 
-  renderControl(control) {
+  renderControl(control, i18n) {
     const { id, type, active, availableMap, name, exception, validation, summary, hidden } = control
     let term
     let desc
@@ -248,12 +248,12 @@ class ControlPanelFinish extends React.Component {
           {summaries.map(({ term, desc, exception, validation, valueComponent }) => {
             let styles = {}
             if (exception) {
-              desc = '*Fix exceptions'
+              desc = i18n('Fix exceptions')
               styles = { color: 'red' }
             } else if (typeof desc === 'string' && desc.length > 64) {
               desc = `${desc.substr(0, 32)}...${desc.substr(-32)}`
             } else if (!desc && validation && validation.required) {
-              desc = '*Required'
+              desc = i18n('Required')
               styles = { color: 'red' }
             }
             return (

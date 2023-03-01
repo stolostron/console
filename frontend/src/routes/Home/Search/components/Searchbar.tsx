@@ -18,10 +18,10 @@ import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
-import { useTranslation } from '../../../../lib/acm-i18next'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -47,6 +47,7 @@ type SearchbarProps = {
   toggleInfoModal: () => void
   updateBrowserUrl: (history: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
+  refetchSearch: any
 }
 
 export const convertStringToTags = (searchText: string) => {
@@ -74,6 +75,7 @@ export function Searchbar(props: SearchbarProps) {
     updateBrowserUrl,
     queryString,
     savedSearchQueries,
+    refetchSearch,
   } = props
   const history = useHistory()
   const [inputValue, setInputValue] = useState('')
@@ -102,7 +104,12 @@ export function Searchbar(props: SearchbarProps) {
   }, [currentQuery, savedSearchLimit, savedSearchQueries])
 
   /** callback for updating the inputValue state in this component so that the input can be controlled */
-  const handleInputChange = (value: string) => {
+  const handleInputChange = (input: any) => {
+    // **Note: PatternFly change the fn signature
+    // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
+    // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
+    // both cases need to be handled for backwards compatibility
+    const value = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
     const delimiters = [' ', ':', ',']
     if (delimiters.indexOf(value) < 0) {
       // Delimiters are only used to enter chips - do not allow for entry in input
@@ -171,12 +178,14 @@ export function Searchbar(props: SearchbarProps) {
 
     /** add a heading to the menu */
     const headingItem = (
+      // eslint-disable-next-line jsx-a11y/aria-role
       <MenuItem role={'search-suggestion-item'} isDisabled itemId={'heading'} key={'heading'}>
         {suggestions[0].name}
       </MenuItem>
     )
 
     let filteredMenuItems = [
+      // eslint-disable-next-line jsx-a11y/aria-role
       <MenuItem role={'search-suggestion-item'} isDisabled key={'loading-suggestion'} itemId={'loading-suggestion'}>
         {t('Loading...')}
       </MenuItem>,
@@ -191,6 +200,7 @@ export function Searchbar(props: SearchbarProps) {
         )
         .map((currentValue) => (
           <MenuItem
+            // eslint-disable-next-line jsx-a11y/aria-role
             role={'search-suggestion-item'}
             itemId={`${currentValue.kind}-${currentValue.id}`}
             key={`${currentValue.kind}-${currentValue.id}`}
@@ -203,6 +213,7 @@ export function Searchbar(props: SearchbarProps) {
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
       const noResultItem = (
+        // eslint-disable-next-line jsx-a11y/aria-role
         <MenuItem role={'search-suggestion-item'} isDisabled itemId={'no-matching-filters'} key={'no-matching-filters'}>
           {t('No matching filters')}
         </MenuItem>
@@ -386,7 +397,7 @@ export function Searchbar(props: SearchbarProps) {
           onKeyDown={handleTextInputKeyDown}
           aria-label={t('Search input')}
         >
-          <ChipGroup>
+          <ChipGroup collapsedText={t('{{remaining}} more', { remaining: '${remaining}' })}>
             {searchbarTags.map((searchbarTag, idx) => (
               <Chip
                 key={searchbarTag.id}
@@ -416,6 +427,7 @@ export function Searchbar(props: SearchbarProps) {
           variant="plain"
           onClick={() => {
             if (currentQuery !== '' && !currentQuery.endsWith(':')) {
+              refetchSearch()
               updateBrowserUrl(history, currentQuery)
               setMenuIsOpen(false)
             }

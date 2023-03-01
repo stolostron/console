@@ -24,6 +24,10 @@
     display: flex;
     flex-direction: column;
     row-gap: 0;
+    padding: var(--pf-global--spacer--lg);
+}
+.temptifly .showWizard .creation-view-controls,
+.creation-view .creation-view-controls {
     padding: var(--pf-c-wizard__main-body--PaddingTop) var(--pf-c-wizard__main-body--PaddingRight)
         var(--pf-c-wizard__main-body--PaddingBottom) var(--pf-c-wizard__main-body--PaddingLeft);
 }
@@ -455,53 +459,11 @@
     color: #06c;
     font-size: 10px;
 }
-.temptifly-controls-add-value-container,
 .creation-view-controls-add-value-container {
     display: flex;
-    margin: 20px 0 24px 20px;
 }
-.temptifly-controls-add-value-container.bottom-right,
 .creation-view-controls-add-value-container.bottom-right {
     justify-content: flex-end;
-    margin: 0 0 24px;
-}
-.temptifly-controls-add-value-container a,
-.creation-view-controls-add-value-container a {
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
-}
-.temptifly-controls-add-value,
-.creation-view-controls-add-value {
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    color: #3d70b2;
-}
-.temptifly-controls-add-value:focus,
-.creation-view-controls-add-value:focus {
-    outline: none;
-}
-.temptifly-controls-add-button,
-.creation-view-controls-add-button {
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    color: #3d70b2;
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.temptifly-controls-add-button svg,
-.creation-view-controls-add-button svg {
-    margin: 0 6px;
-    width: 16px;
-    height: 16px;
-    fill: #3d70b2;
-}
-.temptifly-controls-add-button:focus,
-.creation-view-controls-add-button:focus {
-    outline: none;
 }
 .temptifly-controls-delete-button,
 .creation-view-controls-delete-button {

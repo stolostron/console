@@ -440,7 +440,7 @@ const ApplicationCreationPage = (t) => {
 
 const setRegions = (control, controlData) => {
   const alterRegionData = (controlData, regions, active) => {
-    const regionObject = controlData.find((object) => object.name === 'Region')
+    const regionObject = controlData.find((object) => object.id === 'region')
     regionObject.active = active
     regionObject.available = regions
   }

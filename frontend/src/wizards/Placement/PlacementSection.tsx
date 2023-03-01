@@ -300,7 +300,7 @@ export function PlacementSelector(props: {
   return (
     <WizDetailsHidden>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <span className="pf-c-form__label pf-c-form__label-text">How do you want to select clusters?</span>
+        <span className="pf-c-form__label pf-c-form__label-text">{t('How do you want to select clusters?')}</span>
         <ToggleGroup aria-label="Default with single selectable">
           <ToggleGroupItem
             text={t('New placement')}

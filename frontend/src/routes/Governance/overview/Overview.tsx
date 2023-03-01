@@ -24,6 +24,7 @@ export default function GovernanceOverview() {
   const [namespaces] = useRecoilState(namespacesState)
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+  const { t } = useTranslation()
   useEffect(() => {
     checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
   }, [namespaces])
@@ -49,9 +50,9 @@ export default function GovernanceOverview() {
           <PolicySetViolationsCard />
           <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
           <ClustersCard />
-          <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
-          <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
-          <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
+          <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
+          <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
+          <SecurityGroupCard key="controls" title={t('Controls')} group="controls" policies={policies} />
         </AcmMasonry>
       </Stack>
     </PageSection>
@@ -233,7 +234,7 @@ function ClustersCard() {
   return (
     <div>
       <Card isRounded>
-        <CardTitle>{'Clusters'}</CardTitle>
+        <CardTitle>{t('Clusters')}</CardTitle>
         <CardBody>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
             {clusters.map((cluster) => {

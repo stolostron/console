@@ -150,15 +150,15 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
   const cols = useMemo(
     () => [
       {
-        header: 'Type',
+        header: t('Type'),
         cell: 'type',
       },
       {
-        header: 'Status',
+        header: t('Status'),
         cell: 'status',
       },
       {
-        header: 'Updated',
+        header: t('Updated'),
         cell: (item: ResourceCondition) => {
           if (!item.lastTransitionTime) {
             return '-'
@@ -167,7 +167,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
         },
       },
       {
-        header: 'Reason',
+        header: t('Reason'),
         cell: (item: ResourceCondition) => {
           if (!item.reason) {
             return '-'
@@ -176,7 +176,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
         },
       },
       {
-        header: 'Message',
+        header: t('Message'),
         cell: (item: ResourceCondition) => {
           if (!item.message) {
             return '-'
@@ -185,7 +185,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
         },
       },
     ],
-    []
+    [t]
   )
 
   return (
@@ -193,12 +193,12 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
       <Divider />
       <PageSection variant={'light'}>
         <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
-          {'Conditions'}
+          {t('Conditions')}
         </Text>
         {conditions.length ? (
           <AcmTable
             key={'resource-conditions'}
-            plural={'resource conditions'}
+            plural={t('resource conditions')}
             items={conditions}
             columns={cols}
             keyFn={() => Math.random().toString(36).substring(7)}
@@ -350,7 +350,7 @@ export default function DetailsOverviewPage(props: {
         <PageSection variant={'light'}>
           <Stack hasGutter>
             <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
-              {`${resource.kind} details`}
+              {t('search.resource.details', { resource: resource.kind })}
             </Text>
             <DescriptionList
               columnModifier={{
@@ -359,13 +359,13 @@ export default function DetailsOverviewPage(props: {
               style={{ fontSize: '14px' }}
             >
               <DescriptionListGroup>
-                <DescriptionListTerm>{'Name'}</DescriptionListTerm>
+                <DescriptionListTerm>{t('Name')}</DescriptionListTerm>
                 <DescriptionListDescription>{resource.metadata?.name}</DescriptionListDescription>
               </DescriptionListGroup>
 
               {resource.metadata?.namespace && (
                 <DescriptionListGroup>
-                  <DescriptionListTerm>{'Namespace'}</DescriptionListTerm>
+                  <DescriptionListTerm>{t('Namespace')}</DescriptionListTerm>
                   <DescriptionListDescription>
                     <Button
                       data-test="namespace-nav-link"
@@ -385,7 +385,7 @@ export default function DetailsOverviewPage(props: {
               )}
 
               <DescriptionListGroup>
-                <DescriptionListTerm>{'Cluster'}</DescriptionListTerm>
+                <DescriptionListTerm>{t('Cluster')}</DescriptionListTerm>
                 <DescriptionListDescription>
                   <Link
                     to={{
@@ -403,7 +403,7 @@ export default function DetailsOverviewPage(props: {
               <DescriptionListGroup>
                 <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
                   <FlexItem>
-                    <DescriptionListTerm>{'Labels'}</DescriptionListTerm>
+                    <DescriptionListTerm>{t('Labels')}</DescriptionListTerm>
                   </FlexItem>
                   {canEditResource && (
                     <FlexItem>
@@ -433,21 +433,21 @@ export default function DetailsOverviewPage(props: {
 
               {podSelectorLink && (
                 <DescriptionListGroup>
-                  <DescriptionListTerm>{'Pod selector'}</DescriptionListTerm>
+                  <DescriptionListTerm>{t('Pod selector')}</DescriptionListTerm>
                   <DescriptionListDescription>{podSelectorLink}</DescriptionListDescription>
                 </DescriptionListGroup>
               )}
 
               {nodeSelectorLink && (
                 <DescriptionListGroup>
-                  <DescriptionListTerm>{'Node selector'}</DescriptionListTerm>
+                  <DescriptionListTerm>{t('Node selector')}</DescriptionListTerm>
                   <DescriptionListDescription>{nodeSelectorLink}</DescriptionListDescription>
                 </DescriptionListGroup>
               )}
 
               {resourceTolerationsCount > 0 && (
                 <DescriptionListGroup>
-                  <DescriptionListTerm>{'Tolerations'}</DescriptionListTerm>
+                  <DescriptionListTerm>{t('Tolerations')}</DescriptionListTerm>
                   <DescriptionListDescription>
                     {canEditResource ? (
                       <Link
@@ -472,7 +472,7 @@ export default function DetailsOverviewPage(props: {
               )}
 
               <DescriptionListGroup>
-                <DescriptionListTerm>{'Annotations'}</DescriptionListTerm>
+                <DescriptionListTerm>{t('Annotations')}</DescriptionListTerm>
                 <DescriptionListDescription>
                   {canEditResource ? (
                     <Link
@@ -496,12 +496,12 @@ export default function DetailsOverviewPage(props: {
               </DescriptionListGroup>
 
               <DescriptionListGroup>
-                <DescriptionListTerm>{'Created at'}</DescriptionListTerm>
+                <DescriptionListTerm>{t('Created at')}</DescriptionListTerm>
                 <DescriptionListDescription>{getDate(resource.metadata?.creationTimestamp)}</DescriptionListDescription>
               </DescriptionListGroup>
 
               <DescriptionListGroup>
-                <DescriptionListTerm>{'Owner'}</DescriptionListTerm>
+                <DescriptionListTerm>{t('Owner')}</DescriptionListTerm>
                 <DescriptionListDescription>
                   <OwnerReferences
                     cluster={cluster}

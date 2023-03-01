@@ -95,6 +95,7 @@ export const BlankSearchbar = () => {
                 searchText: 'kind:Pod',
               },
             ]}
+            refetchSearch={() => {}}
           />
         </MockedProvider>
       </Router>
@@ -130,6 +131,7 @@ const LoadingSearchbar = () => (
               searchText: 'kind:Pod',
             },
           ]}
+          refetchSearch={() => {}}
         />
       </MockedProvider>
     </Router>
@@ -184,6 +186,7 @@ const PrefilledSearchbar = () => (
               searchText: 'kind:Pod',
             },
           ]}
+          refetchSearch={() => {}}
         />
       </MockedProvider>
     </Router>
@@ -214,6 +217,21 @@ describe('Searchbar tests', () => {
     expect(getByText('kind:Pod')).toBeInTheDocument()
   })
 
+  it('Searchbar should render correctly and add a search via Run search button', async () => {
+    render(<BlankSearchbar />)
+
+    const searchbar = screen.getByLabelText('Search input')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
+
+    userEvent.type(searchbar, 'name ')
+    userEvent.type(searchbar, 'name1 ')
+
+    expect(screen.queryByText('name:name1')).toBeInTheDocument()
+
+    userEvent.click(screen.getByText('Run search'))
+  })
+
   it('Searchbar should render correctly and add a search via typing', async () => {
     render(<BlankSearchbar />)
 
@@ -225,28 +243,6 @@ describe('Searchbar tests', () => {
     userEvent.type(searchbar, 'name1 ')
 
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
-  })
-
-  it.skip('Searchbar should render correctly and add a search via dropdown suggestions', async () => {
-    render(<BlankSearchbar />)
-
-    const searchbar = screen.getByLabelText('Search input')
-    expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
-
-    // Select the 'name' dropdown suggestion item
-    const nameFilterSuggestion = screen.getByText('name1')
-    expect(nameFilterSuggestion).toBeTruthy()
-    userEvent.click(nameFilterSuggestion)
-
-    await waitFor(() => expect(screen.queryByText('name values')).toBeInTheDocument())
-
-    // Select the 'name' dropdown suggestion item
-    const nameValueSuggestion = screen.getByText('name1')
-    expect(nameValueSuggestion).toBeTruthy()
-    userEvent.click(nameValueSuggestion)
-
-    await waitFor(() => expect(screen.queryByText('name:name1')).toBeInTheDocument())
   })
 
   it('Searchbar should correctly delete existing tags', async () => {

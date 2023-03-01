@@ -251,7 +251,9 @@ class ControlPanelComboBox extends React.Component {
                         data-testid={`combo-${controlId}`}
                       />
                     </div>
+
                     {!disabled && (searchText || active) && (
+                      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                       <div
                         role="button"
                         className="tf--list-box__selection"

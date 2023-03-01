@@ -28,9 +28,10 @@ export default function CreateArgoApplicationSetPage() {
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { t } = useTranslation()
   return (
     <SyncEditor
-      editorTitle={'Application set YAML'}
+      editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
       schema={schema}
@@ -90,6 +91,7 @@ export function CreateApplicationArgo() {
       namespaces={availableNamespace}
       applicationSets={applicationSets}
       placements={placements}
+      breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }, { text: t('Create application set') }]}
       clusters={managedClusters}
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}

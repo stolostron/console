@@ -296,6 +296,7 @@ export default function LogsPage(props: {
   const logViewerRef = useRef<any>()
   const resourceLogRef = useRef<any>()
   const { t } = useTranslation()
+  const [isLoadingLogs, setIsLoadingLogs] = useState<boolean>(false)
   const [logs, setLogs] = useState<string>('')
   const [logsError, setLogsError] = useState<string>()
   const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
@@ -353,6 +354,7 @@ export default function LogsPage(props: {
 
   useEffect(() => {
     if (cluster !== 'local-cluster' && container !== '') {
+      setIsLoadingLogs(true)
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -368,6 +370,7 @@ export default function LogsPage(props: {
       logsResult
         .then((result) => {
           setLogs(result.data as string)
+          setIsLoadingLogs(false)
         })
         .catch((err) => {
           const managedCluster = managedClusters.find(
@@ -399,6 +402,7 @@ export default function LogsPage(props: {
       logsResult
         .then((result) => {
           setLogs(result.data as string)
+          setIsLoadingLogs(false)
         })
         .catch((err) => {
           setLogsError(err.message)
@@ -406,7 +410,7 @@ export default function LogsPage(props: {
     }
   }, [cluster, container, managedClusters, name, namespace, previousLogs])
 
-  const linesLength = useMemo(() => logs.split('\n').length, [logs])
+  const linesLength = useMemo(() => logs.split('\n').length - 1, [logs])
 
   const toggleFullscreen = () => {
     resourceLogRef.current && screenfull.isEnabled && screenfull.toggle(resourceLogRef.current)
@@ -442,12 +446,6 @@ export default function LogsPage(props: {
         />
       </PageSection>
     )
-  } else if (resourceError === '' && !logsError && logs === '') {
-    return (
-      <PageSection>
-        <AcmLoadingPage />
-      </PageSection>
-    )
   } else if (logsError) {
     return (
       <PageSection>
@@ -458,6 +456,12 @@ export default function LogsPage(props: {
           title={`${t('Error querying resource logs:')} ${name}`}
           subtitle={logsError}
         />
+      </PageSection>
+    )
+  } else if (resourceError === '' && !logsError && isLoadingLogs) {
+    return (
+      <PageSection>
+        <AcmLoadingPage />
       </PageSection>
     )
   }

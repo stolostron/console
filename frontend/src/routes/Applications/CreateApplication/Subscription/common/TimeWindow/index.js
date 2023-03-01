@@ -4,20 +4,21 @@
 
 import PropTypes from 'prop-types'
 import {
-  Radio,
-  Checkbox,
   Accordion,
   AccordionItem,
   AccordionToggle,
   AccordionContent,
+  Button,
+  Checkbox,
+  Radio,
   Select,
   SelectOption,
   SelectVariant,
   TimePicker,
+  ButtonVariant,
 } from '@patternfly/react-core'
 import { Fragment, Component } from 'react'
-import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
-import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
+import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
 import moment from 'moment-timezone'
 import _ from 'lodash'
@@ -251,18 +252,17 @@ export class TimeWindow extends Component {
                       </Select>
                     </div>
 
-                    <div className="config-time-section" style={{ display: 'block' }}>
+                    <div style={{ display: 'block' }}>
                       {this.renderTimes(control, modeSelected)}
-                      <div
-                        className={`add-time-btn ${!modeSelected ? 'btn-disabled' : ''}`}
-                        tabIndex="0"
-                        role={'button'}
+                      <Button
+                        variant={ButtonVariant.link}
                         onClick={() => this.addTimeToList(control, modeSelected)}
-                        onKeyPress={this.addTimeKeyPress.bind(this)}
+                        icon={<PlusCircleIcon />}
+                        isDisabled={!modeSelected}
+                        isSmall
                       >
-                        <PlusCircleIcon color="#06c" key="add-time" className="add-time-btn-icon" />
-                        <div className="add-time-btn-text">{i18n('Add another time range')}</div>
-                      </div>
+                        {i18n('Add another time range')}
+                      </Button>
                     </div>
                   </div>
                 </AccordionContent>
@@ -346,16 +346,15 @@ export class TimeWindow extends Component {
                   />
                 </div>
                 {id !== 0 ? ( // Option to remove added times
-                  <div
+                  <Button
                     id={id}
-                    className={`remove-time-btn ${!modeSelected ? 'btn-disabled' : ''}`}
-                    tabIndex="0"
-                    role={'button'}
+                    variant={ButtonVariant.link}
+                    isDisabled={!modeSelected}
                     onClick={() => this.removeTimeFromList(control, item, modeSelected)}
-                    onKeyPress={this.removeTimeKeyPress.bind(this)}
-                  >
-                    <TimesCircleIcon color="#06c" key="remove-time" />
-                  </div>
+                    icon={<TimesCircleIcon />}
+                    aria-label={i18n('Remove time range')}
+                    isSmall
+                  />
                 ) : (
                   ''
                 )}
@@ -414,12 +413,6 @@ export class TimeWindow extends Component {
 
       // Update UI
       this.forceUpdate()
-    }
-  }
-
-  addTimeKeyPress = (e) => {
-    if (e.type === 'click' || e.key === 'Enter') {
-      this.addTimeToList(this.props.control)
     }
   }
 

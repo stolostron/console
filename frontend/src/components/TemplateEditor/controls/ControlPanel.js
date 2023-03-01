@@ -4,7 +4,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Alert, Button } from '@patternfly/react-core'
-import { TrashIcon } from '@patternfly/react-icons'
+import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import classNames from 'classnames'
 import ControlPanelAccordion from './ControlPanelAccordion'
 import ControlPanelTextInput from './ControlPanelTextInput'
@@ -22,7 +22,6 @@ import ControlPanelWizard from './ControlPanelWizard'
 import ControlPanelPrompt from './ControlPanelPrompt'
 import ControlPanelSkeleton from './ControlPanelSkeleton'
 import '../css/control-panel.css'
-import { AddIcon } from '../icons/Icons'
 
 class ControlPanel extends React.Component {
   static propTypes = {
@@ -724,11 +723,6 @@ class ControlPanel extends React.Component {
     const handleGroupChange = () => {
       this.props.handleGroupChange(control, controlData, this.creationView, inx)
     }
-    const handleGroupChangeKey = (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        handleGroupChange()
-      }
-    }
     return (
       <Button
         variant="plain"
@@ -737,7 +731,7 @@ class ControlPanel extends React.Component {
         title={deletePrompt}
         aria-label={deletePrompt}
         onClick={handleGroupChange}
-        onKeyPress={handleGroupChangeKey}
+        isSmall
       >
         <TrashIcon />
       </Button>
@@ -752,27 +746,11 @@ class ControlPanel extends React.Component {
     const handleGroupChange = () => {
       this.props.handleGroupChange(control, controlData, this.creationView)
     }
-    const handleGroupChangeKey = (e) => {
-      if (e.type === 'click' || e.key === 'Enter') {
-        handleGroupChange()
-      }
-    }
+
     return (
-      <div className="creation-view-controls-add-value-container">
-        <div
-          id={`add-${control.id}`}
-          className="creation-view-controls-add-button"
-          tabIndex="0"
-          role={'button'}
-          title={addPrompt}
-          aria-label={addPrompt}
-          onClick={handleGroupChange}
-          onKeyPress={handleGroupChangeKey}
-        >
-          {addPrompt}
-          <AddIcon className="icon" />
-        </div>
-      </div>
+      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />} isSmall>
+        {addPrompt}
+      </Button>
     )
   }
 

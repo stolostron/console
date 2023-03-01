@@ -89,8 +89,7 @@
     margin-right: 5px;
 }
 .sub-child-resource-content {
-    display: inline-flex;
-    color: #152935;
+    display: flex;
     line-height: 21px;
 }
 .sub-child-resource-content svg {

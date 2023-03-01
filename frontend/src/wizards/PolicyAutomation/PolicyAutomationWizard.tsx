@@ -9,11 +9,11 @@ import {
   Select,
   Step,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizCheckbox,
   WizNumberInput,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { IResource } from '../common/resources/IResource'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
 import { ConfigMap } from '../../resources'
@@ -21,9 +21,12 @@ import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../components/AutomationProviderHint'
 
-export function PolicyAutomationWizard(props: {
+export interface PolicyAutomationWizardProps {
   title: string
-  breadcrumb?: { label: string; to?: string }[]
+  breadcrumb?: {
+    text: string
+    to?: string
+  }[]
   policy: IResource
   credentials: IResource[]
   configMaps?: ConfigMap[]
@@ -34,7 +37,9 @@ export function PolicyAutomationWizard(props: {
   onSubmit: WizardSubmit
   onCancel: WizardCancel
   getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
-}) {
+}
+
+export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
   const ansibleCredentials = useMemo(
     () =>
       props.credentials.filter(
@@ -75,6 +80,7 @@ export function PolicyAutomationWizard(props: {
 
   return (
     <WizardPage
+      id="policy-automation-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
       breadcrumb={props.breadcrumb}
@@ -97,7 +103,7 @@ export function PolicyAutomationWizard(props: {
         }
       }
     >
-      <Step label="Automation" id="automation-step">
+      <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint
           component="alert"
           workflowSupportRequired={
@@ -116,6 +122,7 @@ export function PolicyAutomationWizard(props: {
             id="secret"
             label={t('Ansible credential')}
             path="spec.automationDef.secret"
+            placeholder={t('Select the Ansible credential')}
             options={ansibleCredentialNames}
             onValueChange={(value, item) => {
               if ((item as IPolicyAutomation).spec?.automationDef?.name) {

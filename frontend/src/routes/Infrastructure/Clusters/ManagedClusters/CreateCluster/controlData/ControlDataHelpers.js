@@ -7,7 +7,6 @@ import {
   VALIDATE_BASE_DNS_NAME_REQUIRED,
   VALID_DNS_LABEL,
   getURLValidator,
-  getAlphanumericValidator,
   getNoProxyValidator,
   getSourcePath,
 } from '../../../../../../components/TemplateEditor'
@@ -704,9 +703,8 @@ export const architectureData = (t) => {
       placeholder: t('Enter CPU architecture'),
       tooltip: t('tooltip.architecture'),
       id: 'architecture',
-      type: 'combobox',
-      available: ['amd64'],
-      validation: getAlphanumericValidator(t),
+      type: 'singleselect',
+      available: ['amd64', 'arm64', 's390x', 'ppc64le'],
       cacheUserValueKey: 'create.cluster.architecture',
     },
   ]

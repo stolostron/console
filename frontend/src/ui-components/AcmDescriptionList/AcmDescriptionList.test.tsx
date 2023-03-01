@@ -8,6 +8,7 @@ import { AcmDescriptionList, ListItems } from './AcmDescriptionList'
 describe('AcmDescriptionList', () => {
   const leftItems = [
     { key: 'Name', value: 'cluster' },
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
     { key: 'Status', keyAction: <a id="link">Link</a>, value: 'Ready' },
   ]
   const rightItems = [

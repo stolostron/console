@@ -127,7 +127,7 @@ describe('Create Policy Page', () => {
 
   test('can cancel create policy', async () => {
     render(<TestCreatePolicyPage />)
-    await waitForText('Create policy')
+    await waitForText('Create policy', true)
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })

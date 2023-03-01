@@ -93,7 +93,6 @@ export default function PolicySetCard(props: {
       {modal !== undefined && modal}
       <Card
         isRounded
-        isHoverable
         isFullHeight
         isSelectable
         isSelected={selectedCardID === cardID}

@@ -4,7 +4,7 @@ import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons/dist/js/icons'
+import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
@@ -13,6 +13,7 @@ import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   variant?: string
@@ -71,10 +72,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
     }
   }
+  const { t } = useTranslation()
   const editorHadFocus = useRef(false)
-  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
-  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
-  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
+  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Copy')}</span>
+  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Selection copied')}</span>
+  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('All copied')}</span>
   const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
   const [prohibited, setProhibited] = useState<any>([])
   const [filteredRows, setFilteredRows] = useState<number[]>([])
@@ -472,9 +474,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // undo/redo enable
       const model = editorRef.current?.getModel()
-      const editStacks = model?._undoRedoService._editStacks
-      setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
-      setHasUndo(editStacks?.values()?.next()?.value?.hasPastElements())
+      setHasRedo(model['_commandManager']?.future.length > 0)
+      setHasUndo(model['_commandManager']?.past.length > 0)
     }
   }
 
@@ -538,8 +539,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="undo-button"
               icon={<UndoIcon />}
-              aria-label="Undo"
-              toolTipText="Undo"
+              aria-label={t('Undo')}
+              toolTipText={t('Undo')}
               isDisabled={!hasUndo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'undo')
@@ -551,8 +552,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="redo-button"
               icon={<RedoIcon />}
-              aria-label="Redo"
-              toolTipText="Redo"
+              aria-label={t('Redo')}
+              toolTipText={t('Redo')}
               isDisabled={!hasRedo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'redo')
@@ -563,8 +564,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           <CodeEditorControl
             id="search-button"
             icon={<SearchIcon />}
-            aria-label="Find"
-            toolTipText="Find"
+            aria-label={t('Find')}
+            toolTipText={t('Find')}
             onClick={() => {
               editorRef?.current.trigger('source', 'actions.find')
             }}
@@ -574,8 +575,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               id="secret-button"
               icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-              aria-label="Show Secrets"
-              toolTipText="Show Secrets"
+              aria-label={t('Show Secrets')}
+              toolTipText={t('Show Secrets')}
               onClick={() => {
                 setShowSecrets(!showSecrets)
               }}
@@ -585,7 +586,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           <ClipboardCopyButton
             id="copy-button"
             textId="code-content"
-            aria-label="Copy to clipboard"
+            aria-label={t('Copy to clipboard')}
             disabled={false}
             onClick={() => {
               const selectedText = editorRef.current.getModel().getValueInRange(editorRef.current.getSelection())
@@ -601,7 +602,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             {copyHint}
           </ClipboardCopyButton>
           {!!onClose && (
-            <CodeEditorControl icon={<CloseIcon />} aria-label="Close" toolTipText="Close" onClick={onClose || noop} />
+            <CodeEditorControl
+              icon={<CloseIcon />}
+              aria-label={t('Close')}
+              toolTipText={t('Close')}
+              onClick={onClose || noop}
+            />
           )}
         </div>
       </>

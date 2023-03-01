@@ -57,7 +57,8 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
     () =>
       namespaces
         .filter((namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster'])
-        .map((namespace) => namespace.metadata.name ?? ''),
+        .map((namespace) => namespace.metadata.name ?? '')
+        .sort(),
     [namespaces]
   )
 
@@ -73,6 +74,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
+      breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}
       onCancel={() => history.push(NavigationPath.policies)}
       onSubmit={(data) => {
         const resources = data as IResource[]

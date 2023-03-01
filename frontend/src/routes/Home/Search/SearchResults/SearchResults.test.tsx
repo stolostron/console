@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
+import { ApolloError } from '@apollo/client'
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
@@ -15,6 +16,24 @@ import {
 import SearchResults from './SearchResults'
 
 describe('SearchResults Page', () => {
+  it('should render page in loading state', async () => {
+    render(
+      <Router history={createBrowserHistory()}>
+        <MockedProvider mocks={[]}>
+          <SearchResults
+            currentQuery={'kind:Pod testCluster'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={true}
+            data={{}}
+          />
+        </MockedProvider>
+      </Router>
+    )
+    // Test the loading state while apollo query finishes
+    expect(screen.getByText('Loading')).toBeInTheDocument()
+  })
+
   it('should render page with correct data from search WITH keyword', async () => {
     const mocks = [
       {
@@ -66,12 +85,38 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:Pod testCluster'} preSelectedRelatedResources={[]} />
+          <SearchResults
+            currentQuery={'kind:Pod testCluster'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
@@ -220,12 +265,38 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:Pod'} preSelectedRelatedResources={[]} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={[]}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered search result table correctly
@@ -429,12 +500,38 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:Pod'} preSelectedRelatedResources={['Node']} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={['Node']}
+            error={undefined}
+            loading={false}
+            data={{
+              searchResult: [
+                {
+                  items: [
+                    {
+                      apiversion: 'v1',
+                      cluster: 'testCluster',
+                      container: 'installer',
+                      created: '2021-01-04T14:53:52Z',
+                      hostIP: '10.0.128.203',
+                      kind: 'Pod',
+                      name: 'testPod',
+                      namespace: 'testNamespace',
+                      podIP: '10.129.0.40',
+                      restarts: 0,
+                      startedAt: '2021-01-04T14:53:52Z',
+                      status: 'Completed',
+                      _uid: 'testing-search-results-pod',
+                    },
+                  ],
+                },
+              ],
+            }}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getAllByText('Loading')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
@@ -520,12 +617,16 @@ describe('SearchResults Page', () => {
     render(
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={mocks}>
-          <SearchResults currentQuery={'kind:Pod'} preSelectedRelatedResources={['Node']} />
+          <SearchResults
+            currentQuery={'kind:Pod'}
+            preSelectedRelatedResources={['Node']}
+            error={{ message: 'Error getting search data' } as ApolloError}
+            loading={false}
+            data={{}}
+          />
         </MockedProvider>
       </Router>
     )
-    // Test the loading state while apollo query finishes
-    expect(screen.getAllByText('Loading')).toBeTruthy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered errors correctly

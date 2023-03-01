@@ -17,7 +17,7 @@ import { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
 import {
@@ -331,10 +331,22 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         <Text component={TextVariants.p}>
           <Split hasGutter>
             <SplitItem>
-              <strong>{policySetClusters.length}</strong>&nbsp; clusters
+              <Trans
+                i18nKey="policyset.details.sidebar.cluster.count"
+                values={{
+                  count: policySetClusters.length,
+                }}
+                components={{ bold: <strong /> }}
+              />
             </SplitItem>
             <SplitItem>
-              <strong>{policySetPolicies.length}</strong>&nbsp; policies
+              <Trans
+                i18nKey="policyset.details.sidebar.policy.count"
+                values={{
+                  count: policySetPolicies.length,
+                }}
+                components={{ bold: <strong /> }}
+              />
             </SplitItem>
           </Split>
         </Text>

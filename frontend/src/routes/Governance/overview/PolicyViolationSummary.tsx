@@ -81,17 +81,17 @@ export function ViolationsCard(props: {
             link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=with-violations` : undefined,
           },
           {
-            key: 'pending',
+            key: t('pending'),
             value: props.pending,
             link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
           },
           {
-            key: 'without violations',
+            key: t('without violations'),
             value: props.compliant,
             link: props.compliant > 0 ? `${NavigationPath.policies}?violations=without-violations` : undefined,
           },
         ]}
-        colorScale={colorThemes.criticalImportantSuccess}
+        colorScale={colorThemes.criticalLowSuccess}
       />
     </Card>
   )
