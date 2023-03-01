@@ -23,7 +23,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
@@ -194,7 +194,7 @@ export function ClustersTable(props: {
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
 
@@ -494,7 +494,7 @@ export function ClustersTable(props: {
 
   return (
     <Fragment>
-      <BulkActionModel<Cluster> {...modalProps} />
+      <BulkActionModal<Cluster> {...modalProps} />
       <UpdateAutomationModal
         clusters={updateAutomationTemplates}
         open={!!updateAutomationTemplates}

@@ -18,7 +18,7 @@ import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
-import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
@@ -201,7 +201,7 @@ export function ClusterSetManageResourcesContent() {
           </ActionGroup>
         )}
       </AcmForm>
-      <BulkActionModel<Cluster>
+      <BulkActionModal<Cluster>
         open={showConfirmModal}
         title={t('manageClusterSet.form.modal.title')}
         action={t('save')}

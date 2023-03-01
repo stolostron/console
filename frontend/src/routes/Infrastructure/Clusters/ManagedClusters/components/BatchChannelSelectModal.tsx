@@ -14,7 +14,7 @@ import { AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
@@ -64,7 +64,7 @@ export function BatchChannelSelectModal(props: {
   }, [props.clusters, props.open])
 
   return (
-    <BulkActionModel<Cluster>
+    <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.selectChannel')}
       plural={t('bulk.plural.selectChannel')}

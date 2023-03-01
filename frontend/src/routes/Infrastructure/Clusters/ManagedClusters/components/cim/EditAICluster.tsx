@@ -32,7 +32,7 @@ import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 
 const {
@@ -100,7 +100,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   )
 
   const [bulkModalProps, setBulkModalProps] = useState<
-    IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   >({ open: false })
   const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
 
@@ -208,7 +208,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
       <AcmErrorBoundary>
         <AcmPageContent id="edit-cluster">
           <PageSection variant="light" type="wizard" isFilled>
-            <BulkActionModel<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
+            <BulkActionModal<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
             <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
               <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"

@@ -15,7 +15,7 @@ import {
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
@@ -58,7 +58,7 @@ function AnsibleJobTemplateTable() {
   const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
-  const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
+  const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModalProps<ClusterCurator> | { open: false }>({
     open: false,
   })
 
@@ -74,7 +74,7 @@ function AnsibleJobTemplateTable() {
   // Set table
   return (
     <Fragment>
-      <BulkActionModel<ClusterCurator> {...bulkModalProps} />
+      <BulkActionModal<ClusterCurator> {...bulkModalProps} />
       <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
       <AcmTable<ClusterCurator>
         plural="templates"

@@ -4,7 +4,7 @@ import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { AcmInlineProvider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
@@ -42,7 +42,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
@@ -379,7 +379,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         open={showChannelSelectModal}
         close={() => setShowChannelSelectModal(false)}
       />
-      <BulkActionModel<Cluster> {...modalProps} />
+      <BulkActionModal<Cluster> {...modalProps} />
       {actions && actions.length > 0 && (
         <RbacDropdown<Cluster>
           id={`${cluster.name}-actions`}
