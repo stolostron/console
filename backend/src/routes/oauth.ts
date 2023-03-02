@@ -7,7 +7,7 @@ import { deleteCookie } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
-import { getToken } from '../lib/token'
+import { getAuthenticatedToken } from '../lib/token'
 import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
@@ -77,34 +77,34 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
 }
 
 export async function logout(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-  const token = getToken(req)
-  if (!token) return unauthorized(req, res)
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    const gotOptions = { headers: { Authorization: `Bearer ${token}` }, https: { rejectUnauthorized: false } }
 
-  const gotOptions = { headers: { Authorization: `Bearer ${token}` }, https: { rejectUnauthorized: false } }
+    let tokenName = token
+    const sha256Prefix = 'sha256~'
+    if (tokenName.startsWith(sha256Prefix)) {
+      tokenName = `sha256~${createHash('sha256')
+        .update(token.substring(sha256Prefix.length))
+        .digest('base64')
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')}`
+    }
 
-  let tokenName = token
-  const sha256Prefix = 'sha256~'
-  if (tokenName.startsWith(sha256Prefix)) {
-    tokenName = `sha256~${createHash('sha256')
-      .update(token.substring(sha256Prefix.length))
-      .digest('base64')
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')}`
+    try {
+      const url =
+        process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`
+      await got.delete(url, gotOptions)
+    } catch (err) {
+      logger.error(err)
+    }
+
+    const host = req.headers.host
+
+    deleteCookie(res, { cookie: 'connect.sid' })
+    deleteCookie(res, { cookie: 'acm-access-token-cookie' })
+    deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host}` })
+    res.writeHead(200).end()
   }
-
-  try {
-    const url =
-      process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`
-    await got.delete(url, gotOptions)
-  } catch (err) {
-    logger.error(err)
-  }
-
-  const host = req.headers.host
-
-  deleteCookie(res, { cookie: 'connect.sid' })
-  deleteCookie(res, { cookie: 'acm-access-token-cookie' })
-  deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host}` })
-  res.writeHead(200).end()
 }
