@@ -217,19 +217,34 @@ describe('ClusterActionDropdown', () => {
 })
 
 describe('ClusterActionDropdown', () => {
-  test("disables menu items based on the user's permissions", async () => {
+  test("disables menu items based on the user's permissions for ready cluster", async () => {
+    const cluster = JSON.parse(JSON.stringify(mockCluster))
+    render(<Component cluster={cluster} />)
+    const rbacNocks: Scope[] = [
+      nockRBAC(await rbacPatchManagedCluster()),
+      nockRBAC(await rbacPatchClusterDeployment()), // hibernate
+      nockRBAC(await rbacDeleteManagedCluster()), // destroy
+      nockRBAC(await rbacDeleteClusterDeployment()),
+      nockRBAC(await rbacDeleteManagedCluster()), //detach
+      // update automation template
+      nockRBAC(await rbacPatchClusterCurator()),
+      nockRBAC(await rbacCreateClusterCurator()),
+      nockRBAC(await rbacPatchSecret()),
+      nockRBAC(await rbacCreateSecret()),
+    ]
+    await clickByLabel('Actions')
+    await waitForNocks(rbacNocks)
+  })
+
+  test("disables menu items based on the user's permissions for hibernating cluster", async () => {
     const cluster = JSON.parse(JSON.stringify(mockCluster))
     cluster.status = ClusterStatus.hibernating
     render(<Component cluster={cluster} />)
     const rbacNocks: Scope[] = [
       nockRBAC(await rbacPatchManagedCluster()),
-      nockRBAC(await rbacPatchClusterDeployment()),
+      nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),
-      nockRBAC(await rbacPatchClusterCurator()),
-      nockRBAC(await rbacCreateClusterCurator()),
-      nockRBAC(await rbacPatchSecret()),
-      nockRBAC(await rbacCreateSecret()),
     ]
     await clickByLabel('Actions')
     await waitForNocks(rbacNocks)

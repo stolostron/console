@@ -8,7 +8,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
 import { listMultiClusterEngines } from '../../../../../../resources/multi-cluster-engine'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
@@ -60,7 +60,7 @@ const AIClusterDetails: React.FC = () => {
   const cdNamespace = clusterDeployment?.metadata?.namespace
 
   const [bulkModalProps, setBulkModalProps] = useState<
-    IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   >({ open: false })
 
   const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
@@ -192,7 +192,7 @@ const AIClusterDetails: React.FC = () => {
         <AcmExpandableCard title={t('Cluster hosts')} id="aihosts">
           {!!agentClusterInstall && (
             <>
-              <BulkActionModel<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
+              <BulkActionModal<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
               <AgentTable
                 agents={clusterAgents}
                 className="agents-table"

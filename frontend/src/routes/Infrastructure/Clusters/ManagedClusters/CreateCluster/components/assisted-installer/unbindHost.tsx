@@ -6,7 +6,7 @@ import { Alert, AlertVariant } from '@patternfly/react-core'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { IResource, patchResource } from '../../../../../../../resources'
-import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
+import { IBulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { agentNameSortFunc, getAgentName, setProvisionRequirements } from './utils'
 
 import './unbindHost.css'
@@ -76,7 +76,7 @@ const agentClusterSortFunc = (
 
 export function useOnUnbindHost(
   toggleDialog: (
-    props: IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    props: IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   ) => void,
   clusterName?: string,
   agentClusterInstall?: CIM.AgentClusterInstallK8sResource
