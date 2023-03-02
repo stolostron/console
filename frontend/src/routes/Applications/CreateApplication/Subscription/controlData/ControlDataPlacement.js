@@ -18,7 +18,7 @@ import DeprecationAlert from '../common/DeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, listPlacements } from '../../../../../resources'
+import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
@@ -86,7 +86,7 @@ const setAvailableRules = (control, result) => {
         const clusterSelector = _.get(rule, 'spec.clusterSelector')
         const clusterConditions = _.get(rule, 'spec.clusterConditions')
         let selector = enableHubSelfManagement?.active
-          ? i18n('creation.app.local.clusters.only', [ruleName])
+          ? i18n('creation.app.local.clusters.only', [rule.kind, ruleName])
           : unavailable
         if (clusterSelector?.matchExpressions?.length > 0) {
           if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
@@ -101,8 +101,8 @@ const setAvailableRules = (control, result) => {
           }
         } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
           selector = enableHubSelfManagement?.active
-            ? i18n('creation.app.clusters.all.online', [ruleName])
-            : i18n('creation.app.clusters.only.online', [ruleName])
+            ? i18n('creation.app.clusters.all.online', [rule.kind, ruleName])
+            : i18n('creation.app.clusters.only.online', [rule.kind, ruleName])
         } else if (clusterSelector.matchLabels) {
           if (!clusterSelector.matchLabels['local-cluster']) {
             const getLabels = () => {
@@ -200,7 +200,7 @@ export const updateNewRuleControls = (control) => {
   control.info = availableInfo ? availableInfo[control?.active] : ''
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
   const isPlacementRule = groupControlData.find(({ id }) => id === 'isPlacementRule')
-  if (control.info.startsWith('PlacementRule')) {
+  if (active.kind === PlacementRuleKind) {
     isPlacementRule && _.set(isPlacementRule, 'active', true)
   } else {
     isPlacementRule && _.set(isPlacementRule, 'active', false)
