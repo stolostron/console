@@ -184,15 +184,6 @@ const ClusterSelector = (props: {
     [forceUpdate]
   )
 
-  // const addLabelKeyPress = useCallback(
-  //   (e) => {
-  //     if (e.type === 'click' || e.key === 'Enter') {
-  //       addLabelToList(control)
-  //     }
-  //   },
-  //   [control, addLabelToList]
-  // )
-
   const removeLabelFromList = useCallback(
     (control: { active: any }, item: { id: any }, isReadOnly?: boolean | undefined) => {
       if (!isReadOnly) {
@@ -206,15 +197,6 @@ const ClusterSelector = (props: {
     },
     [forceUpdate, handleChange]
   )
-
-  // const removeLabelKeyPress = useCallback(
-  //   (e) => {
-  //     if (e.type === 'click' || e.key === 'Enter') {
-  //       removeLabelFromList(control, { id: e.target.id })
-  //     }
-  //   },
-  //   [control, removeLabelFromList]
-  // )
 
   const renderClusterLabels = (
     control: { active: { clusterLabelsList: any[] } },
