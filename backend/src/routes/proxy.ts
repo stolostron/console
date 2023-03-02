@@ -22,7 +22,7 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_ETAG,
 ]
 
-export async function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export async function proxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     const url = req.url
