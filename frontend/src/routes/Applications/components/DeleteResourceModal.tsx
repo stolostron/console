@@ -8,9 +8,8 @@ import { Fragment, ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
-import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
+import { ApplicationKind, ApplicationSetKind, IResource, PlacementApiVersionBeta } from '../../../resources'
 import '../css/DeleteResourceModal.css'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 
 export interface IDeleteResourceModalProps {
     open: boolean
@@ -34,9 +33,6 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
     const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
     const history = useHistory()
-    const { placementsState } = useSharedAtoms()
-    const [placements] = useRecoilState(placementsState)
-    const placementApiVersion = placements[0].apiVersion || 'cluster.open-cluster-management.io/v1beta1'
 
     if (props.open === false) {
         return <></>
@@ -66,7 +62,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                 props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
                     ? [
                           {
-                              apiVersion: placementApiVersion,
+                              apiVersion: PlacementApiVersionBeta, // replace when placement type is available
                               kind: 'Placement',
                               name: props.appSetPlacement,
                               namespace: props.resource.metadata?.namespace,
