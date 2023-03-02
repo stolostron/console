@@ -13,6 +13,9 @@ interface AnsibleCredential {
   token: string
 }
 
+// must match ansiblePaths in frontend/src/resources/utils/resource-request.ts
+const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
+
 export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
@@ -30,6 +33,11 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
     try {
       towerUrl = new URL(ansibleCredential.towerHost.toString())
     } catch (err) {
+      return respondBadRequest(req, res)
+    }
+
+    // whitelist of apis our ui calls
+    if (!ansiblePaths.includes(towerUrl.pathname)) {
       return respondBadRequest(req, res)
     }
 
