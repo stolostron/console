@@ -144,6 +144,7 @@ function RenderSearchBar(props: {
     variables: {
       property: searchCompleteValue,
       query: searchCompleteQuery,
+      limit: 10000,
     },
   })
 
