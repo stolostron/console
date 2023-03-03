@@ -256,24 +256,28 @@ describe('getShortDateTime', () => {
 })
 
 describe('getAppChildResources', () => {
-  expect(
-    getAppChildResources(mockApplication0, mockApplications, mockSubscriptions, mockPlacementRules, [], mockChannels)
-  ).toEqual([
-    [
-      {
-        apiVersion: 'apps.open-cluster-management.io/v1',
-        id: 'subscriptions-namespace-0-subscription-0',
-        kind: 'Subscription',
-        label: 'subscription-0 [Subscription]',
-        name: 'subscription-0',
-        namespace: 'namespace-0',
-        subChildResources: [],
-      },
-    ],
-    [],
-  ])
+  it('should get the child resources', () => {
+    expect(
+      getAppChildResources(mockApplication0, mockApplications, mockSubscriptions, mockPlacementRules, [], mockChannels)
+    ).toEqual([
+      [
+        {
+          apiVersion: 'apps.open-cluster-management.io/v1',
+          id: 'subscriptions-namespace-0-subscription-0',
+          kind: 'Subscription',
+          label: 'subscription-0 [Subscription]',
+          name: 'subscription-0',
+          namespace: 'namespace-0',
+          subChildResources: [],
+        },
+      ],
+      [],
+    ])
+  })
 })
 
 describe('getAppSetRelatedResources', () => {
-  expect(getAppSetRelatedResources(mockApplicationSet0, mockApplicationSets)).toEqual(['fengappset2-placement', []])
+  it('should get the related placement info', () => {
+    expect(getAppSetRelatedResources(mockApplicationSet0, mockApplicationSets)).toEqual(['fengappset2-placement', []])
+  })
 })
