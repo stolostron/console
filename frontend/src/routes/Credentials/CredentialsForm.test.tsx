@@ -20,6 +20,7 @@ import {
   selectByText,
   typeByTestId,
   waitForNock,
+  waitForTestId,
   waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
@@ -27,7 +28,7 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 
-const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
   metadata: { name },
@@ -36,15 +37,17 @@ const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].m
 export function createProviderConnection(
   provider: string,
   stringData: ProviderConnectionStringData,
-  common = false
+  common = false,
+  name?: string,
+  namespace?: string
 ): ProviderConnection {
   return {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     type: 'Opaque',
     metadata: {
-      name: `${provider}-connection`,
-      namespace: mockNamespaces[0].metadata.name,
+      name: name ? name : `${provider}-connection`,
+      namespace: namespace ? namespace : mockNamespaces[0].metadata.name,
       labels: {
         'cluster.open-cluster-management.io/type': provider,
         'cluster.open-cluster-management.io/credentials': '',
@@ -109,6 +112,36 @@ describe('add credentials page', () => {
     await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
     await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
     await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+    await clickByText('Next')
+
+    // Add Credentials
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
+  })
+
+  it('should create aws (Amazon Web Services) s3 credentials', async () => {
+    render(<Component credentialsType={Provider.awss3} />)
+    const providerConnection = createProviderConnection(
+      'awss3',
+      {
+        bucket: 'test-bucket',
+        region: 'us-east-1',
+        credentials: '[default]\naws_access_key_id=abc\naws_secret_access_key=efg',
+      },
+      false,
+      'hypershift-operator-oidc-provider-s3-credentials',
+      'local-cluster'
+    )
+
+    await waitForTestId('credentialsName')
+    await clickByText('Next')
+
+    // bucket
+    await typeByTestId('bucketName', providerConnection.stringData?.bucket!)
+    await typeByTestId('credentials', providerConnection.stringData?.credentials!)
+    await selectByText('Select region', providerConnection.stringData?.region!)
+
     await clickByText('Next')
 
     // Add Credentials

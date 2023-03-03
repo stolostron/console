@@ -17,7 +17,7 @@ import moment from 'moment'
 import { Fragment, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
-import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
@@ -85,7 +85,7 @@ export function CredentialsTable(props: {
 }) {
   const { t } = useTranslation()
   const history = useHistory()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Secret> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
 
@@ -120,7 +120,7 @@ export function CredentialsTable(props: {
 
   return (
     <Fragment>
-      <BulkActionModel<Secret> {...modalProps} />
+      <BulkActionModal<Secret> {...modalProps} />
       <AcmTable<Secret>
         emptyState={
           <AcmEmptyState

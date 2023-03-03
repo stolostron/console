@@ -6,7 +6,7 @@ import { SelectOption } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { BulkActionModal } from '../../../../../components/BulkActionModal'
 
 export type UpdateReleaseImageModalProps = {
   close?: () => void
@@ -85,7 +85,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
   )
 
   return (
-    <BulkActionModel<ClusterPool>
+    <BulkActionModal<ClusterPool>
       open={props.clusterPools?.length !== undefined}
       title={t('bulk.title.updateReleaseImage')}
       action={t('update')}

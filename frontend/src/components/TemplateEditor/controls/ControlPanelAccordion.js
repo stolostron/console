@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import { Badge, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import get from 'lodash/get'
-import { CaretIcon } from '../icons/Icons'
+import { AngleRightIcon } from '@patternfly/react-icons'
 
 class ControlPanelAccordion extends React.Component {
   static propTypes = {
@@ -101,7 +101,7 @@ class ControlPanelAccordion extends React.Component {
               <div className={mainTitleClasses}>
                 {collapsable && (
                   <div className={'creation-view-controls-title-main-collapse-button'}>
-                    <CaretIcon />
+                    <AngleRightIcon />
                   </div>
                 )}
                 <div className="creation-view-controls-title-main-name">

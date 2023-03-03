@@ -14,7 +14,7 @@ import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
@@ -51,7 +51,7 @@ export function AutomationDetailsSidebar(props: {
     govData.clusterRisks.unknown +
     govData.clusterRisks.synced
 
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyAutomation> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyAutomation> | { open: false }>({
     open: false,
   })
 
@@ -173,7 +173,7 @@ export function AutomationDetailsSidebar(props: {
 
   return (
     <div>
-      <BulkActionModel<PolicyAutomation> {...modalProps} />
+      <BulkActionModal<PolicyAutomation> {...modalProps} />
       <AutomationProviderHint
         component="alert"
         workflowSupportRequired={
