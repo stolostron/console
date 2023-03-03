@@ -58,30 +58,6 @@ export default function AnsibleAutomationsPage() {
   )
 }
 
-// const CreateAutomationTemplateBtn = () => {
-//   const { t } = useTranslation()
-//   const unauthorizedMessage = t('rbac.unauthorized')
-//   const { namespacesState } = useSharedAtoms()
-//   const [namespaces] = useRecoilState(namespacesState)
-//   const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
-//   useEffect(() => {
-//     checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
-//   }, [namespaces])
-//   return (
-//     <div>
-//       <AcmButton
-//         isDisabled={!canCreateAutomationTemplate}
-//         tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
-//         component={Link}
-//         to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
-//       >
-//         {t('template.create')}
-//       </AcmButton>
-//       <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
-//     </div>
-//   )
-// }
-
 function AnsibleJobTemplateTable() {
   // Load Data
   const { ansibleCredentialsValue, clusterCuratorTemplatesValue } = useSharedSelectors()
