@@ -28,7 +28,6 @@ import {
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import AnsibleAutomationsPage from './AnsibleAutomations'
-import userEvent from '@testing-library/user-event'
 
 const mockAnsibleConnection1: ProviderConnection = {
   apiVersion: ProviderConnectionApiVersion,
