@@ -31,7 +31,6 @@ import {
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
-import { namespacesState } from '../../atoms'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -67,6 +66,7 @@ export default function CredentialsPage() {
 /* istanbul ignore next */
 const AddConnectionBtn = () => {
   const { t } = useTranslation()
+  const { namespacesState } = useSharedAtoms()
   const unauthorizedMessage = t('rbac.unauthorized')
   const [namespaces] = useRecoilState(namespacesState)
   const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
