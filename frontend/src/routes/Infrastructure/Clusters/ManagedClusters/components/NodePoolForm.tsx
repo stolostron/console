@@ -548,8 +548,8 @@ export function NodePoolForm(props: {
         <Fragment>
           <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
           <AcmTable
-            plural=""
             items={resourceErrors}
+            emptyState={undefined} // only shown when resourceErrors.length > 0
             columns={[
               {
                 header: t('Name'),
@@ -572,7 +572,7 @@ export function NodePoolForm(props: {
             autoHidePagination
           />
           <Button variant="link" onClick={props.close} key="hypershift-nodepool-error-close">
-            {t('close')}
+            {t('Close')}
           </Button>
         </Fragment>
       )}

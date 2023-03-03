@@ -2873,7 +2873,7 @@
   "View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).": "システムアラート、重要なアプリケーションメトリクス、およびシステム全体の健全性を表示します。Site Reliability Engineers (SRE) 向けに設計された運用ダッシュボードを使用して、分散ワークロードに影響を与える問題を検索、特定、解決します。",
   "View template": "テンプレートの表示",
   "View topology": "トポロジーの表示",
-  "View yaml": "YAML の表示",
+  "View YAML": "YAML の表示",
   "View YAML in Search details": "検索の詳細での YAML の表示",
   "view.addons": "アドオンの表示",
   "view.documentation": "ドキュメントの表示",

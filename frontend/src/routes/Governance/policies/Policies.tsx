@@ -32,7 +32,7 @@ import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
-import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
@@ -105,7 +105,7 @@ export default function PoliciesPage() {
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
   const history = useHistory()
   const [policySets] = useRecoilState(policySetsState)
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyTableItem> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
 
@@ -395,7 +395,8 @@ export default function PoliciesPage() {
                 title: t('policy.modal.title.enable'),
                 action: t('policy.table.actions.enable'),
                 processing: t('policy.table.actions.enabling'),
-                resources: [...item],
+                items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.enable'),
                 columns: bulkModalStatusColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -434,7 +435,8 @@ export default function PoliciesPage() {
                 title: t('policy.modal.title.disable'),
                 action: t('policy.table.actions.disable'),
                 processing: t('policy.table.actions.disabling'),
-                resources: [...item],
+                items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.disable'),
                 columns: bulkModalStatusColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -484,7 +486,8 @@ export default function PoliciesPage() {
                 title: t('policy.modal.title.inform'),
                 action: t('policy.table.actions.inform'),
                 processing: t('policy.table.actions.informing'),
-                resources: [...item],
+                items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.inform'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -523,7 +526,8 @@ export default function PoliciesPage() {
                 title: t('policy.modal.title.enforce'),
                 action: t('policy.table.actions.enforce'),
                 processing: t('policy.table.actions.enforcing'),
-                resources: [...item],
+                items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.enforce'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -721,10 +725,10 @@ export default function PoliciesPage() {
       <BulkActionModal<PolicyTableItem> {...modalProps} />
       <AcmTable<PolicyTableItem>
         id="policyTable"
-        plural={t('Policies')}
         columns={policyColumns}
         keyFn={policyKeyFn}
         items={tableItems}
+        emptyState={undefined} // only shown when tableItems.length > 0
         tableActions={tableActions}
         initialFilters={
           presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
@@ -964,7 +968,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
           <AcmTable<PolicyTableItem>
             columns={addPolicyToSetColumns}
             items={props.policyTableItems}
-            plural="Policies"
+            emptyState={undefined} // only shown when policyTableItems is not empty
             keyFn={(item: PolicyTableItem) => item.policy.metadata.uid as string}
           />
         </StackItem>

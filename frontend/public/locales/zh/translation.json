@@ -2873,7 +2873,7 @@
   "View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).": "查看系统警报、关键应用程序指标和整体系统健康状况。使用专为站点可靠性工程师 (SRE) 设计的操作仪表板搜索、识别并解决影响分布式工作负载的问题。",
   "View template": "查看模板",
   "View topology": "查看拓扑",
-  "View yaml": "查看 yaml",
+  "View YAML": "查看 YAML",
   "View YAML in Search details": "在搜索详情中查看 YAML",
   "view.addons": "查看附加组件",
   "view.documentation": "查看文档",

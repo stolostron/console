@@ -8,8 +8,8 @@ import {
   AcmSubmit,
   AcmTable,
   AcmTablePaginationContextProvider,
+  AcmTableProps,
   AcmTextInput,
-  IAcmTableColumn,
 } from '../ui-components'
 import {
   ActionGroup,
@@ -30,37 +30,33 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 import { getRawErrorInfo } from './ErrorPage'
 
-export interface IBulkActionModalProps<T = undefined> {
+export type BulkActionModalProps<T = undefined> = {
   open: true
   action: string
   title: string
-  plural?: string
   processing: string
-  resources: Array<T>
   close: () => void
   onCancel?: () => void
   description: string | React.ReactNode
-  columns?: IAcmTableColumn<T>[]
-  keyFn?: (item: T) => string
   actionFn: (item: T) => IRequestResult
   checkBox?: JSX.Element
   confirmText?: string
   isDanger?: boolean
   isValidError?: (error: Error) => boolean
-  emptyState?: JSX.Element
-  showToolbar?: boolean
   hideTableAfterSubmit?: boolean
   icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
   hasExternalResources?: boolean
   disableSubmitButton?: boolean
-}
+} & Required<Pick<AcmTableProps<T>, 'items'>> &
+  Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
+  Omit<AcmTableProps<T>, 'columns'>
 
 export interface ItemError<T> {
   item: T
   error: Error
 }
 
-export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | { open: false }) {
+export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { open: false }) {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
   const [progressCount, setProgressCount] = useState(0)
@@ -110,8 +106,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                   <AcmTablePaginationContextProvider localStorageKey="model">
                     <AcmTable<T>
                       gridBreakPoint={TableGridBreakpoint.none}
-                      plural={props.plural ?? ''}
-                      items={props.resources}
+                      items={props.items}
                       columns={props.columns}
                       keyFn={props.keyFn}
                       tableActions={[]}
@@ -156,8 +151,8 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
             {props.columns && props.keyFn && (
               <AcmTablePaginationContextProvider localStorageKey="model">
                 <AcmTable<T>
-                  plural=""
-                  items={props.resources.filter((item) => getItemError(item) !== undefined)}
+                  emptyState={undefined} // table only displayed when there are errors
+                  items={props.items.filter((item) => getItemError(item) !== undefined)}
                   columns={[
                     props.columns[0],
                     {
@@ -217,7 +212,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
           {errors
             ? [
                 <Button variant="primary" key="close-bulk-action" onClick={props.close}>
-                  {t('close')}
+                  {t('Close')}
                 </Button>,
               ]
             : [
@@ -225,7 +220,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                   key="submit-bulk-action"
                   id="submit-button"
                   isDisabled={
-                    !props.resources?.length ||
+                    !props.items?.length ||
                     (props.confirmText !== undefined && confirm !== props.confirmText) ||
                     props.disableSubmitButton
                   }
@@ -233,9 +228,9 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
                     if (errors.length === 0) {
-                      setProgressCount(props.resources.length)
+                      setProgressCount(props.items.length)
                       const requestResult = resultsSettled(
-                        props.resources.map((resource) => {
+                        props.items.map((resource) => {
                           const r = props.actionFn(resource)
                           return {
                             promise: r.promise.finally(() => setProgress((progress) => progress + 1)),
@@ -252,7 +247,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                           }
                           if (validError) {
                             errors.push({
-                              item: props.resources[index],
+                              item: props.items[index],
                               error: promiseResult.reason,
                             })
                           }

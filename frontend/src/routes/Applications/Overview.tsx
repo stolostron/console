@@ -1031,7 +1031,6 @@ export default function ApplicationsOverview() {
       <AcmTable<IResource>
         id="applicationTable"
         key="data-table"
-        plural={t('Applications')}
         columns={columns}
         keyFn={keyFn}
         items={tableItems}

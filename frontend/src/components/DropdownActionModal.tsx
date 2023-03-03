@@ -84,7 +84,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
             {error
               ? [
                   <Button variant="primary" key="close-action" onClick={props.close}>
-                    {t('close')}
+                    {t('Close')}
                   </Button>,
                 ]
               : [

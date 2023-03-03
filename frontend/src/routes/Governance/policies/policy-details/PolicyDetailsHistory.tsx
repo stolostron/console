@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 
 interface HistoryTableData {
   message: string
@@ -112,8 +112,14 @@ export function PolicyDetailsHistory(props: {
       <Title headingLevel="h3">{clusterName}</Title>
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
-        <AcmTable
+        <AcmTable<HistoryTableData>
           items={statusItems}
+          emptyState={
+            <AcmEmptyState
+              title={t('No history')}
+              message={t('There is no history for the policy template on this cluster.')}
+            />
+          }
           columns={columns}
           keyFn={(item) => `${item.message}.${item.timestamp}`}
           initialSort={{
@@ -121,7 +127,6 @@ export function PolicyDetailsHistory(props: {
             direction: 'desc',
           }}
           fuseThreshold={0}
-          plural={t('clusters')}
         />
       </AcmTablePaginationContextProvider>
     </PageSection>

@@ -742,8 +742,8 @@ export function HypershiftUpgradeModal(props: {
           <Fragment>
             <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
             <AcmTable
-              plural=""
               items={patchErrors}
+              emptyState={undefined} // only shown when patchErrors.length > 0
               columns={[
                 {
                   header: t('Error'),
@@ -759,7 +759,7 @@ export function HypershiftUpgradeModal(props: {
               autoHidePagination
             />
             <Button variant="link" onClick={props.close} key="hypershift-upgrade-error-close">
-              {t('close')}
+              {t('Close')}
             </Button>
           </Fragment>
         )}

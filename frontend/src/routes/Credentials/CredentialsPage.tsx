@@ -17,7 +17,7 @@ import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
-import { BulkActionModal, IBulkActionModalProps } from '../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
@@ -78,7 +78,7 @@ export function CredentialsTable(props: {
 }) {
   const { t } = useTranslation()
   const history = useHistory()
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Secret> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
   const { namespacesState } = useSharedAtoms()
@@ -146,7 +146,6 @@ export function CredentialsTable(props: {
             }
           />
         }
-        plural={t('Credentials')}
         items={props.secrets}
         columns={[
           {
@@ -243,7 +242,8 @@ export function CredentialsTable(props: {
                       title: t('Permanently delete credentials?'),
                       action: t('Delete'),
                       processing: t('Deleting'),
-                      resources: [secret],
+                      items: [secret],
+                      emptyState: undefined, // there is always 1 item supplied
                       description: t(
                         'You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.'
                       ),
@@ -305,7 +305,8 @@ export function CredentialsTable(props: {
                 title: t('Permanently delete credentials?'),
                 action: t('Delete'),
                 processing: t('Deleting'),
-                resources: [...secrets],
+                items: [...secrets],
+                emptyState: undefined, // table action is only enabled when items are selected
                 description: t(
                   'You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.'
                 ),
@@ -325,7 +326,6 @@ export function CredentialsTable(props: {
                 actionFn: deleteResource,
                 close: () => setModalProps({ open: false }),
                 isDanger: true,
-                icon: 'warning',
               })
             },
             variant: 'bulk-action',
