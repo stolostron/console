@@ -14,16 +14,24 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import moment from 'moment'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, IBulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
-import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
-import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
+import {
+  deleteResource,
+  DiscoveryConfig,
+  ProviderConnection,
+  Secret,
+  SecretDefinition,
+  unpackProviderConnection,
+} from '../../resources'
+import { namespacesState } from '../../atoms'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -59,9 +67,20 @@ export default function CredentialsPage() {
 /* istanbul ignore next */
 const AddConnectionBtn = () => {
   const { t } = useTranslation()
+  const unauthorizedMessage = t('rbac.unauthorized')
+  const [namespaces] = useRecoilState(namespacesState)
+  const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
+  useEffect(() => {
+    checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)
+  }, [namespaces])
   return (
     <div>
-      <AcmButton component={Link} to={createBackCancelLocation(NavigationPath.addCredentials)}>
+      <AcmButton
+        isDisabled={!canAddCredential}
+        tooltip={!canAddCredential ? unauthorizedMessage : ''}
+        component={Link}
+        to={createBackCancelLocation(NavigationPath.addCredentials)}
+      >
         {t('Add credential')}
       </AcmButton>
       <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>

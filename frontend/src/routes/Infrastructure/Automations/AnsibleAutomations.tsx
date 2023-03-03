@@ -14,16 +14,23 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
-import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
-import { ClusterCurator, deleteResource, getTemplateJobsNum, LinkAnsibleCredential } from '../../../resources'
+import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { createBackCancelLocation, NavigationPath } from '../../../NavigationPath'
+import {
+  ClusterCurator,
+  ClusterCuratorDefinition,
+  deleteResource,
+  getTemplateJobsNum,
+  LinkAnsibleCredential,
+} from '../../../resources'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
+import { namespacesState } from '../../../atoms'
 
 export default function AnsibleAutomationsPage() {
   const alertContext = useContext(AcmAlertContext)
@@ -49,6 +56,29 @@ export default function AnsibleAutomationsPage() {
         </PageSection>
       </AcmPageContent>
     </AcmPage>
+  )
+}
+
+const CreateAutomationTemplateBtn = () => {
+  const { t } = useTranslation()
+  const unauthorizedMessage = t('rbac.unauthorized')
+  const [namespaces] = useRecoilState(namespacesState)
+  const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
+  useEffect(() => {
+    checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
+  }, [namespaces])
+  return (
+    <div>
+      <AcmButton
+        isDisabled={!canCreateAutomationTemplate}
+        tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
+        component={Link}
+        to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
+      >
+        {t('template.create')}
+      </AcmButton>
+      <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
+    </div>
   )
 }
 
@@ -267,23 +297,7 @@ function AnsibleJobTemplateTable() {
           <AcmEmptyState
             title={t('template.emptyStateHeader')}
             message={<Trans i18nKey="template.emptyStateMsg" components={{ bold: <strong /> }} />}
-            action={
-              <div>
-                <AcmButton
-                  role="link"
-                  onClick={() => {
-                    // TODO: make sure addtemplate can handle new ansible Automations
-                    history.push(NavigationPath.addAnsibleAutomation)
-                  }}
-                  // disabled={}
-                  // tooltip={t('rbac.unauthorized')}
-                  hidden
-                >
-                  {t('template.create')}
-                </AcmButton>
-                <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
-              </div>
-            }
+            action={<CreateAutomationTemplateBtn />}
           />
         }
       ></AcmTable>
