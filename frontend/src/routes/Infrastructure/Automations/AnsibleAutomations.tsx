@@ -14,7 +14,7 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -30,7 +30,6 @@ import {
   LinkAnsibleCredential,
 } from '../../../resources'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { namespacesState } from '../../../atoms'
 
 export default function AnsibleAutomationsPage() {
   const alertContext = useContext(AcmAlertContext)
@@ -62,6 +61,7 @@ export default function AnsibleAutomationsPage() {
 const CreateAutomationTemplateBtn = () => {
   const { t } = useTranslation()
   const unauthorizedMessage = t('rbac.unauthorized')
+  const { namespacesState } = useSharedAtoms()
   const [namespaces] = useRecoilState(namespacesState)
   const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
   useEffect(() => {
