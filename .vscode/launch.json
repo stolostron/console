@@ -6,7 +6,7 @@
   "compounds": [
     {
       "name": "Launch Everything",
-      "configurations": ["Launch Backend", "Launch Chrome"]
+      "configurations": ["Launch Backend", "Launch Chrome Delayed"]
     }
   ],
   "configurations": [
@@ -15,20 +15,37 @@
       "request": "launch",
       "type": "chrome",
       "webRoot": "${workspaceFolder}/frontend",
+      "url": "https://localhost:3000/multicloud/welcome"
+    },
+    {
+      "name": "Launch Chrome Delayed",
+      "request": "launch",
+      "type": "chrome",
+      "webRoot": "${workspaceFolder}/frontend",
       "url": "https://localhost:3000/multicloud/welcome",
-      "preLaunchTask": "Delay",
-      "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${webRoot}/node_modules/*",
-        "webpack:////*": "/*",
-        "webpack://?:*/*": "${webRoot}/*",
-        "webpack:///([a-z]):/(.+)": "$1:/$2"
-      }
+      "preLaunchTask": "Delay"
     },
     {
       "name": "Launch Backend",
       "request": "launch",
       "runtimeArgs": ["run", "start:hot"],
       "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Backend Test",
+      "request": "launch",
+      "args": [
+        "--experimental-vm-modules",
+        "node_modules/.bin/jest",
+        "${file}",
+        "--runInBand",
+        "--watchAll=false",
+        "--coverage=false"
+      ],
+      "cwd": "${workspaceFolder}/backend",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
       "console": "integratedTerminal"

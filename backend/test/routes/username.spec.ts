@@ -5,6 +5,9 @@ import nock from 'nock'
 
 describe('username Route', function () {
   it('should return the username', async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
     nock(process.env.CLUSTER_API_URL)
       .post('/apis/authentication.k8s.io/v1/tokenreviews')
       .reply(200, {
@@ -20,6 +23,9 @@ describe('username Route', function () {
     expect(body).toEqual({ username: 'testuser' })
   })
   it('should return empty string if no username provided', async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
     nock(process.env.CLUSTER_API_URL)
       .post('/apis/authentication.k8s.io/v1/tokenreviews')
       .reply(200, {
