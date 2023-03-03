@@ -10,9 +10,8 @@ export const useDataViewStrings = (): DataViewStrings => {
     () => ({
       backLabel: t('Back'),
       cancelLabel: t('Cancel'),
-      noItemsString: (plural: string) => t('No {{plural}} yet', { plural }),
-      getStartedMessage: (article: string, singular: string) =>
-        t('To get started, create {{article}} {{singular}}.', { article, singular }),
+      noItemsString: t('No items yet'),
+      getStartedMessage: t('To get started, create an item'),
       createItemString: t('Create item'),
     }),
     [t]
