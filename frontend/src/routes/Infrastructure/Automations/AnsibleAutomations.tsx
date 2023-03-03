@@ -58,29 +58,29 @@ export default function AnsibleAutomationsPage() {
   )
 }
 
-const CreateAutomationTemplateBtn = () => {
-  const { t } = useTranslation()
-  const unauthorizedMessage = t('rbac.unauthorized')
-  const { namespacesState } = useSharedAtoms()
-  const [namespaces] = useRecoilState(namespacesState)
-  const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
-  useEffect(() => {
-    checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
-  }, [namespaces])
-  return (
-    <div>
-      <AcmButton
-        isDisabled={!canCreateAutomationTemplate}
-        tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
-        component={Link}
-        to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
-      >
-        {t('template.create')}
-      </AcmButton>
-      <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
-    </div>
-  )
-}
+// const CreateAutomationTemplateBtn = () => {
+//   const { t } = useTranslation()
+//   const unauthorizedMessage = t('rbac.unauthorized')
+//   const { namespacesState } = useSharedAtoms()
+//   const [namespaces] = useRecoilState(namespacesState)
+//   const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
+//   useEffect(() => {
+//     checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
+//   }, [namespaces])
+//   return (
+//     <div>
+//       <AcmButton
+//         isDisabled={!canCreateAutomationTemplate}
+//         tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
+//         component={Link}
+//         to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
+//       >
+//         {t('template.create')}
+//       </AcmButton>
+//       <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
+//     </div>
+//   )
+// }
 
 function AnsibleJobTemplateTable() {
   // Load Data
@@ -98,7 +98,13 @@ function AnsibleJobTemplateTable() {
     open: false,
   })
   const { t } = useTranslation()
-
+  const unauthorizedMessage = t('rbac.unauthorized')
+  const { namespacesState } = useSharedAtoms()
+  const [namespaces] = useRecoilState(namespacesState)
+  const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
+  useEffect(() => {
+    checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
+  }, [namespaces])
   const history = useHistory()
 
   // Set table
@@ -251,6 +257,8 @@ function AnsibleJobTemplateTable() {
         }}
         tableActionButtons={[
           {
+            isDisabled: !canCreateAutomationTemplate,
+            tooltip: !canCreateAutomationTemplate ? unauthorizedMessage : '',
             id: 'add',
             title: t('template.create'),
             click: () => {
@@ -297,7 +305,19 @@ function AnsibleJobTemplateTable() {
           <AcmEmptyState
             title={t('template.emptyStateHeader')}
             message={<Trans i18nKey="template.emptyStateMsg" components={{ bold: <strong /> }} />}
-            action={<CreateAutomationTemplateBtn />}
+            action={
+              <div>
+                <AcmButton
+                  isDisabled={!canCreateAutomationTemplate}
+                  tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
+                  component={Link}
+                  to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
+                >
+                  {t('template.create')}
+                </AcmButton>
+                <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
+              </div>
+            }
           />
         }
       ></AcmTable>

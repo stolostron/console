@@ -62,32 +62,6 @@ export default function CredentialsPage() {
   )
 }
 
-// Ingoring coverage since this will move one the console header navigation is done
-/* istanbul ignore next */
-const AddConnectionBtn = () => {
-  const { t } = useTranslation()
-  const { namespacesState } = useSharedAtoms()
-  const unauthorizedMessage = t('rbac.unauthorized')
-  const [namespaces] = useRecoilState(namespacesState)
-  const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
-  useEffect(() => {
-    checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)
-  }, [namespaces])
-  return (
-    <div>
-      <AcmButton
-        isDisabled={!canAddCredential}
-        tooltip={!canAddCredential ? unauthorizedMessage : ''}
-        component={Link}
-        to={createBackCancelLocation(NavigationPath.addCredentials)}
-      >
-        {t('Add credential')}
-      </AcmButton>
-      <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
-    </div>
-  )
-}
-
 function getProviderName(labels: Record<string, string> | undefined) {
   const label = labels?.['cluster.open-cluster-management.io/type']
   if (label) {
@@ -107,6 +81,13 @@ export function CredentialsTable(props: {
   const [modalProps, setModalProps] = useState<IBulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
+  const { namespacesState } = useSharedAtoms()
+  const unauthorizedMessage = t('rbac.unauthorized')
+  const [namespaces] = useRecoilState(namespacesState)
+  const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
+  useEffect(() => {
+    checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)
+  }, [namespaces])
 
   sessionStorage.removeItem('DiscoveryCredential')
 
@@ -150,7 +131,19 @@ export function CredentialsTable(props: {
                 components={{ bold: <strong /> }}
               />
             }
-            action={<AddConnectionBtn />}
+            action={
+              <div>
+                <AcmButton
+                  isDisabled={!canAddCredential}
+                  tooltip={!canAddCredential ? unauthorizedMessage : ''}
+                  component={Link}
+                  to={createBackCancelLocation(NavigationPath.addCredentials)}
+                >
+                  {t('Add credential')}
+                </AcmButton>
+                <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
+              </div>
+            }
           />
         }
         plural={t('Credentials')}
