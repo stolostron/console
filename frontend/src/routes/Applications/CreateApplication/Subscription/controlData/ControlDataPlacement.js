@@ -25,6 +25,7 @@ import _ from 'lodash'
 const clusterSelectorCheckbox = 'clusterSelector'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const unavailable = '-unavailable-'
+const nameIndex = 'metadata.name'
 
 export const loadExistingPlacementRules = (t) => {
   let nsControl = undefined
@@ -39,6 +40,14 @@ export const loadExistingPlacementRules = (t) => {
     loadingDesc: t('creation.app.loading.rules'),
     setAvailable: setAvailableRules.bind(null),
   }
+}
+
+const getLabels = (clusterSelector) => {
+  return clusterSelector.matchExpressions
+    .map(({ key, operator, values }) => {
+      return `${key} "${operator}" ${values.join(', ')}`
+    })
+    .join('; ')
 }
 
 const setAvailableRules = (control, result) => {
@@ -65,24 +74,21 @@ const setAvailableRules = (control, result) => {
 
       const placementKeyFn = (placement) => {
         let selector = unavailable
-        const placementName = _.get(placement, 'metadata.name', '')
+        const placementName = _.get(placement, nameIndex, '')
         const clusterSelector = _.get(placement, 'spec.predicates[0].requiredClusterSelector.labelSelector')
         if (clusterSelector) {
-          const getLabels = () => {
-            return clusterSelector.matchExpressions
-              .map(({ key, operator, values }) => {
-                return `${key} "${operator}" ${values.join(', ')}`
-              })
-              .join('; ')
-          }
-          selector = i18n('creation.app.clusters.expressions', [placement.kind, placementName, getLabels()])
+          selector = i18n('creation.app.clusters.expressions', [
+            placement.kind,
+            placementName,
+            getLabels(clusterSelector),
+          ])
         }
         control.availableInfo[placementName] = selector
         return placementName
       }
 
       const keyFn = (rule) => {
-        const ruleName = _.get(rule, 'metadata.name', '')
+        const ruleName = _.get(rule, nameIndex, '')
         const clusterSelector = _.get(rule, 'spec.clusterSelector')
         const clusterConditions = _.get(rule, 'spec.clusterConditions')
         let selector = enableHubSelfManagement?.active
@@ -90,14 +96,7 @@ const setAvailableRules = (control, result) => {
           : unavailable
         if (clusterSelector?.matchExpressions?.length > 0) {
           if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
-            const getLabels = () => {
-              return clusterSelector.matchExpressions
-                .map(({ key, operator, values }) => {
-                  return `${key} "${operator}" ${values.join(', ')}`
-                })
-                .join('; ')
-            }
-            selector = i18n('creation.app.clusters.expressions', [rule.kind, ruleName, getLabels()])
+            selector = i18n('creation.app.clusters.expressions', [rule.kind, ruleName, getLabels(clusterSelector)])
           }
         } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
           selector = enableHubSelfManagement?.active
@@ -197,16 +196,19 @@ export const updatePlacementControls = (control) => {
 export const updateNewRuleControls = (control) => {
   const { availableData, availableInfo, groupControlData } = control
   const active = availableData[control.active]
+  const kind = _.get(active, 'kind')
   control.info = availableInfo ? availableInfo[control?.active] : ''
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
   const isPlacementRule = groupControlData.find(({ id }) => id === 'isPlacementRule')
-  if (active.kind === PlacementRuleKind) {
-    isPlacementRule && _.set(isPlacementRule, 'active', true)
-  } else {
-    isPlacementRule && _.set(isPlacementRule, 'active', false)
+  if (kind) {
+    if (kind === PlacementRuleKind) {
+      isPlacementRule && _.set(isPlacementRule, 'active', true)
+    } else {
+      isPlacementRule && _.set(isPlacementRule, 'active', false)
+    }
   }
 
-  selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, 'metadata.name'))
+  selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -233,7 +235,7 @@ export const reverseOnline = (control, templateObject) => {
   }
 }
 
-export const summarizeOnline = (control, globalControlData, summary) => {
+export const summarizeOnline = (control, _globalControlData, summary) => {
   const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
   const existingRuleControl = getControlByID(control.groupControlData, existingRuleCheckbox)
   const existingRuleCombo = getControlByID(control.groupControlData, 'placementrulecombo')

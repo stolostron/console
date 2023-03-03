@@ -475,12 +475,12 @@ export const getAppChildResources = (
     // Find PRs referenced/deployed by this sub
     let subWithPR
     const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
-    const targetPlacements =
-      referencedPR?.kind === PlacementRuleKind
-        ? placementRules
-        : referencedPR?.kind === PlacementKind
-        ? placements
-        : undefined
+    let targetPlacements: any[] = []
+    if (referencedPR?.kind === PlacementRuleKind) {
+      targetPlacements = placementRules
+    } else if (referencedPR?.kind === PlacementKind) {
+      targetPlacements = placements
+    }
     targetPlacements?.forEach((item) => {
       if (
         referencedPR &&
