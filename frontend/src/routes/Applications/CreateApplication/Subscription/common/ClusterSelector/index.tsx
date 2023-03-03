@@ -212,6 +212,9 @@ const ClusterSelector = (props: {
       control.active.clusterLabelsList.map((item) => {
         const { id, labelName, labelValue, validValue } = item
         const label = id === 0 ? i18n('clusterSelector.label.field.ui') : ''
+        const value = labelName === '' ? '' : labelName
+        const matchLabel = id === 0 ? i18n('clusterSelector.value.field.ui') : ''
+        const matchLabelValue = labelValue === '' ? '' : labelValue
 
         if (validValue || id === 0) {
           return (
@@ -222,7 +225,7 @@ const ClusterSelector = (props: {
                     id={`labelName-${id}-${controlId}`}
                     className="text-input"
                     label={label}
-                    value={labelName === '' ? '' : labelName}
+                    value={value}
                     placeholder={i18n('clusterSelector.label.placeholder.field')}
                     isDisabled={isReadOnly}
                     onChange={(value) => handleChange(value, 'labelName', id)}
@@ -233,8 +236,8 @@ const ClusterSelector = (props: {
                   <AcmTextInput
                     id={`labelValue-${id}-${controlId}`}
                     className="text-input"
-                    label={id === 0 ? i18n('clusterSelector.value.field.ui') : ''}
-                    value={labelValue === '' ? '' : labelValue}
+                    label={matchLabel}
+                    value={matchLabelValue}
                     placeholder={i18n('clusterSelector.value.placeholder.field')}
                     isDisabled={isReadOnly}
                     onChange={(value) => handleChange(value, 'labelValue', id)}
