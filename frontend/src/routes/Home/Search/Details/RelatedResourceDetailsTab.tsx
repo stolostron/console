@@ -67,7 +67,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
           keywords: [],
           filters: relatedResQueryFilters,
           // Limit results to  for better performance - we show a info alert to user asking them to refine search.
-          limit: 1000,
+          limit: 10000,
         },
       ],
     },

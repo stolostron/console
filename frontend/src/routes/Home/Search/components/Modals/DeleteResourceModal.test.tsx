@@ -54,7 +54,7 @@ const mockSearchQuery = {
             values: ['pod'],
           },
         ],
-        limit: 1000,
+        limit: 10000,
       },
     ],
   },

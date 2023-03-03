@@ -187,7 +187,7 @@ describe('SearchPage', () => {
             query: {
               filters: [],
               keywords: [],
-              limit: 1000,
+              limit: 10000,
             },
           },
         },
@@ -305,7 +305,7 @@ describe('SearchPage', () => {
                     values: ['testPod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
