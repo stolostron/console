@@ -41,6 +41,7 @@ import {
 } from '../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
+import { AcmLabelsListInput } from '../../../ui-components/AcmLabelsListInput/AcmLabelsListInput'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
 
@@ -690,6 +691,20 @@ function EditAnsibleJobModal(props: {
           }}
           buttonLabel=""
           placeholder={t('template.modal.settings.placeholder')}
+        />
+        <AcmLabelsListInput
+          id="job-skiptags"
+          label={t('Skip Tags')}
+          value={ansibleJob?.skip_tags}
+          onChange={(labels) => {
+            if (ansibleJob) {
+              const copy = { ...ansibleJob }
+              copy.skip_tags = labels?.join(',')
+              setAnsibleJob(copy)
+            }
+          }}
+          buttonLabel=""
+          placeholder={t('Enter tag')}
         />
         {!filterForJobTemplates && (
           <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />
