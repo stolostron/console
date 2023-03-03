@@ -40,19 +40,6 @@ export interface PlacementRuleStatus {
   }[]
 }
 
-export function listPRAndPlacements(namespace: string) {
-  if (!namespace) {
-    return {
-      promise: Promise.resolve([]),
-      abort: () => {},
-    }
-  }
-
-  return {
-    promise: Promise.all([listPlacementRules(namespace), listPlacements(namespace)]),
-  }
-}
-
 export function listPlacementRules(namespace: string) {
   if (!namespace) {
     return {

@@ -3,8 +3,19 @@
 import i18next from 'i18next'
 import moment from 'moment'
 import { ArgoApplicationDefinition } from '../../../resources'
+import { mockPlacementRules } from '../../Governance/governance.sharedMocks'
+import {
+  mockApplication0,
+  mockApplications,
+  mockApplicationSet0,
+  mockApplicationSets,
+  mockChannels,
+  mockSubscriptions,
+} from '../Application.sharedmocks'
 import {
   getAge,
+  getAppChildResources,
+  getAppSetRelatedResources,
   getClusterCountString,
   getEditLink,
   getResourceLabel,
@@ -242,4 +253,27 @@ describe('getShortDateTime', () => {
   it('includes all elements for timestamps from a different year', () => {
     expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
   })
+})
+
+describe('getAppChildResources', () => {
+  expect(
+    getAppChildResources(mockApplication0, mockApplications, mockSubscriptions, mockPlacementRules, [], mockChannels)
+  ).toEqual([
+    [
+      {
+        apiVersion: 'apps.open-cluster-management.io/v1',
+        id: 'subscriptions-namespace-0-subscription-0',
+        kind: 'Subscription',
+        label: 'subscription-0 [Subscription]',
+        name: 'subscription-0',
+        namespace: 'namespace-0',
+        subChildResources: [],
+      },
+    ],
+    [],
+  ])
+})
+
+describe('getAppSetRelatedResources', () => {
+  expect(getAppSetRelatedResources(mockApplicationSet0, mockApplicationSets)).toEqual(['fengappset2-placement', []])
 })

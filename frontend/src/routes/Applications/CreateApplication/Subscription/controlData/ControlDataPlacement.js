@@ -104,14 +104,14 @@ const setAvailableRules = (control, result) => {
             : i18n('creation.app.clusters.only.online', [rule.kind, ruleName])
         } else if (clusterSelector.matchLabels) {
           if (!clusterSelector.matchLabels['local-cluster']) {
-            const getLabels = () => {
+            const getMatchLabels = () => {
               return Object.entries(clusterSelector.matchLabels)
                 .map(([key, value]) => {
                   return `${key}=${value}`
                 })
                 .join('; ')
             }
-            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getLabels()])
+            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getMatchLabels()])
           }
         }
         control.availableInfo[ruleName] = selector
