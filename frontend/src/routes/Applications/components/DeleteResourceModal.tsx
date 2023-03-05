@@ -8,7 +8,7 @@ import { Fragment, ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
-import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
+import { ApplicationKind, ApplicationSetKind, IResource, PlacementApiVersionBeta } from '../../../resources'
 import '../css/DeleteResourceModal.css'
 
 export interface IDeleteResourceModalProps {
@@ -62,7 +62,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
           ? [
               {
-                apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
+                apiVersion: PlacementApiVersionBeta, // replace when placement type is available
                 kind: 'Placement',
                 name: props.appSetPlacement,
                 namespace: props.resource.metadata?.namespace,
@@ -183,11 +183,20 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
           <div>
             <ul>
               {props.selected.map((child) => {
+                const filteredChildren: any[] = []
+                if (child.subChildResources) {
+                  child.subChildResources.forEach((sub: any) => {
+                    if (!sub.includes(child.name)) {
+                      filteredChildren.push(sub)
+                    }
+                  })
+                }
+
                 return (
                   <div className="remove-app-modal-content-data" key={child.id}>
                     <li>
                       {child.label}
-                      {child.subChildResources && child.subChildResources.length > 0 && (
+                      {filteredChildren.length > 0 && (
                         <div className="sub-child-resource-content">
                           <div>
                             <ExclamationTriangleIcon />
@@ -196,7 +205,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                             <p>
                               {props.t('This subscription deploys the following resources, which will be removed:')}
                             </p>
-                            <p>{child.subChildResources.join(', ')}</p>
+                            <p>{filteredChildren.join(', ')}</p>
                           </div>
                         </div>
                       )}

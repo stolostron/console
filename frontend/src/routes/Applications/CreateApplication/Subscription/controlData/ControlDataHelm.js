@@ -12,7 +12,7 @@
 'use strict'
 
 import { getURLValidator } from '../../../../../components/TemplateEditor'
-import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
+import { updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 
 const helmReleaseChannelData = (isLocalCluster, t) => {
@@ -42,7 +42,6 @@ const helmReleaseChannelData = (isLocalCluster, t) => {
       placeholder: t('app.enter.select.helmrepo.url'),
       available: [],
       validation: getURLValidator(t),
-      fetchAvailable: loadExistingChannels('helmrepo', t),
       reverse: 'Channel[0].spec.pathname',
       onSelect: updateChannelControls,
       simplified: channelSimplified,

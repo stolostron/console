@@ -12,22 +12,12 @@
 'use strict'
 
 import _ from 'lodash'
-import { getGitChannelBranches, getGitChannelPaths, listChannels } from '../../../../../resources'
+import { getGitChannelBranches, getGitChannelPaths } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
 const specPathname = 'spec.pathname'
-
-export const loadExistingChannels = (type, t) => {
-  return {
-    query: () => {
-      return listChannels().promise
-    },
-    loadingDesc: t('creation.app.loading.channels'),
-    setAvailable: setAvailableChannelSpecs.bind(null, type),
-  }
-}
 
 export const getUniqueChannelName = (channelPath, groupControlData) => {
   //create a unique name for a new channel, based on path and type
@@ -411,44 +401,6 @@ export const channelSimplified = (value, control) => {
   }
   const mappedData = _.get(control, 'availableData', {})[value]
   return (mappedData && _.get(mappedData, specPathname)) || value
-}
-
-export const setAvailableChannelSpecs = (type, control, result) => {
-  const { loading } = result
-  const { data = {} } = result
-  const channels = data
-  control.available = []
-  control.availableMap = {}
-  control.isLoading = false
-  const error = channels ? null : result.error
-  if (!control.available) {
-    control.available = []
-    control.availableMap = {}
-  }
-  if (control.available.length === 0 && (error || channels)) {
-    if (error) {
-      control.isFailed = true
-    } else if (channels) {
-      control.isLoaded = true
-      const keyFn = (channel) => {
-        return `${_.get(channel, specPathname, '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
-          channel,
-          'metadata.name',
-          'name'
-        )}]`
-      }
-      control.availableData = _.keyBy(
-        _.filter(channels, (channel) => {
-          return channel.spec.type.toLowerCase().startsWith(type)
-        }),
-        keyFn
-      )
-      control.available = _.map(Object.values(control.availableData), keyFn).sort()
-    } else {
-      control.isLoading = loading
-    }
-    return control
-  }
 }
 
 export const getSharedPlacementRuleWarning = (control) => (

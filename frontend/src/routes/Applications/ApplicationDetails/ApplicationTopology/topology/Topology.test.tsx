@@ -3,6 +3,11 @@
 import { render, screen } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { nockSearch } from '../../../../../lib/nock-util'
+import {
+  mockSearchQuerySearchDisabledManagedClusters,
+  mockSearchResponseSearchDisabledManagedClusters,
+} from '../../../Application.sharedmocks'
 
 import { Topology, TopologyProps } from './Topology'
 const mockProcessactionlink = jest.fn()
@@ -36,6 +41,8 @@ describe('Topology tests', () => {
         height: 50,
       }),
     })
+
+    nockSearch(mockSearchQuerySearchDisabledManagedClusters, mockSearchResponseSearchDisabledManagedClusters)
   })
 
   test('app subscription topology no placement', async () => {

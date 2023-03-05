@@ -4,7 +4,7 @@ import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons/dist/js/icons'
+import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
@@ -72,10 +72,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
     }
   }
+  const { t } = useTranslation()
   const editorHadFocus = useRef(false)
-  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
-  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
-  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
+  const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Copy')}</span>
+  const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('Selection copied')}</span>
+  const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>{t('All copied')}</span>
   const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
   const [prohibited, setProhibited] = useState<any>([])
   const [filteredRows, setFilteredRows] = useState<number[]>([])
@@ -112,7 +113,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
-  const { t } = useTranslation()
 
   // compile schema(s) just once
   const validationRef = useRef<unknown>()
@@ -474,9 +474,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // undo/redo enable
       const model = editorRef.current?.getModel()
-      const editStacks = model?._undoRedoService._editStacks
-      setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
-      setHasUndo(editStacks?.values()?.next()?.value?.hasPastElements())
+      setHasRedo(model['_commandManager']?.future.length > 0)
+      setHasUndo(model['_commandManager']?.past.length > 0)
     }
   }
 

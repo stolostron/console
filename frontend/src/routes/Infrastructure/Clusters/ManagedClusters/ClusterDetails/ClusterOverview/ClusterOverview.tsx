@@ -18,9 +18,9 @@ import {
   Provider,
   AcmAlert,
 } from '../../../../../../ui-components'
-import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, ButtonVariant, Modal, ModalVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { useContext, useState } from 'react'
+import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -45,6 +45,8 @@ import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
 import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
+import { GetProjects } from '../../../../../../components/GetProjects'
 
 const { getClusterProperties } = CIM
 
@@ -75,6 +77,7 @@ export function ClusterOverviewPageContent(props: {
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
+  const { projects } = GetProjects()
 
   const renderControlPlaneType = () => {
     if (cluster?.name === 'local-cluster') {
@@ -344,9 +347,14 @@ export function ClusterOverviewPageContent(props: {
       : [...clusterClaimedBySetPool, ...(!cluster?.isHypershift ? [clusterProperties.automationTemplate] : [])]),
   ]
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const handleModalToggle = () => {
+    setIsModalOpen(!isModalOpen)
+  }
+
   let details = <ProgressStepBar />
   if (cluster?.isHypershift) {
-    details = <HypershiftClusterDetails />
+    details = <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
   }
   if (cluster?.provider === Provider.hostinventory) {
     if (cluster.isHypershift) {
@@ -370,6 +378,26 @@ export function ClusterOverviewPageContent(props: {
 
   return (
     <AcmPageContent id="overview">
+      <Fragment>
+        <Modal
+          variant={ModalVariant.large}
+          showClose={false}
+          isOpen={isModalOpen}
+          aria-labelledby="modal-wizard-label"
+          aria-describedby="modal-wizard-description"
+          onClose={handleModalToggle}
+          hasNoBodyWrapper
+        >
+          <CredentialsForm
+            namespaces={projects}
+            isEditing={false}
+            isViewing={false}
+            credentialsType={Provider.awss3}
+            handleModalToggle={handleModalToggle}
+            hideYaml={true}
+          />
+        </Modal>
+      </Fragment>
       <PageSection>
         {clusterCurator && (
           <TemplateSummaryModal

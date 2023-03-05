@@ -12,28 +12,32 @@ import {
   AcmPageContent,
   AcmTable,
   compareStrings,
+  getNodeStatusLabel,
   IAcmTableAction,
   IAcmTableButtonAction,
   IAcmTableColumn,
   ITableFilter,
   Provider,
   ProviderLongTextMap,
+  StatusType,
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
   addonPathKey,
+  AddonStatus,
   addonTextKey,
   Cluster,
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterStatus,
+  getAddonStatusLabel,
   getClusterStatusLabel,
   ManagedClusterDefinition,
   patchResource,
@@ -52,6 +56,8 @@ import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
+import { ClusterAction, clusterSupportsAction } from './utils/cluster-actions'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -184,10 +190,11 @@ export function ClustersTable(props: {
   const [hostedClusters] = useRecoilState(hostedClustersState)
 
   const { t } = useTranslation()
+  const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
 
@@ -203,6 +210,7 @@ export function ClustersTable(props: {
   const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn()
   const clusterNodesColumn = useClusterNodesColumn()
+  const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
 
   const modalColumns = useMemo(
@@ -220,6 +228,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
       {
         header: '',
@@ -238,6 +247,7 @@ export function ClustersTable(props: {
       clusterDistributionColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
+      clusterAddonsColumn,
       clusterCreatedDataColumn,
     ]
   )
@@ -249,8 +259,7 @@ export function ClustersTable(props: {
         title: t('managed.upgrade.plural'),
         click: (managedClusters: Array<Cluster>) => {
           if (!managedClusters) return
-          const managedClustersNoHypershift = managedClusters.filter((mc) => !mc.isHostedCluster)
-          setUpgradeClusters(managedClustersNoHypershift)
+          setUpgradeClusters(managedClusters)
         },
         variant: 'bulk-action',
       },
@@ -282,7 +291,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.hibernate'),
             action: t('hibernate'),
             processing: t('hibernating'),
-            resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
             description: t('bulk.message.hibernate'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -317,7 +326,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.resume'),
             action: t('resume'),
             processing: t('resuming'),
-            resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
             description: t('bulk.message.resume'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -354,7 +363,7 @@ export function ClustersTable(props: {
             action: t('detach'),
             plural: t('detachable clusters'),
             processing: t('detaching'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
             description: t('bulk.message.detach'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -378,7 +387,11 @@ export function ClustersTable(props: {
             action: t('destroy'),
             processing: t('destroying'),
             plural: t('destroyable clusters'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter(
+              (cluster) =>
+                clusterSupportsAction(cluster, ClusterAction.Destroy) ||
+                clusterSupportsAction(cluster, ClusterAction.Detach)
+            ),
             description: t('bulk.message.destroy'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -408,7 +421,6 @@ export function ClustersTable(props: {
             label: ProviderLongTextMap[key],
             value: key,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
       },
@@ -418,19 +430,71 @@ export function ClustersTable(props: {
         options: Object.keys(ClusterStatus)
           .map((status) => ({
             label: getClusterStatusLabel(status as ClusterStatus, t),
-            value: getClusterStatusLabel(status as ClusterStatus, t),
+            value: status,
           }))
-          .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) =>
-          selectedValues.includes(getClusterStatusLabel(cluster.status as ClusterStatus, t)),
+        tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.status),
+      },
+      {
+        id: 'nodes',
+        label: t('table.nodes'),
+        options: Object.keys(StatusType)
+          .map((status) => ({
+            label: getNodeStatusLabel(status as StatusType, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case StatusType.healthy:
+                return !!cluster.nodes?.ready
+              case StatusType.danger:
+                return !!cluster.nodes?.unhealthy
+              case StatusType.unknown:
+                return !!cluster.nodes?.unknown
+              default:
+                return false
+            }
+          }
+          return false
+        },
+      },
+      {
+        id: 'add-ons',
+        label: t('Add-ons'),
+        options: Object.keys(AddonStatus)
+          .map((status) => ({
+            label: getAddonStatusLabel(status as AddonStatus, t),
+            value: status,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => {
+          for (const value of selectedValues) {
+            switch (value) {
+              case AddonStatus.Available:
+                return !!cluster.addons?.available
+              case AddonStatus.Degraded:
+                return !!cluster.addons?.degraded
+              case AddonStatus.Disabled:
+                return false
+              case AddonStatus.Progressing:
+                return !!cluster.addons?.progressing
+              case AddonStatus.Unknown:
+                return !!cluster.addons?.unknown
+              default:
+                return false
+            }
+          }
+          return false
+        },
       },
     ]
   }, [t])
 
   return (
     <Fragment>
-      <BulkActionModel<Cluster> {...modalProps} />
+      <BulkActionModal<Cluster> {...modalProps} />
       <UpdateAutomationModal
         clusters={updateAutomationTemplates}
         open={!!updateAutomationTemplates}
@@ -462,6 +526,7 @@ export function ClustersTable(props: {
         tableActions={tableActions}
         rowActions={rowActions}
         emptyState={props.emptyState}
+        initialFilters={presets.initialFilters.addons ? { 'add-ons': presets.initialFilters.addons } : undefined}
         filters={filters}
         id="managedClusters"
       />
@@ -625,6 +690,27 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
           healthy={cluster.nodes!.ready}
           danger={cluster.nodes!.unhealthy}
           unknown={cluster.nodes!.unknown}
+        />
+      ) : (
+        '-'
+      )
+    },
+  }
+}
+
+export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  return {
+    header: t('Add-ons'),
+    sort: 'addons',
+    cell: (cluster) => {
+      return cluster.addons!.addonList.length > 0 ? (
+        <AcmInlineStatusGroup
+          healthy={cluster.addons!.available}
+          danger={cluster.addons!.degraded}
+          progress={cluster.addons!.progressing}
+          unknown={cluster.addons!.unknown}
+          groupId="add-ons"
         />
       ) : (
         '-'

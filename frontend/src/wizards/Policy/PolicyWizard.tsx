@@ -16,7 +16,6 @@ import {
   StringsMapInput,
   Sync,
   WizardCancel,
-  WizardPage,
   WizardSubmit,
   WizArrayInput,
   WizCheckbox,
@@ -32,6 +31,7 @@ import {
   ItemContext,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
+import { WizardPage } from '../WizardPage'
 import { NavigationPath } from '../../NavigationPath'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
@@ -58,6 +58,7 @@ export function PolicyWizard(props: {
   resources?: IResource[]
   defaultPlacementKind?: 'Placement' | 'PlacementRule'
   yamlEditor?: () => ReactNode
+  breadcrumb?: { text: string; to?: string }[]
   gitSource?: string
   onSubmit: WizardSubmit
   onCancel: WizardCancel
@@ -70,8 +71,10 @@ export function PolicyWizard(props: {
 
   return (
     <WizardPage
+      id="policy-wizard"
       wizardStrings={translatedWizardStrings}
       title={props.title}
+      breadcrumb={props.breadcrumb}
       description={t(
         'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls.'
       )}
@@ -194,6 +197,7 @@ export function PolicyWizard(props: {
               labelHelp={t(
                 'The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).'
               )}
+              placeholder={t('Add')}
             />
             <StringsMapInput
               id="categories"
@@ -206,6 +210,7 @@ export function PolicyWizard(props: {
               labelHelp={t(
                 'A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards.'
               )}
+              placeholder={t('Add')}
             />
             <StringsMapInput
               id="controls"
@@ -218,6 +223,7 @@ export function PolicyWizard(props: {
               labelHelp={t(
                 'The name of the security control that is being checked. For example, the certificate policy controller.'
               )}
+              placeholder={t('Add')}
             />
           </Section>
         </WizItemSelector>

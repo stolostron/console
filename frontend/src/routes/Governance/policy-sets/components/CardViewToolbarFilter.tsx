@@ -3,7 +3,7 @@
 import { makeStyles } from '@mui/styles'
 import { Badge, Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
@@ -22,8 +22,6 @@ const useStyles = makeStyles({
   },
 })
 
-const noViolation = 'no-violation'
-
 export default function CardViewToolbarFilter(props: {
   preSelectedFilters: string[]
   setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
@@ -36,103 +34,60 @@ export default function CardViewToolbarFilter(props: {
   const classes = useStyles()
   const { t } = useTranslation()
 
-  const onFilterSelect = (selection: string) => {
-    window.history.pushState({}, '', NavigationPath.policySets)
-    if (selectedFilters.includes(selection)) {
-      const newFilters = selectedFilters.filter((filter) => filter !== selection)
-      setSelectedFilters(newFilters)
-      setViolationFilters(newFilters)
-    } else {
-      const newFilters = [...selectedFilters, selection]
-      setSelectedFilters(newFilters)
-      setViolationFilters(newFilters)
-    }
-  }
+  const onFilterSelect = useCallback(
+    (selection: string) => {
+      window.history.pushState({}, '', NavigationPath.policySets)
+      if (selectedFilters.includes(selection)) {
+        const newFilters = selectedFilters.filter((filter) => filter !== selection)
+        setSelectedFilters(newFilters)
+        setViolationFilters(newFilters)
+      } else {
+        const newFilters = [...selectedFilters, selection]
+        setSelectedFilters(newFilters)
+        setViolationFilters(newFilters)
+      }
+    },
+    [selectedFilters, setViolationFilters]
+  )
 
-  const selectOptions = [
-    <SelectGroup key={'violation'} label={t('Violations')}>
-      <SelectOption
-        key={'violation'}
-        inputId={'violation'}
-        value={'violation'}
-        isChecked={selectedFilters.indexOf('violation') > -1}
-      >
-        <div className={classes.filterOption}>
-          {t('With violation')}
-          <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-            {
-              policySets.filter((policySet: PolicySet) => {
-                if (policySet.status && policySet.status.compliant) {
-                  return policySet.status.compliant === 'NonCompliant'
-                }
-                return false
-              }).length
-            }
-          </Badge>
-        </div>
-      </SelectOption>
-      <SelectOption
-        key={noViolation}
-        inputId={noViolation}
-        value={noViolation}
-        isChecked={selectedFilters.indexOf(noViolation) > -1}
-      >
-        <div className={classes.filterOption}>
-          {t('Without violation')}
-          <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-            {
-              policySets.filter((policySet: PolicySet) => {
-                if (policySet.status && policySet.status.compliant) {
-                  return policySet.status.compliant === 'Compliant'
-                }
-                return false
-              }).length
-            }
-          </Badge>
-        </div>
-      </SelectOption>
-      <SelectOption
-        key={'pending'}
-        inputId={'pending'}
-        value={'pending'}
-        isChecked={selectedFilters.indexOf('pending') > -1}
-      >
-        <div className={classes.filterOption}>
-          {t('Pending')}
-          <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-            {
-              policySets.filter((policySet: PolicySet) => {
-                if (policySet.status && policySet.status.compliant) {
-                  return policySet.status.compliant === 'Pending'
-                }
-                return false
-              }).length
-            }
-          </Badge>
-        </div>
-      </SelectOption>
-      <SelectOption
-        key={'no-status'}
-        inputId={'no-status'}
-        value={'no-status'}
-        isChecked={selectedFilters.indexOf('no-status') > -1}
-      >
-        <div className={classes.filterOption}>
-          {t('No status')}
-          <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-            {
-              policySets.filter((policySet: PolicySet) => {
-                if (!policySet.status) {
-                  return true
-                }
-                return policySet.status && policySet.status.compliant === undefined
-              }).length
-            }
-          </Badge>
-        </div>
-      </SelectOption>
-    </SelectGroup>,
-  ]
+  const selectOptions = useMemo(
+    () => [
+      <SelectGroup key={'violation'} label={t('Violations')}>
+        {[
+          {
+            key: 'violation',
+            label: t('With violation'),
+            complianceValue: 'NonCompliant',
+          },
+          {
+            key: 'no-violation',
+            label: t('Without violation'),
+            complianceValue: 'Compliant',
+          },
+          {
+            key: 'pending',
+            label: t('Pending'),
+            complianceValue: 'Pending',
+          },
+          {
+            key: 'no-status',
+            label: t('No status'),
+            complianceValue: undefined,
+          },
+        ].map(({ key, label, complianceValue }) => (
+          <SelectOption key={key} inputId={key} value={key}>
+            <div className={classes.filterOption}>
+              {label}
+              <Badge className={classes.filterOptionBadge} key={`${key}-count`} isRead>
+                {policySets.filter((policySet: PolicySet) => policySet?.status?.compliant === complianceValue).length}
+              </Badge>
+            </div>
+          </SelectOption>
+        ))}
+      </SelectGroup>,
+    ],
+    [classes.filterOption, classes.filterOptionBadge, policySets, t]
+  )
 
   return (
     <Select
@@ -145,6 +100,7 @@ export default function CardViewToolbarFilter(props: {
         selection: string | SelectOptionObject
       ) => onFilterSelect(selection as string)}
       selections={selectedFilters}
+      isGrouped
       isOpen={isFilterOpen}
       placeholderText={
         <div>

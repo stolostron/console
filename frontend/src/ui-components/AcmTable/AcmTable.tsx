@@ -209,6 +209,19 @@ export interface ITableFilter<T> {
   showEmptyOptions?: boolean
 }
 
+type FilterSelectOptionObject = SelectOptionObject & {
+  filterId: string
+  value: FilterOptionValueT
+}
+
+const createFilterSelectOptionObject = (filterId: string, value: FilterOptionValueT): FilterSelectOptionObject => ({
+  filterId,
+  value,
+  toString: () => value,
+  compareTo: (selectOption: FilterSelectOptionObject) =>
+    selectOption.filterId === filterId && selectOption.value === value,
+})
+
 const useStyles = makeStyles({
   tableDiv: {
     display: 'table',
@@ -812,7 +825,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [clearSearch, clearFilters, cachedPrefixId])
 
   const updateSearch = useCallback(
-    (newSearch: string) => {
+    (input: any) => {
+      // **Note: PatternFly change the fn signature
+      // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
+      // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
+      // both cases need to be handled for backwards compatibility
+      const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
       setSearch(newSearch)
       setPage(1)
       if (!newSearch) {
@@ -1201,35 +1219,22 @@ function TableColumnFilters<T>(props: {
   const { t } = useTranslation()
 
   const onFilterSelect = useCallback(
-    (selection: string | SelectOptionObject) => {
-      /* istanbul ignore if */
-
-      if (typeof selection !== 'string') {
-        /* istanbul ignore next */
-        throw new Error(t('Filter select error: Incorrect selection type'))
-      }
-
-      let filterId = ''
-      for (const filter of filters) {
-        /* istanbul ignore next */
-        if (filter.options.find((option) => option.value === selection)) {
-          filterId = filter.id
-        }
-      }
+    (selection: FilterSelectOptionObject) => {
+      const { filterId, value } = selection
 
       setToolbarFilterIds((toolbarFilterIds) => {
         const selectedFilterValues = toolbarFilterIds[filterId]
         /* istanbul ignore next */
-        const isCurrentlySelected = selectedFilterValues?.includes(selection)
+        const isCurrentlySelected = selectedFilterValues?.includes(value)
         const updatedFilters = { ...toolbarFilterIds }
         if (isCurrentlySelected) {
           if (selectedFilterValues.length === 1) {
             delete updatedFilters[filterId]
           } else {
-            updatedFilters[filterId] = updatedFilters[filterId].filter((filterValue) => filterValue !== selection)
+            updatedFilters[filterId] = updatedFilters[filterId].filter((filterValue) => filterValue !== value)
           }
         } else {
-          updatedFilters[filterId] = [...(updatedFilters[filterId] ?? []), selection]
+          updatedFilters[filterId] = [...(updatedFilters[filterId] ?? []), value]
         }
         if (setLocalStorage && cachedPrefixId) {
           setLocalStorage(cachedPrefixId, updatedFilters)
@@ -1298,28 +1303,35 @@ function TableColumnFilters<T>(props: {
 
     return validFilters.map((filter) => (
       <SelectGroup key={filter.filter.id} label={filter.filter.label}>
-        {filter.options.map((option) => (
-          <SelectOption
-            key={option.option.value}
-            inputId={option.option.value}
-            value={option.option.value}
-            isChecked={
-              /* istanbul ignore next */
-              toolbarFilterIds[filter.filter.id]?.indexOf(option.option.value) > -1 ?? false
-            }
-          >
-            <div className={classes.filterOption}>
-              {option.option.label}
-              <Badge className={classes.filterOptionBadge} key={option.option.value} isRead>
-                {option.count}
-              </Badge>
-            </div>
-          </SelectOption>
-        ))}
+        {filter.options.map((option) => {
+          const key = `${filter.filter.id}-${option.option.value}`
+          return (
+            <SelectOption
+              key={key}
+              inputId={key}
+              value={createFilterSelectOptionObject(filter.filter.id, option.option.value)}
+            >
+              <div className={classes.filterOption}>
+                {option.option.label}
+                <Badge className={classes.filterOptionBadge} key={key} isRead>
+                  {option.count}
+                </Badge>
+              </div>
+            </SelectOption>
+          )
+        })}
       </SelectGroup>
     ))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, items, toolbarFilterIds])
+
+  const selections = useMemo(() => {
+    return Object.keys(toolbarFilterIds).reduce(
+      (acc: FilterSelectOptionObject[], filterId: string) =>
+        acc.concat(toolbarFilterIds[filterId].map((value) => createFilterSelectOptionObject(filterId, value))),
+      []
+    )
+  }, [toolbarFilterIds])
 
   return (
     <ToolbarItem>
@@ -1352,13 +1364,11 @@ function TableColumnFilters<T>(props: {
           onToggle={() => setIsOpen(!isOpen)}
           onSelect={(
             _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-            selection: string | SelectOptionObject
-          ) => onFilterSelect(selection)}
-          selections={Object.keys(toolbarFilterIds).reduce(
-            (acc: string[], val: string) => acc.concat(toolbarFilterIds[val]),
-            []
-          )}
+            selection: SelectOptionObject
+          ) => onFilterSelect(selection as FilterSelectOptionObject)}
+          selections={selections}
           isOpen={isOpen}
+          isGrouped
           placeholderText={
             <div>
               <FilterIcon className={classes.filterLabelMargin} />
@@ -1618,7 +1628,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
           setIsOpen(false)
         }}
       >
-        {t('Select {{count}} page items', { count: Math.min(props.perPage, props.itemCount) })}
+        {t('Select page ({{count}} items)', { count: Math.min(props.perPage, props.itemCount) })}
       </DropdownItem>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1634,7 +1644,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
           setIsOpen(false)
         }}
       >
-        {t('Select all {{count}} items', { count: props.itemCount })}
+        {t('Select all ({{count}} items)', { count: props.itemCount })}
       </DropdownItem>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

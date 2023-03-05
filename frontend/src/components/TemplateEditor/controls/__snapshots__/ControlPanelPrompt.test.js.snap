@@ -5,14 +5,17 @@ exports[`ControlPanelPrompt component renders as expected 1`] = `
   <div
     class="creation-view-controls-add-value-container bottom-right"
   >
-    <div
-      class="creation-view-controls-add-button"
+    <button
+      aria-disabled="false"
+      class="pf-c-button pf-m-link pf-m-small"
+      data-ouia-component-id="OUIA-Generated-Button-link-1"
+      data-ouia-component-type="PF4/Button"
+      data-ouia-safe="true"
       id="add-provider-connection"
-      role="button"
-      tabindex="0"
+      type="button"
     >
       Add credential
-    </div>
+    </button>
   </div>
 </DocumentFragment>
 `;

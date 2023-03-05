@@ -39,7 +39,7 @@ import {
   AcmSecondaryNavItem,
   Provider,
 } from '../../../../../ui-components'
-import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
+import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { useAllClusters } from '../components/useAllClusters'
@@ -48,6 +48,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 export const ClusterContext = createContext<{
   readonly cluster?: Cluster
@@ -166,6 +167,7 @@ export default function ClusterDetailsPage({
     certificateSigningRequests,
     managedCluster,
     clusterAddons,
+    clusterManagementAddons,
     clusterClaim,
     clusterCurator,
     agentClusterInstall,
@@ -242,7 +244,9 @@ export default function ClusterDetailsPage({
       />
     )
   }
-  if (getClusterActions(cluster).length > 0) {
+  if (
+    Object.values(ClusterAction).some((clusterAction) => clusterSupportsAction(cluster, clusterAction as ClusterAction))
+  ) {
     clusterActionGroupChildren.push(
       <ClusterActionDropdown key={'ClusterActionDropdown-cluster-action'} cluster={cluster!} isKebab={false} />
     )

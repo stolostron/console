@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { action } from 'mobx'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -17,7 +17,7 @@ import {
   VisualizationProvider,
   isNode,
 } from '@patternfly/react-topology'
-import { ToolbarItem, Split, SplitItem } from '@patternfly/react-core'
+import { ToolbarItem, Split, SplitItem, Alert, Button } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
@@ -34,6 +34,9 @@ import noop from 'lodash/noop'
 import './components/future/topology-components.css'
 import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
+import { useQuery } from '../../../../../lib/useQuery'
 
 export interface TopologyProps {
   elements: {
@@ -88,6 +91,19 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     elements,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
+  const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
+  const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
+  const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
+  const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
+  useEffect(startPolling, [startPolling])
+  useEffect(() => {
+    const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
+    const clusterWithDisabledSearch = clustersWithSearchDisabled.map((item: { name: string }) => item.name)
+    const found = clusterNames.some((r) => clusterWithDisabledSearch.includes(r))
+    if (found) {
+      setIsSearchDisabled(true)
+    }
+  }, [data, clusterNames])
 
   useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
     setSelectedIds(ids)
@@ -137,6 +153,29 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   const viewToolbar = (
     <>
       <ToolbarItem>{channelChanger}</ToolbarItem>
+      {isSearchDisabled && (
+        <Alert
+          variant="warning"
+          title={t(
+            'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
+          )}
+        >
+          <Button
+            variant="link"
+            className={'abc'}
+            style={{ padding: '0' }}
+            onClick={() =>
+              window.open(
+                `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`,
+                '_blank'
+              )
+            }
+          >
+            {t('View clusters with search add-on disabled.')}
+          </Button>
+        </Alert>
+      )}
+
       <div style={{ position: 'absolute', right: '30px' }}>
         <ToolbarItem style={{ marginLeft: 'auto', marginRight: 0 }}>
           <div className="diagram-title">

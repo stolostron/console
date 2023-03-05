@@ -71,7 +71,7 @@ import {
   EyeSlashIcon,
   HelpIcon,
   PasteIcon,
-  PlusIcon,
+  PlusCircleIcon,
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
@@ -131,7 +131,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const isHorizontal = props.isHorizontal ?? false
   const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
   const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>()
-  const [copyHint, setCopyHint] = useState<ReactNode>(<span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>)
+  const [copyHint, setCopyHint] = useState<ReactNode>(
+    <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
+  )
 
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
@@ -181,14 +183,14 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                         <ClipboardCopyButton
                           id="copy-button"
                           textId="code-content"
-                          aria-label="Copy to clipboard"
+                          aria-label={t('Copy to clipboard')}
                           onClick={() => {
                             navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
-                              <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
+                              <span style={{ wordBreak: 'keep-all' }}>{t('Successfully copied to clipboard!')}</span>
                             )
                             setTimeout(() => {
-                              setCopyHint(<span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>)
+                              setCopyHint(<span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>)
                             }, 800)
                           }}
                           exitDelay={600}
@@ -257,7 +259,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   <ActionList>
                     {mode === 'details' && props.edit !== undefined && (
                       <ActionListItem>
-                        <Button onClick={props.edit}>Edit</Button>
+                        <Button onClick={props.edit}>{t('Edit')}</Button>
                       </ActionListItem>
                     )}
                   </ActionList>
@@ -517,7 +519,7 @@ export function AcmDataFormWizard(props: {
 
   steps.push({
     id: 'review',
-    name: 'Review',
+    name: t('Review'),
     component: (
       <Form>
         {showFormErrors && formHasErrors(t, formData) && (
@@ -797,6 +799,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
           </DescriptionListDescription>
         </DescriptionListGroup>
       )
+    case 'Alert':
     case 'TextNumber':
     case 'Number':
       return (
@@ -1228,6 +1231,14 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'OrderedItems': {
       return <OrderedItemsInput input={input} validated={validated} isReadOnly={isReadOnly} />
     }
+
+    case 'Alert': {
+      return (
+        <Alert isInline variant={input.variant} title={input.labelHelpTitle}>
+          {input.reactNode}
+        </Alert>
+      )
+    }
   }
 }
 
@@ -1542,10 +1553,10 @@ function OrderedItemsInput(props: {
         style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
         variant="link"
         isSmall
-        aria-label="Action"
         onClick={() => input.onCreate?.()}
+        icon={<PlusCircleIcon />}
       >
-        <PlusIcon /> &nbsp; {input.placeholder}
+        {input.placeholder}
       </Button>
     </Fragment>
   )

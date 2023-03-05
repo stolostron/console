@@ -1916,78 +1916,24 @@ exports[`Correctly returns label components 1`] = `
 `;
 
 exports[`Correctly returns policyreport policies 1`] = `
-<LabelGroup
-  aria-label="Label group category"
-  categoryName=""
-  closeBtnAriaLabel="Close label group"
-  collapsedText="3 more"
-  defaultIsOpen={false}
-  expandedText="Show less"
-  hasEditableTextArea={false}
-  isClosable={false}
-  isCompact={false}
-  isEditable={false}
-  isVertical={false}
-  numLabels={2}
-  onClick={[Function]}
-  tooltipPosition="top"
->
-  <Label
-    render={[Function]}
-    style={
-      Object {
-        "backgroundColor": "#fff",
-        "padding": "0 .25rem 0 0",
-      }
-    }
-  >
-    AUTH_OPERATOR_PROXY_ERROR
-  </Label>
-  <Label
-    render={[Function]}
-    style={
-      Object {
-        "backgroundColor": "#fff",
-        "padding": "0 .25rem 0 0",
-      }
-    }
-  >
-    CONTAINER_ROOT_PARTITION_SIZE
-  </Label>
-  <Label
-    render={[Function]}
-    style={
-      Object {
-        "backgroundColor": "#fff",
-        "padding": "0 .25rem 0 0",
-      }
-    }
-  >
-    MASTER_DEFINED_AS_MACHINESETS
-  </Label>
-  <Label
-    render={[Function]}
-    style={
-      Object {
-        "backgroundColor": "#fff",
-        "padding": "0 .25rem 0 0",
-      }
-    }
-  >
-    NODES_MINIMUM_REQUIREMENTS_NOT_MET
-  </Label>
-  <Label
-    render={[Function]}
-    style={
-      Object {
-        "backgroundColor": "#fff",
-        "padding": "0 .25rem 0 0",
-      }
-    }
-  >
-    UNSUPPORT_SDN_PLUGIN
-  </Label>
-</LabelGroup>
+<AcmLabels
+  collapse={
+    Array [
+      "MASTER_DEFINED_AS_MACHINESETS",
+      "NODES_MINIMUM_REQUIREMENTS_NOT_MET",
+      "UNSUPPORT_SDN_PLUGIN",
+    ]
+  }
+  labels={
+    Array [
+      "AUTH_OPERATOR_PROXY_ERROR",
+      "CONTAINER_ROOT_PARTITION_SIZE",
+      "MASTER_DEFINED_AS_MACHINESETS",
+      "NODES_MINIMUM_REQUIREMENTS_NOT_MET",
+      "UNSUPPORT_SDN_PLUGIN",
+    ]
+  }
+/>
 `;
 
 exports[`Correctly returns url search params with 0 params 1`] = `"?cluster%3DtestCluster"`;

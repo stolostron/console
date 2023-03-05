@@ -11,7 +11,7 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import _, { noop } from 'lodash'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -36,6 +36,7 @@ import {
   validatePrivateSshKey,
   validatePublicSshKey,
   validateRequiredPrefix,
+  validateS3Credential,
   validateVCenterServer,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
@@ -52,6 +53,7 @@ import {
 } from '../../resources'
 import schema from './schema.json'
 import { CredentialsType } from './CredentialsType'
+import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -148,6 +150,7 @@ export function CredentialsForm(
     handleModalToggle?: () => void
     hideYaml?: boolean
     newCredentialCallback?: any
+    isHosted?: boolean
   } & ProviderConnectionOrCredentialsType
 ) {
   const { t } = useTranslation()
@@ -156,7 +159,6 @@ export function CredentialsForm(
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
-
   const history = useHistory()
   const { back, cancel } = useBackCancelNavigation()
 
@@ -187,6 +189,10 @@ export function CredentialsForm(
   const [aws_secret_access_key, setAwsSecretAccessKeyID] = useState(
     () => providerConnection?.stringData?.aws_secret_access_key ?? ''
   )
+
+  const [bucket_name, setBucketName] = useState(() => providerConnection?.stringData?.bucket ?? '')
+  const [aws_s3_credentials, setAwsS3Credentials] = useState(() => providerConnection?.stringData?.credentials ?? '')
+  const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
 
   // Azure Cloud State
   const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
@@ -300,6 +306,13 @@ export function CredentialsForm(
   // Red Hat Cloud
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
+  // AWS S3 bucket
+  const s3values = useMemo(
+    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
+    []
+  )
+  const isHostedControlPlane = credentialsType === Provider.awss3
+
   function stateToData() {
     const stringData: ProviderConnectionStringData = {}
     const secret: ProviderConnection = {
@@ -340,6 +353,11 @@ export function CredentialsForm(
         stringData.httpsProxy = httpsProxy
         stringData.noProxy = noProxy
         stringData.additionalTrustBundle = additionalTrustBundle
+        break
+      case Provider.awss3:
+        stringData.bucket = bucket_name
+        stringData.credentials = aws_s3_credentials
+        stringData.region = aws_s3_region
         break
       case Provider.azure:
         stringData.baseDomainResourceGroupName = baseDomainResourceGroupName
@@ -509,10 +527,34 @@ export function CredentialsForm(
     </Fragment>
   )
 
+  useEffect(() => {
+    if (isHostedControlPlane) {
+      setName(providerConnection?.metadata.name || s3values.name)
+      setNamespace(providerConnection?.metadata.namespace || s3values.namespace)
+    }
+  }, [isHostedControlPlane, s3values, providerConnection?.metadata.name, providerConnection?.metadata.namespace])
+
+  const breadcrumbs =
+    credentialsType === Provider.aws || credentialsType === Provider.awss3
+      ? [
+          { text: t('Credentials'), to: NavigationPath.credentials },
+          { text: t('Credential type'), to: NavigationPath.addCredentials },
+          {
+            text: t('AWS credential'),
+            to: NavigationPath.addAWSType,
+          },
+          { text: title },
+        ]
+      : [
+          { text: t('Credentials'), to: NavigationPath.credentials },
+          { text: t('Credential type'), to: NavigationPath.addCredentials },
+          { text: title },
+        ]
+
   const formData: FormData = {
     title,
     titleTooltip,
-    breadcrumb: [{ text: t('Credentials'), to: NavigationPath.credentials }, { text: title }],
+    breadcrumb: breadcrumbs,
     sections: [
       {
         type: 'Section',
@@ -537,6 +579,23 @@ export function CredentialsForm(
             isDisabled: true, // always pre-filled
           },
           {
+            id: 'disable-alert',
+            type: 'Alert',
+            label: '',
+            labelHelpTitle: t('Credential name and namespace are predefined as below for HyperShift add-on'),
+            variant: 'info',
+            reactNode: (
+              <Fragment>
+                <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noreferrer">
+                  {t('Learn more')}
+                </a>
+              </Fragment>
+            ),
+            value: '',
+            onChange: () => {},
+            isHidden: !isHostedControlPlane,
+          },
+          {
             id: 'credentialsName',
             type: 'Text',
             label: t('Credential name'),
@@ -546,7 +605,7 @@ export function CredentialsForm(
             onChange: setName,
             validation: (value) => validateKubernetesDnsName(value, t),
             isRequired: true,
-            isDisabled: isEditing,
+            isDisabled: isEditing || isHostedControlPlane,
             isHidden: !credentialsType,
           },
           {
@@ -562,7 +621,7 @@ export function CredentialsForm(
               id: namespace,
               value: namespace,
             })),
-            isDisabled: isEditing,
+            isDisabled: isEditing || isHostedControlPlane,
             isHidden: !credentialsType,
           },
           {
@@ -643,6 +702,50 @@ export function CredentialsForm(
             onChange: setAwsSecretAccessKeyID,
             isRequired: true,
             isSecret: true,
+          },
+        ],
+      },
+      {
+        type: 'Section',
+        title: t('Bucket'),
+        wizardTitle: t('Enter bucket information'),
+        inputs: [
+          {
+            id: 'bucketName',
+            type: 'Text',
+            label: t('Bucket name'),
+            placeholder: t('Enter your bucket name'),
+            isHidden: credentialsType !== Provider.awss3,
+            value: bucket_name,
+            onChange: setBucketName,
+            isRequired: true,
+          },
+          {
+            id: 'credentials',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'TextArea',
+            label: t('Credentials'),
+            placeholder: t('Enter your credentials'),
+            labelHelp: t('You use access keys to sign programmatic requests that you make to AWS. '),
+            value: aws_s3_credentials,
+            onChange: setAwsS3Credentials,
+            validation: (value) => validateS3Credential(value, t),
+            isRequired: true,
+            isSecret: true,
+          },
+          {
+            id: 'region',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'Select',
+            label: t('Region'),
+            options: _.keys(awsRegions).map((region) => ({
+              id: region,
+              value: region,
+            })),
+            value: aws_s3_region,
+            onChange: setAwsS3Region,
+            placeholder: t('Select region'),
+            isRequired: true,
           },
         ],
       },
@@ -1369,6 +1472,7 @@ export function CredentialsForm(
       mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
       hideYaml={hideYaml}
       secrets={[
+        '*.stringData.credentials',
         '*.stringData.pullSecret',
         '*.stringData.aws_secret_access_key',
         '*.stringData.ssh-privatekey',

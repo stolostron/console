@@ -98,17 +98,22 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
   })
 }
 
-// Used when need to maintain same number of hooks called
-export function queryEmpty(): IRequestResult<ISearchResult> {
-  const abortController = new AbortController()
-  return {
-    promise: Promise.resolve<ISearchResult>({
-      data: {
-        searchResult: [],
-      },
-    }),
-    abort: () => abortController.abort(),
-  }
+export function querySearchDisabledManagedClusters(): IRequestResult<ISearchResult> {
+  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+    operationName: 'searchResult',
+    variables: {
+      input: [
+        {
+          filters: [
+            { property: 'kind', values: ['Cluster'] },
+            { property: 'addon', values: ['search-collector=false'] },
+            { property: 'name', values: ['!local-cluster'] },
+          ],
+        },
+      ],
+    },
+    query: searchFilterQuery,
+  })
 }
 
 export function useSearchParams() {

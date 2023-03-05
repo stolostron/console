@@ -26,7 +26,7 @@ import {
   ChannelDefinition,
   ChannelKind,
   IResource,
-  PlacementApiVersionAlpha,
+  PlacementApiVersionBeta,
   PlacementDefinition,
   PlacementKind,
   PlacementRuleApiVersion,
@@ -339,7 +339,7 @@ export default function AdvancedConfiguration() {
               return editLink({
                 resource,
                 kind: 'Subscription',
-                apiversion: SubscriptionApiVersion,
+                apiversion: _.get(resource, 'apiVersion') || SubscriptionApiVersion,
               })
             },
             sort: 'metadata.name',
@@ -462,7 +462,7 @@ export default function AdvancedConfiguration() {
               return editLink({
                 resource,
                 kind: 'Channel',
-                apiversion: ChannelApiVersion,
+                apiversion: _.get(resource, 'apiVersion') || ChannelApiVersion,
               })
             },
             sort: 'metadata.name',
@@ -554,7 +554,7 @@ export default function AdvancedConfiguration() {
               return editLink({
                 resource,
                 kind: 'Placement',
-                apiversion: PlacementApiVersionAlpha,
+                apiversion: _.get(resource, 'apiVersion') || PlacementApiVersionBeta,
               })
             },
             sort: 'metadata.name',
@@ -600,7 +600,7 @@ export default function AdvancedConfiguration() {
               return editLink({
                 resource,
                 kind: 'PlacementRule',
-                apiversion: PlacementRuleApiVersion,
+                apiversion: _.get(resource, 'apiVersion') || PlacementRuleApiVersion,
               })
             },
             sort: 'metadata.name',

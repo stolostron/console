@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TFunction } from 'i18next'
 import { ClusterManagementAddOn, ClusterManagementAddOnDefinition } from '../cluster-management-add-on'
 import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 
@@ -167,5 +168,21 @@ export function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterA
     } else {
       return undefined
     }
+  }
+}
+
+export const getAddonStatusLabel = (status: AddonStatus | undefined, t: TFunction) => {
+  switch (status) {
+    case AddonStatus.Available:
+      return t('Available')
+    case AddonStatus.Degraded:
+      return t('Degraded')
+    case AddonStatus.Disabled:
+      return t('Disabled')
+    case AddonStatus.Progressing:
+      return t('Progressing')
+    case AddonStatus.Unknown:
+    default:
+      return t('Unknown')
   }
 }

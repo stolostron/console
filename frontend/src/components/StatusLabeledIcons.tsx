@@ -53,6 +53,7 @@ export function StatusLabeledIcons(props: {
         <Flex key={key}>
           <FlexItem>{icon}</FlexItem>
           <Stack style={{ textAlign: 'left' }}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a href="#">{status}</a>
             {subtitle && <span>{subtitle}</span>}
           </Stack>

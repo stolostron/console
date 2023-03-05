@@ -402,6 +402,7 @@ function createSyncButton(
         rel="noreferrer"
         icon={<SyncAltIcon />}
         iconPosition="left"
+        isSmall
         onClick={() => {
           setModalProps({
             open: true,
@@ -498,12 +499,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
       return (
         <Card>
           <CardBody>
-            <Link to={targetLink}>
-              {t('Search resource')}{' '}
-              <svg className="new-tab-icon">
-                <use href={openTabIcon} />
-              </svg>
-            </Link>
+            <Link to={targetLink}>{t('Search resource')}</Link>
           </CardBody>
         </Card>
       )
@@ -516,10 +512,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                 <Fragment>
                   <AcmActionGroup>
                     <Link id="search-resource" to={targetLink}>
-                      {t('Search resource')}{' '}
-                      <svg className="new-tab-icon">
-                        <use href={openTabIcon} />
-                      </svg>
+                      {t('Search resource')}
                     </Link>
                     <Link
                       id="app-search-argo-apps-link"
@@ -592,7 +585,13 @@ function createSubsCards(
                         namespace: appResource?.metadata?.namespace!,
                       })}
                     >
-                      <AcmButton id="set-time-window-link" component="a" variant={ButtonVariant.link} rel="noreferrer">
+                      <AcmButton
+                        id="set-time-window-link"
+                        component="a"
+                        variant={ButtonVariant.link}
+                        rel="noreferrer"
+                        isSmall
+                      >
                         {t('Set time window')}
                       </AcmButton>
                     </Link>

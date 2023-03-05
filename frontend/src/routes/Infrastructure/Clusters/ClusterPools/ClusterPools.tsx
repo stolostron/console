@@ -27,7 +27,7 @@ import {
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -171,7 +171,7 @@ export function ClusterPoolsTable(props: {
 
   const { clusterPools } = props
   const { t } = useTranslation()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterPool> | { open: false }>({
     open: false,
   })
   const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
@@ -213,7 +213,7 @@ export function ClusterPoolsTable(props: {
 
   return (
     <Fragment>
-      <BulkActionModel<ClusterPool> {...modalProps} />
+      <BulkActionModal<ClusterPool> {...modalProps} />
       <ClusterClaimModal {...clusterClaimModalProps} />
       <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
       <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
@@ -525,7 +525,7 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
   const { t } = useTranslation()
   const classes = useStyles()
   const alertContext = useContext(AcmAlertContext)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterClaim> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterClaim> | { open: false }>({
     open: false,
   })
 
@@ -575,7 +575,7 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
 
   return (
     <div className={classes.table}>
-      <BulkActionModel<ClusterClaim> {...modalProps} />
+      <BulkActionModal<ClusterClaim> {...modalProps} />
       <AcmTable<ClusterClaim>
         noBorders
         keyFn={(claim: ClusterClaim) => claim.metadata.name!}

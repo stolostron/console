@@ -15,6 +15,7 @@ const isHostInventoryInfrastructureType = (
 
 const clusterInfrastructureTypes = [
   Provider.aws,
+  Provider.awss3,
   Provider.azure,
   Provider.gcp,
   Provider.vmware,

@@ -26,6 +26,7 @@ describe('AcmInlineStatus', () => {
         popover={{
           headerContent: 'Header',
           bodyContent: 'Some information about the status here.',
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
           footerContent: <a href="#">Status link</a>,
         }}
       />

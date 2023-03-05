@@ -95,6 +95,7 @@ export const AcmCountCardSection = (props: AcmCountCardSection) => {
                 <div id={card.id} className={`${classes.card} ${i === 0 ? classes.cardFirst : ''}`}>
                   <div className={classes.countContainer}>
                     {card.countClick && card.count > 0 ? (
+                      // eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
                       <a onClick={card.countClick} className={card.isDanger ? classes.countDanger : classes.count}>
                         {card.count}
                       </a>
@@ -116,6 +117,7 @@ export const AcmCountCardSection = (props: AcmCountCardSection) => {
                   {card.description && <div className={classes.description}>{card.description}</div>}
                   {card.linkText && (
                     <div className={classes.link}>
+                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                       <a onClick={card.onLinkClick}>{card.linkText}</a>
                     </div>
                   )}

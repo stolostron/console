@@ -46,7 +46,7 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
@@ -269,7 +269,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const { waitForAll } = useSharedRecoil()
   const [clusterVersions] = useRecoilValue(waitForAll([clusterVersionState]))
 
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<InfraEnvK8sResource> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
     open: false,
   })
 
@@ -383,7 +383,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
 
   return (
     <>
-      <BulkActionModel<InfraEnvK8sResource> {...modalProps} />
+      <BulkActionModal<InfraEnvK8sResource> {...modalProps} />
       <Stack hasGutter>
         {!isStorage && <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={storageOperatorUrl} />}
         {isStorage && (
