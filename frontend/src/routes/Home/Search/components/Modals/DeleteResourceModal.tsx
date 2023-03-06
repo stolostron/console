@@ -2,11 +2,12 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
+import { useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 import { convertStringToQuery } from '../../search-helper'
 import { searchClient } from '../../search-sdk/search-client'
 import {
@@ -34,7 +35,10 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
 export const DeleteResourceModal = (props: any) => {
   const { t } = useTranslation()
   const { open, close, resource, currentQuery, relatedResource } = props
+  const { useSearchQueryLimit } = useSharedAtoms()
+  const searchQueryLimit = useSearchQueryLimit()
   const [canDelete, setCanDelete] = useState<boolean>(false)
+  const [loadingAccessRequest, setLoadingAccessRequest] = useState<boolean>(true)
   const [accessError, setAccessError] = useState(null)
   const [deleteResourceError, setDeleteResourceError] = useState(undefined)
   let apiGroup = ''
@@ -61,9 +65,13 @@ export const DeleteResourceModal = (props: any) => {
     )
 
     canDeleteResource.promise
-      .then((result) => setCanDelete(result.status?.allowed!))
+      .then((result) => {
+        setLoadingAccessRequest(false)
+        setCanDelete(result.status?.allowed!)
+      })
       .catch((err) => {
         console.error(err)
+        setLoadingAccessRequest(false)
         setAccessError(err)
       })
     return () => canDeleteResource.abort()
@@ -80,7 +88,7 @@ export const DeleteResourceModal = (props: any) => {
                 variables: {
                   input: [
                     {
-                      ...convertStringToQuery(currentQuery),
+                      ...convertStringToQuery(currentQuery, searchQueryLimit),
                       relatedKinds: [resource.kind],
                     },
                   ],
@@ -93,7 +101,7 @@ export const DeleteResourceModal = (props: any) => {
                   variables: {
                     input: [
                       {
-                        ...convertStringToQuery(currentQuery),
+                        ...convertStringToQuery(currentQuery, searchQueryLimit),
                         relatedKinds: [resource.kind],
                       },
                     ],
@@ -127,7 +135,7 @@ export const DeleteResourceModal = (props: any) => {
               .query({
                 query: SearchResultRelatedCountDocument,
                 variables: {
-                  input: [convertStringToQuery(currentQuery)],
+                  input: [convertStringToQuery(currentQuery, searchQueryLimit)],
                 },
                 fetchPolicy: 'cache-first',
               })
@@ -136,7 +144,7 @@ export const DeleteResourceModal = (props: any) => {
                   searchClient.writeQuery({
                     query: SearchResultRelatedCountDocument,
                     variables: {
-                      input: [convertStringToQuery(currentQuery)],
+                      input: [convertStringToQuery(currentQuery, searchQueryLimit)],
                     },
                     data: {
                       searchResult: [
@@ -165,7 +173,7 @@ export const DeleteResourceModal = (props: any) => {
               .query({
                 query: SearchResultItemsDocument,
                 variables: {
-                  input: [convertStringToQuery(currentQuery)],
+                  input: [convertStringToQuery(currentQuery, searchQueryLimit)],
                 },
                 fetchPolicy: 'cache-first',
               })
@@ -175,7 +183,7 @@ export const DeleteResourceModal = (props: any) => {
                   searchClient.writeQuery({
                     query: SearchResultItemsDocument,
                     variables: {
-                      input: [convertStringToQuery(currentQuery)],
+                      input: [convertStringToQuery(currentQuery, searchQueryLimit)],
                     },
                     data: {
                       searchResult: [
@@ -213,7 +221,7 @@ export const DeleteResourceModal = (props: any) => {
         onClose={close}
         actions={[
           <AcmButton
-            isDisabled={!canDelete}
+            isDisabled={loadingAccessRequest || !canDelete}
             key="confirm"
             variant={ButtonVariant.danger}
             onClick={() => deleteResourceFn()}
@@ -228,7 +236,7 @@ export const DeleteResourceModal = (props: any) => {
         {accessError ? (
           <AcmAlert data-testid={'user-access-error'} noClose={true} variant={'danger'} title={accessError} />
         ) : null}
-        {!accessError && !canDelete ? (
+        {!accessError && !canDelete && !loadingAccessRequest ? (
           <AcmAlert noClose={true} variant={'danger'} title={t('You are not authorized to delete this resource.')} />
         ) : null}
         {deleteResourceError ? (
