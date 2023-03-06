@@ -502,7 +502,6 @@
   "Autoscaling": "Autoscaling",
   "Av2-series": "Av2-series",
   "Available": "Available",
-  "AWS credential": "AWS credential",
   "Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.": "Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.",
   "B-series burstable virtual machine sizes": "B-series burstable virtual machine sizes",
   "back": "Back",

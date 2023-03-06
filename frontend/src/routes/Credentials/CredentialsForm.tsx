@@ -543,7 +543,7 @@ export function CredentialsForm(
         { text: t('Credentials'), to: NavigationPath.credentials },
         { text: t('Credential type'), to: NavigationPath.addCredentials },
         {
-          text: t('AWS credential'),
+          text: t('Amazon Web Services credential'),
           to: NavigationPath.addAWSType,
         },
         { text: title },
