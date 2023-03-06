@@ -84,7 +84,6 @@ export function getAppSetTopology(application) {
       : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
 
   const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
-  //const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
   const resources = []
 
   if (appSetApps.length > 0) {
