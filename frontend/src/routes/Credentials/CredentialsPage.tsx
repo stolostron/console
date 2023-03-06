@@ -14,16 +14,23 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import moment from 'moment'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, IBulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
-import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
-import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
+import {
+  deleteResource,
+  DiscoveryConfig,
+  ProviderConnection,
+  Secret,
+  SecretDefinition,
+  unpackProviderConnection,
+} from '../../resources'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -55,20 +62,6 @@ export default function CredentialsPage() {
   )
 }
 
-// Ingoring coverage since this will move one the console header navigation is done
-/* istanbul ignore next */
-const AddConnectionBtn = () => {
-  const { t } = useTranslation()
-  return (
-    <div>
-      <AcmButton component={Link} to={createBackCancelLocation(NavigationPath.addCredentials)}>
-        {t('Add credential')}
-      </AcmButton>
-      <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
-    </div>
-  )
-}
-
 function getProviderName(labels: Record<string, string> | undefined) {
   const label = labels?.['cluster.open-cluster-management.io/type']
   if (label) {
@@ -88,6 +81,13 @@ export function CredentialsTable(props: {
   const [modalProps, setModalProps] = useState<IBulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
+  const { namespacesState } = useSharedAtoms()
+  const unauthorizedMessage = t('rbac.unauthorized')
+  const [namespaces] = useRecoilState(namespacesState)
+  const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
+  useEffect(() => {
+    checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)
+  }, [namespaces])
 
   sessionStorage.removeItem('DiscoveryCredential')
 
@@ -131,7 +131,19 @@ export function CredentialsTable(props: {
                 components={{ bold: <strong /> }}
               />
             }
-            action={<AddConnectionBtn />}
+            action={
+              <div>
+                <AcmButton
+                  isDisabled={!canAddCredential}
+                  tooltip={!canAddCredential ? unauthorizedMessage : ''}
+                  component={Link}
+                  to={createBackCancelLocation(NavigationPath.addCredentials)}
+                >
+                  {t('Add credential')}
+                </AcmButton>
+                <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
+              </div>
+            }
           />
         }
         plural={t('Credentials')}
@@ -279,6 +291,8 @@ export function CredentialsTable(props: {
               history.push(createBackCancelLocation(NavigationPath.addCredentials))
             },
             variant: ButtonVariant.primary,
+            isDisabled: !canAddCredential,
+            tooltip: !canAddCredential ? unauthorizedMessage : '',
           },
         ]}
         tableActions={[
