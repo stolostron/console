@@ -16,8 +16,8 @@ import { TFunction } from 'i18next'
 import { useTranslation } from '../lib/acm-i18next'
 
 export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
-  let title = 'Error'
-  let message = 'Unknown'
+  let title = t('Error')
+  let message = t('Unknown')
   if (error instanceof ResourceError) {
     /* istanbul ignore next */
     switch (error.code) {

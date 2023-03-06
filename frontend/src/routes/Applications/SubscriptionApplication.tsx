@@ -226,12 +226,7 @@ export function CreateSubscriptionApplication(
           )
         })
         .catch((err) => {
-          const errorInfo = getErrorInfo(err, t)
-          toastContext.addAlert({
-            type: 'danger',
-            title: errorInfo.title,
-            message: errorInfo.message,
-          })
+          toastContext.addAlert(getErrorInfo(err, t))
         })
     }
   }
@@ -309,21 +304,11 @@ export function CreateSubscriptionApplication(
             redirectRoute()
           })
           .catch((err) => {
-            const errorInfo = getErrorInfo(err, t)
-            toastContext.addAlert({
-              type: 'danger',
-              title: errorInfo.title,
-              message: errorInfo.message,
-            })
+            toastContext.addAlert(getErrorInfo(err, t))
           })
       } else {
         createResource(resourceJSON).catch((err) => {
-          const errorInfo = getErrorInfo(err, t)
-          toastContext.addAlert({
-            type: 'danger',
-            title: errorInfo.title,
-            message: errorInfo.message,
-          })
+          toastContext.addAlert(getErrorInfo(err, t))
         })
       }
     }

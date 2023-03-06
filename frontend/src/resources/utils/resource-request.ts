@@ -716,11 +716,11 @@ export async function fetchRetry<T>(options: {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
             tokenExpired()
-            throw new ResourceError(status.message as string, status.code as number)
+            throw new ResourceError(status.message as string, status.code as number, status.reason)
           } else if (ResourceErrorCodes.includes(status.code as number)) {
-            throw new ResourceError(status.message as string, status.code as number)
+            throw new ResourceError(status.message as string, status.code as number, status.reason)
           } else {
-            throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown)
+            throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown, status.reason)
           }
         }
       }
