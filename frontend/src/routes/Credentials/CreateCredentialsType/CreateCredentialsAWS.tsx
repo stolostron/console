@@ -91,7 +91,7 @@ export function CreateCredentialsAWS() {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Credentials'), to: NavigationPath.credentials },
       { label: t('Credential type'), to: NavigationPath.addCredentials },
-      { label: t('AWS credential') },
+      { label: t('Amazon Web Services credential') },
     ]
     return newBreadcrumbs
   }, [t])
