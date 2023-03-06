@@ -534,22 +534,28 @@ export function CredentialsForm(
     }
   }, [isHostedControlPlane, s3values, providerConnection?.metadata.name, providerConnection?.metadata.namespace])
 
-  const breadcrumbs =
-    credentialsType === Provider.aws || credentialsType === Provider.awss3
-      ? [
-          { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential type'), to: NavigationPath.addCredentials },
-          {
-            text: t('AWS credential'),
-            to: NavigationPath.addAWSType,
-          },
-          { text: title },
-        ]
-      : [
-          { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential type'), to: NavigationPath.addCredentials },
-          { text: title },
-        ]
+  let breadcrumbs
+  if (isViewing || isEditing) {
+    breadcrumbs = [{ text: t('Credentials'), to: NavigationPath.credentials }, { text: title }]
+  } else {
+    if (credentialsType === Provider.aws || credentialsType === Provider.awss3) {
+      breadcrumbs = [
+        { text: t('Credentials'), to: NavigationPath.credentials },
+        { text: t('Credential type'), to: NavigationPath.addCredentials },
+        {
+          text: t('AWS credential'),
+          to: NavigationPath.addAWSType,
+        },
+        { text: title },
+      ]
+    } else {
+      breadcrumbs = [
+        { text: t('Credentials'), to: NavigationPath.credentials },
+        { text: t('Credential type'), to: NavigationPath.addCredentials },
+        { text: title },
+      ]
+    }
+  }
 
   const formData: FormData = {
     title,
