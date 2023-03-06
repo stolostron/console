@@ -15,7 +15,6 @@ export enum AddonStatus {
   'Available' = 'Available',
   'Progressing' = 'Progressing',
   'Degraded' = 'Degraded',
-  'Disabled' = 'Disabled',
   'Unknown' = 'Unknown',
 }
 
@@ -65,9 +64,11 @@ export function mapAddons(
 
 function getDisplayStatus(cma: ClusterManagementAddOn | undefined, mcas: ManagedClusterAddOn[]): string {
   const mcaStatus = mcas?.find((mca) => mca.metadata.name === cma?.metadata.name)
+
   if (mcaStatus?.status?.conditions === undefined) {
-    return AddonStatus.Disabled
+    return AddonStatus.Unknown
   }
+
   const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
     (condition) => condition.type === AddonStatus.Degraded
   )
@@ -177,8 +178,6 @@ export const getAddonStatusLabel = (status: AddonStatus | undefined, t: TFunctio
       return t('Available')
     case AddonStatus.Degraded:
       return t('Degraded')
-    case AddonStatus.Disabled:
-      return t('Disabled')
     case AddonStatus.Progressing:
       return t('Progressing')
     case AddonStatus.Unknown:

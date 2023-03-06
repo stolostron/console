@@ -970,7 +970,6 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
       case AddonStatus.Unknown:
         unknown++
         break
-      case AddonStatus.Disabled:
       default:
         break
     }

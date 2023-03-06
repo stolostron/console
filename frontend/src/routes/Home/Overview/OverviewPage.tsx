@@ -99,10 +99,6 @@ function getClusterSummary(
               prev.addons.progress.count = prev.addons.progress.count + 1
               prev.addons.progress.clusters.add(curr.name)
               break
-            case AddonStatus.Disabled:
-              prev.addons.pending.count = prev.addons.pending.count + 1
-              prev.addons.pending.clusters.add(curr.name)
-              break
             default:
               prev.addons.unknown.count = prev.addons.unknown.count + 1
               prev.addons.unknown.clusters.add(curr.name)
@@ -481,11 +477,6 @@ export default function OverviewPage() {
         key: t('Progressing'),
         value: progress.count,
         link: buildClusterAddonLinks(AddonStatus.Progressing),
-      },
-      {
-        key: t('Pending'),
-        value: pending.count,
-        link: buildClusterAddonLinks(AddonStatus.Disabled),
       },
       {
         key: t('Unknown'),
