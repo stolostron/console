@@ -291,6 +291,8 @@ export function CredentialsTable(props: {
               history.push(createBackCancelLocation(NavigationPath.addCredentials))
             },
             variant: ButtonVariant.primary,
+            isDisabled: !canAddCredential,
+            tooltip: !canAddCredential ? unauthorizedMessage : '',
           },
         ]}
         tableActions={[
