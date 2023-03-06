@@ -3,9 +3,15 @@
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { DeleteResourceModal } from './DeleteResourceModal'
+
+const mockSettings: Settings = {
+  SEARCH_QUERY_LIMIT: '10000',
+}
 
 const getMCAResponse = {
   apiVersion: 'action.open-cluster-management.io/v1beta1',
@@ -100,19 +106,25 @@ describe('DeleteResourceModal', () => {
     const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
     render(
-      <DeleteResourceModal
-        open={true}
-        currentQuery={'kind:pod'}
-        resource={{
-          name: 'testPod',
-          namespace: 'testNamespace',
-          kind: 'pod',
-          apiversion: 'v1',
-          cluster: 'local-cluster',
-          _hubClusterResource: 'true',
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
         }}
-        close={() => {}}
-      />
+      >
+        <DeleteResourceModal
+          open={true}
+          currentQuery={'kind:pod'}
+          resource={{
+            name: 'testPod',
+            namespace: 'testNamespace',
+            kind: 'pod',
+            apiversion: 'v1',
+            cluster: 'local-cluster',
+            _hubClusterResource: 'true',
+          }}
+          close={() => {}}
+        />
+      </RecoilRoot>
     )
 
     await act(async () => {
