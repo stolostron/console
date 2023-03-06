@@ -10,7 +10,7 @@
     top: 0px;
     box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
     z-index: var(--pf-c-page--section--m-sticky-top--ZIndex);
-    background-color: var(--pf-global--BackgroundColor--400);
+    background-color: var(--pf-global--BackgroundColor--100);
 }
 
 .topologyDetails .detailsHeader .innerDetailsHeader {

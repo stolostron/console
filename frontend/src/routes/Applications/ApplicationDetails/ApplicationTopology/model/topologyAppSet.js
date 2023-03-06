@@ -6,7 +6,7 @@ import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName } from './utils'
+import { addClusters, getClusterName, processMultiples } from './utils'
 
 export function getAppSetTopology(application) {
     const links = []
@@ -84,10 +84,33 @@ export function getAppSetTopology(application) {
             : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
 
     const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
-    const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
+    // const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
+    const resources = []
 
-    resources.forEach((deployable) => {
-        const { name: deployableName, namespace: deployableNamespace, kind, version, group } = deployable
+    if (appSetApps.length > 0) {
+        appSetApps.forEach((app) => {
+            const appResources = get(app, 'status.resources', [])
+            let appClusterName = app.spec.destination.name
+            if (!appClusterName) {
+                const appCluster = application.appSetClusters.find((cls) => cls.url === app.spec.destination.server)
+                appClusterName = appCluster ? appCluster.name : undefined
+            }
+            appResources.forEach((resource) => {
+                resources.push({ ...resource, cluster: appClusterName })
+            })
+        })
+    }
+
+    processMultiples(resources).forEach((deployable) => {
+        const {
+            name: deployableName,
+            namespace: deployableNamespace,
+            kind,
+            version,
+            group,
+            resourceCount,
+            resources: deployableResources,
+        } = deployable
         const type = kind.toLowerCase()
 
         const memberId = `member--member--deployable--member--clusters--${getClusterName(
@@ -123,6 +146,8 @@ export function getAppSetTopology(application) {
                 parent: {
                     clusterId,
                 },
+                resources: deployableResources,
+                resourceCount: resourceCount || 0 + clusterNames.length,
             },
         }
 

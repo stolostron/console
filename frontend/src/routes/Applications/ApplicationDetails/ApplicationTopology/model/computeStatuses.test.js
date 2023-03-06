@@ -2424,3 +2424,54 @@ describe('getPulseStatusForCluster all some ok', () => {
         expect(getPulseStatusForCluster(clusterNode)).toEqual('yellow')
     })
 })
+
+describe('getPulseStatusForGenericNode resources exist', () => {
+    const cmNode = {
+        type: 'configmap',
+        name: 'cm1',
+        namespace: 'ns',
+        specs: {
+            clusters: [{ status: 'ok', name: 'local-cluster' }],
+            configmapModel: {
+                'cm1-local-cluster': {
+                    name: 'cm1',
+                },
+            },
+            resources: [
+                {
+                    name: 'cm1',
+                },
+            ],
+        },
+    }
+    it('should process configmap node', () => {
+        expect(computeNodeStatus(cmNode, true, t)).toEqual('green')
+    })
+})
+
+describe('getPulseStatusForGenericNode resources has different length', () => {
+    const cmNode = {
+        type: 'configmap',
+        name: 'cm1',
+        namespace: 'ns',
+        specs: {
+            clusters: [{ status: 'ok', name: 'local-cluster' }],
+            configmapModel: {
+                'cm1-local-cluster': {
+                    name: 'cm1',
+                },
+            },
+            resources: [
+                {
+                    name: 'cm1',
+                },
+                {
+                    name: 'cm2',
+                },
+            ],
+        },
+    }
+    it('should process configmap node', () => {
+        expect(computeNodeStatus(cmNode, true, t)).toEqual('yellow')
+    })
+})

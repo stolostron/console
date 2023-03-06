@@ -32,9 +32,9 @@ class DetailsTable extends Component {
 
     static getDerivedStateFromProps(props, state) {
         const { id, node, handleOpen } = props
-        const { perPage, sortBy } = state
+        const { perPage, sortBy, searchValue, detailType } = state
         localStorage.setItem(`table-${id}-page-size`, perPage)
-        const { searchValue } = state
+
         const tableData = [
             {
                 name: 'Name',
@@ -59,19 +59,23 @@ class DetailsTable extends Component {
         let available = []
         resources.forEach((resource) => {
             clustersNames.forEach((cluster) => {
-                Array.from(Array(replicaCount)).forEach((_, i) => {
-                    const modelKey = resource.namespace
-                        ? `${resource.name}-${cluster}-${resource.namespace}`
-                        : `${resource.name}-${cluster}`
-                    const status = statusMap[modelKey]
-                    available.push({
-                        pulse: status && status.length > i ? status[i].pulse : 'orange',
-                        name: status && status.length > i ? status[i].name : resource.name,
-                        namespace: status && status.length > i ? status[i].namespace : resource.namespace,
-                        cluster: cluster,
-                        type: type,
+                const displayResource = resource.cluster ? (resource.cluster === cluster ? true : false) : true
+
+                if (displayResource) {
+                    Array.from(Array(replicaCount)).forEach((_, i) => {
+                        const modelKey = resource.namespace
+                            ? `${resource.name}-${cluster}-${resource.namespace}`
+                            : `${resource.name}-${cluster}`
+                        const status = statusMap[modelKey]
+                        available.push({
+                            pulse: status && status.length > i ? status[i].pulse || 'green' : 'orange',
+                            name: status && status.length > i ? status[i].name : resource.name,
+                            namespace: status && status.length > i ? status[i].namespace : resource.namespace,
+                            cluster: cluster,
+                            type: type,
+                        })
                     })
-                })
+                }
             })
         })
         available = available.sort((a, b) => {
@@ -83,6 +87,11 @@ class DetailsTable extends Component {
 
         const columns = tableData.map(({ id }) => ({ key: id }))
         newState.columns = columns
+
+        if (detailType !== type) {
+            newState.page = 1
+            newState.detailType = type
+        }
 
         let rows = []
         available.forEach((item) => {
@@ -155,12 +164,14 @@ class DetailsTable extends Component {
 
     constructor(props) {
         super(props)
-        const { id } = props
+        const { id, node } = props
+        const { type } = node
         this.state = {
             page: 1,
             perPage: parseInt(localStorage.getItem(`table-${id}-page-size`), 10) || PAGE_SIZES.DEFAULT,
             sortBy: {},
             searchValue: '',
+            detailType: type,
         }
         this.handleSort = this.handleSort.bind(this)
     }
