@@ -137,7 +137,7 @@ function RenderSearchBar(props: {
       return filter.property !== value
     })
     return { searchCompleteValue: value, searchCompleteQuery: query }
-  }, [currentSearch])
+  }, [currentSearch, searchQueryLimit])
 
   const searchCompleteResults = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
@@ -332,7 +332,7 @@ export default function SearchPage() {
           })
       }
     }
-  }, [fireSearchQuery, presetSearchQuery, called, refetch])
+  }, [fireSearchQuery, presetSearchQuery, called, refetch, searchQueryLimit])
 
   useEffect(() => {
     setSearchQueryLoading(loading)
