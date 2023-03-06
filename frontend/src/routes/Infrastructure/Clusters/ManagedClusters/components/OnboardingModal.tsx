@@ -67,7 +67,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
       className="onboarding-modal-class"
       style={{ padding: '0px' }}
     >
-      <Grid style={{ paddingLeft: '24px', paddingTop: '24px', paddingRight: '24px' }}>
+      <Grid style={{ padding: '24px' }}>
         <GridItem span={3}>
           <MainIcon />
         </GridItem>
@@ -139,7 +139,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 <li>
                   <AcmButton
                     variant="link"
-                    icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                    icon={<ExternalLinkAltIcon className="pf-u-font-size-xs" style={{ padding: '0.5px' }} />}
                     iconPosition="right"
                     isInline
                     onClick={() =>
