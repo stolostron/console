@@ -354,7 +354,7 @@ export function CredentialsForm(
         break
       case Provider.awss3:
         stringData.bucket = bucket_name
-        stringData.credentials = `[default]\naws_access_key_id=${aws_access_key_id}\naws secret_access_key=${aws_secret_access_key}`
+        stringData.credentials = `[default]\naws_access_key_id=${aws_access_key_id}\naws_secret_access_key=${aws_secret_access_key}`
         stringData.region = aws_s3_region
         break
       case Provider.azure:
