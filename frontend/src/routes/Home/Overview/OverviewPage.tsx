@@ -329,7 +329,7 @@ export default function OverviewPage() {
   }, [policyReports, selectedClusterNames, clusters])
 
   const { kubernetesTypes, regions, ready, offline, addons, providers } = summaryData
-  const { healthy, danger, progress, pending, unknown } = addons
+  const { healthy, danger, progress, unknown } = addons
   const provider = providers.find((p: any) => p.provider === selectedCloud)
   const cloudLabelFilter: string =
     selectedCloud === ''
@@ -490,7 +490,7 @@ export default function OverviewPage() {
         link: buildClusterAddonLinks(AddonStatus.Available),
       },
     ]
-  }, [healthy, danger, progress, pending, unknown, t])
+  }, [healthy, danger, progress, unknown, t])
 
   const policyReportData = useMemo(() => {
     return [
