@@ -649,7 +649,7 @@ export default function ApplicationsOverview() {
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
         },
         tooltip: t(
-          'Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.'
+          'For Subscription applications, displays the number of remote and local clusters where resources for the application are deployed. For Argo applications, this is the name of the destination cluster. For OpenShift applications, this is the cluster where the application is deployed.'
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
