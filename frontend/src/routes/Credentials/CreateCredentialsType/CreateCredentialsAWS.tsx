@@ -67,7 +67,7 @@ export function CreateCredentialsAWS() {
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('Hosted cluster OIDC and more'),
+            description: t('OIDC Secret for Red Hat OpenShift Provisioning with hosted control plane'),
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
