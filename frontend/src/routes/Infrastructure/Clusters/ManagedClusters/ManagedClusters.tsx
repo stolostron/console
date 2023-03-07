@@ -476,8 +476,6 @@ export function ClustersTable(props: {
                 return !!cluster.addons?.available
               case AddonStatus.Degraded:
                 return !!cluster.addons?.degraded
-              case AddonStatus.Disabled:
-                return false
               case AddonStatus.Progressing:
                 return !!cluster.addons?.progressing
               case AddonStatus.Unknown:
