@@ -28,7 +28,7 @@ export default function ApplicationsPage() {
     appTableFilterItems.includes('fluxapps') ||
     !appTableFilterItems.length
 
-  const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
+  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoApps)
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
@@ -40,21 +40,23 @@ export default function ApplicationsPage() {
   const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
 
   useEffect(() => {
-    if (waitForSearch && applicationsMatch.isExact) {
+    if (applicationsMatch.isExact) {
       // No need to poll for Advanced configuration page
       startPolling()
-      startPollingOCPResources()
+      if (waitForSearch) {
+        startPollingOCPResources()
+      } else {
+        stopPollingOCPResources()
+      }
     } else {
-      stopPollingOCPResources()
-    }
-    if (!loadingOCPResources) {
+      stopPolling()
       stopPollingOCPResources()
     }
   }, [
     waitForSearch,
-    loadingOCPResources,
     applicationsMatch,
     startPolling,
+    stopPolling,
     startPollingOCPResources,
     stopPollingOCPResources,
   ])
