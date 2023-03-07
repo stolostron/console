@@ -592,7 +592,7 @@ export function CredentialsForm(
             variant: 'info',
             reactNode: (
               <Fragment>
-                <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noreferrer">
+                <a href={DOC_LINKS.HYPERSHIFT_OIDC} target="_blank" rel="noreferrer">
                   {t('Learn more')}
                 </a>
               </Fragment>
@@ -715,6 +715,11 @@ export function CredentialsForm(
         type: 'Section',
         title: t('Bucket'),
         wizardTitle: t('Enter bucket information'),
+        description: (
+          <a href={DOC_LINKS.CREATE_CONNECTION_AWS} target="_blank" rel="noreferrer">
+            {t('How do I get S3 Bucket OIDC secret credentials?')}
+          </a>
+        ),
         inputs: [
           {
             id: 'bucketName',

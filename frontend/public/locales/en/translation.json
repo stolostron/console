@@ -1420,6 +1420,7 @@
   "How do I get Google Cloud Platform credentials?": "How do I get Google Cloud Platform credentials?",
   "How do I get Microsoft Azure credentials?": "How do I get Microsoft Azure credentials?",
   "How do I get OpenStack credentials?": "How do I get OpenStack credentials?",
+  "How do I get S3 Bucket OIDC secret credentials?": "How do I get S3 Bucket OIDC secret credentials?",
   "How do I get the OpenShift Cluster Manager API Token?": "How do I get the OpenShift Cluster Manager API Token?",
   "How do I get the Red Hat OpenShift Container Platform pull secret?": "How do I get the Red Hat OpenShift Container Platform pull secret?",
   "How do I get VMware credentials?": "How do I get VMware credentials?",

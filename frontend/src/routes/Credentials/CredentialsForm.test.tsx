@@ -139,7 +139,8 @@ describe('add credentials page', () => {
 
     // bucket
     await typeByTestId('bucketName', providerConnection.stringData?.bucket!)
-    await typeByTestId('credentials', providerConnection.stringData?.credentials!)
+    await typeByTestId('aws_access_key_id', 'abc')
+    await typeByTestId('aws_secret_access_key', 'efg')
     await selectByText('Select region', providerConnection.stringData?.region!)
 
     await clickByText('Next')
