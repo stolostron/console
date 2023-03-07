@@ -233,12 +233,7 @@ const useStyles = makeStyles({
   table: {
     '& tbody.pf-m-expanded > tr': {
       borderBottom: 0,
-      overflowY: 'visible !important',
-      '& .pf-c-table__expandable-row-content': {
-        paddingTop: 0,
-        paddingBottom: 0,
-      },
-      '&:first-of-type, &:last-of-type': {
+      '&:last-of-type': {
         borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
       },
     },
