@@ -36,7 +36,6 @@ import {
   validatePrivateSshKey,
   validatePublicSshKey,
   validateRequiredPrefix,
-  validateS3Credential,
   validateVCenterServer,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
@@ -191,7 +190,6 @@ export function CredentialsForm(
   )
 
   const [bucket_name, setBucketName] = useState(() => providerConnection?.stringData?.bucket ?? '')
-  const [aws_s3_credentials, setAwsS3Credentials] = useState(() => providerConnection?.stringData?.credentials ?? '')
   const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
 
   // Azure Cloud State
@@ -356,7 +354,7 @@ export function CredentialsForm(
         break
       case Provider.awss3:
         stringData.bucket = bucket_name
-        stringData.credentials = aws_s3_credentials
+        stringData.credentials = `[default]\naws_access_key_id=${aws_access_key_id}\naws secret_access_key=${aws_secret_access_key}`
         stringData.region = aws_s3_region
         break
       case Provider.azure:
@@ -477,6 +475,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.httpProxy', setState: setHttpProxy },
       { path: 'Secret[0].stringData.httpsProxy', setState: setHttpsProxy },
       { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
+      { path: 'Secret[0].stringData.bucket', setState: setBucketName },
+      { path: 'Secret[0].stringData.region', setState: setAwsS3Region },
       { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
       { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
       { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
@@ -727,15 +727,29 @@ export function CredentialsForm(
             isRequired: true,
           },
           {
-            id: 'credentials',
+            id: 'aws_access_key_id',
             isHidden: credentialsType !== Provider.awss3,
-            type: 'TextArea',
-            label: t('Credentials'),
-            placeholder: t('Enter your credentials'),
-            labelHelp: t('You use access keys to sign programmatic requests that you make to AWS. '),
-            value: aws_s3_credentials,
-            onChange: setAwsS3Credentials,
-            validation: (value) => validateS3Credential(value, t),
+            type: 'Text',
+            label: t('Access key ID'),
+            placeholder: t('Enter your AWS access key ID'),
+            labelHelp: t(
+              'You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.'
+            ),
+            value: aws_access_key_id,
+            onChange: setAwsAccessKeyID,
+            isRequired: true,
+          },
+          {
+            id: 'aws_secret_access_key',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'Text',
+            label: t('Secret access key'),
+            placeholder: t('Enter your AWS secret access key'),
+            labelHelp: t(
+              'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
+            ),
+            value: aws_secret_access_key,
+            onChange: setAwsSecretAccessKeyID,
             isRequired: true,
             isSecret: true,
           },
