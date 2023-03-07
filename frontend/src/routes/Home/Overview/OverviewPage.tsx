@@ -598,7 +598,7 @@ export default function OverviewPage() {
                   description={t('Overview of cluster add-ons')}
                   loading={!clusterAddonData}
                   data={clusterAddonData}
-                  colorScale={colorThemes.criticalLowImportantUnknownSuccess}
+                  colorScale={colorThemes.criticalLowUnknownSuccess}
                 />
               </AcmMasonry>
             </Stack>
