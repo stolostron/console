@@ -444,8 +444,8 @@ export function ClustersTable(props: {
             value: status,
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) => {
-          for (const value of selectedValues) {
+        tableFilterFn: (selectedValues, cluster) =>
+          selectedValues.some((value) => {
             switch (value) {
               case StatusType.healthy:
                 return !!cluster.nodes?.ready
@@ -456,9 +456,7 @@ export function ClustersTable(props: {
               default:
                 return false
             }
-          }
-          return false
-        },
+          }),
       },
       {
         id: 'add-ons',
@@ -469,8 +467,8 @@ export function ClustersTable(props: {
             value: status,
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) => {
-          for (const value of selectedValues) {
+        tableFilterFn: (selectedValues, cluster) =>
+          selectedValues.some((value) => {
             switch (value) {
               case AddonStatus.Available:
                 return !!cluster.addons?.available
@@ -483,9 +481,7 @@ export function ClustersTable(props: {
               default:
                 return false
             }
-          }
-          return false
-        },
+          }),
       },
     ]
   }, [t])
