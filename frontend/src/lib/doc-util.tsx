@@ -52,7 +52,8 @@ export const DOC_LINKS = {
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
   POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
-  HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
+  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-enable-feature-aws`,
+  HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
 }
 

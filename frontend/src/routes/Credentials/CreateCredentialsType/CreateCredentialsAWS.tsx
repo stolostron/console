@@ -76,7 +76,7 @@ export function CreateCredentialsAWS() {
           : t('Hosted control plane operator and hypershift add-on must be enabled in order to continue'),
         alertVariant: 'info',
         alertContent: (
-          <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noopener noreferrer">
+          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
         ),
