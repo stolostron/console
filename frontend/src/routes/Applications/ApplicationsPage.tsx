@@ -52,14 +52,7 @@ export default function ApplicationsPage() {
       stopPolling()
       stopPollingOCPResources()
     }
-  }, [
-    waitForSearch,
-    applicationsMatch,
-    startPolling,
-    stopPolling,
-    startPollingOCPResources,
-    stopPollingOCPResources,
-  ])
+  }, [waitForSearch, applicationsMatch, startPolling, stopPolling, startPollingOCPResources, stopPollingOCPResources])
 
   useEffect(() => {
     const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
