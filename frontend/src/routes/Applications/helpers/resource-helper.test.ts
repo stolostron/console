@@ -5,6 +5,7 @@ import moment from 'moment'
 import { ArgoApplicationDefinition } from '../../../resources'
 import {
   getAge,
+  getClusterCountSearchLink,
   getClusterCountString,
   getEditLink,
   getResourceLabel,
@@ -241,5 +242,43 @@ describe('getShortDateTime', () => {
 
   it('includes all elements for timestamps from a different year', () => {
     expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
+  })
+})
+
+describe('getClusterCountSearchLink', () => {
+  const resource = {
+    apiVersion: 'apps/v1',
+    kind: 'StatefulSet',
+    label:
+      'app.kubernetes.io/component=application-controller; app.kubernetes.io/managed-by=openshift-gitops; app.kubernetes.io/name=openshift-gitops-application-controller; app.kubernetes.io/part-of=argocd',
+    metadata: {
+      name: 'argocd',
+      namespace: 'openshift-gitops',
+      creationTimestamp: '2023-03-06T20:40:14Z',
+    },
+    status: {
+      cluster: 'local-cluster',
+      resourceName: 'openshift-gitops-application-controller',
+    },
+    transformed: {
+      clusterCount: 'local-cluster',
+      resourceText: '',
+      createdText: 'a day ago',
+      timeWindow: '',
+      namespace: 'openshift-gitops',
+    },
+  }
+
+  const clusterCount = {
+    localPlacement: true,
+    remoteCount: 0,
+  }
+
+  const clusterList = ['local-cluster']
+
+  it('should generate link', () => {
+    expect(getClusterCountSearchLink(resource, clusterCount, clusterList)).toEqual(
+      '/multicloud/infrastructure/clusters/details/local-cluster/local-cluster'
+    )
   })
 })
