@@ -82,7 +82,6 @@ export function AcmLabelsListInput(props: {
                 closeBtnProps={{ id: `remove-${key}` }}
               >
                 {key}
-                {/* {typeof value[key] === 'string' && value[key].trim() !== '' && `=${value[key]}`} */}
               </Label>
             ))}
           <TextInput
