@@ -1,23 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../mock-request'
 import { parsePipedJsonBody } from '../../src/lib/body-parser'
+import { ansiblePaths } from '../../src/routes/ansibletower'
 import nock from 'nock'
+
+const TOWER_HOST = 'https://ansible-tower.com'
 
 describe(`ansibletower Route`, function () {
   it(`should list Ansible TowerJobs`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
-
-    nock('https://ansible-tower-web-svc-tower.apps.collective.aws.red-chesterfield.com')
-      .get('/api/v2/workflow_job_templates/')
-      .reply(200, response)
-
+    nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
-      towerHost:
-        'https://ansible-tower-web-svc-tower.apps.collective.aws.red-chesterfield.com/api/v2/workflow_job_templates/',
+      towerHost: TOWER_HOST + ansiblePaths[0],
       token: '12345',
     })
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify(response))
+  })
+
+  it(`when bad things happen to Ansible TowerJobs 1`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
+    const res = await request('POST', '/ansibletower', {
+      towerHost: TOWER_HOST + '/badPath',
+      token: '12345',
+    })
+    expect(res.statusCode).toEqual(200)
+    expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
+  })
+
+  it.only(`when bad things happen to Ansible TowerJobs 2`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
+    const res = await request('POST', '/ansibletower', {
+      token: '12345',
+    })
+    expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 })
 

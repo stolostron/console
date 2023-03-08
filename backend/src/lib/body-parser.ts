@@ -76,5 +76,5 @@ export async function parsePipedJsonBody<T = Promise<Record<string, unknown>>>(r
     limit: 1 * 1024 * 1024,
     encoding: true,
   })
-  return JSON.parse(bodyString) as T
+  return JSON.parse(bodyString || '{}') as T
 }
