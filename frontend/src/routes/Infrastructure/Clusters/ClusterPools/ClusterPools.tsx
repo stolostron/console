@@ -237,12 +237,10 @@ export function ClusterPoolsTable(props: {
                 {
                   title: (
                     <>
-                      <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                        <TextContent>
-                          <Text component={TextVariants.h3}>{t('clusterPool.clusters')}</Text>
-                        </TextContent>
-                        <ClusterPoolClustersTable clusters={clusterPoolClusters} />
-                      </div>
+                      <TextContent>
+                        <Text component={TextVariants.h3}>{t('clusterPool.clusters')}</Text>
+                      </TextContent>
+                      <ClusterPoolClustersTable clusters={clusterPoolClusters} />
                     </>
                   ),
                 },
@@ -255,12 +253,10 @@ export function ClusterPoolsTable(props: {
                 {
                   title: (
                     <>
-                      <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                        <TextContent>
-                          <Text component={TextVariants.h3}>{t('pending.cluster.claims')}</Text>
-                        </TextContent>
-                        <ClusterPoolClaimsTable claims={clusterPoolClaims} />
-                      </div>
+                      <TextContent>
+                        <Text component={TextVariants.h3}>{t('pending.cluster.claims')}</Text>
+                      </TextContent>
+                      <ClusterPoolClaimsTable claims={clusterPoolClaims} />
                     </>
                   ),
                 },

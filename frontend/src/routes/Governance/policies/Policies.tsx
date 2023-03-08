@@ -747,26 +747,23 @@ export default function PoliciesPage() {
           if (!standards && !controls && !categories) return undefined
           return [
             {
-              fullWidth: true,
               cells: [
                 {
                   title: (
-                    <div style={{ marginLeft: 106, marginTop: '20px', marginBottom: '20px' }}>
-                      <DescriptionList isAutoFit isAutoColumnWidths>
-                        <DescriptionListGroup>
-                          <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
-                          <DescriptionListDescription>{standards ?? '-'}</DescriptionListDescription>
-                        </DescriptionListGroup>
-                        <DescriptionListGroup>
-                          <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
-                          <DescriptionListDescription>{controls ?? '-'}</DescriptionListDescription>
-                        </DescriptionListGroup>
-                        <DescriptionListGroup>
-                          <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
-                          <DescriptionListDescription>{categories ?? '-'}</DescriptionListDescription>
-                        </DescriptionListGroup>
-                      </DescriptionList>
-                    </div>
+                    <DescriptionList isAutoFit isAutoColumnWidths>
+                      <DescriptionListGroup>
+                        <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
+                        <DescriptionListDescription>{standards ?? '-'}</DescriptionListDescription>
+                      </DescriptionListGroup>
+                      <DescriptionListGroup>
+                        <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
+                        <DescriptionListDescription>{controls ?? '-'}</DescriptionListDescription>
+                      </DescriptionListGroup>
+                      <DescriptionListGroup>
+                        <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
+                        <DescriptionListDescription>{categories ?? '-'}</DescriptionListDescription>
+                      </DescriptionListGroup>
+                    </DescriptionList>
                   ),
                 },
               ],

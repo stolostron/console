@@ -114,11 +114,12 @@ export function TableExpandable(args: Record<string, unknown>) {
                   cells: [
                     {
                       title: (
-                        <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                        <>
                           <TextContent>
                             <Text component={TextVariants.h3}>Favorite Colors</Text>
                           </TextContent>
                           <AcmTable<IExampleSubData>
+                            noBorders
                             plural="stuffs"
                             showToolbar={false}
                             autoHidePagination
@@ -142,7 +143,7 @@ export function TableExpandable(args: Record<string, unknown>) {
                             items={mappedItems}
                             gridBreakPoint={TableGridBreakpoint.none}
                           />
-                        </div>
+                        </>
                       ),
                     },
                   ],
