@@ -184,8 +184,6 @@ export type IAcmTableAction<T> =
 interface ITableItem<T> {
   item: T
   key: string
-  group?: string
-  subItems?: T[]
   subRows?: IRow[]
   [key: string]: unknown
 }
@@ -250,21 +248,6 @@ const useStyles = makeStyles({
   },
 })
 
-function countGroups(items: ITableItem<unknown>[]): number {
-  const { ungrouped, groups } = items.reduce(
-    (acc, item) => {
-      if (item.group) {
-        acc.groups.add(item.group)
-      } else {
-        acc.ungrouped++
-      }
-      return acc
-    },
-    { ungrouped: 0, groups: new Set() }
-  )
-  return ungrouped + groups.size
-}
-
 function OuiaIdRowWrapper(props: RowWrapperProps) {
   return <RowWrapper {...props} ouiaId={get(props, 'row.props.key')} />
 }
@@ -310,8 +293,6 @@ export interface AcmTableProps<T> {
   disabledItems?: T[]
   columns: IAcmTableColumn<T>[]
   keyFn: (item: T) => string
-  groupFn?: (item: T) => string | null
-  groupSummaryFn?: (items: T[]) => IRow
   customTableAction?: ReactNode
   tableActionButtons?: IAcmTableButtonAction[]
   tableActions?: IAcmTableAction<T>[]
@@ -348,8 +329,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     columns,
     addSubRows,
     keyFn,
-    groupFn,
-    groupSummaryFn,
     tableActions = [],
     rowActions = [],
     rowActionResolver,
@@ -413,7 +392,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [disabled, setDisabled] = useState<{ [uid: string]: boolean }>({})
   const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [expanded, setExpanded] = useState<{ [uid: string]: boolean }>({})
-  const [openGroups, setOpenGroups] = useState<{ [key: string]: boolean }>({})
   const [toolbarFilterIds, setToolbarFilterIds] = useState<{ [key: string]: string[] }>(initialFilters)
   const [internalSearch, setInternalSearch] = useState(search)
 
@@ -553,12 +531,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
-      const group = (groupFn && groupFn(item)) || undefined
       const subRows = addSubRows?.(item)
       // Establish key for subrow based on parent row
       subRows?.map((row, idx) => (row.props = { key: `${key}-subrow-${idx}` }))
 
-      const tableItem: ITableItem<T> = { item, subRows, key, group }
+      const tableItem: ITableItem<T> = { item, subRows, key }
       for (let i = 0; i < columns.length; i++) {
         const column = columns[i]
         if (column.search) {
@@ -571,8 +548,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: groupFn ? countGroups(tableItems) : tableItems.length }
-  }, [items, columns, addSubRows, keyFn, groupFn, filters, toolbarFilterIds])
+    return { tableItems, totalCount: tableItems.length }
+  }, [items, columns, addSubRows, keyFn, filters, toolbarFilterIds])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -592,17 +569,21 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         // TODO use FuseOptionKeyObject to allow for weights
       })
       const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
-      return { filtered, filteredCount: groupFn ? countGroups(filtered) : filtered.length }
+      return { filtered, filteredCount: filtered.length }
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [internalSearch, items, tableItems, totalCount, columns, groupFn])
+  }, [internalSearch, items, tableItems, totalCount, columns])
 
-  const sorted = useMemo<ITableItem<T>[]>(() => {
+  const { sorted, itemCount } = useMemo<{
+    sorted: ITableItem<T>[]
+    itemCount: number
+  }>(() => {
+    const sorted: ITableItem<T>[] = [...filtered]
     if (sort && sort.index !== undefined) {
       const compare = columns[sort.index].sort
-      const sorted: ITableItem<T>[] = [...filtered]
+
       /* istanbul ignore else */
       if (compare) {
         if (typeof compare === 'string') {
@@ -614,50 +595,20 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       if (sort.direction === SortByDirection.desc) {
         sorted.reverse()
       }
-      return sorted
-    } else {
-      return filtered
     }
+    return { sorted, itemCount: sorted.length }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, sort, columns])
-
-  const { grouped, itemCount } = useMemo<{
-    grouped: ITableItem<T>[]
-    itemCount: number
-  }>(() => {
-    if (groupFn) {
-      const grouped: ITableItem<T>[] = []
-      const groupSubItems: { [key: string]: T[] } = {}
-      sorted.forEach((tableItem) => {
-        const { group, item } = tableItem
-        if (group) {
-          tableItem.subItems = []
-          if (!groupSubItems[group]) {
-            groupSubItems[group] = tableItem.subItems
-            grouped.push(tableItem)
-          } else {
-            groupSubItems[group].push(item)
-          }
-        } else {
-          grouped.push(tableItem)
-        }
-      })
-      return { grouped, itemCount: grouped.length }
-    } else {
-      return { grouped: sorted, itemCount: sorted.length }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sorted, columns, groupFn])
 
   const actualPage = useMemo<number>(() => {
     const start = (page - 1) * perPage
     let actualPage = page
-    if (start >= grouped.length) {
-      actualPage = Math.max(1, Math.ceil(grouped.length / perPage))
+    if (start >= sorted.length) {
+      actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
     }
     return actualPage
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [grouped, page, perPage])
+  }, [sorted, page, perPage])
 
   useEffect(() => {
     if (page !== actualPage) {
@@ -668,8 +619,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const paged = useMemo<ITableItem<T>[]>(() => {
     const start = (actualPage - 1) * perPage
-    return grouped.slice(start, start + perPage)
-  }, [grouped, actualPage, perPage])
+    return sorted.slice(start, start + perPage)
+  }, [sorted, actualPage, perPage])
 
   const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
     const newRows: IRow[] = []
@@ -681,80 +632,27 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       })
     let addedSubRowCount = 0
     paged.forEach((tableItem, i) => {
-      const { item, key, group, subItems, subRows } = tableItem
-      let isOpen: boolean | undefined = undefined
-      if (group) {
-        // Only expandable if the next item is also part of the group
-        if (subItems!.length) {
-          isOpen = !!openGroups[group]
-        }
-      } else {
-        isOpen = expanded[key] ?? (subRows?.length ? false : undefined)
-      }
-      // if there will be a group summary, include first item with the sub items
-      const allSubItems =
-        (group && groupSummaryFn && subItems && subItems!.length && [item].concat(subItems)) || subItems
-      if (group && groupSummaryFn && allSubItems) {
-        // if there are no sub items, pass in single item
-        const groupSummary = groupSummaryFn(allSubItems.length ? allSubItems : [item])
-        newRows.push({
-          ...groupSummary,
-          isOpen,
-          selected: selected[key] === true,
-          disableSelection: disabled[key] === true,
-          props: { key: group, group },
-        })
-      } else {
-        newRows.push({
-          isOpen,
-          selected: selected[key] === true,
-          props: { key, group },
-          disableSelection: disabled[key] === true,
-          cells: itemToCells(item, key),
-        })
-      }
-      if (allSubItems) {
-        allSubItems.forEach((subItem, idx) => {
-          // Establish key for subrow based on parent row
-          const subKey = `${tableItem.key}-subrow-${idx}`
-          newRows.push({
-            parent: i + addedSubRowCount,
-            props: { key: subKey },
-            cells: itemToCells(subItem, subKey),
-          })
-        })
-        addedSubRowCount += allSubItems.length
-      } else if (subRows) {
+      const { item, key, subRows } = tableItem
+      const isOpen = expanded[key] ?? (subRows?.length ? false : undefined)
+
+      newRows.push({
+        isOpen,
+        selected: selected[key] === true,
+        props: { key },
+        disableSelection: disabled[key] === true,
+        cells: itemToCells(item, key),
+      })
+      if (subRows) {
         subRows.forEach((subRow) => newRows.push({ ...subRow, parent: i + addedSubRowCount }))
         addedSubRowCount += subRows.length
       }
     })
     return { rows: newRows, addedSubRowCount }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, paged, columns, expanded, openGroups, keyFn])
+  }, [selected, paged, columns, expanded, keyFn])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
-    if (groupFn && addedSubRowCount) {
-      return (_event, rowIndex, isOpen) => {
-        /* istanbul ignore next */
-        if (!rows[rowIndex] && isOpen) {
-          // Open all
-          let tempOpenGrouops = {}
-          rows.forEach((_, idx) => {
-            const rowKey = rows[idx]?.props?.group.toString()
-            tempOpenGrouops = rowKey ? { ...tempOpenGrouops, [rowKey]: true } : tempOpenGrouops
-          })
-          setOpenGroups(tempOpenGrouops)
-        } else if (!rows[rowIndex] && !isOpen) {
-          // Close all
-          setOpenGroups({})
-        } else if (rows[rowIndex]) {
-          // Open/close single row
-          const rowKey = rows[rowIndex].props.group.toString()
-          setOpenGroups({ ...expanded, [rowKey]: isOpen })
-        }
-      }
-    } else if (addSubRows && addedSubRowCount) {
+    if (addSubRows && addedSubRowCount) {
       return (_event, rowIndex, isOpen) => {
         /* istanbul ignore next */
         if (!rows[rowIndex] && isOpen) {
@@ -777,7 +675,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
     return undefined
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, addedSubRowCount, openGroups, setOpenGroups, expanded, setExpanded, groupFn, addSubRows])
+  }, [rows, addedSubRowCount, expanded, setExpanded, addSubRows])
 
   // Compensate for PF auto-added columns
   // sort state always contains the data index
@@ -919,7 +817,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           onClick: action.isDisabled
             ? undefined
             : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
-                if (groupFn || addSubRows) {
+                if (addSubRows) {
                   const tableItem = rowData.props?.key && paged.find((tableItem) => tableItem.key === rowData.props.key)
                   if (tableItem) {
                     action.click(tableItem.item)
@@ -935,7 +833,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           title: action.title,
           isAriaDisabled: action.isDisabled ? true : false,
           onClick: (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
-            if (groupFn || addSubRows) {
+            if (addSubRows) {
               const tableItem = rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
               if (tableItem) {
                 action.click(tableItem.item)
@@ -964,7 +862,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   if (rowActionResolver) {
     actionResolver = (rowData: IRowData, extraData: IExtraData) => {
       let tableItem
-      if (groupFn || addSubRows) {
+      if (addSubRows) {
         tableItem = rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
       } else {
         tableItem = paged[extraData.rowIndex!]

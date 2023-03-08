@@ -42,7 +42,6 @@ export default {
     'Include rowActions': { control: { type: 'boolean' }, defaultValue: false },
     'Include rowActionResolver': { control: { type: 'boolean' }, defaultValue: true },
     'Include extraToolbarControls': { control: { type: 'boolean' }, defaultValue: true },
-    'Use groupSummaryFn': { control: { type: 'boolean' }, defaultValue: false },
     gridBreakPoint: {
       options: ['dynamic', ...Object.values(TableGridBreakpoint)],
       control: {
@@ -57,8 +56,6 @@ export default {
     initialSelectedItems: hidden,
     columns: hidden,
     keyFn: hidden,
-    groupFn: hidden,
-    groupSummaryFn: hidden,
     tableActions: hidden,
     rowActions: hidden,
     rowActionResolver: hidden,
@@ -157,67 +154,6 @@ export function TableExpandable(args: Record<string, unknown>) {
         </PageSection>
       </AcmPageContent>
     </AcmPage>
-  )
-}
-export function TableGrouped(args: Record<string, unknown>) {
-  return (
-    <AcmPage header={<AcmPageHeader title="AcmTable with expandable row" />}>
-      <AcmPageContent id="table">
-        <PageSection>
-          <TableGroupedStory {...args} />
-        </PageSection>
-      </AcmPageContent>
-    </AcmPage>
-  )
-}
-
-function TableGroupedStory(args: Record<string, unknown>) {
-  const [items, setItems] = useState<IExampleData[]>(exampleData.slice(0, 105))
-  return (
-    <AcmTable<IExampleData>
-      items={items}
-      columns={columns}
-      keyFn={(item: IExampleData) => item.uid.toString()}
-      groupFn={(item: IExampleData) => {
-        const provider = getProviderForItem(item)
-        return provider !== Provider.other ? provider : null
-      }}
-      groupSummaryFn={
-        args['Use groupSummaryFn']
-          ? (items: IExampleData[]) => {
-              if (items.length > 1) {
-                return {
-                  cells: [
-                    {
-                      title: `${items.length} addresses`,
-                      props: {
-                        colSpan: 6,
-                      },
-                    },
-                    { title: <AcmInlineProvider provider={getProviderForItem(items[0])} /> },
-                    { title: '' },
-                  ],
-                }
-              } else {
-                const { firstName, last_name, email, gender, ip_address, uid } = items[0]
-                return {
-                  cells: [
-                    firstName,
-                    last_name,
-                    email,
-                    gender,
-                    ip_address,
-                    uid,
-                    { title: <AcmInlineProvider provider={getProviderForItem(items[0])} /> },
-                    { title: getAcmInlineStatusForItem(items[0]) },
-                  ],
-                }
-              }
-            }
-          : undefined
-      }
-      {...commonProperties(args, (items) => setItems(items), items)}
-    />
   )
 }
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ButtonVariant, ToggleGroup, ToggleGroupItem, TooltipPosition } from '@patternfly/react-core'
-import { fitContent, IRow, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
@@ -44,8 +44,6 @@ describe('AcmTable', () => {
       searchPlaceholder?: string
       useSearch?: boolean
       transforms?: boolean
-      groupFn?: (item: IExampleData) => string | null
-      groupSummaryFn?: (items: IExampleData[]) => IRow
       gridBreakPoint?: TableGridBreakpoint
       useCustomTableAction?: boolean
     } & Partial<AcmTableProps<IExampleData>>
@@ -817,55 +815,6 @@ describe('AcmTable', () => {
     expect(getByText('Delete item tooltip')).toBeVisible()
     userEvent.click(getByText('Delete item tooltip'))
     expect(expandedDeleteAction).not.toHaveBeenCalled()
-  })
-  test('renders with grouping', () => {
-    const { getAllByLabelText, getByPlaceholderText, getByRole, getByTestId, getByText } = render(
-      // Group some items by name, some by gender, and some not at all to test single-item groups,
-      // multiple-item groups, and ungrouped items
-      <Table groupFn={(item) => (item.uid < 25 ? item.firstName : item.uid < 50 ? null : item.gender)} />
-    )
-    userEvent.click(getByTestId('expandable-toggle0'))
-    // search for 'Male'
-    expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), 'Male')
-
-    // Run delete action for code coverage
-    userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByRole('menu')).toBeVisible()
-    expect(getByText('Delete item')).toBeVisible()
-    userEvent.click(getByText('Delete item'))
-  })
-  test('renders with grouping', () => {
-    const { getAllByLabelText, getByPlaceholderText, getByRole, getByTestId, getByText } = render(
-      // Group some items by name, some by gender, and some not at all to test single-item groups,
-      // multiple-item groups, and ungrouped items
-      <Table groupFn={(item) => (item.uid < 25 ? item.firstName : item.uid < 50 ? null : item.gender)} />
-    )
-    userEvent.click(getByTestId('expandable-toggle0'))
-    // search for 'Female'
-    expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), 'Female')
-
-    // Run tooltipped action for code coverage
-    userEvent.click(getAllByLabelText('Actions')[2])
-    expect(getByRole('menu')).toBeVisible()
-    expect(getByText('Tooltipped delete item')).toBeVisible()
-    userEvent.click(getByText('Tooltipped delete item'))
-    expect(deleteAction).toHaveBeenCalled()
-  })
-  test('renders with grouping and summary', () => {
-    const { getByTestId } = render(
-      // Group some items by name, some by gender, and some not at all to test single-item groups,
-      // multiple-item groups, and ungrouped items
-      <Table
-        noBorders
-        groupFn={(item) => (item.uid < 25 ? item.firstName : item.uid < 50 ? null : item.gender)}
-        groupSummaryFn={(items) => {
-          return { cells: [{ title: `${items.length} items`, props: { colSpan: 8 } }] }
-        }}
-      />
-    )
-    userEvent.click(getByTestId('expandable-toggle0'))
   })
 
   test('renders with filtering and filters options work correctly', () => {
