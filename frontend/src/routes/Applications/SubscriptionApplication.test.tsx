@@ -11,6 +11,9 @@ import {
   Channel,
   ChannelApiVersion,
   ChannelKind,
+  ManagedClusterSetBinding,
+  ManagedClusterSetBindingApiVersion,
+  ManagedClusterSetBindingKind,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
@@ -34,11 +37,20 @@ import {
   SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState, channelsState, namespacesState, secretsState } from '../../atoms'
-import { clickByTestId, clickByText, typeByTestId, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
+import { applicationsState, channelsState, managedClusterSetsState, namespacesState, secretsState } from '../../atoms'
+import {
+  clickBySelector,
+  clickByTestId,
+  clickByText,
+  typeByTestId,
+  waitForNock,
+  waitForNocks,
+  waitForText,
+} from '../../lib/test-util'
 import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
+import { mockGlobalClusterSet } from '../../lib/test-metadata'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 
@@ -105,6 +117,32 @@ const mockSubscription: Subscription = {
     placement: {
       placementRef: {
         kind: 'PlacementRule',
+        name: 'application-0-placement-1',
+      },
+    },
+  },
+}
+
+const mockSubscriptionWithPlacement: Subscription = {
+  apiVersion: SubscriptionApiVersion,
+  kind: SubscriptionKind,
+  metadata: {
+    annotations: {
+      'apps.open-cluster-management.io/git-branch': 'test-branch',
+      'apps.open-cluster-management.io/git-path': 'test-path',
+      'apps.open-cluster-management.io/reconcile-option': 'merge',
+    },
+    labels: {
+      app: 'application-0',
+    },
+    name: 'application-0-subscription-1',
+    namespace: 'namespace-0',
+  },
+  spec: {
+    channel: 'ginvalidcom-ns/ginvalidcom',
+    placement: {
+      placementRef: {
+        kind: 'Placement',
         name: 'application-0-placement-1',
       },
     },
@@ -250,6 +288,48 @@ const mockChannelProject: Project = {
   },
 }
 
+const mockCreatePlacement: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: {
+    labels: {
+      app: 'application-0',
+    },
+    name: 'application-0-placement-1',
+    namespace: 'namespace-0',
+  },
+  spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'In',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
+    clusterSets: ['global'],
+  },
+}
+
+const nockCreateManagedclustersetbindings: ManagedClusterSetBinding = {
+  apiVersion: ManagedClusterSetBindingApiVersion,
+  kind: ManagedClusterSetBindingKind,
+  metadata: {
+    namespace: 'namespace-0',
+    name: 'global',
+  },
+  spec: {
+    clusterSet: 'global',
+  },
+}
+
 const mockPlacement: Placement = {
   apiVersion: PlacementApiVersionBeta,
   kind: PlacementKind,
@@ -297,7 +377,6 @@ const mockNamespace1: Namespace = {
 }
 
 const mockProjects = [mockProject, mockProject2, mockChannelProject]
-
 const mockPlacements = [mockPlacement]
 const mockPlacementRules = [mockPlacementRule]
 const mockNamespaces = [mockNamespace0, mockNamespace1]
@@ -324,6 +403,7 @@ describe('Create Subscription Application page', () => {
         initializeState={(snapshot) => {
           snapshot.set(secretsState, mockSecrets)
           snapshot.set(namespacesState, mockNamespaces)
+          snapshot.set(managedClusterSetsState, [mockGlobalClusterSet])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
@@ -354,7 +434,57 @@ describe('Create Subscription Application page', () => {
     expect(window.location.pathname).toEqual('/')
   })
 
-  test('create a git subscription app', async () => {
+  test('create a git subscription app using placement', async () => {
+    const initialNocks = [nockList(mockProject, mockProjects)]
+    window.scrollBy = () => {}
+    const { container } = render(<Component />)
+    await waitForNocks(initialNocks)
+    await waitForText('Create application', true)
+    // fill the form
+    await typeByTestId('eman', mockApplication0.metadata.name!)
+    await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
+    // click git card
+    userEvent.click(screen.getByText(/channel\.type\.git/i))
+    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
+    const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+    userEvent.type(githubURL, gitLink)
+    userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
+    userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+
+    // create placement
+    await clickBySelector(container, '#clusterSelector-checkbox-clusterSelector')
+    userEvent.click(screen.getByPlaceholderText(/select the cluster sets/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /global/i,
+      })
+    )
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /clusterselector\.label\.field\.ui/i,
+      }),
+      'name'
+    )
+    userEvent.type(screen.getByRole('textbox', { name: /clusterselector\.value\.field\.ui/i }), 'local-cluster')
+
+    // screen.logTestingPlaygroundURL()
+
+    await clickByTestId('create-button-portal-id-btn')
+    await waitForNocks([
+      nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
+      nockCreate(mockChannel, undefined, 201, { dryRun: 'All' }),
+      nockCreate(mockSubscriptionWithPlacement, undefined, 201, { dryRun: 'All' }),
+      nockCreate(mockCreatePlacement, undefined, 201, { dryRun: 'All' }),
+      nockCreate(nockCreateManagedclustersetbindings, undefined, 201, { dryRun: 'All' }),
+      nockCreate(nockApplication, undefined, 201),
+      nockCreate(mockChannel, undefined, 201),
+      nockCreate(mockCreatePlacement, undefined, 201),
+      nockCreate(mockSubscriptionWithPlacement, undefined, 201),
+      nockCreate(nockCreateManagedclustersetbindings, undefined, 201),
+    ])
+  })
+
+  test('create a git subscription app using placementrule', async () => {
     const initialNocks = [nockList(mockProject, mockProjects)]
     window.scrollBy = () => {}
     render(<Component />)
