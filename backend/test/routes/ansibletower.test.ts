@@ -29,12 +29,18 @@ describe(`ansibletower Route`, function () {
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 
-  it.only(`when bad things happen to Ansible TowerJobs 2`, async function () {
+  it(`when bad things happen to Ansible TowerJobs 2`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
       token: '12345',
     })
+    expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
+  })
+
+  it(`when bad things happen to Ansible TowerJobs 3`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(400)
+    const res = await request('POST', '/ansibletower')
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 })
