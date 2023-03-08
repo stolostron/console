@@ -16,6 +16,7 @@ import {
   getAge,
   getAppChildResources,
   getAppSetRelatedResources,
+  getClusterCountSearchLink,
   getClusterCountString,
   getEditLink,
   getResourceLabel,
@@ -279,5 +280,40 @@ describe('getAppChildResources', () => {
 describe('getAppSetRelatedResources', () => {
   it('should get the related placement info', () => {
     expect(getAppSetRelatedResources(mockApplicationSet0, mockApplicationSets)).toEqual(['fengappset2-placement', []])
+describe('getClusterCountSearchLink', () => {
+  const resource = {
+    apiVersion: 'apps/v1',
+    kind: 'StatefulSet',
+    label:
+      'app.kubernetes.io/component=application-controller; app.kubernetes.io/managed-by=openshift-gitops; app.kubernetes.io/name=openshift-gitops-application-controller; app.kubernetes.io/part-of=argocd',
+    metadata: {
+      name: 'argocd',
+      namespace: 'openshift-gitops',
+      creationTimestamp: '2023-03-06T20:40:14Z',
+    },
+    status: {
+      cluster: 'local-cluster',
+      resourceName: 'openshift-gitops-application-controller',
+    },
+    transformed: {
+      clusterCount: 'local-cluster',
+      resourceText: '',
+      createdText: 'a day ago',
+      timeWindow: '',
+      namespace: 'openshift-gitops',
+    },
+  }
+
+  const clusterCount = {
+    localPlacement: true,
+    remoteCount: 0,
+  }
+
+  const clusterList = ['local-cluster']
+
+  it('should generate link', () => {
+    expect(getClusterCountSearchLink(resource, clusterCount, clusterList)).toEqual(
+      '/multicloud/infrastructure/clusters/details/local-cluster/local-cluster'
+    )
   })
 })
