@@ -19,6 +19,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import {
   ClosedDeleteModalProps,
@@ -146,6 +147,8 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
+  const { useSearchQueryLimit } = useSharedAtoms()
+  const searchQueryLimit = useSearchQueryLimit()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
@@ -214,7 +217,7 @@ export default function SearchResults(props: {
       />
       <PageSection style={{ paddingTop: '0' }}>
         <Stack hasGutter>
-          {searchResultItems.length >= 1000 ? (
+          {searchResultItems.length >= searchQueryLimit ? (
             <AcmAlert
               noClose={true}
               variant={'warning'}
