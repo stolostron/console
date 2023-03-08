@@ -3,13 +3,12 @@
 import { AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
-  ClusterStatus,
   createResource,
   IRequestResult,
   patchResource,
@@ -18,6 +17,7 @@ import {
 } from '../../../../../resources'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -33,9 +33,7 @@ const compareVersion = (a: string, b: string) => {
 }
 
 const isUpgradeable = (c: Cluster) => {
-  const hasAvailableUpgrades = c.distribution?.upgradeInfo?.isReadyUpdates
-  const isReady = c.status === ClusterStatus.ready
-  return (!!c.name && isReady && hasAvailableUpgrades) || false
+  return clusterSupportsAction(c, ClusterAction.Upgrade)
 }
 
 // setLatestVersions will set a cluster with latest version
@@ -76,7 +74,7 @@ export function BatchUpgradeModal(props: {
   }, [props.clusters, props.open])
 
   return (
-    <BulkActionModel<Cluster>
+    <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.upgrade')}
       plural={t('bulk.plural.upgrade')}

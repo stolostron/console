@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
@@ -20,7 +20,7 @@ export function PolicyActionDropdown(props: {
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
   const { item, setModal } = props
@@ -267,7 +267,7 @@ export function PolicyActionDropdown(props: {
 
   return (
     <>
-      <BulkActionModel<PolicyTableItem> {...modalProps} />
+      <BulkActionModal<PolicyTableItem> {...modalProps} />
       {actions && actions.length > 0 && (
         <RbacDropdown<PolicyTableItem>
           id={`${item.policy.metadata.name}-actions`}

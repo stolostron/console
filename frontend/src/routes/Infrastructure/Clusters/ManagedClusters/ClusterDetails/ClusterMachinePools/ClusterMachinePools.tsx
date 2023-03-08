@@ -12,7 +12,7 @@ import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../../components/Rbac'
 import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
@@ -34,7 +34,7 @@ export function MachinePoolsTable() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { machinePoolsState } = useSharedAtoms()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<MachinePool> | { open: false }>({
     open: false,
   })
   const [scaleMachinePool, setScaleMachinePool] = useState<ScaleMachinePoolModalProps | undefined>()
@@ -218,7 +218,7 @@ export function MachinePoolsTable() {
   return (
     <>
       <ScaleClusterAlert />
-      <BulkActionModel<MachinePool> {...modalProps} />
+      <BulkActionModal<MachinePool> {...modalProps} />
       <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
       <AcmTable<MachinePool>
         plural="machinepools"

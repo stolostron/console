@@ -26,7 +26,7 @@ import {
 import { useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
@@ -95,7 +95,7 @@ export function ClusterSetSubmarinerPageContent() {
   const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
   const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
   const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterAddOn> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterAddOn> | { open: false }>({
     open: false,
   })
   const [editSubmarinerConfigModalProps, setEditSubmarinerConfigModalProps] = useState<EditSubmarinerConfigModalProps>(
@@ -223,7 +223,7 @@ export function ClusterSetSubmarinerPageContent() {
     <AcmPageContent id="clusters">
       <PageSection>
         <EditSubmarinerConfigModal {...editSubmarinerConfigModalProps} />
-        <BulkActionModel<ManagedClusterAddOn> {...modalProps} />
+        <BulkActionModal<ManagedClusterAddOn> {...modalProps} />
         <Stack hasGutter>
           <StackItem>
             <AcmExpandableCard title={t('multi-cluster.networking')} id="submariner-info">

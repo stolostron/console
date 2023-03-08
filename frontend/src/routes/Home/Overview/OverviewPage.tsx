@@ -99,10 +99,6 @@ function getClusterSummary(
               prev.addons.progress.count = prev.addons.progress.count + 1
               prev.addons.progress.clusters.add(curr.name)
               break
-            case AddonStatus.Disabled:
-              prev.addons.pending.count = prev.addons.pending.count + 1
-              prev.addons.pending.clusters.add(curr.name)
-              break
             default:
               prev.addons.unknown.count = prev.addons.unknown.count + 1
               prev.addons.unknown.clusters.add(curr.name)
@@ -333,7 +329,7 @@ export default function OverviewPage() {
   }, [policyReports, selectedClusterNames, clusters])
 
   const { kubernetesTypes, regions, ready, offline, addons, providers } = summaryData
-  const { healthy, danger, progress, pending, unknown } = addons
+  const { healthy, danger, progress, unknown } = addons
   const provider = providers.find((p: any) => p.provider === selectedCloud)
   const cloudLabelFilter: string =
     selectedCloud === ''
@@ -483,11 +479,6 @@ export default function OverviewPage() {
         link: buildClusterAddonLinks(AddonStatus.Progressing),
       },
       {
-        key: t('Pending'),
-        value: pending.count,
-        link: buildClusterAddonLinks(AddonStatus.Disabled),
-      },
-      {
         key: t('Unknown'),
         value: unknown.count,
         link: buildClusterAddonLinks(AddonStatus.Unknown),
@@ -499,7 +490,7 @@ export default function OverviewPage() {
         link: buildClusterAddonLinks(AddonStatus.Available),
       },
     ]
-  }, [healthy, danger, progress, pending, unknown, t])
+  }, [healthy, danger, progress, unknown, t])
 
   const policyReportData = useMemo(() => {
     return [
@@ -607,7 +598,7 @@ export default function OverviewPage() {
                   description={t('Overview of cluster add-ons')}
                   loading={!clusterAddonData}
                   data={clusterAddonData}
-                  colorScale={colorThemes.criticalLowImportantUnknownSuccess}
+                  colorScale={colorThemes.criticalLowUnknownSuccess}
                 />
               </AcmMasonry>
             </Stack>

@@ -32,10 +32,14 @@ const nocked = (args: string | RegExp | Url, options?: nock.Options | undefined)
   const stack = StackTrace.getSync()
   const scope = nock(args, options)
   if (window.pendingNocks) {
+    let stackIndex = 1
+    while (stackIndex < stack.length + 1 && stack[stackIndex + 1].getSource().indexOf('nock-util.ts') >= 0) {
+      stackIndex++
+    }
     window.pendingNocks.push({
       scope,
-      nock: stack[1].getFunctionName(),
-      source: stack[2].getSource(),
+      nock: stack[stackIndex].getFunctionName(),
+      source: stack[stackIndex + 1].getSource(),
     })
   }
   return scope

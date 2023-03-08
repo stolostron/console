@@ -23,7 +23,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
@@ -57,6 +57,7 @@ import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
+import { ClusterAction, clusterSupportsAction } from './utils/cluster-actions'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -193,7 +194,7 @@ export function ClustersTable(props: {
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
 
@@ -258,8 +259,7 @@ export function ClustersTable(props: {
         title: t('managed.upgrade.plural'),
         click: (managedClusters: Array<Cluster>) => {
           if (!managedClusters) return
-          const managedClustersNoHypershift = managedClusters.filter((mc) => !mc.isHostedCluster)
-          setUpgradeClusters(managedClustersNoHypershift)
+          setUpgradeClusters(managedClusters)
         },
         variant: 'bulk-action',
       },
@@ -291,7 +291,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.hibernate'),
             action: t('hibernate'),
             processing: t('hibernating'),
-            resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
             description: t('bulk.message.hibernate'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -326,7 +326,7 @@ export function ClustersTable(props: {
             title: t('bulk.title.resume'),
             action: t('resume'),
             processing: t('resuming'),
-            resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
             description: t('bulk.message.resume'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -363,7 +363,7 @@ export function ClustersTable(props: {
             action: t('detach'),
             plural: t('detachable clusters'),
             processing: t('detaching'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
             description: t('bulk.message.detach'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -387,7 +387,11 @@ export function ClustersTable(props: {
             action: t('destroy'),
             processing: t('destroying'),
             plural: t('destroyable clusters'),
-            resources: clusters.filter((cluster) => !cluster.isHostedCluster),
+            resources: clusters.filter(
+              (cluster) =>
+                clusterSupportsAction(cluster, ClusterAction.Destroy) ||
+                clusterSupportsAction(cluster, ClusterAction.Detach)
+            ),
             description: t('bulk.message.destroy'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -440,8 +444,8 @@ export function ClustersTable(props: {
             value: status,
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) => {
-          for (const value of selectedValues) {
+        tableFilterFn: (selectedValues, cluster) =>
+          selectedValues.some((value) => {
             switch (value) {
               case StatusType.healthy:
                 return !!cluster.nodes?.ready
@@ -452,9 +456,7 @@ export function ClustersTable(props: {
               default:
                 return false
             }
-          }
-          return false
-        },
+          }),
       },
       {
         id: 'add-ons',
@@ -465,15 +467,13 @@ export function ClustersTable(props: {
             value: status,
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues, cluster) => {
-          for (const value of selectedValues) {
+        tableFilterFn: (selectedValues, cluster) =>
+          selectedValues.some((value) => {
             switch (value) {
               case AddonStatus.Available:
                 return !!cluster.addons?.available
               case AddonStatus.Degraded:
                 return !!cluster.addons?.degraded
-              case AddonStatus.Disabled:
-                return false
               case AddonStatus.Progressing:
                 return !!cluster.addons?.progressing
               case AddonStatus.Unknown:
@@ -481,16 +481,14 @@ export function ClustersTable(props: {
               default:
                 return false
             }
-          }
-          return false
-        },
+          }),
       },
     ]
   }, [t])
 
   return (
     <Fragment>
-      <BulkActionModel<Cluster> {...modalProps} />
+      <BulkActionModal<Cluster> {...modalProps} />
       <UpdateAutomationModal
         clusters={updateAutomationTemplates}
         open={!!updateAutomationTemplates}

@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider, Provider } from '../../../../../ui-components'
+import { AcmInlineProvider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
@@ -31,122 +31,7 @@ import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
-
-/**
- * Function to return cluster actions available to a cluster
- * @param cluster
- */
-export function getClusterActions(cluster: Cluster) {
-  let actionIds = [
-    'edit-labels',
-    'upgrade-cluster',
-    'select-channel',
-    'search-cluster',
-    'import-cluster',
-    'hibernate-cluster',
-    'resume-cluster',
-    'detach-cluster',
-    'destroy-cluster',
-    'ai-edit',
-    'ai-scale-up',
-    'destroy-hypershift-cluster',
-    'update-automation-template',
-  ]
-
-  // ClusterCurator
-  if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
-    const disabledPreHookActions = [
-      'upgrade-cluster',
-      'select-channel',
-      'search-cluster',
-      'import-cluster',
-      'hibernate-cluster',
-      'resume-cluster',
-      'detach-cluster',
-    ]
-    actionIds = actionIds.filter((id) => !disabledPreHookActions.includes(id))
-  }
-
-  if (cluster.status === ClusterStatus.importfailed) {
-    const disabledImportFailedActions = [
-      'upgrade-cluster',
-      'select-channel',
-      'search-cluster',
-      'import-cluster',
-      'detach-cluster',
-    ]
-    actionIds = actionIds.filter((id) => !disabledImportFailedActions.includes(id))
-  }
-
-  if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
-    const disabledHibernationActions = [
-      'upgrade-cluster',
-      'select-channel',
-      'search-cluster',
-      'hibernate-cluster',
-      'import-cluster',
-      'detach-cluster',
-    ]
-    actionIds = actionIds.filter((id) => !disabledHibernationActions.includes(id))
-  }
-
-  if (cluster.status !== ClusterStatus.hibernating) {
-    actionIds = actionIds.filter((id) => id !== 'resume-cluster')
-  }
-
-  if (!cluster.hive.isHibernatable) {
-    actionIds = actionIds.filter((id) => id !== 'hibernate-cluster')
-  }
-
-  if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
-    actionIds = actionIds.filter((id) => id !== 'upgrade-cluster')
-  }
-
-  if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
-    actionIds = actionIds.filter((id) => id !== 'select-channel')
-  }
-
-  if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-    actionIds = actionIds.filter((id) => id !== 'edit-labels')
-    actionIds = actionIds.filter((id) => id !== 'search-cluster')
-  }
-
-  if (cluster.status !== ClusterStatus.detached) {
-    actionIds = actionIds.filter((id) => id !== 'import-cluster')
-  }
-
-  if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-    actionIds = actionIds.filter((id) => id !== 'detach-cluster')
-  }
-
-  if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
-    actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
-  }
-
-  if (!cluster.isHypershift || !cluster.hypershift?.agent || cluster.status === ClusterStatus.destroying) {
-    actionIds = actionIds.filter((id) => id !== 'destroy-hypershift-cluster')
-  }
-
-  if (cluster.provider !== Provider.hostinventory || cluster.isHypershift) {
-    actionIds = actionIds.filter((id) => id !== 'ai-edit')
-  }
-
-  if (
-    !(
-      cluster.provider === Provider.hostinventory &&
-      !cluster.isHypershift &&
-      [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
-    )
-  ) {
-    actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
-  }
-
-  // Remove "Update automation template" for hosted clusters
-  if (cluster.isHostedCluster) {
-    actionIds = actionIds.filter((id) => id !== 'update-automation-template')
-  }
-  return actionIds
-}
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -157,7 +42,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
@@ -212,264 +97,266 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
   }
 
-  let actions = useMemo(
-    () => [
-      {
-        id: 'update-automation-template',
-        text: t('Update automation template'),
-        click: () => setShowUpdateAutomationModal(true),
-        isAriaDisabled: true,
-        rbac: [
-          rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-          rbacPatch(SecretDefinition, cluster.namespace),
-          rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-          rbacCreate(SecretDefinition, cluster.namespace),
-        ],
-      },
-      {
-        id: 'edit-labels',
-        text: t('managed.editLabels'),
-        click: () => setShowEditLabels(true),
-        isAriaDisabled: true,
-        rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
-      },
-      {
-        id: 'upgrade-cluster',
-        text: t('managed.upgrade'),
-        click: () => setShowUpgradeModal(true),
-        isAriaDisabled: true,
-        rbac: [
-          rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-          rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-        ],
-      },
-      {
-        id: 'select-channel',
-        text: t('managed.selectChannel'),
-        click: () => setShowChannelSelectModal(true),
-        isAriaDisabled: true,
-        rbac: [
-          rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-          rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-        ],
-      },
-      ...(isSearchAvailable
-        ? [
-            {
-              id: 'search-cluster',
-              text: t('managed.search'),
-              click: (cluster: Cluster) =>
-                window.location.assign(`${NavigationPath.search}?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
-            },
-          ]
-        : []),
-      {
-        id: 'import-cluster',
-        text: t('managed.import'),
-        click: (cluster: Cluster) => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.import'),
-            action: t('import'),
-            processing: t('importing'),
-            resources: [cluster],
-            close: () => {
-              setModalProps({ open: false })
-            },
-            description: t('bulk.message.import'),
-            columns: [
+  const actions = useMemo(
+    () =>
+      [
+        {
+          id: ClusterAction.UpdateAutomationTemplate,
+          text: t('Update automation template'),
+          click: () => setShowUpdateAutomationModal(true),
+          isAriaDisabled: true,
+          rbac: [
+            rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+            rbacPatch(SecretDefinition, cluster.namespace),
+            rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+            rbacCreate(SecretDefinition, cluster.namespace),
+          ],
+        },
+        {
+          id: ClusterAction.EditLabels,
+          text: t('managed.editLabels'),
+          click: () => setShowEditLabels(true),
+          isAriaDisabled: true,
+          rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
+        },
+        {
+          id: ClusterAction.Upgrade,
+          text: t('managed.upgrade'),
+          click: () => setShowUpgradeModal(true),
+          isAriaDisabled: true,
+          rbac: [
+            rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+            rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+          ],
+        },
+        {
+          id: ClusterAction.SelectChannel,
+          text: t('managed.selectChannel'),
+          click: () => setShowChannelSelectModal(true),
+          isAriaDisabled: true,
+          rbac: [
+            rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+            rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+          ],
+        },
+        ...(isSearchAvailable
+          ? [
               {
-                header: t('upgrade.table.name'),
-                sort: 'displayName',
-                cell: (cluster) => (
-                  <>
-                    <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
-                    {cluster.hive.clusterClaimName && (
-                      <TextContent>
-                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                      </TextContent>
-                    )}
-                  </>
-                ),
+                id: ClusterAction.Search,
+                text: t('managed.search'),
+                click: (cluster: Cluster) =>
+                  window.location.assign(
+                    `${NavigationPath.search}?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                  ),
               },
-              {
-                header: t('table.provider'),
-                sort: 'provider',
-                cell: (cluster: Cluster) =>
-                  cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            ]
+          : []),
+        {
+          id: ClusterAction.Import,
+          text: t('managed.import'),
+          click: (cluster: Cluster) => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.import'),
+              action: t('import'),
+              processing: t('importing'),
+              resources: [cluster],
+              close: () => {
+                setModalProps({ open: false })
               },
-            ],
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
-          })
-        },
-        rbac: [rbacCreate(ManagedClusterDefinition)],
-      },
-      {
-        id: 'hibernate-cluster',
-        text: t('managed.hibernate'),
-        click: () => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.hibernate'),
-            action: t('hibernate'),
-            processing: t('hibernating'),
-            resources: [cluster],
-            description: t('bulk.message.hibernate'),
-            columns: modalColumns,
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => {
-              return patchResource(
+              description: t('bulk.message.import'),
+              columns: [
                 {
-                  apiVersion: ClusterDeploymentDefinition.apiVersion,
-                  kind: ClusterDeploymentDefinition.kind,
-                  metadata: {
-                    name: cluster.name!,
-                    namespace: cluster.namespace!,
-                  },
-                } as ClusterDeployment,
-                [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
-              )
-            },
-            close: () => {
-              setModalProps({ open: false })
-            },
-          })
-        },
-        isAriaDisabled: true,
-        rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-      },
-      {
-        id: 'resume-cluster',
-        text: t('managed.resume'),
-        click: () => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.resume'),
-            action: t('resume'),
-            processing: t('resuming'),
-            resources: [cluster],
-            description: t('bulk.message.resume'),
-            columns: modalColumns,
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => {
-              return patchResource(
+                  header: t('upgrade.table.name'),
+                  sort: 'displayName',
+                  cell: (cluster) => (
+                    <>
+                      <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                      {cluster.hive.clusterClaimName && (
+                        <TextContent>
+                          <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                        </TextContent>
+                      )}
+                    </>
+                  ),
+                },
                 {
-                  apiVersion: ClusterDeploymentDefinition.apiVersion,
-                  kind: ClusterDeploymentDefinition.kind,
-                  metadata: {
-                    name: cluster.name!,
-                    namespace: cluster.namespace!,
-                  },
-                } as ClusterDeployment,
-                [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
-              )
-            },
-            close: () => {
-              setModalProps({ open: false })
-            },
-          })
+                  header: t('table.provider'),
+                  sort: 'provider',
+                  cell: (cluster: Cluster) =>
+                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                },
+              ],
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
+            })
+          },
+          rbac: [rbacCreate(ManagedClusterDefinition)],
         },
-        isAriaDisabled: true,
-        rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-      },
-      {
-        id: 'detach-cluster',
-        text: t('managed.detach'),
-        click: (cluster: Cluster) => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.detach'),
-            action: t('detach'),
-            processing: t('detaching'),
-            resources: [cluster],
-            description: t('bulk.message.detach'),
-            columns: modalColumns,
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => detachCluster(cluster),
-            close: () => {
-              setModalProps({ open: false })
-            },
-            isDanger: true,
-            icon: 'warning',
-            confirmText: cluster.displayName,
-            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-          })
+        {
+          id: ClusterAction.Hibernate,
+          text: t('managed.hibernate'),
+          click: () => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.hibernate'),
+              action: t('hibernate'),
+              processing: t('hibernating'),
+              resources: [cluster],
+              description: t('bulk.message.hibernate'),
+              columns: modalColumns,
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster) => {
+                return patchResource(
+                  {
+                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                    kind: ClusterDeploymentDefinition.kind,
+                    metadata: {
+                      name: cluster.name!,
+                      namespace: cluster.namespace!,
+                    },
+                  } as ClusterDeployment,
+                  [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                )
+              },
+              close: () => {
+                setModalProps({ open: false })
+              },
+            })
+          },
+          isAriaDisabled: true,
+          rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
-        isAriaDisabled: true,
-        rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
-      },
-      {
-        id: 'destroy-cluster',
-        text: t('managed.destroy'),
-        click: (cluster: Cluster) => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.destroy'),
-            action: t('destroy'),
-            processing: t('destroying'),
-            resources: [cluster],
-            description: t('bulk.message.destroy'),
-            columns: modalColumns,
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => deleteCluster(cluster),
-            close: () => {
-              setModalProps({ open: false })
-            },
-            isDanger: true,
-            icon: 'warning',
-            confirmText: cluster.displayName,
-            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-          })
+        {
+          id: ClusterAction.Resume,
+          text: t('managed.resume'),
+          click: () => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.resume'),
+              action: t('resume'),
+              processing: t('resuming'),
+              resources: [cluster],
+              description: t('bulk.message.resume'),
+              columns: modalColumns,
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster) => {
+                return patchResource(
+                  {
+                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                    kind: ClusterDeploymentDefinition.kind,
+                    metadata: {
+                      name: cluster.name!,
+                      namespace: cluster.namespace!,
+                    },
+                  } as ClusterDeployment,
+                  [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                )
+              },
+              close: () => {
+                setModalProps({ open: false })
+              },
+            })
+          },
+          isAriaDisabled: true,
+          rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
-        isAriaDisabled: true,
-        rbac: destroyRbac,
-      },
-      {
-        id: 'ai-edit',
-        text: t('managed.editAI'),
-        click: (cluster: Cluster) =>
-          history.push(
-            NavigationPath.editCluster.replace(':namespace', cluster.namespace!).replace(':name', cluster.name!)
-          ),
-        isAriaDisabled: cluster.status !== ClusterStatus.draft,
-      },
-      {
-        id: 'ai-scale-up',
-        text: t('managed.ai.scaleUp'),
-        click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
-      },
-      {
-        id: 'destroy-hypershift-cluster',
-        text: t('managed.destroy'),
-        click: (cluster: Cluster) => {
-          setModalProps({
-            open: true,
-            title: t('bulk.title.destroy'),
-            action: t('destroy'),
-            processing: t('destroying'),
-            resources: [cluster],
-            description: t('bulk.message.destroy'),
-            columns: modalColumns,
-            keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => deleteHypershiftCluster(cluster),
-            close: () => {
-              setModalProps({ open: false })
-            },
-            isDanger: true,
-            icon: 'warning',
-            confirmText: cluster.displayName,
-            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-          })
+        {
+          id: ClusterAction.Detach,
+          text: t('managed.detach'),
+          click: (cluster: Cluster) => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.detach'),
+              action: t('detach'),
+              processing: t('detaching'),
+              resources: [cluster],
+              description: t('bulk.message.detach'),
+              columns: modalColumns,
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster) => detachCluster(cluster),
+              close: () => {
+                setModalProps({ open: false })
+              },
+              isDanger: true,
+              icon: 'warning',
+              confirmText: cluster.displayName,
+              isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+            })
+          },
+          isAriaDisabled: true,
+          rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
         },
-        isAriaDisabled: true,
-        rbac: destroyRbac,
-      },
-    ],
+        {
+          id: ClusterAction.Destroy,
+          text: t('managed.destroy'),
+          click: (cluster: Cluster) => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.destroy'),
+              action: t('destroy'),
+              processing: t('destroying'),
+              resources: [cluster],
+              description: t('bulk.message.destroy'),
+              columns: modalColumns,
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster) => deleteCluster(cluster),
+              close: () => {
+                setModalProps({ open: false })
+              },
+              isDanger: true,
+              icon: 'warning',
+              confirmText: cluster.displayName,
+              isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+            })
+          },
+          isAriaDisabled: true,
+          rbac: destroyRbac,
+        },
+        {
+          id: ClusterAction.EditAI,
+          text: t('managed.editAI'),
+          click: (cluster: Cluster) =>
+            history.push(
+              NavigationPath.editCluster.replace(':namespace', cluster.namespace!).replace(':name', cluster.name!)
+            ),
+          isAriaDisabled: cluster.status !== ClusterStatus.draft,
+        },
+        {
+          id: ClusterAction.ScaleUpAI,
+          text: t('managed.ai.scaleUp'),
+          click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
+        },
+        {
+          id: ClusterAction.DestroyHosted,
+          text: t('managed.destroy'),
+          click: (cluster: Cluster) => {
+            setModalProps({
+              open: true,
+              title: t('bulk.title.destroy'),
+              action: t('destroy'),
+              processing: t('destroying'),
+              resources: [cluster],
+              description: t('bulk.message.destroy'),
+              columns: modalColumns,
+              keyFn: (cluster) => cluster.name as string,
+              actionFn: (cluster) => deleteHypershiftCluster(cluster),
+              close: () => {
+                setModalProps({ open: false })
+              },
+              isDanger: true,
+              icon: 'warning',
+              confirmText: cluster.displayName,
+              isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+            })
+          },
+          isAriaDisabled: true,
+          rbac: destroyRbac,
+        },
+      ].filter((action) => clusterSupportsAction(cluster, action.id)),
     [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
   )
-  const clusterActions = getClusterActions(cluster)
-  actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)
+
   return (
     <>
       <UpdateAutomationModal
@@ -492,7 +379,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         open={showChannelSelectModal}
         close={() => setShowChannelSelectModal(false)}
       />
-      <BulkActionModel<Cluster> {...modalProps} />
+      <BulkActionModal<Cluster> {...modalProps} />
       {actions && actions.length > 0 && (
         <RbacDropdown<Cluster>
           id={`${cluster.name}-actions`}

@@ -4,7 +4,6 @@ import {
   Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
-  ClusterStatus,
   createResource,
   IRequestResult,
   patchResource,
@@ -15,13 +14,12 @@ import { AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
 const isChannelSelectable = (c: Cluster) => {
-  const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels
-  const isReady = c.status === ClusterStatus.ready
-  return (!!c.name && isReady && isReadySelectChannels) || false
+  return clusterSupportsAction(c, ClusterAction.SelectChannel)
 }
 
 const setCurrentChannel = (
@@ -66,7 +64,7 @@ export function BatchChannelSelectModal(props: {
   }, [props.clusters, props.open])
 
   return (
-    <BulkActionModel<Cluster>
+    <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.selectChannel')}
       plural={t('bulk.plural.selectChannel')}

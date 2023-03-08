@@ -23,7 +23,7 @@ import {
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
-import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
+import { IBulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
@@ -449,7 +449,7 @@ export const agentNameSortFunc = (
 
 export const useOnDeleteHost = (
   toggleDialog: (
-    props: IBulkActionModelProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    props: IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   ) => void,
   bareMetalHosts: CIM.BareMetalHostK8sResource[],
   agentClusterInstall?: CIM.AgentClusterInstallK8sResource,

@@ -32,7 +32,7 @@ import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
@@ -105,7 +105,7 @@ export default function PoliciesPage() {
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
   const history = useHistory()
   const [policySets] = useRecoilState(policySetsState)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
 
@@ -718,7 +718,7 @@ export default function PoliciesPage() {
   return (
     <PageSection>
       {modal !== undefined && modal}
-      <BulkActionModel<PolicyTableItem> {...modalProps} />
+      <BulkActionModal<PolicyTableItem> {...modalProps} />
       <AcmTable<PolicyTableItem>
         id="policyTable"
         plural={t('Policies')}

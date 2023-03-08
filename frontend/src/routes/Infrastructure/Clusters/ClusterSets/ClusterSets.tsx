@@ -24,7 +24,7 @@ import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -112,7 +112,7 @@ export default function ClusterSetsPage() {
 
 export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet[] }) {
   const { t } = useTranslation()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterSet> | { open: false }>({
     open: false,
   })
   const [createClusterSetModalOpen, setCreateClusterSetModalOpen] = useState<boolean>(false)
@@ -162,7 +162,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
   return (
     <Fragment>
       <CreateClusterSetModal isOpen={createClusterSetModalOpen} onClose={() => setCreateClusterSetModalOpen(false)} />
-      <BulkActionModel {...modalProps} />
+      <BulkActionModal {...modalProps} />
       <AcmTable<ManagedClusterSet>
         plural="clusterSets"
         items={props.managedClusterSets}
