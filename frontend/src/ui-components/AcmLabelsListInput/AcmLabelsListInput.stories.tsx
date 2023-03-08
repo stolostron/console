@@ -13,7 +13,7 @@ export default {
   },
 }
 
-export const LabelsInput = (args: any) => {
+export const LabelListInput = (args: any) => {
   const [value, setValue] = useState<string | undefined>()
   return (
     <AcmPageCard>
@@ -33,4 +33,4 @@ export const LabelsInput = (args: any) => {
     </AcmPageCard>
   )
 }
-LabelsInput.args = { isDisabled: false }
+LabelListInput.args = { isDisabled: false }
