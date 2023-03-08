@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'

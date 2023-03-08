@@ -6,7 +6,8 @@
   "compounds": [
     {
       "name": "Launch Everything",
-      "configurations": ["Launch Backend", "Launch Chrome Delayed"]
+      "configurations": ["Launch Backend", "Launch Chrome Delayed"],
+      "stopAll": true
     }
   ],
   "configurations": [
@@ -32,7 +33,9 @@
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "cwd": "${fileWorkspaceFolder}",
+      "preLaunchTask": "KillNodes"
     },
     {
       "name": "Debug Backend Test",
@@ -43,7 +46,8 @@
         "${file}",
         "--runInBand",
         "--watchAll=false",
-        "--coverage=false"
+        "--coverage=false",
+        "--testTimeout=6000000"
       ],
       "cwd": "${workspaceFolder}/backend",
       "skipFiles": ["<node_internals>/**"],

@@ -5,7 +5,7 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, unauthorized } from '../lib/respond'
+import { notFound } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 

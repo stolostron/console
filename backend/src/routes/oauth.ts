@@ -6,7 +6,7 @@ import { encode as stringifyQuery, parse as parseQueryString } from 'querystring
 import { deleteCookie } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
+import { redirect, respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { setDead } from './liveness'
 

@@ -5,8 +5,10 @@ import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, respondBadRequest, unauthorized } from '../lib/respond'
+import { notFound, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
+
+import { pipeShot } from '../../test/test-shots'
 
 interface AnsibleCredential {
   towerHost: string
@@ -14,7 +16,7 @@ interface AnsibleCredential {
 }
 
 // must match ansiblePaths in frontend/src/resources/utils/resource-request.ts
-const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
+export const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
 
 export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (await getAuthenticatedToken(req, res)) {
@@ -52,12 +54,15 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
       if (process.env.HTTPS_PROXY) {
         options.agent = new ProxyAgent()
       }
+
       pipeline(
         req,
         request(options, (response) => {
           if (!response) return notFound(req, res)
           res.writeHead(response.statusCode ?? 500, response.headers)
           pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
+
+          // pipeShot(req, body, options, response)
         }),
         (err) => {
           if (err) logger.error(err)

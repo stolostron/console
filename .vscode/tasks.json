@@ -16,6 +16,18 @@
         "revealProblems": "onProblem",
         "close": true
       }
+    },
+    {
+      "label": "KillNodes",
+      "command": "killall",
+      "args": ["node"],
+      "type": "shell",
+      "group": "none",
+      "presentation": {
+        "reveal": "silent",
+        "revealProblems": "onProblem",
+        "close": true
+      }
     }
   ]
 }
