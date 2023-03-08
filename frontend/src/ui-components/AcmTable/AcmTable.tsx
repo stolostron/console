@@ -791,6 +791,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     [filtered, rows, keyFn]
   )
 
+  const resolveTableItem = (rowData: IRowData, rowId: number): ITableItem<T> | undefined => {
+    if (addSubRows) {
+      return rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
+    } else {
+      return paged[rowId]
+    }
+  }
+
   // Function to parse provided actions from AcmTable IAcmRowAction --> Patternfly Table IAction
   const parseRowAction = (rowActions: IAcmRowAction<T>[]) => {
     const actions: IAction[] = []
@@ -801,49 +809,30 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           isSeparator: true,
         })
       }
-      // Add row action with tooltip
-      if (action.tooltip) {
-        actions.push({
-          title: (
-            <DropdownItem
-              isAriaDisabled={action.isDisabled}
-              tooltip={action.tooltip}
-              tooltipProps={action.tooltipProps}
-              style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
-            >
-              {action.title}
-            </DropdownItem>
-          ),
-          onClick: action.isDisabled
-            ? undefined
-            : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
-                if (addSubRows) {
-                  const tableItem = rowData.props?.key && paged.find((tableItem) => tableItem.key === rowData.props.key)
-                  if (tableItem) {
-                    action.click(tableItem.item)
-                  }
-                } else {
-                  action.click(paged[rowId].item)
-                }
-              },
-        })
-      } else {
-        // Add generic row action
-        actions.push({
-          title: action.title,
-          isAriaDisabled: action.isDisabled ? true : false,
-          onClick: (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
-            if (addSubRows) {
-              const tableItem = rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
+
+      actions.push({
+        title: action.tooltip ? (
+          <DropdownItem
+            isAriaDisabled={action.isDisabled}
+            tooltip={action.tooltip}
+            tooltipProps={action.tooltipProps}
+            style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
+          >
+            {action.title}
+          </DropdownItem>
+        ) : (
+          action.title
+        ),
+        isAriaDisabled: action.tooltip ? undefined : action.isDisabled ? true : false,
+        onClick: action.isDisabled
+          ? undefined
+          : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
+              const tableItem = resolveTableItem(rowData, rowId)
               if (tableItem) {
                 action.click(tableItem.item)
               }
-            } else {
-              action.click(paged[rowId].item)
-            }
-          },
-        })
-      }
+            },
+      })
     })
     return actions
   }
@@ -855,12 +844,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   let actionResolver: IActionsResolver | undefined
   if (rowActionResolver) {
     actionResolver = (rowData: IRowData, extraData: IExtraData) => {
-      let tableItem
-      if (addSubRows) {
-        tableItem = rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
-      } else {
-        tableItem = paged[extraData.rowIndex!]
-      }
+      const tableItem = resolveTableItem(rowData, extraData.rowIndex!)
       if (tableItem) {
         return parseRowAction(rowActionResolver(tableItem.item))
       }
