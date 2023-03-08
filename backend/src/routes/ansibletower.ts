@@ -8,8 +8,6 @@ import { logger } from '../lib/logger'
 import { notFound, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 
-import { pipeShot } from '../../test/test-shots'
-
 interface AnsibleCredential {
   towerHost: string
   token: string
@@ -61,8 +59,6 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
           if (!response) return notFound(req, res)
           res.writeHead(response.statusCode ?? 500, response.headers)
           pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-
-          // pipeShot(req, body, options, response)
         }),
         (err) => {
           if (err) logger.error(err)
