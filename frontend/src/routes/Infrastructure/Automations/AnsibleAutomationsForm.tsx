@@ -693,8 +693,22 @@ function EditAnsibleJobModal(props: {
           placeholder={t('template.modal.settings.placeholder')}
         />
         <AcmLabelsListInput
+          id="job-jobtags"
+          label={t('Job tags')}
+          value={ansibleJob?.job_tags}
+          onChange={(labels) => {
+            if (ansibleJob) {
+              const copy = { ...ansibleJob }
+              copy.job_tags = labels?.join(',')
+              setAnsibleJob(copy)
+            }
+          }}
+          buttonLabel=""
+          placeholder={t('Enter job tag')}
+        />
+        <AcmLabelsListInput
           id="job-skiptags"
-          label={t('Skip Tags')}
+          label={t('Skip tags')}
           value={ansibleJob?.skip_tags}
           onChange={(labels) => {
             if (ansibleJob) {
@@ -704,7 +718,7 @@ function EditAnsibleJobModal(props: {
             }
           }}
           buttonLabel=""
-          placeholder={t('Enter tag')}
+          placeholder={t('Enter skip tag')}
         />
         {!filterForJobTemplates && (
           <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />

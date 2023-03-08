@@ -22,15 +22,20 @@ export function AcmLabelsListInput(props: {
   const value = valueString?.split(',')
 
   function addLabel(input: string) {
+    const filteredInput = input
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag != '')
+
     /* istanbul ignore next */
-    let newLabels = value
-    if (!newLabels) {
-      newLabels = []
-    }
-    if (input && !newLabels.includes(input)) {
-      newLabels.push(input)
-      props.onChange(newLabels)
-    }
+    const newLabels = value || []
+
+    filteredInput.forEach((finput) => {
+      if (!newLabels.includes(finput)) {
+        newLabels.push(finput)
+        props.onChange(newLabels)
+      }
+    })
   }
 
   function removeLabel(removedLabel: string) {
