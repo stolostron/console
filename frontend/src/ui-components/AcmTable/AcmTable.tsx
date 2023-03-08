@@ -776,66 +776,75 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     [items, propsOnSelect, selected, rows, keyFn]
   )
 
-  const resolveTableItem = (rowData: IRowData, rowId: number): ITableItem<T> | undefined => {
-    if (addSubRows) {
-      return rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
-    } else {
-      return paged[rowId]
-    }
-  }
+  const resolveTableItem = useCallback(
+    (rowData: IRowData, rowId: number): ITableItem<T> | undefined => {
+      if (addSubRows) {
+        return rowData.props?.key && filtered.find((tableItem) => tableItem.key === rowData.props.key)
+      } else {
+        return paged[rowId]
+      }
+    },
+    [addSubRows, filtered, paged]
+  )
 
   // Function to parse provided actions from AcmTable IAcmRowAction --> Patternfly Table IAction
-  const parseRowAction = (rowActions: IAcmRowAction<T>[]) => {
-    const actions: IAction[] = []
-    rowActions.forEach((action) => {
-      // Add separator if specified
-      if (action.addSeparator) {
-        actions.push({
-          isSeparator: true,
-        })
-      }
+  const parseRowAction = useCallback(
+    (rowActions: IAcmRowAction<T>[]) => {
+      const actions: IAction[] = []
+      rowActions.forEach((action) => {
+        // Add separator if specified
+        if (action.addSeparator) {
+          actions.push({
+            isSeparator: true,
+          })
+        }
 
-      actions.push({
-        title: action.tooltip ? (
-          <DropdownItem
-            isAriaDisabled={action.isDisabled}
-            tooltip={action.tooltip}
-            tooltipProps={action.tooltipProps}
-            style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
-          >
-            {action.title}
-          </DropdownItem>
-        ) : (
-          action.title
-        ),
-        isAriaDisabled: action.tooltip ? undefined : action.isDisabled ? true : false,
-        onClick: action.isDisabled
-          ? undefined
-          : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
-              const tableItem = resolveTableItem(rowData, rowId)
-              if (tableItem) {
-                action.click(tableItem.item)
-              }
-            },
+        actions.push({
+          title: action.tooltip ? (
+            <DropdownItem
+              isAriaDisabled={action.isDisabled}
+              tooltip={action.tooltip}
+              tooltipProps={action.tooltipProps}
+              style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
+            >
+              {action.title}
+            </DropdownItem>
+          ) : (
+            action.title
+          ),
+          isAriaDisabled: action.tooltip ? undefined : action.isDisabled ? true : false,
+          onClick: action.isDisabled
+            ? undefined
+            : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
+                const tableItem = resolveTableItem(rowData, rowId)
+                if (tableItem) {
+                  action.click(tableItem.item)
+                }
+              },
+        })
       })
-    })
-    return actions
-  }
+      return actions
+    },
+    [resolveTableItem]
+  )
 
   // Parse static actions
-  const actions = parseRowAction(rowActions)
+  const actions = useMemo(() => parseRowAction(rowActions), [parseRowAction, rowActions])
 
   // Wrap provided action resolver
-  let actionResolver: IActionsResolver | undefined
-  if (rowActionResolver) {
-    actionResolver = (rowData: IRowData, extraData: IExtraData) => {
-      const tableItem = resolveTableItem(rowData, extraData.rowIndex!)
-      if (tableItem) {
-        return parseRowAction(rowActionResolver(tableItem.item))
-      }
-      return []
-    }
-  }
+  const actionResolver = useMemo(
+    () =>
+      rowActionResolver
+        ? (rowData: IRowData, extraData: IExtraData) => {
+            const tableItem = resolveTableItem(rowData, extraData.rowIndex!)
+            if (tableItem) {
+              return parseRowAction(rowActionResolver(tableItem.item))
+            }
+            return []
+          }
+        : undefined,
+    [parseRowAction, resolveTableItem, rowActionResolver]
+  )
 
   const filtersHash = useMemo(() => hash(filters), [filters])
 
