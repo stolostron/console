@@ -1,0 +1,58 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Launch Everything",
+      "configurations": ["Launch Backend", "Launch Chrome Delayed"],
+      "stopAll": true
+    }
+  ],
+  "configurations": [
+    {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "chrome",
+      "webRoot": "${workspaceFolder}/frontend",
+      "url": "https://localhost:3000/multicloud/welcome"
+    },
+    {
+      "name": "Launch Chrome Delayed",
+      "request": "launch",
+      "type": "chrome",
+      "webRoot": "${workspaceFolder}/frontend",
+      "url": "https://localhost:3000/multicloud/welcome",
+      "preLaunchTask": "Delay"
+    },
+    {
+      "name": "Launch Backend",
+      "request": "launch",
+      "runtimeArgs": ["run", "start:hot"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal",
+      "cwd": "${fileWorkspaceFolder}",
+      "preLaunchTask": "KillNodes"
+    },
+    {
+      "name": "Debug Backend Test",
+      "request": "launch",
+      "args": [
+        "--experimental-vm-modules",
+        "node_modules/.bin/jest",
+        "${file}",
+        "--runInBand",
+        "--watchAll=false",
+        "--coverage=false",
+        "--testTimeout=6000000"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    }
+  ]
+}

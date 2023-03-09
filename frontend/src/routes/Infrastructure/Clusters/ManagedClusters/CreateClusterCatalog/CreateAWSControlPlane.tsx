@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon } from '@patternfly/react-icons'
+import { ExpandableSection } from '@patternfly/react-core'
+import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   CatalogColor,
@@ -10,15 +11,25 @@ import {
   PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmPage, Provider } from '../../../../../ui-components'
+import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
+import HypershiftDiagram from './HypershiftDiagram.svg'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const [isDiagramExpanded, setIsDiagramExpanded] = useState(true)
+  const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
+
+  const onDiagramToggle = (isExpanded: boolean) => {
+    if (!isMouseOverControlPlaneLink) {
+      setIsDiagramExpanded(isExpanded)
+    }
+  }
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
       {
@@ -105,6 +116,32 @@ export function CreateAWSControlPlane() {
         itemToCardFn={(card) => card}
         onBack={back(NavigationPath.createCluster)}
         onCancel={cancel(NavigationPath.clusters)}
+        customCatalogSection={
+          <ExpandableSection
+            style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+            isExpanded={isDiagramExpanded}
+            onToggle={onDiagramToggle}
+            toggleContent={
+              <>
+                <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
+                <AcmButton
+                  variant="link"
+                  icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                  iconPosition="right"
+                  isInline
+                  onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
+                  onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
+                  onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
+                >
+                  {t('Learn more about control plane types')}
+                </AcmButton>
+              </>
+            }
+            isIndented={true}
+          >
+            <HypershiftDiagram />
+          </ExpandableSection>
+        }
       />
     </AcmPage>
   )
