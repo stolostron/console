@@ -10,19 +10,19 @@ import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
-import { getToken } from '../lib/token'
+import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { getServiceAccountToken } from './serviceAccountToken'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
 
-export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = getToken(req)
-    if (!token) return unauthorized(req, res)
-    ServerSideEvents.handleRequest(token, req, res)
+export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+    const token = await getAuthenticatedToken(req, res)
+    if (token) {
+        ServerSideEvents.handleRequest(token, req, res)
+    }
 }
 
 interface WatchEvent {
