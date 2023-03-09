@@ -10,7 +10,7 @@ import {
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { rbacCreate, rbacDelete } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -20,7 +20,7 @@ import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
   const { t } = useTranslation()
   const history = useHistory()
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterSet> | { open: false }>({
     open: false,
   })
 
@@ -103,7 +103,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         clusterSet={showManagedClusterSetBindingModal ? props.managedClusterSet : undefined}
         onClose={() => setShowManagedClusterSetBindingModal(false)}
       />
-      <BulkActionModel<ManagedClusterSet> {...modalProps} />
+      <BulkActionModal<ManagedClusterSet> {...modalProps} />
       <RbacDropdown<ManagedClusterSet>
         id={`${props.managedClusterSet.metadata.name}-actions`}
         item={props.managedClusterSet}

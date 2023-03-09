@@ -84,7 +84,21 @@ export function getAppSetTopology(application) {
       : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
 
   const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
-  const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
+  const resources = []
+
+  if (appSetApps.length > 0) {
+    appSetApps.forEach((app) => {
+      const appResources = get(app, 'status.resources', [])
+      let appClusterName = app.spec.destination.name
+      if (!appClusterName) {
+        const appCluster = application.appSetClusters.find((cls) => cls.url === app.spec.destination.server)
+        appClusterName = appCluster ? appCluster.name : undefined
+      }
+      appResources.forEach((resource) => {
+        resources.push({ ...resource, cluster: appClusterName })
+      })
+    })
+  }
 
   processMultiples(resources).forEach((deployable) => {
     const {

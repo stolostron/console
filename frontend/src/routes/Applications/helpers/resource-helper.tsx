@@ -5,6 +5,7 @@ import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
+import { generatePath } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,
@@ -239,7 +240,8 @@ export function getClusterCountString(
 
 export function getClusterCountSearchLink(resource: IResource, clusterCount: ClusterCount, clusterList?: string[]) {
   if (isOCPAppResourceKind(resource.kind)) {
-    return undefined
+    const cluster = clusterList ? clusterList[0] : ''
+    return generatePath(NavigationPath.clusterDetails, { name: cluster, namespace: cluster })
   }
   if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
     return undefined

@@ -1493,8 +1493,12 @@ function OrderedItemsInput(props: {
         aria-label="draggable data list example"
         isCompact
         onDragFinish={(itemOrder) => {
-          const newItems = itemOrder.map((key) => input.value.find((item, index) => key === input.keyFn(item, index)))
-          input.onChange(newItems)
+          if (itemOrder.length) {
+            const newItems = itemOrder
+              .map((key) => input.value.find((item, index) => key === input.keyFn(item, index)))
+              .filter((newItem) => newItem != undefined)
+            input.onChange(newItems)
+          }
         }}
         itemOrder={input.value.map((item, index) => input.keyFn(item, index))}
         style={{ borderTop: '0' }}

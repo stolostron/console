@@ -7,6 +7,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import {
   SearchResultItemsDocument,
@@ -15,20 +17,30 @@ import {
 } from '../search-sdk/search-sdk'
 import SearchResults from './SearchResults'
 
+const mockSettings: Settings = {
+  SEARCH_QUERY_LIMIT: '10000',
+}
+
 describe('SearchResults Page', () => {
   it('should render page in loading state', async () => {
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={[]}>
-          <SearchResults
-            currentQuery={'kind:Pod testCluster'}
-            preSelectedRelatedResources={[]}
-            error={undefined}
-            loading={true}
-            data={{}}
-          />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={[]}>
+            <SearchResults
+              currentQuery={'kind:Pod testCluster'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={true}
+              data={{}}
+            />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -49,7 +61,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -83,39 +95,45 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <SearchResults
-            currentQuery={'kind:Pod testCluster'}
-            preSelectedRelatedResources={[]}
-            error={undefined}
-            loading={false}
-            data={{
-              searchResult: [
-                {
-                  items: [
-                    {
-                      apiversion: 'v1',
-                      cluster: 'testCluster',
-                      container: 'installer',
-                      created: '2021-01-04T14:53:52Z',
-                      hostIP: '10.0.128.203',
-                      kind: 'Pod',
-                      name: 'testPod',
-                      namespace: 'testNamespace',
-                      podIP: '10.129.0.40',
-                      restarts: 0,
-                      startedAt: '2021-01-04T14:53:52Z',
-                      status: 'Completed',
-                      _uid: 'testing-search-results-pod',
-                    },
-                  ],
-                },
-              ],
-            }}
-          />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:Pod testCluster'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        container: 'installer',
+                        created: '2021-01-04T14:53:52Z',
+                        hostIP: '10.0.128.203',
+                        kind: 'Pod',
+                        name: 'testPod',
+                        namespace: 'testNamespace',
+                        podIP: '10.129.0.40',
+                        restarts: 0,
+                        startedAt: '2021-01-04T14:53:52Z',
+                        status: 'Completed',
+                        _uid: 'testing-search-results-pod',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -139,7 +157,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -184,7 +202,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -229,7 +247,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -263,39 +281,45 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <SearchResults
-            currentQuery={'kind:Pod'}
-            preSelectedRelatedResources={[]}
-            error={undefined}
-            loading={false}
-            data={{
-              searchResult: [
-                {
-                  items: [
-                    {
-                      apiversion: 'v1',
-                      cluster: 'testCluster',
-                      container: 'installer',
-                      created: '2021-01-04T14:53:52Z',
-                      hostIP: '10.0.128.203',
-                      kind: 'Pod',
-                      name: 'testPod',
-                      namespace: 'testNamespace',
-                      podIP: '10.129.0.40',
-                      restarts: 0,
-                      startedAt: '2021-01-04T14:53:52Z',
-                      status: 'Completed',
-                      _uid: 'testing-search-results-pod',
-                    },
-                  ],
-                },
-              ],
-            }}
-          />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:Pod'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        container: 'installer',
+                        created: '2021-01-04T14:53:52Z',
+                        hostIP: '10.0.128.203',
+                        kind: 'Pod',
+                        name: 'testPod',
+                        namespace: 'testNamespace',
+                        podIP: '10.129.0.40',
+                        restarts: 0,
+                        startedAt: '2021-01-04T14:53:52Z',
+                        status: 'Completed',
+                        _uid: 'testing-search-results-pod',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -323,7 +347,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -359,7 +383,7 @@ describe('SearchResults Page', () => {
                   },
                 ],
                 relatedKinds: ['Node'],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -419,7 +443,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -464,7 +488,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -498,39 +522,45 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <SearchResults
-            currentQuery={'kind:Pod'}
-            preSelectedRelatedResources={['Node']}
-            error={undefined}
-            loading={false}
-            data={{
-              searchResult: [
-                {
-                  items: [
-                    {
-                      apiversion: 'v1',
-                      cluster: 'testCluster',
-                      container: 'installer',
-                      created: '2021-01-04T14:53:52Z',
-                      hostIP: '10.0.128.203',
-                      kind: 'Pod',
-                      name: 'testPod',
-                      namespace: 'testNamespace',
-                      podIP: '10.129.0.40',
-                      restarts: 0,
-                      startedAt: '2021-01-04T14:53:52Z',
-                      status: 'Completed',
-                      _uid: 'testing-search-results-pod',
-                    },
-                  ],
-                },
-              ],
-            }}
-          />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:Pod'}
+              preSelectedRelatedResources={['Node']}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        container: 'installer',
+                        created: '2021-01-04T14:53:52Z',
+                        hostIP: '10.0.128.203',
+                        kind: 'Pod',
+                        name: 'testPod',
+                        namespace: 'testNamespace',
+                        podIP: '10.129.0.40',
+                        restarts: 0,
+                        startedAt: '2021-01-04T14:53:52Z',
+                        status: 'Completed',
+                        _uid: 'testing-search-results-pod',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -556,7 +586,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -580,7 +610,7 @@ describe('SearchResults Page', () => {
                   },
                 ],
                 relatedKinds: ['Node'],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -603,7 +633,7 @@ describe('SearchResults Page', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -615,17 +645,23 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <SearchResults
-            currentQuery={'kind:Pod'}
-            preSelectedRelatedResources={['Node']}
-            error={{ message: 'Error getting search data' } as ApolloError}
-            loading={false}
-            data={{}}
-          />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:Pod'}
+              preSelectedRelatedResources={['Node']}
+              error={{ message: 'Error getting search data' } as ApolloError}
+              loading={false}
+              data={{}}
+            />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
     await wait()

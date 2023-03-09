@@ -45,7 +45,7 @@ import {
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'
 import { ClusterSetContext } from '../ClusterSetDetails'
@@ -53,7 +53,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 export function ClusterSetAccessManagement() {
   const { t } = useTranslation()
   const { clusterSet } = useContext(ClusterSetContext)
-  const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterRoleBinding> | { open: false }>({
+  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterRoleBinding> | { open: false }>({
     open: false,
   })
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
@@ -153,7 +153,7 @@ export function ClusterSetAccessManagement() {
   return (
     <AcmPageContent id="access-management">
       <PageSection>
-        <BulkActionModel<ClusterRoleBinding> {...modalProps} />
+        <BulkActionModal<ClusterRoleBinding> {...modalProps} />
         <AddUsersModal
           isOpen={addModalOpen}
           onClose={() => {

@@ -9,9 +9,15 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { useState } from 'react'
 import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
+
+const mockSettings: Settings = {
+  SEARCH_QUERY_LIMIT: '10000',
+}
 
 describe('RelatedResults', () => {
   const RelatedTiles = () => {
@@ -41,7 +47,7 @@ describe('RelatedResults', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -53,11 +59,17 @@ describe('RelatedResults', () => {
       },
     ]
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <RelatedTiles />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <RelatedTiles />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
@@ -82,7 +94,7 @@ describe('RelatedResults', () => {
                     values: ['Pod'],
                   },
                 ],
-                limit: 1000,
+                limit: 10000,
               },
             ],
           },
@@ -117,11 +129,17 @@ describe('RelatedResults', () => {
     ]
 
     render(
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <RelatedTiles />
-        </MockedProvider>
-      </Router>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <RelatedTiles />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()

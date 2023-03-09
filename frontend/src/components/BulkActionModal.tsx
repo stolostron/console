@@ -24,9 +24,9 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
-import { getErrorInfo } from '../components/ErrorPage'
+import { getErrorInfo } from './ErrorPage'
 
-export interface IBulkActionModelProps<T = undefined> {
+export interface IBulkActionModalProps<T = undefined> {
   open: true
   action: string
   title: string
@@ -57,7 +57,7 @@ export interface ItemError<T> {
   error: Error
 }
 
-export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | { open: false }) {
+export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | { open: false }) {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
   const [progressCount, setProgressCount] = useState(0)

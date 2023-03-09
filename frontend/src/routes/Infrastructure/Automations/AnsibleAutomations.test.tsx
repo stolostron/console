@@ -12,7 +12,7 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../resources'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
@@ -157,10 +157,36 @@ function TestIntegrationPage(props: {
   )
 }
 
+function EmptyStateAutomationPage(props: { providerConnections: ProviderConnection[] }) {
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(secretsState, props.providerConnections as Secret[])
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
+        <Route
+          path={NavigationPath.ansibleAutomations}
+          render={(props: any) => {
+            testLocation = props.location
+            return <AnsibleAutomationsPage />
+          }}
+        />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+}
+
 describe('automation page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+  })
+
+  test('should render emptyState', async () => {
+    render(<EmptyStateAutomationPage providerConnections={mockProviderConnections} />)
+    await waitForText("You don't have any automation templates")
+    await screen.getByRole('link', { name: /create automation template/i })
   })
 
   test('should render the table with templates', async () => {
