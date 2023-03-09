@@ -2,17 +2,18 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { patchUserPreference, SavedSearch, UserPreference } from '../../../../../resources/userpreference'
+import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 
 export const DeleteSearchModal = (props: {
   onClose: () => void
   searchToDelete?: SavedSearch
   userPreference?: UserPreference
+  setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
 }) => {
-  const { onClose, searchToDelete, userPreference } = props
+  const { onClose, searchToDelete, userPreference, setUserPreference } = props
   const { t } = useTranslation()
   const [deleteError, setDeleteError] = useState<string | undefined>()
 
@@ -32,8 +33,11 @@ export const DeleteSearchModal = (props: {
               setDeleteError(undefined)
               if (userPreference && searchToDelete) {
                 patchUserPreference(userPreference, 'remove', searchToDelete)
-                  .promise.then(() => props.onClose())
-                  .catch((err) => {
+                  .then((res) => {
+                    setUserPreference(res)
+                    props.onClose()
+                  })
+                  .catch((err: any) => {
                     if (err && err.message) {
                       setDeleteError(err.message)
                     } else {
