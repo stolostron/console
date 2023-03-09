@@ -3,6 +3,8 @@ import {
   Catalog,
   CatalogCardItemType,
   CatalogColor,
+  DataViewStringContext,
+  defaultStrings,
   ICatalogCard,
   ItemView,
   PageHeader,
@@ -23,6 +25,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { Divider, ExpandableSection } from '@patternfly/react-core'
+import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 
 type CardData = {
   id: string
@@ -185,6 +188,8 @@ export function CreateClusterCatalog() {
     [t]
   )
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -195,41 +200,43 @@ export function CreateClusterCatalog() {
         />
       }
     >
-      <ItemView
-        items={cards.cardsWithCreds.length > 0 ? cards.cardsWithCreds : cards.cardsWithOutCreds}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.clusters)}
-        onCancel={cancel(NavigationPath.clusters)}
-        customCatalogSection={
-          cards.cardsWithOutCreds.length > 0 &&
-          cards.cardsWithCreds.length > 0 && (
-            <>
-              <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
-              <ExpandableSection
-                style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
-                isExpanded={isAdditionalProvidersExpanded}
-                onToggle={onAdditionalProvidersToggle}
-                toggleContent={<span style={{ color: 'var(--pf-global--Color--100)' }}>Additional providers</span>}
-                isIndented={true}
-              >
-                <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>
-                  {t('Add credentials in order to get started with a new infrastructure provider.')}
-                </div>
-                <Catalog
-                  keyFn={keyFn}
-                  items={cards.cardsWithOutCreds}
-                  itemToCardFn={(card) => card}
-                  selectItem={() => {}}
-                  unselectItem={() => {}}
-                  isSelected={() => false}
-                  showSelect={false}
-                />
-              </ExpandableSection>
-            </>
-          )
-        }
-      />
+      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+        <ItemView
+          items={cards.cardsWithCreds.length > 0 ? cards.cardsWithCreds : cards.cardsWithOutCreds}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.clusters)}
+          onCancel={cancel(NavigationPath.clusters)}
+          customCatalogSection={
+            cards.cardsWithOutCreds.length > 0 &&
+            cards.cardsWithCreds.length > 0 && (
+              <>
+                <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
+                <ExpandableSection
+                  style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+                  isExpanded={isAdditionalProvidersExpanded}
+                  onToggle={onAdditionalProvidersToggle}
+                  toggleContent={<span style={{ color: 'var(--pf-global--Color--100)' }}>Additional providers</span>}
+                  isIndented={true}
+                >
+                  <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>
+                    {t('Add credentials in order to get started with a new infrastructure provider.')}
+                  </div>
+                  <Catalog
+                    keyFn={keyFn}
+                    items={cards.cardsWithOutCreds}
+                    itemToCardFn={(card) => card}
+                    selectItem={() => {}}
+                    unselectItem={() => {}}
+                    isSelected={() => false}
+                    showSelect={false}
+                  />
+                </ExpandableSection>
+              </>
+            )
+          }
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }

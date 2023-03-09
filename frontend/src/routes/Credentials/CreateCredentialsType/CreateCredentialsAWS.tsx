@@ -6,9 +6,12 @@ import {
   ICatalogCard,
   ItemView,
   PageHeader,
+  DataViewStringContext,
+  defaultStrings,
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useDataViewStrings } from '../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../resources'
@@ -96,6 +99,8 @@ export function CreateCredentialsAWS() {
     return newBreadcrumbs
   }, [t])
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -106,13 +111,15 @@ export function CreateCredentialsAWS() {
         />
       }
     >
-      <ItemView
-        items={cards}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.createCluster)}
-        onCancel={cancel(NavigationPath.clusters)}
-      />
+      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+        <ItemView
+          items={cards}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.createCluster)}
+          onCancel={cancel(NavigationPath.clusters)}
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }

@@ -71,6 +71,7 @@ import { makeStyles } from '@mui/styles'
 import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
 import { validateYAML } from '../../../../../lib/validation'
+import { useWizardStrings } from '../../../../../lib/wizardStrings'
 
 const acmSchema = [...schema, ...kac]
 
@@ -305,6 +306,11 @@ export default function ImportClusterPage() {
     })
   }, [])
 
+  const translatedWizardStrings = useWizardStrings({
+    stepsAriaLabel: t('Import cluster steps'),
+    contentAriaLabel: t('Import cluster content'),
+  })
+
   function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
@@ -358,6 +364,7 @@ export default function ImportClusterPage() {
       }
     >
       <Wizard
+        wizardStrings={translatedWizardStrings}
         title={t('page.header.import-cluster')}
         showHeader={false}
         showYaml={drawerExpanded}

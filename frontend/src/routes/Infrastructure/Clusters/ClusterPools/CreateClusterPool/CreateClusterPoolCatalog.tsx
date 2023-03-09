@@ -1,5 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, CatalogColor, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
+import {
+  CatalogCardItemType,
+  CatalogColor,
+  DataViewStringContext,
+  defaultStrings,
+  ICatalogCard,
+  ItemView,
+  PageHeader,
+} from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
@@ -7,6 +15,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmIcon, AcmPage, Provider, ProviderIconMap, ProviderLongTextMap } from '../../../../../ui-components'
 import { ClusterPoolInfrastructureType, CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
+import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 
 export function CreateClusterPoolCatalog() {
   const [t] = useTranslation()
@@ -88,6 +97,8 @@ export function CreateClusterPoolCatalog() {
     [t]
   )
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -98,13 +109,15 @@ export function CreateClusterPoolCatalog() {
         />
       }
     >
-      <ItemView
-        items={cards}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.clusterPools)}
-        onCancel={cancel(NavigationPath.clusterPools)}
-      />
+      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+        <ItemView
+          items={cards}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.clusterPools)}
+          onCancel={cancel(NavigationPath.clusterPools)}
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }
