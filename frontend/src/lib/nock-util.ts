@@ -3,6 +3,8 @@
 /* istanbul ignore file */
 import { isEqual } from 'lodash'
 import nock from 'nock'
+import StackTrace from 'stacktrace-js'
+import { Url } from 'url'
 import {
   AnsibleTowerJobTemplateList,
   ClusterRoleBinding,
@@ -18,8 +20,6 @@ import {
 } from '../resources'
 import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
-import StackTrace from 'stacktrace-js'
-import { Url } from 'url'
 
 export type ISearchRelatedResult = {
   data: {
@@ -447,6 +447,12 @@ export function nockSearch(
 export function nockRequest(pathname: string, response: object, statusCode = 200) {
   return nocked(process.env.JEST_DEFAULT_HOST as string)
     .get(pathname)
+    .reply(statusCode, response)
+}
+
+export function nockPatchRequest(pathname: string, response: object, statusCode = 200) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .patch(pathname)
     .reply(statusCode, response)
 }
 
