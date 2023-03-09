@@ -1446,6 +1446,8 @@
   "import": "Import",
   "Import": "Import",
   "Import an existing cluster": "Import an existing cluster",
+  "Import cluster content": "Import cluster content",
+  "Import cluster steps": "Import cluster steps",
   "Import cluster YAML": "Import cluster YAML",
   "Import the Hosted Cluster once the Hosted Control Plane is available.": "Import the Hosted Cluster once the Hosted Control Plane is available.",
   "import.auto.config.label": "Kubeconfig",
