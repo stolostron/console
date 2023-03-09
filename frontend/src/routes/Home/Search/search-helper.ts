@@ -12,6 +12,7 @@ export function formatSearchbarSuggestions(
   data: string[],
   suggestionKind: 'label' | 'filter' | 'value',
   searchQuery: string,
+  queryResultLimit: number,
   t: TFunction
 ) {
   let valuesToRemoveFromSuggestions: string[] = []
@@ -28,7 +29,7 @@ export function formatSearchbarSuggestions(
     const searchTokens = searchQuery.split(' ')
     const searchCompleteFilter = searchTokens[searchTokens.length - 1].replace(':', '')
     labelTag.name = t('{{0}} values', [searchCompleteFilter])
-    const query = convertStringToQuery(searchQuery)
+    const query = convertStringToQuery(searchQuery, queryResultLimit)
     query.filters.forEach((filter) => {
       if (filter.property === searchCompleteFilter) {
         valuesToRemoveFromSuggestions = filter.values.filter((value) => data.indexOf(value) > 0)
@@ -103,7 +104,7 @@ export function formatSearchbarSuggestions(
   return suggestions
 }
 
-export const convertStringToQuery = (searchText: string) => {
+export const convertStringToQuery = (searchText: string, queryResultLimit: number) => {
   const searchTokens = searchText.split(' ')
   const keywords = searchTokens.filter((token) => token !== '' && token.indexOf(':') < 0)
   const filters = searchTokens
@@ -118,8 +119,7 @@ export const convertStringToQuery = (searchText: string) => {
   return {
     keywords,
     filters,
-    // Limit results to  for better performance - we show a info alert to user asking them to refine search.
-    limit: 1000,
+    limit: queryResultLimit,
   }
 }
 

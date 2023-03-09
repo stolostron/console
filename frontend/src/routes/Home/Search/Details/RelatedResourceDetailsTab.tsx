@@ -12,6 +12,7 @@ import _ from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { getGroupFromApiVersion, IResource } from '../../../../resources'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'
 import { SearchRelatedResult, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
@@ -20,6 +21,8 @@ import { useSearchDefinitions } from '../searchDefinitions'
 export default function RelatedResourceDetailsTab(props: { cluster: string; resource: IResource }) {
   const { cluster, resource } = props
   const { t } = useTranslation()
+  const { useSearchQueryLimit } = useSharedAtoms()
+  const searchQueryLimit = useSearchQueryLimit()
   const [accordionKeys, setAccordionKeys] = useState<string[]>([])
 
   const { kind, name, namespace, apiGroup } = useMemo(() => {
@@ -66,8 +69,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
         {
           keywords: [],
           filters: relatedResQueryFilters,
-          // Limit results to  for better performance - we show a info alert to user asking them to refine search.
-          limit: 1000,
+          limit: searchQueryLimit,
         },
       ],
     },
@@ -146,7 +148,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
   return (
     <PageSection>
       <Stack hasGutter>
-        {relatedResultItems.length >= 1000 ? (
+        {relatedResultItems.length >= searchQueryLimit ? (
           <Alert
             variant={'warning'}
             isInline={true}
