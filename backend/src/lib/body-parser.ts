@@ -69,3 +69,12 @@ export async function parseResponseJsonBody<T = Promise<Record<string, unknown>>
   })
   return JSON.parse(bodyString) as T
 }
+
+export async function parsePipedJsonBody<T = Promise<Record<string, unknown>>>(r: Http2ServerResponse): Promise<T> {
+  const bodyString = await rawBody(getDecodeStream(r.stream, r.getHeader(constants.HTTP2_HEADER_CONTENT_ENCODING)), {
+    length: r.getHeader('content-length'),
+    limit: 1 * 1024 * 1024,
+    encoding: true,
+  })
+  return JSON.parse(bodyString || '{}') as T
+}
