@@ -1033,7 +1033,7 @@ export default function ApplicationsOverview() {
                     },
                 ]}
                 isKebab={false}
-                isPlain={true}
+                isPlain={false}
                 isPrimary={true}
                 // tooltipPosition={tableDropdown.tooltipPosition}
                 // dropdownPosition={DropdownPosition.left}
