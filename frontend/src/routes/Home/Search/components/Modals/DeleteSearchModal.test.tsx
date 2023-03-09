@@ -56,6 +56,7 @@ describe('DeleteSearchModal', () => {
             }}
             userPreference={mockUserPreferences[0]}
             onClose={() => {}}
+            setUserPreference={() => {}}
           />
         </MockedProvider>
       </RecoilRoot>
