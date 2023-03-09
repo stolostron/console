@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { cloneDeep, get, isEmpty } from 'lodash'
+import { PlacementKind, PlacementRuleKind } from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 
@@ -38,7 +39,7 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
 
     // get reports, hooks and rules
-    const { channelsMap, rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
+    const { channelsMap, rulesMap, placementsMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
       selectedSubscriptions,
       model.subscriptions
     )
@@ -60,6 +61,7 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     await getAppHooks(preHooksMap, true)
     await getAppHooks(postHooksMap, false)
     getAppRules(rulesMap, model.allClusters, recoilStates.placementDecisions)
+    getAppPlacements(placementsMap, recoilStates.placements, recoilStates.placementRules)
 
     // get all channels
     getAllAppChannels(model.allChannels, subscriptions, recoilStates.channels)
@@ -137,6 +139,7 @@ export const getSubChannelName = (paths, isChucked) => {
 const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
   const rulesMap = {}
   const channelsMap = {}
+  const placementsMap = {}
   const postHooksMap = {}
   const preHooksMap = {}
   let arr = null
@@ -190,8 +193,9 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
       subscription.channels = []
     }
 
-    // ditto for rules
     const ruleNamespace = get(subscription, NAMESPACE)
+
+    // ditto for placementDecisions
     get(subscription, 'spec.placement.placementRef.name', '')
       .split(',')
       .forEach((ruleName) => {
@@ -205,13 +209,52 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
           subscription.rules = []
         }
       })
+
+    // ditto for placements and placmentrules
+    get(subscription, 'spec.placement.placementRef.name', '')
+      .split(',')
+      .forEach((ruleName) => {
+        if (ruleName) {
+          arr = placementsMap[ruleNamespace]
+          if (!arr) {
+            placementsMap[ruleNamespace] = []
+            arr = placementsMap[ruleNamespace]
+          }
+          arr.push({ ruleName, subscription })
+          subscription.placements = []
+        }
+      })
   })
   return {
     channelsMap,
     rulesMap,
+    placementsMap,
     preHooksMap,
     postHooksMap,
   }
+}
+
+const getAppPlacements = (placementsMap, placements, placementRules) => {
+  Object.entries(placementsMap).forEach(([namespace, values]) => {
+    // stuff placements or placement rules into subscriptions that use them
+    values.forEach(({ ruleName, subscription }) => {
+      const placementRef = get(subscription, 'spec.placement.placementRef')
+      if (placementRef) {
+        const { kind } = placementRef
+        if (kind === PlacementRuleKind) {
+          subscription.placements.push(
+            placementRules.find((pr) => pr.metadata.name === ruleName && pr.metadata.namespace === namespace)
+          )
+        } else if (kind === PlacementKind) {
+          subscription.placements.push(
+            placements.find(
+              (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
+            )
+          )
+        }
+      }
+    })
+  })
 }
 
 const getAppRules = (rulesMap, allClusters, placementDecisions) => {

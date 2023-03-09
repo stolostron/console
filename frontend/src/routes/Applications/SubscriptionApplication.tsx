@@ -179,8 +179,15 @@ export function CreateSubscriptionApplication(
 ) {
   const history = useHistory()
   const { t } = useTranslation()
-  const { ansibleJobState, applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState } =
-    useSharedAtoms()
+  const {
+    ansibleJobState,
+    applicationsState,
+    channelsState,
+    placementRulesState,
+    secretsState,
+    subscriptionsState,
+    placementsState,
+  } = useSharedAtoms()
   const toastContext = useContext(AcmToastContext)
   const [secrets] = useRecoilState(secretsState)
   const providerConnections = secrets.map(unpackProviderConnection)
@@ -375,6 +382,7 @@ export function CreateSubscriptionApplication(
   const [subscriptions] = useRecoilState(subscriptionsState)
   const [channels] = useRecoilState(channelsState)
   const [placementRules] = useRecoilState(placementRulesState)
+  const [placements] = useRecoilState(placementsState)
   const location = useLocation()
   const editApplication = getEditApplication(location)
   const searchParams = useSearchParams()
@@ -391,6 +399,7 @@ export function CreateSubscriptionApplication(
           subscriptions,
           channels,
           placementRules,
+          placements,
         })
 
         setFetchControl({
