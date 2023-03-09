@@ -35,7 +35,6 @@ import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon
 import {
   expandable,
   IAction,
-  IActionsResolver,
   IExtraData,
   IRow,
   IRowData,
@@ -812,7 +811,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           ) : (
             action.title
           ),
-          isAriaDisabled: action.tooltip ? undefined : action.isDisabled ? true : false,
+          isAriaDisabled: action.isDisabled ? true : false,
           onClick: action.isDisabled
             ? undefined
             : (_event: React.MouseEvent, rowId: number, rowData: IRowData) => {
