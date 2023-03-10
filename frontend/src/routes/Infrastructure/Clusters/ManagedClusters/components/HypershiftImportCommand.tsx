@@ -61,6 +61,22 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     function importHostedControlPlaneCluster() {
         const hdName = selectedHostedClusterResource.metadata?.name
         const hdNamespace = selectedHostedClusterResource.metadata?.namespace
+
+        const match = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(hdName!)
+
+        if (!match) {
+            //Invalid hostname
+            //throw error, don't import cluster
+            const errorInfo = getErrorInfo(t('invalidclustername.message'), t)
+            toastContext.addAlert({
+                type: 'danger',
+                title: errorInfo.title,
+                message: errorInfo.message,
+                autoClose: true,
+            })
+            return
+        }
+
         const managedClusterResource: ManagedCluster = {
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
@@ -156,7 +172,9 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
             createResource(clusterNameSpace as IResource)
         } catch (err) {}
 
-        createResource(klusterletAddonConfig as IResource)
+        try {
+            createResource(klusterletAddonConfig as IResource)
+        } catch (err) {}
     }
 
     if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {
