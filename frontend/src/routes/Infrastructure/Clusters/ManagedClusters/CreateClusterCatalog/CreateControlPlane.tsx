@@ -2,6 +2,7 @@
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
+  DataViewStringContext,
   getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
@@ -11,6 +12,7 @@ import {
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../../../resources'
@@ -116,6 +118,8 @@ export function CreateControlPlane() {
     return newBreadcrumbs
   }, [t])
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -126,13 +130,15 @@ export function CreateControlPlane() {
         />
       }
     >
-      <ItemView
-        items={cards}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.createCluster)}
-        onCancel={cancel(NavigationPath.clusters)}
-      />
+      <DataViewStringContext.Provider value={dataViewStrings}>
+        <ItemView
+          items={cards}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.createCluster)}
+          onCancel={cancel(NavigationPath.clusters)}
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }

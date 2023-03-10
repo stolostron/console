@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, ItemView, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import {
+  CatalogCardItemType,
+  ItemView,
+  ICatalogCard,
+  PageHeader,
+  DataViewStringContext,
+} from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
@@ -52,6 +59,8 @@ export function CreateDiscoverHost() {
     { label: t('Hosts') },
   ]
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -62,13 +71,15 @@ export function CreateDiscoverHost() {
         />
       }
     >
-      <ItemView
-        items={cards}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.createBMControlPlane)}
-        onCancel={cancel(NavigationPath.clusters)}
-      />
+      <DataViewStringContext.Provider value={dataViewStrings}>
+        <ItemView
+          items={cards}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.createBMControlPlane)}
+          onCancel={cancel(NavigationPath.clusters)}
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }

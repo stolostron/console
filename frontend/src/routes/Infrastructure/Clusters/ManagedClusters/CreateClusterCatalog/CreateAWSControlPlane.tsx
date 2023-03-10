@@ -4,6 +4,7 @@ import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   CatalogColor,
+  DataViewStringContext,
   getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
@@ -13,6 +14,7 @@ import {
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
@@ -100,6 +102,8 @@ export function CreateAWSControlPlane() {
     return newBreadcrumbs
   }, [t])
 
+  const dataViewStrings = useDataViewStrings()
+
   return (
     <AcmPage
       header={
@@ -110,39 +114,41 @@ export function CreateAWSControlPlane() {
         />
       }
     >
-      <ItemView
-        items={cards}
-        itemKeyFn={keyFn}
-        itemToCardFn={(card) => card}
-        onBack={back(NavigationPath.createCluster)}
-        onCancel={cancel(NavigationPath.clusters)}
-        customCatalogSection={
-          <ExpandableSection
-            style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
-            isExpanded={isDiagramExpanded}
-            onToggle={onDiagramToggle}
-            toggleContent={
-              <>
-                <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
-                <AcmButton
-                  variant="link"
-                  icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
-                  iconPosition="right"
-                  isInline
-                  onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
-                  onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
-                  onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
-                >
-                  {t('Learn more about control plane types')}
-                </AcmButton>
-              </>
-            }
-            isIndented={true}
-          >
-            <HypershiftDiagram />
-          </ExpandableSection>
-        }
-      />
+      <DataViewStringContext.Provider value={dataViewStrings}>
+        <ItemView
+          items={cards}
+          itemKeyFn={keyFn}
+          itemToCardFn={(card) => card}
+          onBack={back(NavigationPath.createCluster)}
+          onCancel={cancel(NavigationPath.clusters)}
+          customCatalogSection={
+            <ExpandableSection
+              style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+              isExpanded={isDiagramExpanded}
+              onToggle={onDiagramToggle}
+              toggleContent={
+                <>
+                  <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
+                  <AcmButton
+                    variant="link"
+                    icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                    iconPosition="right"
+                    isInline
+                    onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
+                    onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
+                    onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
+                  >
+                    {t('Learn more about control plane types')}
+                  </AcmButton>
+                </>
+              }
+              isIndented={true}
+            >
+              <HypershiftDiagram />
+            </ExpandableSection>
+          }
+        />
+      </DataViewStringContext.Provider>
     </AcmPage>
   )
 }
