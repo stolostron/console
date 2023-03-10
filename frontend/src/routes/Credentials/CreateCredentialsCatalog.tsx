@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { LocationDescriptor } from 'history'
-import { DataViewStringContext, ICatalogCard, ItemView, PageHeader, defaultStrings } from '@stolostron/react-data-view'
+import { DataViewStringContext, ICatalogCard, ItemView, PageHeader } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
@@ -73,7 +73,7 @@ export function CreateCredentialsCatalog() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}

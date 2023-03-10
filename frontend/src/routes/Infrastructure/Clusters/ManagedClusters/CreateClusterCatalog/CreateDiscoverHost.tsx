@@ -5,7 +5,6 @@ import {
   ICatalogCard,
   PageHeader,
   DataViewStringContext,
-  defaultStrings,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -72,7 +71,7 @@ export function CreateDiscoverHost() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}

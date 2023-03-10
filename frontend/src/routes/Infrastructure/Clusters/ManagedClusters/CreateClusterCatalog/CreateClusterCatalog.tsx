@@ -4,7 +4,6 @@ import {
   CatalogCardItemType,
   CatalogColor,
   DataViewStringContext,
-  defaultStrings,
   ICatalogCard,
   ItemView,
   PageHeader,
@@ -200,7 +199,7 @@ export function CreateClusterCatalog() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards.cardsWithCreds.length > 0 ? cards.cardsWithCreds : cards.cardsWithOutCreds}
           itemKeyFn={keyFn}

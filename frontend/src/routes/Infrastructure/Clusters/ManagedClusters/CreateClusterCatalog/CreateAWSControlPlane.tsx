@@ -5,7 +5,6 @@ import {
   CatalogCardItemType,
   CatalogColor,
   DataViewStringContext,
-  defaultStrings,
   getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
@@ -115,7 +114,7 @@ export function CreateAWSControlPlane() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}

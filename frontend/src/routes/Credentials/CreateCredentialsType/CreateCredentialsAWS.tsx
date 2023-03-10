@@ -7,7 +7,6 @@ import {
   ItemView,
   PageHeader,
   DataViewStringContext,
-  defaultStrings,
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -111,7 +110,7 @@ export function CreateCredentialsAWS() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}

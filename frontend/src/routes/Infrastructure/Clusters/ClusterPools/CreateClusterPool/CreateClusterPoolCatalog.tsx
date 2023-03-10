@@ -3,7 +3,6 @@ import {
   CatalogCardItemType,
   CatalogColor,
   DataViewStringContext,
-  defaultStrings,
   ICatalogCard,
   ItemView,
   PageHeader,
@@ -109,7 +108,7 @@ export function CreateClusterPoolCatalog() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}

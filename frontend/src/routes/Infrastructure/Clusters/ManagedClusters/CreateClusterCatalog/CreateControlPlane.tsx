@@ -3,7 +3,6 @@ import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   DataViewStringContext,
-  defaultStrings,
   getPatternflyColor,
   ICatalogBreadcrumb,
   ICatalogCard,
@@ -131,7 +130,7 @@ export function CreateControlPlane() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings || defaultStrings}>
+      <DataViewStringContext.Provider value={dataViewStrings}>
         <ItemView
           items={cards}
           itemKeyFn={keyFn}
