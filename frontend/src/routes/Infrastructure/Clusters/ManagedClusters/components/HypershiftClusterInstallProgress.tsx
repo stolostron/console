@@ -9,6 +9,7 @@ import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 
 import './HypershiftClusterInstallProgress.css'
+import { createContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type HypershiftClusterInstallProgressProps = {
     hostedCluster: HostedClusterK8sResource
@@ -16,15 +17,51 @@ type HypershiftClusterInstallProgressProps = {
     clusterImages: ClusterImageSetK8sResource[]
 }
 
-const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => (
-    <Stack hasGutter>
-        <StackItem>
-            <ProgressStepper isVertical>
-                <HostedClusterProgress hostedCluster={hostedCluster} />
-                <NodePoolsProgress {...rest} />
-            </ProgressStepper>
-        </StackItem>
-    </Stack>
-)
+export const NodePoolTableWidthContext = createContext(1024)
+
+const percentWidth = 0.9
+
+const HypershiftClusterInstallProgress = ({ hostedCluster, ...rest }: HypershiftClusterInstallProgressProps) => {
+    const [width, setWidth] = useState<number>(1024)
+
+    const nodePoolTableWidthRef = useRef<HTMLDivElement>(null)
+
+    useLayoutEffect(() => {
+        /* istanbul ignore if */
+        if (nodePoolTableWidthRef.current?.clientWidth)
+            setWidth(nodePoolTableWidthRef.current.clientWidth * percentWidth)
+    }, [])
+
+    useEffect(() => {
+        function handleWindowResize() {
+            /* istanbul ignore if */
+            if (nodePoolTableWidthRef.current?.clientWidth)
+                setWidth(nodePoolTableWidthRef.current?.clientWidth * percentWidth)
+        }
+
+        window.addEventListener('resize', handleWindowResize)
+
+        return () => {
+            window.removeEventListener('resize', handleWindowResize)
+        }
+    }, [])
+
+    return (
+        <Stack hasGutter>
+            <div id="hypershift-cluster-install-progress" ref={nodePoolTableWidthRef}>
+                <StackItem>
+                    <ProgressStepper isVertical>
+                        <HostedClusterProgress hostedCluster={hostedCluster} />
+                    </ProgressStepper>
+                    <ProgressStepper isVertical>
+                        <NodePoolTableWidthContext.Provider value={width}>
+                            <NodePoolsProgress {...rest} />
+                        </NodePoolTableWidthContext.Provider>
+                    </ProgressStepper>
+                </StackItem>
+            </div>
+        </Stack>
+    )
+}
 
 export default HypershiftClusterInstallProgress
