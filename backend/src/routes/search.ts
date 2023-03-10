@@ -5,8 +5,8 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, unauthorized } from '../lib/respond'
-import { getToken } from '../lib/token'
+import { notFound } from '../lib/respond'
+import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from './mchVersion'
 
 const proxyHeaders = [
@@ -36,43 +36,43 @@ function getNamespace(): string {
 }
 
 export async function search(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    const token = getToken(req)
-    if (!token) return unauthorized(req, res)
+    const token = await getAuthenticatedToken(req, res)
+    if (token) {
+        const headers: OutgoingHttpHeaders = { authorization: `Bearer ${token}` }
+        for (const header of proxyHeaders) {
+            if (req.headers[header]) headers[header] = req.headers[header]
+        }
 
-    const headers: OutgoingHttpHeaders = { authorization: `Bearer ${token}` }
-    for (const header of proxyHeaders) {
-        if (req.headers[header]) headers[header] = req.headers[header]
+        const mch = await getMultiClusterHub()
+        const namespace = getNamespace()
+        const searchService =
+            mch && namespace && namespace !== mch.metadata.namespace
+                ? `https://search-search-api.${mch.metadata.namespace}.svc.cluster.local:4010`
+                : undefined
+
+        const searchUrl = process.env.SEARCH_API_URL || searchService || 'https://search-search-api:4010'
+
+        const url = new URL(searchUrl + '/searchapi/graphql')
+        headers.authorization = `Bearer ${token}`
+        headers.host = url.hostname
+        const options: RequestOptions = {
+            protocol: url.protocol,
+            hostname: url.hostname,
+            port: url.port,
+            path: url.pathname,
+            method: req.method,
+            headers,
+            rejectUnauthorized: false,
+        }
+
+        pipeline(
+            req,
+            request(options, (response) => {
+                if (!response) return notFound(req, res)
+                res.writeHead(response.statusCode, response.headers)
+                pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
+            }),
+            () => logger.error
+        )
     }
-
-    const mch = await getMultiClusterHub()
-    const namespace = getNamespace()
-    const searchService =
-        mch && namespace && namespace !== mch.metadata.namespace
-            ? `https://search-search-api.${mch.metadata.namespace}.svc.cluster.local:4010`
-            : undefined
-
-    const searchUrl = process.env.SEARCH_API_URL || searchService || 'https://search-search-api:4010'
-
-    const url = new URL(searchUrl + '/searchapi/graphql')
-    headers.authorization = `Bearer ${token}`
-    headers.host = url.hostname
-    const options: RequestOptions = {
-        protocol: url.protocol,
-        hostname: url.hostname,
-        port: url.port,
-        path: url.pathname,
-        method: req.method,
-        headers,
-        rejectUnauthorized: false,
-    }
-
-    pipeline(
-        req,
-        request(options, (response) => {
-            if (!response) return notFound(req, res)
-            res.writeHead(response.statusCode, response.headers)
-            pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-        }),
-        () => logger.error
-    )
 }
