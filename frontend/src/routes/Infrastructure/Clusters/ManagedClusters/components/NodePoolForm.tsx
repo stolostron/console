@@ -275,7 +275,14 @@ export function NodePoolForm(props: {
             })
 
             //If HCP image is not in filtered images, add it to the list in order to be selectable
-            if (!filteredImages.includes(ver)) {
+            let hcpVerFound = false
+            filteredImages.forEach((image: OpenshiftVersionOptionType) => {
+                if (image.version === ver) {
+                    hcpVerFound = true
+                }
+            })
+
+            if (!hcpVerFound) {
                 const hcpImage: OpenshiftVersionOptionType = {
                     label: 'N/A',
                     value: ver,
