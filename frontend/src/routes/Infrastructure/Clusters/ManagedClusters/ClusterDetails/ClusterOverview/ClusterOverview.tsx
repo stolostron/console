@@ -144,11 +144,12 @@ export function ClusterOverviewPageContent(props: {
             },
             distribution: {
                 key: t('table.distribution'),
-                value: cluster?.distribution?.displayVersion && (
+                value: (
                     <DistributionField
                         cluster={cluster}
                         clusterCurator={clusterCurator}
                         hostedCluster={hostedCluster}
+                        resource={'hostedcluster'}
                     />
                 ),
             },
