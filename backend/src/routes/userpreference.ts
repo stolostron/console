@@ -1,62 +1,87 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { request, RequestOptions } from 'https'
-import { pipeline } from 'stream'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Agent } from 'https'
+import { HeadersInit } from 'node-fetch'
+import { fetchRetry } from '../lib/fetch-retry'
+import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { notFound } from '../lib/respond'
+import { getAuthenticatedToken } from '../lib/token'
+import { IResource } from '../resources/resource'
 import { getServiceAccountToken } from './serviceAccountToken'
 
-const proxyHeaders = [
-  constants.HTTP2_HEADER_ACCEPT,
-  constants.HTTP2_HEADER_ACCEPT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_LENGTH,
-  constants.HTTP2_HEADER_CONTENT_TYPE,
-]
-const proxyResponseHeaders = [
-  constants.HTTP2_HEADER_CACHE_CONTROL,
-  constants.HTTP2_HEADER_CONTENT_TYPE,
-  constants.HTTP2_HEADER_CONTENT_LENGTH,
-  constants.HTTP2_HEADER_CONTENT_ENCODING,
-  constants.HTTP2_HEADER_ETAG,
-]
+const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } = constants
 
-export function userpreference(req: Http2ServerRequest, res: Http2ServerResponse): void {
-  const serviceAccountToken = getServiceAccountToken()
-  let path = '/apis/console.open-cluster-management.io/v1/userpreferences'
-  const headers: OutgoingHttpHeaders = { authorization: `Bearer ${serviceAccountToken}` }
-  for (const header of proxyHeaders) {
-    if (req.headers[header]) headers[header] = req.headers[header]
+export interface SavedSearch {
+  description?: string
+  id: string
+  name: string
+  searchText: string
+}
+export interface UserPreference extends IResource {
+  apiVersion: 'console.open-cluster-management.io/v1'
+  kind: 'UserPreference'
+  spec?: {
+    savedSearches?: SavedSearch[]
   }
+}
 
-  if (req.method === 'PATCH' || req.method === 'GET') {
-    path = path + '/' + req.url.split('/')[2]
-  }
+export async function userpreference<T = unknown>(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    const serviceAccountToken = getServiceAccountToken()
+    const agent = new Agent({ rejectUnauthorized: false })
 
-  const clusterUrl = new URL(process.env.CLUSTER_API_URL)
-  const options: RequestOptions = {
-    protocol: clusterUrl.protocol,
-    hostname: clusterUrl.hostname,
-    port: clusterUrl.port,
-    path,
-    method: req.method,
-    headers,
-    rejectUnauthorized: false,
-  }
-  pipeline(
-    req,
-    request(options, (response) => {
-      if (!response) return notFound(req, res)
-      const responseHeaders: OutgoingHttpHeaders = {}
-      for (const header of proxyResponseHeaders) {
-        if (response.headers[header]) responseHeaders[header] = response.headers[header]
-      }
-      res.writeHead(response.statusCode ?? 500, responseHeaders)
-      pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-    }),
-    (err) => {
-      if (err) logger.error(err)
+    const headers: HeadersInit = {
+      [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAccountToken}`,
+      [HTTP2_HEADER_ACCEPT]: 'application/json',
+      [HTTP2_HEADER_CONTENT_TYPE]: req.method === 'PATCH' ? 'application/json-patch+json' : 'application/json',
     }
-  )
+
+    let path = process.env.CLUSTER_API_URL + '/apis/console.open-cluster-management.io/v1/userpreferences'
+    if (req.method === 'PATCH' || req.method === 'GET') {
+      path = path + '/' + req.url.split('/')[2]
+    }
+
+    if (req.method === 'GET') {
+      const getResponse = await jsonRequest<T>(path, serviceAccountToken)
+        .then((response) => response)
+        .catch((err: Error): undefined => {
+          logger.error({ msg: 'Error getting UserPreference', error: err.message })
+          return undefined
+        })
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(getResponse))
+    } else {
+      let body = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+      req.on('end', async () => {
+        body = chucks.join()
+
+        const fetchResponse = await fetchRetry(path, {
+          method: req.method,
+          headers,
+          agent,
+          body: body,
+          compress: true,
+        })
+          .then(async (response) => {
+            return response.json()
+          })
+          .catch((err) => {
+            logger.error({
+              msg: req.method === 'POST' ? 'Error creating UserPreference' : 'Error updating UserPreference',
+              error: err.message,
+            })
+            return undefined
+          })
+
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify(fetchResponse))
+      })
+    }
+  }
 }
