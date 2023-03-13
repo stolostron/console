@@ -39,7 +39,7 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
 
     // get reports, hooks and rules
-    const { channelsMap, rulesMap, placementsMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
+    const { channelsMap, decisionsMap, placementsMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
       selectedSubscriptions,
       model.subscriptions
     )
@@ -60,7 +60,7 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
 
     await getAppHooks(preHooksMap, true)
     await getAppHooks(postHooksMap, false)
-    getAppRules(rulesMap, model.allClusters, recoilStates.placementDecisions)
+    getAppDecisions(decisionsMap, model.allClusters, recoilStates.placementDecisions)
     getAppPlacements(placementsMap, recoilStates.placements, recoilStates.placementRules)
 
     // get all channels
@@ -137,7 +137,7 @@ export const getSubChannelName = (paths, isChucked) => {
 }
 
 const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
-  const rulesMap = {}
+  const decisionsMap = {}
   const channelsMap = {}
   const placementsMap = {}
   const postHooksMap = {}
@@ -200,10 +200,10 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
       .forEach((ruleName) => {
         // ditto for placementDecisions
         if (ruleName) {
-          arr = rulesMap[ruleNamespace]
+          arr = decisionsMap[ruleNamespace]
           if (!arr) {
-            rulesMap[ruleNamespace] = []
-            arr = rulesMap[ruleNamespace]
+            decisionsMap[ruleNamespace] = []
+            arr = decisionsMap[ruleNamespace]
           }
           arr.push({ ruleName, subscription })
           subscription.decisions = []
@@ -221,7 +221,7 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
   })
   return {
     channelsMap,
-    rulesMap,
+    decisionsMap,
     placementsMap,
     preHooksMap,
     postHooksMap,
@@ -251,8 +251,8 @@ const getAppPlacements = (placementsMap, placements, placementRules) => {
   })
 }
 
-const getAppRules = (rulesMap, allClusters, placementDecisions) => {
-  Object.entries(rulesMap).forEach(([namespace, values]) => {
+const getAppDecisions = (decisionsMap, allClusters, placementDecisions) => {
+  Object.entries(decisionsMap).forEach(([namespace, values]) => {
     // stuff rules into subscriptions that use them
     placementDecisions &&
       placementDecisions
