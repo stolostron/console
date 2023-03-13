@@ -43,7 +43,6 @@ export interface IBulkActionModalProps<T = undefined> {
   columns?: IAcmTableColumn<T>[]
   keyFn?: (item: T) => string
   actionFn: (item: T) => IRequestResult
-  preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
   checkBox?: JSX.Element
   confirmText?: string
   isDanger?: boolean
@@ -233,9 +232,6 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
-                    if (props.preActionFn) {
-                      props.preActionFn(props.resources, errors)
-                    }
                     if (errors.length === 0) {
                       setProgressCount(props.resources.length)
                       const requestResult = resultsSettled(
