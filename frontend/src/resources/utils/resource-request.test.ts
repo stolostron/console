@@ -46,32 +46,46 @@ const mockClusterNamespace: Namespace = {
   },
 }
 
-describe('reconcileResources negative testing', () => {
+describe('reconcileResources', () => {
   nockIgnoreApiPaths()
-  it('reconcileResources catches error creating namespace resource', async () => {
+  it('catches error creating namespace resource', async () => {
     nockCreate(mockClusterNamespace, mockClusterNamespace, 400)
 
     await expect(async () => {
       await reconcileResources([mockClusterCurator, mockClusterNamespace], [])
     }).rejects.toThrowError(ResourceError)
   })
-  it('createResources catches error creating resource', async () => {
+})
+describe('createResource', () => {
+  nockIgnoreApiPaths()
+  it('catches error creating resource', async () => {
     nockCreate(mockClusterCurator, mockClusterCurator, 400)
 
     await expect(async () => {
       await createResource(mockClusterCurator).promise
     }).rejects.toThrowError(ResourceError)
   })
-  it('updateResources catches error updating resource', async () => {
+})
+describe('updateResources', () => {
+  nockIgnoreApiPaths()
+  it('catches error updating resource', async () => {
     nockReplace(mockClusterCurator, mockPatchedClusterCurator, 400)
     await expect(async () => {
       await updateResources([mockClusterCurator])
     }).rejects.toThrowError(ResourceError)
   })
-  it('deleteResources catches error updating resource', async () => {
-    nockDelete(mockClusterCurator, mockPatchedClusterCurator, 400)
+})
+describe('deleteResources', () => {
+  nockIgnoreApiPaths()
+  it('catches error updating resource', async () => {
+    nockDelete(mockClusterCurator, mockPatchedClusterCurator, 401)
     await expect(async () => {
       await deleteResources([mockClusterCurator])
+    }).rejects.toThrowError(ResourceError)
+  })
+  it('throws error when no name set', async () => {
+    await expect(async () => {
+      await deleteResources([{ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind }])
     }).rejects.toThrowError(ResourceError)
   })
 })
