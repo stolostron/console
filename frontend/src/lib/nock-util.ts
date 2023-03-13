@@ -456,6 +456,12 @@ export function nockPatchRequest(pathname: string, response: object, statusCode 
     .reply(statusCode, response)
 }
 
+export function nockPostRequest(pathname: string, response: object, statusCode = 200) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .post(pathname, JSON.stringify(response))
+    .reply(statusCode, response)
+}
+
 export const mockBadRequestStatus = {
   kind: StatusKind,
   apiVersion: StatusApiVersion,

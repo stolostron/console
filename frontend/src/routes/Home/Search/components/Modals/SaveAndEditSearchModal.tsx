@@ -176,7 +176,9 @@ export const SaveAndEditSearchModal = (props: {
         {!savedSearch && (
           <AcmAlert noClose variant={'danger'} isInline={true} title={t('Error')} subtitle={t('Enter search text')} />
         )}
-        {updateError && <AcmAlert noClose variant={'danger'} title={updateError} />}
+        {updateError && (
+          <AcmAlert data-testid={'edit-saved-search-error'} noClose variant={'danger'} title={updateError} />
+        )}
         {isNameConflict && (
           <AcmAlert
             isInline
