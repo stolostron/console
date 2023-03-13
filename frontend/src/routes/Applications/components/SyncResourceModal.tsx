@@ -59,7 +59,6 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
       onClose={props.close}
       variant={ModalVariant.large}
       position="top"
-      positionOffset="225px"
       actions={[
         <Button key="confirm" variant="primary" onClick={() => handleSubmit()}>
           {t('Synchronize')}
