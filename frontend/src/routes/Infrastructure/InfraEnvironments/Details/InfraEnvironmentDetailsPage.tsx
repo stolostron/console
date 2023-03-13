@@ -9,7 +9,7 @@ import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../sha
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ResourceError } from '../../../../resources'
+import { ResourceError, ResourceErrorCode } from '../../../../resources'
 import {
   getOnCreateBMH,
   getOnSaveISOParams,
@@ -76,7 +76,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     return (
       <Page>
         <ErrorPage
-          error={new ResourceError('Not found', 404)}
+          error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
             <AcmButton role="link" onClick={() => history.push(NavigationPath.infraEnvironments)}>
               {t('button.backToInfraEnvs')}

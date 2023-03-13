@@ -48,7 +48,7 @@ export enum ResourceErrorCode {
 const ResourceErrorCodes = Object.keys(ResourceErrorCode).map((k) => Number(ResourceErrorCode[k as any]))
 
 export class ResourceError extends Error {
-  constructor(message: string, public code: ResourceErrorCode, public reason?: string) {
+  constructor(public code: ResourceErrorCode, message?: string, public reason?: string) {
     super(message)
     Object.setPrototypeOf(this, ResourceError.prototype)
     this.name = 'ResourceError'
@@ -318,12 +318,17 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
   return patchRequest<unknown, ResultType>(url, data, headers)
 }
 
+function checkForName<Resource extends IResource>(resource: Resource): void {
+  if (getResourceName(resource) === undefined) {
+    throw new ResourceError(ResourceErrorCode.BadRequest, 'Resource name is required.')
+  }
+}
+
 export function deleteResource<Resource extends IResource>(
   resource: Resource,
   options?: { dryRun?: boolean }
 ): IRequestResult {
-  if (getResourceName(resource) === undefined)
-    throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
+  checkForName(resource)
   const url = Promise.resolve(resource).then((resource) => {
     return getResourceNameApiPath(resource).then((path) => {
       let url = getBackendUrl() + path
@@ -341,10 +346,7 @@ export function getResource<Resource extends IResource>(
     fieldSelector?: Record<string, unknown>
   }
 ): IRequestResult<Resource> {
-  if (getResourceName(resource) === undefined) {
-    throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-  }
-
+  checkForName(resource)
   const url = Promise.resolve(resource).then((resource) => {
     return getResourceNameApiPath(resource).then((path) => {
       let url = getBackendUrl() + path
@@ -641,7 +643,7 @@ export async function fetchRetry<T>(options: {
         headers['Content-Type'] = 'application/json'
       }
     } catch (err) {
-      throw new ResourceError(`Invalid body object for request`, ResourceErrorCode.BadRequest)
+      throw new ResourceError(ResourceErrorCode.BadRequest)
     }
   }
 
@@ -658,7 +660,7 @@ export async function fetchRetry<T>(options: {
       })
     } catch (err) {
       if (options.signal?.aborted) {
-        throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
+        throw new ResourceError(ResourceErrorCode.RequestAborted)
       }
 
       if (retries === 0) {
@@ -666,26 +668,22 @@ export async function fetchRetry<T>(options: {
           if (typeof (err as any)?.code === 'string') {
             switch ((err as any)?.code) {
               case 'ETIMEDOUT':
-                throw new ResourceError('Request timeout.', ResourceErrorCode.Timeout)
+                throw new ResourceError(ResourceErrorCode.Timeout)
               case 'ECONNRESET':
-                throw new ResourceError('Request connection reset.', ResourceErrorCode.ConnectionReset)
+                throw new ResourceError(ResourceErrorCode.ConnectionReset)
               case 'ENOTFOUND':
-                throw new ResourceError('Resource not found.', ResourceErrorCode.NotFound)
-              default:
-                throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
+                throw new ResourceError(ResourceErrorCode.NotFound)
             }
           } else if (typeof (err as any)?.code === 'number') {
             if (ResourceErrorCodes.includes((err as any)?.code)) {
-              throw new ResourceError(err.message, (err as any)?.code)
-            } else {
-              throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
+              throw new ResourceError((err as any)?.code, err.message)
             }
           } else if (err.message === 'Network Error') {
-            throw new ResourceError('Network error', ResourceErrorCode.NetworkError)
+            throw new ResourceError(ResourceErrorCode.NetworkError)
           }
         }
         console.log(err)
-        throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
+        throw new ResourceError(ResourceErrorCode.Unknown, `Unknown error code: ${(err as any)?.code}`)
       }
     }
 
@@ -716,11 +714,11 @@ export async function fetchRetry<T>(options: {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
             tokenExpired()
-            throw new ResourceError(status.message as string, status.code as number, status.reason)
+            throw new ResourceError(status.code as number, status.message as string, status.reason)
           } else if (ResourceErrorCodes.includes(status.code as number)) {
-            throw new ResourceError(status.message as string, status.code as number, status.reason)
+            throw new ResourceError(status.code as number, status.message as string, status.reason)
           } else {
-            throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown, status.reason)
+            throw new ResourceError(ResourceErrorCode.Unknown, status.message as string, status.reason)
           }
         }
       }
@@ -739,9 +737,9 @@ export async function fetchRetry<T>(options: {
           if (!options.disableRedirectUnauthorizedLogin) {
             tokenExpired()
           }
-          throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
+          throw new ResourceError(ResourceErrorCode.Unauthorized)
         case 404:
-          throw new ResourceError('Not found', ResourceErrorCode.NotFound)
+          throw new ResourceError(ResourceErrorCode.NotFound)
         case 408: // Request Timeout
         case 429: // Too Many Requests
         case 500: // Internal Server Error
@@ -763,9 +761,9 @@ export async function fetchRetry<T>(options: {
 
       if (retries === 0) {
         if (ResourceErrorCodes.includes(response.status)) {
-          throw new ResourceError(response.statusText, response.status)
+          throw new ResourceError(response.status, response.statusText)
         } else {
-          throw new ResourceError(`Request failed with status code ${response.status}`, ResourceErrorCode.Unknown)
+          throw new ResourceError(ResourceErrorCode.Unknown, `Unknown error code: ${response.status}`)
         }
       }
     }

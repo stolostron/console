@@ -26,6 +26,7 @@ import {
   ManagedCluster,
   mapAddons,
   ResourceError,
+  ResourceErrorCode,
   SecretDefinition,
 } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
@@ -200,7 +201,7 @@ export default function ClusterDetailsPage({
     return (
       <Page>
         <ErrorPage
-          error={new ResourceError('Not found', 404)}
+          error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
             <AcmButton
               role="link"
