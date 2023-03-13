@@ -2,7 +2,8 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
-import { listResources } from '.'
+import { listResources, Placement, PlacementKind } from '.'
+import { PlacementApiVersion } from '../wizards/common/resources/IPlacement'
 
 export const PlacementRuleApiVersion = 'apps.open-cluster-management.io/v1'
 export type PlacementRuleApiVersionType = 'apps.open-cluster-management.io/v1'
@@ -53,9 +54,33 @@ export function listPlacementRules(namespace: string) {
       namespace,
     },
   })
+
   return {
     promise: result.promise.then((placementRules) => {
       return placementRules
+    }),
+    abort: result.abort,
+  }
+}
+
+export function listPlacements(namespace: string) {
+  if (!namespace) {
+    return {
+      promise: Promise.resolve([]),
+      abort: () => {},
+    }
+  }
+  const result = listResources<Placement>({
+    apiVersion: PlacementApiVersion,
+    kind: PlacementKind,
+    metadata: {
+      namespace,
+    },
+  })
+
+  return {
+    promise: result.promise.then((placements) => {
+      return placements
     }),
     abort: result.abort,
   }

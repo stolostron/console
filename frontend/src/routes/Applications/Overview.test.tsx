@@ -12,6 +12,7 @@ import {
   managedClusterInfosState,
   managedClustersState,
   namespacesState,
+  placementDecisionsState,
   placementRulesState,
   subscriptionsState,
 } from '../../atoms'
@@ -41,6 +42,7 @@ import {
   mockArgoApplication1,
   mockOCPApplication0,
   mockFluxApplication0,
+  mockPlacementsDecisions,
 } from './Application.sharedmocks'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 
@@ -56,6 +58,7 @@ describe('Applications Page', () => {
           snapshot.set(applicationsState, mockApplications)
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
+          snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(applicationSetsState, mockApplicationSets)

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { cloneDeep, get, isEmpty } from 'lodash'
+import { PlacementKind, PlacementRuleKind } from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 
@@ -38,7 +39,7 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
 
     // get reports, hooks and rules
-    const { channelsMap, rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
+    const { channelsMap, decisionsMap, placementsMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
       selectedSubscriptions,
       model.subscriptions
     )
@@ -59,7 +60,8 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
 
     await getAppHooks(preHooksMap, true)
     await getAppHooks(postHooksMap, false)
-    getAppRules(rulesMap, model.allClusters, recoilStates.placementRules)
+    getAppDecisions(decisionsMap, model.allClusters, recoilStates.placementDecisions)
+    getAppPlacements(placementsMap, recoilStates.placements, recoilStates.placementRules)
 
     // get all channels
     getAllAppChannels(model.allChannels, subscriptions, recoilStates.channels)
@@ -135,8 +137,9 @@ export const getSubChannelName = (paths, isChucked) => {
 }
 
 const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
-  const rulesMap = {}
+  const decisionsMap = {}
   const channelsMap = {}
+  const placementsMap = {}
   const postHooksMap = {}
   const preHooksMap = {}
   let arr = null
@@ -190,53 +193,90 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
       subscription.channels = []
     }
 
-    // ditto for rules
     const ruleNamespace = get(subscription, NAMESPACE)
+
     get(subscription, 'spec.placement.placementRef.name', '')
       .split(',')
       .forEach((ruleName) => {
+        // ditto for placementDecisions
         if (ruleName) {
-          arr = rulesMap[ruleNamespace]
+          arr = decisionsMap[ruleNamespace]
           if (!arr) {
-            rulesMap[ruleNamespace] = []
-            arr = rulesMap[ruleNamespace]
+            decisionsMap[ruleNamespace] = []
+            arr = decisionsMap[ruleNamespace]
           }
           arr.push({ ruleName, subscription })
-          subscription.rules = []
+          subscription.decisions = []
+          // ditto for placements and placmentrules
+
+          arr = placementsMap[ruleNamespace]
+          if (!arr) {
+            placementsMap[ruleNamespace] = []
+            arr = placementsMap[ruleNamespace]
+          }
+          arr.push({ ruleName, subscription })
+          subscription.placements = []
         }
       })
   })
   return {
     channelsMap,
-    rulesMap,
+    decisionsMap,
+    placementsMap,
     preHooksMap,
     postHooksMap,
   }
 }
 
-const getAppRules = (rulesMap, allClusters, placementRules) => {
-  Object.entries(rulesMap).forEach(([namespace, values]) => {
+const getAppPlacements = (placementsMap, placements, placementRules) => {
+  Object.entries(placementsMap).forEach(([namespace, values]) => {
+    // stuff placements or placement rules into subscriptions that use them
+    values.forEach(({ ruleName, subscription }) => {
+      const placementRef = get(subscription, 'spec.placement.placementRef')
+      if (placementRef) {
+        const { kind } = placementRef
+        if (kind === PlacementRuleKind) {
+          subscription.placements.push(
+            placementRules.find((pr) => pr.metadata.name === ruleName && pr.metadata.namespace === namespace)
+          )
+        } else if (kind === PlacementKind) {
+          subscription.placements.push(
+            placements.find(
+              (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
+            )
+          )
+        }
+      }
+    })
+  })
+}
+
+const getAppDecisions = (decisionsMap, allClusters, placementDecisions) => {
+  Object.entries(decisionsMap).forEach(([namespace, values]) => {
     // stuff rules into subscriptions that use them
-    placementRules
-      .filter((rule) => {
-        return get(rule, 'metadata.namespace') === namespace
-      })
-      .forEach((rule) => {
-        const name = get(rule, 'metadata.name')
-        values.forEach(({ ruleName, subscription }) => {
-          if (name === ruleName) {
-            subscription.rules.push(rule)
-            const clusters = get(rule, 'status.decisions', [])
-            clusters.forEach((cluster) => {
-              // get cluster name
-              const clusterName = get(cluster, 'clusterName')
-              if (clusterName && allClusters.indexOf(clusterName) === -1) {
-                allClusters.push(clusterName)
-              }
-            })
-          }
+    placementDecisions &&
+      placementDecisions
+        .filter((placementDecision) => {
+          return get(placementDecision, 'metadata.namespace') === namespace
         })
-      })
+        .forEach((placementDecision) => {
+          const name =
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ||
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule']
+          values.forEach(({ ruleName, subscription }) => {
+            if (name === ruleName) {
+              subscription.decisions.push(placementDecision)
+              const clusters = get(placementDecision, 'status.decisions', [])
+              clusters.forEach((cluster) => {
+                // get cluster name
+                const clusterName = get(cluster, 'clusterName')
+                if (clusterName && allClusters.indexOf(clusterName) === -1) {
+                  allClusters.push(clusterName)
+                }
+              })
+            }
+          })
+        })
   })
 }
 

@@ -1,3 +1,15 @@
+.add-label-btn {
+  padding: 5px;
+  cursor: pointer;
+}
+.btn-disabled {
+  cursor: not-allowed !important;
+}
+
 .clusterSelector-container .pf-c-accordion__expanded-content-body::after {
-    background-color: unset;
+  background-color: unset;
+}
+
+.clusterSelector-labels-section .labels-section .pf-c-select {
+  margin-bottom: 10px;
 }

@@ -25,7 +25,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
   }
   const namespace = _.get(props.node, 'namespace', '')
   const type = _.get(props.node, 'type', '')
-  const kind = type === 'placements' ? 'placementrule' : type
+  const kind = type === 'placements' ? 'placementdecision' : type
   let apiVersion = _.get(props.node, 'specs.raw.apiVersion', '') // only works for app definition, for resource we need data from search
   const isDesign = _.get(props.node, 'specs.isDesign', false)
   const editorTitle = `${kind[0].toUpperCase() + kind.substring(1)} YAML`

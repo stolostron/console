@@ -78,12 +78,12 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
   const { dataContext } = useContext(PluginContext)
   const { atoms } = useContext(dataContext)
-  const { argoApplicationsState, channelsState, namespacesState, placementRulesState, subscriptionsState } = atoms
+  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } = atoms
 
   const [argoApplications] = useRecoilState(argoApplicationsState)
   const [channels] = useRecoilState(channelsState)
   const [subscriptions] = useRecoilState(subscriptionsState)
-  const [placementRules] = useRecoilState(placementRulesState)
+  const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [namespaces] = useRecoilState(namespacesState)
 
   let managedClusters = useAllClusters()
@@ -152,7 +152,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const clusterList = getClusterList(
       applicationResource,
       argoApplications,
-      placementRules,
+      placementDecisions,
       subscriptions,
       localCluster,
       managedClusters

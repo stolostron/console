@@ -103,7 +103,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
   //update existing placement rule section when user changes the namespace
   const nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
   const { active, availableData, groupControlData } = urlControl
-  const pathData = availableData[active]
+  const pathData = availableData && availableData[active]
 
   const nameControl = groupControlData.find(({ id: idCtrlCHName }) => idCtrlCHName === 'channelName')
   const namespaceControl = groupControlData.find(({ id: idChannelNS }) => idChannelNS === 'channelNamespace')

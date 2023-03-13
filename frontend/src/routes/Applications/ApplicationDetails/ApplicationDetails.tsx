@@ -112,6 +112,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     channelsState,
     placementRulesState,
     placementsState,
+    placementDecisionsState,
     subscriptionReportsState,
     subscriptionsState,
     THROTTLE_EVENTS_DELAY,
@@ -165,6 +166,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       placementRules: placementRulesState,
       subscriptions: subscriptionsState,
       subscriptionReports: subscriptionReportsState,
+      placementDecisions: placementDecisionsState,
     }),
     [
       applicationsState,
@@ -172,6 +174,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       argoApplicationsState,
       ansibleJobState,
       channelsState,
+      placementDecisionsState,
       placementsState,
       placementRulesState,
       subscriptionsState,
@@ -263,6 +266,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 recoilStates.applications,
                 recoilStates.subscriptions,
                 recoilStates.placementRules,
+                recoilStates.placements,
                 recoilStates.channels
               )
             : [[], []]

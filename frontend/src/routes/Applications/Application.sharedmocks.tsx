@@ -23,6 +23,9 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   OCPAppResource,
+  PlacementDecision,
+  PlacementDecisionApiVersion,
+  PlacementDecisionKind,
   PlacementRule,
   PlacementRuleApiVersion,
   PlacementRuleKind,
@@ -94,6 +97,7 @@ const mockChannel0: Channel = {
     type: 'Git',
   },
 }
+
 const mockPlacementrule0: PlacementRule = {
   apiVersion: PlacementRuleApiVersion,
   kind: PlacementRuleKind,
@@ -121,6 +125,25 @@ const mockPlacementrule0: PlacementRule = {
     ],
   },
 }
+
+const mockPlacementDecision0: PlacementDecision = {
+  apiVersion: PlacementDecisionApiVersion,
+  kind: PlacementDecisionKind,
+  metadata: {
+    labels: { 'cluster.open-cluster-management.io/placementrule': mockPlacementrule0.metadata.name! },
+    name: 'placementrule-0-decision-1',
+    namespace: mockPlacementrule0.metadata.namespace,
+  },
+  status: {
+    decisions: [
+      {
+        clusterName: 'local-cluster',
+        reason: '',
+      },
+    ],
+  },
+}
+
 const mockManagedCluster0: ManagedCluster = {
   apiVersion: ManagedClusterApiVersion,
   kind: ManagedClusterKind,
@@ -299,6 +322,7 @@ export const acmExtension: AcmExtension = {
 export const mockApplications: Application[] = [mockApplication0]
 export const mockSubscriptions: Subscription[] = [mockSubscription0]
 export const mockChannels: Channel[] = [mockChannel0]
+export const mockPlacementsDecisions: PlacementDecision[] = [mockPlacementDecision0]
 export const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 export const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 export const mockManagedClusterInfos = [mockManagedClusterInfo0]
@@ -309,7 +333,7 @@ export const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespa
 }))
 export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
 export const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
-const mockOCPApplications: OCPAppResource[] = [mockOCPApplication0, mockFluxApplication0]
+export const mockOCPApplications: OCPAppResource[] = [mockOCPApplication0, mockFluxApplication0]
 const mockSearchDisabledCluster = {
   HubAcceptedManagedCluster: 'True',
   ManagedClusterConditionAvailable: 'True',

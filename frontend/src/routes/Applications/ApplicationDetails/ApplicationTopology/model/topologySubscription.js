@@ -47,8 +47,8 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
     application.subscriptions.forEach((subscription) => {
       // get cluster placement if any
       const ruleDecisionMap = {}
-      if (subscription.rules) {
-        subscription.rules.forEach((rule) => {
+      if (subscription.decisions) {
+        subscription.decisions.forEach((rule) => {
           const ruleDecisions = get(rule, 'status.decisions')
           if (ruleDecisions) {
             ruleDecisions.forEach(({ clusterName, clusterNamespace }) => {
@@ -59,7 +59,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       }
       if (
         get(subscription, 'spec.placement.local', '') === true &&
-        subscription.rules &&
+        subscription.decisions &&
         includes(managedClusterNames, localClusterName) === false
       ) {
         const localCluster = {
@@ -98,7 +98,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       const subscriptionId = addSubscription(appId, clustersNames, subscription, source, isRulePlaced, links, nodes)
 
       // add rules node
-      if (subscription.rules) {
+      if (subscription.decisions) {
         addSubscriptionRules(subscriptionId, subscription, links, nodes)
       }
 
@@ -156,7 +156,7 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
 }
 
 const addSubscriptionRules = (parentId, subscription, links, nodes) => {
-  subscription.rules.forEach((rule, idx) => {
+  subscription.decisions.forEach((rule, idx) => {
     const {
       metadata: { name, namespace },
     } = rule

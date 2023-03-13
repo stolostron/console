@@ -25,8 +25,10 @@ import {
   IResource,
   IResourceDefinition,
   JobKind,
+  Placement,
+  PlacementDecision,
+  PlacementKind,
   PlacementRule,
-  PlacementRuleApiVersion,
   PlacementRuleKind,
   StatefulSetKind,
   Subscription,
@@ -100,7 +102,7 @@ const getArgoClusterList = (
 
 const getSubscriptionsClusterList = (
   resource: Application,
-  placementRules: PlacementRule[],
+  placementDecisions: PlacementDecision[],
   subscriptions: Subscription[]
 ) => {
   const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
@@ -113,21 +115,23 @@ const getSubscriptionsClusterList = (
     }
 
     const subDetails = sa.split('/')
-
     subscriptions.forEach((sub) => {
       if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
         const placementRef = sub.spec.placement?.placementRef
-        if (placementRef) {
-          const placement = placementRules.find(
-            (rule) => rule.metadata.name === placementRef.name && rule.metadata.namespace === subDetails[0]
-          )
-          const decisions = placement?.status?.decisions
+        const placement = placementDecisions.find(
+          (placementDecision) =>
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
+              placementRef?.name ||
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
+              placementRef?.name
+        )
 
-          if (decisions) {
-            decisions.forEach((cluster) => {
-              clusterSet.add(cluster.clusterName)
-            })
-          }
+        const decisions = placement?.status?.decisions
+
+        if (decisions) {
+          decisions.forEach((cluster) => {
+            clusterSet.add(cluster.clusterName)
+          })
         }
       }
     })
@@ -138,7 +142,7 @@ const getSubscriptionsClusterList = (
 export const getClusterList = (
   resource: IResource,
   argoApplications: ArgoApplication[],
-  placementRules: PlacementRule[],
+  placementDecisions: PlacementDecision[],
   subscriptions: Subscription[],
   localCluster: Cluster | undefined,
   managedClusters: Cluster[]
@@ -163,7 +167,7 @@ export const getClusterList = (
       managedClusters
     )
   } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
-    return getSubscriptionsClusterList(resource as Application, placementRules, subscriptions)
+    return getSubscriptionsClusterList(resource as Application, placementDecisions, subscriptions)
   }
 
   return [] as string[]
@@ -416,6 +420,7 @@ export const getAppChildResources = (
   applications: Application[],
   subscriptions: Subscription[],
   placementRules: PlacementRule[],
+  placements: Placement[],
   channels: Channel[]
 ) => {
   const subAnnotationArray = getSubscriptionsFromAnnotation(app)
@@ -472,7 +477,13 @@ export const getAppChildResources = (
     // Find PRs referenced/deployed by this sub
     let subWithPR
     const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
-    placementRules.forEach((item) => {
+    let targetPlacements: any[] = []
+    if (referencedPR?.kind === PlacementRuleKind) {
+      targetPlacements = placementRules
+    } else if (referencedPR?.kind === PlacementKind) {
+      targetPlacements = placements
+    }
+    targetPlacements?.forEach((item) => {
       if (
         referencedPR &&
         referencedPR.name === item.metadata.name &&
@@ -524,9 +535,9 @@ export const getAppChildResources = (
         id: `rules-${prNamespace}-${prName}`,
         name: prName,
         namespace: prNamespace,
-        kind: PlacementRuleKind,
-        apiVersion: PlacementRuleApiVersion,
-        label: `${prName} [${PlacementRuleKind}]`,
+        kind: sub.rule.kind,
+        apiVersion: sub.rule.apiVersion,
+        label: `${prName} [${sub.rule.kind}]`,
       })
     }
   })
