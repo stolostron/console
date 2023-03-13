@@ -62,7 +62,7 @@ export const getApplicationResources = (application: any) => {
       subscriptions.forEach((subscription) => {
         const { channels, rules, placements } = subscription
         delete subscription.channels
-        delete subscription.rules
+        delete subscription.decisions
         delete subscription.placements
         resources.push(filterDeep(channels[0]))
         resources.push(filterDeep(subscription))

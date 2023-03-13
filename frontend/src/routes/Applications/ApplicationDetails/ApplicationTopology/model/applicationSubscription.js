@@ -195,10 +195,10 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
 
     const ruleNamespace = get(subscription, NAMESPACE)
 
-    // ditto for placementDecisions
     get(subscription, 'spec.placement.placementRef.name', '')
       .split(',')
       .forEach((ruleName) => {
+        // ditto for placementDecisions
         if (ruleName) {
           arr = rulesMap[ruleNamespace]
           if (!arr) {
@@ -206,15 +206,9 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
             arr = rulesMap[ruleNamespace]
           }
           arr.push({ ruleName, subscription })
-          subscription.rules = []
-        }
-      })
+          subscription.decisions = []
+          // ditto for placements and placmentrules
 
-    // ditto for placements and placmentrules
-    get(subscription, 'spec.placement.placementRef.name', '')
-      .split(',')
-      .forEach((ruleName) => {
-        if (ruleName) {
           arr = placementsMap[ruleNamespace]
           if (!arr) {
             placementsMap[ruleNamespace] = []
@@ -271,7 +265,7 @@ const getAppRules = (rulesMap, allClusters, placementDecisions) => {
             placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule']
           values.forEach(({ ruleName, subscription }) => {
             if (name === ruleName) {
-              subscription.rules.push(placementDecision)
+              subscription.decisions.push(placementDecision)
               const clusters = get(placementDecision, 'status.decisions', [])
               clusters.forEach((cluster) => {
                 // get cluster name
