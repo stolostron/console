@@ -152,7 +152,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
               noClose
               variant="danger"
               title={t('there.were.errors')}
-              message={t('Expand table rows to view detailed error messages.')}
+              message={t('Expand the table rows to view detailed error messages.')}
             />
             {props.columns && props.keyFn && (
               <AcmTablePaginationContextProvider localStorageKey="model">
