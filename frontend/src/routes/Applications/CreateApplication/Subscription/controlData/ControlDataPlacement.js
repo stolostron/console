@@ -310,6 +310,11 @@ const placementData = (isLocalCluster, t) => {
       active: isLocalCluster,
     },
     {
+      id: 'placementRuleDeprecated',
+      type: 'hidden',
+      deprecated: { path: 'PlacementRule[0].$synced.kind' },
+    },
+    {
       type: 'custom',
       id: 'clusterSelector',
       component: <ClusterSelector />,

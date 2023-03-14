@@ -20,8 +20,8 @@ import {
 import {
   initializeControls,
   parseYAML,
-  getImmutables,
-  getImmutableRows,
+  getDecorationData,
+  getDecorationRows,
   generateSource,
   cacheUserData,
   cloneControlData,
@@ -29,7 +29,7 @@ import {
 import { logCreateErrors, logSourceErrors } from './utils/logger'
 import { validateControls } from './utils/validate-controls'
 import { updateEditStack } from './utils/refresh-source-from-stack'
-import { highlightChanges, highlightAllChanges, highlightImmutables } from './utils/refresh-source-highlighting'
+import { highlightChanges, highlightAllChanges, highlightDecorations } from './utils/refresh-source-highlighting'
 import ControlPanel from './controls/ControlPanel'
 import EditorHeader from './components/EditorHeader'
 import YamlEditor from './components/YamlEditor'
@@ -174,8 +174,8 @@ export default class TemplateEditor extends React.Component {
       }
 
       // generate source from template or stack of resources
-      let templateObject, templateResources, immutableRows
-      ;({ templateYAML, templateObject, templateResources, immutableRows } = generateSource(
+      let templateObject, templateResources, decorationRows
+      ;({ templateYAML, templateObject, templateResources, decorationRows } = generateSource(
         template,
         editStack,
         controlData,
@@ -192,7 +192,7 @@ export default class TemplateEditor extends React.Component {
         resetStatus: typeof resetStatus === 'function' ? resetStatus : () => {},
         isEditing: !!customResources,
         editorReadOnly: state.editorReadOnly || editorReadOnly,
-        immutableRows,
+        decorationRows,
       }
     }
 
@@ -413,20 +413,20 @@ export default class TemplateEditor extends React.Component {
   }
 
   forceGenerate() {
-    const { template, otherYAMLTabs, editStack, controlData, showEditor } = this.state
+    const { template, otherYAMLTabs, editStack, controlData, showEditor, i18n } = this.state
     if (showEditor) {
       const {
         templateYAML: newYAML,
         templateObject,
         templateResources,
-        immutableRows,
+        decorationRows,
       } = generateSource(template, editStack, controlData, otherYAMLTabs)
-      highlightImmutables(this.editors, immutableRows)
+      highlightDecorations(this.editors, decorationRows, i18n)
       this.setState({
         templateYAML: newYAML,
         templateObject,
         templateResources,
-        immutableRows,
+        decorationRows,
       })
     }
   }
@@ -452,7 +452,7 @@ export default class TemplateEditor extends React.Component {
       templateYAML: newYAML,
       templateObject,
       templateResources,
-      immutableRows,
+      decorationRows,
     } = generateSource(template, editStack, controlData, otherYAMLTabs)
     validateControls(
       this.editors,
@@ -465,7 +465,7 @@ export default class TemplateEditor extends React.Component {
       i18n
     )
     highlightAllChanges(this.editors, templateYAML, newYAML, otherYAMLTabs, this.selectedTab)
-    highlightImmutables(this.editors, immutableRows)
+    highlightDecorations(this.editors, decorationRows, i18n)
     const notifications = controlData.filter((c) => {
       return !!c.exception && isFinalValidate
     })
@@ -477,7 +477,7 @@ export default class TemplateEditor extends React.Component {
       templateResources,
       exceptions: [],
       notifications,
-      immutableRows,
+      decorationRows,
     })
     this.isDirty = firstTemplateYAML !== newYAML
     this.handleScrollAndCollapse(control, controlData, creationView)
@@ -530,7 +530,7 @@ export default class TemplateEditor extends React.Component {
       templateYAML: newYAML,
       templateObject,
       templateResources,
-      immutableRows,
+      decorationRows,
     } = generateSource(template, editStack, controlData, otherYAMLTabs)
     validateControls(
       this.editors,
@@ -543,13 +543,13 @@ export default class TemplateEditor extends React.Component {
       i18n
     )
     highlightAllChanges(this.editors, templateYAML, newYAML, otherYAMLTabs, this.selectedTab)
-    highlightImmutables(this.editors, immutableRows)
+    highlightDecorations(this.editors, decorationRows, i18n)
     this.setState({
       controlData,
       templateYAML: newYAML,
       templateObject,
       templateResources,
-      immutableRows,
+      decorationRows,
     })
     this.isDirty = firstTemplateYAML !== newYAML
   }
@@ -600,7 +600,7 @@ export default class TemplateEditor extends React.Component {
     let { template } = this.props
     const { onControlInitialize } = this.props
     const { editStack, otherYAMLTabs, editor, i18n } = this.state
-    let { templateYAML, templateObject, templateResources, immutableRows } = this.state
+    let { templateYAML, templateObject, templateResources, decorationRows } = this.state
     let newYAML = templateYAML
     let newYAMLTabs = otherYAMLTabs
 
@@ -644,13 +644,13 @@ export default class TemplateEditor extends React.Component {
           templateYAML: newYAML,
           templateObject,
           templateResources,
-          immutableRows,
+          decorationRows,
         } = generateSource(template, editStack, controlData, newYAMLTabs))
         if (newYAMLTabs.length === 0 && this.editors.length > 1) {
           this.editors.length = 1
         }
         highlightAllChanges(this.editors, templateYAML, newYAML, otherYAMLTabs, this.selectedTab)
-        highlightImmutables(this.editors, immutableRows)
+        highlightDecorations(this.editors, decorationRows, i18n)
         templateYAML = newYAML
       }
     }
@@ -661,7 +661,7 @@ export default class TemplateEditor extends React.Component {
       templateObject,
       templateResources,
       otherYAMLTabs,
-      immutableRows,
+      decorationRows,
     }
   }
 
@@ -783,7 +783,7 @@ export default class TemplateEditor extends React.Component {
 
   renderEditors = () => {
     const { monacoEditor, theme } = this.props
-    const { activeYAMLEditor, otherYAMLTabs, editorReadOnly, templateYAML, immutableRows, showCondensed } = this.state
+    const { activeYAMLEditor, otherYAMLTabs, editorReadOnly, templateYAML, decorationRows, showCondensed } = this.state
     return (
       <React.Fragment>
         <YamlEditor
@@ -799,7 +799,7 @@ export default class TemplateEditor extends React.Component {
           theme={theme}
           yaml={templateYAML}
           readOnly={editorReadOnly}
-          immutableRows={immutableRows}
+          decorationRows={decorationRows}
         />
         {otherYAMLTabs.map(({ id, templateYAML: yaml }, inx) => {
           return (
@@ -836,7 +836,7 @@ export default class TemplateEditor extends React.Component {
     if (this.editors.length > 1) {
       otherYAMLTabs[this.editors.length - 2].editor = editor
     } else {
-      highlightImmutables(this.editors, this.state.immutableRows)
+      highlightDecorations(this.editors, this.state.decorationRows, this.state.i18n)
     }
     this.layoutEditors()
 
@@ -1062,12 +1062,12 @@ export default class TemplateEditor extends React.Component {
     }
 
     // what lines should be readonly in editor
-    newState.immutableRows = []
-    const immutables = getImmutables(controlData)
-    if (immutables.length) {
+    newState.decorationRows = []
+    const decorationData = getDecorationData(controlData)
+    if (decorationData.length) {
       const parsed = parseYAML(newState.templateYAML)
-      newState.immutableRows = getImmutableRows(immutables, parsed.parsed)
-      highlightImmutables(this.editors, newState.immutableRows)
+      newState.decorationRows = getDecorationRows(decorationData, parsed.parsed)
+      highlightDecorations(this.editors, newState.decorationRows, newState.i18n)
     }
 
     this.setState(newState)
@@ -1347,7 +1347,7 @@ export default class TemplateEditor extends React.Component {
     if (editStack.initialized) {
       delete editStack.initialized
     }
-    const { templateYAML, templateObject, templateResources, immutableRows } = generateSource(
+    const { templateYAML, templateObject, templateResources, decorationRows } = generateSource(
       template,
       editStack,
       controlData,
@@ -1370,7 +1370,7 @@ export default class TemplateEditor extends React.Component {
       templateResources,
       editStack,
       resetInx: resetInx + 1,
-      immutableRows,
+      decorationRows,
     })
     this.isDirty = false
     this.selectedTab = 0

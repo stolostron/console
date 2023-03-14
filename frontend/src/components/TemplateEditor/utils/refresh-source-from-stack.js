@@ -7,8 +7,8 @@ import {
   discoverControls,
   setEditingMode,
   reverseTemplate,
-  getImmutables,
-  getImmutableRows,
+  getDecorationData,
+  getDecorationRows,
   setImmutableValues,
   parseYAML,
 } from './source-utils'
@@ -73,8 +73,8 @@ const intializeControls = (editStack, controlData) => {
 
 const generateSource = (editStack, controlData, template, otherYAMLTabs) => {
   // set immutable values
-  const immutables = getImmutables(controlData)
-  setImmutableValues(immutables, editStack.customResources)
+  const decorationData = getDecorationData(controlData)
+  setImmutableValues(decorationData, editStack.customResources)
 
   // get the next iteration of template changes
   const { templateResources, templateObject } = generateSourceFromTemplate(template, controlData, otherYAMLTabs)
@@ -131,13 +131,13 @@ const generateSource = (editStack, controlData, template, otherYAMLTabs) => {
     })
   }
 
-  const immutableRows = getImmutableRows(immutables, mergedObjects)
+  const decorationRows = getDecorationRows(decorationData, mergedObjects)
 
   return {
     templateYAML,
     templateObject: mergedObjects,
     templateResources,
-    immutableRows,
+    decorationRows,
   }
 }
 

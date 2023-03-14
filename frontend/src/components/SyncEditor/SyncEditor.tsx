@@ -8,7 +8,7 @@ import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
-import { compileAjvSchemas, formatErrors } from './validation'
+import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
@@ -474,8 +474,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // undo/redo enable
       const model = editorRef.current?.getModel()
-      setHasRedo(model['_commandManager']?.future.length > 0)
-      setHasUndo(model['_commandManager']?.past.length > 0)
+      const editStack = model['_commandManager']
+      setHasRedo(editStack?.future.length > 0)
+      setHasUndo(editStack?.currentOpenStackElement || editStack?.past.length > 0)
     }
   }
 
@@ -522,8 +523,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // report just errors and user changes
       onStatusChange({
-        warnings: formatErrors(errors, true),
-        errors: formatErrors(errors),
+        warnings: formatErrors(errors, ErrorType.warning),
+        errors: formatErrors(errors, ErrorType.error),
         changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
       })
     }

@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { get, capitalize } from 'lodash'
+import { get } from 'lodash'
+import { ErrorType } from './validation'
 
+const startCase = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 export const decorate = (
   isCustomEdit: boolean,
   editorHasFocus: boolean,
@@ -76,21 +80,40 @@ const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations
 }
 
 const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], squigglyTooltips: any[]) => {
-  errors.forEach((error: { linePos: any; message: any; isWarning: boolean }) => {
-    const { linePos, message, isWarning } = error
+  errors.forEach((error: { linePos: any; message: any; errorType: ErrorType }) => {
+    const { linePos, message, errorType } = error
     const start = linePos?.start?.line ?? 0
     if (linePos && start !== 0) {
       // error in margin
+      const options = {
+        isWholeLine: true,
+        glyphMarginClassName: 'errorDecoration',
+        overviewRuler: { color: '#ff0000', position: 4 },
+        minimap: { color: '#ff000060', position: 1 },
+        glyphMarginHoverMessage: { value: '```html\n' + startCase(message) + ' \n```' },
+        description: 'resource-editor',
+      }
+      const squiggly = {
+        className: 'squiggly-error',
+      }
+      switch (errorType) {
+        case ErrorType.warning:
+          options.glyphMarginClassName = 'warningDecoration'
+          options.overviewRuler.color = '#ffff00'
+          options.minimap.color = '#ffff0060'
+          squiggly.className = 'squiggly-warning'
+          break
+        case ErrorType.info:
+          options.glyphMarginClassName = 'infoDecoration'
+          options.overviewRuler.color = '#2B9AF3'
+          options.minimap.color = '#2B9AF360'
+          squiggly.className = 'squiggly-information'
+          break
+      }
+
       decorations.push({
         range: new monacoRef.current.Range(start, 0, start, 132),
-        options: {
-          isWholeLine: true,
-          glyphMarginClassName: isWarning ? 'warningDecoration' : 'errorDecoration',
-          glyphMarginHoverMessage: { value: '```html\n' + capitalize(message) + ' \n```' },
-          overviewRuler: { color: isWarning ? '#ffff00' : '#ff0000', position: 4 },
-          minimap: { color: isWarning ? '#ffff0060' : '#ff000060', position: 1 },
-          description: 'resource-editor',
-        },
+        options,
       })
 
       // squiggly line under error
@@ -102,13 +125,11 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
       )
       decorations.push({
         range,
-        options: {
-          className: isWarning ? 'squiggly-warning' : 'squiggly-error',
-        },
+        options: squiggly,
       })
       squigglyTooltips.push({
         range,
-        message: capitalize(message.replace(/\^*/g, '').replace(/\n/g, '  ')),
+        message: startCase(message.replace(/\^*/g, '')).replace(/\n/g, '  '),
       })
     }
     errors.push({ linePos, message })
@@ -161,12 +182,13 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
     (decoration: {
       options: {
         inlineClassName: string
+        glyphMarginClassName: string
         className: string
         description: string
       }
     }) =>
       decoration?.options?.className?.startsWith('squiggly-') ||
-      (decoration?.options?.description === 'resource-editor' &&
+      (!!decoration?.options?.glyphMarginClassName &&
         (decoration?.options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
   )
 }

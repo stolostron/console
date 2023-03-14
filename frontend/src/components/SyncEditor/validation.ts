@@ -4,13 +4,19 @@ import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep } from 'lodash'
 import { getPathArray } from './synchronize'
 
+export enum ErrorType {
+  error = 'error',
+  warning = 'warning',
+  info = 'info',
+}
+
 export interface ErrorMessageType {
   linePos: {
     end: { line: 1; col: 1 }
     start: { line: 1; col: 1 }
   }
   message: string
-  isWarning?: boolean
+  errorType?: ErrorType
 }
 
 //////// compile ajv schemas for validation
@@ -31,7 +37,9 @@ export const compileAjvSchemas = (schema: any[]) => {
       })
       return schemas
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 export const addAjvKeywords = (ajv: Ajv) => {
@@ -67,6 +75,13 @@ export const addAjvKeywords = (ajv: Ajv) => {
       return (
         !data || (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) && data.length <= 63)
       )
+    },
+  })
+  ajv.addKeyword({
+    keyword: 'deprecatedKind',
+    schemaType: 'string',
+    validate: () => {
+      return false
     },
   })
 }
@@ -181,7 +196,7 @@ export function validateResource(
         })
         if (!lineIsProtected) {
           errorMsg.linePos.start.line = errorMsg.linePos.end.line = lineNumber
-          errorMsg.isWarning = true
+          errorMsg.errorType = ErrorType.error
           let matches
           switch (keyword) {
             // missing a key
@@ -202,19 +217,22 @@ export function validateResource(
                   errorMsg.linePos.end.col = similar.$gk.end.col
                 }
               }
-              errorMsg.isWarning = false
               break
             case 'const':
               errorMsg.message = `${message}: ${params.allowedValue}`
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
-              errorMsg.isWarning = false
+              break
+            case 'deprecatedKind':
+              errorMsg.message = `This kind is deprecated: ${mapping.$v}`
+              errorMsg.linePos.start.col = mapping.$gv.start.col
+              errorMsg.linePos.end.col = mapping.$gv.end.col
+              errorMsg.errorType = ErrorType.info
               break
             // value wrong pattern
             case 'pattern':
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
-              errorMsg.isWarning = false
               break
             // validateName
             case 'validateName':
@@ -222,7 +240,6 @@ export function validateResource(
                 'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
-              errorMsg.isWarning = false
               break
             // validateDep
             case 'validateDep':
@@ -232,7 +249,6 @@ export function validateResource(
               errorMsg.linePos.end.line = mapping.$gv.end.line
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
-              errorMsg.isWarning = false
               break
             // validateLabel
             case 'validateLabel':
@@ -240,7 +256,6 @@ export function validateResource(
                 'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
-              errorMsg.isWarning = false
               break
             // value wrong enum
             case 'enum':
@@ -253,12 +268,12 @@ export function validateResource(
                 errorMsg.linePos.start.col = mapping.$gv.start.col
                 errorMsg.linePos.end.col = mapping.$gv.end.col
               }
+              errorMsg.errorType = ErrorType.warning
               break
             case 'type':
               errorMsg.message = message
               errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
               errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
-              errorMsg.isWarning = false
               break
             default:
               errorMsg.message = message
@@ -273,11 +288,9 @@ export function validateResource(
   }
 }
 
-export const formatErrors = (errors: ErrorMessageType[], warnings?: boolean) => {
+export const formatErrors = (errors: ErrorMessageType[], merrorType?: ErrorType) => {
   return errors
-    .filter(({ isWarning }) => {
-      return warnings ? isWarning === true : isWarning !== true
-    })
+    .filter(({ errorType }) => errorType === merrorType)
     .map((error) => {
       return {
         line: error.linePos.start.line,
