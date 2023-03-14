@@ -8,7 +8,7 @@ import { getAuthenticatedToken } from '../lib/token'
 import { getServiceAccountToken } from './serviceAccountToken'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
-interface TokenReview {
+export interface TokenReview {
   spec: {
     token: string
   }

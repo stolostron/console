@@ -9,7 +9,6 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { userPreferencesState } from '../../../atoms'
 import { nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { UserPreference } from '../../../resources/userpreference'
@@ -21,36 +20,27 @@ import {
 } from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
 
-const mockUserPreferences: UserPreference[] = [
-  {
-    apiVersion: 'console.open-cluster-management.io/v1',
-    kind: 'UserPreference',
-    metadata: {
-      name: 'kube-admin',
-    },
-    spec: {
-      savedSearches: [
-        {
-          description: 'testSavedQueryDesc1',
-          id: '1609811592984',
-          name: 'testSavedQuery1',
-          searchText: 'kind:pod',
-        },
-      ],
-    },
+const mockUserPreference: UserPreference = {
+  apiVersion: 'console.open-cluster-management.io/v1',
+  kind: 'UserPreference',
+  metadata: {
+    name: 'kube-admin',
   },
-]
-
-const getUsernameResponse = {
-  body: {
-    username: 'kube:admin',
+  spec: {
+    savedSearches: [
+      {
+        description: 'testSavedQueryDesc1',
+        id: '1609811592984',
+        name: 'testSavedQuery1',
+        searchText: 'kind:pod',
+      },
+    ],
   },
-  statusCode: 200,
 }
 
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -76,11 +66,7 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(userPreferencesState, mockUserPreferences)
-        }}
-      >
+      <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -90,7 +76,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -105,7 +91,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with errors', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -135,11 +121,7 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(userPreferencesState, mockUserPreferences)
-        }}
-      >
+      <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -149,7 +131,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -165,7 +147,7 @@ describe('SearchPage', () => {
   })
 
   it('should render search page correctly and add a search', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -216,11 +198,7 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(userPreferencesState, mockUserPreferences)
-        }}
-      >
+      <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -230,7 +208,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -264,7 +242,7 @@ describe('SearchPage', () => {
       search: '?filters={"textsearch":"kind%3APod%20name%3AtestPod"}',
     } as Location
 
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -339,11 +317,7 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(userPreferencesState, mockUserPreferences)
-        }}
-      >
+      <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -353,7 +327,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()

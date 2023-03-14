@@ -41,8 +41,9 @@ export const SaveAndEditSearchModal = (props: {
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   savedSearchQueries: SavedSearch[]
   userPreference?: UserPreference
+  setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
 }) => {
-  const { savedSearch, onClose, setSelectedSearch, savedSearchQueries, userPreference } = props
+  const { savedSearch, onClose, setSelectedSearch, savedSearchQueries, userPreference, setUserPreference } = props
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(reducer, initState)
   const { searchName, searchDesc } = state
@@ -108,8 +109,11 @@ export const SaveAndEditSearchModal = (props: {
           searchText: searchText,
         },
       ])
-        .then(() => savedSearchSuccess())
-        .catch((err) => {
+        .then((res) => {
+          setUserPreference(res)
+          savedSearchSuccess()
+        })
+        .catch((err: any) => {
           setRequestError(err)
         })
     } else {
@@ -119,8 +123,11 @@ export const SaveAndEditSearchModal = (props: {
         description: searchDesc,
         searchText: searchText,
       })
-        .promise.then(() => savedSearchSuccess())
-        .catch((err) => {
+        .then((res) => {
+          setUserPreference(res)
+          savedSearchSuccess()
+        })
+        .catch((err: any) => {
           setRequestError(err)
         })
     }
@@ -169,7 +176,9 @@ export const SaveAndEditSearchModal = (props: {
         {!savedSearch && (
           <AcmAlert noClose variant={'danger'} isInline={true} title={t('Error')} subtitle={t('Enter search text')} />
         )}
-        {updateError && <AcmAlert noClose variant={'danger'} title={updateError} />}
+        {updateError && (
+          <AcmAlert data-testid={'edit-saved-search-error'} noClose variant={'danger'} title={updateError} />
+        )}
         {isNameConflict && (
           <AcmAlert
             isInline

@@ -20,7 +20,7 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
@@ -99,6 +99,7 @@ function RenderSearchBar(props: {
   setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
   savedSearchQueries: SavedSearch[]
   userPreference?: UserPreference
+  setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
   refetchSearch: any
   searchQueryLoading: boolean
 }) {
@@ -109,6 +110,7 @@ function RenderSearchBar(props: {
     setQueryErrors,
     setSelectedSearch,
     userPreference,
+    setUserPreference,
     refetchSearch,
   } = props
   const { t } = useTranslation()
@@ -179,6 +181,7 @@ function RenderSearchBar(props: {
           onClose={() => setSaveSearch(undefined)}
           savedSearchQueries={savedSearchQueries}
           userPreference={userPreference}
+          setUserPreference={setUserPreference}
         />
         <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
         <Searchbar
@@ -304,10 +307,8 @@ export default function SearchPage() {
   } = transformBrowserUrlToSearchString(window.location.search || '')
   const { t } = useTranslation()
   const savedSearches = t('Saved searches')
-  const { userPreferencesState } = useSharedAtoms()
   const { useSearchQueryLimit } = useSharedAtoms()
   const searchQueryLimit = useSearchQueryLimit()
-  const [userPreferences] = useRecoilState(userPreferencesState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearches)
   const [searchQueryLoading, setSearchQueryLoading] = useState(false)
   const [searchQueryError, setSearchQueryError] = useState<ApolloError | undefined>()
@@ -343,8 +344,8 @@ export default function SearchPage() {
   }, [error])
 
   useEffect(() => {
-    getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
-  }, [userPreferences])
+    getUserPreference().then((resp) => setUserPreference(resp))
+  }, [])
 
   const userSavedSearches = useMemo(() => {
     return userPreference?.spec?.savedSearches ?? []
@@ -387,6 +388,7 @@ export default function SearchPage() {
           setQueryErrors={setQueryErrors}
           savedSearchQueries={userSavedSearches}
           userPreference={userPreference}
+          setUserPreference={setUserPreference}
           refetchSearch={refetch}
           searchQueryLoading={searchQueryLoading}
         />
@@ -404,6 +406,7 @@ export default function SearchPage() {
               savedSearches={userSavedSearches}
               setSelectedSearch={setSelectedSearch}
               userPreference={userPreference}
+              setUserPreference={setUserPreference}
             />
           ))}
       </AcmScrollable>

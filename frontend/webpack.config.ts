@@ -5,16 +5,16 @@ import CompressionPlugin from 'compression-webpack-plugin'
 import CopyPlugin from 'copy-webpack-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
+import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
 import { supportedLanguages } from './src/lib/supportedLanguages'
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -162,6 +162,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
         '/multicloud/configure': { target: 'https://localhost:4000', secure: false },
         '/multicloud/username': { target: 'https://localhost:4000', secure: false },
+        '/multicloud/userpreference': { target: 'https://localhost:4000', secure: false },
       },
       open: true,
       historyApiFallback: true,
