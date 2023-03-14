@@ -20,30 +20,29 @@ export async function getAppSetResourceStatuses(application, appData) {
 
 async function getResourceStatuses(name, namespace, appSetApps, appData) {
   const targetNS = []
-  const argoAppsLabelNames = []
 
   appSetApps.forEach((argoApp) => {
     //get destination and clusters information
-    argoAppsLabelNames.push(`app.kubernetes.io/instance=${argoApp.metadata.name}`)
     const argoNS = argoApp.spec.destination.namespace
     argoNS && targetNS.push(argoNS)
   })
 
   const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []
-  let definedNamespace = ''
-  // const kindsNotNamespaceScoped = ['cluster']
+  const definedNamespace = []
   const kindsNotNamespaceScoped = []
   const kindsNotNamespaceScopedNames = []
   resources.forEach((resource) => {
-    definedNamespace = _.get(resource, 'namespace')
-    if (!resource.namespace) {
+    const rscNS = _.get(resource, 'namespace')
+    if (rscNS) {
+      definedNamespace.push(rscNS)
+    }
+    if (!rscNS) {
       kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
       kindsNotNamespaceScopedNames.push(resource.name)
     }
   })
 
-  appData.targetNamespaces = definedNamespace ? definedNamespace : _.uniq(targetNS)
-  appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
+  appData.targetNamespaces = definedNamespace.length > 0 ? _.uniq(definedNamespace) : _.uniq(targetNS)
 
   let query //= getQueryStringForResource('Application', name, namespace)
   let queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)

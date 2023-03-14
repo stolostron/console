@@ -28,7 +28,6 @@ export type ClusterDetailsContainerData = {
   page: number
   startIdx: number
   clusterSearchToggle: boolean
-  isSelectOpen: boolean
   expandSectionToggleMap: any
   clusterID?: string
   selected?: any
@@ -77,7 +76,6 @@ export function ApplicationTopologyPageContent(props: {
     page: 1,
     startIdx: 0,
     clusterSearchToggle: false,
-    isSelectOpen: false,
     expandSectionToggleMap: new Set(),
     clusterID: undefined,
     selected: undefined,

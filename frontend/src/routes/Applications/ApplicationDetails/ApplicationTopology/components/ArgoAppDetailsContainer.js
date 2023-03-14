@@ -80,15 +80,15 @@ class ArgoAppDetailsContainer extends Component {
     }
 
     // save details state to DiagramView
-    handleArgoAppDetailsContainerUpdate(
+    handleArgoAppDetailsContainerUpdate({
       page,
       startIdx,
       argoAppSearchToggle,
       expandSectionToggleMap,
       selected,
       selectedArgoAppList,
-      isLoading
-    )
+      isLoading,
+    })
     this.setState({
       expandSectionToggleMap: expandSectionToggleMap,
     })
@@ -109,7 +109,15 @@ class ArgoAppDetailsContainer extends Component {
     }
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(1, 0, false, new Set(), selection, newArgoAppList, isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: 1,
+      startIdx: 0,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: selection,
+      selectedArgoAppList: newArgoAppList,
+      isLoading,
+    })
     this.setState({
       selected: selection,
       argoAppList: newArgoAppList,
@@ -129,15 +137,15 @@ class ArgoAppDetailsContainer extends Component {
     const newArgoAppSearchToggle = !argoAppSearchToggle
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(
+    handleArgoAppDetailsContainerUpdate({
       page,
       startIdx,
-      newArgoAppSearchToggle,
+      argoAppSearchToggle: newArgoAppSearchToggle,
       expandSectionToggleMap,
-      undefined,
-      [],
-      isLoading
-    )
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       argoAppSearchToggle: newArgoAppSearchToggle,
     })
@@ -150,7 +158,15 @@ class ArgoAppDetailsContainer extends Component {
     const { isLoading } = this.state
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(1, 0, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: 1,
+      startIdx: 0,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       selected: undefined,
       startIdx: 0,
@@ -167,7 +183,15 @@ class ArgoAppDetailsContainer extends Component {
     const { isLoading } = this.state
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(1, 0, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: 1,
+      startIdx: 0,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       startIdx: 0,
       page: 1,
@@ -192,7 +216,15 @@ class ArgoAppDetailsContainer extends Component {
     const newStartIdx = perPage * divResult
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(lastPage, newStartIdx, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: lastPage,
+      startIdx: newStartIdx,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       startIdx: newStartIdx,
       page: lastPage,
@@ -208,7 +240,15 @@ class ArgoAppDetailsContainer extends Component {
     const newStartIdx = startIdx + perPage
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(currentPage, newStartIdx, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: currentPage,
+      startIdx: newStartIdx,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -224,7 +264,15 @@ class ArgoAppDetailsContainer extends Component {
     const newStartIdx = startIdx - perPage
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(currentPage, newStartIdx, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: currentPage,
+      startIdx: newStartIdx,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -240,7 +288,15 @@ class ArgoAppDetailsContainer extends Component {
     const newStartIdx = (newPage - 1) * perPage
 
     // save details state to DiagramViewer
-    handleArgoAppDetailsContainerUpdate(newPage, newStartIdx, false, new Set(), undefined, [], isLoading)
+    handleArgoAppDetailsContainerUpdate({
+      page: newPage,
+      startIdx: newStartIdx,
+      argoAppSearchToggle: false,
+      expandSectionToggleMap: new Set(),
+      selected: undefined,
+      selectedArgoAppList: [],
+      isLoading,
+    })
     this.setState({
       startIdx: newStartIdx,
       page: newPage,
@@ -326,7 +382,6 @@ class ArgoAppDetailsContainer extends Component {
               'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.',
               [name, status]
             )}
-            :{' '}
           </span>
         </div>
       )
@@ -357,8 +412,8 @@ class ArgoAppDetailsContainer extends Component {
       display: 'block',
     }
     for (let i = startIdx; i < displayArgoAppList.length && i < page * perPage; i++) {
-      const { name, cluster, namespace, destinationName, destinationNamespace, status } = displayArgoAppList[i]
-      const statusIcon = this.mapArgoStatusToStatusIcon(status)
+      const { name, cluster, namespace, destinationName, destinationNamespace, healthStatus } = displayArgoAppList[i]
+      const statusIcon = this.mapArgoStatusToStatusIcon(healthStatus)
       const parentDivStyle =
         i === startIdx
           ? {
@@ -433,10 +488,10 @@ class ArgoAppDetailsContainer extends Component {
               </div>
               <div className={divClass}>
                 <span className={labelClass}>{t('Status')}: </span>
-                <span className={valueClass}>{status}</span>
+                <span className={valueClass}>{healthStatus}</span>
               </div>
               <div className="spacer" />
-              {this.renderErrorMessage(name, status, t)}
+              {this.renderErrorMessage(name, healthStatus, t)}
             </AccordionContent>
           </AccordionItem>
           <span style={outerArgoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
