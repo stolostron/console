@@ -60,6 +60,7 @@ export interface ProviderConnectionStringData {
   // OpenStack
   ['clouds.yaml']?: string
   cloud?: string
+  os_ca_bundle?: string
 
   // Red Hat Virtualization
   ovirt_url?: string

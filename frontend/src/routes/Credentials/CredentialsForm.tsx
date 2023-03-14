@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
+import YAML from 'yaml'
 import {
   AcmEmptyState,
   AcmIcon,
@@ -26,6 +27,7 @@ import {
   validateBaseDomain,
   validateCertificate,
   validateCloudsYaml,
+  validateDirectoryAndName,
   validateGCProjectID,
   validateHttpProxy,
   validateHttpsProxy,
@@ -280,6 +282,32 @@ export function CredentialsForm(
   // OpenStack
   const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
   const [cloud, setOpenstackCloud] = useState(() => providerConnection?.stringData?.cloud ?? '')
+  const [osCABundle, setOSCABundle] = useState(() => providerConnection?.stringData?.os_ca_bundle ?? '')
+  const [osCALocation, setOSCALocation] = useState<string>('')
+  useEffect(() => {
+    try {
+      const yamlData = YAML.parse(cloudsYaml) as {
+        clouds: {
+          [cloud: string]: {
+            auth?: {
+              cacert?: string
+            }
+          }
+        }
+      }
+      setOSCALocation(yamlData?.clouds?.[cloud]?.auth?.cacert ?? '')
+    } catch (_e) {}
+  }, [cloudsYaml, cloud])
+  useEffect(() => {
+    try {
+      const yamlData = YAML.parse(cloudsYaml)
+      if (yamlData?.clouds?.[cloud]?.auth && osCALocation) {
+        yamlData.clouds[cloud].auth.cacert = osCALocation
+        setOpenstackCloudsYaml(YAML.stringify(yamlData))
+      }
+    } catch (_e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [osCALocation, cloud])
 
   // Red Hat Virtualization
   const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
@@ -412,6 +440,7 @@ export function CredentialsForm(
       case Provider.openstack:
         stringData['clouds.yaml'] = cloudsYaml
         stringData.cloud = cloud
+        stringData.os_ca_bundle = osCABundle
         stringData.baseDomain = baseDomain
         stringData.pullSecret = pullSecret
         stringData['ssh-privatekey'] = sshPrivatekey
@@ -494,6 +523,7 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.vsphereResourcePool', setState: setVsphereResourcePool },
       { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
       { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
+      { path: 'Secret[0].stringData.os_ca_bundle', setState: setOSCABundle },
       { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
       { path: 'Secret[0].stringData.ovirt_fqdn', setState: setOvirtFqdn },
       { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
@@ -1070,6 +1100,31 @@ export function CredentialsForm(
             onChange: setOpenstackCloud,
             isRequired: true,
           },
+          {
+            id: 'os_ca_bundle',
+            isHidden: credentialsType !== Provider.openstack,
+            type: 'TextArea',
+            label: t('credentialsForm.os_ca_bundle.label'),
+            placeholder: t('credentialsForm.os_ca_bundle.placeholder'),
+            labelHelp: t('credentialsForm.os_ca_bundle.labelHelp'),
+            value: osCABundle,
+            onChange: setOSCABundle,
+            isRequired: false,
+            isSecret: true,
+            validation: (value) => validateCertificate(value, t),
+          },
+          {
+            id: 'os_ca_location',
+            isHidden: credentialsType !== Provider.openstack,
+            type: 'Text',
+            label: t('credentialsForm.os_ca_location.label'),
+            placeholder: t('credentialsForm.os_ca_location.placeholder'),
+            labelHelp: t('credentialsForm.os_ca_location.labelHelp'),
+            value: osCALocation,
+            onChange: setOSCALocation,
+            isRequired: false,
+            validation: (value) => validateDirectoryAndName(osCABundle, value, t),
+          },
         ],
       },
       {
@@ -1508,6 +1563,7 @@ export function CredentialsForm(
         '*.stringData.additionalTrustBundle',
         '*.stringData.disconnectedAdditionalTrustBundle',
         '*.stringData.ovirt_ca_bundle',
+        '*.stringData.os_ca_bundle',
         '*.stringData.ovirt_password',
         '*.stringData.ovirt-config.yaml',
         '*.stringData.osServicePrincipal.json',
