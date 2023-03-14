@@ -20,7 +20,7 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
@@ -95,9 +95,17 @@ function RenderSearchBar(props: {
     setQueryErrors: React.Dispatch<React.SetStateAction<boolean>>
     savedSearchQueries: SavedSearch[]
     userPreference?: UserPreference
+    setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
 }) {
-    const { presetSearchQuery, queryErrors, savedSearchQueries, setQueryErrors, setSelectedSearch, userPreference } =
-        props
+    const {
+        presetSearchQuery,
+        queryErrors,
+        savedSearchQueries,
+        setQueryErrors,
+        setSelectedSearch,
+        userPreference,
+        setUserPreference,
+    } = props
     const { t } = useTranslation()
     const history = useHistory()
     const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
@@ -164,6 +172,7 @@ function RenderSearchBar(props: {
                     onClose={() => setSaveSearch(undefined)}
                     savedSearchQueries={savedSearchQueries}
                     userPreference={userPreference}
+                    setUserPreference={setUserPreference}
                 />
                 <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
                 <Searchbar
@@ -285,16 +294,15 @@ export default function SearchPage() {
         presetSearchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
-    const { userPreferencesState } = useSharedAtoms()
-    const [userPreferences] = useRecoilState(userPreferencesState)
     const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
     const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
+
     const { t } = useTranslation()
     useEffect(() => {
-        getUserPreference(userPreferences).then((resp) => setUserPreference(resp))
-    }, [userPreferences])
+        getUserPreference().then((resp) => setUserPreference(resp))
+    }, [])
 
     const userSavedSearches = useMemo(() => {
         return userPreference?.spec?.savedSearches ?? []
@@ -337,6 +345,7 @@ export default function SearchPage() {
                     setQueryErrors={setQueryErrors}
                     savedSearchQueries={userSavedSearches}
                     userPreference={userPreference}
+                    setUserPreference={setUserPreference}
                 />
                 {!queryErrors &&
                     (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
@@ -349,6 +358,7 @@ export default function SearchPage() {
                             savedSearches={userSavedSearches}
                             setSelectedSearch={setSelectedSearch}
                             userPreference={userPreference}
+                            setUserPreference={setUserPreference}
                         />
                     ))}
             </AcmScrollable>
