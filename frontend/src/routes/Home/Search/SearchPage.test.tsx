@@ -38,17 +38,9 @@ const mockUserPreference: UserPreference = {
   },
 }
 
-const getUsernameResponse = {
-  body: {
-    username: 'kube:admin',
-  },
-  statusCode: 200,
-}
-
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
-    const getUserPreferenceNock = nockRequest('/userpreference/kube-admin', mockUserPreference)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -84,7 +76,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -99,8 +91,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with errors', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
-    const getUserPreferenceNock = nockRequest('/userpreference/kube-admin', mockUserPreference)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -140,7 +131,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -156,8 +147,7 @@ describe('SearchPage', () => {
   })
 
   it('should render search page correctly and add a search', async () => {
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
-    const getUserPreferenceNock = nockRequest('/userpreference/kube-admin', mockUserPreference)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -218,7 +208,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -252,8 +242,7 @@ describe('SearchPage', () => {
       search: '?filters={"textsearch":"kind%3APod%20name%3AtestPod"}',
     } as Location
 
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
-    const getUserPreferenceNock = nockRequest('/userpreference/kube-admin', mockUserPreference)
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
         request: {
@@ -338,7 +327,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([getUsernameNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()

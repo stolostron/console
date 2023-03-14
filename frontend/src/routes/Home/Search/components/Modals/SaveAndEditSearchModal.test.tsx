@@ -5,17 +5,10 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreApiPaths, nockPatchRequest, nockPostRequest, nockRequest } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockPatchRequest, nockPostRequest } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { UserPreference } from '../../../../../resources/userpreference'
 import { SaveAndEditSearchModal } from './SaveAndEditSearchModal'
-
-const getUsernameResponse = {
-  body: {
-    username: 'kube:admin',
-  },
-  statusCode: 200,
-}
 
 const mockUserPreference: UserPreference = {
   apiVersion: 'console.open-cluster-management.io/v1',
@@ -57,8 +50,14 @@ describe('SaveAndEditSearchModal', () => {
   beforeEach(() => nockIgnoreApiPaths())
   it('should create UserPreference with a successful response', async () => {
     Date.now = jest.fn(() => 1609885947015)
-    const getUsernameNock = nockRequest('/username', getUsernameResponse)
-    const createUserPreferenceNock = nockPostRequest('/userpreference', mockUserPreference)
+    const createUserPreferenceNock = nockPostRequest('/userpreference', [
+      {
+        id: '1609885947015',
+        name: 'testSearch1',
+        description: 'testSearch1Desc',
+        searchText: 'kind:Pod',
+      },
+    ])
     render(
       <RecoilRoot>
         <MockedProvider addTypename={false}>
@@ -91,14 +90,14 @@ describe('SaveAndEditSearchModal', () => {
     userEvent.click(saveButton)
 
     // Wait for UserPreference GET mock
-    await waitForNocks([getUsernameNock, createUserPreferenceNock])
+    await waitForNocks([createUserPreferenceNock])
 
     await wait() // Test that the component has rendered correctly without an error
     await waitFor(() => expect(screen.queryByTestId('edit-saved-search-error')).not.toBeInTheDocument())
   })
 
   it('should Update UserPreference with a successful response', async () => {
-    const patchUserPreferenceNock = nockPatchRequest('/userpreference/kube-admin', mockUserPreferencePatch)
+    const patchUserPreferenceNock = nockPatchRequest('/userpreference', mockUserPreferencePatch)
     render(
       <RecoilRoot>
         <MockedProvider addTypename={false}>

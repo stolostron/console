@@ -37,7 +37,7 @@ const mockUserPreference: UserPreference = {
 describe('DeleteSearchModal', () => {
   beforeEach(() => nockIgnoreApiPaths())
   it('should call the delete request with a successful response', async () => {
-    const getUserPreferenceNock = nockPatchRequest('/userpreference/kube-admin', mockUserPreference)
+    const getUserPreferenceNock = nockPatchRequest('/userpreference', mockUserPreference)
     render(
       <RecoilRoot>
         <MockedProvider addTypename={false}>

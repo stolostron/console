@@ -55,7 +55,6 @@ router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
-router.all('/userpreference/*', userpreference)
 router.get(`/*`, serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
