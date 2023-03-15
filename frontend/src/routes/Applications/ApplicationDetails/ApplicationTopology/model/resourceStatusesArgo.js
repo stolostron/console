@@ -68,7 +68,7 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
   if (argoSource) {
     const { searchResult } = argoSource.data
     const searchResultItems = searchResult && searchResult.length && _.get(searchResult[0], 'items', [])
-    const allApps = searchResultItems ? searchResultItems.filter((app) => app.kind === 'Application') : []
+    const allApps = searchResultItems ? searchResultItems.filter((searchApp) => searchApp.kind === 'Application') : []
     const targetNS = []
     const targetClusters = []
     const targetNSForClusters = {} //keep track of what namespaces each cluster must deploy on
@@ -128,7 +128,7 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
   }
 
   let query = getQueryStringForResource('Application', name, namespace)
-  let queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
+  const queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
   if (appData && appData.targetNamespaces) {
     const argoKinds = appData.relatedKinds
       ? appData.relatedKinds.filter(function (el) {
