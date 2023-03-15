@@ -1111,7 +1111,7 @@ export function CredentialsForm(
             onChange: setOSCABundle,
             isRequired: false,
             isSecret: true,
-            validation: (value) => validateCertificate(value, t),
+            validation: (value) => (value !== '' ? validateCertificate(value, t) : undefined),
           },
           {
             id: 'os_ca_location',

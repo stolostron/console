@@ -8,7 +8,8 @@ import {
   ProviderConnectionKind,
   ProviderConnectionStringData,
 } from '../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -362,11 +363,12 @@ describe('add credentials page', () => {
       'ost',
       {
         'clouds.yaml':
-          'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+          'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/etc/openstack-ca/ca.crt"\n',
         cloud: 'openstack',
         clusterOSImage: '',
         imageContentSources: '',
         disconnectedAdditionalTrustBundle: '',
+        os_ca_bundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
       },
       true
     )
@@ -379,6 +381,19 @@ describe('add credentials page', () => {
     // ost credentials
     await typeByTestId('cloud', providerConnection.stringData?.cloud!)
     await typeByTestId('clouds.yaml', providerConnection.stringData?.['clouds.yaml']!)
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /internal ca certificate/i,
+      }),
+      providerConnection.stringData?.os_ca_bundle!
+    )
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /ca certificate location/i,
+      }),
+      '/etc/openstack-ca/ca.crt'
+    )
+
     await clickByText('Next')
 
     // skip disconnected
@@ -394,6 +409,10 @@ describe('add credentials page', () => {
     await clickByText('Next')
 
     // Add Credentials
+    if (providerConnection.stringData) {
+      providerConnection.stringData['clouds.yaml'] =
+        'clouds:\n  openstack:\n    auth:\n      auth_url: https://acme.com\n      username: fakeuser\n      password: fakepwd\n      cacert: /etc/openstack-ca/ca.crt/etc/openstack-ca/ca.crt\n'
+    }
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
