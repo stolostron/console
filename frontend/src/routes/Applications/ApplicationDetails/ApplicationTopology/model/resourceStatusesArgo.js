@@ -9,8 +9,7 @@ export async function getArgoResourceStatuses(application, appData, topology) {
   const argoSource = await getArgoSource(application, appData)
 
   // get resource statuses
-  const { name, namespace } = application
-  const resourceStatuses = await getResourceStatuses(name, namespace, appData, topology, argoSource)
+  const resourceStatuses = await getResourceStatuses(application.app, appData, topology, argoSource)
 
   const secret = await getArgoSecret(appData, resourceStatuses)
   if (secret) {
@@ -61,17 +60,20 @@ async function getArgoSource(application, appData) {
   })
 }
 
-async function getResourceStatuses(name, namespace, appData, topology, argoSource) {
+async function getResourceStatuses(app, appData, topology, argoSource) {
+  const name = _.get(app, 'metadata.name')
+  const namespace = _.get(app, 'metadata.namespace')
+  const kindsNotNamespaceScoped = []
+  const kindsNotNamespaceScopedNames = []
   if (argoSource) {
     const { searchResult } = argoSource.data
-    const allApps = _.get(searchResult[0], 'items', []).filter((app) => app.kind === 'Application')
+    const searchResultItems = searchResult && searchResult.length && _.get(searchResult[0], 'items', [])
+    const allApps = searchResultItems ? searchResultItems.filter((searchApp) => searchApp.kind === 'Application') : []
     const targetNS = []
     const targetClusters = []
-    const argoAppsLabelNames = []
     const targetNSForClusters = {} //keep track of what namespaces each cluster must deploy on
     allApps.forEach((argoApp) => {
       //get destination and clusters information
-      argoAppsLabelNames.push(`app.kubernetes.io/instance=${argoApp.name}`)
       const argoNS = argoApp.destinationNamespace
       argoNS && targetNS.push(argoNS)
       const argoServerDest = findMatchingCluster(argoApp, _.get(appData, 'argoSecrets'))
@@ -89,9 +91,21 @@ async function getResourceStatuses(name, namespace, appData, topology, argoSourc
         }
       }
     })
-    appData.targetNamespaces = _.uniq(targetNS)
+
+    const resources = _.get(app, 'status.resources', [])
+    const resourceNS = []
+    resources.forEach((rsc) => {
+      const rscNS = _.get(rsc, 'namespace')
+      if (rscNS) {
+        resourceNS.push(rscNS)
+      }
+      if (!rscNS) {
+        kindsNotNamespaceScoped.push(rsc.kind.toLowerCase())
+        kindsNotNamespaceScopedNames.push(rsc.name)
+      }
+    })
+    appData.targetNamespaces = resourceNS.length > 0 ? _.uniq(resourceNS) : _.uniq(targetNS)
     appData.clusterInfo = _.uniq(targetClusters)
-    appData.argoAppsLabelNames = _.uniq(argoAppsLabelNames)
     //store all argo apps and destination clusters info on the first app
     const topoResources = topology.nodes
     const firstNode = topoResources[0]
@@ -114,14 +128,20 @@ async function getResourceStatuses(name, namespace, appData, topology, argoSourc
   }
 
   let query = getQueryStringForResource('Application', name, namespace)
+  const queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
   if (appData && appData.targetNamespaces) {
-    const argoKinds = appData.relatedKinds ? appData.relatedKinds.toString() : null
+    const argoKinds = appData.relatedKinds
+      ? appData.relatedKinds.filter(function (el) {
+          return !kindsNotNamespaceScoped.includes(el)
+        })
+      : null
     //get all resources from the target namespace since they are not linked to the argo application
     query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString())
-    query.filters.push({
-      property: 'label',
-      values: appData.argoAppsLabelNames,
-    })
+    if (kindsNotNamespaceScoped.length > 0) {
+      kindsNotNamespaceScoped.forEach((item, i) => {
+        queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i]))
+      })
+    }
     //get the cluster for each target namespace and all pods related to this objects only
     //always ask for related pods, replicaset and replocationcontroller because they are tagged by the app instance
     // we'll get them if any are linked to the objects returned above
@@ -130,7 +150,7 @@ async function getResourceStatuses(name, namespace, appData, topology, argoSourc
   return searchClient.query({
     query: SearchResultRelatedItemsDocument,
     variables: {
-      input: [{ ...query }],
+      input: [{ ...query }, ...queryNotNamespaceScoped],
       limit: 1000,
     },
     fetchPolicy: 'network-only',
