@@ -128,7 +128,7 @@ export function validateBaseDomain(value: string, t: TFunction) {
   return undefined
 }
 
-export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFunction) {
+export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string, t: TFunction) {
   if (yamlValue) {
     try {
       //ensure we have valid YAML
@@ -139,6 +139,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
               auth_url?: string
               password?: string
               username?: string
+              cacert?: string
             }
           }
         }
@@ -150,25 +151,15 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
         return t('validate.yaml.not.valid')
       }
 
-      let found = false
-      for (const key in clouds) {
-        //look for matching cloud name
-        if (cloudValue !== undefined && key === cloudValue) {
-          found = true
-        }
-        //check a few of the required fields, especially password, since the user
-        //would have had to add this manually
-        if (
-          clouds[key]?.auth?.auth_url === undefined ||
-          clouds[key]?.auth?.password === undefined ||
-          clouds[key]?.auth?.username === undefined
-        ) {
-          return t('validate.yaml.not.valid')
-        }
-      }
-      //Uh-oh, cloud name not found in clouds.yaml
-      if (cloudValue !== undefined && !found) {
+      const cloud = clouds[cloudValue]
+      if (!cloud) {
         return t('validate.yaml.cloud.not.found')
+      }
+      if (!cloud?.auth?.auth_url || !cloud?.auth?.password || !cloud?.auth?.username) {
+        return t('validate.yaml.cloud.auth.not.found')
+      }
+      if (!cloud?.auth?.cacert && osCABundle) {
+        return t('validate.yaml.cloud.cacert.not.found')
       }
     } catch (e) {
       return t('validate.yaml.not.valid')

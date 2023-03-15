@@ -27,7 +27,6 @@ import {
   validateBaseDomain,
   validateCertificate,
   validateCloudsYaml,
-  validateDirectoryAndName,
   validateGCProjectID,
   validateHttpProxy,
   validateHttpsProxy,
@@ -283,31 +282,29 @@ export function CredentialsForm(
   const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
   const [cloud, setOpenstackCloud] = useState(() => providerConnection?.stringData?.cloud ?? '')
   const [osCABundle, setOSCABundle] = useState(() => providerConnection?.stringData?.os_ca_bundle ?? '')
-  const [osCALocation, setOSCALocation] = useState<string>('')
-  useEffect(() => {
-    try {
-      const yamlData = YAML.parse(cloudsYaml) as {
-        clouds: {
-          [cloud: string]: {
-            auth?: {
-              cacert?: string
-            }
-          }
-        }
-      }
-      setOSCALocation(yamlData?.clouds?.[cloud]?.auth?.cacert ?? '')
-    } catch (_e) {}
-  }, [cloudsYaml, cloud])
+  // user changes yaml, update cloud to first cloud in yaml
   useEffect(() => {
     try {
       const yamlData = YAML.parse(cloudsYaml)
-      if (yamlData?.clouds?.[cloud]?.auth && osCALocation) {
-        yamlData.clouds[cloud].auth.cacert = osCALocation
-        setOpenstackCloudsYaml(YAML.stringify(yamlData))
+      const clouds = Object.keys(yamlData?.clouds)
+      if (clouds.length) {
+        setOpenstackCloud(clouds[0])
       }
     } catch (_e) {}
+  }, [cloudsYaml])
+  // user adds ca cert or changes cloud, set auth.cacert to '/etc/openstack-ca/ca.crt'
+  useEffect(() => {
+    if (osCABundle) {
+      try {
+        const yamlData = YAML.parse(cloudsYaml)
+        if (yamlData?.clouds?.[cloud]?.auth) {
+          yamlData.clouds[cloud].auth.cacert = '/etc/openstack-ca/ca.crt'
+          setOpenstackCloudsYaml(YAML.stringify(yamlData))
+        }
+      } catch (_e) {}
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [osCALocation, cloud])
+  }, [osCABundle, cloud])
 
   // Red Hat Virtualization
   const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
@@ -1085,7 +1082,7 @@ export function CredentialsForm(
             onChange: setOpenstackCloudsYaml,
             isRequired: true,
             isSecret: true,
-            validation: (value) => validateCloudsYaml(value, cloud, t),
+            validation: (value) => validateCloudsYaml(value, cloud, osCABundle, t),
           },
           {
             id: 'cloud',
@@ -1112,18 +1109,6 @@ export function CredentialsForm(
             isRequired: false,
             isSecret: true,
             validation: (value) => (value !== '' ? validateCertificate(value, t) : undefined),
-          },
-          {
-            id: 'os_ca_location',
-            isHidden: credentialsType !== Provider.openstack,
-            type: 'Text',
-            label: t('credentialsForm.os_ca_location.label'),
-            placeholder: t('credentialsForm.os_ca_location.placeholder'),
-            labelHelp: t('credentialsForm.os_ca_location.labelHelp'),
-            value: osCALocation,
-            onChange: setOSCALocation,
-            isRequired: false,
-            validation: (value) => validateDirectoryAndName(osCABundle, value, t),
           },
         ],
       },

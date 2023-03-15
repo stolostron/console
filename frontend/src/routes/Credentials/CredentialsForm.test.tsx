@@ -387,12 +387,6 @@ describe('add credentials page', () => {
       }),
       providerConnection.stringData?.os_ca_bundle!
     )
-    userEvent.type(
-      screen.getByRole('textbox', {
-        name: /ca certificate location/i,
-      }),
-      '/etc/openstack-ca/ca.crt'
-    )
 
     await clickByText('Next')
 
@@ -411,7 +405,7 @@ describe('add credentials page', () => {
     // Add Credentials
     if (providerConnection.stringData) {
       providerConnection.stringData['clouds.yaml'] =
-        'clouds:\n  openstack:\n    auth:\n      auth_url: https://acme.com\n      username: fakeuser\n      password: fakepwd\n      cacert: /etc/openstack-ca/ca.crt/etc/openstack-ca/ca.crt\n'
+        'clouds:\n  openstack:\n    auth:\n      auth_url: https://acme.com\n      username: fakeuser\n      password: fakepwd\n      cacert: /etc/openstack-ca/ca.crt\n'
     }
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')

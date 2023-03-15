@@ -196,9 +196,9 @@ describe('validation', () => {
       ],
     ])('%s', (_name, value, value2, isValid) => {
       if (!isValid) {
-        expect(validateCloudsYaml(value, value2, t)).toBeTruthy()
+        expect(validateCloudsYaml(value, value2, '', t)).toBeTruthy()
       } else {
-        expect(validateCloudsYaml(value, value2, t)).toBeUndefined()
+        expect(validateCloudsYaml(value, value2, '', t)).toBeUndefined()
       }
     })
   })
