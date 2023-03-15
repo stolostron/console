@@ -32,7 +32,7 @@ import { searchClient } from './search-sdk/search-client'
 import {
   useGetMessagesQuery,
   useSearchCompleteQuery,
-  useSearchResultItemsLazyQuery,
+  useSearchResultItemsQuery,
   useSearchSchemaQuery,
 } from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
@@ -159,6 +159,25 @@ function RenderSearchBar(props: {
     }
   }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
 
+  const suggestions = useMemo(() => {
+    return currentSearch === '' ||
+      (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
+      ? formatSearchbarSuggestions(
+          _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
+          'filter',
+          '', // Dont need to de-dupe filters
+          searchQueryLimit,
+          t
+        )
+      : formatSearchbarSuggestions(
+          _.get(searchCompleteResults, 'data.searchComplete', []),
+          'value',
+          currentSearch, // pass current search query in order to de-dupe already selected values
+          searchQueryLimit,
+          t
+        )
+  }, [currentSearch, searchSchemaResults, searchCompleteResults, searchQueryLimit, t])
+
   const saveSearchTooltip = useMemo(() => {
     if (savedSearchQueries.length >= savedSearchLimit) {
       return t('Saved search query limit has been reached. Please delete a saved search to save another.')
@@ -189,24 +208,7 @@ function RenderSearchBar(props: {
           queryString={currentSearch}
           saveSearchTooltip={saveSearchTooltip}
           setSaveSearch={setSaveSearch}
-          suggestions={
-            currentSearch === '' ||
-            (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
-              ? formatSearchbarSuggestions(
-                  _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
-                  'filter',
-                  '', // Dont need to de-dupe filters
-                  searchQueryLimit,
-                  t
-                )
-              : formatSearchbarSuggestions(
-                  _.get(searchCompleteResults, 'data.searchComplete', []),
-                  'value',
-                  currentSearch, // pass current search query in order to de-dupe already selected values
-                  searchQueryLimit,
-                  t
-                )
-          }
+          suggestions={suggestions}
           currentQueryCallback={(newQuery) => {
             setCurrentSearch(newQuery)
             if (newQuery === '') {
@@ -310,38 +312,15 @@ export default function SearchPage() {
   const { useSearchQueryLimit } = useSharedAtoms()
   const searchQueryLimit = useSearchQueryLimit()
   const [selectedSearch, setSelectedSearch] = useState(savedSearches)
-  const [searchQueryLoading, setSearchQueryLoading] = useState(false)
-  const [searchQueryError, setSearchQueryError] = useState<ApolloError | undefined>()
   const [queryErrors, setQueryErrors] = useState(false)
   const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
 
-  const [fireSearchQuery, { called, data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
+  const { data, loading, error, refetch } = useSearchResultItemsQuery({
+    skip: presetSearchQuery === '',
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: { input: [convertStringToQuery(presetSearchQuery, searchQueryLimit)] },
   })
-
-  useEffect(() => {
-    if (presetSearchQuery !== '') {
-      if (!called) {
-        fireSearchQuery({
-          variables: { input: [convertStringToQuery(presetSearchQuery, searchQueryLimit)] },
-        })
-      } else {
-        refetch &&
-          refetch({
-            input: [convertStringToQuery(presetSearchQuery, searchQueryLimit)],
-          })
-      }
-    }
-  }, [fireSearchQuery, presetSearchQuery, called, refetch, searchQueryLimit])
-
-  useEffect(() => {
-    setSearchQueryLoading(loading)
-  }, [loading])
-
-  useEffect(() => {
-    setSearchQueryError(error)
-  }, [error])
 
   useEffect(() => {
     getUserPreference().then((resp) => setUserPreference(resp))
@@ -390,14 +369,14 @@ export default function SearchPage() {
           userPreference={userPreference}
           setUserPreference={setUserPreference}
           refetchSearch={refetch}
-          searchQueryLoading={searchQueryLoading}
+          searchQueryLoading={loading}
         />
         {!queryErrors &&
           (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
             <SearchResults
               currentQuery={presetSearchQuery}
-              error={searchQueryError}
-              loading={searchQueryLoading}
+              error={error}
+              loading={loading}
               data={data}
               preSelectedRelatedResources={preSelectedRelatedResources}
             />

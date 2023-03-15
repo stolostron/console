@@ -20,6 +20,7 @@
   "{{count}} more_plural": "{{count}} more",
   "{{count}} selected": "{{count}} selected",
   "{{count}} selected_plural": "{{count}} selected",
+  "{{kind}} details": "{{kind}} details",
   "{{name}} was successfully created.": "{{name}} was successfully created.",
   "{{name}} was successfully updated.": "{{name}} was successfully updated.",
   "{{names}} were successfully synced.": "{{names}} were successfully synced.",
