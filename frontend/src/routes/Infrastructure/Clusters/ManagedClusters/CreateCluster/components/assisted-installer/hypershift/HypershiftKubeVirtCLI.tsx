@@ -21,52 +21,44 @@ import {
 } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
-import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
-import { Provider } from '../../../../../../../../ui-components'
-import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
 import './css/HypershiftAWSCLI.css'
 
-export function HypershiftAWSCLI() {
+export function HypershiftKubeVirtCLI() {
   const { t } = useTranslation()
   const { back, cancel } = useBackCancelNavigation()
   const breadcrumbs = [
     { label: t('Clusters'), to: NavigationPath.clusters },
     { label: t('Infrastructure'), to: NavigationPath.createCluster },
-    { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
+    {
+      label: t('Control plane type - {{hcType}}', { hcType: 'KubeVirt' }),
+      to: NavigationPath.createKubeVirtControlPlane,
+    },
     { label: t('Create cluster') },
   ]
 
   const [copied, setCopied] = useState(false)
-  const [isModalOpenAws, setIsModalOpenAws] = useState(false)
-  const [isModalOpenAwsBucket, setIsModalOpenAwsBucket] = useState(false)
-  const { projects } = GetProjects()
 
   const code = `# Set environment variables
-REGION="us-east-1"
-CLUSTER_NAME="example"
-SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
-NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
+export CLUSTER_NAME=example
+export PULL_SECRET="$HOME/pull-secret"
+export MEM="6Gi"
+export CPU="2"
+export WORKER_COUNT="2"
 
-hypershift create cluster aws 
-  --name $CLUSTER_NAME \\
-  --namespace $NAMESPACE \\
-  --node-pool-replicas=3 \\
-  --secret-creds $SECRET_CREDS \\
-  --region $REGION \\`
+hypershift create cluster kubevirt \\
+--name $CLUSTER_NAME \\
+--node-pool-replicas=$WORKER_COUNT \\
+--pull-secret $PULL_SECRET \\
+--memory $MEM \\
+--cores $CPU \\`
 
-  const helperCommand = `hypershift create cluster aws --help`
-  const handleModalToggleAws = () => {
-    setIsModalOpenAws(!isModalOpenAws)
-  }
-
-  const handleModalToggleAwsBucket = () => {
-    setIsModalOpenAwsBucket(!isModalOpenAwsBucket)
-  }
-
+  const helperCommand = `hypershift create cluster kubevirt --help`
+  const patchCommand = `oc patch ingresscontroller -n openshift-ingress-operator default --type=json -p '[{ "op": "add", "path": "/spec/routeAdmission", "value": {wildcardPolicy: "WildcardsAllowed"}}]'`
+  const patchStorageCommand = `oc patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'`
   const onClick = (text: string) => {
     navigator.clipboard.writeText(text.toString())
     setCopied(true)
@@ -92,42 +84,6 @@ hypershift create cluster aws
 
   return (
     <Page>
-      <Modal
-        variant={ModalVariant.large}
-        showClose={false}
-        isOpen={isModalOpenAws}
-        aria-labelledby="modal-wizard-label"
-        aria-describedby="modal-wizard-description"
-        onClose={handleModalToggleAws}
-        hasNoBodyWrapper
-      >
-        <CredentialsForm
-          namespaces={projects}
-          isEditing={false}
-          isViewing={false}
-          credentialsType={Provider.aws}
-          handleModalToggle={handleModalToggleAws}
-          hideYaml={true}
-        />
-      </Modal>
-      <Modal
-        variant={ModalVariant.large}
-        showClose={false}
-        isOpen={isModalOpenAwsBucket}
-        aria-labelledby="modal-wizard-label"
-        aria-describedby="modal-wizard-description"
-        onClose={handleModalToggleAwsBucket}
-        hasNoBodyWrapper
-      >
-        <CredentialsForm
-          namespaces={projects}
-          isEditing={false}
-          isViewing={false}
-          credentialsType={Provider.awss3}
-          handleModalToggle={handleModalToggleAwsBucket}
-          hideYaml={true}
-        />
-      </Modal>
       <PageHeader
         title={t('Create cluster')}
         breadcrumbs={breadcrumbs}
@@ -151,28 +107,45 @@ hypershift create cluster aws
             <TextContent>
               <Text component={TextVariants.h2}>{t('Prerequisite')}</Text>
               <Text component={TextVariants.p}>
-                {t('Enable Hosted Control Plane feature for AWS. Download and install Hosted Control Plane CLI.')}
+                {t('Enable Hosted Control Plane feature for KubeVirt. Download and install Hosted Control Plane CLI.')}
               </Text>
-              <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
+              <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_MANAGE_KUBEVIRT} target="_blank">
                 {t('Follow documentation for more information.')}
               </Text>
             </TextContent>
           </ListItem>
           <ListItem icon={<span className="ocm-icons">2</span>}>
             <TextContent>
-              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) credential')}</Text>
+              <Text component={TextVariants.h2}>{t('Configure')}</Text>
               <Text component={TextVariants.p}>
-                {t('Create a new or update an existing AWS credential.')}
-                <CreateCredentialModal handleModalToggle={handleModalToggleAws} />
+                {t('The management OpenShift Container Platform cluster must have wildcard DNS routes enabled:')}
               </Text>
+              <CodeBlock actions={actions(patchCommand, 'helper-command')}>
+                <CodeBlockCode id="patch-command">{patchCommand}</CodeBlockCode>
+              </CodeBlock>
+
+              <Text component={TextVariants.p}>
+                {t(
+                  'The management OpenShift Container Platform cluster must have OpenShift Virtualization installed on it. For more information, see Installing OpenShift Virtualization using the web console.'
+                )}
+              </Text>
+              <Text component={TextVariants.p}>
+                {t(
+                  'The management {ocp-short} cluster must have a default storage class. For more information, see link:https://docs.openshift.com/container-platform/4.12/post_installation_configuration/storage-configuration.html[Post-installation storage configuration]. This example shows how to set a default storage class:'
+                )}
+              </Text>
+              <CodeBlock actions={actions(patchStorageCommand, 'helper-command')}>
+                <CodeBlockCode id="patch-storageclass-command">{patchStorageCommand}</CodeBlockCode>
+              </CodeBlock>
             </TextContent>
           </ListItem>
           <ListItem icon={<span className="ocm-icons">3</span>}>
             <TextContent>
-              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) S3 bucket credential')}</Text>
+              <Text component={TextVariants.h2}>{t('Pull secret')}</Text>
               <Text component={TextVariants.p}>
-                {t('Create a new or update an existing AWS S3 bucket credential.')}
-                <CreateCredentialModal handleModalToggle={handleModalToggleAwsBucket} />
+                {t(
+                  'Create a valid pull secret for the `quay.io/openshift-release-dev` repository. For more information, see link:https://console.redhat.com/openshift/install/platform-agnostic/user-provisioned[Install OpenShift on any x86_64 platform with user-provisioned infrastructure]'
+                )}
               </Text>
             </TextContent>
           </ListItem>

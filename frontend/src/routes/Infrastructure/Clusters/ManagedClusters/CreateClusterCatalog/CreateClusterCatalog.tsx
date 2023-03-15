@@ -81,6 +81,12 @@ export function CreateClusterCatalog() {
         description: 'Placeholder',
       },
       {
+        id: 'kubevirt',
+        provider: Provider.kubevirt,
+        description:
+          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise datacenter.',
+      },
+      {
         id: 'azure',
         provider: Provider.azure,
         description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
@@ -127,7 +133,11 @@ export function CreateClusterCatalog() {
       ],
       labels,
       onClick:
-        id !== 'aws' ? nextStep(getTypedCreateClusterPath(provider)) : nextStep(NavigationPath.createAWSControlPlane),
+        id === Provider.aws
+          ? nextStep(NavigationPath.createAWSControlPlane)
+          : id === Provider.kubevirt
+          ? nextStep(NavigationPath.createKubeVirtControlPlane)
+          : nextStep(getTypedCreateClusterPath(provider)),
     })
 
     const cardsWithCreds: ICatalogCard[] = []

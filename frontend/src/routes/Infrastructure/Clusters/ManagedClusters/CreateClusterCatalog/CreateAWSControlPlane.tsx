@@ -59,6 +59,10 @@ export function CreateAWSControlPlane() {
         onClick: nextStep(NavigationPath.createAWSCLI),
         badgeList: [
           {
+            badge: t('Technology preview'),
+            badgeColor: CatalogColor.orange,
+          },
+          {
             badge: t('CLI-based'),
             badgeColor: CatalogColor.purple,
           },
@@ -128,7 +132,7 @@ export function CreateAWSControlPlane() {
               onToggle={onDiagramToggle}
               toggleContent={
                 <>
-                  <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
+                  <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Compare control plane types')} </span>
                   <AcmButton
                     variant="link"
                     icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}

@@ -2,6 +2,7 @@
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
+  CatalogColor,
   DataViewStringContext,
   getPatternflyColor,
   ICatalogBreadcrumb,
@@ -75,6 +76,8 @@ export function CreateControlPlane() {
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
         ),
+        badge: t('Technology preview'),
+        badgeColor: CatalogColor.orange,
       },
       {
         id: 'standalone',
