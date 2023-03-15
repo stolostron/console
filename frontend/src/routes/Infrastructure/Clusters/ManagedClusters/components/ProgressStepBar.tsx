@@ -12,13 +12,15 @@ import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster, clusterDeployment } = useContext(ClusterContext)
   const { ansibleJobState, clusterCuratorsState, configMapsState } = useSharedAtoms()
   const [curators] = useRecoilState(clusterCuratorsState)
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const [configMaps] = useRecoilState(configMapsState)
   const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
-  const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
+  const curator = curators.find(
+    (curator) => curator.metadata.name === cluster?.name && curator.metadata.namespace == cluster?.namespace
+  )
 
   const installStatus = [
     ClusterStatus.prehookjob,
@@ -31,7 +33,7 @@ export function ProgressStepBar() {
     ClusterStatus.posthookfailed,
   ]
 
-  if (installStatus.includes(cluster?.status!)) {
+  if (clusterDeployment && installStatus.includes(cluster?.status!)) {
     // hook state
     const prehooks = curator?.spec?.install?.prehook?.length
     const posthooks = curator?.spec?.install?.posthook?.length

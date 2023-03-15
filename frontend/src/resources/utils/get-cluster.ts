@@ -1213,6 +1213,20 @@ export function getClusterStatus(
   } else if (!clusterJoined && !hostedCluster) {
     mcStatus = ClusterStatus.pendingimport
 
+    // Check if cluster is being automatically imported or has failed automatic import
+    const mcConditionImportSucceeded = mcConditions.find((c) => c.type === 'ManagedClusterImportSucceeded')
+    if (mcConditionImportSucceeded?.status === 'False') {
+      switch (mcConditionImportSucceeded.reason) {
+        case 'ManagedClusterImporting':
+          mcStatus = ClusterStatus.importing
+          break
+        case 'ManagedClusterImportFailed':
+          mcStatus = ClusterStatus.importfailed
+          statusMessage = mcConditionImportSucceeded.message
+          break
+      }
+    }
+
     // check for respective csrs awaiting approval
     if (certificateSigningRequests && certificateSigningRequests.length) {
       const clusterCsrs =
@@ -1220,8 +1234,9 @@ export function getClusterStatus(
           return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === mc.metadata.name
         }) ?? []
       const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
-      mcStatus =
-        activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
+      if (activeCsr && !activeCsr?.status?.certificate) {
+        mcStatus = ClusterStatus.needsapproval
+      }
     }
   } else if (hostedCluster && !clusterAvailable) {
     // HC import
