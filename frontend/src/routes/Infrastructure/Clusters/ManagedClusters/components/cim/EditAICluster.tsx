@@ -27,6 +27,7 @@ import {
     useOnDeleteHost,
     useAssistedServiceConfigMap,
     useClusterDeploymentInfraEnv,
+    importYaml,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -34,6 +35,7 @@ import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
+import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
 const {
     ClusterDeploymentWizard,
@@ -257,6 +259,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 setPreviewOpen={setPreviewOpen}
                                 fetchManagedClusters={fetchManagedClusters}
                                 fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
+                                onCreateBmcByYaml={importYaml}
+                                docVersion={DOC_VERSION}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                         </FeatureGateContextProvider>
