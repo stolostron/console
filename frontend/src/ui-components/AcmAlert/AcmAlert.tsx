@@ -126,6 +126,7 @@ export function AcmAlert(props: {
       timeout={150}
     >
       <Alert
+        actionLinks={alertInfo?.actions}
         isInline={props.isInline}
         title={alertInfo?.title || props.title}
         actionClose={!props.noClose && <AlertActionCloseButton onClose={() => setOpen(false)} />}

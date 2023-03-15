@@ -141,6 +141,7 @@ export function AcmToast(props: {
         <Alert
           title={alertInfo?.title || props.title}
           actionClose={<AlertActionCloseButton onClose={() => setOpen(false)} />}
+          actionLinks={alertInfo?.actions}
           variant={alertInfo?.type || props.variant}
           style={props.style}
           className={props.className}

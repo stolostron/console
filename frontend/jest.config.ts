@@ -48,7 +48,7 @@ const config: Config.InitialOptions = {
   ci: true,
   collectCoverage: true,
   coverageDirectory: './coverage',
-  coverageReporters: ['text', 'text-summary', 'html', ['lcov', { projectRoot: '../' }]],
+  coverageReporters: ['text-summary', 'html', ['lcov', { projectRoot: '../' }]],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
     '<rootDir>/src/*.{tsx,ts,jsx,js}',

@@ -15,6 +15,10 @@ import {
   ActionGroup,
   Button,
   ButtonVariant,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   ModalVariant,
   Progress,
   ProgressMeasureLocation,
@@ -24,7 +28,7 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
-import { getErrorInfo } from './ErrorPage'
+import { getRawErrorInfo } from './ErrorPage'
 
 export interface IBulkActionModalProps<T = undefined> {
   open: true
@@ -39,7 +43,6 @@ export interface IBulkActionModalProps<T = undefined> {
   columns?: IAcmTableColumn<T>[]
   keyFn?: (item: T) => string
   actionFn: (item: T) => IRequestResult
-  preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
   checkBox?: JSX.Element
   confirmText?: string
   isDanger?: boolean
@@ -79,7 +82,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
     if (errors) {
       for (const error of errors) {
         if (error.item === item) {
-          return getErrorInfo(error.error, t)
+          return getRawErrorInfo(error.error, t)
         }
       }
     }
@@ -93,6 +96,7 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
       titleIconVariant={props.icon}
       isOpen={true}
       onClose={props.close}
+      position="top"
     >
       <AcmForm style={{ gap: 0 }}>
         {!errors?.length ? (
@@ -142,7 +146,13 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
           </Fragment>
         ) : (
           <Fragment>
-            <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
+            <AcmAlert
+              isInline
+              noClose
+              variant="danger"
+              title={t('there.were.errors')}
+              message={t('Expand the table rows to view detailed error messages.')}
+            />
             {props.columns && props.keyFn && (
               <AcmTablePaginationContextProvider localStorageKey="model">
                 <AcmTable<T>
@@ -153,10 +163,33 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                     {
                       header: t('error'),
                       cell: (item) => {
-                        return <Fragment>{getItemError(item)?.message}</Fragment>
+                        const itemError = getItemError(item)
+                        return (
+                          <DescriptionList isHorizontal>
+                            <DescriptionListGroup>
+                              <DescriptionListTerm>{itemError?.title}</DescriptionListTerm>
+                              <DescriptionListDescription>{itemError?.message}</DescriptionListDescription>
+                            </DescriptionListGroup>
+                          </DescriptionList>
+                        )
                       },
                     },
                   ]}
+                  addSubRows={(item: T) => {
+                    const itemError = getItemError(item)
+                    return itemError?.details
+                      ? [
+                          {
+                            noPadding: false,
+                            cells: [
+                              {
+                                title: itemError.details,
+                              },
+                            ],
+                          },
+                        ]
+                      : []
+                  }}
                   keyFn={props.keyFn}
                   tableActions={[]}
                   rowActions={[]}
@@ -199,9 +232,6 @@ export function BulkActionModal<T = unknown>(props: IBulkActionModalProps<T> | {
                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
-                    if (props.preActionFn) {
-                      props.preActionFn(props.resources, errors)
-                    }
                     if (errors.length === 0) {
                       setProgressCount(props.resources.length)
                       const requestResult = resultsSettled(

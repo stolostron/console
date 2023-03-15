@@ -7,7 +7,7 @@ import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy, ResourceError } from '../../../../resources'
+import { Policy, ResourceError, ResourceErrorCode } from '../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmActionGroup,
@@ -72,7 +72,7 @@ export function PolicyDetailsPage() {
   if (!selectedPolicy) {
     return (
       <ErrorPage
-        error={new ResourceError('Not found', 404)}
+        error={new ResourceError(ResourceErrorCode.NotFound)}
         actions={
           <AcmButton role="link" onClick={() => history.push(NavigationPath.policies)}>
             {t('Back to policies')}

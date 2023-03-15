@@ -71,6 +71,13 @@ export function nockGet<Resource extends IResource>(
   return finalNockScope
 }
 
+// export function nockGetError<Resource extends IResource>(resource: Resource, error: string | object) {
+//   const resourcePath = getResourceNameApiPathTestHelper(resource)
+//   return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+//     .get(resourcePath)
+//     .replyWithError(error)
+// }
+
 export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
   const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
   const finalNockScope = nockScope.reply(statusCode, response, {
@@ -239,6 +246,15 @@ export function nockCreate(
   return scope
 }
 
+export function nockCreateError(resource: IResource | ClusterRoleBinding, error: string | object) {
+  const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .post(getResourceApiPathTestHelper(resource), (body) => {
+      return isEqual(body, resource)
+    })
+    .replyWithError(error)
+  return scope
+}
+
 export function nockPatch(
   resource: IResource,
   data: unknown[] | unknown,
@@ -389,6 +405,13 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
     })
 }
 
+export function nockReplaceError(resource: IResource, error: string | object) {
+  const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
+  return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .put(resourceNameApiPath, (body) => isEqual(body, resource))
+    .replyWithError(error)
+}
+
 export function nockDelete(resource: IResource, response?: IResource, statusCode?: number) {
   const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
   return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
@@ -405,6 +428,13 @@ export function nockDelete(resource: IResource, response?: IResource, statusCode
       'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
       'Access-Control-Allow-Credentials': 'true',
     })
+}
+
+export function nockDeleteError(resource: IResource, error: string | object) {
+  const resourceNameApiPath = getResourceNameApiPathTestHelper(resource)
+  return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .delete(resourceNameApiPath)
+    .replyWithError(error)
 }
 
 export function nockSearch(

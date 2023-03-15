@@ -272,7 +272,6 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
       variant={ModalVariant.medium}
       titleIconVariant="warning"
       position="top"
-      positionOffset="225px"
       actions={[
         <Button key="confirm" variant="danger" isDisabled={!props.canRemove} onClick={() => handleSubmit()}>
           {props.t('Delete')}

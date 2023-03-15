@@ -58,7 +58,6 @@ export function OnboardingModal(props: IOnboardingModalProps) {
   return (
     <AcmModal
       position="top"
-      positionOffset="10em"
       variant={ModalVariant.medium}
       id="clustersOnboardingModal"
       ouiaId="clustersOnboardingModal"
