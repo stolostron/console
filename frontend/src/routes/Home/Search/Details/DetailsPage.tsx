@@ -133,6 +133,10 @@ export default function DetailsPage() {
               text: t('Search'),
               to: breadcrumbLink,
             },
+            {
+              text: t('{{kind}} details', { kind }),
+              to: '',
+            },
           ]}
           navigation={
             <AcmSecondaryNav>
