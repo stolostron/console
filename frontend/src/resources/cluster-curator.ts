@@ -5,6 +5,7 @@ import { IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 import { set } from 'lodash'
 import { AnsibleJobTemplateType } from './ansible-job'
+import { AnsibleInventoryType } from './ansible-inventory'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
 export type ClusterCuratorApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
@@ -37,6 +38,9 @@ export interface ClusterCurator {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
+    }
+    inventory?: {
+      name?: string
     }
     scale?: {
       towerAuthSecret?: string

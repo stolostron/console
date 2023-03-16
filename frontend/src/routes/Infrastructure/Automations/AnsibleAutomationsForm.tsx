@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
@@ -34,11 +34,13 @@ import {
   createResource,
   getClusterCurator,
   IResource,
+  listAnsibleTowerInventories,
   listAnsibleTowerJobs,
   ProviderConnection,
   replaceResource,
   Secret,
 } from '../../../resources'
+import { AnsibleInventory } from '../../../resources/ansible-inventory'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
@@ -120,6 +122,9 @@ export function AnsibleAutomationsForm(props: {
   }>()
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory?.name ?? '')
+  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
+
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
   const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
@@ -164,6 +169,7 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+      const inventoryList: string[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
       listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
@@ -184,6 +190,22 @@ export function AnsibleAutomationsForm(props: {
         .catch(() => {
           setAnsibleTowerAuthError(t('validate.ansible.host'))
           setAnsibleTowerJobTemplateList([])
+        })
+      listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+        .promise.then((response) => {
+          if (response) {
+            response.results.forEach((inventory) => {
+              if (inventory.name) {
+                inventoryList.push(inventory.name)
+              }
+            })
+            setAnsibleTowerInventoryList(inventoryList)
+            setAnsibleTowerAuthError('')
+          }
+        })
+        .catch(() => {
+          setAnsibleTowerAuthError(t('validate.ansible.host'))
+          setAnsibleTowerInventoryList([])
         })
     }
   }, [ansibleSelection, ansibleCredentials, t])
@@ -222,6 +244,9 @@ export function AnsibleAutomationsForm(props: {
           towerAuthSecret: ansibleSelection,
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
+        },
+        inventory: {
+          name: ansibleInventory,
         },
         ...(settings.ansibleIntegration === 'enabled'
           ? {
@@ -313,6 +338,23 @@ export function AnsibleAutomationsForm(props: {
             })),
             footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
             isDisabled: isEditing,
+            validation: () => {
+              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+            },
+          },
+          {
+            id: 'Inventory',
+            type: 'Select',
+            label: t('Ansible inventory'),
+            placeholder: t('Select an inventory'),
+            value: ansibleInventory,
+            onChange: setAnsibleInventory,
+            isRequired: false,
+            options: ansibleTowerInventoryList.map((name) => ({
+              id: name as string,
+              value: name as string,
+            })),
+            isDisabled: !ansibleSelection,
             validation: () => {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
             },
