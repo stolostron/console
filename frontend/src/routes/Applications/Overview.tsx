@@ -753,9 +753,17 @@ export default function ApplicationsOverview() {
                             const isFlux = isFluxApplication(item.label)
                             switch (value) {
                                 case 'openshiftapps':
-                                    return !isFlux && !item.metadata?.namespace?.startsWith('openshift-')
+                                    return (
+                                        !isFlux &&
+                                        !item.metadata?.namespace?.startsWith('openshift-') &&
+                                        item.metadata?.namespace !== 'openshift'
+                                    )
                                 case 'openshift-default':
-                                    return !isFlux && item.metadata?.namespace?.startsWith('openshift-')
+                                    return (
+                                        !isFlux &&
+                                        (item.metadata?.namespace?.startsWith('openshift-') ||
+                                            item.metadata?.namespace === 'openshift')
+                                    )
                                 case 'fluxapps':
                                     return isFlux
                             }
