@@ -15,6 +15,7 @@ import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './Mana
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
+import { NodePoolTableWidthContext } from './HypershiftClusterInstallProgress'
 
 type NodePoolsTableProps = {
     nodePools: NodePool[]
@@ -319,6 +320,8 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         [toggleAddNodepoolModal, hostedCluster?.spec?.platform?.type, t, canCreateNodepool]
     )
 
+    const npTableWidth = useContext(NodePoolTableWidthContext)
+
     return (
         <>
             <RemoveNodePoolModal {...removeNodepoolModalProps} />
@@ -331,7 +334,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
                 clusterImages={clusterImages}
             />
             <Stack hasGutter>
-                <StackItem>
+                <StackItem style={{ width: npTableWidth }}>
                     <AcmTable<NodePool>
                         key="nodepool-table"
                         plural={t('Node pools')}
