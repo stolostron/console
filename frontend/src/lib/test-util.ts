@@ -367,6 +367,6 @@ export async function selectByText(placeholdText: string, text: string) {
 }
 
 export async function clickHostAction(text: string) {
-    await clickByText('Add hosts')
+    await clickByText('ai:Add hosts')
     await clickByText(text)
 }
