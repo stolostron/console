@@ -121,7 +121,7 @@ export function AnsibleAutomationsForm(props: {
   }>()
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
-  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory?.name ?? '')
+  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
   const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
 
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
@@ -351,7 +351,8 @@ export function AnsibleAutomationsForm(props: {
               id: name as string,
               value: name as string,
             })),
-            isDisabled: !ansibleSelection,
+            isDisabled: isEditing,
+            isHidden: !ansibleSelection,
             validation: () => {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
             },
@@ -617,7 +618,6 @@ export function AnsibleAutomationsForm(props: {
       <EditAnsibleJobModal
         ansibleJob={editAnsibleJob}
         ansibleSelection={ansibleSelection}
-        ansibleInventory={ansibleInventory}
         setAnsibleJob={updateAnsibleJob}
         ansibleCredentials={ansibleCredentials}
         ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
@@ -635,7 +635,6 @@ function EditAnsibleJobModal(props: {
   ansibleTowerWorkflowTemplateList: string[] | undefined
   ansibleJob?: ClusterCuratorAnsibleJob
   ansibleJobList?: ClusterCuratorAnsibleJob[]
-  ansibleInventory?: string
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
   const { t } = useTranslation()
