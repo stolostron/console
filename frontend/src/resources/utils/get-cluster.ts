@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '../../ui-components'
+import { Provider, StatusType } from '../../ui-components'
 import {
   isDraft,
   getIsSNOCluster,
@@ -123,6 +123,49 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
       return t('status.stopping')
     default:
       return t('status.unknown')
+  }
+}
+
+export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType => {
+  switch (clusterStatus) {
+    case ClusterStatus.ready:
+      return StatusType.healthy
+    case ClusterStatus.running:
+      return StatusType.running
+    case ClusterStatus.needsapproval:
+      return StatusType.warning
+    case ClusterStatus.failed:
+    case ClusterStatus.notstarted:
+    case ClusterStatus.provisionfailed:
+    case ClusterStatus.deprovisionfailed:
+    case ClusterStatus.notaccepted:
+    case ClusterStatus.offline:
+    case ClusterStatus.degraded:
+    case ClusterStatus.prehookfailed:
+    case ClusterStatus.posthookfailed:
+    case ClusterStatus.importfailed:
+      return StatusType.danger
+    case ClusterStatus.creating:
+    case ClusterStatus.destroying:
+    case ClusterStatus.detaching:
+    case ClusterStatus.stopping:
+    case ClusterStatus.resuming:
+    case ClusterStatus.prehookjob:
+    case ClusterStatus.posthookjob:
+    case ClusterStatus.importing:
+      return StatusType.progress
+    case ClusterStatus.detached:
+      return StatusType.detached
+    case ClusterStatus.hibernating:
+      return StatusType.sleep
+    case ClusterStatus.unknown:
+      return StatusType.unknown
+    case ClusterStatus.draft:
+      return StatusType.draft
+    case ClusterStatus.pending:
+    case ClusterStatus.pendingimport:
+    default:
+      return StatusType.pending
   }
 }
 
