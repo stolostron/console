@@ -11,6 +11,9 @@ import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
+// must match ansiblePaths in backend/src/routes/ansibletower.ts
+const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
+
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
     abort: () => void
@@ -465,12 +468,10 @@ async function getAnsibleTemplates(
     token: string,
     abortController: AbortController
 ) {
-    const ansibleResourcePaths = ['job_templates/', 'workflow_job_templates/']
-    const ansibleApiPath = '/api/v2/'
     const ansibleJobs: AnsibleTowerJobTemplate[] = []
 
-    for (const path of ansibleResourcePaths) {
-        let jobUrl: string = ansibleHostUrl + ansibleApiPath + path
+    for (const path of ansiblePaths) {
+        let jobUrl: string = ansibleHostUrl + path
         while (jobUrl) {
             const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
             result.data.results && ansibleJobs.push(...result.data.results)
