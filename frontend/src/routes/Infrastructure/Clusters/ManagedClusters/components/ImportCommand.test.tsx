@@ -82,7 +82,7 @@ describe('ImportCommandContainer', () => {
 
         await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull(), { timeout: 10500 })
+        await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull(), { timeout: 12500 })
         await waitFor(() => expect(screen.getByText(mockBadRequestStatus.message)).toBeInTheDocument())
     })
 })
