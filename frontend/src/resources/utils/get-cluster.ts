@@ -1161,8 +1161,19 @@ export function getClusterStatus(
             } else {
               const readyCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Ready')
               statusMessage = readyCondition?.message
-              cdStatus =
-                clusterDeployment.spec.powerState === 'Running' ? ClusterStatus.resuming : ClusterStatus.unknown
+              if (clusterDeployment.spec.powerState === 'Running') {
+                cdStatus = ClusterStatus.resuming
+              } else if (
+                !clusterDeployment.spec.powerState &&
+                ['WaitingForNodes', 'PausingForClusterOperatorsToSettle', 'WaitingForClusterOperators'].includes(
+                  powerState
+                )
+              ) {
+                // spec.powerState is not set initially - most likely a new deployment that is almost ready
+                cdStatus = ClusterStatus.running
+              } else {
+                cdStatus = ClusterStatus.unknown
+              }
             }
           }
         }

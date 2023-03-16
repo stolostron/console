@@ -27,13 +27,15 @@ export function ProgressStepBar() {
     ClusterStatus.prehookfailed,
     ClusterStatus.creating,
     ClusterStatus.provisionfailed,
-    ClusterStatus.importing,
     ClusterStatus.importfailed,
     ClusterStatus.posthookjob,
     ClusterStatus.posthookfailed,
   ]
 
-  if (clusterDeployment && installStatus.includes(cluster?.status!)) {
+  if (
+    installStatus.includes(cluster?.status!) ||
+    (clusterDeployment?.status?.powerState !== 'Running' && cluster?.status === ClusterStatus.importing)
+  ) {
     // hook state
     const prehooks = curator?.spec?.install?.prehook?.length
     const posthooks = curator?.spec?.install?.posthook?.length
