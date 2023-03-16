@@ -815,7 +815,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }, [clearSearch, clearFilters, cachedPrefixId])
 
     const updateSearch = useCallback(
-        (newSearch: string) => {
+        (input: any) => {
+            // **Note: PatternFly change the fn signature
+            // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
+            // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
+            // both cases need to be handled for backwards compatibility
+            const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
             setSearch(newSearch)
             setPage(1)
             if (!newSearch) {
