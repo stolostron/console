@@ -16,11 +16,12 @@ import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import { supportedLanguages } from './src/lib/supportedLanguages'
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
-module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
+module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production' || argv.mode === undefined
   const isDevelopment = !isProduction
   const locales = supportedLanguages
-  const useTsChecker = argv.hot
+  const openBrowser = !env.LAUNCH
+  const useTsChecker = argv.hot || !openBrowser
   const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -164,7 +165,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         '/multicloud/username': { target: 'https://localhost:4000', secure: false },
         '/multicloud/userpreference': { target: 'https://localhost:4000', secure: false },
       },
-      open: true,
+      open: openBrowser,
       historyApiFallback: true,
       compress: true,
       https: true,
