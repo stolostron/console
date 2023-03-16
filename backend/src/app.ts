@@ -21,6 +21,7 @@ import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { username } from './routes/username'
+import { userpreference } from './routes/userpreference'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -53,6 +54,7 @@ router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get('/username', username)
+router.all('/userpreference', userpreference)
 router.get(`/*`, serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

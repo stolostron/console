@@ -29,8 +29,9 @@ export default function SavedSearchQueries(props: {
     savedSearches: SavedSearch[]
     setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
     userPreference?: UserPreference
+    setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
 }) {
-    const { savedSearches, setSelectedSearch, userPreference } = props
+    const { savedSearches, setSelectedSearch, userPreference, setUserPreference } = props
     const { t } = useTranslation()
     const history = useHistory()
     const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
@@ -97,6 +98,7 @@ export default function SavedSearchQueries(props: {
                         onClose={() => setEditSavedSearch(undefined)}
                         savedSearchQueries={savedSearches}
                         userPreference={userPreference}
+                        setUserPreference={setUserPreference}
                     />
                 )}
                 {shareSearch && (
@@ -107,6 +109,7 @@ export default function SavedSearchQueries(props: {
                         onClose={() => setDeleteSearch(undefined)}
                         searchToDelete={deleteSearch}
                         userPreference={userPreference}
+                        setUserPreference={setUserPreference}
                     />
                 )}
                 {savedSearches.length > 0 && (
