@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
@@ -40,7 +40,6 @@ import {
   replaceResource,
   Secret,
 } from '../../../resources'
-import { AnsibleInventory } from '../../../resources/ansible-inventory'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
@@ -245,9 +244,7 @@ export function AnsibleAutomationsForm(props: {
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
         },
-        inventory: {
-          name: ansibleInventory,
-        },
+        inventory: ansibleInventory,
         ...(settings.ansibleIntegration === 'enabled'
           ? {
               scale: {
@@ -620,6 +617,7 @@ export function AnsibleAutomationsForm(props: {
       <EditAnsibleJobModal
         ansibleJob={editAnsibleJob}
         ansibleSelection={ansibleSelection}
+        ansibleInventory={ansibleInventory}
         setAnsibleJob={updateAnsibleJob}
         ansibleCredentials={ansibleCredentials}
         ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
@@ -637,6 +635,7 @@ function EditAnsibleJobModal(props: {
   ansibleTowerWorkflowTemplateList: string[] | undefined
   ansibleJob?: ClusterCuratorAnsibleJob
   ansibleJobList?: ClusterCuratorAnsibleJob[]
+  ansibleInventory?: string
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
   const { t } = useTranslation()
