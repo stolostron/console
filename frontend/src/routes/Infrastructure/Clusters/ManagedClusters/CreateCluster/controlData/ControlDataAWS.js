@@ -98,7 +98,7 @@ const setAWSZones = (control, controlData) => {
 }
 
 const updateWorkerZones = (control, controlData) => {
-    const region = controlData.find(({ name }) => name === 'Region').active
+    const region = getControlByID(controlData, 'region').active
     const worker = control.active[control.active.length - 1]
     const typeZones = worker.find(({ id }) => id === 'workerZones')
     const zones = awsRegions[region]
