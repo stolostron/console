@@ -17,10 +17,13 @@ spec:
     name: sshkey-cluster-{{{hypershift.name}}}
   networking:
     {{#if hypershift-network.isAdvanced}}
-    podCIDR: {{{hypershift-network.podCIDR}}}
-    serviceCIDR: {{{hypershift-network.serviceCIDR}}}
+    clusterNetwork:
+      - cidr: {{{hypershift-network.clusterNetworkCidr}}}
+        hostPrefix: {{{hypershift-network.clusterNetworkHostPrefix}}}
+    serviceCIDR: {{{hypershift-network.serviceNetworkCidr}}}
     {{else}}
-    podCIDR: 10.132.0.0/14
+    clusterNetwork:
+      - cidr: 10.132.0.0/14
     serviceCIDR: 172.31.0.0/16
     {{/if}}
     machineCIDR: {{{hypershift-network.machineCIDR}}}
