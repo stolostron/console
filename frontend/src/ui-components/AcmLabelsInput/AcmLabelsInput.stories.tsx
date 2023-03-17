@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmPageCard } from '../AcmPage/AcmPage'
-import { AcmLabelsInput } from './AcmLabelsInput'
+import { AcmLabelsInput, addLabelRecord, getLabelStringFromRecord, removeLabelRecord } from './AcmLabelsInput'
 
 export default {
   title: 'LabelsInput',
@@ -24,6 +24,9 @@ export const LabelsInput = (args: any) => {
           isDisabled={args.isDisabled}
           value={value}
           onChange={setValue}
+          addLabel={addLabelRecord}
+          removeLabel={removeLabelRecord}
+          getLabelString={getLabelStringFromRecord}
           buttonLabel="Add label"
           placeholder="Enter key=value, then press enter, space, or comma"
         />

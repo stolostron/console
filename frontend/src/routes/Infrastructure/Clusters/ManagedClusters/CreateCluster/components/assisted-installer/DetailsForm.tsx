@@ -15,7 +15,13 @@ import { useClusterImages, getDefault } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../../../shared-recoil'
 
 import { getValue } from '../../../../../../../components/TemplateEditor'
-import { AcmLabelsInput, AcmSelect } from '../../../../../../../ui-components'
+import {
+  AcmLabelsInput,
+  AcmSelect,
+  addLabelRecord,
+  getLabelStringFromRecord,
+  removeLabelRecord,
+} from '../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 
 const {
@@ -115,6 +121,9 @@ export const getExtensionAfter = ({
       label={t('import.form.labels.label')}
       buttonLabel={t('label.add')}
       value={additionalLabels}
+      addLabel={addLabelRecord}
+      removeLabel={removeLabelRecord}
+      getLabelString={getLabelStringFromRecord}
       onChange={(label) => setAdditionaLabels(label)}
       placeholder={t('labels.edit.placeholder')}
       isDisabled={false}

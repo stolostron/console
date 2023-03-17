@@ -16,6 +16,7 @@ export interface AcmLabelInputProps<T> {
   hidden?: boolean
   placeholder?: string
   isDisabled?: boolean
+  allowSpaces?: boolean
 }
 
 export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
@@ -23,13 +24,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
   const ValidationContext = useValidationContext()
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null)
 
-  const {
-    value,
-    removeLabel = removeLabelRecord,
-    addLabel = addLabelRecord,
-    getLabelString = getLabelStringFromRecord,
-    onChange,
-  } = props
+  const { value, removeLabel, addLabel, getLabelString, onChange, allowSpaces } = props
   const escapeRef = useRef<HTMLInputElement>()
 
   return (
@@ -94,6 +89,8 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
                 case ',':
                 case 'Enter':
                   {
+                    if (e.key === ' ' && allowSpaces) break
+
                     e.preventDefault()
                     e.stopPropagation()
                     // istanbul ignore else
@@ -170,7 +167,7 @@ export function addLabelString(input: string, value: string) {
       newLabels.push(finput)
     }
   })
-  console.log('checking labels: ', newLabels)
+
   return newLabels?.join(',')
 }
 
@@ -185,7 +182,7 @@ export function removeLabelRecord(tag: string, value: Record<string, string> | u
 
 export function removeLabelString(key: string, value: string | undefined) {
   /* istanbul ignore next */
-  let newLabels = value?.split(',').filter((label) => label != key && label != '')
+  const newLabels = value?.split(',').filter((label) => label != key && label != '')
   if (newLabels && newLabels.length == 0) return undefined
   return newLabels?.join(',')
 }

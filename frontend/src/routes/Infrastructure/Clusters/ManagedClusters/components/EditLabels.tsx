@@ -8,6 +8,9 @@ import {
   AcmLabelsInput,
   AcmModal,
   AcmSubmit,
+  addLabelRecord,
+  getLabelStringFromRecord,
+  removeLabelRecord,
 } from '../../../../../ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
@@ -43,6 +46,9 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
               })}
               buttonLabel={t('labels.button.add')}
               value={labels}
+              addLabel={addLabelRecord}
+              removeLabel={removeLabelRecord}
+              getLabelString={getLabelStringFromRecord}
               onChange={(labels) => setLabels(labels!)}
               placeholder={t('labels.edit.placeholder')}
             />

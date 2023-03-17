@@ -722,6 +722,7 @@ function EditAnsibleJobModal(props: {
                   setAnsibleJob(copy)
                 }
               }}
+              allowSpaces
               buttonLabel=""
               placeholder={t('Enter job tag with "," or "enter"')}
             />
@@ -739,6 +740,7 @@ function EditAnsibleJobModal(props: {
                   setAnsibleJob(copy)
                 }
               }}
+              allowSpaces
               buttonLabel=""
               placeholder={t('Enter skip tag with "," or "enter"')}
             />

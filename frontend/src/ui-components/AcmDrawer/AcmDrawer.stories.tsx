@@ -5,7 +5,12 @@ import { ActionGroup, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmDrawer, AcmDrawerContext } from './AcmDrawer'
 import { AcmForm } from '../AcmForm/AcmForm'
-import { AcmLabelsInput } from '../AcmLabelsInput/AcmLabelsInput'
+import {
+  AcmLabelsInput,
+  addLabelRecord,
+  getLabelStringFromRecord,
+  removeLabelRecord,
+} from '../AcmLabelsInput/AcmLabelsInput'
 import { AcmPage } from '../AcmPage/AcmPage'
 
 export default {
@@ -39,6 +44,9 @@ export const Drawer = () => {
                 label="local-cluster labels"
                 id="labels-input"
                 value={labels}
+                addLabel={addLabelRecord}
+                removeLabel={removeLabelRecord}
+                getLabelString={getLabelStringFromRecord}
                 onChange={(labels) => setLabels(labels)}
                 buttonLabel="Add label"
               />
@@ -90,6 +98,9 @@ export const DrawerUsingAcmPageContext = () => {
                           label="local-cluster labels"
                           id="labels-input"
                           value={labels}
+                          addLabel={addLabelRecord}
+                          removeLabel={removeLabelRecord}
+                          getLabelString={getLabelStringFromRecord}
                           onChange={(labels) => setLabels(labels)}
                           buttonLabel="Add label"
                         />

@@ -10,6 +10,9 @@ import {
   AcmSubmit,
   AcmTable,
   AcmTextInput,
+  addLabelRecord,
+  getLabelStringFromRecord,
+  removeLabelRecord,
 } from '../../../../../ui-components'
 import {
   ActionGroup,
@@ -220,6 +223,9 @@ export function NodePoolForm(props: {
         <AcmLabelsInput
           id="nodepool-rootvolumetype"
           label={t('Security groups')}
+          addLabel={addLabelRecord}
+          removeLabel={removeLabelRecord}
+          getLabelString={getLabelStringFromRecord}
           value={awsSecurityGroups}
           onChange={setAwsSecurityGroups}
           buttonLabel="Add security group"
