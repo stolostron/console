@@ -535,7 +535,7 @@ async function getAnsibleInventories(
   abortController: AbortController
 ) {
   const ansibleInventories: AnsibleTowerInventory[] = []
-  let inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
+  const inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
   const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
   result.data.results && ansibleInventories.push(...result.data.results)
 
