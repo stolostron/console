@@ -100,11 +100,8 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
                 case 'Backspace':
                   /* istanbul ignore else */
                   if (!inputValue) {
-                    const labels = document.querySelectorAll('.label-pill button') as unknown as HTMLButtonElement[]
-
                     /* istanbul ignore else */
-                    if (labels && labels.length > 0 && escapeRef.current != undefined) {
-                      // labels[labels.length - 1].focus()
+                    if (escapeRef.current != undefined) {
                       escapeRef.current.focus()
                     }
                   }
@@ -161,12 +158,13 @@ export function addLabelString(input: string, value: string) {
     .map((tag) => tag.trim())
     .filter((tag) => tag != '')
   /* istanbul ignore next */
-  const newLabels = value?.split(',') || []
+  const newLabels = value?.split(',').filter((tag) => tag != '') || []
   filteredInput.forEach((finput) => {
     if (!newLabels.includes(finput)) {
       newLabels.push(finput)
     }
   })
+  console.log('checking labels: ', newLabels)
   return newLabels?.join(',')
 }
 
