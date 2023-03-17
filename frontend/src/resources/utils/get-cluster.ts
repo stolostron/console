@@ -66,7 +66,6 @@ export enum ClusterStatus {
   'draft' = 'draft',
   'running' = 'running',
   'upgradefailed' = 'upgradefailed',
-  'error' = 'error',
 }
 
 export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
@@ -1309,6 +1308,7 @@ export function getClusterStatus(
         getConditionReason('HubAcceptedManagedCluster', mcConditions) === 'Error'
       if (stuckImport) {
         mcStatus = ClusterStatus.importfailed
+        statusMessage = getConditionMessage('HubAcceptedManagedCluster', mcConditions)
       } else {
         mcStatus = ClusterStatus.importing
       }
