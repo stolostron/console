@@ -1,6 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { Alert, Grid, GridItem, Stack, StackItem } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmTile } from '../../../../ui-components'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
@@ -13,7 +14,9 @@ export default function RelatedResultsTiles(props: {
 }) {
     const { currentQuery, selectedKinds, setSelectedKinds } = props
     const { t } = useTranslation()
-    const queryFilters = convertStringToQuery(currentQuery)
+    const { useSearchQueryLimit } = useSharedAtoms()
+    const searchQueryLimit = useSearchQueryLimit()
+    const queryFilters = convertStringToQuery(currentQuery, searchQueryLimit)
     const { data, error, loading } = useSearchResultRelatedCountQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {

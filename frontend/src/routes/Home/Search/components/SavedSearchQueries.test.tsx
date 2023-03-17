@@ -31,7 +31,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['Pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                             {
                                 keywords: [],
@@ -41,7 +41,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['DaemonSet', 'Deployment', 'Job', 'StatefulSet', 'ReplicaSet'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                             {
                                 keywords: [],
@@ -64,7 +64,7 @@ describe('SavedSearchQueries Page', () => {
                                         ],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                             {
                                 keywords: [],
@@ -74,7 +74,7 @@ describe('SavedSearchQueries Page', () => {
                                         values: ['hour'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },

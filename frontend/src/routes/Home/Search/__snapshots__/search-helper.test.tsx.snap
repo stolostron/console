@@ -17,7 +17,7 @@ Object {
     },
   ],
   "keywords": Array [],
-  "limit": 1000,
+  "limit": 10000,
 }
 `;
 

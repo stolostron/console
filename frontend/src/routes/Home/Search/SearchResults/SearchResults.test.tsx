@@ -6,6 +6,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import {
     SearchResultItemsDocument,
@@ -13,6 +15,10 @@ import {
     SearchResultRelatedItemsDocument,
 } from '../search-sdk/search-sdk'
 import SearchResults from './SearchResults'
+
+const mockSettings: Settings = {
+    SEARCH_QUERY_LIMIT: '10000',
+}
 
 describe('SearchResults Page', () => {
     it('should render page with correct data from search WITH keyword', async () => {
@@ -30,7 +36,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -64,11 +70,17 @@ describe('SearchResults Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SearchResults currentQuery={'kind:pod testCluster'} preSelectedRelatedResources={[]} />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SearchResults currentQuery={'kind:pod testCluster'} preSelectedRelatedResources={[]} />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -93,7 +105,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -138,7 +150,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -183,7 +195,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -217,11 +229,17 @@ describe('SearchResults Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={[]} />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={[]} />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -250,7 +268,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -296,7 +314,7 @@ describe('SearchResults Page', () => {
                                     },
                                 ],
                                 relatedKinds: ['node'],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -344,7 +362,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -389,7 +407,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -423,11 +441,17 @@ describe('SearchResults Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getAllByText('Loading')).toBeTruthy()
@@ -453,7 +477,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -477,7 +501,7 @@ describe('SearchResults Page', () => {
                                     },
                                 ],
                                 relatedKinds: ['node'],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -500,7 +524,7 @@ describe('SearchResults Page', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -512,11 +536,17 @@ describe('SearchResults Page', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <SearchResults currentQuery={'kind:pod'} preSelectedRelatedResources={['node']} />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getAllByText('Loading')).toBeTruthy()

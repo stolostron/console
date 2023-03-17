@@ -111,8 +111,9 @@ function RenderSearchBar(props: {
     const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
     const [saveSearch, setSaveSearch] = useState<SavedSearch>()
     const [open, toggleOpen] = useState<boolean>(false)
-    const { useSavedSearchLimit } = useSharedAtoms()
+    const { useSavedSearchLimit, useSearchQueryLimit } = useSharedAtoms()
     const savedSearchLimit = useSavedSearchLimit()
+    const searchQueryLimit = useSearchQueryLimit()
     const toggle = () => toggleOpen(!open)
 
     useEffect(() => {
@@ -126,12 +127,12 @@ function RenderSearchBar(props: {
 
     const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
         const value = getSearchCompleteString(currentSearch)
-        const query = convertStringToQuery(currentSearch)
+        const query = convertStringToQuery(currentSearch, searchQueryLimit)
         query.filters = query.filters.filter((filter) => {
             return filter.property !== value
         })
         return { searchCompleteValue: value, searchCompleteQuery: query }
-    }, [currentSearch])
+    }, [currentSearch, searchQueryLimit])
 
     const searchCompleteResults = useSearchCompleteQuery({
         skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
@@ -139,6 +140,7 @@ function RenderSearchBar(props: {
         variables: {
             property: searchCompleteValue,
             query: searchCompleteQuery,
+            limit: searchQueryLimit,
         },
     })
 
@@ -188,12 +190,14 @@ function RenderSearchBar(props: {
                                   _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
                                   'filter',
                                   '', // Dont need to de-dupe filters
+                                  searchQueryLimit,
                                   t
                               )
                             : formatSearchbarSuggestions(
                                   _.get(searchCompleteResults, 'data.searchComplete', []),
                                   'value',
                                   currentSearch, // pass current search query in order to de-dupe already selected values
+                                  searchQueryLimit,
                                   t
                               )
                     }
@@ -294,11 +298,13 @@ export default function SearchPage() {
         presetSearchQuery = '',
         preSelectedRelatedResources = [], // used to show any related resource on search page navigation
     } = transformBrowserUrlToSearchString(window.location.search || '')
+    const { t } = useTranslation()
+    const { useSearchQueryLimit } = useSharedAtoms()
+    const searchQueryLimit = useSearchQueryLimit()
     const [selectedSearch, setSelectedSearch] = useState(savedSearches)
     const [queryErrors, setQueryErrors] = useState(false)
     const [queryMessages, setQueryMessages] = useState<any[]>([])
     const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-    const { t } = useTranslation()
     useEffect(() => {
         getUserPreference().then((resp) => setUserPreference(resp))
     }, [])
@@ -313,7 +319,7 @@ export default function SearchPage() {
         }
     }, [presetSearchQuery, t])
 
-    const query = convertStringToQuery(presetSearchQuery)
+    const query = convertStringToQuery(presetSearchQuery, searchQueryLimit)
     const msgQuery = useGetMessagesQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
