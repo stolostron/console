@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, List, ListItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import * as React from 'react'
+import './DocPage.css'
 
 type DocPageProps = {
   listItems: {

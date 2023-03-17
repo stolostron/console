@@ -17,7 +17,6 @@ import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../..
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import DocPage from './common/DocPage'
 import DocPageToolbar from './common/DocPageToolbar'
-import './css/HypershiftAWSCLI.css'
 
 export function HypershiftKubeVirtCLI() {
   const { t } = useTranslation()
@@ -90,7 +89,7 @@ hypershift create cluster kubevirt \\
       title: t('Running the Hosted Control Plane command'),
       content: (
         <Fragment>
-          <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>
+          <Text component={TextVariants.h4}>{t('How to log in to OpenShift Container Platform')}</Text>
           <Text
             component={TextVariants.a}
             onClick={() => {
@@ -100,7 +99,7 @@ hypershift create cluster kubevirt \\
           >
             {t('Use the oc login command.')}
           </Text>
-          <Text component={TextVariants.h4}>{t('Execute command')}</Text>
+          <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
             {t(
               'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. To create the Hosted Control Plane, copy and paste the following command: '
