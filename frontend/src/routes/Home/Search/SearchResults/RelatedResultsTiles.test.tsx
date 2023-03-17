@@ -9,9 +9,15 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { useState } from 'react'
 import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResultsTiles from './RelatedResultsTiles'
+
+const mockSettings: Settings = {
+    SEARCH_QUERY_LIMIT: '10000',
+}
 
 describe('RelatedResultsTiles', () => {
     const RelatedTiles = () => {
@@ -40,7 +46,7 @@ describe('RelatedResultsTiles', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -52,11 +58,17 @@ describe('RelatedResultsTiles', () => {
             },
         ]
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <RelatedTiles />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <RelatedTiles />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getAllByTestId('acmtile-loading')).toHaveLength(4)
@@ -81,7 +93,7 @@ describe('RelatedResultsTiles', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 1000,
+                                limit: 10000,
                             },
                         ],
                     },
@@ -116,11 +128,17 @@ describe('RelatedResultsTiles', () => {
         ]
 
         render(
-            <Router history={createBrowserHistory()}>
-                <MockedProvider mocks={mocks}>
-                    <RelatedTiles />
-                </MockedProvider>
-            </Router>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(settingsState, mockSettings)
+                }}
+            >
+                <Router history={createBrowserHistory()}>
+                    <MockedProvider mocks={mocks}>
+                        <RelatedTiles />
+                    </MockedProvider>
+                </Router>
+            </RecoilRoot>
         )
         // Test the loading state while apollo query finishes
         expect(screen.getAllByTestId('acmtile-loading')).toHaveLength(4)

@@ -3,6 +3,7 @@ import { Alert, Stack, StackItem } from '@patternfly/react-core'
 import _ from 'lodash'
 import { useCallback } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
@@ -18,11 +19,13 @@ export default function RelatedResultsTables(props: {
 }) {
     const { currentQuery, selectedKinds, setDeleteResource } = props
     const { t } = useTranslation()
+    const { useSearchQueryLimit } = useSharedAtoms()
+    const searchQueryLimit = useSearchQueryLimit()
     const { data, loading, error } = useSearchResultRelatedItemsQuery({
         skip: selectedKinds.length === 0,
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
-            input: [{ ...convertStringToQuery(currentQuery), relatedKinds: selectedKinds }],
+            input: [{ ...convertStringToQuery(currentQuery, searchQueryLimit), relatedKinds: selectedKinds }],
         },
     })
 

@@ -14,6 +14,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
 import {
     ClosedDeleteModalProps,
@@ -35,6 +36,8 @@ function SearchResultTables(props: {
 }) {
     const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
+    const { useSearchQueryLimit } = useSharedAtoms()
+    const searchQueryLimit = useSearchQueryLimit()
 
     const searchDefinitions = useSearchDefinitions()
 
@@ -76,7 +79,7 @@ function SearchResultTables(props: {
 
     return (
         <Fragment>
-            {data.length >= 1000 ? (
+            {data.length >= searchQueryLimit ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}
@@ -108,6 +111,8 @@ function SearchResultTables(props: {
 export default function SearchResults(props: { currentQuery: string; preSelectedRelatedResources: string[] }) {
     const { currentQuery, preSelectedRelatedResources } = props
     const { t } = useTranslation()
+    const { useSearchQueryLimit } = useSharedAtoms()
+    const searchQueryLimit = useSearchQueryLimit()
     const [selectedKinds, setSelectedKinds] = useState<string[]>(preSelectedRelatedResources)
     const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
     const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
@@ -130,15 +135,15 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     useEffect(() => {
         if (!called) {
             fireSearchQuery({
-                variables: { input: [convertStringToQuery(currentQuery)] },
+                variables: { input: [convertStringToQuery(currentQuery, searchQueryLimit)] },
             })
         } else {
             refetch &&
                 refetch({
-                    input: [convertStringToQuery(currentQuery)],
+                    input: [convertStringToQuery(currentQuery, searchQueryLimit)],
                 })
         }
-    }, [fireSearchQuery, currentQuery, called, refetch])
+    }, [fireSearchQuery, currentQuery, called, refetch, searchQueryLimit])
 
     const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
