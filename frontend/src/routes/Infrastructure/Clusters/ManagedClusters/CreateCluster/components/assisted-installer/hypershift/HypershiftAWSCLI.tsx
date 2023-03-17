@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Button,
   Card,
   ClipboardCopyButton,
   CodeBlock,
@@ -11,9 +12,12 @@ import {
   Modal,
   ModalVariant,
   Page,
+  PageGroup,
   Text,
   TextContent,
   TextVariants,
+  Toolbar,
+  ToolbarContent,
 } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
@@ -21,13 +25,14 @@ import { CreateCredentialModal } from '../../../../../../../../components/Create
 import { GetProjects } from '../../../../../../../../components/GetProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
-import { NavigationPath } from '../../../../../../../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
 import './css/HypershiftAWSCLI.css'
 
 export function HypershiftAWSCLI() {
   const { t } = useTranslation()
+  const { back, cancel } = useBackCancelNavigation()
   const breadcrumbs = [
     { label: t('Clusters'), to: NavigationPath.clusters },
     { label: t('Infrastructure'), to: NavigationPath.createCluster },
@@ -200,6 +205,27 @@ hypershift create cluster aws
           </ListItem>
         </List>
       </Card>
+      <PageGroup sticky="bottom" style={{ height: '68px' }}>
+        <Toolbar>
+          <ToolbarContent>
+            <Button variant="secondary" onClick={back(NavigationPath.createAWSControlPlane)}>
+              {t('Back')}
+            </Button>
+            <ToolbarContent>
+              <Button
+                variant="link"
+                isInline
+                onClick={cancel(NavigationPath.managedClusters)}
+                style={{
+                  paddingLeft: 48,
+                }}
+              >
+                {t('Cancel')}
+              </Button>
+            </ToolbarContent>
+          </ToolbarContent>
+        </Toolbar>
+      </PageGroup>
     </Page>
   )
 }

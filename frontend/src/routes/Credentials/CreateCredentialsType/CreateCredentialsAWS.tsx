@@ -67,7 +67,7 @@ export function CreateCredentialsAWS() {
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('Hosted cluster OIDC and more'),
+            description: t('OIDC Secret for Red Hat OpenShift Provisioning with hosted control plane'),
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
@@ -76,7 +76,7 @@ export function CreateCredentialsAWS() {
           : t('Hosted control plane operator and hypershift add-on must be enabled in order to continue'),
         alertVariant: 'info',
         alertContent: (
-          <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noopener noreferrer">
+          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
         ),
@@ -91,7 +91,7 @@ export function CreateCredentialsAWS() {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Credentials'), to: NavigationPath.credentials },
       { label: t('Credential type'), to: NavigationPath.addCredentials },
-      { label: t('AWS credential') },
+      { label: t('Amazon Web Services credential') },
     ]
     return newBreadcrumbs
   }, [t])

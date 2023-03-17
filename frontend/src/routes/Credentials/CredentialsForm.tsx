@@ -36,7 +36,6 @@ import {
   validatePrivateSshKey,
   validatePublicSshKey,
   validateRequiredPrefix,
-  validateS3Credential,
   validateVCenterServer,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
@@ -191,7 +190,6 @@ export function CredentialsForm(
   )
 
   const [bucket_name, setBucketName] = useState(() => providerConnection?.stringData?.bucket ?? '')
-  const [aws_s3_credentials, setAwsS3Credentials] = useState(() => providerConnection?.stringData?.credentials ?? '')
   const [aws_s3_region, setAwsS3Region] = useState(() => providerConnection?.stringData?.region ?? '')
 
   // Azure Cloud State
@@ -356,7 +354,7 @@ export function CredentialsForm(
         break
       case Provider.awss3:
         stringData.bucket = bucket_name
-        stringData.credentials = aws_s3_credentials
+        stringData.credentials = `[default]\naws_access_key_id=${aws_access_key_id}\naws_secret_access_key=${aws_secret_access_key}`
         stringData.region = aws_s3_region
         break
       case Provider.azure:
@@ -477,6 +475,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.httpProxy', setState: setHttpProxy },
       { path: 'Secret[0].stringData.httpsProxy', setState: setHttpsProxy },
       { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
+      { path: 'Secret[0].stringData.bucket', setState: setBucketName },
+      { path: 'Secret[0].stringData.region', setState: setAwsS3Region },
       { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
       { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
       { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
@@ -534,22 +534,28 @@ export function CredentialsForm(
     }
   }, [isHostedControlPlane, s3values, providerConnection?.metadata.name, providerConnection?.metadata.namespace])
 
-  const breadcrumbs =
-    credentialsType === Provider.aws || credentialsType === Provider.awss3
-      ? [
-          { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential type'), to: NavigationPath.addCredentials },
-          {
-            text: t('AWS credential'),
-            to: NavigationPath.addAWSType,
-          },
-          { text: title },
-        ]
-      : [
-          { text: t('Credentials'), to: NavigationPath.credentials },
-          { text: t('Credential type'), to: NavigationPath.addCredentials },
-          { text: title },
-        ]
+  let breadcrumbs
+  if (isViewing || isEditing) {
+    breadcrumbs = [{ text: t('Credentials'), to: NavigationPath.credentials }, { text: title }]
+  } else {
+    if (credentialsType === Provider.aws || credentialsType === Provider.awss3) {
+      breadcrumbs = [
+        { text: t('Credentials'), to: NavigationPath.credentials },
+        { text: t('Credential type'), to: NavigationPath.addCredentials },
+        {
+          text: t('Amazon Web Services credential'),
+          to: NavigationPath.addAWSType,
+        },
+        { text: title },
+      ]
+    } else {
+      breadcrumbs = [
+        { text: t('Credentials'), to: NavigationPath.credentials },
+        { text: t('Credential type'), to: NavigationPath.addCredentials },
+        { text: title },
+      ]
+    }
+  }
 
   const formData: FormData = {
     title,
@@ -586,7 +592,7 @@ export function CredentialsForm(
             variant: 'info',
             reactNode: (
               <Fragment>
-                <a href={DOC_LINKS.HYPERSHIFT_INTRO} target="_blank" rel="noreferrer">
+                <a href={DOC_LINKS.HYPERSHIFT_OIDC} target="_blank" rel="noreferrer">
                   {t('Learn more')}
                 </a>
               </Fragment>
@@ -709,6 +715,11 @@ export function CredentialsForm(
         type: 'Section',
         title: t('Bucket'),
         wizardTitle: t('Enter bucket information'),
+        description: (
+          <a href={DOC_LINKS.CREATE_CONNECTION_AWS} target="_blank" rel="noreferrer">
+            {t('How do I get S3 Bucket OIDC secret credentials?')}
+          </a>
+        ),
         inputs: [
           {
             id: 'bucketName',
@@ -721,15 +732,29 @@ export function CredentialsForm(
             isRequired: true,
           },
           {
-            id: 'credentials',
+            id: 'aws_access_key_id',
             isHidden: credentialsType !== Provider.awss3,
-            type: 'TextArea',
-            label: t('Credentials'),
-            placeholder: t('Enter your credentials'),
-            labelHelp: t('You use access keys to sign programmatic requests that you make to AWS. '),
-            value: aws_s3_credentials,
-            onChange: setAwsS3Credentials,
-            validation: (value) => validateS3Credential(value, t),
+            type: 'Text',
+            label: t('Access key ID'),
+            placeholder: t('Enter your AWS access key ID'),
+            labelHelp: t(
+              'You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.'
+            ),
+            value: aws_access_key_id,
+            onChange: setAwsAccessKeyID,
+            isRequired: true,
+          },
+          {
+            id: 'aws_secret_access_key',
+            isHidden: credentialsType !== Provider.awss3,
+            type: 'Text',
+            label: t('Secret access key'),
+            placeholder: t('Enter your AWS secret access key'),
+            labelHelp: t(
+              'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
+            ),
+            value: aws_secret_access_key,
+            onChange: setAwsSecretAccessKeyID,
             isRequired: true,
             isSecret: true,
           },

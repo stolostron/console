@@ -14,7 +14,6 @@ import {
   validateVCenterServer,
   validateNoProxy,
   validateNoProxyList,
-  validateS3Credential,
 } from './validation'
 
 const t = (key: string) => key
@@ -244,19 +243,6 @@ describe('validation', () => {
         expect(validateNoProxyList(value, t)).toBeTruthy()
       } else {
         expect(validateNoProxyList(value, t)).toBeUndefined()
-      }
-    })
-  })
-
-  describe('validateS3Credential', () => {
-    test.each([
-      ['should allow a valid s3 value', '[default]\naws_access_key_id=dfdf\naws_secret_access_key=dff', true],
-      ['should not allow an invalid value', 'default', false],
-    ])('%s', (_name, value, isValid) => {
-      if (!isValid) {
-        expect(validateS3Credential(value, t)).toBeTruthy()
-      } else {
-        expect(validateS3Credential(value, t)).toBeUndefined()
       }
     })
   })

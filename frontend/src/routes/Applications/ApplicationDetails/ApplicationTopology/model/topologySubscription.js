@@ -92,7 +92,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       let clustersNames = get(subscription, 'report.results', []).map((result) => {
         return result.source
       })
-      clustersNames = clustersNames.length ? clustersNames : ruleClusterNames
+      clustersNames = ruleClusterNames || clustersNames
 
       const isRulePlaced = ruleClusterNames.length > 0
       const subscriptionId = addSubscription(appId, clustersNames, subscription, source, isRulePlaced, links, nodes)

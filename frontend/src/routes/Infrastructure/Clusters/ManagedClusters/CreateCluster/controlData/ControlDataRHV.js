@@ -16,6 +16,7 @@ import {
   clusterDetailsControlData,
   disabledForFirstInGroup,
   reverseImageSet,
+  onImageChange,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -74,6 +75,7 @@ export const getControlDataRHV = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
+      onSelect: onImageChange,
       reverse: reverseImageSet,
     },
     //Always Hidden
