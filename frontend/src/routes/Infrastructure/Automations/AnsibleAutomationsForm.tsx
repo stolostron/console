@@ -244,7 +244,7 @@ export function AnsibleAutomationsForm(props: {
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
         },
-        inventory: ansibleInventory,
+        ...(ansibleInventory ? { inventory: ansibleInventory } : {}),
         ...(settings.ansibleIntegration === 'enabled'
           ? {
               scale: {
