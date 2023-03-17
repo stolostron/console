@@ -911,7 +911,7 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
             vendor: 'Openshift',
         },
         applicationManager: {
-            enabled: false,
+            enabled: true,
             argocdCluster: false,
         },
         policyController: {
