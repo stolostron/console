@@ -1270,13 +1270,13 @@ export function getClusterStatus(
     // Check if cluster is being automatically imported or has failed automatic import
     const mcConditionImportSucceeded = mcConditions.find((c) => c.type === 'ManagedClusterImportSucceeded')
     if (mcConditionImportSucceeded?.status === 'False') {
+      statusMessage = mcConditionImportSucceeded.message
       switch (mcConditionImportSucceeded.reason) {
         case 'ManagedClusterImporting':
           mcStatus = ClusterStatus.importing
           break
         case 'ManagedClusterImportFailed':
           mcStatus = ClusterStatus.importfailed
-          statusMessage = mcConditionImportSucceeded.message
           break
       }
     }
