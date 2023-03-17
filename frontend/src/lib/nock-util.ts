@@ -18,6 +18,7 @@ import {
   StatusApiVersion,
   StatusKind,
 } from '../resources'
+import { AnsibleTowerInventoryList } from '../resources/ansible-inventory'
 import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
@@ -344,6 +345,22 @@ export function nockAnsibleTower(
   statusCode = 200
 ) {
   return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .post('/ansibletower', (body) => isEqual(body, data))
+    .reply(statusCode, response, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Credentials': 'true',
+    })
+}
+
+export function nockAnsibleTowerInventory(
+  data: AnsibleCredentialPostBody | unknown,
+  response: AnsibleTowerInventoryList,
+  statusCode = 200
+) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string, {
+    encodedQueryParams: true,
+  })
     .post('/ansibletower', (body) => isEqual(body, data))
     .reply(statusCode, response, {
       'Access-Control-Allow-Origin': '*',
