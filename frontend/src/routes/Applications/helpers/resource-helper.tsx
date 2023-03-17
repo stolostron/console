@@ -5,6 +5,7 @@ import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
+import { generatePath } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
@@ -145,15 +146,7 @@ export const getClusterList = (
     managedClusters: Cluster[]
 ) => {
     // managed resources using search to fetch
-    const ocpAppResourceKinds = [
-        CronJobKind,
-        DaemonSetKind,
-        DeploymentKind,
-        DeploymentConfigKind,
-        JobKind,
-        StatefulSetKind,
-    ]
-    if (ocpAppResourceKinds.includes(resource.kind)) {
+    if (isOCPAppResourceKind(resource.kind)) {
         const clusterSet = new Set<string>()
         if (resource.status.cluster) {
             clusterSet.add(resource.status.cluster)
@@ -209,6 +202,19 @@ function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
     return false
 }
 
+export function isOCPAppResourceKind(kind: string) {
+    const ocpAppResourceKinds = [
+        CronJobKind,
+        DaemonSetKind,
+        DeploymentKind,
+        DeploymentConfigKind,
+        JobKind,
+        StatefulSetKind,
+    ]
+
+    return ocpAppResourceKinds.includes(kind)
+}
+
 export const normalizeRepoType = (type: string) => {
     const repoType = (type && type.toLowerCase()) || ''
     return repoType === 'github' ? 'git' : repoType
@@ -222,7 +228,7 @@ export function getClusterCountString(
     clusterList?: string[],
     resource?: IResource
 ) {
-    if (resource && isArgoApp(resource)) {
+    if (resource && (isArgoApp(resource) || isOCPAppResourceKind(resource.kind))) {
         return clusterList?.length ? clusterList[0] : t('None')
     } else if (clusterCount.remoteCount && clusterCount.localPlacement) {
         return t('{{remoteCount}} Remote, 1 Local', { remoteCount: clusterCount.remoteCount })
@@ -236,6 +242,10 @@ export function getClusterCountString(
 }
 
 export function getClusterCountSearchLink(resource: IResource, clusterCount: ClusterCount, clusterList?: string[]) {
+    if (isOCPAppResourceKind(resource.kind)) {
+        const cluster = clusterList ? clusterList[0] : ''
+        return generatePath(NavigationPath.clusterDetails, { name: cluster, namespace: cluster })
+    }
     if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
         return undefined
     }
