@@ -1,23 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Button,
-  Card,
   ClipboardCopyButton,
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
-  List,
-  ListItem,
   Modal,
   ModalVariant,
   Page,
   PageGroup,
   Text,
-  TextContent,
   TextVariants,
-  Toolbar,
-  ToolbarContent,
 } from '@patternfly/react-core'
 import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
@@ -28,6 +21,8 @@ import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../.
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
+import DocPage from './common/DocPage'
+import DocPageToolbar from './common/DocPageToolbar'
 import './css/HypershiftAWSCLI.css'
 
 export function HypershiftAWSCLI() {
@@ -90,6 +85,69 @@ hypershift create cluster aws
     </Fragment>
   )
 
+  const listItems = [
+    {
+      title: t('Prerequisite'),
+      content: (
+        <Fragment>
+          <Text component={TextVariants.p}>
+            {t('Enable Hosted Control Plane feature for AWS. Download and install Hosted Control Plane CLI.')}
+          </Text>
+          <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
+            {t('Follow documentation for more information.')}
+          </Text>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Amazon Web Services (AWS) credential'),
+      content: (
+        <Text component={TextVariants.p}>
+          {t('Create a new or update an existing AWS credential.')}
+          <CreateCredentialModal handleModalToggle={handleModalToggleAws} />
+        </Text>
+      ),
+    },
+    {
+      title: t('Amazon Web Services (AWS) S3 bucket credential'),
+      content: (
+        <Text component={TextVariants.p}>
+          {t('Create a new or update an existing AWS S3 bucket credential.')}
+          <CreateCredentialModal handleModalToggle={handleModalToggleAwsBucket} />
+        </Text>
+      ),
+    },
+    {
+      title: t('Running the Hosted Control Plane command'),
+      content: (
+        <Fragment>
+          <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>
+          <Text
+            component={TextVariants.a}
+            onClick={() => {
+              window.open(window.SERVER_FLAGS?.requestTokenURL)
+            }}
+            target="_blank"
+          >
+            {t('Use the oc login command.')}
+          </Text>
+          <Text component={TextVariants.h4}>{t('Execute command')}</Text>
+          <Text component={TextVariants.p}>
+            {t('To create the Hosted Control Plane, copy and paste the following command:')}
+          </Text>
+          <CodeBlock actions={actions(code, 'code-command')}>
+            <CodeBlockCode id="code-content">{code}</CodeBlockCode>
+          </CodeBlock>
+          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <CodeBlock actions={actions(helperCommand, 'helper-command')}>
+            <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
+          </CodeBlock>
+          {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
+        </Fragment>
+      ),
+    },
+  ]
+
   return (
     <Page>
       <Modal
@@ -145,86 +203,13 @@ hypershift create cluster aws
           </>
         }
       />
-      <Card style={{ margin: '2em', padding: '2em' }}>
-        <List isPlain isBordered iconSize="large">
-          <ListItem icon={<span className="ocm-icons">1</span>}>
-            <TextContent>
-              <Text component={TextVariants.h2}>{t('Prerequisite')}</Text>
-              <Text component={TextVariants.p}>
-                {t('Enable Hosted Control Plane feature for AWS. Download and install Hosted Control Plane CLI.')}
-              </Text>
-              <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
-                {t('Follow documentation for more information.')}
-              </Text>
-            </TextContent>
-          </ListItem>
-          <ListItem icon={<span className="ocm-icons">2</span>}>
-            <TextContent>
-              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) credential')}</Text>
-              <Text component={TextVariants.p}>
-                {t('Create a new or update an existing AWS credential.')}
-                <CreateCredentialModal handleModalToggle={handleModalToggleAws} />
-              </Text>
-            </TextContent>
-          </ListItem>
-          <ListItem icon={<span className="ocm-icons">3</span>}>
-            <TextContent>
-              <Text component={TextVariants.h2}>{t('Amazon Web Services (AWS) S3 bucket credential')}</Text>
-              <Text component={TextVariants.p}>
-                {t('Create a new or update an existing AWS S3 bucket credential.')}
-                <CreateCredentialModal handleModalToggle={handleModalToggleAwsBucket} />
-              </Text>
-            </TextContent>
-          </ListItem>
-          <ListItem icon={<span className="ocm-icons">4</span>}>
-            <TextContent>
-              <Text component={TextVariants.h2}>{t('Running the Hosted Control Plane command')}</Text>
-              <Text component={TextVariants.h4}>{t('How to log into OpenShift Container Platform')}</Text>
-              <Text
-                component={TextVariants.a}
-                onClick={() => {
-                  window.open(window.SERVER_FLAGS?.requestTokenURL)
-                }}
-                target="_blank"
-              >
-                {t('Use the oc login command.')}
-              </Text>
-              <Text component={TextVariants.h4}>{t('Execute command')}</Text>
-              <Text component={TextVariants.p}>{t('To create the Hosted Control Plane command, copy the code:')}</Text>
-              <CodeBlock actions={actions(code, 'code-command')}>
-                <CodeBlockCode id="code-content">{code}</CodeBlockCode>
-              </CodeBlock>
-              <Text style={{ marginTop: '1em' }}>
-                {t('Use the following command to see all available parameters.')}
-              </Text>
-              <CodeBlock actions={actions(helperCommand, 'helper-command')}>
-                <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
-              </CodeBlock>
-              {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
-            </TextContent>
-          </ListItem>
-        </List>
-      </Card>
+      <DocPage listItems={listItems} />
+
       <PageGroup sticky="bottom" style={{ height: '68px' }}>
-        <Toolbar>
-          <ToolbarContent>
-            <Button variant="secondary" onClick={back(NavigationPath.createAWSControlPlane)}>
-              {t('Back')}
-            </Button>
-            <ToolbarContent>
-              <Button
-                variant="link"
-                isInline
-                onClick={cancel(NavigationPath.managedClusters)}
-                style={{
-                  paddingLeft: 48,
-                }}
-              >
-                {t('Cancel')}
-              </Button>
-            </ToolbarContent>
-          </ToolbarContent>
-        </Toolbar>
+        <DocPageToolbar
+          onBack={back(NavigationPath.createAWSControlPlane)}
+          onCancel={cancel(NavigationPath.managedClusters)}
+        />
       </PageGroup>
     </Page>
   )

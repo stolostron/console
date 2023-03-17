@@ -67,7 +67,7 @@ export function CreateKubeVirtControlPlane() {
     const newBreadcrumbs: ICatalogBreadcrumb[] = [
       { label: t('Clusters'), to: NavigationPath.clusters },
       { label: t('Infrastructure'), to: NavigationPath.createCluster },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'KubeVirt' }) },
+      { label: t('Control plane type - {{hcType}}', { hcType: 'Openshift Virtualization' }) },
     ]
     return newBreadcrumbs
   }, [t])
@@ -78,7 +78,7 @@ export function CreateKubeVirtControlPlane() {
     <AcmPage
       header={
         <PageHeader
-          title={t('Control plane type - {{hcType}}', { hcType: 'KubeVirt' })}
+          title={t('Control plane type - {{hcType}}', { hcType: 'Openshift Virtualization' })}
           description={t('Choose a control plane type for your cluster.')}
           breadcrumbs={breadcrumbs}
         />
