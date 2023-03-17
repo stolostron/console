@@ -633,6 +633,7 @@ function EditAnsibleJobModal(props: {
       title={props.ansibleJob?.name !== '' ? t('template.modal.title.edit') : t('template.modal.title.add')}
       isOpen={props.ansibleJob !== undefined}
       onClose={() => props.setAnsibleJob()}
+      position="top"
     >
       <AcmForm>
         <FormGroup fieldId="template-type" isInline>
