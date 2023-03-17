@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterPool, ClusterStatus, ManagedClusterSet } from '../../../../../resources'
-import { AcmInlineStatusGroup } from '../../../../../ui-components'
+import { ClusterPool, getClusterStatusType, ManagedClusterSet } from '../../../../../resources'
+import { AcmInlineStatusGroup, StatusType } from '../../../../../ui-components'
 import { useClusters } from './useClusters'
 
 export function ClusterStatuses(props: {
@@ -21,51 +21,35 @@ export function ClusterStatuses(props: {
   let unknown = 0
 
   clusters.forEach((cluster) => {
-    switch (cluster.status) {
-      case ClusterStatus.ready:
+    switch (getClusterStatusType(cluster.status)) {
+      case StatusType.healthy:
         healthy++
         break
-      case ClusterStatus.running:
+      case StatusType.running:
         running++
         break
-      case ClusterStatus.needsapproval:
+      case StatusType.warning:
         warning++
         break
-      case ClusterStatus.creating:
-      case ClusterStatus.destroying:
-      case ClusterStatus.detaching:
-      case ClusterStatus.stopping:
-      case ClusterStatus.resuming:
-      case ClusterStatus.prehookjob:
-      case ClusterStatus.posthookjob:
-      case ClusterStatus.importing:
+      case StatusType.progress:
         progress++
         break
-      case ClusterStatus.failed:
-      case ClusterStatus.provisionfailed:
-      case ClusterStatus.deprovisionfailed:
-      case ClusterStatus.notaccepted:
-      case ClusterStatus.offline:
-      case ClusterStatus.degraded:
-      case ClusterStatus.prehookfailed:
-      case ClusterStatus.posthookfailed:
-      case ClusterStatus.importfailed:
+      case StatusType.danger:
         danger++
         break
-      // temporary
-      case ClusterStatus.hibernating:
+      case StatusType.sleep:
         sleep++
         break
-      case ClusterStatus.pending:
-      case ClusterStatus.pendingimport:
+      case StatusType.pending:
         pending++
         break
-      case ClusterStatus.unknown:
-        unknown++
-        break
-      // detached clusters don't have a ManagedCluster
-      case ClusterStatus.detached:
+      case StatusType.detached:
         detached++
+        break
+      case StatusType.draft: // No separate count for draft; they don't appear in ClusterPools anyway
+      case StatusType.unknown:
+      default:
+        unknown++
         break
     }
   })

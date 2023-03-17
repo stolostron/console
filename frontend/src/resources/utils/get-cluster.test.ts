@@ -364,6 +364,55 @@ const mockManagedClusterOCM: ManagedCluster = {
   },
 }
 
+const mockManagedClusterImporting: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: { name: clusterName },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    version: { kubernetes: '' },
+    clusterClaims: [],
+    conditions: [
+      {
+        type: 'HubAcceptedManagedCluster',
+        status: 'True',
+      },
+      {
+        type: 'ManagedClusterImportSucceeded',
+        status: 'False',
+        reason: 'ManagedClusterImporting',
+        message: 'Importing resources are applied, wait for resources be available',
+      },
+    ],
+  },
+}
+
+const mockManagedClusterImportfailed: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: { name: clusterName },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    version: { kubernetes: '' },
+    clusterClaims: [],
+    conditions: [
+      {
+        type: 'HubAcceptedManagedCluster',
+        status: 'True',
+      },
+      {
+        type: 'ManagedClusterImportSucceeded',
+        status: 'False',
+        reason: 'ManagedClusterImportFailed',
+        message:
+          'Try to import managed cluster, retry times: 15/15, error: [the server could not find the requested resource (post customresourcedefinitions.apiextensions.k8s.io)',
+      },
+    ],
+  },
+}
+
 const mockClusterDeployment: ClusterDeployment = {
   apiVersion: ClusterDeploymentApiVersion,
   kind: ClusterDeploymentKind,
@@ -934,7 +983,7 @@ describe('getClusterStatus', () => {
   })
   it('should return unknown for a hosted cluster with corresponding managed cluster', () => {
     const status = getClusterStatus(
-      undefined,
+      undefined /* clusterDeployment */,
       undefined /* managedClusterInfo */,
       undefined /* certificateSigningRequests */,
       mockHostedClusterManagedCluster /* managedCluster */,
@@ -945,6 +994,36 @@ describe('getClusterStatus', () => {
     )
     expect(status.status).toBe(ClusterStatus.unknown)
     expect(status.statusMessage).toBeUndefined()
+  })
+  it('should return importing for managed cluster that is being automatically imported', () => {
+    const status = getClusterStatus(
+      undefined /* clusterDeployment */,
+      undefined /* managedClusterInfo */,
+      undefined /* certificateSigningRequests */,
+      mockManagedClusterImporting /* managedCluster */,
+      undefined /* clusterCurator */,
+      undefined /* agentClusterInstall */,
+      undefined /* clusterClaim */,
+      undefined /* hostedCluster */
+    )
+    expect(status.status).toBe(ClusterStatus.importing)
+    expect(status.statusMessage).toBe('Importing resources are applied, wait for resources be available')
+  })
+  it('should return importfailed for managed cluster that has failed being automatically imported', () => {
+    const status = getClusterStatus(
+      undefined /* clusterDeployment */,
+      undefined /* managedClusterInfo */,
+      undefined /* certificateSigningRequests */,
+      mockManagedClusterImportfailed /* managedCluster */,
+      undefined /* clusterCurator */,
+      undefined /* agentClusterInstall */,
+      undefined /* clusterClaim */,
+      undefined /* hostedCluster */
+    )
+    expect(status.status).toBe(ClusterStatus.importfailed)
+    expect(status.statusMessage).toBe(
+      'Try to import managed cluster, retry times: 15/15, error: [the server could not find the requested resource (post customresourcedefinitions.apiextensions.k8s.io)'
+    )
   })
 })
 

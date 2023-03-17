@@ -51,7 +51,6 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         ![
           ClusterStatus.detaching,
           ClusterStatus.hibernating,
-          ClusterStatus.importfailed,
           ClusterStatus.prehookfailed,
           ClusterStatus.prehookjob,
           ClusterStatus.stopping,

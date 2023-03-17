@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Cluster, ClusterStatus, getClusterStatusLabel, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType, Provider } from '../../../../../ui-components'
+import {
+  Cluster,
+  ClusterStatus,
+  getClusterStatusLabel,
+  getClusterStatusType,
+  getLatestAnsibleJob,
+} from '../../../../../resources'
+import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useLocation } from 'react-router-dom'
@@ -27,57 +33,8 @@ export function StatusField(props: { cluster: Cluster }) {
     namespace: props.cluster?.namespace!,
   })
 
-  let type: StatusType
   const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
-  switch (props.cluster?.status) {
-    case ClusterStatus.ready:
-      type = StatusType.healthy
-      break
-    case ClusterStatus.running:
-      type = StatusType.running
-      break
-    case ClusterStatus.needsapproval:
-      type = StatusType.warning
-      break
-    case ClusterStatus.failed:
-    case ClusterStatus.notstarted:
-    case ClusterStatus.provisionfailed:
-    case ClusterStatus.deprovisionfailed:
-    case ClusterStatus.notaccepted:
-    case ClusterStatus.offline:
-    case ClusterStatus.degraded:
-    case ClusterStatus.prehookfailed:
-    case ClusterStatus.posthookfailed:
-    case ClusterStatus.importfailed:
-      type = StatusType.danger
-      break
-    case ClusterStatus.creating:
-    case ClusterStatus.destroying:
-    case ClusterStatus.detaching:
-    case ClusterStatus.stopping:
-    case ClusterStatus.resuming:
-    case ClusterStatus.prehookjob:
-    case ClusterStatus.posthookjob:
-    case ClusterStatus.importing:
-      type = StatusType.progress
-      break
-    case ClusterStatus.detached:
-      type = StatusType.detached
-      break
-    case ClusterStatus.hibernating:
-      type = StatusType.sleep
-      break
-    case ClusterStatus.unknown:
-      type = StatusType.unknown
-      break
-    case ClusterStatus.draft:
-      type = StatusType.draft
-      break
-    case ClusterStatus.pending:
-    case ClusterStatus.pendingimport:
-    default:
-      type = StatusType.pending
-  }
+  const type = getClusterStatusType(props.cluster.status)
 
   let hasAction = false
   let Action = () => <></>
