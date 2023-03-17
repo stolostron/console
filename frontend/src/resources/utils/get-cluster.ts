@@ -34,6 +34,7 @@ import {
   checkCuratorConditionDone,
   checkForRequirementsMetConditionFailureReason,
   checkForCondition,
+  getConditionReason,
 } from './status-conditions'
 
 export enum ClusterStatus {
@@ -65,6 +66,7 @@ export enum ClusterStatus {
   'draft' = 'draft',
   'running' = 'running',
   'upgradefailed' = 'upgradefailed',
+  'error' = 'error',
 }
 
 export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
@@ -1302,7 +1304,14 @@ export function getClusterStatus(
     )
 
     if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
-      mcStatus = ClusterStatus.importing
+      const stuckImport =
+        checkForCondition('HubAcceptedManagedCluster', mcConditions) &&
+        getConditionReason('HubAcceptedManagedCluster', mcConditions) === 'Error'
+      if (stuckImport) {
+        mcStatus = ClusterStatus.importfailed
+      } else {
+        mcStatus = ClusterStatus.importing
+      }
 
       const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
       if (mcConditionAvailable) {
