@@ -121,6 +121,7 @@ describe('SavedSearchQueries Page', () => {
                                 },
                             ]}
                             setSelectedSearch={() => {}}
+                            setUserPreference={() => {}}
                         />
                     </MockedProvider>
                 </Router>
