@@ -44,6 +44,11 @@ import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } fro
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
 
+const DEFAULT_DESTROY_TIMEOUT = 5
+const DEFAULT_INSTALL_TIMEOUT = 5
+const DEFAULT_SCALE_TIMEOUT = 5
+const DEFAULT_UPGRADE_TIMEOUT = 120
+
 export default function AnsibleAutomationsFormPage({
   match,
 }: RouteComponentProps<{ namespace: string; name: string }>) {
@@ -130,24 +135,28 @@ export function AnsibleAutomationsForm(props: {
   const [installPostJobs, setInstallPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.install?.posthook ?? []
   )
+  const [installTimout, setInstallTimout] = useState<number>(DEFAULT_INSTALL_TIMEOUT)
   const [upgradePreJobs, setUpgradePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.upgrade?.prehook ?? []
   )
   const [upgradePostJobs, setUpgradePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.upgrade?.posthook ?? []
   )
+  const [updateTimout, setUpdateTimout] = useState<number>(DEFAULT_UPGRADE_TIMEOUT)
   const [scalePreJobs, setScalePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.scale?.prehook ?? []
   )
   const [scalePostJobs, setScalePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.scale?.posthook ?? []
   )
+  const [scaleTimout, setScaleTimout] = useState<number>(DEFAULT_SCALE_TIMEOUT)
   const [destroyPreJobs, setDestroyPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.destroy?.prehook ?? []
   )
   const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.destroy?.posthook ?? []
   )
+  const [destroyTimout, setDestroyTimout] = useState<number>(DEFAULT_DESTROY_TIMEOUT)
 
   const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
@@ -217,11 +226,13 @@ export function AnsibleAutomationsForm(props: {
           towerAuthSecret: ansibleSelection,
           prehook: installPreJobs,
           posthook: installPostJobs,
+          ...(installTimout !== DEFAULT_INSTALL_TIMEOUT ? { jobMonitorTimeout: installTimout } : {}),
         },
         upgrade: {
           towerAuthSecret: ansibleSelection,
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
+          ...(updateTimout !== DEFAULT_UPGRADE_TIMEOUT ? { monitorTimeout: updateTimout } : {}),
         },
         ...(settings.ansibleIntegration === 'enabled'
           ? {
@@ -229,11 +240,13 @@ export function AnsibleAutomationsForm(props: {
                 towerAuthSecret: ansibleSelection,
                 prehook: scalePreJobs,
                 posthook: scalePostJobs,
+                ...(scaleTimout !== DEFAULT_SCALE_TIMEOUT ? { jobMonitorTimeout: scaleTimout } : {}),
               },
               destroy: {
                 towerAuthSecret: ansibleSelection,
                 prehook: destroyPreJobs,
                 posthook: destroyPostJobs,
+                ...(destroyTimout !== DEFAULT_DESTROY_TIMEOUT ? { jobMonitorTimeout: destroyTimout } : {}),
               },
             }
           : {}),
@@ -367,6 +380,15 @@ export function AnsibleAutomationsForm(props: {
                   setEditAnsibleJob({ name: '', extra_vars: {} })
                 },
               },
+              {
+                id: 'installTimeout',
+                type: 'TextNumber',
+                label: t('template.install.timeout'),
+                labelHelp: t('template.install.timeout.help'),
+                value: installTimout,
+                onChange: setInstallTimout,
+                isDisabled: isEditing,
+              },
             ],
           },
           {
@@ -412,6 +434,15 @@ export function AnsibleAutomationsForm(props: {
                   setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
                   setEditAnsibleJob({ name: '', extra_vars: {} })
                 },
+              },
+              {
+                id: 'updateTimeout',
+                type: 'TextNumber',
+                label: t('template.install.timeout'),
+                labelHelp: t('template.upgrade.timeout.help'),
+                value: updateTimout,
+                onChange: setUpdateTimout,
+                isDisabled: isEditing,
               },
             ],
           },
@@ -460,6 +491,15 @@ export function AnsibleAutomationsForm(props: {
                         setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
                         setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
+                    },
+                    {
+                      id: 'scaleTimeout',
+                      type: 'TextNumber',
+                      label: t('template.install.timeout'),
+                      labelHelp: t('template.scale.timeout.help'),
+                      value: scaleTimout,
+                      onChange: setScaleTimout,
+                      isDisabled: isEditing,
                     },
                   ],
                 },
@@ -518,6 +558,15 @@ export function AnsibleAutomationsForm(props: {
                         })
                         setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
+                    },
+                    {
+                      id: 'destroyTimeout',
+                      type: 'TextNumber',
+                      label: t('template.install.timeout'),
+                      labelHelp: t('template.destroy.timeout.help'),
+                      value: destroyTimout,
+                      onChange: setDestroyTimout,
+                      isDisabled: isEditing,
                     },
                   ],
                 },
