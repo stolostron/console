@@ -55,7 +55,7 @@ describe('EditLabels', () => {
     getByTestId('label-input-button').click()
     userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
     expect(getByText('foo=bar')).toBeVisible()
-    getByTestId(`remove-foo`).click()
+    getByTestId(`remove-foo=bar`).click()
     expect(queryByText('foo=bar')).toBeNull()
   })
 })
