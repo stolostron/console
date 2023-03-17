@@ -1,30 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { FormGroup, Label, TextInput } from '@patternfly/react-core'
-import { Fragment, useState, useRef, SetStateAction } from 'react'
+import { Fragment, useState, useRef, SetStateAction, ReactNode, useCallback, useMemo } from 'react'
 import { useValidationContext } from '../AcmForm/AcmForm'
 
-export interface AcmLabelInputProps<T> {
+export type AcmLabelsInputProps<T> = {
   id: string
   label: string
-  value: T | undefined
-  addLabel: (key: string, value: T) => T
-  removeLabel: (key: string, value: T | undefined) => T | undefined
-  getLabelString: (value: T) => string[]
-  onChange: (labels: T | undefined) => void
-  buttonLabel: string
+  values: T[]
+  addLabel: (input: string) => void
+  removeLabel: (key: string) => void
+  getLabelKey: (value: T) => string
+  getLabelContent: (value: T) => ReactNode
   hidden?: boolean
   placeholder?: string
   isDisabled?: boolean
   allowSpaces?: boolean
 }
 
-export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
+function clearInput(e: EventTarget | null, setInputValue: (value: SetStateAction<string | undefined>) => void) {
+  const inputElement = e as HTMLInputElement
+  setInputValue('')
+  inputElement.value = ''
+  setTimeout(() => (inputElement.value = ''), 0)
+}
+
+export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
   const [inputValue, setInputValue] = useState<string>()
   const ValidationContext = useValidationContext()
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null)
 
-  const { value, removeLabel, addLabel, getLabelString, onChange, allowSpaces } = props
+  const { values, addLabel, removeLabel, getLabelKey, getLabelContent, allowSpaces } = props
   const escapeRef = useRef<HTMLInputElement>()
 
   return (
@@ -50,24 +56,24 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
             inputRef.current?.focus()
           }}
         >
-          {value &&
-            getLabelString(value).map((key, index, { length }) => {
-              return (
-                <Label
-                  className="label-pill"
-                  key={key}
-                  style={{ margin: 2 }}
-                  onClose={(e) => {
-                    onChange(removeLabel(key, value))
-                    /* istanbul ignore next */
-                    e.detail === 0 && inputRef.current?.focus() // only refocus on keyboard event, detail is 0 on key event
-                  }}
-                  closeBtnProps={{ id: `remove-${key}`, ref: index + 1 === length ? escapeRef : null }}
-                >
-                  {key}
-                </Label>
-              )
-            })}
+          {values.map((value, index, { length }) => {
+            const key = getLabelKey(value)
+            return (
+              <Label
+                className="label-pill"
+                key={key}
+                style={{ margin: 2 }}
+                onClose={(e) => {
+                  removeLabel(key)
+                  /* istanbul ignore next */
+                  e.detail === 0 && inputRef.current?.focus() // only refocus on keyboard event, detail is 0 on key event
+                }}
+                closeBtnProps={{ id: `remove-${key}`, ref: index + 1 === length ? escapeRef : null }}
+              >
+                {getLabelContent(value)}
+              </Label>
+            )
+          })}
 
           <TextInput
             ref={inputRef}
@@ -95,7 +101,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
                     e.stopPropagation()
                     // istanbul ignore else
                     if (inputValue) {
-                      onChange(addLabel(inputValue, value!))
+                      addLabel(inputValue)
                     }
                     clearInput(e.target, setInputValue)
                   }
@@ -114,7 +120,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
             onBlur={
               /* istanbul ignore next */
               (e) => {
-                onChange(addLabel(e.target.value, value!))
+                addLabel(e.target.value)
                 clearInput(e.target, setInputValue)
               }
             }
@@ -125,74 +131,122 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
   )
 }
 
-export function addLabelRecord(input: string, value: Record<string, string>) {
-  /* istanbul ignore next */
-  const newlabels = input
-    .split(',')
-    .join(' ')
-    .split(' ')
-    .map((label) => label.trim())
-    .filter((label) => label !== '')
-    .reduce(
-      (value, label) => {
-        const parts = label.split('=')
-        if (parts.length === 1) {
-          value[parts[0]] = ''
-        } else {
-          value[parts[0]] = parts.slice(1).join('=')
-        }
-        return value as Record<string, string>
-      },
-      { ...value }
-    )
-  return newlabels as Record<string, string>
+export type AcmKubernetesLabelsInputProps = {
+  value: Record<string, string> | undefined
+  onChange: (labels: Record<string, string> | undefined) => void
+} & Omit<AcmLabelsInputProps<string>, 'values' | 'addLabel' | 'removeLabel' | 'getLabelKey' | 'getLabelContent'>
+
+function getKubernetesLabelKey(value: [string, string]) {
+  return value[0]
 }
 
-function clearInput(e: EventTarget | null, setInputValue: (value: SetStateAction<string | undefined>) => void) {
-  const inputElement = e as HTMLInputElement
-  setInputValue('')
-  inputElement.value = ''
-  setTimeout(() => (inputElement.value = ''), 0)
+function getKubernetesLabelContent(value: [string, string]) {
+  let content = value[0]
+  if (value[1]) {
+    content += `=${value[1]}`
+  }
+  return content
 }
 
-export function addLabelString(input: string, value: string) {
-  const filteredInput = input
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter((tag) => tag != '')
-  /* istanbul ignore next */
-  const newLabels = value?.split(',').filter((tag) => tag != '') || []
-  filteredInput.forEach((finput) => {
-    if (!newLabels.includes(finput)) {
-      newLabels.push(finput)
-    }
-  })
+export function AcmKubernetesLabelsInput(props: AcmKubernetesLabelsInputProps) {
+  const { value, onChange, ...acmLabelInputProps } = props
+  const values: [string, string][] = value ? Object.entries(value) : []
 
-  return newLabels?.join(',')
+  const addKubernetesLabel = useCallback(
+    (input: string) => {
+      onChange(
+        input
+          .split(',')
+          .join(' ')
+          .split(' ')
+          .map((label) => label.trim())
+          .filter((label) => label !== '')
+          .reduce(
+            (value, label) => {
+              const parts = label.split('=')
+              if (parts.length === 1) {
+                value[parts[0]] = ''
+              } else {
+                value[parts[0]] = parts.slice(1).join('=')
+              }
+              return value as Record<string, string>
+            },
+            { ...value }
+          )
+      )
+    },
+    [value, onChange]
+  )
+
+  const removeKubernetesLabel = useCallback(
+    (key: string) => {
+      const newLabels: Record<string, string> = { ...value }
+      delete newLabels[key]
+      onChange(newLabels)
+    },
+    [value, onChange]
+  )
+
+  return (
+    <AcmLabelsInput<[string, string]>
+      values={values}
+      addLabel={addKubernetesLabel}
+      removeLabel={removeKubernetesLabel}
+      getLabelKey={getKubernetesLabelKey}
+      getLabelContent={getKubernetesLabelContent}
+      {...acmLabelInputProps}
+    />
+  )
 }
 
-export function removeLabelRecord(tag: string, value: Record<string, string> | undefined) {
-  /* istanbul ignore next */
-  const keyArray = tag.split('=')
-  const key = keyArray[0]
-  const newLabels: Record<string, string> = { ...value }
-  delete newLabels[key]
-  return newLabels
+export type AcmAnsibleTagsInputProps = {
+  value: string | undefined
+  onChange: (value: string) => void
+} & Omit<AcmLabelsInputProps<string>, 'values' | 'addLabel' | 'removeLabel' | 'getLabelKey' | 'getLabelContent'>
+
+function getAnsibleTag(value: string) {
+  return value
 }
 
-export function removeLabelString(key: string, value: string | undefined) {
-  /* istanbul ignore next */
-  const newLabels = value?.split(',').filter((label) => label != key && label != '')
-  if (newLabels && newLabels.length == 0) return undefined
-  return newLabels?.join(',')
-}
+export function AcmAnsibleTagsInput(props: AcmAnsibleTagsInputProps) {
+  const { value, onChange, ...acmLabelInputProps } = props
+  const values = useMemo(() => (value ? value.split(',') : []), [value])
+  const updateValues = useCallback((values: string[]) => onChange(values.join(',')), [onChange])
 
-export function getLabelStringFromRecord(value: Record<string, string>) {
-  return Object.keys(value).map((key) => {
-    let resultString = key
-    if (typeof value[key] === 'string' && value[key].trim() !== '') {
-      resultString += `=${value[key]}`
-    }
-    return resultString
-  })
+  const addAnsibleTag = useCallback(
+    (input: string) => {
+      updateValues(
+        input
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter((tag) => tag != '')
+          .reduce(
+            (values, label) => {
+              return values.includes(label) ? values : [...values, label]
+            },
+            [...values]
+          )
+      )
+    },
+    [values, updateValues]
+  )
+
+  const removeAnsibleTag = useCallback(
+    (key: string) => {
+      updateValues(values.filter((v) => v !== key))
+    },
+    [values, updateValues]
+  )
+
+  return (
+    <AcmLabelsInput<string>
+      values={values}
+      addLabel={addAnsibleTag}
+      removeLabel={removeAnsibleTag}
+      getLabelKey={getAnsibleTag}
+      getLabelContent={getAnsibleTag}
+      allowSpaces
+      {...acmLabelInputProps}
+    />
+  )
 }

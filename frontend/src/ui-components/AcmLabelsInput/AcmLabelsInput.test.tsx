@@ -4,46 +4,16 @@ import { useState } from 'react'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import {
-  AcmLabelsInput,
-  addLabelRecord,
-  addLabelString,
-  getLabelStringFromRecord,
-  removeLabelRecord,
-  removeLabelString,
-} from './AcmLabelsInput'
+import { AcmAnsibleTagsInput, AcmKubernetesLabelsInput } from './AcmLabelsInput'
 
 describe('AcmLabelsInput', () => {
   const LabelsInputKeyPairs = () => {
     const [value, setValue] = useState<Record<string, string> | undefined>()
-    return (
-      <AcmLabelsInput
-        addLabel={addLabelRecord}
-        removeLabel={removeLabelRecord}
-        getLabelString={getLabelStringFromRecord}
-        label="Label input"
-        id="label-input"
-        value={value}
-        onChange={setValue}
-        buttonLabel="Add label"
-      />
-    )
+    return <AcmKubernetesLabelsInput label="Label input" id="label-input" value={value} onChange={setValue} />
   }
   const LabelsInputStrings = () => {
     const [value, setValue] = useState<string>()
-    return (
-      <AcmLabelsInput
-        addLabel={addLabelString}
-        removeLabel={removeLabelString}
-        getLabelString={(value) => value.split(',').map((item) => item)}
-        label="Label input"
-        id="label-input"
-        value={value}
-        onChange={setValue}
-        allowSpaces
-        buttonLabel="Add label"
-      />
-    )
+    return <AcmAnsibleTagsInput label="Label input" id="label-input" value={value} onChange={setValue} />
   }
   test('renders', async () => {
     const { getByText, getByTestId } = render(<LabelsInputKeyPairs />)
@@ -68,7 +38,7 @@ describe('AcmLabelsInput', () => {
 
     // delete labels
     labels.forEach((label) => {
-      userEvent.click(getByTestId(`remove-${label}`))
+      userEvent.click(getByTestId(`remove-${label.split('=')[0]}`))
       expect(queryByText(label)).toBeNull()
     })
   })
@@ -135,18 +105,7 @@ describe('AcmLabelsInput', () => {
   test('allows an undefined value to be set', async () => {
     const UndefinedLabelsInput = () => {
       const [value, setValue] = useState<Record<string, string> | undefined>(undefined)
-      return (
-        <AcmLabelsInput
-          label="Label input"
-          id="label-input"
-          value={value}
-          onChange={setValue}
-          addLabel={addLabelRecord}
-          removeLabel={removeLabelRecord}
-          getLabelString={getLabelStringFromRecord}
-          buttonLabel="Add label"
-        />
-      )
+      return <AcmKubernetesLabelsInput label="Label input" id="label-input" value={value} onChange={setValue} />
     }
     const { getByTestId } = render(<UndefinedLabelsInput />)
     expect(getByTestId('label-input-button')).toBeVisible()
@@ -167,7 +126,7 @@ describe('AcmLabelsInput', () => {
 
     // delete labels
     labels.forEach((label) => {
-      userEvent.click(getByTestId(`remove-${label}`))
+      userEvent.click(getByTestId(`remove-${label.split('=')[0]}`))
       expect(queryByText(label)).toBeNull()
 
       expect(getByTestId('label-input-button')).toBeVisible()

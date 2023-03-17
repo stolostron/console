@@ -4,15 +4,12 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   AcmAlert,
   AcmForm,
-  AcmLabelsInput,
+  AcmKubernetesLabelsInput,
   AcmNumberInput,
   AcmSelect,
   AcmSubmit,
   AcmTable,
   AcmTextInput,
-  addLabelRecord,
-  getLabelStringFromRecord,
-  removeLabelRecord,
 } from '../../../../../ui-components'
 import {
   ActionGroup,
@@ -220,15 +217,11 @@ export function NodePoolForm(props: {
       key: t('Security groups'),
       value: props.nodepool?.spec.platform.aws?.securityGroups[0].id,
       edit: (
-        <AcmLabelsInput
+        <AcmKubernetesLabelsInput
           id="nodepool-rootvolumetype"
           label={t('Security groups')}
-          addLabel={addLabelRecord}
-          removeLabel={removeLabelRecord}
-          getLabelString={getLabelStringFromRecord}
           value={awsSecurityGroups}
           onChange={setAwsSecurityGroups}
-          buttonLabel="Add security group"
         />
       ),
     },

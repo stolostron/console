@@ -12,14 +12,11 @@ import {
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,
-  AcmLabelsInput,
+  AcmKubernetesLabelsInput,
   AcmPage,
   AcmPageHeader,
   AcmSelect,
   AcmToastContext,
-  addLabelRecord,
-  getLabelStringFromRecord,
-  removeLabelRecord,
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
@@ -591,14 +588,10 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
       </DescriptionListDescription>
     </DescriptionListGroup>
   ) : (
-    <AcmLabelsInput
+    <AcmKubernetesLabelsInput
       id={controlId}
       label={controlLabel}
-      buttonLabel={t('label.add')}
       value={additionalLabels}
-      addLabel={addLabelRecord}
-      removeLabel={removeLabelRecord}
-      getLabelString={getLabelStringFromRecord}
       onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
       placeholder={t('labels.edit.placeholder')}
     />

@@ -41,17 +41,13 @@ import {
 } from '../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
+  AcmAnsibleTagsInput,
   AcmForm,
-  AcmLabelsInput,
+  AcmKubernetesLabelsInput,
   AcmModal,
   AcmSelect,
   AcmSubmit,
-  addLabelRecord,
-  addLabelString,
-  getLabelStringFromRecord,
   Provider,
-  removeLabelRecord,
-  removeLabelString,
 } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
@@ -689,13 +685,10 @@ function EditAnsibleJobModal(props: {
               ))}
         </AcmSelect>
 
-        <AcmLabelsInput
+        <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}
           value={ansibleJob?.extra_vars}
-          addLabel={addLabelRecord}
-          removeLabel={removeLabelRecord}
-          getLabelString={getLabelStringFromRecord}
           onChange={(labels) => {
             if (ansibleJob) {
               const copy = { ...ansibleJob }
@@ -703,18 +696,14 @@ function EditAnsibleJobModal(props: {
               setAnsibleJob(copy)
             }
           }}
-          buttonLabel=""
           placeholder={t('template.modal.settings.placeholder')}
         />
         {filterForJobTemplates && (
           <>
-            <AcmLabelsInput
+            <AcmAnsibleTagsInput
               id="job-jobtags"
               label={t('Job tags')}
               value={ansibleJob?.job_tags}
-              addLabel={addLabelString}
-              removeLabel={removeLabelString}
-              getLabelString={(value) => value.split(',').map((item) => item)}
               onChange={(labels) => {
                 if (ansibleJob) {
                   const copy = { ...ansibleJob }
@@ -722,17 +711,12 @@ function EditAnsibleJobModal(props: {
                   setAnsibleJob(copy)
                 }
               }}
-              allowSpaces
-              buttonLabel=""
               placeholder={t('Enter job tag with "," or "enter"')}
             />
-            <AcmLabelsInput
+            <AcmAnsibleTagsInput
               id="job-skiptags"
               label={t('Skip tags')}
               value={ansibleJob?.skip_tags}
-              addLabel={addLabelString}
-              removeLabel={removeLabelString}
-              getLabelString={(value) => value.split(',').map((item) => item)}
               onChange={(labels) => {
                 if (ansibleJob) {
                   const copy = { ...ansibleJob }
@@ -740,8 +724,6 @@ function EditAnsibleJobModal(props: {
                   setAnsibleJob(copy)
                 }
               }}
-              allowSpaces
-              buttonLabel=""
               placeholder={t('Enter skip tag with "," or "enter"')}
             />
           </>

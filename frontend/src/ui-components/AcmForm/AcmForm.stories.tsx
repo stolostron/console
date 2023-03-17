@@ -5,12 +5,7 @@ import { Meta } from '@storybook/react'
 import { useState } from 'react'
 import { AcmAlertGroup } from '../AcmAlert/AcmAlert'
 import { AcmFormSection } from '../AcmFormSection/AcmFormSection'
-import {
-  AcmLabelsInput,
-  addLabelRecord,
-  getLabelStringFromRecord,
-  removeLabelRecord,
-} from '../AcmLabelsInput/AcmLabelsInput'
+import { AcmKubernetesLabelsInput } from '../AcmLabelsInput/AcmLabelsInput'
 import { AcmMultiSelect } from '../AcmMultiSelect/AcmMultiSelect'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../AcmPage/AcmPage'
 import { AcmSelect } from '../AcmSelect/AcmSelect'
@@ -152,16 +147,7 @@ export function FormStory() {
       </AcmMultiSelect>
 
       <AcmFormSection title="Labels" spacing></AcmFormSection>
-      <AcmLabelsInput
-        id="labelsInput"
-        label="Labels Input"
-        value={labels}
-        onChange={setLabels}
-        addLabel={addLabelRecord}
-        removeLabel={removeLabelRecord}
-        getLabelString={getLabelStringFromRecord}
-        buttonLabel="Add label"
-      />
+      <AcmKubernetesLabelsInput id="labelsInput" label="Labels Input" value={labels} onChange={setLabels} />
 
       <AcmAlertGroup isInline canClose />
 

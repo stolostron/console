@@ -5,12 +5,7 @@ import { ActionGroup, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmDrawer, AcmDrawerContext } from './AcmDrawer'
 import { AcmForm } from '../AcmForm/AcmForm'
-import {
-  AcmLabelsInput,
-  addLabelRecord,
-  getLabelStringFromRecord,
-  removeLabelRecord,
-} from '../AcmLabelsInput/AcmLabelsInput'
+import { AcmKubernetesLabelsInput } from '../AcmLabelsInput/AcmLabelsInput'
 import { AcmPage } from '../AcmPage/AcmPage'
 
 export default {
@@ -40,15 +35,11 @@ export const Drawer = () => {
               different clusters that share common labels.
             </p>
             <AcmForm style={{ marginTop: '24px' }}>
-              <AcmLabelsInput
+              <AcmKubernetesLabelsInput
                 label="local-cluster labels"
                 id="labels-input"
                 value={labels}
-                addLabel={addLabelRecord}
-                removeLabel={removeLabelRecord}
-                getLabelString={getLabelStringFromRecord}
                 onChange={(labels) => setLabels(labels)}
-                buttonLabel="Add label"
               />
             </AcmForm>
             <ActionGroup style={{ marginTop: '24px' }}>
@@ -94,15 +85,11 @@ export const DrawerUsingAcmPageContext = () => {
                         distribute your resources to different clusters that share common labels.
                       </p>
                       <AcmForm style={{ marginTop: '24px' }}>
-                        <AcmLabelsInput
+                        <AcmKubernetesLabelsInput
                           label="local-cluster labels"
                           id="labels-input"
                           value={labels}
-                          addLabel={addLabelRecord}
-                          removeLabel={removeLabelRecord}
-                          getLabelString={getLabelStringFromRecord}
                           onChange={(labels) => setLabels(labels)}
-                          buttonLabel="Add label"
                         />
                       </AcmForm>
                       <ActionGroup style={{ marginTop: '24px' }}>
