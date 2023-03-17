@@ -351,7 +351,6 @@ export function AnsibleAutomationsForm(props: {
               id: name as string,
               value: name as string,
             })),
-            isDisabled: isEditing,
             isHidden: !ansibleSelection,
             validation: () => {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
