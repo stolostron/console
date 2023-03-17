@@ -23,7 +23,13 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelInputProps<T>) {
   const ValidationContext = useValidationContext()
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null)
 
-  const { value, removeLabel, addLabel, getLabelString, onChange } = props
+  const {
+    value,
+    removeLabel = removeLabelRecord,
+    addLabel = addLabelRecord,
+    getLabelString = getLabelStringFromRecord,
+    onChange,
+  } = props
   const escapeRef = useRef<HTMLInputElement>()
 
   return (

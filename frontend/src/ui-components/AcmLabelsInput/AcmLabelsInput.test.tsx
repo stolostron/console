@@ -4,13 +4,22 @@ import { useState } from 'react'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { AcmLabelsInput } from './AcmLabelsInput'
+import { AcmLabelsInput, addLabelRecord, getLabelStringFromRecord, removeLabelRecord } from './AcmLabelsInput'
 
 describe('AcmLabelsInput', () => {
   const LabelsInput = () => {
     const [value, setValue] = useState<Record<string, string> | undefined>()
     return (
-      <AcmLabelsInput label="Label input" id="label-input" value={value} onChange={setValue} buttonLabel="Add label" />
+      <AcmLabelsInput
+        addLabel={addLabelRecord}
+        removeLabel={removeLabelRecord}
+        getLabelString={getLabelStringFromRecord}
+        label="Label input"
+        id="label-input"
+        value={value}
+        onChange={setValue}
+        buttonLabel="Add label"
+      />
     )
   }
   test('renders', async () => {
@@ -36,7 +45,7 @@ describe('AcmLabelsInput', () => {
 
     // delete labels
     labels.forEach((label) => {
-      userEvent.click(getByTestId(`remove-${label.split('=')[0]}`))
+      userEvent.click(getByTestId(`remove-${label}`))
       expect(queryByText(label)).toBeNull()
     })
   })
