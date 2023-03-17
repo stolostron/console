@@ -292,19 +292,6 @@ export function CredentialsForm(
       }
     } catch (_e) {}
   }, [cloudsYaml])
-  // user adds ca cert or changes cloud, set auth.cacert to '/etc/openstack-ca/ca.crt'
-  useEffect(() => {
-    if (osCABundle) {
-      try {
-        const yamlData = YAML.parse(cloudsYaml)
-        if (yamlData?.clouds?.[cloud]?.auth) {
-          yamlData.clouds[cloud].auth.cacert = '/etc/openstack-ca/ca.crt'
-          setOpenstackCloudsYaml(YAML.stringify(yamlData))
-        }
-      } catch (_e) {}
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [osCABundle, cloud])
 
   // Red Hat Virtualization
   const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')

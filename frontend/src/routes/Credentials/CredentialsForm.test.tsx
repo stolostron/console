@@ -403,10 +403,6 @@ describe('add credentials page', () => {
     await clickByText('Next')
 
     // Add Credentials
-    if (providerConnection.stringData) {
-      providerConnection.stringData['clouds.yaml'] =
-        'clouds:\n  openstack:\n    auth:\n      auth_url: https://acme.com\n      username: fakeuser\n      password: fakepwd\n      cacert: /etc/openstack-ca/ca.crt\n'
-    }
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)

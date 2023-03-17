@@ -161,6 +161,9 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABu
       if (!cloud?.auth?.cacert && osCABundle) {
         return t('validate.yaml.cloud.cacert.not.found')
       }
+      if (cloud?.auth?.cacert && !osCABundle) {
+        return t('validate.yaml.cloud.cacert.was.found')
+      }
     } catch (e) {
       return t('validate.yaml.not.valid')
     }
