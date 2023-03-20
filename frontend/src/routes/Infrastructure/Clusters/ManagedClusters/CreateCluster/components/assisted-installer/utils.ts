@@ -235,8 +235,27 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
       agentClusterInstall.spec?.networking?.machineNetwork?.[0]?.cidr
     )
   } else {
-    appendPatch(agentClusterInstallPatches, '/spec/apiVIP', values.apiVip, agentClusterInstall.spec?.apiVIP)
-    appendPatch(agentClusterInstallPatches, '/spec/ingressVIP', values.ingressVip, agentClusterInstall.spec?.ingressVIP)
+    const isUserNetworking = values.managedNetworkingType === 'userManaged'
+    appendPatch(agentClusterInstallPatches, '/spec/networking/userManagedNetworking', isUserNetworking, agentClusterInstall.spec?.networking?.userManagedNetworking)
+    if (isUserNetworking) {
+      if (agentClusterInstall.spec?.ingressVIP) {
+        agentClusterInstallPatches.push({
+          op: 'remove',
+          path: '/spec/ingressVIP',
+        })
+      }
+
+      if (agentClusterInstall.spec?.apiVIP) {
+        agentClusterInstallPatches.push({
+          op: 'remove',
+          path: '/spec/apiVIP',
+        })
+      }
+      appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
+    } else {
+      appendPatch(agentClusterInstallPatches, '/spec/apiVIP', values.apiVip, agentClusterInstall.spec?.apiVIP)
+      appendPatch(agentClusterInstallPatches, '/spec/ingressVIP', values.ingressVip, agentClusterInstall.spec?.ingressVIP)
+    }
   }
 
   if (values.enableProxy) {
