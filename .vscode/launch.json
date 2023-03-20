@@ -29,12 +29,12 @@
     {
       "name": "Launch Backend",
       "request": "launch",
-      "runtimeArgs": ["run", "start:hot"],
+      "args": ["run", "launch"],
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
       "console": "integratedTerminal",
-      "cwd": "${fileWorkspaceFolder}",
+      "cwd": "${workspaceFolder}",
       "preLaunchTask": "KillNodes"
     },
     {
@@ -53,6 +53,46 @@
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Frontend Test",
+      "request": "launch",
+      "args": [
+        "--experimental-vm-modules",
+        "node_modules/.bin/jest",
+        "${file}",
+        "--runInBand",
+        "--watchAll=false",
+        "--coverage=false"
+      ],
+      "env": {
+        "LAUNCH": "true"
+      },
+      "cwd": "${workspaceFolder}/frontend",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "name": "vscode-jest-tests.v2",
+      "request": "launch",
+      "args": [
+        "--runInBand",
+        "--watchAll=false",
+        "--coverage=false",
+        "--testNamePattern",
+        "${jest.testNamePattern}",
+        "--runTestsByPath",
+        "${jest.testFile}"
+      ],
+      "env": {
+        "LAUNCH": "true"
+      },
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/jest"
     }
   ]
 }
