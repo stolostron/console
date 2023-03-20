@@ -29,6 +29,7 @@ export interface ClusterCurator {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
+      jobMonitorTimeout?: number
     }
     upgrade?: {
       desiredUpdate?: string
@@ -37,16 +38,19 @@ export interface ClusterCurator {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
+      monitorTimeout?: number
     }
     scale?: {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
+      jobMonitorTimeout?: number
     }
     destroy?: {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
+      jobMonitorTimeout?: number
     }
   }
   status?: {
