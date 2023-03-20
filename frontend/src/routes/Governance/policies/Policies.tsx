@@ -35,7 +35,7 @@ import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import { formatDescriptionForDropdown, getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -748,26 +748,56 @@ export default function PoliciesPage() {
           const standards = item.policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
           const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
           const categories = item.policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
-          if (!standards && !controls && !categories) return undefined
+          const desc = item.policy.metadata.annotations?.['policy.open-cluster-management.io/description']
+          const formattedDescription = formatDescriptionForDropdown(desc as string)
           return [
             {
               cells: [
                 {
                   title: (
-                    <DescriptionList isAutoFit isAutoColumnWidths>
-                      <DescriptionListGroup>
-                        <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
-                        <DescriptionListDescription>{standards ?? '-'}</DescriptionListDescription>
-                      </DescriptionListGroup>
-                      <DescriptionListGroup>
-                        <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
-                        <DescriptionListDescription>{controls ?? '-'}</DescriptionListDescription>
-                      </DescriptionListGroup>
-                      <DescriptionListGroup>
-                        <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
-                        <DescriptionListDescription>{categories ?? '-'}</DescriptionListDescription>
-                      </DescriptionListGroup>
-                    </DescriptionList>
+                    <Stack hasGutter>
+                      <StackItem>
+                        <DescriptionList isAutoFit isAutoColumnWidths>
+                          <DescriptionListGroup>
+                            <DescriptionListTerm>{t('Description')}</DescriptionListTerm>
+                            <DescriptionListDescription>
+                              {formattedDescription.length > 0 ? (
+                                formattedDescription
+                              ) : (
+                                <Button
+                                  variant="link"
+                                  isInline
+                                  onClick={() => {
+                                    const path = NavigationPath.editPolicy
+                                      .replace(':namespace', item.policy.metadata.namespace!)
+                                      .replace(':name', item.policy.metadata.name!)
+                                    history.push(path + '?context=policies')
+                                  }}
+                                >
+                                  Add
+                                </Button>
+                              )}
+                            </DescriptionListDescription>
+                          </DescriptionListGroup>
+                        </DescriptionList>
+                      </StackItem>
+                      <StackItem>
+                        <DescriptionList isAutoFit isAutoColumnWidths>
+                          <DescriptionListGroup>
+                            <DescriptionListTerm>{t('Standards')}</DescriptionListTerm>
+                            <DescriptionListDescription>{standards ?? '-'}</DescriptionListDescription>
+                          </DescriptionListGroup>
+                          <DescriptionListGroup>
+                            <DescriptionListTerm>{t('Controls')}</DescriptionListTerm>
+                            <DescriptionListDescription>{controls ?? '-'}</DescriptionListDescription>
+                          </DescriptionListGroup>
+                          <DescriptionListGroup>
+                            <DescriptionListTerm>{t('Categories')}</DescriptionListTerm>
+                            <DescriptionListDescription>{categories ?? '-'}</DescriptionListDescription>
+                          </DescriptionListGroup>
+                        </DescriptionList>
+                      </StackItem>
+                    </Stack>
                   ),
                 },
               ],

@@ -21,7 +21,12 @@ import {
   PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
-import { getPlacementDecisionsForPlacements, getPlacementsForResource, getPolicyRemediation } from '../../common/util'
+import {
+  getPlacementDecisionsForPlacements,
+  getPlacementsForResource,
+  getPolicyDescription,
+  getPolicyRemediation,
+} from '../../common/util'
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
@@ -79,6 +84,10 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
       {
         key: t('Name'),
         value: policy.metadata.name ?? '-',
+      },
+      {
+        key: t('Description'),
+        value: getPolicyDescription(policy),
       },
       {
         key: t('Namespace'),
