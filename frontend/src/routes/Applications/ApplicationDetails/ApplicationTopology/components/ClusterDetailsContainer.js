@@ -97,7 +97,15 @@ class ClusterDetailsContainer extends Component {
             newClusterList = clusterList
         }
 
-        handleClusterDetailsContainerUpdate(1, 0, false, new Set(), clusterID, selection, newClusterList)
+        handleClusterDetailsContainerUpdate({
+            page: 1,
+            startIdx: 0,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: selection,
+            selectedClusterList: newClusterList,
+        })
         this.setState({
             selected: selection,
             clusterList: newClusterList,
@@ -115,7 +123,15 @@ class ClusterDetailsContainer extends Component {
         } = this.props
         const { clusterID } = this.state
 
-        handleClusterDetailsContainerUpdate(1, 0, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: 1,
+            startIdx: 0,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             selected: undefined,
             startIdx: 0,
@@ -131,7 +147,15 @@ class ClusterDetailsContainer extends Component {
         } = this.props
         const { clusterID } = this.state
 
-        handleClusterDetailsContainerUpdate(1, 0, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: 1,
+            startIdx: 0,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             startIdx: 0,
             page: 1,
@@ -155,7 +179,15 @@ class ClusterDetailsContainer extends Component {
         }
         const newStartIdx = perPage * divResult
 
-        handleClusterDetailsContainerUpdate(lastPage, newStartIdx, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: lastPage,
+            startIdx: newStartIdx,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             startIdx: newStartIdx,
             page: lastPage,
@@ -170,7 +202,15 @@ class ClusterDetailsContainer extends Component {
         const { perPage, startIdx, clusterID } = this.state
         const newStartIdx = startIdx + perPage
 
-        handleClusterDetailsContainerUpdate(currentPage, newStartIdx, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: currentPage,
+            startIdx: newStartIdx,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             startIdx: newStartIdx,
             page: currentPage,
@@ -185,7 +225,15 @@ class ClusterDetailsContainer extends Component {
         const { perPage, startIdx, clusterID } = this.state
         const newStartIdx = startIdx - perPage
 
-        handleClusterDetailsContainerUpdate(currentPage, newStartIdx, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: currentPage,
+            startIdx: newStartIdx,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             startIdx: newStartIdx,
             page: currentPage,
@@ -200,7 +248,15 @@ class ClusterDetailsContainer extends Component {
         const { perPage, clusterID } = this.state
         const newStartIdx = (newPage - 1) * perPage
 
-        handleClusterDetailsContainerUpdate(newPage, newStartIdx, false, new Set(), clusterID, undefined, [])
+        handleClusterDetailsContainerUpdate({
+            page: newPage,
+            startIdx: newStartIdx,
+            clusterSearchToggle: false,
+            expandSectionToggleMap: new Set(),
+            clusterID,
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             startIdx: newStartIdx,
             page: newPage,
@@ -221,15 +277,15 @@ class ClusterDetailsContainer extends Component {
         const { page, startIdx, clusterSearchToggle, expandSectionToggleMap, clusterID } = this.state
         const newClusterSearchToggle = !clusterSearchToggle
 
-        handleClusterDetailsContainerUpdate(
+        handleClusterDetailsContainerUpdate({
             page,
             startIdx,
             newClusterSearchToggle,
             expandSectionToggleMap,
             clusterID,
-            undefined,
-            []
-        )
+            selected: undefined,
+            selectedClusterList: [],
+        })
         this.setState({
             clusterSearchToggle: newClusterSearchToggle,
         })
@@ -255,15 +311,15 @@ class ClusterDetailsContainer extends Component {
             expandSectionToggleMap.delete(itemNum)
         }
 
-        handleClusterDetailsContainerUpdate(
+        handleClusterDetailsContainerUpdate({
             page,
             startIdx,
             clusterSearchToggle,
             expandSectionToggleMap,
             clusterID,
             selected,
-            selectedClusterList
-        )
+            selectedClusterList,
+        })
         this.setState({
             expandSectionToggleMap: expandSectionToggleMap,
         })
