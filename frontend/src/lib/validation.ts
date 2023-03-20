@@ -350,19 +350,6 @@ export function validateRequiredPrefix(value: string, requiredPrefix: string, t:
   return undefined
 }
 
-export function validateDirectoryAndName(osCABundle: string, value: string, t: TFunction) {
-  if (!value) {
-    if (osCABundle !== '') {
-      return t('If a CA Certificate is specified, this location must also be specified.')
-    }
-  } else {
-    const regex = /^(?:[a-z]:)?[/\\]{0,2}(?:[./\\ ](?![./\\\n])|[^<>:"|?*./\\ \n])+$/gim
-    if (!regex.test(value)) {
-      return t('The value must be a valid directory and file name.')
-    }
-  }
-}
-
 export function validateVCenterServer(value: string, t: TFunction) {
   if (!validator.isFQDN(value) && !validator.isIP(value)) {
     if (value && value.indexOf('://') > 0) {

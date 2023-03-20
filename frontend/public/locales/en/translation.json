@@ -2855,7 +2855,7 @@
   "validate.projectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
   "validate.publicSshKey": "Must be a valid public key",
   "validate.yaml.cloud.auth.not.found": "The cloud.yaml must contain an auth key with auth_url, username, and password keys.",
-  "validate.yaml.cloud.cacert.not.found": "If a CA certificate is specified, the cloud auth key must also contain a 'cacert: /etc/openstack-ca/ca.crt' or 'cacert: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'.",
+  "validate.yaml.cloud.cacert.not.found": "If a CA certificate is specified, the cloud auth key must contain a cacert key with the value '/etc/openstack-ca/ca.crt' or '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'",
   "validate.yaml.cloud.cacert.was.found": "If a CA certificate is not specified, the cloud auth key should not contain a cacert key.",
   "validate.yaml.cloud.not.found": "The cloud name was not found in clouds.yaml.",
   "validate.yaml.not.valid": "The YAML is not valid.",
