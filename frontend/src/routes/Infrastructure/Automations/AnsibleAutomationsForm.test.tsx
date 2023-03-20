@@ -15,7 +15,8 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
@@ -98,11 +99,13 @@ const mockClusterCurator: ClusterCurator = {
         { name: 'test-job-post-install', extra_vars: {}, type: 'Job' },
         { name: 'test-job-pre-install-ii', extra_vars: {}, type: 'Workflow' },
       ],
+      jobMonitorTimeout: 55,
     },
     upgrade: {
       towerAuthSecret: 'ansible-test-secret',
       prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {}, type: 'Job' }],
       posthook: [{ name: 'test-job-post-upgrade', extra_vars: {}, type: 'Job' }],
+      monitorTimeout: 555,
     },
     inventory: 'test-inventory',
   },
@@ -229,6 +232,19 @@ describe('add automation template page', () => {
     await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
     await clickByText('Save')
 
+    // install timeout
+    userEvent.clear(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      })
+    )
+    userEvent.type(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      }),
+      mockClusterCurator!.spec!.install!.jobMonitorTimeout!.toString(10)
+    )
+
     await clickByText('Next')
 
     // upgrade templates
@@ -241,6 +257,20 @@ describe('add automation template page', () => {
     await clickByPlaceholderText('Search or select a job template name', 0)
     await clickByText(mockTemplateList.results![3].name!, 0)
     await clickByText('Save')
+
+    // upgrade timeout
+    userEvent.clear(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      })
+    )
+    userEvent.type(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      }),
+      mockClusterCurator!.spec!.upgrade!.monitorTimeout!.toString(10)
+    )
+
     await clickByText('Next')
 
     // add template
