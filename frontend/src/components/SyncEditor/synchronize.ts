@@ -21,8 +21,13 @@ export const setFormValues = (
   }
 ) => {
   if (Array.isArray(syncs)) {
-    syncs.forEach(({ path, setState }) => {
-      const value = get(resources.parsed, path, '')
+    syncs.forEach(({ path, getter, setState }) => {
+      let value = ''
+      if (typeof path === 'string') {
+        value = get(resources.parsed, path, '') as string
+      } else if (typeof getter === 'function') {
+        value = getter(resources.parsed)
+      }
       setState(value ?? '')
     })
   }
@@ -30,16 +35,18 @@ export const setFormValues = (
 
 export const getPathArray = (path: string[] | string) => {
   const pathArr: string[] = []
-  if (!Array.isArray(path)) {
-    path = path.replace(/\[/g, '.').replace(/\]./g, '.')
-    path = path.split('.')
-  }
-  path.forEach((seg: any, idx: number) => {
-    pathArr.push(seg)
-    if (idx > 1 && idx < path.length - 1) {
-      pathArr.push('$v')
+  if (path) {
+    if (!Array.isArray(path)) {
+      path = path.replace(/\[/g, '.').replace(/\]./g, '.')
+      path = path.split('.')
     }
-  })
+    path.forEach((seg: any, idx: number) => {
+      pathArr.push(seg)
+      if (idx > 1 && idx < path.length - 1) {
+        pathArr.push('$v')
+      }
+    })
+  }
   return pathArr
 }
 
