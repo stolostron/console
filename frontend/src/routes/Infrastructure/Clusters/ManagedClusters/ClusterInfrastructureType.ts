@@ -18,6 +18,7 @@ const clusterInfrastructureTypes = [
   Provider.awss3,
   Provider.azure,
   Provider.gcp,
+  Provider.kubevirt,
   Provider.vmware,
   Provider.openstack,
   Provider.redhatvirtualization,

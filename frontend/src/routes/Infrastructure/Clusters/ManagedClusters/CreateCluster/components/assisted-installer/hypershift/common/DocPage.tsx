@@ -42,7 +42,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
         <List isPlain isBordered iconSize="large">
           {listItems.map((item) => {
             return (
-              <ListItem icon={<span className="ocm-icons">{listItems.indexOf(item) + 1}</span>}>
+              <ListItem key={item.title} icon={<span className="ocm-icons">{listItems.indexOf(item) + 1}</span>}>
                 <TextContent>
                   <Text component={TextVariants.h2}>{item.title}</Text>
                   {item.content}

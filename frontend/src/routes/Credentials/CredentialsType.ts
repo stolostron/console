@@ -9,6 +9,7 @@ const credentialsTypes = [
   Provider.gcp,
   Provider.hostinventory,
   Provider.hybrid,
+  Provider.kubevirt,
   Provider.openstack,
   Provider.redhatcloud,
   Provider.redhatvirtualization,
