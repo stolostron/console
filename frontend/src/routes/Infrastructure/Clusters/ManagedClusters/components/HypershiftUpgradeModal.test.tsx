@@ -189,7 +189,7 @@ const mockNodepools: NodePoolK8sResource[] = [
 
 const mockNodepoolsNoStatus: NodePool[] = [
   {
-    apiVersion: 'hypershift.openshift.io/v1alpha1',
+    apiVersion: 'hypershift.openshift.io/v1beta1',
     kind: 'NodePool',
     metadata: {
       name: 'feng-hypershift-test-1',
@@ -220,7 +220,7 @@ const mockNodepoolsNoStatus: NodePool[] = [
     },
   },
   {
-    apiVersion: 'hypershift.openshift.io/v1alpha1',
+    apiVersion: 'hypershift.openshift.io/v1beta1',
     kind: 'NodePool',
     metadata: {
       name: 'feng-hypershift-test-2',
