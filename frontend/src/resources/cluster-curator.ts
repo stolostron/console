@@ -38,6 +38,7 @@ export interface ClusterCurator {
       prehook?: ClusterCuratorAnsibleJob[]
       posthook?: ClusterCuratorAnsibleJob[]
     }
+    inventory?: string
     scale?: {
       towerAuthSecret?: string
       prehook?: ClusterCuratorAnsibleJob[]

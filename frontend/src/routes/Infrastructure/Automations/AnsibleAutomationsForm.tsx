@@ -34,6 +34,7 @@ import {
   createResource,
   getClusterCurator,
   IResource,
+  listAnsibleTowerInventories,
   listAnsibleTowerJobs,
   ProviderConnection,
   replaceResource,
@@ -120,6 +121,9 @@ export function AnsibleAutomationsForm(props: {
   }>()
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
+  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
+
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
   const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
@@ -164,6 +168,7 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+      const inventoryList: string[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
       listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
@@ -184,6 +189,22 @@ export function AnsibleAutomationsForm(props: {
         .catch(() => {
           setAnsibleTowerAuthError(t('validate.ansible.host'))
           setAnsibleTowerJobTemplateList([])
+        })
+      listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+        .promise.then((response) => {
+          if (response) {
+            response.results.forEach((inventory) => {
+              if (inventory.name) {
+                inventoryList.push(inventory.name)
+              }
+            })
+            setAnsibleTowerInventoryList(inventoryList)
+            setAnsibleTowerAuthError('')
+          }
+        })
+        .catch(() => {
+          setAnsibleTowerAuthError(t('validate.ansible.host'))
+          setAnsibleTowerInventoryList([])
         })
     }
   }, [ansibleSelection, ansibleCredentials, t])
@@ -223,6 +244,7 @@ export function AnsibleAutomationsForm(props: {
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
         },
+        ...(ansibleInventory ? { inventory: ansibleInventory } : {}),
         ...(settings.ansibleIntegration === 'enabled'
           ? {
               scale: {
@@ -313,6 +335,23 @@ export function AnsibleAutomationsForm(props: {
             })),
             footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
             isDisabled: isEditing,
+            validation: () => {
+              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+            },
+          },
+          {
+            id: 'Inventory',
+            type: 'Select',
+            label: t('Ansible inventory'),
+            placeholder: t('Select an inventory'),
+            value: ansibleInventory,
+            onChange: setAnsibleInventory,
+            isRequired: false,
+            options: ansibleTowerInventoryList.map((name) => ({
+              id: name as string,
+              value: name as string,
+            })),
+            isHidden: !ansibleSelection,
             validation: () => {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
             },

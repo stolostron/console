@@ -14,7 +14,7 @@ interface AnsibleCredential {
 }
 
 // must match ansiblePaths in frontend/src/resources/utils/resource-request.ts
-export const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
+export const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/', '/api/v2/inventories/']
 
 export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (await getAuthenticatedToken(req, res)) {

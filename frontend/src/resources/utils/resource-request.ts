@@ -10,6 +10,7 @@ import { isLocalSubscription } from '../../routes/Applications/helpers/subscript
 import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
+import { AnsibleTowerInventory, AnsibleTowerInventoryList } from '../ansible-inventory'
 
 // must match ansiblePaths in backend/src/routes/ansibletower.ts
 const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
@@ -520,6 +521,57 @@ export function fetchGetAnsibleJobs(
     signal,
     data: {
       towerHost: ansibleJobsUrl,
+      token: token,
+    },
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
+  })
+}
+
+async function getAnsibleInventories(
+  backendURLPath: string,
+  ansibleHostUrl: string,
+  token: string,
+  abortController: AbortController
+) {
+  const ansibleInventories: AnsibleTowerInventory[] = []
+  const inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
+  const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
+  result.data.results && ansibleInventories.push(...result.data.results)
+
+  return {
+    results: ansibleInventories?.map((ansibleInventory: { name?: string; type?: string }) => {
+      return { name: ansibleInventory.name, type: ansibleInventory.type! }
+    }),
+  }
+}
+
+export function listAnsibleTowerInventories(
+  ansibleHostUrl: string,
+  token: string
+): IRequestResult<AnsibleTowerInventoryList> {
+  const backendURLPath = getBackendUrl() + '/ansibletower'
+  const abortController = new AbortController()
+  return {
+    promise: getAnsibleInventories(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+      return item as AnsibleTowerInventoryList
+    }),
+    abort: () => abortController.abort(),
+  }
+}
+
+export function fetchGetAnsibleInventories(
+  backendUrlPath: string,
+  ansibleInventoriesUrl: string,
+  token: string,
+  signal: AbortSignal
+) {
+  return fetchRetry<AnsibleTowerInventoryList>({
+    method: 'POST',
+    url: backendUrlPath,
+    signal,
+    data: {
+      towerHost: ansibleInventoriesUrl,
       token: token,
     },
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
