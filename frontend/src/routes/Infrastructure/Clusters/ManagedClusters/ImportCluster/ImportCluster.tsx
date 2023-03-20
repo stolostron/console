@@ -12,7 +12,7 @@ import {
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,
-  AcmLabelsInput,
+  AcmKubernetesLabelsInput,
   AcmPage,
   AcmPageHeader,
   AcmSelect,
@@ -595,10 +595,9 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
       </DescriptionListDescription>
     </DescriptionListGroup>
   ) : (
-    <AcmLabelsInput
+    <AcmKubernetesLabelsInput
       id={controlId}
       label={controlLabel}
-      buttonLabel={t('label.add')}
       value={additionalLabels}
       onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
       placeholder={t('labels.edit.placeholder')}

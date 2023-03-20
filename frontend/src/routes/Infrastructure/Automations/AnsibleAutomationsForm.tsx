@@ -41,7 +41,15 @@ import {
   Secret,
 } from '../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
+import {
+  AcmAnsibleTagsInput,
+  AcmForm,
+  AcmKubernetesLabelsInput,
+  AcmModal,
+  AcmSelect,
+  AcmSubmit,
+  Provider,
+} from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
 
@@ -664,6 +672,7 @@ function EditAnsibleJobModal(props: {
       title={props.ansibleJob?.name !== '' ? t('template.modal.title.edit') : t('template.modal.title.add')}
       isOpen={props.ansibleJob !== undefined}
       onClose={() => props.setAnsibleJob()}
+      position="top"
     >
       <AcmForm>
         <FormGroup fieldId="template-type" isInline>
@@ -716,7 +725,7 @@ function EditAnsibleJobModal(props: {
               ))}
         </AcmSelect>
 
-        <AcmLabelsInput
+        <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}
           value={ansibleJob?.extra_vars}
@@ -727,9 +736,38 @@ function EditAnsibleJobModal(props: {
               setAnsibleJob(copy)
             }
           }}
-          buttonLabel=""
           placeholder={t('template.modal.settings.placeholder')}
         />
+        {filterForJobTemplates && (
+          <>
+            <AcmAnsibleTagsInput
+              id="job-jobtags"
+              label={t('Job tags')}
+              value={ansibleJob?.job_tags}
+              onChange={(labels) => {
+                if (ansibleJob) {
+                  const copy = { ...ansibleJob }
+                  copy.job_tags = labels
+                  setAnsibleJob(copy)
+                }
+              }}
+              placeholder={t('Enter job tag with "," or "enter"')}
+            />
+            <AcmAnsibleTagsInput
+              id="job-skiptags"
+              label={t('Skip tags')}
+              value={ansibleJob?.skip_tags}
+              onChange={(labels) => {
+                if (ansibleJob) {
+                  const copy = { ...ansibleJob }
+                  copy.skip_tags = labels
+                  setAnsibleJob(copy)
+                }
+              }}
+              placeholder={t('Enter skip tag with "," or "enter"')}
+            />
+          </>
+        )}
         {!filterForJobTemplates && (
           <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />
         )}

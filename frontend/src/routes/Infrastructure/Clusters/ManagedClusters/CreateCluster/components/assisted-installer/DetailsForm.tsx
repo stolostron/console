@@ -15,7 +15,7 @@ import { useClusterImages, getDefault } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../../../shared-recoil'
 
 import { getValue } from '../../../../../../../components/TemplateEditor'
-import { AcmLabelsInput, AcmSelect } from '../../../../../../../ui-components'
+import { AcmKubernetesLabelsInput, AcmSelect } from '../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 
 const {
@@ -110,10 +110,9 @@ export const getExtensionAfter = ({
     </AcmSelect>
   ),
   openshiftVersion: (
-    <AcmLabelsInput
+    <AcmKubernetesLabelsInput
       id="additionalLabels"
       label={t('import.form.labels.label')}
-      buttonLabel={t('label.add')}
       value={additionalLabels}
       onChange={(label) => setAdditionaLabels(label)}
       placeholder={t('labels.edit.placeholder')}

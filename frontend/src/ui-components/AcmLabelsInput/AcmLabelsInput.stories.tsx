@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmPageCard } from '../AcmPage/AcmPage'
-import { AcmLabelsInput } from './AcmLabelsInput'
+import { AcmKubernetesLabelsInput } from './AcmLabelsInput'
 
 export default {
   title: 'LabelsInput',
-  component: AcmLabelsInput,
+  component: AcmKubernetesLabelsInput,
   argTypes: {
     isDisabled: { control: 'boolean' },
   },
@@ -18,13 +18,12 @@ export const LabelsInput = (args: any) => {
   return (
     <AcmPageCard>
       <AcmForm>
-        <AcmLabelsInput
+        <AcmKubernetesLabelsInput
           label="Labels Input"
           id="labels-input"
           isDisabled={args.isDisabled}
           value={value}
           onChange={setValue}
-          buttonLabel="Add label"
           placeholder="Enter key=value, then press enter, space, or comma"
         />
       </AcmForm>
