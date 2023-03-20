@@ -5,6 +5,7 @@ import YAML from 'yaml'
 import { TFunction } from 'i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
+import set from 'lodash/set'
 
 import isCidr from 'is-cidr'
 
@@ -128,6 +129,29 @@ export function validateBaseDomain(value: string, t: TFunction) {
   return undefined
 }
 
+// user provided ca but didn't add cacert key
+export function enforceCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string) {
+  if (yamlValue && cloudValue && osCABundle) {
+    try {
+      //ensure we have valid YAML
+      const yamlData = YAML.parse(yamlValue) as {
+        clouds: {
+          [cloud: string]: {
+            auth?: {
+              cacert?: string
+            }
+          }
+        }
+      }
+      if (!yamlData?.clouds[cloudValue]?.auth?.cacert) {
+        set(yamlData, `clouds[${cloudValue}].auth.cacert`, '/etc/openstack-ca/ca.crt')
+        return YAML.stringify(yamlData)
+      }
+    } catch (e) {}
+  }
+  return yamlValue
+}
+
 export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string, t: TFunction) {
   if (yamlValue) {
     try {
@@ -158,7 +182,12 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABu
       if (!cloud?.auth?.auth_url || !cloud?.auth?.password || !cloud?.auth?.username) {
         return t('validate.yaml.cloud.auth.not.found')
       }
-      if (!cloud?.auth?.cacert && osCABundle) {
+      if (
+        osCABundle &&
+        cloud?.auth?.cacert &&
+        cloud?.auth?.cacert !== '/etc/openstack-ca/ca.crt' &&
+        cloud?.auth?.cacert !== '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+      ) {
         return t('validate.yaml.cloud.cacert.not.found')
       }
       if (cloud?.auth?.cacert && !osCABundle) {

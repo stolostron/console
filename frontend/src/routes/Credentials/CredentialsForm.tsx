@@ -23,6 +23,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
+  enforceCloudsYaml,
   validateAnsibleHost,
   validateBaseDomain,
   validateCertificate,
@@ -422,7 +423,7 @@ export function CredentialsForm(
         stringData.additionalTrustBundle = additionalTrustBundle
         break
       case Provider.openstack:
-        stringData['clouds.yaml'] = cloudsYaml
+        stringData['clouds.yaml'] = enforceCloudsYaml(cloudsYaml, cloud, osCABundle)
         stringData.cloud = cloud
         stringData.os_ca_bundle = osCABundle
         stringData.baseDomain = baseDomain
