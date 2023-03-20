@@ -6,17 +6,14 @@ import {
   CodeBlockAction,
   CodeBlockCode,
   Page,
-  PageGroup,
   Text,
   TextVariants,
 } from '@patternfly/react-core'
-import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import DocPage from './common/DocPage'
-import DocPageToolbar from './common/DocPageToolbar'
 
 export function HypershiftKubeVirtCLI() {
   const { t } = useTranslation()
@@ -120,30 +117,12 @@ hypershift create cluster kubevirt \\
 
   return (
     <Page>
-      <PageHeader
-        title={t('Create cluster')}
+      <DocPage
+        listItems={listItems}
+        onBack={back(NavigationPath.createKubeVirtControlPlane)}
+        onCancel={cancel(NavigationPath.managedClusters)}
         breadcrumbs={breadcrumbs}
-        titleHelp={
-          <>
-            {t('page.header.create-cluster.tooltip')}
-            <a
-              href={DOC_LINKS.CREATE_CLUSTER}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: 'block', marginTop: '4px' }}
-            >
-              {t('learn.more')}
-            </a>
-          </>
-        }
       />
-      <DocPage listItems={listItems} />
-      <PageGroup sticky="bottom" style={{ height: '68px' }}>
-        <DocPageToolbar
-          onBack={back(NavigationPath.createKubeVirtControlPlane)}
-          onCancel={cancel(NavigationPath.managedClusters)}
-        />
-      </PageGroup>
     </Page>
   )
 }

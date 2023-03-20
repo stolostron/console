@@ -4,8 +4,8 @@ import * as React from 'react'
 import { useTranslation } from '../../../../../../../../../lib/acm-i18next'
 
 type DocPageProps = {
-  onCancel: any
-  onBack: any
+  onCancel: () => void
+  onBack: () => void
 }
 
 const DocPageToolbar: React.FC<DocPageProps> = ({ onCancel, onBack }) => {

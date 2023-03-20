@@ -8,11 +8,9 @@ import {
   Modal,
   ModalVariant,
   Page,
-  PageGroup,
   Text,
   TextVariants,
 } from '@patternfly/react-core'
-import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
@@ -22,7 +20,6 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../../../..
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
 import DocPage from './common/DocPage'
-import DocPageToolbar from './common/DocPageToolbar'
 
 export function HypershiftAWSCLI() {
   const { t } = useTranslation()
@@ -185,31 +182,12 @@ hypershift create cluster aws
           hideYaml={true}
         />
       </Modal>
-      <PageHeader
-        title={t('Create cluster')}
+      <DocPage
+        listItems={listItems}
         breadcrumbs={breadcrumbs}
-        titleHelp={
-          <>
-            {t('page.header.create-cluster.tooltip')}
-            <a
-              href={DOC_LINKS.CREATE_CLUSTER}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: 'block', marginTop: '4px' }}
-            >
-              {t('learn.more')}
-            </a>
-          </>
-        }
+        onBack={back(NavigationPath.createAWSControlPlane)}
+        onCancel={cancel(NavigationPath.managedClusters)}
       />
-      <DocPage listItems={listItems} />
-
-      <PageGroup sticky="bottom" style={{ height: '68px' }}>
-        <DocPageToolbar
-          onBack={back(NavigationPath.createAWSControlPlane)}
-          onCancel={cancel(NavigationPath.managedClusters)}
-        />
-      </PageGroup>
     </Page>
   )
 }
