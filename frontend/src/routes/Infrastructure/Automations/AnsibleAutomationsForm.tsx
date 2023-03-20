@@ -47,7 +47,7 @@ import schema from './schema.json'
 const DEFAULT_DESTROY_TIMEOUT = 5
 const DEFAULT_INSTALL_TIMEOUT = 5
 const DEFAULT_SCALE_TIMEOUT = 5
-const DEFAULT_UPGRADE_TIMEOUT = 480
+const DEFAULT_UPGRADE_TIMEOUT = 120
 
 export default function AnsibleAutomationsFormPage({
   match,
@@ -391,8 +391,8 @@ export function AnsibleAutomationsForm(props: {
               {
                 id: 'installTimeout',
                 type: 'TextNumber',
-                label: t('template.install.timeout'),
-                labelHelp: t('template.install.timeout.help'),
+                label: t('template.timeout'),
+                labelHelp: t('template.timeout.help', { timeout: DEFAULT_INSTALL_TIMEOUT }),
                 value: installTimeout,
                 onChange: setInstallTimeout,
               },
@@ -445,8 +445,8 @@ export function AnsibleAutomationsForm(props: {
               {
                 id: 'updateTimeout',
                 type: 'TextNumber',
-                label: t('template.install.timeout'),
-                labelHelp: t('template.upgrade.timeout.help'),
+                label: t('template.timeout'),
+                labelHelp: t('template.timeout.help', { timeout: DEFAULT_UPGRADE_TIMEOUT }),
                 value: updateTimeout,
                 onChange: setUpdateTimeout,
               },
@@ -501,8 +501,8 @@ export function AnsibleAutomationsForm(props: {
                     {
                       id: 'scaleTimeout',
                       type: 'TextNumber',
-                      label: t('template.install.timeout'),
-                      labelHelp: t('template.scale.timeout.help'),
+                      label: t('template.timeout'),
+                      labelHelp: t('template.timeout.help', { timeout: DEFAULT_SCALE_TIMEOUT }),
                       value: scaleTimeout,
                       onChange: setScaleTimeout,
                     },
@@ -567,8 +567,8 @@ export function AnsibleAutomationsForm(props: {
                     {
                       id: 'destroyTimeout',
                       type: 'TextNumber',
-                      label: t('template.install.timeout'),
-                      labelHelp: t('template.destroy.timeout.help'),
+                      label: t('template.timeout'),
+                      labelHelp: t('template.timeout.help', { timeout: DEFAULT_DESTROY_TIMEOUT }),
                       value: destroyTimeout,
                       onChange: setDestroyTimeout,
                     },
