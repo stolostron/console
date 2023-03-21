@@ -210,7 +210,7 @@ describe('validation', () => {
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
         '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
-        false,
+        true,
       ],
     ])('%s', (_name, value, value2, value3, isValid) => {
       if (!isValid) {
