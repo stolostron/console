@@ -63,6 +63,7 @@ export const getControlDataOST = (
       },
       available: [],
       onSelect: onChangeConnection,
+      encode: ['cacertificate'],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
     },
     ...clusterDetailsControlData(t),
