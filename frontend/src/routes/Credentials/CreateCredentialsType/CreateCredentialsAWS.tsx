@@ -27,7 +27,7 @@ export function CreateCredentialsAWS() {
     (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
   )
 
-  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
+  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(true)
   useEffect(() => {
     const getHypershiftStatus = async () => {
       try {
@@ -36,10 +36,11 @@ export function CreateCredentialsAWS() {
         const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
         const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
         setIsHypershiftEnabled(
-          (hypershiftLocalHosting?.enabled &&
-            hypershiftPreview?.enabled &&
-            hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')?.status ===
-              'True') as boolean
+          (true ||
+            (hypershiftLocalHosting?.enabled &&
+              hypershiftPreview?.enabled &&
+              hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')
+                ?.status === 'True')) as boolean
         )
       } catch {
         // nothing to do
