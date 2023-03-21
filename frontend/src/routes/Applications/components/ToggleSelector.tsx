@@ -43,7 +43,6 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
       <DeleteResourceModal {...props.modalProps} />
       <AcmTable<IResource>
-        plural=""
         columns={selectedResources.columns}
         keyFn={props.keyFn}
         items={selectedResources.items}

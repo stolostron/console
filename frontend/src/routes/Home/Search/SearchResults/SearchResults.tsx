@@ -51,8 +51,8 @@ function RenderAccordionItem(props: {
     (kind: string, items: ISearchResult[]) => {
       return (
         <AcmTable
-          plural=""
           items={items}
+          emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
             searchDefinitions,
             `[${kind.toLowerCase()}].columns`,

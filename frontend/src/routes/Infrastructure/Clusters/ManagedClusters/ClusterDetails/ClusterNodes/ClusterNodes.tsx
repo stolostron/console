@@ -2,6 +2,7 @@
 
 import { NodeInfo } from '../../../../../../resources'
 import {
+  AcmEmptyState,
   AcmInlineStatus,
   AcmPageContent,
   AcmTable,
@@ -180,8 +181,8 @@ export function NodesPoolsTable() {
     <>
       <ScaleClusterAlert />
       <AcmTable<NodeInfo>
-        plural="nodes"
         items={nodes}
+        emptyState={<AcmEmptyState title={t('No nodes found')} message={t('The cluster has no nodes.')} />}
         columns={columns}
         keyFn={keyFn}
         tableActions={[]}

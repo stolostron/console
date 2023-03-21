@@ -4,7 +4,7 @@ import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { AcmInlineProvider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
@@ -42,7 +42,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
@@ -160,7 +160,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.import'),
               action: t('import'),
               processing: t('importing'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               close: () => {
                 setModalProps({ open: false })
               },
@@ -202,7 +203,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.hibernate'),
               action: t('hibernate'),
               processing: t('hibernating'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               description: t('bulk.message.hibernate'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
@@ -236,7 +238,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.resume'),
               action: t('resume'),
               processing: t('resuming'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               description: t('bulk.message.resume'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
@@ -270,7 +273,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.detach'),
               action: t('detach'),
               processing: t('detaching'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               description: t('bulk.message.detach'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
@@ -296,7 +300,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.destroy'),
               action: t('destroy'),
               processing: t('destroying'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               description: t('bulk.message.destroy'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
@@ -336,7 +341,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               title: t('bulk.title.destroy'),
               action: t('destroy'),
               processing: t('destroying'),
-              resources: [cluster],
+              items: [cluster],
+              emptyState: undefined, // there is always 1 item supplied
               description: t('bulk.message.destroy'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,

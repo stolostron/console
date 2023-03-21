@@ -18,7 +18,7 @@ import {
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
+import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useState } from 'react'
@@ -322,8 +322,13 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <Text component={TextVariants.h4}>{t('Recommendations with remediation')}</Text>
       </TextContent>
       <AcmTable<PolicyReportResults>
-        plural="Recommendations"
         items={policyReportViolations}
+        emptyState={
+          <AcmEmptyState
+            title={t('No recommendations found')}
+            message={t('You do not have any recommendations yet.')}
+          />
+        }
         initialSort={{
           index: 2, // default to sorting by highest risk
           direction: 'desc',

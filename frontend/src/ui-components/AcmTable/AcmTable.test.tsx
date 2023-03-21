@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
+import { AcmEmptyState } from '../AcmEmptyState'
 import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
 const axe = configureAxe({
@@ -58,7 +59,7 @@ describe('AcmTable', () => {
     const [items, setItems] = useState<IExampleData[]>(testItems)
     return (
       <AcmTable<IExampleData>
-        plural="addresses"
+        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
         items={items}
         columns={[
           {
@@ -291,7 +292,7 @@ describe('AcmTable', () => {
     }
     const { container } = render(
       <AcmTable<IExampleData>
-        plural="addresses"
+        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
         showToolbar={false}
         items={exampleData.slice(0, 10)}
         addSubRows={(item: IExampleData) => {
@@ -729,7 +730,7 @@ describe('AcmTable', () => {
     const expandedDeleteAction = jest.fn()
     const { getAllByLabelText, getByRole, getByTestId, getByText } = render(
       <AcmTable<IExampleData>
-        plural="addresses"
+        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
         showToolbar={false}
         items={exampleData.slice(0, 10)}
         addSubRows={(item: IExampleData) => {

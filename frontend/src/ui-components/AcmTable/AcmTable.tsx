@@ -282,8 +282,7 @@ export function AcmTablePaginationContextProvider(props: { children: ReactNode; 
   return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
 }
 
-export interface AcmTableProps<T> {
-  plural: string
+export type AcmTableProps<T> = {
   items?: T[]
   addSubRows?: (item: T) => IRow[] | undefined
   initialSelectedItems?: T[]
@@ -296,7 +295,7 @@ export interface AcmTableProps<T> {
   rowActions?: IAcmRowAction<T>[]
   rowActionResolver?: (item: T) => IAcmRowAction<T>[]
   extraToolbarControls?: ReactNode
-  emptyState?: ReactNode
+  emptyState: ReactNode
   onSelect?: (items: T[]) => void
   initialPage?: number
   page?: number
@@ -319,6 +318,7 @@ export interface AcmTableProps<T> {
   filters?: ITableFilter<T>[]
   id?: string
 }
+
 export function AcmTable<T>(props: AcmTableProps<T>) {
   const {
     id,
@@ -976,14 +976,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </EmptyState>
         </PageSection>
       ) : items.length === 0 ? (
-        <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
-          {props.emptyState ?? (
-            <AcmEmptyState
-              title={t('No {{items}} found', { items: props.plural })}
-              message={t('You do not have any {{items}} yet', { items: props.plural })}
-            />
-          )}
-        </PageSection>
+        props.emptyState && (
+          <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
+            {props.emptyState}
+          </PageSection>
+        )
       ) : (
         <Fragment>
           <div ref={outerDivRef} className={classes.outerDiv}>

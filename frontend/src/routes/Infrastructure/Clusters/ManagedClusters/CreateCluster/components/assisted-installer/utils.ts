@@ -23,7 +23,7 @@ import {
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
-import { IBulkActionModalProps } from '../../../../../../../components/BulkActionModal'
+import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
@@ -449,7 +449,7 @@ export const agentNameSortFunc = (
 
 export const useOnDeleteHost = (
   toggleDialog: (
-    props: IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    props: BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   ) => void,
   bareMetalHosts: CIM.BareMetalHostK8sResource[],
   agentClusterInstall?: CIM.AgentClusterInstallK8sResource,
@@ -464,7 +464,8 @@ export const useOnDeleteHost = (
         title: t('host.action.title.delete'),
         action: t('delete'),
         processing: t('deleting'),
-        resources: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
+        items: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
+        emptyState: undefined, // nothing displayed if neither agent nor bmh supplied
         description: t('host.action.message.delete'),
         columns: [
           {

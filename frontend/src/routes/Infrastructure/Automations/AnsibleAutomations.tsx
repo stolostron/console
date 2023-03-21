@@ -15,7 +15,7 @@ import {
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
@@ -64,7 +64,7 @@ function AnsibleJobTemplateTable() {
   const templatedCurators = useRecoilValue(clusterCuratorTemplatesValue)
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
 
-  const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModalProps<ClusterCurator> | { open: false }>({
+  const [bulkModalProps, setBulkModalProps] = useState<BulkActionModalProps<ClusterCurator> | { open: false }>({
     open: false,
   })
 
@@ -89,7 +89,6 @@ function AnsibleJobTemplateTable() {
       <BulkActionModal<ClusterCurator> {...bulkModalProps} />
       <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
       <AcmTable<ClusterCurator>
-        plural="templates"
         items={templatedCurators}
         columns={[
           {
@@ -179,7 +178,8 @@ function AnsibleJobTemplateTable() {
                       title: t('template.modal.delete.title'),
                       action: t('delete'),
                       processing: t('deleting'),
-                      resources: [curator],
+                      items: [curator],
+                      emptyState: undefined, // there is always 1 item supplied
                       description: curator.spec?.install?.towerAuthSecret ? (
                         <div>
                           <Trans
@@ -253,7 +253,8 @@ function AnsibleJobTemplateTable() {
                 title: t('bulk.delete.templates'),
                 action: t('delete'),
                 processing: t('deleting'),
-                resources: [...curators],
+                items: [...curators],
+                emptyState: undefined, // table action is only enabled when items are selected
                 description: t('bulk.delete.templates.message'),
                 columns: [
                   {
