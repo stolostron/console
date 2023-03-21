@@ -3,7 +3,6 @@ import { ExpandableSection } from '@patternfly/react-core'
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
-  CatalogColor,
   DataViewStringContext,
   getPatternflyColor,
   ICatalogBreadcrumb,
@@ -19,6 +18,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
+import { getHostedCard } from './common'
 import HypershiftDiagram from './HypershiftDiagram.svg'
 
 export function CreateAWSControlPlane() {
@@ -34,40 +34,7 @@ export function CreateAWSControlPlane() {
   }
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
-      {
-        id: 'hosted',
-        title: t('Hosted'),
-        items: [
-          {
-            type: CatalogCardItemType.Description,
-            description: t(
-              'Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.'
-            ),
-          },
-          {
-            type: CatalogCardItemType.List,
-            title: t(''),
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
-            items: [
-              {
-                text: t('Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'),
-              },
-              { text: t('Quickly provisions clusters.') },
-            ],
-          },
-        ],
-        onClick: nextStep(NavigationPath.createAWSCLI),
-        badgeList: [
-          {
-            badge: t('Technology preview'),
-            badgeColor: CatalogColor.orange,
-          },
-          {
-            badge: t('CLI-based'),
-            badgeColor: CatalogColor.purple,
-          },
-        ],
-      },
+      getHostedCard(nextStep(NavigationPath.createAWSCLI)),
       {
         id: 'standalone',
         title: t('Standalone'),
