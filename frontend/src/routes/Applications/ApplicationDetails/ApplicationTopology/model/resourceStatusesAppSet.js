@@ -28,7 +28,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     })
 
     const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []
-    let definedNamespace = []
+    const definedNamespace = []
     const kindsNotNamespaceScoped = []
     const kindsNotNamespaceScopedNames = []
     resources.forEach((resource) => {
@@ -45,7 +45,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     appData.targetNamespaces = definedNamespace.length > 0 ? _.uniq(definedNamespace) : _.uniq(targetNS)
 
     let query //= getQueryStringForResource('Application', name, namespace)
-    let queryNotNamespaceScoped //= getQueryStringForResource('cluster', other kinds)
+    let queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
     const argoKinds = appData.relatedKinds
         ? appData.relatedKinds.filter(function (el) {
               return !kindsNotNamespaceScoped.includes(el)
@@ -66,7 +66,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
     return searchClient.query({
         query: SearchResultRelatedItemsDocument,
         variables: {
-            input: [{ ...query }, { ...queryNotNamespaceScoped }],
+            input: [{ ...query }, ...queryNotNamespaceScoped],
             limit: 1000,
         },
         fetchPolicy: 'network-only',

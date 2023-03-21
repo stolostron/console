@@ -15,7 +15,7 @@ const mockSearchQuery = {
                 filters: [
                     {
                         property: 'kind',
-                        values: ['applicationset', 'placement'],
+                        values: ['applicationset', 'placement', 'cluster'],
                     },
                     {
                         property: 'namespace',
@@ -29,7 +29,25 @@ const mockSearchQuery = {
                 filters: [
                     {
                         property: 'kind',
-                        values: ['cluster', 'consolelink', 'consolelink'],
+                        values: ['consolelink'],
+                    },
+                    {
+                        property: 'name',
+                        values: ['application-menu-rh-developer-blog'],
+                    },
+                ],
+                relatedKinds: [],
+            },
+            {
+                keywords: [],
+                filters: [
+                    {
+                        property: 'kind',
+                        values: ['consolelink'],
+                    },
+                    {
+                        property: 'name',
+                        values: ['ocp100'],
                     },
                 ],
                 relatedKinds: [],
@@ -12880,6 +12898,17 @@ describe('getAppSetResourceStatuses', () => {
                             status: 'Synced',
                             version: 'v1',
                         },
+                        {
+                            name: 'helloworld-app-deploy',
+                            namespace: 'cluster-configs-rhacm',
+                            group: 'apps',
+                            health: {
+                                status: 'Healthy',
+                            },
+                            kind: 'Deployment',
+                            status: 'Synced',
+                            version: 'v1',
+                        },
                     ],
                     sourceType: 'Directory',
                     summary: {},
@@ -13037,17 +13066,6 @@ describe('getAppSetResourceStatuses', () => {
                             group: 'console.openshift.io',
                             kind: 'ConsoleLink',
                             name: 'ocp100',
-                            status: 'Synced',
-                            version: 'v1',
-                        },
-                        {
-                            name: 'helloworld-app-deploy',
-                            namespace: 'cluster-configs-rhacm',
-                            group: 'apps',
-                            health: {
-                                status: 'Healthy',
-                            },
-                            kind: 'Deployment',
                             status: 'Synced',
                             version: 'v1',
                         },
