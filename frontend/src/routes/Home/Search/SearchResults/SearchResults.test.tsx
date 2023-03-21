@@ -18,7 +18,7 @@ import {
 import SearchResults from './SearchResults'
 
 const mockSettings: Settings = {
-  SEARCH_QUERY_LIMIT: '10000',
+  SEARCH_RESULT_LIMIT: '10000',
 }
 
 describe('SearchResults Page', () => {

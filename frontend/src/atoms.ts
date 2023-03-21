@@ -135,7 +135,9 @@ export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 export interface Settings {
   LOG_LEVEL?: string
   SAVED_SEARCH_LIMIT?: string
-  SEARCH_QUERY_LIMIT?: string
+  SEARCH_RESULT_LIMIT?: string
+  SEARCH_AUTOCOMPLETE_LIMIT?: string
+
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
   awsPrivateWizardStep?: 'enabled' | 'disabled'
@@ -174,7 +176,12 @@ export function useSavedSearchLimit() {
   return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }
 
-export function useSearchQueryLimit() {
+export function useSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.SEARCH_QUERY_LIMIT ?? '10000'), [settings])
+  return useMemo(() => parseInt(settings.SEARCH_RESULT_LIMIT ?? '10000'), [settings])
+}
+
+export function useSearchAutocompleteLimit() {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
 }

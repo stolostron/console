@@ -16,7 +16,7 @@ import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
 
 const mockSettings: Settings = {
-  SEARCH_QUERY_LIMIT: '10000',
+  SEARCH_RESULT_LIMIT: '10000',
 }
 
 describe('RelatedResults', () => {
