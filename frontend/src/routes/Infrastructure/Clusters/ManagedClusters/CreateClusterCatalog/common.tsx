@@ -9,7 +9,7 @@ import {
 } from '@stolostron/react-data-view'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
-export function getHostedCard(onNext: any): ICatalogCard {
+function GetHostedCard(onNext: any): ICatalogCard {
   const [t] = useTranslation()
   return {
     id: 'hosted',
@@ -46,3 +46,4 @@ export function getHostedCard(onNext: any): ICatalogCard {
     ],
   }
 }
+export default GetHostedCard

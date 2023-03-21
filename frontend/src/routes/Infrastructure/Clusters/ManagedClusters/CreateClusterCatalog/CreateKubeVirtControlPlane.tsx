@@ -11,16 +11,16 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage } from '../../../../../ui-components'
-import { getHostedCard } from './common'
+import GetHostedCard from './common'
 
 export function CreateKubeVirtControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
 
   const cards = useMemo(() => {
-    const newCards: ICatalogCard[] = [getHostedCard(nextStep(NavigationPath.createKubeVirtCLI))]
+    const newCards: ICatalogCard[] = [GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI))]
     return newCards
-  }, [nextStep, t])
+  }, [nextStep])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 

@@ -18,7 +18,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
-import { getHostedCard } from './common'
+import GetHostedCard from './common'
 import HypershiftDiagram from './HypershiftDiagram.svg'
 
 export function CreateAWSControlPlane() {
@@ -34,7 +34,7 @@ export function CreateAWSControlPlane() {
   }
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
-      getHostedCard(nextStep(NavigationPath.createAWSCLI)),
+      GetHostedCard(nextStep(NavigationPath.createAWSCLI)),
       {
         id: 'standalone',
         title: t('Standalone'),
