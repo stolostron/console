@@ -12,6 +12,7 @@ import {
 } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint, truncate } from '@patternfly/react-table'
 import { useState } from 'react'
+import { AcmEmptyState } from '../AcmEmptyState'
 import { AcmInlineStatus, StatusType } from '../AcmInlineStatus/AcmInlineStatus'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../AcmPage/AcmPage'
 import { Provider } from '../AcmProvider'
@@ -72,6 +73,10 @@ export default {
   },
 }
 
+function TableEmptyState(args: Record<string, unknown>) {
+  return <AcmEmptyState title={`No ${args.plural} found`} message={`You do not have any ${args.plural} yet`} />
+}
+
 export function Table(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable" />}>
@@ -86,6 +91,7 @@ export function TableStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>(exampleData.slice(0, 105))
   return (
     <AcmTable<IExampleData>
+      emptyState={<TableEmptyState {...args} />}
       items={items}
       columns={columns}
       keyFn={(item: IExampleData) => item.uid.toString()}
@@ -101,6 +107,7 @@ export function TableExpandable(args: Record<string, unknown>) {
       <AcmPageContent id="table">
         <PageSection>
           <AcmTable<IExampleData>
+            emptyState={<TableEmptyState {...args} />}
             items={items}
             columns={columns}
             keyFn={(item: IExampleData) => item.uid?.toString()}
@@ -120,7 +127,12 @@ export function TableExpandable(args: Record<string, unknown>) {
                           </TextContent>
                           <AcmTable<IExampleSubData>
                             noBorders
-                            plural="stuffs"
+                            emptyState={
+                              <AcmEmptyState
+                                title={`No favorite colors found`}
+                                message={`You do not have any favorite colors yet`}
+                              />
+                            }
                             showToolbar={false}
                             autoHidePagination
                             keyFn={(item: IExampleSubData) => item.suid}
@@ -174,6 +186,7 @@ function TableFilteredStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>(exampleData.slice(0, 105))
   return (
     <AcmTable<IExampleData>
+      emptyState={<TableEmptyState {...args} />}
       items={items}
       columns={columns}
       filters={[
@@ -227,6 +240,7 @@ function TableEmptyStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>()
   return (
     <AcmTable<IExampleData>
+      emptyState={<TableEmptyState {...args} />}
       items={[]}
       columns={columns}
       keyFn={(item: IExampleData) => item.uid.toString()}
@@ -251,6 +265,7 @@ function TableLoadingStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>()
   return (
     <AcmTable<IExampleData>
+      emptyState={<TableEmptyState {...args} />}
       items={undefined}
       columns={columns}
       keyFn={(item: IExampleData) => item.uid.toString()}

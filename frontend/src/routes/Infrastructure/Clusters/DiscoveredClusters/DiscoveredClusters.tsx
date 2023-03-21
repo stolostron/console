@@ -15,7 +15,7 @@ import {
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
@@ -185,18 +185,17 @@ export function DiscoveredClustersTable(props: {
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [emptyState, setEmptyState] = useState<React.ReactNode>()
-  useEffect(() => {
+  const emptyState = useMemo(() => {
     if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
-      setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
+      return <EmptyStateNoCRHCredentials /> // An object is possibly undefined, return default empty state
     } else if (props.credentials.length === 0 && props.discoveryConfigs?.length === 0) {
-      setEmptyState(<EmptyStateNoCRHCredentials />) // No credentials exist, guide user to set up credentials
+      return <EmptyStateNoCRHCredentials /> // No credentials exist, guide user to set up credentials
     } else if (props.credentials.length > 0 && props.discoveryConfigs?.length === 0) {
-      setEmptyState(<EmptyStateCRHCredentials credentials={props.credentials} />) // Credential is set up, guide user to set up discovery config
+      return <EmptyStateCRHCredentials credentials={props.credentials} /> // Credential is set up, guide user to set up discovery config
     } else if (props.credentials.length > 0 && props.discoveryConfigs?.length > 0) {
-      setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
+      return <EmptyStateAwaitingDiscoveredClusters /> //Discoveryconfig is set up, wait for discoveredclusters to appear
     } else {
-      setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
+      return <EmptyStateNoCRHCredentials /> // If unable to meet any of the above cases, return default state
     }
   }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
 
@@ -332,7 +331,6 @@ export function DiscoveredClustersTable(props: {
   return (
     <Fragment>
       <AcmTable<DiscoveredCluster>
-        plural={t('Discovered clusters')}
         items={props.discoveredClusters}
         columns={discoveredClusterCols}
         keyFn={dckeyFn}

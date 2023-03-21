@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '../../../../ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { BulkActionModal, IBulkActionModalProps } from '../../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 import { useOnUnbindHost } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
@@ -42,7 +42,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
   const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
   const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
   const [bulkModalProps, setBulkModalProps] = useState<
-    IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   >({ open: false })
   const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, infraNMStates)
   const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)

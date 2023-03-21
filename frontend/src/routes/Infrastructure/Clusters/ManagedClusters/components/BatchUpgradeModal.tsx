@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmSelect } from '../../../../../ui-components'
+import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
@@ -77,10 +77,15 @@ export function BatchUpgradeModal(props: {
     <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.upgrade')}
-      plural={t('bulk.plural.upgrade')}
       action={t('upgrade.submit')}
       processing={t('upgrade.submit.processing')}
-      resources={upgradeableClusters}
+      items={upgradeableClusters}
+      emptyState={
+        <AcmEmptyState
+          title={t('No clusters available')}
+          message={t('None of the selected clusters can be upgraded.')}
+        />
+      }
       close={() => {
         setSelectVersions({})
         props.close()

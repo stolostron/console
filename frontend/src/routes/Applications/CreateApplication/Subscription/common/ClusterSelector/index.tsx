@@ -21,9 +21,11 @@ import _ from 'lodash'
 import './style.css'
 import { TFunction } from 'i18next'
 import Tooltip from '../../../../../../components/TemplateEditor/components/Tooltip'
-import { ManagedClusterSet } from '../../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../../resources'
 import { getTemplateValue } from '../../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
+import YAML from 'yaml'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 const activeModeStr = 'active.mode'
 
@@ -35,6 +37,7 @@ const ClusterSelector = (props: {
   i18n: TFunction
   templateYAML: string
 }) => {
+  const { t } = useTranslation()
   const { managedClusterSetsState, managedClusterSetBindingsState } = useSharedAtoms()
   const [clusterSets] = useRecoilState(managedClusterSetsState)
   const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
@@ -127,10 +130,17 @@ const ClusterSelector = (props: {
   )
 
   const addClusterSetToControl = (clusterSets: string[]) => {
+    // const { t } = useTranslation()
     const { control, templateYAML } = props
     const { active } = control
     const { clusterSetsList } = active
     const namespace = getTemplateValue(templateYAML, 'namespace', '', 0)
+    let templateObject: any[]
+    try {
+      templateObject = YAML.parseAllDocuments(templateYAML).map((doc) => doc.toJSON())
+    } catch (e) {
+      return t('validate.yaml.not.valid')
+    }
     clusterSets.forEach((clusterSet) => {
       // check if the cluster set obj exist in clusterSetsList
       if (!clusterSetsList.find((item: { clusterSetName: string }) => item.clusterSetName === clusterSet)) {
@@ -138,9 +148,17 @@ const ClusterSelector = (props: {
           (clusterSetBinding) =>
             clusterSetBinding.metadata.name === clusterSet && clusterSetBinding.metadata.namespace === namespace
         )
+
+        const managedClusterSetBindingResources = templateObject.filter(
+          (obj) => obj.kind === ManagedClusterSetBindingKind && obj.metadata.name === clusterSet
+        )
+
+        const isExistManagedClusterSetBinding =
+          existManagedClusterSetBinding !== undefined || managedClusterSetBindingResources.length > 0
+
         clusterSetsList.push({
           clusterSetName: clusterSet,
-          existManagedClusterSetBinding: existManagedClusterSetBinding ? true : false,
+          existManagedClusterSetBinding: isExistManagedClusterSetBinding ? true : false,
         })
       }
     })

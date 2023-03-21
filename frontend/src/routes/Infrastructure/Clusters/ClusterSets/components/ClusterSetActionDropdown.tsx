@@ -10,7 +10,7 @@ import {
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { rbacCreate, rbacDelete } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -20,7 +20,7 @@ import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
   const { t } = useTranslation()
   const history = useHistory()
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterSet> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterSet> | { open: false }>({
     open: false,
   })
 
@@ -73,7 +73,8 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             title: t('bulk.title.deleteSet'),
             action: t('delete'),
             processing: t('deleting'),
-            resources: [managedClusterSet],
+            items: [managedClusterSet],
+            emptyState: undefined, // there is always 1 item supplied
             description: t('bulk.message.deleteSet'),
             columns: modalColumns,
             keyFn: (managedClusterSet) => managedClusterSet.metadata.name! as string,

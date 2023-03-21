@@ -82,8 +82,8 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
     (kind: string, items: SearchRelatedResult[]) => {
       return (
         <AcmTable
-          plural=""
           items={items}
+          emptyState={undefined} // table only shown for kinds with related resources
           columns={_.get(
             searchDefinitions,
             `[${kind.toLowerCase()}].columns`,

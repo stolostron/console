@@ -46,7 +46,7 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
@@ -269,7 +269,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const { waitForAll } = useSharedRecoil()
   const [clusterVersions] = useRecoilValue(waitForAll([clusterVersionState]))
 
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
     open: false,
   })
 
@@ -305,7 +305,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       title: t('bulk.title.delete.infraenv'),
       action: t('delete'),
       processing: t('deleting'),
-      resources: infraEnvs,
+      items: infraEnvs,
+      emptyState: undefined, // table action is only enabled when items are selected
       description: t('bulk.message.delete.infraenv'),
       columns: [
         {
@@ -397,7 +398,6 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
             items={infraEnvs}
             rowActions={[]}
             keyFn={keyFn}
-            plural="infra environments"
             columns={[
               {
                 header: t('infraEnv.tableHeader.name'),
@@ -434,7 +434,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                       <AcmLabels
                         labels={infraEnv.metadata.labels}
                         expandedText={t('show.less')}
-                        collapsedText={t('show.more', { number: collapse.length })}
+                        collapsedText={t('show.more', { count: collapse.length })}
                         collapse={collapse}
                       />
                     )
@@ -518,7 +518,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                           title: t('action.title.delete'),
                           action: t('delete'),
                           processing: t('deleting'),
-                          resources: [infraEnv],
+                          items: [infraEnv],
+                          emptyState: undefined, // there is always 1 item supplied
                           description: t('action.message.delete'),
                           columns: [
                             {

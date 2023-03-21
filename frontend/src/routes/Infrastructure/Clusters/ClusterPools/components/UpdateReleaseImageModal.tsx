@@ -85,25 +85,30 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
   )
 
   return (
-    <BulkActionModal<ClusterPool>
-      open={props.clusterPools?.length !== undefined}
-      title={t('bulk.title.updateReleaseImage')}
-      action={t('update')}
-      processing={t('updating')}
-      resources={props.clusterPools ?? []}
-      close={() => {
-        props.close?.()
-        setImageSets({})
-      }}
-      description={t('bulk.message.updateReleaseImage')}
-      columns={modalColumns}
-      keyFn={(clusterPool) => clusterPool.metadata.uid as string}
-      actionFn={(clusterPool) => {
-        return patchResource(clusterPool, [
-          { op: 'replace', path: '/spec/imageSetRef/name', value: imageSets[clusterPool.metadata.uid!] },
-        ])
-      }}
-      showToolbar={false}
-    />
+    <>
+      {!!props.clusterPools?.length && (
+        <BulkActionModal<ClusterPool>
+          open
+          title={t('bulk.title.updateReleaseImage')}
+          action={t('update')}
+          processing={t('updating')}
+          items={props.clusterPools}
+          emptyState={undefined} // at least 1 clusterPool is always supplied
+          close={() => {
+            props.close?.()
+            setImageSets({})
+          }}
+          description={t('bulk.message.updateReleaseImage')}
+          columns={modalColumns}
+          keyFn={(clusterPool) => clusterPool.metadata.uid as string}
+          actionFn={(clusterPool) => {
+            return patchResource(clusterPool, [
+              { op: 'replace', path: '/spec/imageSetRef/name', value: imageSets[clusterPool.metadata.uid!] },
+            ])
+          }}
+          showToolbar={false}
+        />
+      )}
+    </>
   )
 }

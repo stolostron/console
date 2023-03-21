@@ -165,7 +165,6 @@ export function ClusterSetManageResourcesContent() {
           />
         </div>
         <AcmTable<Cluster>
-          plural="resources"
           items={isLoading ? undefined : availableResources}
           initialSelectedItems={selectedResources}
           onSelect={(resources: Cluster[]) => setSelectedResources(resources)}
@@ -201,45 +200,55 @@ export function ClusterSetManageResourcesContent() {
           </ActionGroup>
         )}
       </AcmForm>
-      <BulkActionModal<Cluster>
-        open={showConfirmModal}
-        title={t('manageClusterSet.form.modal.title')}
-        action={t('save')}
-        processing={t('saving')}
-        onCancel={() => setShowConfirmModal(false)}
-        close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
-        isValidError={errorIsNot([ResourceErrorCode.NotFound])}
-        resources={[...removedResources, ...selectedResources]}
-        hideTableAfterSubmit={true}
-        description={<div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>}
-        columns={columnsModal}
-        keyFn={(item) => item.uid}
-        actionFn={(resource: Cluster) => {
-          // return dummy promise if the resource is not changed
-          if (
-            selectedResources.find((sr) => sr.uid === resource.uid) &&
-            resource.clusterSet === clusterSet?.metadata.name
-          ) {
-            return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
+      {showConfirmModal && (
+        <BulkActionModal<Cluster>
+          open
+          title={t('manageClusterSet.form.modal.title')}
+          action={t('save')}
+          processing={t('saving')}
+          onCancel={() => setShowConfirmModal(false)}
+          close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
+          isValidError={errorIsNot([ResourceErrorCode.NotFound])}
+          items={[...removedResources, ...selectedResources]}
+          emptyState={
+            <AcmEmptyState
+              title={t('No changes')}
+              message={t(
+                'Select all clusters to be added to the cluster set and deselect all clusters to be removed from the cluster set.'
+              )}
+            />
           }
-
-          const isSelected = selectedResources.find((selectedResource) => selectedResource.uid === resource.uid)
-          const isRemoved = removedResources.find((removedResource) => removedResource.uid === resource.uid)
-          let op: 'remove' | 'replace' | 'add' = 'remove'
-          if (isRemoved) op = 'remove'
-          if (isSelected) {
-            op = resource.clusterSet === undefined ? 'add' : 'replace'
-          }
-          if (clusterSet?.metadata.name) {
-            return patchClusterSetLabel(resource.name, op, clusterSet.metadata.name, resource.isManaged)
-          } else {
-            return {
-              promise: Promise.resolve(),
-              abort: noop,
+          hideTableAfterSubmit={true}
+          description={<div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>}
+          columns={columnsModal}
+          keyFn={(item) => item.uid}
+          actionFn={(resource: Cluster) => {
+            // return dummy promise if the resource is not changed
+            if (
+              selectedResources.find((sr) => sr.uid === resource.uid) &&
+              resource.clusterSet === clusterSet?.metadata.name
+            ) {
+              return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
             }
-          }
-        }}
-      />
+
+            const isSelected = selectedResources.find((selectedResource) => selectedResource.uid === resource.uid)
+            const isRemoved = removedResources.find((removedResource) => removedResource.uid === resource.uid)
+            let op: 'remove' | 'replace' | 'add' = 'remove'
+            if (isRemoved) op = 'remove'
+            if (isSelected) {
+              op = resource.clusterSet === undefined ? 'add' : 'replace'
+            }
+            if (clusterSet?.metadata.name) {
+              return patchClusterSetLabel(resource.name, op, clusterSet.metadata.name, resource.isManaged)
+            } else {
+              return {
+                promise: Promise.resolve(),
+                abort: noop,
+              }
+            }
+          }}
+        />
+      )}
     </>
   )
 }

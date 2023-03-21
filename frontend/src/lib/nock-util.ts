@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-import { isEqual } from 'lodash'
+import isEqual from 'lodash/isEqual'
+import set from 'lodash/set'
+import { diff } from 'deep-diff'
 import nock from 'nock'
 import StackTrace from 'stacktrace-js'
 import { Url } from 'url'
@@ -237,6 +239,7 @@ export function nockCreate(
 ) {
   const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
     .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
+      set(scope, 'diff', diff(body, resource))
       return isEqual(body, resource)
     })
     .reply(statusCode, response ?? resource, {

@@ -237,7 +237,7 @@ describe('Policy Template Details content', () => {
     await waitForText(
       '[{"Compliant":"Compliant","Validity":{},"conditions":[{"lastTransitionTime":"2022-02-22T13:32:41Z","message":"namespaces [test] found as specified, therefore this Object template is compliant","reason":"K8s `must have` object already exists","status":"True","type":"notification"}]}]'
     )
-    const viewYamlLink = screen.getByText('View yaml')
+    const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
       `/multicloud/home/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
     )

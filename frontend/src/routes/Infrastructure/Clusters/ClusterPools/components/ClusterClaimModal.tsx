@@ -221,7 +221,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
             {t('clusterClaim.modal.viewCluster')}
           </AcmButton>
           <AcmButton key="cancel" variant="link" onClick={reset}>
-            {t('close')}
+            {t('Close')}
           </AcmButton>
         </>
       )}
@@ -241,7 +241,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
             </DescriptionListGroup>
           </DescriptionList>
           <AcmButton key="cancel" variant="link" onClick={reset}>
-            {t('close')}
+            {t('Close')}
           </AcmButton>
         </>
       )}

@@ -21,6 +21,7 @@ import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlert,
   AcmDescriptionList,
+  AcmEmptyState,
   AcmTable,
   AcmTablePaginationContextProvider,
   compareStrings,
@@ -216,7 +217,7 @@ export function PolicyTemplateDetails(props: {
                   rel="noopener noreferrer"
                   href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`}
                 >
-                  {t('View yaml')}
+                  {t('View YAML')}
                 </a>
               )
             } else {
@@ -226,7 +227,7 @@ export function PolicyTemplateDetails(props: {
                   rel="noopener noreferrer"
                   href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}`}
                 >
-                  {t('View yaml')}
+                  {t('View YAML')}
                 </a>
               )
             }
@@ -274,13 +275,18 @@ export function PolicyTemplateDetails(props: {
         <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
           <AcmTable
             items={relatedObjects}
+            emptyState={
+              <AcmEmptyState
+                title={t('No related resources')}
+                message={t('There are no resources related to this policy template.')}
+              />
+            }
             columns={relatedResourceColumns}
             keyFn={(item) => `${item.object.kind}.${item.object.metadata.name}`}
             initialSort={{
               index: 0,
               direction: 'asc',
             }}
-            plural={t('related resources')}
           />
         </AcmTablePaginationContextProvider>
       </PageSection>

@@ -32,7 +32,7 @@ import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
-import { BulkActionModal, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 
 const {
@@ -100,7 +100,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   )
 
   const [bulkModalProps, setBulkModalProps] = useState<
-    IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   >({ open: false })
   const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
 

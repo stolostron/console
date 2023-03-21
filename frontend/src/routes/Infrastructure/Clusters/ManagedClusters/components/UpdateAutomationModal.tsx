@@ -18,6 +18,7 @@ import { makeStyles } from '@mui/styles'
 import {
   AcmAlert,
   AcmButton,
+  AcmEmptyState,
   AcmForm,
   AcmModal,
   AcmSelect,
@@ -323,10 +324,15 @@ export function UpdateAutomationModal(props: {
             </Flex>
           </StackItem>
           <StackItem className={classes.table}>
-            <AcmTable
+            <AcmTable<Cluster>
               columns={addAutomationTemplateColumns}
               items={updatableClusters}
-              plural={t('updatable clusters')}
+              emptyState={
+                <AcmEmptyState
+                  title={t('No clusters available')}
+                  message={t('The automation template cannot be updated for any of the selected clusters.')}
+                />
+              }
               keyFn={(c: Cluster) => c.name as string}
               autoHidePagination={true}
             />

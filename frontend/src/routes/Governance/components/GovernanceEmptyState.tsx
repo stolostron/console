@@ -68,7 +68,7 @@ export function GovernanceCreatePolicysetEmptyState(props: { rbac: boolean }) {
   const { t } = useTranslation()
   return (
     <AcmEmptyState
-      title={"You don't have any policy sets"}
+      title={t("You don't have any policy sets")}
       message={
         <Trans
           i18nKey="Click <bold>Create policy set</bold> to create your resource."
