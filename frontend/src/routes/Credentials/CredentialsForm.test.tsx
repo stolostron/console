@@ -165,6 +165,8 @@ describe('add credentials page', () => {
     changeYaml('aws_access_key_id=', 'a')
     changeYaml('aws_secret_access_key=', 'e')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')
 

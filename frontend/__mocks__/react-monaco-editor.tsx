@@ -29,6 +29,18 @@ class Range {
     return true
   }
 }
+class Selection {
+  startLineNumber: number | undefined
+  endLineNumber: number | undefined
+  endColumn: number | undefined
+  startColumn: number | undefined
+  constructor(startLineNumber?: number, startColumn?: number, endLineNumber?: number, endColumn?: number) {
+    this.endLineNumber = endLineNumber
+    this.endColumn = endColumn
+    this.startLineNumber = startLineNumber
+    this.startColumn = startColumn
+  }
+}
 
 interface MockModel {
   _commandManager: {
@@ -76,6 +88,7 @@ interface MockMonaco {
   KeyMod: any
   KeyCode: any
   Range: Range
+  Selection: Selection
 }
 
 const MonacoEditor = (props: {
@@ -173,6 +186,7 @@ const MonacoEditor = (props: {
       KeyMod: {},
       KeyCode: {},
       Range: Range,
+      Selection: Selection,
     }
     props.editorDidMount(editorMockRef.current.mockEditor, editorMockRef.current.mockMonaco)
   }
