@@ -1,16 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClipboardCopyButton,
-  CodeBlock,
-  CodeBlockAction,
-  CodeBlockCode,
-  Modal,
-  ModalVariant,
-  Page,
-  Text,
-  TextVariants,
-} from '@patternfly/react-core'
+import { CodeBlock, CodeBlockCode, Modal, ModalVariant, Page, Text, TextVariants } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
@@ -19,6 +9,7 @@ import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../.
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
+import { actions } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftAWSCLI() {
@@ -31,7 +22,6 @@ export function HypershiftAWSCLI() {
     { label: t('Create cluster') },
   ]
 
-  const [copied, setCopied] = useState(false)
   const [isModalOpenAws, setIsModalOpenAws] = useState(false)
   const [isModalOpenAwsBucket, setIsModalOpenAwsBucket] = useState(false)
   const { projects } = GetProjects()
@@ -57,29 +47,6 @@ hypershift create cluster aws
   const handleModalToggleAwsBucket = () => {
     setIsModalOpenAwsBucket(!isModalOpenAwsBucket)
   }
-
-  const onClick = (text: string) => {
-    navigator.clipboard.writeText(text.toString())
-    setCopied(true)
-  }
-
-  const actions = (code: string, id: string) => (
-    <Fragment>
-      <CodeBlockAction>
-        <ClipboardCopyButton
-          id={`${id}-copy`}
-          textId={id}
-          aria-label={t('Copy to clipboard')}
-          onClick={() => onClick(code)}
-          exitDelay={copied ? 1500 : 600}
-          maxWidth="110px"
-          variant="plain"
-        >
-          {copied ? t('Successfully copied to clipboard!') : t('Copy to clipboard')}
-        </ClipboardCopyButton>
-      </CodeBlockAction>
-    </Fragment>
-  )
 
   const listItems = [
     {

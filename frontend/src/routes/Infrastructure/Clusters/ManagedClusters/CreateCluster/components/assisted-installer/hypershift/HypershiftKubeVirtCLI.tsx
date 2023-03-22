@@ -1,18 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClipboardCopyButton,
-  CodeBlock,
-  CodeBlockAction,
-  CodeBlockCode,
-  Page,
-  Text,
-  TextVariants,
-} from '@patternfly/react-core'
-import { Fragment, useState } from 'react'
+import { CodeBlock, CodeBlockCode, Page, Text, TextVariants } from '@patternfly/react-core'
+import { Fragment } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
+import { actions } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftKubeVirtCLI() {
@@ -27,8 +20,6 @@ export function HypershiftKubeVirtCLI() {
     },
     { label: t('Create cluster') },
   ]
-
-  const [copied, setCopied] = useState(false)
 
   const code = `# Set environment variables
 export CLUSTER_NAME=example
@@ -45,28 +36,6 @@ hypershift create cluster kubevirt \\
 --cores $CPU \\`
 
   const helperCommand = `hypershift create cluster kubevirt --help`
-  const onClick = (text: string) => {
-    navigator.clipboard.writeText(text.toString())
-    setCopied(true)
-  }
-
-  const actions = (code: string, id: string) => (
-    <Fragment>
-      <CodeBlockAction>
-        <ClipboardCopyButton
-          id={`${id}-copy`}
-          textId={id}
-          aria-label={t('Copy to clipboard')}
-          onClick={() => onClick(code)}
-          exitDelay={copied ? 1500 : 600}
-          maxWidth="110px"
-          variant="plain"
-        >
-          {copied ? t('Successfully copied to clipboard!') : t('Copy to clipboard')}
-        </ClipboardCopyButton>
-      </CodeBlockAction>
-    </Fragment>
-  )
 
   const listItems = [
     {

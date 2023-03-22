@@ -115,13 +115,18 @@ export function CreateClusterCatalog() {
     ]
   }, [t])
 
-  const getOnClickAction = (id: string, provider: Provider & ClusterInfrastructureType) => {
-    return id === Provider.aws
-      ? nextStep(NavigationPath.createAWSControlPlane)
-      : id === Provider.kubevirt
-      ? nextStep(NavigationPath.createKubeVirtControlPlane)
-      : nextStep(getTypedCreateClusterPath(provider))
-  }
+  const getOnClickAction = useCallback(
+    (id: string, provider: Provider & ClusterInfrastructureType) => {
+      if (id === Provider.aws) {
+        return nextStep(NavigationPath.createAWSControlPlane)
+      } else if (id === Provider.kubevirt) {
+        return nextStep(NavigationPath.createKubeVirtControlPlane)
+      } else {
+        return nextStep(getTypedCreateClusterPath(provider))
+      }
+    },
+    [nextStep]
+  )
 
   const cards = useMemo(() => {
     const getProviderCard = (
@@ -191,7 +196,7 @@ export function CreateClusterCatalog() {
     })
 
     return { cardsWithCreds, cardsWithOutCreds }
-  }, [nextStep, getCredentialLabels, clusterImageSets.length, t, cardsData])
+  }, [nextStep, getCredentialLabels, clusterImageSets.length, t, cardsData, getOnClickAction])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
