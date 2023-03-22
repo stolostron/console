@@ -7,9 +7,9 @@ import {
   ICatalogCard,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
-function GetHostedCard(onNext: any): ICatalogCard {
+function GetHostedCard(onNext: () => void): ICatalogCard {
   const [t] = useTranslation()
   return {
     id: 'hosted',

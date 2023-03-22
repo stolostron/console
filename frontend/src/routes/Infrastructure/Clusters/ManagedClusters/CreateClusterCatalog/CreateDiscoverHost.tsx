@@ -1,17 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  CatalogCardItemType,
-  ItemView,
-  ICatalogCard,
-  PageHeader,
-  DataViewStringContext,
-} from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { CatalogCardItemType, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
+import { GetControlPlane } from './common/GetControlPlane'
 
 export function CreateDiscoverHost() {
   const [t] = useTranslation()
@@ -47,8 +40,6 @@ export function CreateDiscoverHost() {
     return newCards
   }, [nextStep, t])
 
-  const keyFn = useCallback((card: ICatalogCard) => card.id, [])
-
   const breadcrumbs = [
     { label: t('Clusters'), to: NavigationPath.clusters },
     { label: t('Infrastructure'), to: NavigationPath.createCluster },
@@ -58,28 +49,18 @@ export function CreateDiscoverHost() {
     },
     { label: t('Hosts') },
   ]
-
-  const dataViewStrings = useDataViewStrings()
-
   return (
-    <AcmPage
-      header={
+    <GetControlPlane
+      pageHeader={
         <PageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
           breadcrumbs={breadcrumbs}
         />
       }
-    >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.createBMControlPlane)}
-          onCancel={cancel(NavigationPath.clusters)}
-        />
-      </DataViewStringContext.Provider>
-    </AcmPage>
+      cards={cards}
+      onBack={back(NavigationPath.createBMControlPlane)}
+      onCancel={cancel(NavigationPath.clusters)}
+    />
   )
 }
