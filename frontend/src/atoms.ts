@@ -178,7 +178,7 @@ export function useSavedSearchLimit() {
 
 export function useSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.SEARCH_RESULT_LIMIT ?? '10000'), [settings])
+  return useMemo(() => parseInt(settings.SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useSearchAutocompleteLimit() {
