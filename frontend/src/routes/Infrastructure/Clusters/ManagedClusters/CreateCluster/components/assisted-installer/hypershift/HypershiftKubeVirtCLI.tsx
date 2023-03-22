@@ -5,7 +5,7 @@ import { Fragment } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
-import { actions } from './common/common'
+import { Actions } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftKubeVirtCLI() {
@@ -71,11 +71,11 @@ hypershift create cluster kubevirt \\
               'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. To create the Hosted Control Plane, copy and paste the following command: '
             )}
           </Text>
-          <CodeBlock actions={actions(code, 'code-command')}>
+          <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
           <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
-          <CodeBlock actions={actions(helperCommand, 'helper-command')}>
+          <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
           {viewDocumentation(DOC_CREATE_kUBEVIRT_CLUSTER, t)}

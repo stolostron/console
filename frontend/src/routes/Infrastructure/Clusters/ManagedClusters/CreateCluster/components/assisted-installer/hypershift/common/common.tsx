@@ -4,7 +4,7 @@ import { ClipboardCopyButton, CodeBlockAction } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../../../../../lib/acm-i18next'
 
-export function actions(code: string, id: string) {
+export function Actions(code: string, id: string) {
   const [copied, setCopied] = useState(false)
 
   const { t } = useTranslation()

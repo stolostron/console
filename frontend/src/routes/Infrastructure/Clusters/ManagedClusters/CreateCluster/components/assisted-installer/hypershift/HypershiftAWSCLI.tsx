@@ -9,7 +9,7 @@ import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../.
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
-import { actions } from './common/common'
+import { Actions } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftAWSCLI() {
@@ -98,11 +98,11 @@ hypershift create cluster aws
           <Text component={TextVariants.p}>
             {t('To create the Hosted Control Plane, copy and paste the following command:')}
           </Text>
-          <CodeBlock actions={actions(code, 'code-command')}>
+          <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
           <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
-          <CodeBlock actions={actions(helperCommand, 'helper-command')}>
+          <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
           {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
