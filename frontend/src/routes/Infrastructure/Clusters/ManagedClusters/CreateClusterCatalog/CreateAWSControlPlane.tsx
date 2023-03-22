@@ -4,7 +4,6 @@ import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   getPatternflyColor,
-  ICatalogBreadcrumb,
   ICatalogCard,
   PageHeader,
   PatternFlyColor,
@@ -15,6 +14,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmButton, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
+import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import GetHostedCard from './common/GetHostedCard'
 import HypershiftDiagram from './HypershiftDiagram.svg'
@@ -60,22 +60,13 @@ export function CreateAWSControlPlane() {
     return newCards
   }, [nextStep, t])
 
-  const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs: ICatalogBreadcrumb[] = [
-      { label: t('Clusters'), to: NavigationPath.clusters },
-      { label: t('Infrastructure'), to: NavigationPath.createCluster },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }) },
-    ]
-    return newBreadcrumbs
-  }, [t])
-
   return (
     <GetControlPlane
       pageHeader={
         <PageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'AWS' })}
           description={t('Choose a control plane type for your cluster.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumbs={breadcrumbs('AWS', t)}
         />
       }
       cards={cards}

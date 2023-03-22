@@ -4,7 +4,6 @@ import {
   CatalogCardItemType,
   CatalogColor,
   getPatternflyColor,
-  ICatalogBreadcrumb,
   ICatalogCard,
   PageHeader,
   PatternFlyColor,
@@ -15,6 +14,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../../../resources'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
+import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 
 export function CreateControlPlane() {
@@ -107,22 +107,13 @@ export function CreateControlPlane() {
     return newCards
   }, [nextStep, t, isHypershiftEnabled])
 
-  const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs: ICatalogBreadcrumb[] = [
-      { label: t('Clusters'), to: NavigationPath.clusters },
-      { label: t('Infrastructure'), to: NavigationPath.createCluster },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }) },
-    ]
-    return newBreadcrumbs
-  }, [t])
-
   return (
     <GetControlPlane
       pageHeader={
         <PageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' })}
           description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumbs={breadcrumbs('Host Inventory', t)}
         />
       }
       cards={cards}
