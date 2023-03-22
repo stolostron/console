@@ -9,7 +9,7 @@ import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../.
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
-import { Actions } from './common/common'
+import { Actions, GetOCLogInCommand } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftAWSCLI() {
@@ -84,16 +84,7 @@ hypershift create cluster aws
       title: t('Running the Hosted Control Plane command'),
       content: (
         <Fragment>
-          <Text component={TextVariants.h4}>{t('How to log in to OpenShift Container Platform')}</Text>
-          <Text
-            component={TextVariants.a}
-            onClick={() => {
-              window.open(window.SERVER_FLAGS?.requestTokenURL)
-            }}
-            target="_blank"
-          >
-            {t('Use the oc login command.')}
-          </Text>
+          {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
             {t('To create the Hosted Control Plane, copy and paste the following command:')}

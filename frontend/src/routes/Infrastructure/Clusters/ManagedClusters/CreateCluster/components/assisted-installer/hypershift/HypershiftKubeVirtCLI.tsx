@@ -5,7 +5,7 @@ import { Fragment } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
-import { Actions } from './common/common'
+import { Actions, GetOCLogInCommand } from './common/common'
 import DocPage from './common/DocPage'
 
 export function HypershiftKubeVirtCLI() {
@@ -55,16 +55,7 @@ hypershift create cluster kubevirt \\
       title: t('Running the Hosted Control Plane command'),
       content: (
         <Fragment>
-          <Text component={TextVariants.h4}>{t('How to log in to OpenShift Container Platform')}</Text>
-          <Text
-            component={TextVariants.a}
-            onClick={() => {
-              window.open(window.SERVER_FLAGS?.requestTokenURL)
-            }}
-            target="_blank"
-          >
-            {t('Use the oc login command.')}
-          </Text>
+          {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
             {t(
