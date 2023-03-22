@@ -283,7 +283,7 @@ describe('SearchPage', () => {
                     values: ['testPod'],
                   },
                 ],
-                limit: 10000,
+                limit: 1000,
               },
             ],
           },

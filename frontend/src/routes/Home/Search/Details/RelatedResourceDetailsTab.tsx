@@ -21,8 +21,8 @@ import { useSearchDefinitions } from '../searchDefinitions'
 export default function RelatedResourceDetailsTab(props: { cluster: string; resource: IResource }) {
   const { cluster, resource } = props
   const { t } = useTranslation()
-  const { useSearchQueryLimit } = useSharedAtoms()
-  const searchQueryLimit = useSearchQueryLimit()
+  const { useSearchResultLimit } = useSharedAtoms()
+  const searchResultLimit = useSearchResultLimit()
   const [accordionKeys, setAccordionKeys] = useState<string[]>([])
 
   const { kind, name, namespace, apiGroup } = useMemo(() => {
@@ -69,7 +69,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
         {
           keywords: [],
           filters: relatedResQueryFilters,
-          limit: searchQueryLimit,
+          limit: searchResultLimit,
         },
       ],
     },
@@ -148,7 +148,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
   return (
     <PageSection>
       <Stack hasGutter>
-        {relatedResultItems.length >= searchQueryLimit ? (
+        {relatedResultItems.length >= searchResultLimit ? (
           <Alert
             variant={'warning'}
             isInline={true}
