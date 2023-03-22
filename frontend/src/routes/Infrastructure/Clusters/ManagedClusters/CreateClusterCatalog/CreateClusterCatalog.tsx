@@ -115,6 +115,14 @@ export function CreateClusterCatalog() {
     ]
   }, [t])
 
+  const getOnClickAction = (id: string, provider: Provider & ClusterInfrastructureType) => {
+    return id === Provider.aws
+      ? nextStep(NavigationPath.createAWSControlPlane)
+      : id === Provider.kubevirt
+      ? nextStep(NavigationPath.createKubeVirtControlPlane)
+      : nextStep(getTypedCreateClusterPath(provider))
+  }
+
   const cards = useMemo(() => {
     const getProviderCard = (
       id: string,
@@ -132,12 +140,7 @@ export function CreateClusterCatalog() {
         },
       ],
       labels,
-      onClick:
-        id === Provider.aws
-          ? nextStep(NavigationPath.createAWSControlPlane)
-          : id === Provider.kubevirt
-          ? nextStep(NavigationPath.createKubeVirtControlPlane)
-          : nextStep(getTypedCreateClusterPath(provider)),
+      onClick: getOnClickAction(id, provider),
     })
 
     const cardsWithCreds: ICatalogCard[] = []
