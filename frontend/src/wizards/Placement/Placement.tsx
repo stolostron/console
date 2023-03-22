@@ -106,7 +106,7 @@ export function Placement(props: {
         path="spec.clusterSets"
         placeholder={t('Select the cluster sets')}
         labelHelp={t(
-          'Select clusters from the cluster sets bound to the namespace. Cluster can then be further selected using cluster labels.'
+          'Select clusters from the cluster sets bound to the namespace. Clusters can then be further selected using cluster labels.'
         )}
         helperText={t(
           'If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.'

@@ -367,7 +367,7 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
 
   if (combinedNameLength > 63)
     return t(
-      'The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters'
+      'The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters'
     )
   return undefined
 }
