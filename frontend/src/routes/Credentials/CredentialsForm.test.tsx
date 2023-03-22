@@ -8,8 +8,7 @@ import {
   ProviderConnectionKind,
   ProviderConnectionStringData,
 } from '../../resources'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -28,6 +27,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
+import userEvent from '@testing-library/user-event'
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
@@ -128,7 +128,7 @@ describe('add credentials page', () => {
       {
         bucket: 'test-bucket',
         region: 'us-east-1',
-        credentials: '[default]\naws_access_key_id=abc\naws_secret_access_key=efg',
+        credentials: '[default]\naws_access_key_id=abcd\naws_secret_access_key=efgh',
       },
       false,
       'hypershift-operator-oidc-provider-s3-credentials',
@@ -140,9 +140,33 @@ describe('add credentials page', () => {
 
     // bucket
     await typeByTestId('bucketName', providerConnection.stringData?.bucket!)
-    await typeByTestId('aws_access_key_id', 'abc')
-    await typeByTestId('aws_secret_access_key', 'efg')
+    await typeByTestId('aws_access_key_id', 'bcd')
+    await typeByTestId('aws_secret_access_key', 'fgh')
     await selectByText('Select region', providerConnection.stringData?.region!)
+
+    // open yaml and use yaml to change aws_access_key_id
+    await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    await waitFor(() => expect(input).not.toHaveValue(''))
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /show secrets/i,
+      })
+    )
+    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
+    const changeYaml = (path: string, text: string) => {
+      const i = input.value.indexOf(path) + path.length
+      input.setSelectionRange(i, i)
+      userEvent.type(input, text)
+    }
+    changeYaml('aws_access_key_id=', 'a')
+    changeYaml('aws_secret_access_key=', 'e')
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')
 

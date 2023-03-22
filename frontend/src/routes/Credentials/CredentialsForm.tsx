@@ -11,7 +11,7 @@ import {
   ProviderIconMap,
   ProviderLongTextMap,
 } from '../../ui-components'
-import _, { noop } from 'lodash'
+import _, { noop, get } from 'lodash'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
@@ -478,6 +478,15 @@ export function CredentialsForm(
     }
     return secret
   }
+  function getValue(path: string, template: any) {
+    const credentials = get(template, 'Secret[0].stringData.credentials', '') as string
+    if (credentials) {
+      const value = credentials.split('\n').find((v) => v.startsWith(`${path}=`))
+      return value ? value.replace(`${path}=`, '') : ''
+    } else {
+      return get(template, `Secret[0].stringData.${path}`, '')
+    }
+  }
   function stateToSyncs() {
     const syncs = [
       { path: 'Secret[0].metadata.name', setState: setName },
@@ -491,8 +500,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
       { path: 'Secret[0].stringData.bucket', setState: setBucketName },
       { path: 'Secret[0].stringData.region', setState: setAwsS3Region },
-      { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
-      { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
+      { getter: getValue.bind(null, 'aws_access_key_id'), setState: setAwsAccessKeyID },
+      { getter: getValue.bind(null, 'aws_secret_access_key'), setState: setAwsSecretAccessKeyID },
       { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
       { path: 'Secret[0].stringData.cloudName', setState: setCloudName },
       { path: 'Secret[0].stringData.projectID', setState: setGcProjectID },
