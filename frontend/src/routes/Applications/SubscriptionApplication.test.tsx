@@ -335,7 +335,7 @@ const mockPlacement: Placement = {
   kind: PlacementKind,
   metadata: {
     namespace: 'namespace-0',
-    name: 'placement-1',
+    name: 'application-0-placement-1',
   },
   spec: {},
 }
@@ -586,6 +586,7 @@ describe('Create Subscription Application page', () => {
       nockGet(mockChannel),
       nockGet(mockSubscriptionPlacement),
       nockGet(mockChannelNamespace),
+      nockGet(mockPlacement),
     ]
     render(
       <RecoilRoot
@@ -633,6 +634,19 @@ describe('Create Subscription Application page', () => {
         },
       ]),
       nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
+      nockPatch(mockPlacement, [
+        {
+          op: 'remove',
+          path: '/spec',
+        },
+        {
+          op: 'add',
+          path: '/metadata/labels',
+          value: {
+            app: 'application-0',
+          },
+        },
+      ]),
     ]
     //update the resources
     userEvent.click(

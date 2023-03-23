@@ -1,9 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { nockCreate, nockDelete, nockIgnoreApiPaths, nockReplace } from '../../lib/nock-util'
+import {
+  nockCreate,
+  nockCreateError,
+  nockDelete,
+  nockDeleteError,
+  nockIgnoreApiPaths,
+  nockReplace,
+  nockReplaceError,
+} from '../../lib/nock-util'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../namespace'
-import { createResource, deleteResources, reconcileResources, ResourceError, updateResources } from './resource-request'
+import {
+  createResource,
+  createResources,
+  deleteResources,
+  reconcileResources,
+  ResourceError,
+  updateResources,
+} from './resource-request'
 
 export const clusterName = 'test-cluster'
 
@@ -46,32 +61,80 @@ const mockClusterNamespace: Namespace = {
   },
 }
 
-describe('reconcileResources negative testing', () => {
+describe('reconcileResources', () => {
   nockIgnoreApiPaths()
-  it('reconcileResources catches error creating namespace resource', async () => {
+  it('catches error creating namespace resource', async () => {
     nockCreate(mockClusterNamespace, mockClusterNamespace, 400)
 
     await expect(async () => {
       await reconcileResources([mockClusterCurator, mockClusterNamespace], [])
     }).rejects.toThrowError(ResourceError)
   })
-  it('createResources catches error creating resource', async () => {
+})
+describe('createResource', () => {
+  nockIgnoreApiPaths()
+  it('catches error creating resource', async () => {
     nockCreate(mockClusterCurator, mockClusterCurator, 400)
 
     await expect(async () => {
       await createResource(mockClusterCurator).promise
     }).rejects.toThrowError(ResourceError)
   })
-  it('updateResources catches error updating resource', async () => {
+})
+describe('createResources', () => {
+  it('detects ETIMEDOUT', async () => {
+    nockCreateError(mockClusterCurator, { message: 'Timeout issue', code: 'ETIMEDOUT' })
+    await expect(async () => {
+      await createResources([mockClusterCurator])
+    }).rejects.toThrowErrorMatchingInlineSnapshot(`"Timeout"`)
+  })
+})
+describe('updateResources', () => {
+  nockIgnoreApiPaths()
+  it('catches error updating resource', async () => {
     nockReplace(mockClusterCurator, mockPatchedClusterCurator, 400)
     await expect(async () => {
       await updateResources([mockClusterCurator])
     }).rejects.toThrowError(ResourceError)
   })
-  it('deleteResources catches error updating resource', async () => {
-    nockDelete(mockClusterCurator, mockPatchedClusterCurator, 400)
+  it('detects ECONNRESET', async () => {
+    nockReplaceError(mockClusterCurator, { message: 'Reset', code: 'ECONNRESET' })
+    await expect(async () => {
+      await updateResources([mockClusterCurator])
+    }).rejects.toThrowErrorMatchingInlineSnapshot(`"ConnectionReset"`)
+  })
+})
+describe('deleteResources', () => {
+  nockIgnoreApiPaths()
+  it('catches error updating resource', async () => {
+    nockDelete(mockClusterCurator, mockPatchedClusterCurator, 401)
     await expect(async () => {
       await deleteResources([mockClusterCurator])
     }).rejects.toThrowError(ResourceError)
+  })
+  it('throws error when no name set', async () => {
+    await expect(async () => {
+      await deleteResources([{ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind }])
+    }).rejects.toThrowError(ResourceError)
+  })
+  it('detects ETIMEDOUT', async () => {
+    nockDeleteError(mockClusterCurator, { message: 'Missing', code: 'ENOTFOUND' })
+    await expect(async () => {
+      await deleteResources([mockClusterCurator])
+    }).rejects.toThrowErrorMatchingInlineSnapshot(`"NotFound"`)
+  })
+  it('detects numeric error codes', async () => {
+    nockDeleteError(mockClusterCurator, { message: 'Aborted', code: 800 })
+    await expect(async () => {
+      await deleteResources([mockClusterCurator])
+    }).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"request to http://localhost/apis/cluster.open-cluster-management.io/v1beta1/namespaces/test-cluster/clustercurators/test-cluster failed, reason: Aborted"`
+    )
+  })
+  it('handles unknown error codes"', async () => {
+    nockDeleteError(mockClusterCurator, { message: 'Random', code: 'RANDOM_ERROR' })
+    await expect(async () => {
+      await deleteResources([mockClusterCurator])
+    }).rejects.toThrowErrorMatchingInlineSnapshot(`"Unknown error code: RANDOM_ERROR"`)
   })
 })

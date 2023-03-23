@@ -5,7 +5,7 @@ import {
   AcmAlertContext,
   AcmAlertGroup,
   AcmForm,
-  AcmLabelsInput,
+  AcmKubernetesLabelsInput,
   AcmModal,
   AcmSubmit,
 } from '../../../../../ui-components'
@@ -36,12 +36,11 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
           <AcmForm style={{ gap: 0 }}>
             <div>{t('labels.description')}</div>
             &nbsp;
-            <AcmLabelsInput
+            <AcmKubernetesLabelsInput
               id="labels-input"
               label={t('labels.lower', {
                 resourceName: props.displayName ?? props.resource?.metadata?.name,
               })}
-              buttonLabel={t('labels.button.add')}
               value={labels}
               onChange={(labels) => setLabels(labels!)}
               placeholder={t('labels.edit.placeholder')}
@@ -101,12 +100,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                       props.close()
                     })
                     .catch((err) => {
-                      const errorInfo = getErrorInfo(err, t)
-                      alertContext.addAlert({
-                        type: 'danger',
-                        title: errorInfo.title,
-                        message: errorInfo.message,
-                      })
+                      alertContext.addAlert(getErrorInfo(err, t))
                     })
                 }}
                 label={t('save')}

@@ -69,13 +69,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     if (!match) {
       //Invalid hostname
       //throw error, don't import cluster
-      const errorInfo = getErrorInfo(t('invalidclustername.message'), t)
-      toastContext.addAlert({
-        type: 'danger',
-        title: errorInfo.title,
-        message: errorInfo.message,
-        autoClose: true,
-      })
+      toastContext.addAlert({ ...getErrorInfo(t('invalidclustername.message'), t), autoClose: true })
       return
     }
 
@@ -157,12 +151,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         })
       })
       .catch((err) => {
-        const errorInfo = getErrorInfo(err, t)
-        toastContext.addAlert({
-          type: 'danger',
-          title: errorInfo.title,
-          message: errorInfo.message,
-        })
+        toastContext.addAlert(getErrorInfo(err, t))
       })
 
     patchResource(selectedHostedClusterResource as IResource, [

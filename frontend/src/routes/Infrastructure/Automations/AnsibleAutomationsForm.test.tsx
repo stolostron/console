@@ -15,11 +15,18 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockAnsibleTower, nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import {
+  nockAnsibleTower,
+  nockAnsibleTowerInventory,
+  nockCreate,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+} from '../../../lib/nock-util'
 import {
   clickByPlaceholderText,
   clickByText,
@@ -32,6 +39,7 @@ import {
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerJobTemplateList } from '../../../resources'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
+import { AnsibleTowerInventoryList } from '../../../resources/ansible-inventory'
 
 const mockNamespaces: Namespace[] = [
   {
@@ -91,12 +99,15 @@ const mockClusterCurator: ClusterCurator = {
         { name: 'test-job-post-install', extra_vars: {}, type: 'Job' },
         { name: 'test-job-pre-install-ii', extra_vars: {}, type: 'Workflow' },
       ],
+      jobMonitorTimeout: 55,
     },
     upgrade: {
       towerAuthSecret: 'ansible-test-secret',
       prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {}, type: 'Job' }],
       posthook: [{ name: 'test-job-post-upgrade', extra_vars: {}, type: 'Job' }],
+      monitorTimeout: 555,
     },
+    inventory: 'test-inventory',
   },
 }
 
@@ -106,6 +117,11 @@ const mockAnsibleCredential = {
 }
 const mockAnsibleCredentialWorkflow = {
   towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
+  token: 'abcd',
+}
+
+const mockAnsibleCredentialInventory = {
+  towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/inventories/',
   token: 'abcd',
 }
 
@@ -135,6 +151,15 @@ const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install-ii',
       type: 'workflow_job_template',
+    },
+  ],
+}
+
+const mockInventoryList: AnsibleTowerInventoryList = {
+  results: [
+    {
+      name: 'test-inventory',
+      type: 'inventory',
     },
   ],
 }
@@ -172,6 +197,7 @@ describe('add automation template page', () => {
     // template information
     const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
     const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
     await clickByPlaceholderText('Select an existing Ansible credential')
     // Should show the modal wizard
@@ -182,9 +208,12 @@ describe('add automation template page', () => {
 
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
+    await clickByPlaceholderText('Select an inventory')
+    await clickByText(mockInventoryList.results[0].name!)
     await clickByText('Next')
     await waitForNock(ansibleJobNock)
     await waitForNock(ansibleWorkflowNock)
+    await waitForNock(ansibleInventoryNock)
 
     // install job templates
     await clickByText('Add an Ansible template', 0)
@@ -203,6 +232,19 @@ describe('add automation template page', () => {
     await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
     await clickByText('Save')
 
+    // install timeout
+    userEvent.clear(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      })
+    )
+    userEvent.type(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      }),
+      mockClusterCurator!.spec!.install!.jobMonitorTimeout!.toString(10)
+    )
+
     await clickByText('Next')
 
     // upgrade templates
@@ -215,6 +257,20 @@ describe('add automation template page', () => {
     await clickByPlaceholderText('Search or select a job template name', 0)
     await clickByText(mockTemplateList.results![3].name!, 0)
     await clickByText('Save')
+
+    // upgrade timeout
+    userEvent.clear(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      })
+    )
+    userEvent.type(
+      screen.getByRole('spinbutton', {
+        name: /timeout/i,
+      }),
+      mockClusterCurator!.spec!.upgrade!.monitorTimeout!.toString(10)
+    )
+
     await clickByText('Next')
 
     // add template

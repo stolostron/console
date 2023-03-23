@@ -28,12 +28,12 @@ export function RenderItemContent(props: {
 }) {
   const { currentQuery, relatedKind, setDeleteResource } = props
   const { t } = useTranslation()
-  const { useSearchQueryLimit } = useSharedAtoms()
-  const searchQueryLimit = useSearchQueryLimit()
+  const { useSearchResultLimit } = useSharedAtoms()
+  const searchResultLimit = useSearchResultLimit()
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
-      input: [{ ...convertStringToQuery(currentQuery, searchQueryLimit), relatedKinds: [relatedKind] }],
+      input: [{ ...convertStringToQuery(currentQuery, searchResultLimit), relatedKinds: [relatedKind] }],
     },
   })
 
@@ -61,8 +61,8 @@ export function RenderItemContent(props: {
 
   return (
     <AcmTable
-      plural=""
       items={relatedResultItems}
+      emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
       rowActions={GetRowActions(relatedKind, currentQuery, true, setDeleteResource, t)}
@@ -78,9 +78,9 @@ export default function RelatedResults(props: {
 }) {
   const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource } = props
   const { t } = useTranslation()
-  const { useSearchQueryLimit } = useSharedAtoms()
-  const searchQueryLimit = useSearchQueryLimit()
-  const queryFilters = convertStringToQuery(currentQuery, searchQueryLimit)
+  const { useSearchResultLimit } = useSharedAtoms()
+  const searchResultLimit = useSearchResultLimit()
+  const queryFilters = convertStringToQuery(currentQuery, searchResultLimit)
   const { data, error, loading } = useSearchResultRelatedCountQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {

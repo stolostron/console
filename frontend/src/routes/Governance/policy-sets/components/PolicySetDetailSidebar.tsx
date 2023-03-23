@@ -12,7 +12,14 @@ import {
   ToggleGroupItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmLabels, AcmTable, colorThemes, compareNumbers, compareStrings } from '../../../../ui-components'
+import {
+  AcmEmptyState,
+  AcmLabels,
+  AcmTable,
+  colorThemes,
+  compareNumbers,
+  compareStrings,
+} from '../../../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -201,8 +208,8 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
               <AcmLabels
                 labels={clusterMatch.metadata.labels}
                 expandedText={t('show.less')}
-                collapsedText={t('show.more', { number: collapse.length })}
-                allCollapsedText={t('count.labels', { number: collapse.length })}
+                collapsedText={t('show.more', { count: collapse.length })}
+                allCollapsedText={t('count.labels', { count: collapse.length })}
                 collapse={collapse}
               />
             )
@@ -372,8 +379,13 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       </Split>
       {type === 'Clusters' ? (
         <AcmTable<string>
-          plural={t('Clusters')}
           items={policySetClusters}
+          emptyState={
+            <AcmEmptyState
+              title={t('No clusters found')}
+              message={t('None of the policies in the policy set have been placed on a cluster.')}
+            />
+          }
           initialSort={{
             index: 1, // default to sorting by violation count
             direction: 'desc',
@@ -388,8 +400,10 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         />
       ) : (
         <AcmTable<Policy>
-          plural={t('Policies')}
           items={policySetPolicies}
+          emptyState={
+            <AcmEmptyState title={t('No polices found')} message={t('There are no policies in the policy set.')} />
+          }
           initialSort={{
             index: 1, // default to sorting by violation count
             direction: 'desc',

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
@@ -20,7 +20,7 @@ export function PolicyActionDropdown(props: {
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyTableItem> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
   const { item, setModal } = props
@@ -84,7 +84,8 @@ export function PolicyActionDropdown(props: {
             title: t('policy.modal.title.enable'),
             action: t('policy.table.actions.enable'),
             processing: t('policy.table.actions.enabling'),
-            resources: [item],
+            items: [item],
+            emptyState: undefined, // there is always 1 item supplied
             description: t('policy.modal.message.enable'),
             columns: bulkModalStatusColumns,
             keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -120,7 +121,8 @@ export function PolicyActionDropdown(props: {
             title: t('policy.modal.title.disable'),
             action: t('policy.table.actions.disable'),
             processing: t('policy.table.actions.disabling'),
-            resources: [item],
+            items: [item],
+            emptyState: undefined, // there is always 1 item supplied
             description: t('policy.modal.message.disable'),
             columns: bulkModalStatusColumns,
             keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -157,7 +159,8 @@ export function PolicyActionDropdown(props: {
             title: t('policy.modal.title.inform'),
             action: t('policy.table.actions.inform'),
             processing: t('policy.table.actions.informing'),
-            resources: [item],
+            items: [item],
+            emptyState: undefined, // there is always 1 item supplied
             description: t('policy.modal.message.inform'),
             columns: bulkModalRemediationColumns,
             keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -196,7 +199,8 @@ export function PolicyActionDropdown(props: {
             title: t('policy.modal.title.enforce'),
             action: t('policy.table.actions.enforce'),
             processing: t('policy.table.actions.enforcing'),
-            resources: [item],
+            items: [item],
+            emptyState: undefined, // there is always 1 item supplied
             description: t('policy.modal.message.enforce'),
             columns: bulkModalRemediationColumns,
             keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,

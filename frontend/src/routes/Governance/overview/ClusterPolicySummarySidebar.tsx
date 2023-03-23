@@ -134,8 +134,8 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
     <div className={classes.body}>
       <div className={classes.sectionSeparator} />
       <AcmTable<ClusterPolicies>
-        plural="Policies"
         items={clusterPolicies}
+        emptyState={undefined} // only shown when clusterPolicies count > 0
         initialSort={{
           index: 1, // default to sorting by violation count
           direction: sortDirection,

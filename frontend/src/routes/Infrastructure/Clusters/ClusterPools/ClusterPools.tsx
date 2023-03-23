@@ -27,7 +27,7 @@ import {
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -171,7 +171,7 @@ export function ClusterPoolsTable(props: {
 
   const { clusterPools } = props
   const { t } = useTranslation()
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterPool> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterPool> | { open: false }>({
     open: false,
   })
   const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
@@ -218,7 +218,6 @@ export function ClusterPoolsTable(props: {
       <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
       <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
       <AcmTable<ClusterPool>
-        plural="clusterPools"
         items={clusterPools}
         addSubRows={(clusterPool: ClusterPool) => {
           const clusterPoolClusters = clusters.filter(
@@ -381,7 +380,8 @@ export function ClusterPoolsTable(props: {
                       title: t('bulk.title.destroyClusterPool'),
                       action: t('destroy'),
                       processing: t('destroying'),
-                      resources: [clusterPool],
+                      items: [clusterPool],
+                      emptyState: undefined, // there is always 1 item supplied
                       description: t('bulk.message.destroyClusterPool'),
                       columns: modalColumns,
                       keyFn: mckeyFn,
@@ -432,7 +432,8 @@ export function ClusterPoolsTable(props: {
                 title: t('bulk.destroy.clusterPools'),
                 action: t('destroy'),
                 processing: t('destroying'),
-                resources: clusterPools,
+                items: clusterPools,
+                emptyState: undefined, // table action is only enabled when items are selected
                 description: t('bulk.message.destroyClusterPool'),
                 columns: modalColumns,
                 keyFn: mckeyFn,
@@ -474,8 +475,8 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
         key="clusterPoolClustersTable"
         autoHidePagination
         showToolbar={false}
-        plural="clusters"
         items={props.clusters}
+        emptyState={undefined} // only shown when cluster count > 0
         columns={[
           {
             header: t('table.name'),
@@ -521,7 +522,7 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
   const { t } = useTranslation()
   const classes = useStyles()
   const alertContext = useContext(AcmAlertContext)
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterClaim> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterClaim> | { open: false }>({
     open: false,
   })
 
@@ -531,7 +532,8 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
       title: t('clusterClaim.delete'),
       action: t('delete'),
       processing: t('deleting'),
-      resources: [claim],
+      items: [claim],
+      emptyState: undefined, // there is always 1 item supplied
       description: t('bulk.message.delete.claim'),
       keyFn: (claim) => claim.metadata.name as string,
       actionFn: (claim) => deleteClaim(claim),
@@ -578,8 +580,8 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
         key="clusterPoolClaimsTable"
         autoHidePagination
         showToolbar={false}
-        plural="claims"
         items={props.claims}
+        emptyState={undefined} // only shown when cluster claims count > 0
         columns={[
           {
             header: t('table.name'),

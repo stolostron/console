@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Addon, AddonStatus, getAddonStatusLabel } from '../../../../../../resources'
-import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '../../../../../../ui-components'
+import { AcmEmptyState, AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
@@ -22,8 +22,8 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
   const { t } = useTranslation()
   return (
     <AcmTable<Addon>
-      plural="add-ons"
       items={props.addons}
+      emptyState={<AcmEmptyState title={t('No add-ons found')} message={t('The cluster has no add-ons.')} />}
       columns={[
         {
           header: t('table.name'),

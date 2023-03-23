@@ -329,7 +329,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 </span>
                 <span key={`${status}-status-list`}>
                   <LabelGroup
-                    collapsedText={t('show.more').replace('{{number}}', (clusterList[status].size - 2).toString())}
+                    collapsedText={t('show.more', { count: clusterList[status].size - 2 })}
                     expandedText={t('show.less')}
                     numLabels={2}
                   >
@@ -394,8 +394,8 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
           {placementMatches.length > 0 || placementRuleMatches.length > 0 ? (
             <AcmTable<TableData>
               key="cluster-placement-list"
-              plural={'placements'}
               items={[...placementMatches, ...placementRuleMatches]}
+              emptyState={undefined} // only shown when there are placement matches
               columns={placementCols}
               keyFn={(item) => item.metadata.uid!.toString()}
               autoHidePagination={true}

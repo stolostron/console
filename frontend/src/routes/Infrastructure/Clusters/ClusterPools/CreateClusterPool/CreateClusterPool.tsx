@@ -240,7 +240,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
         }
         break
       case 'namespace':
-        control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
+        control.available = namespaces.map((namespace) => namespace.metadata.name).sort() as string[]
         break
       case 'singleNodeFeatureFlag':
         if (settings.singleNodeOpenshift === 'enabled') {

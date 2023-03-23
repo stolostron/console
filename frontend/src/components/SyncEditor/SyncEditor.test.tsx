@@ -5,7 +5,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 //import util from 'util'
 
 const mockOneditorchangeCreate = jest.fn()
@@ -127,7 +127,8 @@ describe('SyncEditor component', () => {
   })
 
   it('render new resource', async () => {
-    render(<SyncEditor {...propsNewResource} />)
+    const clone = cloneDeep(propsNewResource)
+    render(<SyncEditor {...clone} />)
 
     // make sure yaml matches
     const input = screen.getByRole('textbox', {
@@ -162,8 +163,9 @@ describe('SyncEditor component', () => {
 
   it('yaml/form edit syncing', async () => {
     const onEditorChange = jest.fn()
-    propsNewResource.onEditorChange = onEditorChange
-    const { rerender } = render(<SyncEditor {...propsNewResource} />)
+    const clone = cloneDeep(propsNewResource)
+    clone.onEditorChange = onEditorChange
+    const { rerender } = render(<SyncEditor {...clone} />)
 
     // make sure yaml matches
     const input = screen.getByRole('textbox', {
@@ -179,12 +181,11 @@ describe('SyncEditor component', () => {
     input.setSelectionRange(i, i + 4)
     userEvent.type(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(propsNewResource.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
     expect(get(onEditorChange.mock.calls, '0.0.resources.0.spec.disabled')).toBeFalsy()
 
     // >>>FORM: change annotations to { test: 'me' }
     input.blur()
-    const clone = cloneDeep(propsNewResource)
     set(clone, 'resources.0.metadata.annotations', { test: 'me' })
     rerender(<SyncEditor {...clone} />)
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
@@ -211,8 +212,9 @@ describe('SyncEditor component', () => {
 
   it('editor toolbar', async () => {
     const onEditorChange = jest.fn()
-    propsNewResource.onEditorChange = onEditorChange
-    render(<SyncEditor {...propsNewResource} />)
+    const clone = cloneDeep(propsNewResource)
+    clone.onEditorChange = onEditorChange
+    render(<SyncEditor {...clone} />)
 
     // make sure yaml matches
     const input = screen.getByRole('textbox', {
@@ -228,7 +230,7 @@ describe('SyncEditor component', () => {
     input.setSelectionRange(i, i + 4)
     userEvent.type(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(propsNewResource.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
     expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
 
     // >>>UNDO--make sure 'disabled: true' is true again
@@ -238,7 +240,7 @@ describe('SyncEditor component', () => {
       })
     )
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(propsNewResource.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
 
     // // >>>REDO--make sure 'disabled: true' is false again
     userEvent.click(
@@ -247,7 +249,7 @@ describe('SyncEditor component', () => {
       })
     )
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(propsNewResource.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
 
     // >>>SHOW SECRETS
     // expect secrets to be redacted in yaml
@@ -273,6 +275,47 @@ describe('SyncEditor component', () => {
       })
     )
     expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
+  })
+
+  it('synchronize', async () => {
+    const clone = cloneDeep(propsNewResource)
+    const onEditorChange = jest.fn()
+    clone.onEditorChange = onEditorChange
+    const setAwsS3Region = jest.fn()
+    const setAwsAccessKeyID = jest.fn()
+    function getValue(path: string, template: any) {
+      return get(template, path, '') as string
+    }
+    clone.syncs = [
+      { path: 'Policy[0].spec.policy-templates[0].objectDefinition.spec.severity', setState: setAwsS3Region },
+      {
+        getter: getValue.bind(null, 'Policy[0].spec.policy-templates[0].objectDefinition.spec.severity'),
+        setState: setAwsAccessKeyID,
+      },
+    ]
+    render(<SyncEditor {...clone} />)
+
+    // make sure yaml matches
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    await waitFor(() => expect(input).not.toHaveValue(''))
+    expect(input).toHaveMultilineValue(newResourceYaml)
+
+    // make any change in editor
+    const text = 'disabled: true'
+    const i = input.value.indexOf(text) + text.length - 4
+    input.setSelectionRange(i, i + 4)
+    userEvent.type(input, 'false')
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
+
+    // make sure syncs get called
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    expect(setAwsS3Region).toHaveBeenCalledWith('medium')
+    expect(setAwsAccessKeyID).toHaveBeenCalledWith('medium')
   })
 
   it.skip('keyboard', async () => {

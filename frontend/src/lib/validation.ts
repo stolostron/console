@@ -5,6 +5,7 @@ import YAML from 'yaml'
 import { TFunction } from 'i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
+import set from 'lodash/set'
 
 import isCidr from 'is-cidr'
 
@@ -128,7 +129,30 @@ export function validateBaseDomain(value: string, t: TFunction) {
   return undefined
 }
 
-export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFunction) {
+// user provided ca but didn't add cacert key
+export function enforceCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string) {
+  if (yamlValue && cloudValue && osCABundle) {
+    try {
+      //ensure we have valid YAML
+      const yamlData = YAML.parse(yamlValue) as {
+        clouds: {
+          [cloud: string]: {
+            auth?: {
+              cacert?: string
+            }
+          }
+        }
+      }
+      if (!yamlData?.clouds[cloudValue]?.auth?.cacert) {
+        set(yamlData, `clouds[${cloudValue}].auth.cacert`, '/etc/openstack-ca/ca.crt')
+        return YAML.stringify(yamlData)
+      }
+    } catch (e) {}
+  }
+  return yamlValue
+}
+
+export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string, t: TFunction) {
   if (yamlValue) {
     try {
       //ensure we have valid YAML
@@ -139,6 +163,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
               auth_url?: string
               password?: string
               username?: string
+              cacert?: string
             }
           }
         }
@@ -150,25 +175,23 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
         return t('validate.yaml.not.valid')
       }
 
-      let found = false
-      for (const key in clouds) {
-        //look for matching cloud name
-        if (cloudValue !== undefined && key === cloudValue) {
-          found = true
-        }
-        //check a few of the required fields, especially password, since the user
-        //would have had to add this manually
-        if (
-          clouds[key]?.auth?.auth_url === undefined ||
-          clouds[key]?.auth?.password === undefined ||
-          clouds[key]?.auth?.username === undefined
-        ) {
-          return t('validate.yaml.not.valid')
-        }
-      }
-      //Uh-oh, cloud name not found in clouds.yaml
-      if (cloudValue !== undefined && !found) {
+      const cloud = clouds[cloudValue]
+      if (!cloud) {
         return t('validate.yaml.cloud.not.found')
+      }
+      if (!cloud?.auth?.auth_url || !cloud?.auth?.password || !cloud?.auth?.username) {
+        return t('validate.yaml.cloud.auth.not.found')
+      }
+      if (
+        osCABundle &&
+        cloud?.auth?.cacert &&
+        cloud?.auth?.cacert !== '/etc/openstack-ca/ca.crt' &&
+        cloud?.auth?.cacert !== '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+      ) {
+        return t('validate.yaml.cloud.cacert.not.found')
+      }
+      if (cloud?.auth?.cacert && !osCABundle) {
+        return t('validate.yaml.cloud.cacert.was.found')
       }
     } catch (e) {
       return t('validate.yaml.not.valid')
@@ -344,7 +367,7 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
 
   if (combinedNameLength > 63)
     return t(
-      'The combined length of namespace and policy name (namespaceName.policyName) should not exceed 63 characters'
+      'The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters'
     )
   return undefined
 }

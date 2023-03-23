@@ -121,7 +121,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
               {t('set.manage-resources')}
             </AcmButton>
             <AcmButton variant="link" onClick={reset}>
-              {t('close')}
+              {t('Close')}
             </AcmButton>
           </ActionGroup>
         </>

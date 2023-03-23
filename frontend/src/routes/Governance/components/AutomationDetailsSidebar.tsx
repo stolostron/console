@@ -14,12 +14,12 @@ import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { BulkActionModal, IBulkActionModalProps } from '../../../components/BulkActionModal'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
-import { AcmTable } from '../../../ui-components'
+import { AcmEmptyState, AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
 
@@ -51,7 +51,7 @@ export function AutomationDetailsSidebar(props: {
     govData.clusterRisks.unknown +
     govData.clusterRisks.synced
 
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<PolicyAutomation> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyAutomation> | { open: false }>({
     open: false,
   })
 
@@ -225,8 +225,8 @@ export function AutomationDetailsSidebar(props: {
       </Stack>
       <AcmTable<JobTableData>
         key="ansible-job-history"
-        plural={'ansible jobs'}
         items={jobItems}
+        emptyState={<AcmEmptyState title="No Ansible jobs found" message="You do not have any Ansible jobs yet." />}
         columns={jobCols}
         keyFn={(item) => item.name}
         autoHidePagination={true}
@@ -264,7 +264,8 @@ export function AutomationDetailsSidebar(props: {
               title: t('Permanently delete policy automation?'),
               action: t('Delete'),
               processing: t('Deleting'),
-              resources: [policyAutomationMatch],
+              items: [policyAutomationMatch],
+              emptyState: undefined, // there is always 1 item supplied
               description: (
                 <Text>
                   <Trans

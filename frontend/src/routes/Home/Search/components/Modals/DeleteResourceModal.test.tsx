@@ -10,7 +10,7 @@ import { wait, waitForNocks } from '../../../../../lib/test-util'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
 const mockSettings: Settings = {
-  SEARCH_QUERY_LIMIT: '10000',
+  SEARCH_RESULT_LIMIT: '1000',
 }
 
 const getMCAResponse = {
@@ -60,7 +60,7 @@ const mockSearchQuery = {
             values: ['pod'],
           },
         ],
-        limit: 10000,
+        limit: 1000,
       },
     ],
   },

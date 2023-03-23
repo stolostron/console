@@ -12,26 +12,31 @@ import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster, clusterDeployment } = useContext(ClusterContext)
   const { ansibleJobState, clusterCuratorsState, configMapsState } = useSharedAtoms()
   const [curators] = useRecoilState(clusterCuratorsState)
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const [configMaps] = useRecoilState(configMapsState)
   const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
-  const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
+  const curator = curators.find(
+    (curator) => curator.metadata.name === cluster?.name && curator.metadata.namespace == cluster?.namespace
+  )
 
   const installStatus = [
     ClusterStatus.prehookjob,
     ClusterStatus.prehookfailed,
     ClusterStatus.creating,
     ClusterStatus.provisionfailed,
-    ClusterStatus.importing,
-    ClusterStatus.importfailed,
     ClusterStatus.posthookjob,
     ClusterStatus.posthookfailed,
   ]
 
-  if (installStatus.includes(cluster?.status!)) {
+  if (
+    installStatus.includes(cluster?.status!) ||
+    (clusterDeployment && // Creation flow only valid when there is a ClusterDeployment
+      clusterDeployment?.status?.powerState !== 'Running' && // if ClusterDeployment is already running, this is a re-import
+      [ClusterStatus.importing, ClusterStatus.importfailed].includes(cluster?.status!))
+  ) {
     // hook state
     const prehooks = curator?.spec?.install?.prehook?.length
     const posthooks = curator?.spec?.install?.posthook?.length

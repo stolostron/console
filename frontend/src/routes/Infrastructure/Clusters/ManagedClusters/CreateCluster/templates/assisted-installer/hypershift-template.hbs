@@ -1,5 +1,5 @@
 ---
-apiVersion: hypershift.openshift.io/v1alpha1
+apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
   name: '{{{hypershift.name}}}'
@@ -90,7 +90,7 @@ stringData:
 
 {{#each hypershift-hosts.nodePools}}
 ---
-apiVersion: hypershift.openshift.io/v1alpha1
+apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
   name: '{{{this.name}}}'

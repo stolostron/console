@@ -23,7 +23,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
@@ -178,7 +178,7 @@ const PageActions = () => {
 export function ClustersTable(props: {
   clusters?: Cluster[]
   tableButtonActions?: IAcmTableButtonAction[]
-  emptyState?: React.ReactNode
+  emptyState: React.ReactNode
 }) {
   useEffect(() => {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
@@ -194,7 +194,7 @@ export function ClustersTable(props: {
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<Cluster> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
 
@@ -291,7 +291,13 @@ export function ClustersTable(props: {
             title: t('bulk.title.hibernate'),
             action: t('hibernate'),
             processing: t('hibernating'),
-            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
+            items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
+            emptyState: (
+              <AcmEmptyState
+                title={t('No clusters available')}
+                message={t('None of the selected clusters can be hibernated.')}
+              />
+            ),
             description: t('bulk.message.hibernate'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -312,7 +318,6 @@ export function ClustersTable(props: {
               setModalProps({ open: false })
             },
             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-            plural: t('hibernatable.clusters'),
           })
         },
         variant: 'bulk-action',
@@ -326,7 +331,13 @@ export function ClustersTable(props: {
             title: t('bulk.title.resume'),
             action: t('resume'),
             processing: t('resuming'),
-            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
+            items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
+            emptyState: (
+              <AcmEmptyState
+                title={t('No clusters available')}
+                message={t('None of the selected clusters can be resumed.')}
+              />
+            ),
             description: t('bulk.message.resume'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -347,7 +358,6 @@ export function ClustersTable(props: {
               setModalProps({ open: false })
             },
             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-            plural: t('resumable.clusters'),
           })
         },
         variant: 'bulk-action',
@@ -361,9 +371,14 @@ export function ClustersTable(props: {
             open: true,
             title: t('bulk.title.detach'),
             action: t('detach'),
-            plural: t('detachable clusters'),
             processing: t('detaching'),
-            resources: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
+            items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
+            emptyState: (
+              <AcmEmptyState
+                title={t('No clusters available')}
+                message={t('None of the selected clusters can be detached.')}
+              />
+            ),
             description: t('bulk.message.detach'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
@@ -386,11 +401,16 @@ export function ClustersTable(props: {
             title: t('bulk.title.destroy'),
             action: t('destroy'),
             processing: t('destroying'),
-            plural: t('destroyable clusters'),
-            resources: clusters.filter(
+            items: clusters.filter(
               (cluster) =>
                 clusterSupportsAction(cluster, ClusterAction.Destroy) ||
                 clusterSupportsAction(cluster, ClusterAction.Detach)
+            ),
+            emptyState: (
+              <AcmEmptyState
+                title={t('No clusters available')}
+                message={t('None of the selected clusters can be destroyed or detached.')}
+              />
             ),
             description: t('bulk.message.destroy'),
             columns: modalColumns,
@@ -511,7 +531,6 @@ export function ClustersTable(props: {
         }}
       />
       <AcmTable<Cluster>
-        plural="clusters"
         items={props.clusters}
         columns={columns}
         keyFn={mckeyFn}
@@ -661,8 +680,8 @@ export function useClusterLabelsColumn(): IAcmTableColumn<Cluster> {
           <AcmLabels
             labels={cluster.labels}
             expandedText={t('show.less')}
-            collapsedText={t('show.more', { number: collapse.length })}
-            allCollapsedText={t('count.labels', { number: collapse.length })}
+            collapsedText={t('show.more', { count: collapse.length })}
+            allCollapsedText={t('count.labels', { count: collapse.length })}
             collapse={collapse}
           />
         )

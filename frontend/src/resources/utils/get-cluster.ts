@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '../../ui-components'
+import { Provider, StatusType } from '../../ui-components'
 import {
   isDraft,
   getIsSNOCluster,
@@ -34,6 +34,7 @@ import {
   checkCuratorConditionDone,
   checkForRequirementsMetConditionFailureReason,
   checkForCondition,
+  getConditionReason,
 } from './status-conditions'
 
 export enum ClusterStatus {
@@ -123,6 +124,49 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
       return t('status.stopping')
     default:
       return t('status.unknown')
+  }
+}
+
+export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType => {
+  switch (clusterStatus) {
+    case ClusterStatus.ready:
+      return StatusType.healthy
+    case ClusterStatus.running:
+      return StatusType.running
+    case ClusterStatus.needsapproval:
+      return StatusType.warning
+    case ClusterStatus.failed:
+    case ClusterStatus.notstarted:
+    case ClusterStatus.provisionfailed:
+    case ClusterStatus.deprovisionfailed:
+    case ClusterStatus.notaccepted:
+    case ClusterStatus.offline:
+    case ClusterStatus.degraded:
+    case ClusterStatus.prehookfailed:
+    case ClusterStatus.posthookfailed:
+    case ClusterStatus.importfailed:
+      return StatusType.danger
+    case ClusterStatus.creating:
+    case ClusterStatus.destroying:
+    case ClusterStatus.detaching:
+    case ClusterStatus.stopping:
+    case ClusterStatus.resuming:
+    case ClusterStatus.prehookjob:
+    case ClusterStatus.posthookjob:
+    case ClusterStatus.importing:
+      return StatusType.progress
+    case ClusterStatus.detached:
+      return StatusType.detached
+    case ClusterStatus.hibernating:
+      return StatusType.sleep
+    case ClusterStatus.unknown:
+      return StatusType.unknown
+    case ClusterStatus.draft:
+      return StatusType.draft
+    case ClusterStatus.pending:
+    case ClusterStatus.pendingimport:
+    default:
+      return StatusType.pending
   }
 }
 
@@ -1118,8 +1162,19 @@ export function getClusterStatus(
             } else {
               const readyCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Ready')
               statusMessage = readyCondition?.message
-              cdStatus =
-                clusterDeployment.spec.powerState === 'Running' ? ClusterStatus.resuming : ClusterStatus.unknown
+              if (clusterDeployment.spec.powerState === 'Running') {
+                cdStatus = ClusterStatus.resuming
+              } else if (
+                !clusterDeployment.spec.powerState &&
+                ['WaitingForNodes', 'PausingForClusterOperatorsToSettle', 'WaitingForClusterOperators'].includes(
+                  powerState
+                )
+              ) {
+                // spec.powerState is not set initially - most likely a new deployment that is almost ready
+                cdStatus = ClusterStatus.running
+              } else {
+                cdStatus = ClusterStatus.unknown
+              }
             }
           }
         }
@@ -1213,6 +1268,21 @@ export function getClusterStatus(
   } else if (!clusterJoined && !hostedCluster) {
     mcStatus = ClusterStatus.pendingimport
 
+    // Check if cluster is being automatically imported or has failed automatic import
+    const mcConditionImportSucceeded = mcConditions.find((c) => c.type === 'ManagedClusterImportSucceeded')
+    if (mcConditionImportSucceeded?.status === 'False') {
+      switch (mcConditionImportSucceeded.reason) {
+        case 'ManagedClusterImporting':
+          mcStatus = ClusterStatus.importing
+          statusMessage = mcConditionImportSucceeded.message
+          break
+        case 'ManagedClusterImportFailed':
+          mcStatus = ClusterStatus.importfailed
+          statusMessage = mcConditionImportSucceeded.message
+          break
+      }
+    }
+
     // check for respective csrs awaiting approval
     if (certificateSigningRequests && certificateSigningRequests.length) {
       const clusterCsrs =
@@ -1220,8 +1290,9 @@ export function getClusterStatus(
           return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === mc.metadata.name
         }) ?? []
       const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
-      mcStatus =
-        activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
+      if (activeCsr && !activeCsr?.status?.certificate) {
+        mcStatus = ClusterStatus.needsapproval
+      }
     }
   } else if (hostedCluster && !clusterAvailable) {
     // HC import
@@ -1233,7 +1304,15 @@ export function getClusterStatus(
     )
 
     if (managedCluster && HostedClusterReadyStatus?.status === 'True') {
-      mcStatus = ClusterStatus.importing
+      const stuckImport =
+        checkForCondition('HubAcceptedManagedCluster', mcConditions) &&
+        getConditionReason('HubAcceptedManagedCluster', mcConditions) === 'Error'
+      if (stuckImport) {
+        mcStatus = ClusterStatus.importfailed
+        statusMessage = getConditionMessage('HubAcceptedManagedCluster', mcConditions)
+      } else {
+        mcStatus = ClusterStatus.importing
+      }
 
       const mcConditionAvailable = mcConditions.find((c) => c.type === 'ManagedClusterConditionAvailable')
       if (mcConditionAvailable) {

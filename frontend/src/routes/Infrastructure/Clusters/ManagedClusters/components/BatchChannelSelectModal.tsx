@@ -10,7 +10,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmSelect } from '../../../../../ui-components'
+import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -67,10 +67,15 @@ export function BatchChannelSelectModal(props: {
     <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.selectChannel')}
-      plural={t('bulk.plural.selectChannel')}
       action={t('upgrade.selectChannel.submit')}
       processing={t('upgrade.selectChannel.submit.processing')}
-      resources={channelSelectableClusters}
+      items={channelSelectableClusters}
+      emptyState={
+        <AcmEmptyState
+          title={t('No clusters available')}
+          message={t('The channel cannot be changed for any of the selected clusters.')}
+        />
+      }
       close={() => {
         setSelectChannels({})
         props.close()

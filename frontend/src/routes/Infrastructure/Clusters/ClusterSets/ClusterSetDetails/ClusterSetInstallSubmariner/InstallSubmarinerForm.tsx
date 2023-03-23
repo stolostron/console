@@ -834,7 +834,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     setOpenstackCloudsYamls(copy)
                   },
                   isSecret: true,
-                  validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, t),
+                  validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, '', t),
                 },
                 {
                   id: 'cloud',

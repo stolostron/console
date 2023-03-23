@@ -82,6 +82,7 @@ export function AcmDrawer(props: AcmDrawerProps) {
       onExpand={/* istanbul ignore next */ () => drawerRef?.current?.focus()}
     >
       <DrawerContent
+        colorVariant="default"
         style={{ backgroundColor: 'unset' }}
         panelContent={
           <AcmAlertProvider>

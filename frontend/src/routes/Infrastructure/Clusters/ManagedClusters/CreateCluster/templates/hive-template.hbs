@@ -92,6 +92,8 @@ spec:
 
   {{#case 'OpenStack'}}
     openstack:
+      certificatesSecretRef:
+        name: {{{name}}}-openstack-trust
       credentialsSecretRef:
         name: {{{name}}}-openstack-creds
       cloud: {{{cloud}}}
@@ -471,6 +473,21 @@ stringData:
      {{{cloudsYaml}}}
 {{else}}
   clouds.yaml: # injected on create
+{{/if}}
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{{name}}}-openstack-trust
+  namespace: '{{{name}}}'
+stringData:
+{{#if showSecrets}}
+  ca.crt: |+
+    {{os_ca_bundle}}
+{{else}}
+  ca.crt: # injected on create
 {{/if}}
 {{/case}}
 

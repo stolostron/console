@@ -116,8 +116,8 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
           <Fragment>
             <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
             <AcmTable
-              plural=""
               items={resourceErrors}
+              emptyState={undefined} // only shown when resourceErrors.length > 0
               columns={[
                 {
                   header: t('Error'),
@@ -133,7 +133,7 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
               autoHidePagination
             />
             <Button variant="link" onClick={props.close} key="hypershift-remove-nodepool-close">
-              {t('close')}
+              {t('Close')}
             </Button>
           </Fragment>
         )}

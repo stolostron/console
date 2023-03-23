@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
+import YAML from 'yaml'
 import {
   AcmEmptyState,
   AcmIcon,
@@ -10,7 +11,7 @@ import {
   ProviderIconMap,
   ProviderLongTextMap,
 } from '../../ui-components'
-import _, { noop } from 'lodash'
+import _, { noop, get } from 'lodash'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
@@ -22,6 +23,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
+  enforceCloudsYaml,
   validateAnsibleHost,
   validateBaseDomain,
   validateCertificate,
@@ -280,6 +282,17 @@ export function CredentialsForm(
   // OpenStack
   const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
   const [cloud, setOpenstackCloud] = useState(() => providerConnection?.stringData?.cloud ?? '')
+  const [osCABundle, setOSCABundle] = useState(() => providerConnection?.stringData?.os_ca_bundle ?? '')
+  // user changes yaml, update cloud to first cloud in yaml
+  useEffect(() => {
+    try {
+      const yamlData = YAML.parse(cloudsYaml)
+      const clouds = Object.keys(yamlData?.clouds)
+      if (clouds.length) {
+        setOpenstackCloud(clouds[0])
+      }
+    } catch (_e) {}
+  }, [cloudsYaml])
 
   // Red Hat Virtualization
   const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
@@ -410,8 +423,9 @@ export function CredentialsForm(
         stringData.additionalTrustBundle = additionalTrustBundle
         break
       case Provider.openstack:
-        stringData['clouds.yaml'] = cloudsYaml
+        stringData['clouds.yaml'] = enforceCloudsYaml(cloudsYaml, cloud, osCABundle)
         stringData.cloud = cloud
+        stringData.os_ca_bundle = osCABundle
         stringData.baseDomain = baseDomain
         stringData.pullSecret = pullSecret
         stringData['ssh-privatekey'] = sshPrivatekey
@@ -464,6 +478,15 @@ export function CredentialsForm(
     }
     return secret
   }
+  function getValue(path: string, template: any) {
+    const credentials = get(template, 'Secret[0].stringData.credentials', '') as string
+    if (credentials) {
+      const value = credentials.split('\n').find((v) => v.startsWith(`${path}=`))
+      return value ? value.replace(`${path}=`, '') : ''
+    } else {
+      return get(template, `Secret[0].stringData.${path}`, '')
+    }
+  }
   function stateToSyncs() {
     const syncs = [
       { path: 'Secret[0].metadata.name', setState: setName },
@@ -477,8 +500,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
       { path: 'Secret[0].stringData.bucket', setState: setBucketName },
       { path: 'Secret[0].stringData.region', setState: setAwsS3Region },
-      { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
-      { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
+      { getter: getValue.bind(null, 'aws_access_key_id'), setState: setAwsAccessKeyID },
+      { getter: getValue.bind(null, 'aws_secret_access_key'), setState: setAwsSecretAccessKeyID },
       { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
       { path: 'Secret[0].stringData.cloudName', setState: setCloudName },
       { path: 'Secret[0].stringData.projectID', setState: setGcProjectID },
@@ -494,6 +517,7 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.vsphereResourcePool', setState: setVsphereResourcePool },
       { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
       { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
+      { path: 'Secret[0].stringData.os_ca_bundle', setState: setOSCABundle },
       { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
       { path: 'Secret[0].stringData.ovirt_fqdn', setState: setOvirtFqdn },
       { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
@@ -1055,7 +1079,7 @@ export function CredentialsForm(
             onChange: setOpenstackCloudsYaml,
             isRequired: true,
             isSecret: true,
-            validation: (value) => validateCloudsYaml(value, cloud, t),
+            validation: (value) => validateCloudsYaml(value, cloud, osCABundle, t),
           },
           {
             id: 'cloud',
@@ -1069,6 +1093,19 @@ export function CredentialsForm(
             value: cloud,
             onChange: setOpenstackCloud,
             isRequired: true,
+          },
+          {
+            id: 'os_ca_bundle',
+            isHidden: credentialsType !== Provider.openstack,
+            type: 'TextArea',
+            label: t('credentialsForm.os_ca_bundle.label'),
+            placeholder: t('credentialsForm.os_ca_bundle.placeholder'),
+            labelHelp: t('credentialsForm.os_ca_bundle.labelHelp'),
+            value: osCABundle,
+            onChange: setOSCABundle,
+            isRequired: false,
+            isSecret: true,
+            validation: (value) => (value !== '' ? validateCertificate(value, t) : undefined),
           },
         ],
       },
@@ -1508,6 +1545,7 @@ export function CredentialsForm(
         '*.stringData.additionalTrustBundle',
         '*.stringData.disconnectedAdditionalTrustBundle',
         '*.stringData.ovirt_ca_bundle',
+        '*.stringData.os_ca_bundle',
         '*.stringData.ovirt_password',
         '*.stringData.ovirt-config.yaml',
         '*.stringData.osServicePrincipal.json',

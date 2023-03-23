@@ -6,7 +6,7 @@ import { Alert, AlertVariant } from '@patternfly/react-core'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { IResource, patchResource } from '../../../../../../../resources'
-import { IBulkActionModalProps } from '../../../../../../../components/BulkActionModal'
+import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { agentNameSortFunc, getAgentName, setProvisionRequirements } from './utils'
 
 import './unbindHost.css'
@@ -76,7 +76,7 @@ const agentClusterSortFunc = (
 
 export function useOnUnbindHost(
   toggleDialog: (
-    props: IBulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    props: BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
   ) => void,
   clusterName?: string,
   agentClusterInstall?: CIM.AgentClusterInstallK8sResource
@@ -105,13 +105,14 @@ export function useOnUnbindHost(
   }
 
   return useCallback(
-    (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => {
+    (agent: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => {
       toggleDialog({
         open: true,
         title: clusterName ? t('host.action.title.unbind.single', { clusterName }) : t('host.action.title.unbind'),
         action: t('unbind'),
         processing: t('unbinding'),
-        resources: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
+        items: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
+        emptyState: undefined, // agent is not optional, items is never empty
         description: <Description agent={agent} bmh={bmh} />,
         columns,
         keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) => resource.metadata?.uid as string,

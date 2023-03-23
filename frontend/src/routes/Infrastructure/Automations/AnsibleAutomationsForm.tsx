@@ -34,15 +34,29 @@ import {
   createResource,
   getClusterCurator,
   IResource,
+  listAnsibleTowerInventories,
   listAnsibleTowerJobs,
   ProviderConnection,
   replaceResource,
   Secret,
 } from '../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, Provider } from '../../../ui-components'
+import {
+  AcmAnsibleTagsInput,
+  AcmForm,
+  AcmKubernetesLabelsInput,
+  AcmModal,
+  AcmSelect,
+  AcmSubmit,
+  Provider,
+} from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
+
+const DEFAULT_DESTROY_TIMEOUT = 5
+const DEFAULT_INSTALL_TIMEOUT = 5
+const DEFAULT_SCALE_TIMEOUT = 5
+const DEFAULT_UPGRADE_TIMEOUT = 120
 
 export default function AnsibleAutomationsFormPage({
   match,
@@ -120,6 +134,9 @@ export function AnsibleAutomationsForm(props: {
   }>()
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
+  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
+
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
   const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
@@ -130,11 +147,17 @@ export function AnsibleAutomationsForm(props: {
   const [installPostJobs, setInstallPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.install?.posthook ?? []
   )
+  const [installTimeout, setInstallTimeout] = useState<number>(
+    clusterCurator?.spec?.install?.jobMonitorTimeout ?? DEFAULT_INSTALL_TIMEOUT
+  )
   const [upgradePreJobs, setUpgradePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.upgrade?.prehook ?? []
   )
   const [upgradePostJobs, setUpgradePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.upgrade?.posthook ?? []
+  )
+  const [updateTimeout, setUpdateTimeout] = useState<number>(
+    clusterCurator?.spec?.upgrade?.monitorTimeout ?? DEFAULT_UPGRADE_TIMEOUT
   )
   const [scalePreJobs, setScalePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.scale?.prehook ?? []
@@ -142,11 +165,17 @@ export function AnsibleAutomationsForm(props: {
   const [scalePostJobs, setScalePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.scale?.posthook ?? []
   )
+  const [scaleTimeout, setScaleTimeout] = useState<number>(
+    clusterCurator?.spec?.scale?.jobMonitorTimeout ?? DEFAULT_SCALE_TIMEOUT
+  )
   const [destroyPreJobs, setDestroyPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.destroy?.prehook ?? []
   )
   const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
     clusterCurator?.spec?.destroy?.posthook ?? []
+  )
+  const [destroyTimeout, setDestroyTimeout] = useState<number>(
+    clusterCurator?.spec?.destroy?.jobMonitorTimeout ?? DEFAULT_DESTROY_TIMEOUT
   )
 
   const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
@@ -164,6 +193,7 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+      const inventoryList: string[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
       listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
@@ -184,6 +214,22 @@ export function AnsibleAutomationsForm(props: {
         .catch(() => {
           setAnsibleTowerAuthError(t('validate.ansible.host'))
           setAnsibleTowerJobTemplateList([])
+        })
+      listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+        .promise.then((response) => {
+          if (response) {
+            response.results.forEach((inventory) => {
+              if (inventory.name) {
+                inventoryList.push(inventory.name)
+              }
+            })
+            setAnsibleTowerInventoryList(inventoryList)
+            setAnsibleTowerAuthError('')
+          }
+        })
+        .catch(() => {
+          setAnsibleTowerAuthError(t('validate.ansible.host'))
+          setAnsibleTowerInventoryList([])
         })
     }
   }, [ansibleSelection, ansibleCredentials, t])
@@ -217,23 +263,28 @@ export function AnsibleAutomationsForm(props: {
           towerAuthSecret: ansibleSelection,
           prehook: installPreJobs,
           posthook: installPostJobs,
+          ...(installTimeout !== DEFAULT_INSTALL_TIMEOUT ? { jobMonitorTimeout: installTimeout } : {}),
         },
         upgrade: {
           towerAuthSecret: ansibleSelection,
           prehook: upgradePreJobs,
           posthook: upgradePostJobs,
+          ...(updateTimeout !== DEFAULT_UPGRADE_TIMEOUT ? { monitorTimeout: updateTimeout } : {}),
         },
+        ...(ansibleInventory ? { inventory: ansibleInventory } : {}),
         ...(settings.ansibleIntegration === 'enabled'
           ? {
               scale: {
                 towerAuthSecret: ansibleSelection,
                 prehook: scalePreJobs,
                 posthook: scalePostJobs,
+                ...(scaleTimeout !== DEFAULT_SCALE_TIMEOUT ? { jobMonitorTimeout: scaleTimeout } : {}),
               },
               destroy: {
                 towerAuthSecret: ansibleSelection,
                 prehook: destroyPreJobs,
                 posthook: destroyPostJobs,
+                ...(destroyTimeout !== DEFAULT_DESTROY_TIMEOUT ? { jobMonitorTimeout: destroyTimeout } : {}),
               },
             }
           : {}),
@@ -317,6 +368,23 @@ export function AnsibleAutomationsForm(props: {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
             },
           },
+          {
+            id: 'Inventory',
+            type: 'Select',
+            label: t('Ansible inventory'),
+            placeholder: t('Select an inventory'),
+            value: ansibleInventory,
+            onChange: setAnsibleInventory,
+            isRequired: false,
+            options: ansibleTowerInventoryList.map((name) => ({
+              id: name as string,
+              value: name as string,
+            })),
+            isHidden: !ansibleSelection,
+            validation: () => {
+              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+            },
+          },
         ],
       },
       {
@@ -367,6 +435,14 @@ export function AnsibleAutomationsForm(props: {
                   setEditAnsibleJob({ name: '', extra_vars: {} })
                 },
               },
+              {
+                id: 'installTimeout',
+                type: 'TextNumber',
+                label: t('template.timeout'),
+                labelHelp: t('template.timeout.help', { timeout: DEFAULT_INSTALL_TIMEOUT }),
+                value: installTimeout,
+                onChange: setInstallTimeout,
+              },
             ],
           },
           {
@@ -412,6 +488,14 @@ export function AnsibleAutomationsForm(props: {
                   setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
                   setEditAnsibleJob({ name: '', extra_vars: {} })
                 },
+              },
+              {
+                id: 'updateTimeout',
+                type: 'TextNumber',
+                label: t('template.timeout'),
+                labelHelp: t('template.timeout.help', { timeout: DEFAULT_UPGRADE_TIMEOUT }),
+                value: updateTimeout,
+                onChange: setUpdateTimeout,
               },
             ],
           },
@@ -460,6 +544,14 @@ export function AnsibleAutomationsForm(props: {
                         setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
                         setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
+                    },
+                    {
+                      id: 'scaleTimeout',
+                      type: 'TextNumber',
+                      label: t('template.timeout'),
+                      labelHelp: t('template.timeout.help', { timeout: DEFAULT_SCALE_TIMEOUT }),
+                      value: scaleTimeout,
+                      onChange: setScaleTimeout,
                     },
                   ],
                 },
@@ -518,6 +610,14 @@ export function AnsibleAutomationsForm(props: {
                         })
                         setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
+                    },
+                    {
+                      id: 'destroyTimeout',
+                      type: 'TextNumber',
+                      label: t('template.timeout'),
+                      labelHelp: t('template.timeout.help', { timeout: DEFAULT_DESTROY_TIMEOUT }),
+                      value: destroyTimeout,
+                      onChange: setDestroyTimeout,
                     },
                   ],
                 },
@@ -625,6 +725,7 @@ function EditAnsibleJobModal(props: {
       title={props.ansibleJob?.name !== '' ? t('template.modal.title.edit') : t('template.modal.title.add')}
       isOpen={props.ansibleJob !== undefined}
       onClose={() => props.setAnsibleJob()}
+      position="top"
     >
       <AcmForm>
         <FormGroup fieldId="template-type" isInline>
@@ -677,7 +778,7 @@ function EditAnsibleJobModal(props: {
               ))}
         </AcmSelect>
 
-        <AcmLabelsInput
+        <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}
           value={ansibleJob?.extra_vars}
@@ -688,9 +789,38 @@ function EditAnsibleJobModal(props: {
               setAnsibleJob(copy)
             }
           }}
-          buttonLabel=""
           placeholder={t('template.modal.settings.placeholder')}
         />
+        {filterForJobTemplates && (
+          <>
+            <AcmAnsibleTagsInput
+              id="job-jobtags"
+              label={t('Job tags')}
+              value={ansibleJob?.job_tags}
+              onChange={(labels) => {
+                if (ansibleJob) {
+                  const copy = { ...ansibleJob }
+                  copy.job_tags = labels
+                  setAnsibleJob(copy)
+                }
+              }}
+              placeholder={t('Enter job tag with "," or "enter"')}
+            />
+            <AcmAnsibleTagsInput
+              id="job-skiptags"
+              label={t('Skip tags')}
+              value={ansibleJob?.skip_tags}
+              onChange={(labels) => {
+                if (ansibleJob) {
+                  const copy = { ...ansibleJob }
+                  copy.skip_tags = labels
+                  setAnsibleJob(copy)
+                }
+              }}
+              placeholder={t('Enter skip tag with "," or "enter"')}
+            />
+          </>
+        )}
         {!filterForJobTemplates && (
           <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />
         )}

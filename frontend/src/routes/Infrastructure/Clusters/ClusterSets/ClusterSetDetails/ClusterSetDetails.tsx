@@ -29,6 +29,7 @@ import {
   ManagedClusterSetBinding,
   managedClusterSetLabel,
   ResourceError,
+  ResourceErrorCode,
 } from '../../../../../resources'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
@@ -150,7 +151,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     return (
       <Page>
         <ErrorPage
-          error={new ResourceError('Not found', 404)}
+          error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
             <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
               {t('button.backToClusterSets')}

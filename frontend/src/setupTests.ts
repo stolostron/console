@@ -7,6 +7,7 @@ import '@testing-library/jest-dom'
 import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
 import 'jest-axe/extend-expect'
+import get from 'lodash/get'
 import { diff } from 'jest-diff'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
@@ -61,7 +62,7 @@ global.EventSource = class EventSource {
 }
 
 configure({ testIdAttribute: 'id' })
-jest.setTimeout(30 * 1000)
+jest.setTimeout((process.env.LAUNCH ? 3000 : 30) * 1000)
 
 async function setupBeforeAll(): Promise<void> {
   nock.disableNetConnect()
@@ -113,30 +114,68 @@ expect.extend({
           return ret
         })
 
-      msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-      msgs.push('!!!!!!!!!!!!!!!! MISSING NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+      const mismatchedNocks: any[] = []
+      const pendingNocks: any[] = []
+      const completedNocks: any[] = []
+      window.pendingNocks.forEach((nock) => {
+        if (nock.scope.isDone()) {
+          completedNocks.push(nock)
+        } else if (get(nock.scope, 'diff')) {
+          mismatchedNocks.push(nock)
+        } else {
+          pendingNocks.push(nock)
+        }
+      })
       const { dataMocks, funcMocks } = window.getNockShot(nocks, true)
-      dataMocks.forEach((data: string) => {
-        msgs.push(data)
-      })
-      msgs.push('\n\n')
-      funcMocks.forEach((func: string) => {
-        msgs.push(func)
-      })
-      msgs.push('\n!!! THESE nocks are still pending: ')
-      window.pendingNocks
-        .filter(({ scope }) => !scope.isDone())
-        .forEach(({ nock, source }) => {
+      if (mismatchedNocks.length) {
+        msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!!!!!!!!!!!!!!! MISMATCHED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+        mismatchedNocks.forEach(({ scope, nock, source }) => {
+          msgs.push(`'${nock}' ${source.trim()}`)
+          const diff = get(scope, 'diff')
+          if (diff) {
+            msgs.push('\n this nock almost matched a request but the bodies were different here:')
+            diff.forEach((d: { lhs: any; rhs: any }) => {
+              msgs.push(' the request expected this:')
+              msgs.push(`  ${d?.lhs}`)
+              msgs.push(' the nock provided this:')
+              msgs.push(`  ${d?.rhs}`)
+            })
+          }
+        })
+        msgs.push('>>>>>> try using this in the nock: <<<<<<<<<<<<')
+        dataMocks.forEach((data: string) => {
+          msgs.push(data)
+        })
+      } else {
+        msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!!!!!!!!!!!!!!! MISSING NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('\n there was no nocks that matched these request(s):')
+
+        dataMocks.forEach((data: string) => {
+          msgs.push(data)
+        })
+        msgs.push('\n\n')
+        funcMocks.forEach((func: string) => {
+          msgs.push(func)
+        })
+      }
+      if (pendingNocks.length) {
+        msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!!!!!!!!!!!!!!! UNUSED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!! THESE nocks were not required by any request: ')
+        pendingNocks.forEach(({ nock, source }) => {
           msgs.push(`'${nock}' ${source.trim()}`)
         })
-      msgs.push('\n!!! THESE nocks were used:')
-      window.pendingNocks
-        .filter(({ scope }) => scope.isDone())
-        .forEach(({ nock, source }) => {
+      }
+      if (completedNocks.length) {
+        msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!!!!!!!!!!!!!!! COMPLETED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
+        msgs.push('!!! THESE nocks were used to satisfy requests:')
+        completedNocks.forEach(({ nock, source }) => {
           msgs.push(`'${nock}' ${source.trim()}`)
         })
-      msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-      msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+      }
     }
 
     const message: () => string = () => msgs.join('\n')

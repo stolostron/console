@@ -291,6 +291,9 @@ export function CreateSubscriptionApplication(
               case 'PlacementRule':
                 resourceVersion = getResourceVersion(placementRules, name, namespace)
                 break
+              case 'Placement':
+                resourceVersion = getResourceVersion(placements, name, namespace)
+                break
             }
             _.set(resource, 'metadata.resourceVersion', resourceVersion)
           }

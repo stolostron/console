@@ -352,7 +352,6 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         <StackItem style={{ width: npTableWidth }}>
           <AcmTable<NodePool>
             key="nodepool-table"
-            plural={t('Node pools')}
             columns={columns}
             keyFn={keyFn}
             items={transformedNodepoolItems}

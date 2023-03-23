@@ -51,8 +51,8 @@ function RenderAccordionItem(props: {
     (kind: string, items: ISearchResult[]) => {
       return (
         <AcmTable
-          plural=""
           items={items}
+          emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
             searchDefinitions,
             `[${kind.toLowerCase()}].columns`,
@@ -147,8 +147,8 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
-  const { useSearchQueryLimit } = useSharedAtoms()
-  const searchQueryLimit = useSearchQueryLimit()
+  const { useSearchResultLimit } = useSharedAtoms()
+  const searchResultLimit = useSearchResultLimit()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
@@ -217,7 +217,7 @@ export default function SearchResults(props: {
       />
       <PageSection style={{ paddingTop: '0' }}>
         <Stack hasGutter>
-          {searchResultItems.length >= searchQueryLimit ? (
+          {searchResultItems.length >= searchResultLimit ? (
             <AcmAlert
               noClose={true}
               variant={'warning'}

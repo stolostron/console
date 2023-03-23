@@ -29,6 +29,7 @@ import {
   DiscoveryConfigKind,
   replaceDiscoveryConfig,
   ResourceError,
+  ResourceErrorCode,
   Secret,
 } from '../../../../../resources'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
@@ -328,7 +329,9 @@ export function DiscoveryConfigPageContent(props: {
 
       canUpdateDiscoveryConfig.promise
         .then((result) =>
-          !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403), t)) : null
+          !result.status?.allowed
+            ? alertContext.addAlert(getErrorInfo(new ResourceError(ResourceErrorCode.Forbidden), t))
+            : null
         )
         .catch((err) => alertContext.addAlert(getErrorInfo(err, t)))
       return () => {
@@ -343,7 +346,9 @@ export function DiscoveryConfigPageContent(props: {
       )
       canCreateDiscoveryConfig.promise
         .then((result) =>
-          !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403), t)) : null
+          !result.status?.allowed
+            ? alertContext.addAlert(getErrorInfo(new ResourceError(ResourceErrorCode.Forbidden), t))
+            : null
         )
         .catch((err) => alertContext.addAlert(getErrorInfo(err, t)))
       return () => {

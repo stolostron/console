@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
@@ -224,8 +224,14 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     <PageSection>
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
-        <AcmTable
+        <AcmTable<resultsTableData>
           items={policiesDeployedOnCluster}
+          emptyState={
+            <AcmEmptyState
+              title={t('No cluster results')}
+              message={t('No clusters are reporting status for this policy.')}
+            />
+          }
           columns={columns}
           keyFn={(item) => `${item.clusterNamespace}.${item.templateName}`}
           initialSort={
@@ -239,7 +245,6 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           initialSearch={filterPresets.initialSearch}
           searchPlaceholder={t('Find clusters')}
           fuseThreshold={0}
-          plural={t('clusters')}
         />
       </AcmTablePaginationContextProvider>
     </PageSection>

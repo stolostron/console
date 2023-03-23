@@ -26,7 +26,7 @@ import {
 import { useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
@@ -95,7 +95,7 @@ export function ClusterSetSubmarinerPageContent() {
   const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
   const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
   const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterAddOn> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterAddOn> | { open: false }>({
     open: false,
   })
   const [editSubmarinerConfigModalProps, setEditSubmarinerConfigModalProps] = useState<EditSubmarinerConfigModalProps>(
@@ -255,7 +255,6 @@ export function ClusterSetSubmarinerPageContent() {
           </StackItem>
           <StackItem>
             <AcmTable<ManagedClusterAddOn>
-              plural="submariner addons"
               items={submarinerAddons}
               columns={[
                 ...columns,
@@ -279,7 +278,8 @@ export function ClusterSetSubmarinerPageContent() {
                             title: t('bulk.title.uninstallSubmariner'),
                             action: t('uninstall'),
                             processing: t('uninstalling'),
-                            resources: [mca],
+                            items: [mca],
+                            emptyState: undefined, // there is always 1 item supplied
                             description: t('bulk.message.uninstallSubmariner'),
                             columns,
                             icon: 'warning',
@@ -337,7 +337,8 @@ export function ClusterSetSubmarinerPageContent() {
                       title: t('bulk.title.uninstallSubmariner'),
                       action: t('uninstall'),
                       processing: t('uninstalling'),
-                      resources: mcas,
+                      items: mcas,
+                      emptyState: undefined, // table action is only enabled when items are selected
                       description: t('bulk.message.uninstallSubmariner'),
                       columns,
                       icon: 'warning',

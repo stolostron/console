@@ -174,31 +174,49 @@ describe('validation', () => {
         `should allow normal clouds.yaml`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
+        '',
         true,
       ],
       [
         `should not allow no clouds key`,
         'clou:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
+        '',
         false,
       ],
       [
         `should not allow cloud name not found in clouds.yaml`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openst',
+        '',
         false,
       ],
       [
         `should not allow missing password in clouds.yaml`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"',
         'openstack',
+        '',
         false,
       ],
-    ])('%s', (_name, value, value2, isValid) => {
+      [
+        `should not allow missing cacert in clouds.yaml when cacertificate is defined`,
+        'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/etc/openstack-ca/ca.crt"',
+        'openstack',
+        '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
+        true,
+      ],
+      [
+        `should not allow missing cacert in clouds.yaml when cacertificate is defined`,
+        'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+        'openstack',
+        '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
+        true,
+      ],
+    ])('%s', (_name, value, value2, value3, isValid) => {
       if (!isValid) {
-        expect(validateCloudsYaml(value, value2, t)).toBeTruthy()
+        expect(validateCloudsYaml(value, value2, value3, t)).toBeTruthy()
       } else {
-        expect(validateCloudsYaml(value, value2, t)).toBeUndefined()
+        expect(validateCloudsYaml(value, value2, value3, t)).toBeUndefined()
       }
     })
   })

@@ -24,7 +24,7 @@ import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -112,7 +112,7 @@ export default function ClusterSetsPage() {
 
 export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet[] }) {
   const { t } = useTranslation()
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ManagedClusterSet> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterSet> | { open: false }>({
     open: false,
   })
   const [createClusterSetModalOpen, setCreateClusterSetModalOpen] = useState<boolean>(false)
@@ -164,7 +164,6 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
       <CreateClusterSetModal isOpen={createClusterSetModalOpen} onClose={() => setCreateClusterSetModalOpen(false)} />
       <BulkActionModal {...modalProps} />
       <AcmTable<ManagedClusterSet>
-        plural="clusterSets"
         items={props.managedClusterSets}
         disabledItems={disabledResources}
         columns={[
@@ -230,7 +229,8 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
                 title: t('bulk.title.deleteSet'),
                 action: t('delete'),
                 processing: t('deleting'),
-                resources: managedClusterSets,
+                items: managedClusterSets,
+                emptyState: undefined, // table action is only enabled when items are selected
                 description: t('bulk.message.deleteSet'),
                 columns: modalColumns,
                 keyFn: (managedClusterSet) => managedClusterSet.metadata.name as string,

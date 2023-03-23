@@ -8,6 +8,7 @@ import {
   EmptyState,
   EmptyStateBody,
   EmptyStatePrimary,
+  ExpandableSection,
   PageSection,
   Title,
 } from '@patternfly/react-core'
@@ -15,9 +16,10 @@ import { ReactNode } from 'react'
 import { TFunction } from 'i18next'
 import { useTranslation } from '../lib/acm-i18next'
 
-export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
-  let title = 'Error'
-  let message = 'Unknown'
+export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {
+  let title = t('Error')
+  let message = t('Unknown')
+  let details
   if (error instanceof ResourceError) {
     /* istanbul ignore next */
     switch (error.code) {
@@ -28,14 +30,11 @@ export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
       case ResourceErrorCode.BadRequest:
         title = t('Bad request')
         message = t('Could not process request because of invalid data.')
+
         break
       case ResourceErrorCode.Conflict:
         title = t('Conflict')
-        message = error.message
-          ? t('Unable to update the resource because of a resource conflict: {{details}}', {
-              details: error.message,
-            })
-          : t('Unable to update the resource because of a resource conflict.')
+        message = t('Unable to update the resource because of a resource conflict.')
         break
       case ResourceErrorCode.UnprocessableEntity:
         title = t('Unprocessable entity')
@@ -100,13 +99,25 @@ export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
         message = t('An unknown error occurred.')
         break
     }
+    details = error.message
   } else if (error instanceof Error) {
     message = error.message
   } else if (typeof error === 'string') {
     message = error
   }
 
-  return { type: 'danger', title, message }
+  return { title, message, details }
+}
+
+export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
+  const { title, message, details } = getRawErrorInfo(error, t)
+  const actions = details ? (
+    <ExpandableSection isWidthLimited toggleText={t('Details')}>
+      {details}
+    </ExpandableSection>
+  ) : undefined
+
+  return { type: 'danger', title, message, actions }
 }
 
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {

@@ -45,7 +45,7 @@ import {
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { BulkActionModal, errorIsNot, IBulkActionModalProps } from '../../../../../../components/BulkActionModal'
+import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'
 import { ClusterSetContext } from '../ClusterSetDetails'
@@ -53,7 +53,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 export function ClusterSetAccessManagement() {
   const { t } = useTranslation()
   const { clusterSet } = useContext(ClusterSetContext)
-  const [modalProps, setModalProps] = useState<IBulkActionModalProps<ClusterRoleBinding> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterRoleBinding> | { open: false }>({
     open: false,
   })
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
@@ -165,7 +165,6 @@ export function ClusterSetAccessManagement() {
           groups={groups}
         />
         <AcmTable<ClusterRoleBinding>
-          plural="clusterRoleBindings"
           items={clusterRoleBindings}
           keyFn={keyFn}
           columns={columns}
@@ -187,7 +186,8 @@ export function ClusterSetAccessManagement() {
                   title: t('bulk.title.removeAuthorization'),
                   action: t('remove'),
                   processing: t('removing'),
-                  resources: clusterRoleBindings,
+                  items: clusterRoleBindings,
+                  emptyState: undefined, // table action is only enabled when items are selected,
                   description: t('bulk.message.removeAuthorization'),
                   columns: columns,
                   keyFn,
@@ -214,7 +214,8 @@ export function ClusterSetAccessManagement() {
                   title: t('bulk.title.removeAuthorization'),
                   action: t('remove'),
                   processing: t('removing'),
-                  resources: [clusterRoleBinding],
+                  items: [clusterRoleBinding],
+                  emptyState: undefined, // there is always 1 item supplied
                   description: t('bulk.message.removeAuthorization'),
                   columns: columns,
                   keyFn,
@@ -420,12 +421,7 @@ function AddUsersModal(props: {
                     return createResource(resource)
                       .promise.then(() => reset())
                       .catch((err) => {
-                        const errorInfo = getErrorInfo(err, t)
-                        alertContext.addAlert({
-                          type: 'danger',
-                          title: errorInfo.title,
-                          message: errorInfo.message,
-                        })
+                        alertContext.addAlert(getErrorInfo(err, t))
                       })
                   }}
                 />
