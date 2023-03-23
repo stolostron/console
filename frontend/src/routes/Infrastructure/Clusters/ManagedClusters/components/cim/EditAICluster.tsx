@@ -228,7 +228,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onApproveAgent={onApproveAgent}
                 onSaveAgent={onSaveAgent}
                 onSaveBMH={onSaveBMH}
-                onCreateBMH={infraEnv ? getOnCreateBMH(infraEnv): undefined} /* AI Flow specific. Not called for CIM. */
+                onCreateBMH={
+                  infraEnv ? getOnCreateBMH(infraEnv) : undefined
+                } /* AI Flow specific. Not called for CIM. */
                 onSaveISOParams={
                   infraEnv ? getOnSaveISOParams(infraEnv) : undefined /* AI Flow specific. Not called for CIM. */
                 }

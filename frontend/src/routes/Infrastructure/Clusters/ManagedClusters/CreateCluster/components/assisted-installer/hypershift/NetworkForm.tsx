@@ -40,7 +40,9 @@ export const getDefaultNetworkFormValues = (
   const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
   const serviceNetworkCidr = getTemplateValue(templateYAML, 'serviceNetworkCidr', defaultServiceCIDR)
   const clusterNetworkCidr = getTemplateValue(templateYAML, 'clusterNetworkCidr', defaultPodCIDR)
-  const clusterNetworkHostPrefix = parseInt(getTemplateValue(templateYAML, 'clusterNetworkHostPrefix', defaultHostPrefix))
+  const clusterNetworkHostPrefix = parseInt(
+    getTemplateValue(templateYAML, 'clusterNetworkHostPrefix', defaultHostPrefix)
+  )
   const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
 
   const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')

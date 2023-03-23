@@ -317,6 +317,7 @@ const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
     provisionRequirements: {
       controlPlaneAgents: 3,
     },
+    platformType: 'None',
   },
   status: {
     conditions: [],
