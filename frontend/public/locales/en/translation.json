@@ -2587,6 +2587,7 @@
   "The impact of the problem would be {{totalRisk}} if it occurred": "The impact of the problem would be {{totalRisk}} if it occurred",
   "The instance profile for the node pool.": "The instance profile for the node pool.",
   "The instance type for the node pool.": "The instance type for the node pool.",
+  "The length of application set name must not exceed 53 characters": "The length of application set name must not exceed 53 characters",
   "The location of the Red Hat Enterprise Linux CoreOS image in your local registry.": "The location of the Red Hat Enterprise Linux CoreOS image in your local registry.",
   "The location of the resources on the Git repository.": "The location of the resources on the Git repository.",
   "The maximum number of non-compliant cluster policy details that pass to the Ansible platform as extra variables. When it is set to 0, it means no limit. The default value is 1000.": "The maximum number of non-compliant cluster policy details that pass to the Ansible platform as extra variables. When it is set to 0, it means no limit. The default value is 1000.",
