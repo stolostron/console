@@ -17,7 +17,26 @@ export function HypershiftDiagram() {
     paddingBottom: '20px',
     color: 'var(--pf-global--Color--200)',
   }
-
+  const controlPlaneStyle = {
+    backgroundColor: 'var(--pf-global--BackgroundColor--200)',
+    padding: '18px',
+  }
+  const controlPlaneTitleStyle = {
+    fontSize: '14px',
+    display: 'block',
+    fontWeight: 'bolder',
+  }
+  const controlPlaneSubTitleStyle = {
+    fontSize: '14px',
+    display: 'block',
+    paddingBottom: '20px',
+    color: 'var(--pf-global--Color--200)',
+  }
+  const standardOCPComponentStyle = {
+    textAlign: 'center' as const,
+    padding: '12px 24px 12px 24px',
+    backgroundColor: 'var(--pf-global--BackgroundColor--200)',
+  }
   return (
     <Split hasGutter style={{ width: '69%' }}>
       <SplitItem isFilled className="hypershift-diagram-majorRectStyle">
@@ -35,22 +54,10 @@ export function HypershiftDiagram() {
           <div className="hypershift-diagram-minorRectStyle">
             <span style={{ paddingBottom: '20px', display: 'block' }}>{t('Hosting service cluster node')}</span>
             <Split hasGutter>
-              <SplitItem
-                isFilled
-                style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)', padding: '18px' }}
-              >
-                <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('Cluster 1')}</span>
-                <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('namespace')}</span>
-                <span
-                  style={{
-                    fontSize: '14px',
-                    display: 'block',
-                    paddingBottom: '20px',
-                    color: 'var(--pf-global--Color--200)',
-                  }}
-                >
-                  ({t('control plane')})
-                </span>
+              <SplitItem isFilled style={controlPlaneStyle}>
+                <span style={controlPlaneTitleStyle}>{t('Cluster 1')}</span>
+                <span style={controlPlaneTitleStyle}>{t('namespace')}</span>
+                <span style={controlPlaneSubTitleStyle}>({t('control plane')})</span>
                 <div className="hypershift-diagram-blueBlockStyle">
                   <span style={{ fontWeight: 'bolder' }}>api-server</span>
                 </div>
@@ -64,22 +71,10 @@ export function HypershiftDiagram() {
                   <span style={{ fontWeight: 'bolder', display: 'block' }}>{t('components')}</span>
                 </div>
               </SplitItem>
-              <SplitItem
-                isFilled
-                style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)', padding: '18px' }}
-              >
-                <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('Cluster 2')}</span>
-                <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('namespace')}</span>
-                <span
-                  style={{
-                    fontSize: '14px',
-                    display: 'block',
-                    paddingBottom: '20px',
-                    color: 'var(--pf-global--Color--200)',
-                  }}
-                >
-                  ({t('control plane')})
-                </span>
+              <SplitItem isFilled style={controlPlaneStyle}>
+                <span style={controlPlaneTitleStyle}>{t('Cluster 2')}</span>
+                <span style={controlPlaneTitleStyle}>{t('namespace')}</span>
+                <span style={controlPlaneSubTitleStyle}>({t('control plane')})</span>
                 <div className="hypershift-diagram-greenBlockStyle">
                   <span style={{ fontWeight: 'bolder' }}>api-server</span>
                 </div>
@@ -132,43 +127,19 @@ export function HypershiftDiagram() {
             </span>
             <div className="hypershift-diagram-minorRectStyle">
               <span style={{ display: 'block', paddingBottom: '20px' }}>{t('Control nodes x3')}</span>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>api-server</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>etcd</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>kcm</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder', display: 'block' }}>{t('Other')}</span>
                 <span style={{ fontWeight: 'bolder', display: 'block' }}>{t('components')}</span>
               </div>
@@ -181,43 +152,19 @@ export function HypershiftDiagram() {
             </span>
             <div className="hypershift-diagram-minorRectStyle">
               <span style={{ display: 'block', paddingBottom: '20px' }}>{t('Worker nodes xN')}</span>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>{t('Workloads xN')}</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>SDN</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>Kubelet</span>
               </div>
               <div style={{ paddingTop: '10px' }}></div>
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 24px 12px 24px',
-                  backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                }}
-              >
+              <div style={standardOCPComponentStyle}>
                 <span style={{ fontWeight: 'bolder' }}>CRI-O</span>
                 <div style={{ paddingTop: '20px' }}></div>
               </div>
