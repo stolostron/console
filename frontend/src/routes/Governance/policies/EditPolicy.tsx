@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicyWizard } from '../../../wizards/Policy/PolicyWizard'
+import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'

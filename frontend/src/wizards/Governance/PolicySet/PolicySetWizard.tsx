@@ -17,18 +17,18 @@ import {
   WizTextInput,
   Sync,
 } from '@patternfly-labs/react-form-wizard'
-import { WizardPage } from '../WizardPage'
-import { NavigationPath } from '../../NavigationPath'
-import { IResource } from '../common/resources/IResource'
-import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
-import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
-import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
-import { PolicyApiVersion, PolicyKind } from '../common/resources/IPolicy'
-import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../common/resources/IPolicySet'
-import { validateKubernetesResourceName } from '../../lib/validation'
-import { PlacementSection } from '../Placement/PlacementSection'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useWizardStrings } from '../../lib/wizardStrings'
+import { WizardPage } from '../../WizardPage'
+import { NavigationPath } from '../../../NavigationPath'
+import { IResource } from '../../common/resources/IResource'
+import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
+import { PlacementBindingKind, PlacementBindingType } from '../../common/resources/IPlacementBinding'
+import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../../common/resources/IPlacementRule'
+import { PolicyApiVersion, PolicyKind } from '../../common/resources/IPolicy'
+import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../../common/resources/IPolicySet'
+import { validateKubernetesResourceName } from '../../../lib/validation'
+import { PlacementSection } from '../../Placement/PlacementSection'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { useWizardStrings } from '../../../lib/wizardStrings'
 
 export interface PolicySetWizardProps {
   breadcrumb?: { text: string; to?: string }[]

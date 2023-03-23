@@ -13,13 +13,13 @@ import {
   WizCheckbox,
   WizNumberInput,
 } from '@patternfly-labs/react-form-wizard'
-import { WizardPage } from '../WizardPage'
-import { IResource } from '../common/resources/IResource'
-import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
-import { ConfigMap } from '../../resources'
-import { Trans, useTranslation } from '../../lib/acm-i18next'
-import { useWizardStrings } from '../../lib/wizardStrings'
-import { AutomationProviderHint } from '../../components/AutomationProviderHint'
+import { WizardPage } from '../../WizardPage'
+import { IResource } from '../../common/resources/IResource'
+import { IPolicyAutomation, PolicyAutomationType } from '../../common/resources/IPolicyAutomation'
+import { ConfigMap } from '../../../resources'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { useWizardStrings } from '../../../lib/wizardStrings'
+import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 
 export interface PolicyAutomationWizardProps {
   title: string

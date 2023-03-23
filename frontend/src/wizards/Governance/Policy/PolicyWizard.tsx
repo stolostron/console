@@ -31,19 +31,19 @@ import {
   ItemContext,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
-import { WizardPage } from '../WizardPage'
-import { NavigationPath } from '../../NavigationPath'
-import { IResource } from '../common/resources/IResource'
-import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
-import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
-import { PlacementRuleKind } from '../common/resources/IPlacementRule'
-import { PolicyApiGroup, PolicyKind, PolicyType } from '../common/resources/IPolicy'
-import { validateKubernetesResourceName, validatePolicyName } from '../../lib/validation'
-import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
-import { PlacementSection } from '../Placement/PlacementSection'
+import { WizardPage } from '../../WizardPage'
+import { NavigationPath } from '../../../NavigationPath'
+import { IResource } from '../../common/resources/IResource'
+import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
+import { PlacementBindingKind } from '../../common/resources/IPlacementBinding'
+import { PlacementRuleKind } from '../../common/resources/IPlacementRule'
+import { PolicyApiGroup, PolicyKind, PolicyType } from '../../common/resources/IPolicy'
+import { validateKubernetesResourceName, validatePolicyName } from '../../../lib/validation'
+import { MatchExpression, MatchExpressionCollapsed } from '../../Placement/MatchExpression'
+import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
-import { useWizardStrings } from '../../lib/wizardStrings'
-import { useTranslation } from '../../lib/acm-i18next'
+import { useWizardStrings } from '../../../lib/wizardStrings'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 export function PolicyWizard(props: {
   title: string

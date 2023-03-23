@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicyWizard } from '../../../wizards/Policy/PolicyWizard'
+import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
