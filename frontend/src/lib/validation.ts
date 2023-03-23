@@ -372,6 +372,15 @@ export function validatePolicyName(value: string, resource: unknown, t?: TFuncti
   return undefined
 }
 
+export function validateAppSetName(value: string, resource: unknown, t?: TFunction) {
+  t = t ? t : (value) => value
+  const error = validateKubernetesResourceName(value, t)
+  if (error) return error
+  const appSet = resource as IResource
+  if (appSet && value.length > 53) return t('The length of application set name must not exceed 53 characters')
+  return undefined
+}
+
 export function validateRequiredPrefix(value: string, requiredPrefix: string, t: TFunction) {
   if (value && !value?.startsWith(requiredPrefix)) {
     return t("The path must begin with '{{prefix}}'", { prefix: requiredPrefix })
