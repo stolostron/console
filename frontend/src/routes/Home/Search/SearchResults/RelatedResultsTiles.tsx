@@ -14,9 +14,9 @@ export default function RelatedResultsTiles(props: {
 }) {
     const { currentQuery, selectedKinds, setSelectedKinds } = props
     const { t } = useTranslation()
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
-    const queryFilters = convertStringToQuery(currentQuery, searchQueryLimit)
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
+    const queryFilters = convertStringToQuery(currentQuery, searchResultLimit)
     const { data, error, loading } = useSearchResultRelatedCountQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {

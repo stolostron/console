@@ -36,9 +36,8 @@ function SearchResultTables(props: {
 }) {
     const { data, currentQuery, setDeleteResource } = props
     const { t } = useTranslation()
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
-
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
     const searchDefinitions = useSearchDefinitions()
 
     const renderContent = useCallback(
@@ -79,7 +78,7 @@ function SearchResultTables(props: {
 
     return (
         <Fragment>
-            {data.length >= searchQueryLimit ? (
+            {data.length >= searchResultLimit ? (
                 <PageSection>
                     <AcmAlert
                         noClose={true}
@@ -111,8 +110,8 @@ function SearchResultTables(props: {
 export default function SearchResults(props: { currentQuery: string; preSelectedRelatedResources: string[] }) {
     const { currentQuery, preSelectedRelatedResources } = props
     const { t } = useTranslation()
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
     const [selectedKinds, setSelectedKinds] = useState<string[]>(preSelectedRelatedResources)
     const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
     const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
@@ -135,15 +134,15 @@ export default function SearchResults(props: { currentQuery: string; preSelected
     useEffect(() => {
         if (!called) {
             fireSearchQuery({
-                variables: { input: [convertStringToQuery(currentQuery, searchQueryLimit)] },
+                variables: { input: [convertStringToQuery(currentQuery, searchResultLimit)] },
             })
         } else {
             refetch &&
                 refetch({
-                    input: [convertStringToQuery(currentQuery, searchQueryLimit)],
+                    input: [convertStringToQuery(currentQuery, searchResultLimit)],
                 })
         }
-    }, [fireSearchQuery, currentQuery, called, refetch, searchQueryLimit])
+    }, [fireSearchQuery, currentQuery, called, refetch, searchResultLimit])
 
     const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 

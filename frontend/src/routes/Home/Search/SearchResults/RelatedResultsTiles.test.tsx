@@ -16,7 +16,7 @@ import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResultsTiles from './RelatedResultsTiles'
 
 const mockSettings: Settings = {
-    SEARCH_QUERY_LIMIT: '10000',
+    SEARCH_RESULT_LIMIT: '1000',
 }
 
 describe('RelatedResultsTiles', () => {
@@ -46,7 +46,7 @@ describe('RelatedResultsTiles', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },
@@ -93,7 +93,7 @@ describe('RelatedResultsTiles', () => {
                                         values: ['pod'],
                                     },
                                 ],
-                                limit: 10000,
+                                limit: 1000,
                             },
                         ],
                     },

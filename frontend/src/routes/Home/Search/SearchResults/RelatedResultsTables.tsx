@@ -19,13 +19,13 @@ export default function RelatedResultsTables(props: {
 }) {
     const { currentQuery, selectedKinds, setDeleteResource } = props
     const { t } = useTranslation()
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
     const { data, loading, error } = useSearchResultRelatedItemsQuery({
         skip: selectedKinds.length === 0,
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
-            input: [{ ...convertStringToQuery(currentQuery, searchQueryLimit), relatedKinds: selectedKinds }],
+            input: [{ ...convertStringToQuery(currentQuery, searchResultLimit), relatedKinds: selectedKinds }],
         },
     })
 
