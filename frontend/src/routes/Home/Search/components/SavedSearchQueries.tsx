@@ -35,8 +35,8 @@ export default function SavedSearchQueries(props: {
     const { savedSearches, setSelectedSearch, userPreference, setUserPreference } = props
     const { t } = useTranslation()
     const history = useHistory()
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
     const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
     const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
     const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
@@ -44,9 +44,9 @@ export default function SavedSearchQueries(props: {
     const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
     // combine the suggested queries and saved queries
     const input = [
-        ...savedSearches.map((query) => convertStringToQuery(query.searchText, searchQueryLimit)),
+        ...savedSearches.map((query) => convertStringToQuery(query.searchText, searchResultLimit)),
         ...suggestedQueryTemplates.map((query: { searchText: string }) =>
-            convertStringToQuery(query.searchText, searchQueryLimit)
+            convertStringToQuery(query.searchText, searchResultLimit)
         ),
     ]
     const { data, error, loading } = useSearchResultCountQuery({

@@ -35,8 +35,8 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
 export const DeleteResourceModal = (props: any) => {
     const { t } = useTranslation()
     const { open, close, resource, currentQuery, relatedResource } = props
-    const { useSearchQueryLimit } = useSharedAtoms()
-    const searchQueryLimit = useSearchQueryLimit()
+    const { useSearchResultLimit } = useSharedAtoms()
+    const searchResultLimit = useSearchResultLimit()
     const [canDelete, setCanDelete] = useState<boolean>(false)
     const [accessError, setAccessError] = useState(null)
     const [deleteResourceError, setDeleteResourceError] = useState(undefined)
@@ -83,7 +83,7 @@ export const DeleteResourceModal = (props: any) => {
                                 variables: {
                                     input: [
                                         {
-                                            ...convertStringToQuery(currentQuery, searchQueryLimit),
+                                            ...convertStringToQuery(currentQuery, searchResultLimit),
                                             relatedKinds: [resource.kind],
                                         },
                                     ],
@@ -96,7 +96,7 @@ export const DeleteResourceModal = (props: any) => {
                                     variables: {
                                         input: [
                                             {
-                                                ...convertStringToQuery(currentQuery, searchQueryLimit),
+                                                ...convertStringToQuery(currentQuery, searchResultLimit),
                                                 relatedKinds: [resource.kind],
                                             },
                                         ],
@@ -130,7 +130,7 @@ export const DeleteResourceModal = (props: any) => {
                             .query({
                                 query: SearchResultRelatedCountDocument,
                                 variables: {
-                                    input: [convertStringToQuery(currentQuery, searchQueryLimit)],
+                                    input: [convertStringToQuery(currentQuery, searchResultLimit)],
                                 },
                                 fetchPolicy: 'cache-first',
                             })
@@ -139,7 +139,7 @@ export const DeleteResourceModal = (props: any) => {
                                     searchClient.writeQuery({
                                         query: SearchResultRelatedCountDocument,
                                         variables: {
-                                            input: [convertStringToQuery(currentQuery, searchQueryLimit)],
+                                            input: [convertStringToQuery(currentQuery, searchResultLimit)],
                                         },
                                         data: {
                                             searchResult: [
@@ -168,7 +168,7 @@ export const DeleteResourceModal = (props: any) => {
                             .query({
                                 query: SearchResultItemsDocument,
                                 variables: {
-                                    input: [convertStringToQuery(currentQuery, searchQueryLimit)],
+                                    input: [convertStringToQuery(currentQuery, searchResultLimit)],
                                 },
                                 fetchPolicy: 'cache-first',
                             })
@@ -178,7 +178,7 @@ export const DeleteResourceModal = (props: any) => {
                                     searchClient.writeQuery({
                                         query: SearchResultItemsDocument,
                                         variables: {
-                                            input: [convertStringToQuery(currentQuery, searchQueryLimit)],
+                                            input: [convertStringToQuery(currentQuery, searchResultLimit)],
                                         },
                                         data: {
                                             searchResult: [
