@@ -130,7 +130,6 @@ const ClusterSelector = (props: {
   )
 
   const addClusterSetToControl = (clusterSets: string[]) => {
-    // const { t } = useTranslation()
     const { control, templateYAML } = props
     const { active } = control
     const { clusterSetsList } = active

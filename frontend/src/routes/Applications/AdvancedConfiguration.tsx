@@ -47,6 +47,7 @@ export default function AdvancedConfiguration() {
     applicationsState,
     channelsState,
     namespacesState,
+    placementDecisionsState,
     placementsState,
     placementRulesState,
     subscriptionsState,
@@ -56,6 +57,7 @@ export default function AdvancedConfiguration() {
   const [channels] = useRecoilState(channelsState)
   const [placementrules] = useRecoilState(placementRulesState)
   const [placements] = useRecoilState(placementsState)
+  const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [subscriptions] = useRecoilState(subscriptionsState)
   const [namespaces] = useRecoilState(namespacesState)
 
@@ -117,11 +119,14 @@ export default function AdvancedConfiguration() {
       }
       if (placementRef) {
         const name = _.get(placementRef, 'name')
-        const selectedPlacementrule = placementrules.find(
-          (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
+        const kind = _.get(placementRef, 'kind')
+        const selectedPlacementDecision = placementDecisions.find(
+          (placementDecision) =>
+            placementDecision.metadata.labels?.[`cluster.open-cluster-management.io/${kind.toLowerCase()}`] === name
         )
-        if (selectedPlacementrule) {
-          clusterCount = getPlacementruleClusterCount(selectedPlacementrule, clusterCount)
+
+        if (selectedPlacementDecision) {
+          clusterCount = getPlacementDecisionClusterCount(selectedPlacementDecision, clusterCount)
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
             const searchLink = getSearchLink({
@@ -141,7 +146,7 @@ export default function AdvancedConfiguration() {
         }
       }
     },
-    [placementrules, t]
+    [placementDecisions, t]
   )
 
   // Cache cell text for sorting and searching
@@ -209,7 +214,7 @@ export default function AdvancedConfiguration() {
         break
       }
       case 'PlacementRule': {
-        clusterCount = getPlacementruleClusterCount(tableItem, clusterCount)
+        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount)
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
@@ -701,7 +706,7 @@ export default function AdvancedConfiguration() {
     )
   }
 
-  function getPlacementruleClusterCount(resource: IResource, clusterCount: ClusterCount) {
+  function getPlacementDecisionClusterCount(resource: IResource, clusterCount: ClusterCount) {
     const clusterDecisions = _.get(resource, 'status.decisions')
     if (clusterDecisions) {
       clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
