@@ -7,10 +7,10 @@ import {
   mockManagedClusters,
   mockPlacements,
   mockPolicy,
-} from '../../routes/Governance/governance.sharedMocks'
+} from '../../../routes/Governance/governance.sharedMocks'
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
-import { PlacementKind } from '../../resources'
+import { PlacementKind } from '../../../resources'
 
 function TestPolicySetWizard() {
   return (
