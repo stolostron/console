@@ -22,7 +22,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../common/resources/IResource'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
 import { PlacementBindingKind, PlacementBindingType } from '../../common/resources/IPlacementBinding'
-import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../../common/resources/IPlacementRule'
+import { PlacementApiGroup, PlacementKind, PlacementType } from '../../common/resources/IPlacement'
 import { PolicyApiVersion, PolicyKind } from '../../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../../common/resources/IPolicySet'
 import { validateKubernetesResourceName } from '../../../lib/validation'
@@ -42,7 +42,6 @@ export interface PolicySetWizardProps {
   clusterSetBindings: IClusterSetBinding[]
   editMode?: EditMode
   resources?: IResource[]
-  defaultPlacementKind?: 'Placement' | 'PlacementRule'
   onSubmit: WizardSubmit
   onCancel: WizardCancel
   yamlEditor?: () => ReactNode
@@ -99,17 +98,14 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
             spec: { description: '', policies: [] },
           },
           {
-            ...PlacementRuleType,
+            ...PlacementType,
             metadata: { name: '', namespace: '' },
-            spec: {
-              clusterSelector: { matchExpressions: [] },
-              clusterConditions: [],
-            },
+            spec: {},
           },
           {
             ...PlacementBindingType,
             metadata: { name: '', namespace: '' },
-            placementRef: { apiGroup: PlacementRuleApiGroup, kind: PlacementRuleKind, name: '' },
+            placementRef: { apiGroup: PlacementApiGroup, kind: PlacementKind, name: '' },
             subjects: [{ apiGroup: PolicySetApiGroup, kind: PolicySetKind, name: '' }],
           } as IResource,
         ]
@@ -176,7 +172,6 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
           bindingSubjectApiGroup={PolicySetApiGroup}
           existingPlacements={props.placements}
           existingPlacementRules={props.placementRules}
-          defaultPlacementKind={props.defaultPlacementKind ?? PlacementRuleKind}
           clusters={props.clusters}
           withoutOnlineClusterCondition
         />

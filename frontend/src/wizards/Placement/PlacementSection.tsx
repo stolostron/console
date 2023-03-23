@@ -22,15 +22,10 @@ import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
-import {
-  IPlacementRule,
-  PlacementRuleApiGroup,
-  PlacementRuleKind,
-  PlacementRuleType,
-} from '../common/resources/IPlacementRule'
+import { IPlacementRule, PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
-import { PlacementRule, PlacementRules } from './PlacementRule'
+import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function PlacementSection(props: {
@@ -40,7 +35,6 @@ export function PlacementSection(props: {
   existingPlacementRules: IResource[]
   existingClusterSets: IResource[]
   existingClusterSetBindings: IClusterSetBinding[]
-  defaultPlacementKind: 'Placement' | 'PlacementRule'
   clusters: IResource[]
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
@@ -173,16 +167,13 @@ export function PlacementSection(props: {
   if (isAdvanced) {
     return (
       <Fragment>
-        {placementCount || (props.defaultPlacementKind === 'Placement' && placementRuleCount === 0) ? (
+        {placementCount ? (
           <Placements
             clusterSets={props.existingClusterSets}
             clusterSetBindings={props.existingClusterSetBindings}
             bindingKind={props.bindingSubjectKind}
             clusters={props.clusters}
           />
-        ) : null}
-        {placementRuleCount || (props.defaultPlacementKind === 'PlacementRule' && placementCount === 0) ? (
-          <PlacementRules clusters={props.clusters} />
         ) : null}
         <PlacementBindings
           placementCount={placementCount}
@@ -210,7 +201,6 @@ export function PlacementSection(props: {
           placementBindingCount={placementBindingCount}
           bindingSubjectKind={props.bindingSubjectKind}
           bindingSubjectApiGroup={props.bindingSubjectApiGroup}
-          defaultPlacementKind={props.defaultPlacementKind}
           allowNoPlacement={props.allowNoPlacement}
           withoutOnlineClusterCondition={props.withoutOnlineClusterCondition}
         />
@@ -288,7 +278,6 @@ export function PlacementSelector(props: {
   placementBindingCount: number
   bindingSubjectKind: string
   bindingSubjectApiGroup: string
-  defaultPlacementKind: 'Placement' | 'PlacementRule'
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
 }) {
@@ -319,38 +308,18 @@ export function PlacementSelector(props: {
                 ? uniqueResourceName(`${bindingSubject.metadata?.name ?? ''}-placement-binding`, newResources)
                 : ''
               const namespace = bindingSubject?.metadata?.namespace ?? ''
-              const placementRefApiGroup =
-                props.defaultPlacementKind === PlacementKind ? PlacementApiGroup : PlacementRuleApiGroup
-              if (props.defaultPlacementKind === PlacementKind) {
-                newResources.push({
-                  apiVersion: PlacementApiVersion,
-                  kind: PlacementKind,
-                  metadata: { name: placementName, namespace },
-                  spec: {},
-                } as IResource)
-              } else {
-                newResources.push({
-                  ...PlacementRuleType,
-                  metadata: { name: placementName, namespace },
-                  spec: {
-                    clusterSelector: { matchExpressions: [] },
-                    clusterConditions: props.withoutOnlineClusterCondition
-                      ? []
-                      : [
-                          {
-                            status: 'True',
-                            type: 'ManagedClusterConditionAvailable',
-                          },
-                        ],
-                  },
-                } as IResource)
-              }
+              newResources.push({
+                apiVersion: PlacementApiVersion,
+                kind: PlacementKind,
+                metadata: { name: placementName, namespace },
+                spec: {},
+              } as IResource)
               newResources.push({
                 ...PlacementBindingType,
                 metadata: { name: placementBindingName, namespace },
                 placementRef: {
-                  apiGroup: placementRefApiGroup,
-                  kind: props.defaultPlacementKind,
+                  apiGroup: PlacementApiGroup,
+                  kind: PlacementKind,
                   name: placementName,
                 },
                 subjects: [
@@ -377,8 +346,6 @@ export function PlacementSelector(props: {
                 ? uniqueResourceName(`${bindingSubject.metadata?.name ?? ''}-placement-binding`, newResources)
                 : ''
               const namespace = bindingSubject?.metadata?.namespace ?? ''
-              const placementRefApiGroup =
-                props.defaultPlacementKind === PlacementKind ? PlacementApiGroup : PlacementRuleApiGroup
 
               newResources.push({
                 ...PlacementBindingType,
@@ -387,8 +354,8 @@ export function PlacementSelector(props: {
                   namespace: namespace,
                 },
                 placementRef: {
-                  apiGroup: placementRefApiGroup,
-                  kind: props.defaultPlacementKind,
+                  apiGroup: PlacementApiGroup,
+                  kind: PlacementKind,
                   name: '',
                 },
                 subjects: [

@@ -20,12 +20,11 @@ import {
   mockClusterSetBinding,
   mockManagedClusters,
   mockNamespaces,
-  mockPlacementBindings,
   mockPlacementRules,
   mockPlacements,
   mockPolicy,
 } from '../governance.sharedMocks'
-import { IResource } from '../../../resources'
+import { IResource, Placement, PlacementBinding } from '../../../resources'
 import userEvent from '@testing-library/user-event'
 
 function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
@@ -109,19 +108,66 @@ describe('Create Policy Page', () => {
       nockCreate(mockPolicy[2]),
     ]
 
-    const placementRuleNock = [
-      nockCreate(mockPlacementRules[0], undefined, 201, { dryRun: 'All' }), // DRY RUN
-      nockCreate(mockPlacementRules[0]),
+    const mockPlacement: Placement = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      kind: 'Placement',
+      metadata: {
+        name: 'policy1-placement',
+        namespace: 'test',
+      },
+      spec: {
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'cloud',
+                    operator: 'In',
+                    values: ['Amazon'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const placementNock = [
+      nockCreate(mockPlacement, undefined, 201, { dryRun: 'All' }), // DRY RUN
+      nockCreate(mockPlacement),
     ]
 
+    const mockPlacementBinding: PlacementBinding = {
+      apiVersion: 'policy.open-cluster-management.io/v1',
+      kind: 'PlacementBinding',
+      metadata: {
+        name: 'policy1-placement',
+        namespace: 'test',
+      },
+      placementRef: {
+        apiGroup: 'cluster.open-cluster-management.io',
+        kind: 'Placement',
+        name: 'policy1-placement',
+      },
+      subjects: [
+        {
+          apiGroup: 'policy.open-cluster-management.io',
+          kind: 'Policy',
+          name: 'policy1',
+        },
+      ],
+    }
+
     const placementBindingNock = [
-      nockCreate(mockPlacementBindings[0], undefined, 201, { dryRun: 'All' }), // DRY RUN
-      nockCreate(mockPlacementBindings[0]),
+      nockCreate(mockPlacementBinding, undefined, 201, { dryRun: 'All' }), // DRY RUN
+      nockCreate(mockPlacementBinding),
     ]
 
     screen.getByRole('button', { name: 'Submit' }).click()
     await waitForNocks(policyNock)
-    await waitForNocks(placementRuleNock)
+    await waitForNocks(placementNock)
     await waitForNocks(placementBindingNock)
   })
 

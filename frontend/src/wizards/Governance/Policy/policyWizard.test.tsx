@@ -11,7 +11,6 @@ import {
 
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
-import { PlacementKind } from '../../../resources'
 
 describe('ExistingTemplateName', () => {
   test('should return false for non-existing name', () => {
@@ -36,7 +35,6 @@ function TestPolicyWizard() {
       clusters={mockManagedClusters}
       clusterSets={[mockClusterSet]}
       clusterSetBindings={[mockClusterSetBinding]}
-      defaultPlacementKind={PlacementKind}
       onSubmit={() => new Promise(() => {})}
       onCancel={() => {}}
     />

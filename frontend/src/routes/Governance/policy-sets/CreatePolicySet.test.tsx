@@ -7,15 +7,9 @@ import { nockIgnoreRBAC, nockCreate, nockIgnoreApiPaths } from '../../../lib/noc
 import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicySet } from './CreatePolicySet'
-import {
-  mockPolicySets,
-  mockPolicy,
-  mockNamespaces,
-  mockPlacementRules,
-  mockManagedClusters,
-  mockPlacementBindings,
-} from '../governance.sharedMocks'
+import { mockPolicySets, mockPolicy, mockNamespaces, mockManagedClusters } from '../governance.sharedMocks'
 import userEvent from '@testing-library/user-event'
+import { Placement, PlacementBinding } from '../../../resources'
 
 function TestCreatePolicySet() {
   return (
@@ -47,7 +41,7 @@ describe('Create Policy Page', () => {
     render(<TestCreatePolicySet />)
 
     // step 1 -- name and namespace
-    userEvent.type(screen.getByRole('textbox', { name: 'Name' }), mockPolicySets[1].metadata.name)
+    userEvent.type(screen.getByRole('textbox', { name: /name/i }), mockPolicySets[1].metadata.name)
     screen.getByText('Select the namespace').click()
     userEvent.type(screen.getByRole('searchbox'), 'test')
     screen.getByRole('option', { name: 'test' }).click()
@@ -74,19 +68,66 @@ describe('Create Policy Page', () => {
       nockCreate(mockPolicySets[2]),
     ]
 
-    const placementRuleNock = [
-      nockCreate(mockPlacementRules[1], undefined, 201, { dryRun: 'All' }), // DRY RUN
-      nockCreate(mockPlacementRules[1]),
+    const mockPlacement: Placement = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      kind: 'Placement',
+      metadata: {
+        name: 'policy-set-with-1-placement-placement',
+        namespace: 'test',
+      },
+      spec: {
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'cloud',
+                    operator: 'In',
+                    values: ['Amazon'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const placementNock = [
+      nockCreate(mockPlacement, undefined, 201, { dryRun: 'All' }), // DRY RUN
+      nockCreate(mockPlacement),
     ]
 
+    const mockPlacementBinding: PlacementBinding = {
+      apiVersion: 'policy.open-cluster-management.io/v1',
+      kind: 'PlacementBinding',
+      metadata: {
+        name: 'policy-set-with-1-placement-placement',
+        namespace: 'test',
+      },
+      placementRef: {
+        apiGroup: 'cluster.open-cluster-management.io',
+        kind: 'Placement',
+        name: 'policy-set-with-1-placement-placement',
+      },
+      subjects: [
+        {
+          apiGroup: 'policy.open-cluster-management.io',
+          kind: 'PolicySet',
+          name: 'policy-set-with-1-placement',
+        },
+      ],
+    }
+
     const placementBindingNock = [
-      nockCreate(mockPlacementBindings[2], undefined, 201, { dryRun: 'All' }), // DRY RUN
-      nockCreate(mockPlacementBindings[2]),
+      nockCreate(mockPlacementBinding, undefined, 201, { dryRun: 'All' }), // DRY RUN
+      nockCreate(mockPlacementBinding),
     ]
 
     screen.getByRole('button', { name: 'Submit' }).click()
     await waitForNocks(policySetNock)
-    await waitForNocks(placementRuleNock)
+    await waitForNocks(placementNock)
     await waitForNocks(placementBindingNock)
   })
 })

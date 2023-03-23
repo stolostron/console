@@ -10,7 +10,6 @@ import {
 } from '../../../routes/Governance/governance.sharedMocks'
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
-import { PlacementKind } from '../../../resources'
 
 function TestPolicySetWizard() {
   return (
@@ -23,7 +22,6 @@ function TestPolicySetWizard() {
       clusters={mockManagedClusters}
       clusterSets={[mockClusterSet]}
       clusterSetBindings={[mockClusterSetBinding]}
-      defaultPlacementKind={PlacementKind}
       onSubmit={() => new Promise(() => {})}
       onCancel={() => {}}
     />
