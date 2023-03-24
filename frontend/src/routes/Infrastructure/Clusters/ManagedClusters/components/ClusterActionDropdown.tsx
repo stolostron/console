@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { DropdownPosition, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { AcmInlineProvider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -410,6 +410,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           isKebab={props.isKebab}
           text={t('actions')}
           actions={actions}
+          dropdownPosition={DropdownPosition.right}
         />
       )}
       <ScaleUpDialog

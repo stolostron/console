@@ -74,159 +74,175 @@ export function PolicyActionDropdown(props: {
         rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
       },
       {
-        id: 'enable-policy',
-        text: t('Enable'),
-        tooltip: item.policy.spec.disabled ? t('Enable policy') : t('Policy is already enabled'),
-        isAriaDisabled: item.policy.spec.disabled === false,
-        click: (item: PolicyTableItem) => {
-          setModalProps({
-            open: true,
-            title: t('policy.modal.title.enable'),
-            action: t('policy.table.actions.enable'),
-            processing: t('policy.table.actions.enabling'),
-            items: [item],
-            emptyState: undefined, // there is always 1 item supplied
-            description: t('policy.modal.message.enable'),
-            columns: bulkModalStatusColumns,
-            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-            actionFn: (item: PolicyTableItem) => {
-              return patchResource(
-                {
-                  apiVersion: PolicyApiVersion,
-                  kind: PolicyKind,
-                  metadata: {
-                    name: item.policy.metadata.name,
-                    namespace: item.policy.metadata.namespace,
+        id: 'status-policy',
+        text: t('Status'),
+        rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+        flyoutMenu: [
+          {
+            id: 'enable-policy',
+            text: t('Enable'),
+            tooltip: item.policy.spec.disabled ? t('Enable policy') : t('Policy is already enabled'),
+            isSelected: !item.policy.spec.disabled,
+            click: (item: PolicyTableItem) => {
+              if (item.policy.spec.disabled) {
+                setModalProps({
+                  open: true,
+                  title: t('policy.modal.title.enable'),
+                  action: t('policy.table.actions.enable'),
+                  processing: t('policy.table.actions.enabling'),
+                  items: [item],
+                  emptyState: undefined, // there is always 1 item supplied
+                  description: t('policy.modal.message.enable'),
+                  columns: bulkModalStatusColumns,
+                  keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
+                  actionFn: (item: PolicyTableItem) => {
+                    return patchResource(
+                      {
+                        apiVersion: PolicyApiVersion,
+                        kind: PolicyKind,
+                        metadata: {
+                          name: item.policy.metadata.name,
+                          namespace: item.policy.metadata.namespace,
+                        },
+                      } as Policy,
+                      [{ op: 'replace', path: '/spec/disabled', value: false }]
+                    )
                   },
-                } as Policy,
-                [{ op: 'replace', path: '/spec/disabled', value: false }]
-              )
+                  close: () => {
+                    setModalProps({ open: false })
+                  },
+                  hasExternalResources: item.source !== 'Local',
+                })
+              }
             },
-            close: () => {
-              setModalProps({ open: false })
+          },
+          {
+            id: 'disable-policy',
+            text: t('policy.table.actions.disable'),
+            tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : t('Disable policy'),
+            isSelected: item.policy.spec.disabled,
+            click: (item: PolicyTableItem) => {
+              if (!item.policy.spec.disabled) {
+                setModalProps({
+                  open: true,
+                  title: t('policy.modal.title.disable'),
+                  action: t('policy.table.actions.disable'),
+                  processing: t('policy.table.actions.disabling'),
+                  items: [item],
+                  emptyState: undefined, // there is always 1 item supplied
+                  description: t('policy.modal.message.disable'),
+                  columns: bulkModalStatusColumns,
+                  keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
+                  actionFn: (item) => {
+                    return patchResource(
+                      {
+                        apiVersion: PolicyApiVersion,
+                        kind: PolicyKind,
+                        metadata: {
+                          name: item.policy.metadata.name,
+                          namespace: item.policy.metadata.namespace,
+                        },
+                      } as Policy,
+                      [{ op: 'replace', path: '/spec/disabled', value: true }]
+                    )
+                  },
+                  close: () => {
+                    setModalProps({ open: false })
+                  },
+                  hasExternalResources: item.source !== 'Local',
+                })
+              }
             },
-            hasExternalResources: item.source !== 'Local',
-          })
-        },
-        rbac: item.policy.spec.disabled ? [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)] : undefined,
+          },
+        ],
       },
       {
-        id: 'disable-policy',
-        text: t('policy.table.actions.disable'),
-        tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : t('Disable policy'),
-        isAriaDisabled: item.policy.spec.disabled === true,
-        click: (item: PolicyTableItem) => {
-          setModalProps({
-            open: true,
-            title: t('policy.modal.title.disable'),
-            action: t('policy.table.actions.disable'),
-            processing: t('policy.table.actions.disabling'),
-            items: [item],
-            emptyState: undefined, // there is always 1 item supplied
-            description: t('policy.modal.message.disable'),
-            columns: bulkModalStatusColumns,
-            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-            actionFn: (item) => {
-              return patchResource(
-                {
-                  apiVersion: PolicyApiVersion,
-                  kind: PolicyKind,
-                  metadata: {
-                    name: item.policy.metadata.name,
-                    namespace: item.policy.metadata.namespace,
+        id: 'remediation-policy',
+        text: t('Remediation'),
+        rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+        flyoutMenu: [
+          {
+            id: 'inform-policy',
+            text: t('policy.table.actions.inform'),
+            tooltip: policyRemediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
+            addSeparator: true,
+            isSelected: policyRemediationAction === 'inform',
+            click: (item: PolicyTableItem) => {
+              if (policyRemediationAction !== 'inform') {
+                setModalProps({
+                  open: true,
+                  title: t('policy.modal.title.inform'),
+                  action: t('policy.table.actions.inform'),
+                  processing: t('policy.table.actions.informing'),
+                  items: [item],
+                  emptyState: undefined, // there is always 1 item supplied
+                  description: t('policy.modal.message.inform'),
+                  columns: bulkModalRemediationColumns,
+                  keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
+                  actionFn: (item) => {
+                    return patchResource(
+                      {
+                        apiVersion: PolicyApiVersion,
+                        kind: PolicyKind,
+                        metadata: {
+                          name: item.policy.metadata.name,
+                          namespace: item.policy.metadata.namespace,
+                        },
+                      } as Policy,
+                      [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
+                    )
                   },
-                } as Policy,
-                [{ op: 'replace', path: '/spec/disabled', value: true }]
-              )
-            },
-            close: () => {
-              setModalProps({ open: false })
-            },
-            hasExternalResources: item.source !== 'Local',
-          })
-        },
-        rbac: item.policy.spec.disabled ? undefined : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
-      },
-      {
-        id: 'inform-policy',
-        text: t('policy.table.actions.inform'),
-        tooltip: policyRemediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
-        addSeparator: true,
-        isAriaDisabled: policyRemediationAction === 'inform',
-        click: (item: PolicyTableItem) => {
-          setModalProps({
-            open: true,
-            title: t('policy.modal.title.inform'),
-            action: t('policy.table.actions.inform'),
-            processing: t('policy.table.actions.informing'),
-            items: [item],
-            emptyState: undefined, // there is always 1 item supplied
-            description: t('policy.modal.message.inform'),
-            columns: bulkModalRemediationColumns,
-            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-            actionFn: (item) => {
-              return patchResource(
-                {
-                  apiVersion: PolicyApiVersion,
-                  kind: PolicyKind,
-                  metadata: {
-                    name: item.policy.metadata.name,
-                    namespace: item.policy.metadata.namespace,
+                  close: () => {
+                    setModalProps({ open: false })
                   },
-                } as Policy,
-                [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
-              )
+                  hasExternalResources: item.source !== 'Local',
+                })
+              }
             },
-            close: () => {
-              setModalProps({ open: false })
-            },
-            hasExternalResources: item.source !== 'Local',
-          })
-        },
-        rbac:
-          policyRemediationAction === 'inform'
-            ? undefined
-            : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
-      },
-      {
-        id: 'enforce-policy',
-        text: t('policy.table.actions.enforce'),
-        tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
-        isAriaDisabled: policyRemediationAction === 'enforce',
-        click: (item: PolicyTableItem) => {
-          setModalProps({
-            open: true,
-            title: t('policy.modal.title.enforce'),
-            action: t('policy.table.actions.enforce'),
-            processing: t('policy.table.actions.enforcing'),
-            items: [item],
-            emptyState: undefined, // there is always 1 item supplied
-            description: t('policy.modal.message.enforce'),
-            columns: bulkModalRemediationColumns,
-            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-            actionFn: (item) => {
-              return patchResource(
-                {
-                  apiVersion: PolicyApiVersion,
-                  kind: PolicyKind,
-                  metadata: {
-                    name: item.policy.metadata.name,
-                    namespace: item.policy.metadata.namespace,
+            rbac:
+              policyRemediationAction === 'inform'
+                ? undefined
+                : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+          },
+          {
+            id: 'enforce-policy',
+            text: t('policy.table.actions.enforce'),
+            tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
+            isSelected: policyRemediationAction === 'enforce',
+            click: (item: PolicyTableItem) => {
+              if (policyRemediationAction !== 'enforce') {
+                setModalProps({
+                  open: true,
+                  title: t('policy.modal.title.enforce'),
+                  action: t('policy.table.actions.enforce'),
+                  processing: t('policy.table.actions.enforcing'),
+                  items: [item],
+                  emptyState: undefined, // there is always 1 item supplied
+                  description: t('policy.modal.message.enforce'),
+                  columns: bulkModalRemediationColumns,
+                  keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
+                  actionFn: (item) => {
+                    return patchResource(
+                      {
+                        apiVersion: PolicyApiVersion,
+                        kind: PolicyKind,
+                        metadata: {
+                          name: item.policy.metadata.name,
+                          namespace: item.policy.metadata.namespace,
+                        },
+                      } as Policy,
+                      [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
+                    )
                   },
-                } as Policy,
-                [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
-              )
+                  close: () => {
+                    setModalProps({ open: false })
+                  },
+                  hasExternalResources: item.source !== 'Local',
+                })
+              }
             },
-            close: () => {
-              setModalProps({ open: false })
-            },
-            hasExternalResources: item.source !== 'Local',
-          })
-        },
-        rbac:
-          policyRemediationAction === 'enforce'
-            ? undefined
-            : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+          },
+        ],
       },
       {
         id: 'edit-policy',

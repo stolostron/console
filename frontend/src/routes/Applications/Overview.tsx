@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { PageSection, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
+import { DropdownPosition, PageSection, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import {
@@ -1023,8 +1022,7 @@ export default function ApplicationsOverview() {
         isKebab={false}
         isPlain={false}
         isPrimary={true}
-        // tooltipPosition={tableDropdown.tooltipPosition}
-        // dropdownPosition={DropdownPosition.left}
+        dropdownPosition={DropdownPosition.left}
       />
     ),
     [canCreateApplication, history, t]
