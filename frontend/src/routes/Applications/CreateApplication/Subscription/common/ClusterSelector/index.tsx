@@ -236,7 +236,6 @@ const ClusterSelector = (props: {
                     placeholder={i18n('clusterSelector.label.placeholder.field')}
                     isDisabled={isReadOnly}
                     onChange={(value) => handleChange(value, 'labelName', id)}
-                    // isRequired
                   />
                 </div>
                 <div className="matching-labels-input">
