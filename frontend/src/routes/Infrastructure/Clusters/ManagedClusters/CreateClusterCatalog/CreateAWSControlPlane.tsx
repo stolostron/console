@@ -19,7 +19,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
-import HypershiftDiagram from './HypershiftDiagram.svg'
+import { HypershiftDiagram } from './HypershiftDiagram'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -128,7 +128,9 @@ export function CreateAWSControlPlane() {
               onToggle={onDiagramToggle}
               toggleContent={
                 <>
-                  <span style={{ color: 'var(--pf-global--Color--100)' }}>Compare control plane types </span>
+                  <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
+                    Compare control plane types{' '}
+                  </span>
                   <AcmButton
                     variant="link"
                     icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
@@ -142,7 +144,6 @@ export function CreateAWSControlPlane() {
                   </AcmButton>
                 </>
               }
-              isIndented={true}
             >
               <HypershiftDiagram />
             </ExpandableSection>
