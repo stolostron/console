@@ -19,6 +19,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 
 import { IResource } from '../common/resources/IResource'
+import PlacementRuleDeprecationAlert from '../../components/PlacementRuleDeprecationAlert'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
@@ -194,6 +195,7 @@ export function PlacementSection(props: {
       // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
       autohide={false}
     >
+      {placementRuleCount != 0 && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
       {showPlacementSelector && (
         <PlacementSelector
           placementCount={placementCount}
