@@ -488,6 +488,19 @@ export function getPolicyRemediation(policy: Policy | undefined) {
   return remediationAggregation
 }
 
+export function getPolicyDescription(policy: Policy | undefined) {
+  if (!policy) {
+    return ''
+  }
+
+  const annotations = policy.metadata.annotations
+  if (annotations && annotations['policy.open-cluster-management.io/description']) {
+    return annotations['policy.open-cluster-management.io/description']
+  }
+
+  return '-'
+}
+
 export function handlePolicyAutomationSubmit(
   data: any,
   secrets: Secret[],
@@ -536,4 +549,16 @@ export function handlePolicyAutomationSubmit(
     }
     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
   })
+}
+
+export function formatDescriptionForDropdown(desc: string) {
+  const formattedDescription = []
+  if (desc) {
+    const descLines = desc.split(/\r?\n/)
+    for (let i = 0; i < descLines.length; i++) {
+      formattedDescription.push(<p>{descLines[i]}</p>)
+    }
+  }
+
+  return formattedDescription
 }

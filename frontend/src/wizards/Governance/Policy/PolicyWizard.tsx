@@ -27,6 +27,7 @@ import {
   WizRadioGroup,
   WizSingleSelect,
   WizStringsInput,
+  WizTextArea,
   WizTextInput,
   ItemContext,
   useItem,
@@ -140,6 +141,12 @@ export function PolicyWizard(props: {
                     required
                     validation={validatePolicyName}
                     readonly={props.editMode === EditMode.Edit}
+                  />
+                  <WizTextArea
+                    id="description"
+                    path={`metadata.annotations.policy\\.open-cluster-management\\.io/description`}
+                    label={t('Description')}
+                    placeholder={t('Enter the description')}
                   />
                   <WizSingleSelect
                     id="namespace"

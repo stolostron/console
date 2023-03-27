@@ -62,8 +62,9 @@ describe('Create Policy Page', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // step 1 -- name and namespace
+    // step 1 -- name, description, and namespace
     userEvent.type(screen.getByRole('textbox', { name: 'Name' }), 'policy1')
+    userEvent.type(screen.getByRole('textbox', { name: 'Description' }), 'Test policy description')
     screen.getByText('Select namespace').click()
     userEvent.type(screen.getByRole('searchbox'), 'test')
     screen.getByRole('option', { name: 'test' }).click()

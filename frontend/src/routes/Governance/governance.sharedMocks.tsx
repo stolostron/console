@@ -184,6 +184,7 @@ const policy1: Policy = {
       'policy.open-cluster-management.io/categories': 'CM Configuration Management',
       'policy.open-cluster-management.io/standards': 'NIST SP 800-53',
       'policy.open-cluster-management.io/controls': 'CM-2 Baseline Configuration',
+      'policy.open-cluster-management.io/description': 'Test policy description',
     },
   },
   spec: {
