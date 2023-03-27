@@ -52,7 +52,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
           let createCredentialModal = undefined
           let icon = <UnknownIcon />
           if (c.status === 'True') {
-            if (c.type === 'Progressing') {
+            if (c.type.endsWith('Progressing')) {
               icon = <InProgressIcon size="sm" />
             } else if (c.type === 'Degraded') {
               icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
@@ -60,7 +60,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
               icon = okIcon
             }
           } else if (c.status === 'False') {
-            if (c.type === 'Progressing' || c.type === 'Degraded') {
+            if (c.type.endsWith('Progressing') || c.type === 'Degraded') {
               icon = okIcon
             } else {
               icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
