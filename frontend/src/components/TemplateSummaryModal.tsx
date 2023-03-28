@@ -19,8 +19,6 @@ const useStyles = makeStyles({
   expandableSection: {
     paddingTop: '20px',
   },
-  tableHeader: { padding: '0px 0px 8px 0px' },
-  tableData: { padding: '8px 0px' },
   linkOut: { paddingBottom: '15px' },
   externalLinkIcon: { marginLeft: '4px', verticalAlign: 'middle' },
 })
@@ -124,22 +122,18 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
   const { t } = useTranslation()
 
   return curatorJobs && curatorJobs.length > 0 ? (
-    <TableComposable aria-label={t('Simple table')} variant={'compact'} style={{ backgroundColor: 'transparent' }}>
+    <TableComposable aria-label={t('Simple table')} variant={'compact'}>
       <Thead>
         <Tr>
-          <Th style={{ padding: '0px 0px 8px 0px' }}>{stage}</Th>
-          <Th style={{ padding: '0px 0px 8px 0px' }}>{t('Template Type')}</Th>
+          <Th>{stage}</Th>
+          <Th>{t('Template Type')}</Th>
         </Tr>
       </Thead>
       <Tbody>
         {curatorJobs.map((job) => (
           <Tr key={job.name}>
-            <Td style={{ padding: '8px 0px' }} dataLabel={job.name}>
-              {job.name}
-            </Td>
-            <Td style={{ padding: '8px 0px' }} dataLabel={job.type}>
-              {job.type}
-            </Td>
+            <Td dataLabel={job.name}>{job.name}</Td>
+            <Td dataLabel={job.type}>{job.type}</Td>
           </Tr>
         ))}
       </Tbody>
