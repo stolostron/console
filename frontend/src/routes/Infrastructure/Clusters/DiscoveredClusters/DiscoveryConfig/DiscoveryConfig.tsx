@@ -192,7 +192,7 @@ export function DiscoveryConfigPageContent(props: {
 
   const updateDiscoveryConfig = useCallback(
     (update: (discoveryConfig: DiscoveryConfig) => void) => {
-      const copy = { ...discoveryConfig } as DiscoveryConfig
+      const copy = { ...discoveryConfig }
       update(copy)
       setDiscoveryConfig(copy)
     },
@@ -208,7 +208,7 @@ export function DiscoveryConfigPageContent(props: {
         confirm: async () => {
           try {
             if (discoveryConfig) {
-              await deleteResource(discoveryConfig as DiscoveryConfig).promise
+              await deleteResource(discoveryConfig).promise
               setModalProps({
                 open: false,
                 confirm: () => {},
@@ -271,7 +271,7 @@ export function DiscoveryConfigPageContent(props: {
     try {
       if (!editing) {
         discoveryConfig.metadata!.name = 'discovery'
-        await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+        await createDiscoveryConfig(discoveryConfig).promise
         toastContext.addAlert({
           title: t('alert.created.header', {
             credentialName: getDiscoveryConfigCredential(discoveryConfig),
@@ -282,7 +282,7 @@ export function DiscoveryConfigPageContent(props: {
         })
         history.push(NavigationPath.discoveredClusters)
       } else {
-        await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+        await replaceDiscoveryConfig(discoveryConfig).promise
         toastContext.addAlert({
           title: t('alert.updated.header', {
             credentialName: getDiscoveryConfigCredential(discoveryConfig),
