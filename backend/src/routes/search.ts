@@ -8,7 +8,6 @@ import { notFound } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { getNamespace, getServiceCACertificate } from './serviceAccountToken'
-import { rootCertificates } from 'tls'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
