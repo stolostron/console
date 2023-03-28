@@ -49,21 +49,25 @@ function base64DecodeValue(value: string): string {
   return value ? Buffer.from(value, 'base64').toString('ascii') : undefined
 }
 
-function getCertificate(name: string, base64DefaultValue: string): string[] {
+type Certificates = string | string[]
+
+function getCertificate(name: string, base64DefaultValue: string): Certificates {
   const internal_cert = readServiceAccountFile(name, base64DecodeValue(base64DefaultValue))
-  return [...(internal_cert ? [internal_cert] : []), ...rootCertificates]
+  return process.env.NODE_ENV === 'production'
+    ? internal_cert
+    : [...(internal_cert ? [internal_cert] : []), ...rootCertificates] // include root certificates for development against clusters with signed certificates
 }
 
-let ca_cert: string[]
-export function getCACertificate(): string[] {
+let ca_cert: Certificates
+export function getCACertificate(): Certificates {
   if (ca_cert === undefined) {
     ca_cert = getCertificate('ca.crt', process.env.CA_CERT)
   }
   return ca_cert
 }
 
-let service_ca_cert: string[]
-export function getServiceCACertificate(): string[] {
+let service_ca_cert: Certificates
+export function getServiceCACertificate(): Certificates {
   if (service_ca_cert === undefined) {
     service_ca_cert = getCertificate('service-ca.crt', process.env.SERVICE_CA_CERT)
   }
