@@ -216,6 +216,18 @@ const mockClusterClaim: ClusterClaim = {
   },
 }
 
+const mockClusterClaimInProgress: ClusterClaim = {
+  apiVersion: ClusterClaimApiVersion,
+  kind: ClusterClaimKind,
+  metadata: {
+    name: mockClusterClaim.metadata.name!,
+    namespace: mockClusterPool.metadata.namespace!,
+  },
+  spec: {
+    clusterPoolName: mockClusterPool.metadata.name!,
+  },
+}
+
 const mockClusterClaimFulfilled: ClusterClaim = {
   apiVersion: ClusterClaimApiVersion,
   kind: ClusterClaimKind,
@@ -352,7 +364,11 @@ describe('ClusterPools page', () => {
     await clickByText('Claim cluster', 0)
     await waitForText('Cluster claim name')
     await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
-    const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaimFulfilled)]
+    const createNocks: Scope[] = [
+      nockCreate(mockClusterClaim),
+      nockGet(mockClusterClaimInProgress, mockClusterClaimInProgress, 200, false),
+      nockGet(mockClusterClaimFulfilled),
+    ]
     await clickByText('Claim')
     await waitForNocks(createNocks)
     await waitForText('View cluster')
