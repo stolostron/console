@@ -996,13 +996,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
       },
     ],
     submit: () => {
-      return new Promise(async (resolve, reject) => {
-        const resources = formData?.customData ?? stateToData()
-        const calls: any[] = resources.map((resource: IResource) => {
-          return createResource(resource)
-        })
-        const requests = resultsSettled(calls)
-        const results = await requests.promise
+      const resources = formData?.customData ?? stateToData()
+      const calls: any[] = resources.map((resource: IResource) => {
+        return createResource(resource)
+      })
+      const requests = resultsSettled(calls)
+      return requests.promise.then((results) => {
         const errors: string[] = []
         results.forEach((res) => {
           if (res.status === 'rejected') {
@@ -1010,9 +1009,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           }
         })
         if (errors.length > 0) {
-          reject(errors[0])
+          throw errors[0]
         } else {
-          resolve(history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)))
+          return history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
         }
       })
     },
