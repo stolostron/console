@@ -547,23 +547,15 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
 
   function deleteClaim(claim: ClusterClaim) {
     return {
-      promise: new Promise(async (resolve, reject) => {
-        const request = deleteResource(claim)
-        request.promise
-          .then(async () => {
-            return resolve(request)
+      promise: deleteResource(claim).promise.catch((e) => {
+        if (e instanceof Error) {
+          alertContext.addAlert({
+            type: 'danger',
+            title: t('request.failed'),
+            message: e.message,
           })
-          .catch((e) => {
-            if (e instanceof Error) {
-              alertContext.addAlert({
-                type: 'danger',
-                title: t('request.failed'),
-                message: e.message,
-              })
-              reject(e)
-              return
-            }
-          })
+        }
+        throw e
       }),
       abort: () => {
         setModalProps({ open: false })
