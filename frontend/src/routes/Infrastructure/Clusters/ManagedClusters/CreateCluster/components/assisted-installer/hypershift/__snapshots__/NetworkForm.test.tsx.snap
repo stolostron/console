@@ -875,6 +875,8 @@ exports[`NetworkForm it renders 1`] = `
 exports[`NetworkForm it sets default form values 1`] = `
 Object {
   "apiPublishingStrategy": "NodePort",
+  "clusterNetworkCidr": "10.132.0.0/14",
+  "clusterNetworkHostPrefix": 23,
   "enableProxy": true,
   "httpProxy": "",
   "httpsProxy": "https://user:pwd@6.7.8.9:456",
@@ -883,8 +885,7 @@ Object {
   "noProxy": "'noprxy.com,3.4.5.6'",
   "nodePortAddress": "4.5.6.7",
   "nodePortPort": 12,
-  "podCIDR": "1.2.3.4/18",
-  "serviceCIDR": "4.5.6.7/16",
+  "serviceNetworkCidr": "172.31.0.0/16",
   "sshPublicKey": "",
 }
 `;
