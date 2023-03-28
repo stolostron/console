@@ -370,60 +370,55 @@ export default function ImportClusterPage() {
         showYaml={drawerExpanded}
         yamlEditor={getWizardSyncEditor}
         defaultData={defaultData}
-        onSubmit={function (data: unknown): Promise<void> {
+        onSubmit={async (data: unknown) => {
           toastContext.clearAlerts()
 
           const resources = data as any[]
-
-          return new Promise(async (resolve, reject) => {
+          try {
+            // create the project
             try {
-              // create the project
-              try {
-                await createProject(state.clusterName).promise
-              } catch (err) {
-                const resourceError = err as ResourceError
-                if (resourceError.code !== ResourceErrorCode.Conflict) {
-                  throw err
-                }
-              }
-
-              const resourceGroups = groupBy(resources, 'kind')
-              // create resources
-              for (const kind of [ManagedClusterKind, KlusterletAddonConfigKind, ClusterCuratorKind, SecretKind]) {
-                if (resourceGroups[kind]?.length) {
-                  for (const resource of resourceGroups[kind]) {
-                    await (kind === ClusterCuratorKind ? createClusterCurator(resource) : createResource(resource))
-                      .promise
-                  }
-                }
-              }
-              toastContext.addAlert({
-                title: t('success.create.created', [state.clusterName]),
-                type: 'success',
-                autoClose: true,
-              })
-              setTimeout(() => {
-                history.push(
-                  generatePath(NavigationPath.clusterDetails, {
-                    name: state.clusterName,
-                    namespace: '~managed-cluster',
-                  })
-                )
-              }, 2000)
+              await createProject(state.clusterName).promise
             } catch (err) {
-              if (err instanceof Error) {
-                toastContext.addAlert({
-                  type: 'danger',
-                  title: err.name,
-                  message: err.message,
-                })
-              } else {
-                reject()
+              const resourceError = err as ResourceError
+              if (resourceError.code !== ResourceErrorCode.Conflict) {
+                throw err
               }
-            } finally {
-              resolve(undefined)
             }
-          })
+
+            const resourceGroups = groupBy(resources, 'kind')
+            // create resources
+            for (const kind of [ManagedClusterKind, KlusterletAddonConfigKind, ClusterCuratorKind, SecretKind]) {
+              if (resourceGroups[kind]?.length) {
+                for (const resource of resourceGroups[kind]) {
+                  await (kind === ClusterCuratorKind ? createClusterCurator(resource) : createResource(resource))
+                    .promise
+                }
+              }
+            }
+            toastContext.addAlert({
+              title: t('success.create.created', [state.clusterName]),
+              type: 'success',
+              autoClose: true,
+            })
+            setTimeout(() => {
+              history.push(
+                generatePath(NavigationPath.clusterDetails, {
+                  name: state.clusterName,
+                  namespace: '~managed-cluster',
+                })
+              )
+            }, 2000)
+          } catch (err) {
+            if (err instanceof Error) {
+              toastContext.addAlert({
+                type: 'danger',
+                title: err.name,
+                message: err.message,
+              })
+            } else {
+              throw err
+            }
+          }
         }}
         onCancel={cancel(NavigationPath.clusters)}
         submitButtonText={submitButtonText}
