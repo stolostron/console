@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { readFileSync } from 'fs'
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
@@ -8,6 +7,7 @@ import { logger } from '../lib/logger'
 import { notFound } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
+import { getNamespace, getServiceCACertificate } from './serviceAccountToken'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -16,24 +16,6 @@ const proxyHeaders = [
   constants.HTTP2_HEADER_CONTENT_LENGTH,
   constants.HTTP2_HEADER_CONTENT_TYPE,
 ]
-
-let namespace: string
-function getNamespace(): string {
-  if (namespace === undefined) {
-    try {
-      namespace = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/namespace', 'utf-8')
-    } catch (err: unknown) {
-      if (!process.env.SEARCH_API_URL) {
-        if (err instanceof Error) {
-          logger.error('Error reading service account namespace', err && err.message)
-        } else {
-          logger.error({ msg: 'Error reading service account namespace', err: err })
-        }
-      }
-    }
-  }
-  return namespace
-}
 
 export async function search(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -46,7 +28,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     const mch = await getMultiClusterHub()
     const namespace = getNamespace()
     const searchService =
-      mch && namespace && namespace !== mch.metadata.namespace
+      mch && namespace !== mch.metadata.namespace
         ? `https://search-search-api.${mch.metadata.namespace}.svc.cluster.local:4010`
         : undefined
 
@@ -62,7 +44,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
       path: url.pathname,
       method: req.method,
       headers,
-      rejectUnauthorized: false,
+      ca: getServiceCACertificate(),
     }
 
     pipeline(

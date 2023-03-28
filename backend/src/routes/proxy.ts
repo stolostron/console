@@ -6,6 +6,7 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
+import { getCACertificate } from './serviceAccountToken'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -41,7 +42,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
     path: url,
     method: req.method,
     headers,
-    rejectUnauthorized: false,
+    ca: getCACertificate(),
   }
   pipeline(
     req,

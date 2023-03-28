@@ -47,7 +47,6 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
         headers: {
           Authorization: `Bearer ${ansibleCredential.token}`,
         },
-        rejectUnauthorized: false,
       }
       if (process.env.HTTPS_PROXY) {
         options.agent = new ProxyAgent()
