@@ -267,7 +267,7 @@ export function DistributionField(props: {
     )
   } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
     // HYPERSHIFT UPGRADE IN PROGRESS
-    const image = props.hostedCluster?.status?.version?.history[0].image
+    const image = props.hostedCluster?.spec.release.image
     const versionNum = getVersionFromReleaseImage(image)
     return (
       <>
