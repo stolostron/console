@@ -122,7 +122,6 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
 function ComposableTable(props: { stage: string; curatorJobs?: { name: string; type?: string }[] }) {
   const { curatorJobs, stage } = props
   const { t } = useTranslation()
-  // let theme = localStorage.getItem('theme')
 
   return curatorJobs && curatorJobs.length > 0 ? (
     <TableComposable aria-label={t('Simple table')} variant={'compact'} style={{ backgroundColor: 'transparent' }}>
