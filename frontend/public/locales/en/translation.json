@@ -2076,7 +2076,6 @@
   "Requires this format: http://<username>:<pswd>@<ip>:<port>": "Requires this format: http://<username>:<pswd>@<ip>:<port>",
   "Requires this format: https://<username>:<pswd>@<ip>:<port>": "Requires this format: https://<username>:<pswd>@<ip>:<port>",
   "Reset View": "Reset View",
-  "Resolve editor syntax errors.": "Resolve editor syntax errors.",
   "resource": "resource",
   "Resource": "Resource",
   "Resource deploy status": "Resource deploy status",
