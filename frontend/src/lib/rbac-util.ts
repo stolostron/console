@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   createSubjectAccessReview,
   createSubjectAccessReviews,
   fallbackPlural,
@@ -46,45 +45,6 @@ export async function getAuthorizedNamespaces(resourceAttributes: ResourceAttrib
     authorizedNamespaces = Array.from(new Set(authorizedNamespaces))
   })
   return authorizedNamespaces
-}
-
-export async function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], clusters: Cluster[]) {
-  const clusterList: string[] = clusters.map((cluster) => cluster.name!)
-
-  if (clusterList.length === 0) {
-    return []
-  }
-
-  const adminAccessRequest = await checkAdminAccess()
-  const isAdmin = adminAccessRequest?.status?.allowed ?? false
-
-  if (isAdmin) {
-    return clusters
-  }
-
-  const resourceList: ResourceAttributes[] = []
-
-  clusterList.forEach((cluster) => {
-    resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, name: cluster })))
-  })
-
-  let authorizedClusterList: string[] = []
-  const promiseResult = createSubjectAccessReviews(resourceList)
-  await promiseResult.promise.then((results) => {
-    results.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        if (result.value.status?.allowed) {
-          authorizedClusterList.push(result.value.spec.resourceAttributes.name!)
-        }
-      }
-    })
-    // remove duplicates from filtered list
-    authorizedClusterList = Array.from(new Set(authorizedClusterList))
-  })
-  const authorizedClusters = authorizedClusterList.map((cluster) => {
-    return clusters.find((c) => c.name === cluster)!
-  })
-  return authorizedClusters
 }
 
 export function checkAdminAccess() {
