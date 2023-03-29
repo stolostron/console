@@ -8,6 +8,7 @@ import {
   savePullSecret,
   saveSSHKey,
   onEditNtpSources,
+  onEditProxy,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
@@ -32,6 +33,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMeta
             onEditNtpSources={onEditNtpSources}
             hasAgents={!!infraAgents.length}
             hasBMHs={!!bareMetalHosts.length}
+            onEditProxy={onEditProxy}
           />
         </CardBody>
       </Card>

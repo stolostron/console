@@ -704,6 +704,28 @@ export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource)
   }
 }
 
+export const onEditProxy = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+  const patches: any[] = []
+  const proxySettings: {
+    httpProxy?: string
+    httpsProxy?: string
+    noProxy?: string
+  } = {}
+  if (values.httpProxy) {
+    proxySettings.httpProxy = values.httpProxy
+  }
+  if (values.httpsProxy) {
+    proxySettings.httpsProxy = values.httpsProxy
+  }
+  if (values.noProxy) {
+    proxySettings.noProxy = values.noProxy
+  }
+  appendPatch(patches, '/spec/proxy', proxySettings, infraEnv.spec?.proxy)
+  if (patches.length) {
+    return patchResource(infraEnv as IResource, patches).promise
+  }
+}
+
 export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
   const secret = {
     apiVersion: 'v1',
