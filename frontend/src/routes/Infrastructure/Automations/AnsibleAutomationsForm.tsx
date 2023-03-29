@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
@@ -281,8 +281,71 @@ export function AnsibleAutomationsForm(props: {
     }
     return curator
   }
+  function setAnsibleSelections(value: SetStateAction<string>) {
+    setAnsibleSelection(value)
+  }
+
+  function setCustomHook(type: string, preHook: boolean, value: any) {
+    const errors: any[] = []
+    if (Array.isArray(value)) {
+      value.forEach(({ type: jobType, name }, index) => {
+        const path = `ClusterCurator[0].spec.${type}.${preHook ? 'prehook' : 'posthook'}.${index}`
+        if (!['Job', 'Workflow'].includes(jobType)) {
+          errors.push({ path: `${path}.type`, message: 'Must be Job or Workflow' })
+        }
+        if (name && !AnsibleTowerJobTemplateList?.includes(name)) {
+          errors.push({ path: `${path}.name`, message: `'${name}' is not an existing job` })
+        }
+      })
+      if (!errors.length) {
+        switch (type) {
+          case 'install':
+            preHook ? setInstallPreJobs(value) : setInstallPostJobs(value)
+            break
+          case 'upgrade':
+            preHook ? setUpgradePreJobs(value) : setUpgradePostJobs(value)
+            break
+          case 'scale':
+            preHook ? setScalePreJobs(value) : setScalePostJobs(value)
+            break
+          case 'destroy':
+            preHook ? setDestroyPreJobs(value) : setDestroyPostJobs(value)
+            break
+        }
+        return undefined
+      }
+    }
+    return errors
+  }
+
   function stateToSyncs() {
-    const syncs = [{ path: 'ClusterCurator[0].metadata.name', setState: setTemplateName }]
+    let syncs: any = [
+      { path: 'ClusterCurator[0].metadata.name', setState: setTemplateName },
+      { path: 'ClusterCurator[0].spec.inventory', setState: setAnsibleInventory },
+
+      { path: 'ClusterCurator[0].spec.install.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
+      { path: 'ClusterCurator[0].spec.upgrade.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
+      { path: 'ClusterCurator[0].spec.scale.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
+      { path: 'ClusterCurator[0].spec.destroy.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
+    ]
+    ;[
+      { type: 'install', timeout: DEFAULT_INSTALL_TIMEOUT },
+      { type: 'upgrade', timeout: DEFAULT_UPGRADE_TIMEOUT, timeoutKey: 'monitorTimeout' },
+      { type: 'scale', timeout: DEFAULT_SCALE_TIMEOUT },
+      { type: 'destroy', timeout: DEFAULT_DESTROY_TIMEOUT },
+    ].forEach(({ type, timeout, timeoutKey }) => {
+      syncs = [
+        ...syncs,
+        { path: `ClusterCurator[0].spec.${type}.prehook`, setter: setCustomHook.bind(null, type, true) },
+        { path: `ClusterCurator[0].spec.${type}.posthook`, setter: setCustomHook.bind(null, type, false) },
+        {
+          path: `ClusterCurator[0].spec.${type}.${timeoutKey || 'jobMonitorTimeout'}`,
+          setter: ((value: any) => {
+            setUpdateTimeout(value || timeout)
+          }).bind(null),
+        },
+      ]
+    })
     return syncs
   }
 
