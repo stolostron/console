@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 export const parameters = {
     layout: 'fullscreen',
     backgrounds: {
@@ -14,6 +13,7 @@ export const parameters = {
 }
 
 import '@patternfly/react-core/dist/styles/base.css'
+import '../src/lib/i18n'
 
 export const decorators = [
     (Story) => (
