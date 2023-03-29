@@ -1490,6 +1490,7 @@
     "Instance type": "Instance type",
     "Internal server error": "Internal server error",
     "internet": "internet",
+    "invalidclustername.message": "The cluster name is invalid. Change the name to the RFC 1123 standard which consists of lower case alphanumeric characters, '-', and must start and end with an alphanumeric character.",
     "items": "items",
     "items per page": "items per page",
     "Job": "Job",
