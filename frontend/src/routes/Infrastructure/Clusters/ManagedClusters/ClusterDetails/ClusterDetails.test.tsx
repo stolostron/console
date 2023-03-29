@@ -900,12 +900,12 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     apiVersion: KlusterletAddonConfigApiVersion,
     kind: KlusterletAddonConfigKind,
     metadata: {
-        name: 'hostedCluster1',
-        namespace: 'hostedCluster1',
+        name: 'hosted-cluster1',
+        namespace: 'hosted-cluster1',
     },
     spec: {
-        clusterName: 'hostedCluster1',
-        clusterNamespace: 'hostedCluster1',
+        clusterName: 'hosted-cluster1',
+        clusterNamespace: 'hosted-cluster1',
         clusterLabels: {
             cloud: 'Amazon',
             vendor: 'Openshift',
@@ -933,15 +933,15 @@ const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: {
-        name: 'hostedCluster1',
+        name: 'hosted-cluster1',
     },
 }
 
-const mockHostedCluster1: HostedClusterK8sResource = {
+const mockhostedCluster1: HostedClusterK8sResource = {
     apiVersion: HostedClusterApiVersion,
     kind: HostedClusterKind,
     metadata: {
-        name: 'hostedCluster1',
+        name: 'hosted-cluster1',
         namespace: clusterName,
     },
     spec: {
@@ -1130,8 +1130,8 @@ const mockSecret: Secret = {
     apiVersion: SecretApiVersion,
     kind: SecretKind,
     metadata: {
-        namespace: 'hostedCluster1',
-        name: 'hostedCluster1-import',
+        namespace: 'hosted-cluster1',
+        name: 'hosted-cluster1-import',
     },
 }
 
@@ -1222,10 +1222,10 @@ const createManagedcluster1: ManagedCluster = {
         labels: {
             cloud: 'auto-detect',
             'cluster.open-cluster-management.io/clusterset': 'default',
-            name: 'hostedCluster1',
+            name: 'hosted-cluster1',
             vendor: 'OpenShift',
         },
-        name: 'hostedCluster1',
+        name: 'hosted-cluster1',
     },
     spec: {
         hubAcceptsClient: true,
@@ -1233,7 +1233,7 @@ const createManagedcluster1: ManagedCluster = {
     },
 }
 
-const mockHostedClusters = [mockHostedCluster1]
+const mockHostedClusters = [mockhostedCluster1]
 
 const mockClusterClaimClusterDeployment: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
@@ -1532,8 +1532,8 @@ describe('ClusterDetails with not found', () => {
                 <MemoryRouter
                     initialEntries={[
                         generatePath(NavigationPath.clusterDetails, {
-                            name: mockHostedCluster1.metadata?.name!,
-                            namespace: mockHostedCluster1.metadata?.namespace!,
+                            name: mockhostedCluster1.metadata?.name!,
+                            namespace: mockhostedCluster1.metadata?.namespace!,
                         }),
                     ]}
                 >
@@ -1544,11 +1544,11 @@ describe('ClusterDetails with not found', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockHostedCluster1.metadata?.name!, true)
+        await waitForText(mockhostedCluster1.metadata?.name!, true)
         await waitFor(() =>
             expect(
                 screen.getByRole('button', {
-                    name: /https:\/\/console-openshift-console\.apps\.hostedcluster1\.test\.com/i,
+                    name: /https:\/\/console-openshift-console\.apps\.hosted-cluster1\.test\.com/i,
                 })
             )
         )
@@ -1557,13 +1557,13 @@ describe('ClusterDetails with not found', () => {
             nockCreate(createManagedcluster1, createManagedcluster1),
             nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfig),
             nockCreate(mockNamespace, mockNamespace),
-            nockPatch(mockHostedCluster1 as IResource, [
+            nockPatch(mockhostedCluster1 as IResource, [
                 {
                     op: 'replace',
                     path: '/metadata/annotations',
                     value: {
-                        'cluster.open-cluster-management.io/managedcluster-name': 'hostedCluster1',
-                        'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hostedCluster1',
+                        'cluster.open-cluster-management.io/managedcluster-name': 'hosted-cluster1',
+                        'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hosted-cluster1',
                     },
                 },
             ]),
@@ -1574,6 +1574,7 @@ describe('ClusterDetails with not found', () => {
                 name: /import cluster/i,
             })
         )
+        console.log('got here4!!!')
         await waitForNocks(mockImportHostedCluster)
     })
 })
