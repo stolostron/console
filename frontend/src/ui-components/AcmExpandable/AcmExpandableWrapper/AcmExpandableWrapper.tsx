@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Children, useCallback, useState } from 'react'
+import { Children, useCallback, useEffect, useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { AcmButton } from '../../AcmButton/AcmButton'
 import { Title, Gallery, GalleryItem } from '@patternfly/react-core'
@@ -46,14 +46,16 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
   const [galleryDiv, setGalleryDiv] = useState<HTMLDivElement | null>(null)
   const wrapperDivRef = useCallback((elem) => setWrapperDiv(elem), [])
   const galleryDivRef = useCallback((elem) => setGalleryDiv(elem), [])
-  const [showExpandable, setShowExpandable] = useState<boolean>(false)
+  const [showExpandable, setShowExpandable] = useState<boolean>(true)
   const [wrapperHeight, setWrapperHeight] = useState<number>(0)
   const { t } = useTranslation()
 
-  // Save max height of wrapper when restricted
-  if (wrapperDiv && !showAll && !wrapperHeight) {
-    setWrapperHeight(wrapperDiv.clientHeight)
-  }
+  // save max height of wrapper when overflow is hidden
+  useEffect(() => {
+    if (wrapperDiv && !showAll && !wrapperHeight) {
+      setWrapperHeight(wrapperDiv.clientHeight)
+    }
+  }, [wrapperDiv, showAll, wrapperHeight])
 
   useResizeObserver(galleryDiv, () => {
     setShowExpandable((galleryDiv?.clientHeight || 0) > wrapperHeight)
