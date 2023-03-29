@@ -120,24 +120,6 @@ Array [
     "name": "Operators",
   },
   Object {
-    "id": "id-=",
-    "key": "key-=",
-    "kind": "value",
-    "name": "=",
-  },
-  Object {
-    "id": "id-<",
-    "key": "key-<",
-    "kind": "value",
-    "name": "<",
-  },
-  Object {
-    "id": "id->",
-    "key": "key->",
-    "kind": "value",
-    "name": ">",
-  },
-  Object {
     "id": "id-<=",
     "key": "key-<=",
     "kind": "value",
@@ -160,6 +142,24 @@ Array [
     "key": "key-!",
     "kind": "value",
     "name": "!",
+  },
+  Object {
+    "id": "id-=",
+    "key": "key-=",
+    "kind": "value",
+    "name": "=",
+  },
+  Object {
+    "id": "id-<",
+    "key": "key-<",
+    "kind": "value",
+    "name": "<",
+  },
+  Object {
+    "id": "id->",
+    "key": "key->",
+    "kind": "value",
+    "name": ">",
   },
 ]
 `;
@@ -212,7 +212,7 @@ Array [
     "id": "id-suggestions-label",
     "key": "key-suggestions-label",
     "kind": "value",
-    "name": "cpu= values",
+    "name": "cpu values",
   },
   Object {
     "disabled": true,
@@ -231,7 +231,7 @@ Array [
     "id": "id-suggestions-label",
     "key": "key-suggestions-label",
     "kind": "value",
-    "name": "cpu= values",
+    "name": "cpu values",
   },
   Object {
     "disabled": true,

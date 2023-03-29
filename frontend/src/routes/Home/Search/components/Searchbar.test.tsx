@@ -77,7 +77,6 @@ export const BlankSearchbar = () => {
       <Router history={createBrowserHistory()}>
         <MockedProvider mocks={[]}>
           <Searchbar
-            loadingSuggestions={false}
             queryString={''}
             saveSearchTooltip={''}
             setSaveSearch={() => {}}
@@ -108,16 +107,20 @@ const LoadingSearchbar = () => (
     <Router history={createBrowserHistory()}>
       <MockedProvider mocks={[]}>
         <Searchbar
-          loadingSuggestions={true}
           queryString={''}
           saveSearchTooltip={''}
           setSaveSearch={() => {}}
           suggestions={[
             {
-              id: 'id-suggestions-label',
-              name: 'Filters',
-              kind: 'filter',
               disabled: true,
+              id: 'id-suggestions-label',
+              kind: 'value',
+              name: 'kind values',
+            },
+            {
+              id: 'id-Loading...',
+              kind: 'value',
+              name: 'Loading...',
             },
           ]}
           currentQueryCallback={(query: string) => query}
@@ -143,7 +146,6 @@ const PrefilledSearchbar = () => (
     <Router history={createBrowserHistory()}>
       <MockedProvider mocks={[]}>
         <Searchbar
-          loadingSuggestions={false}
           queryString={'kind:Pod name:name1'}
           saveSearchTooltip={''}
           setSaveSearch={() => {}}
