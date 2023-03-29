@@ -77,19 +77,21 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
 
   function pollClaim(createdClaim: ClusterClaim) {
     let retries = 10
-    const poll = async (resolve: any) => {
-      if (retries === 0) {
-        return resolve(undefined)
-      }
-      const request = await getResource(createdClaim).promise
-      if (request?.spec?.namespace) {
-        return resolve(request)
+    const poll = async (): Promise<ClusterClaim | undefined> => {
+      if (retries == 0) {
+        return undefined
       } else {
-        retries--
-        setTimeout(() => poll(resolve), 500)
+        return getResource(createdClaim).promise.then((value) => {
+          if (value.spec?.namespace) {
+            return value
+          } else {
+            retries--
+            return new Promise<void>((resolve) => setTimeout(() => resolve(), 500)).then(poll)
+          }
+        })
       }
     }
-    return new Promise(poll)
+    return poll()
   }
 
   return (
@@ -152,31 +154,28 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     processingLabel={t('claiming')}
                     onClick={async () => {
                       alertContext.clearAlerts()
-                      return new Promise(async (resolve, reject) => {
-                        const request = createResource(clusterClaim!)
-                        request.promise
-                          .then(async (result) => {
-                            setClaimCreated(true)
-                            if (props.clusterPool?.status?.ready !== undefined && props.clusterPool.status.ready > 0) {
-                              const updatedClaim = (await pollClaim(result)) as ClusterClaim
+                      return createResource(clusterClaim!)
+                        .promise.then(async (result) => {
+                          setClaimCreated(true)
+                          if (props.clusterPool?.status?.ready !== undefined && props.clusterPool.status.ready > 0) {
+                            pollClaim(result).then((updatedClaim) => {
                               if (updatedClaim) {
                                 setClusterClaim(updatedClaim)
                                 setClaimed(true)
                               }
-                            }
-                            return resolve()
-                          })
-                          .catch((e) => {
-                            if (e instanceof Error) {
-                              alertContext.addAlert({
-                                type: 'danger',
-                                title: t('request.failed'),
-                                message: e.message,
-                              })
-                              reject(e)
-                            }
-                          })
-                      })
+                            })
+                          }
+                        })
+                        .catch((e) => {
+                          if (e instanceof Error) {
+                            alertContext.addAlert({
+                              type: 'danger',
+                              title: t('request.failed'),
+                              message: e.message,
+                            })
+                          }
+                          throw e
+                        })
                     }}
                   />
                   <AcmButton key="cancel" variant="link" onClick={props.onClose}>

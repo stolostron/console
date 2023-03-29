@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   createSubjectAccessReview,
   createSubjectAccessReviews,
   fallbackPlural,
@@ -12,91 +11,40 @@ import {
   ResourceAttributes,
 } from '../resources'
 
-export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
-  return new Promise<string[]>(async (resolve, reject) => {
-    try {
-      const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
+export async function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
+  const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
-      if (namespaceList.length === 0) {
-        return resolve([])
-      }
+  if (namespaceList.length === 0) {
+    return []
+  }
 
-      const adminAccessRequest = await checkAdminAccess()
-      const isAdmin = adminAccessRequest?.status?.allowed ?? false
+  const adminAccessRequest = await checkAdminAccess()
+  const isAdmin = adminAccessRequest?.status?.allowed ?? false
 
-      if (isAdmin) {
-        return resolve(namespaceList)
-      }
+  if (isAdmin) {
+    return namespaceList
+  }
 
-      const resourceList: Array<ResourceAttributes> = []
+  const resourceList: Array<ResourceAttributes> = []
 
-      namespaceList.forEach((namespace) => {
-        resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
-      })
-
-      let authorizedNamespaces: string[] = []
-      const promiseResult = createSubjectAccessReviews(resourceList)
-      await promiseResult.promise.then((results) => {
-        results.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            if (result.value.status?.allowed) {
-              authorizedNamespaces.push(result.value.spec.resourceAttributes.namespace!)
-            }
-          }
-        })
-        // remove duplicates from filtered list
-        authorizedNamespaces = Array.from(new Set(authorizedNamespaces))
-      })
-      return resolve(authorizedNamespaces)
-    } catch (err) {
-      return reject(err)
-    }
+  namespaceList.forEach((namespace) => {
+    resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
   })
-}
 
-export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], clusters: Cluster[]) {
-  return new Promise<Cluster[]>(async (resolve, reject) => {
-    try {
-      const clusterList: string[] = clusters.map((cluster) => cluster.name!)
-
-      if (clusterList.length === 0) {
-        return resolve([])
+  let authorizedNamespaces: string[] = []
+  const promiseResult = createSubjectAccessReviews(resourceList)
+  await promiseResult.promise.then((results) => {
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        if (result.value.status?.allowed) {
+          authorizedNamespaces.push(result.value.spec.resourceAttributes.namespace!)
+        }
       }
-
-      const adminAccessRequest = await checkAdminAccess()
-      const isAdmin = adminAccessRequest?.status?.allowed ?? false
-
-      if (isAdmin) {
-        return resolve(clusters)
-      }
-
-      const resourceList: ResourceAttributes[] = []
-
-      clusterList.forEach((cluster) => {
-        resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, name: cluster })))
-      })
-
-      let authorizedClusterList: string[] = []
-      const promiseResult = createSubjectAccessReviews(resourceList)
-      await promiseResult.promise.then((results) => {
-        results.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            if (result.value.status?.allowed) {
-              authorizedClusterList.push(result.value.spec.resourceAttributes.name!)
-            }
-          }
-        })
-        // remove duplicates from filtered list
-        authorizedClusterList = Array.from(new Set(authorizedClusterList))
-      })
-      const authorizedClusters = authorizedClusterList.map((cluster) => {
-        return clusters.find((c) => c.name === cluster)!
-      })
-      return resolve(authorizedClusters)
-    } catch (err) {
-      return reject(err)
-    }
+    })
+    // remove duplicates from filtered list
+    authorizedNamespaces = Array.from(new Set(authorizedNamespaces))
   })
+  return authorizedNamespaces
 }
 
 export function checkAdminAccess() {
