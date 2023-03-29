@@ -128,7 +128,7 @@ const mockHostedCluster: HostedClusterK8sResource = {
             baseDomain: 'dev06.red-chesterfield.com',
         },
         release: {
-            image: 'randomimage',
+            image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
         },
         services: [],
         platform: {},
