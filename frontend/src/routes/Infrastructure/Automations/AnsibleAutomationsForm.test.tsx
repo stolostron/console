@@ -15,7 +15,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -99,13 +99,13 @@ const mockClusterCurator: ClusterCurator = {
         { name: 'test-job-post-install', extra_vars: {}, type: 'Job' },
         { name: 'test-job-pre-install-ii', extra_vars: {}, type: 'Workflow' },
       ],
-      jobMonitorTimeout: 55,
+      jobMonitorTimeout: 77,
     },
     upgrade: {
       towerAuthSecret: 'ansible-test-secret',
       prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {}, type: 'Job' }],
       posthook: [{ name: 'test-job-post-upgrade', extra_vars: {}, type: 'Job' }],
-      monitorTimeout: 555,
+      monitorTimeout: 777,
     },
     inventory: 'test-inventory',
   },
@@ -232,7 +232,7 @@ describe('add automation template page', () => {
     await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
     await clickByText('Save')
 
-    // install timeout
+    // change install timeout
     userEvent.clear(
       screen.getByRole('spinbutton', {
         name: /timeout/i,
@@ -242,7 +242,7 @@ describe('add automation template page', () => {
       screen.getByRole('spinbutton', {
         name: /timeout/i,
       }),
-      mockClusterCurator!.spec!.install!.jobMonitorTimeout!.toString(10)
+      '7'
     )
 
     await clickByText('Next')
@@ -258,7 +258,7 @@ describe('add automation template page', () => {
     await clickByText(mockTemplateList.results![3].name!, 0)
     await clickByText('Save')
 
-    // upgrade timeout
+    // change upgrade timeout
     userEvent.clear(
       screen.getByRole('spinbutton', {
         name: /timeout/i,
@@ -268,8 +268,39 @@ describe('add automation template page', () => {
       screen.getByRole('spinbutton', {
         name: /timeout/i,
       }),
-      mockClusterCurator!.spec!.upgrade!.monitorTimeout!.toString(10)
+      '77'
     )
+
+    // open yaml and use yaml to change stuff
+    await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    await waitFor(() => expect(input).not.toHaveValue(''))
+    const changeYaml = (path: string, text: string) => {
+      const i = input.value.indexOf(path) + path.length
+      input.setSelectionRange(i, i)
+      userEvent.type(input, text)
+    }
+
+    // cause some errors
+    const saved = input.value
+    changeYaml('towerAuthSecret: ', 'x') // change secret to xansible-test-secret -->error!!
+    changeYaml('name: ', 'y') // change job to ytest-job-pre-install-ii -->error!!
+    changeYaml('type: ', 'z') // change type to zJob -->error!!
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    // undo
+    input.select()
+    userEvent.type(input, saved)
+    // modify some times
+    changeYaml('jobMonitorTimeout: ', '7') //make install timeout 77
+    changeYaml('monitorTimeout: ', '7') //make upgrade timeout 777
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+
+    // close yaml
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')
 
