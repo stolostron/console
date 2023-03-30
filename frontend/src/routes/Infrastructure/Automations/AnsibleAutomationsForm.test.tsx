@@ -15,7 +15,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -238,12 +238,16 @@ describe('add automation template page', () => {
         name: /timeout/i,
       })
     )
-    userEvent.type(
-      screen.getByRole('spinbutton', {
-        name: /timeout/i,
-      }),
-      mockClusterCurator!.spec!.install!.jobMonitorTimeout!.toString(10)
-    )
+    act(() => {
+      fireEvent.change(
+        screen.getByRole('spinbutton', {
+          name: /timeout/i,
+        }),
+        {
+          target: { value: mockClusterCurator!.spec!.install!.jobMonitorTimeout!.toString(10) },
+        }
+      )
+    })
 
     await clickByText('Next')
 
@@ -264,12 +268,16 @@ describe('add automation template page', () => {
         name: /timeout/i,
       })
     )
-    userEvent.type(
-      screen.getByRole('spinbutton', {
-        name: /timeout/i,
-      }),
-      mockClusterCurator!.spec!.upgrade!.monitorTimeout!.toString(10)
-    )
+    act(() => {
+      fireEvent.change(
+        screen.getByRole('spinbutton', {
+          name: /timeout/i,
+        }),
+        {
+          target: { value: mockClusterCurator!.spec!.upgrade!.monitorTimeout!.toString(10) },
+        }
+      )
+    })
 
     await clickByText('Next')
 
