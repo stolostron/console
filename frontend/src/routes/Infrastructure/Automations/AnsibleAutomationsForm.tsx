@@ -51,6 +51,7 @@ import {
   Provider,
 } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import get from 'lodash/get'
 import schema from './schema.json'
 
 const DEFAULT_DESTROY_TIMEOUT = 5
@@ -292,8 +293,34 @@ export function AnsibleAutomationsForm(props: {
     }
     return curator
   }
-  function setAnsibleSelections(value: SetStateAction<string>) {
-    setAnsibleSelection(value)
+
+  const jobTypes = [
+    { type: 'install', timeout: DEFAULT_INSTALL_TIMEOUT },
+    { type: 'upgrade', timeout: DEFAULT_UPGRADE_TIMEOUT, timeoutKey: 'monitorTimeout' },
+    { type: 'scale', timeout: DEFAULT_SCALE_TIMEOUT },
+    { type: 'destroy', timeout: DEFAULT_DESTROY_TIMEOUT },
+  ]
+
+  function setAnsibleSelections(value: any) {
+    const errors: any[] = []
+    let secret: SetStateAction<string> = ansibleSelection
+    if (Object.keys(value).length) {
+      jobTypes.forEach(({ type }) => {
+        const path = `ClusterCurator[0].spec.${type}.towerAuthSecret`
+        const test = get(value, `${type}.towerAuthSecret`)
+        if (!!test && test !== ansibleSelection) {
+          if (ansibleCredentials.findIndex((cred) => get(cred, 'metadata.name') === test) === -1) {
+            errors.push({ path, message: `'${test}' is not an existing ansible` })
+          } else {
+            secret = test
+          }
+        }
+      })
+      if (!errors.length) {
+        setAnsibleSelection(secret)
+      }
+    }
+    return errors
   }
 
   function setCustomHook(type: string, preHook: boolean, value: any) {
@@ -333,27 +360,31 @@ export function AnsibleAutomationsForm(props: {
     let syncs: any = [
       { path: 'ClusterCurator[0].metadata.name', setState: setTemplateName },
       { path: 'ClusterCurator[0].spec.inventory', setState: setAnsibleInventory },
-
-      { path: 'ClusterCurator[0].spec.install.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
-      { path: 'ClusterCurator[0].spec.upgrade.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
-      { path: 'ClusterCurator[0].spec.scale.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
-      { path: 'ClusterCurator[0].spec.destroy.towerAuthSecret', setter: setAnsibleSelections.bind(null) },
+      { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
     ]
-    ;[
-      { type: 'install', timeout: DEFAULT_INSTALL_TIMEOUT },
-      { type: 'upgrade', timeout: DEFAULT_UPGRADE_TIMEOUT, timeoutKey: 'monitorTimeout' },
-      { type: 'scale', timeout: DEFAULT_SCALE_TIMEOUT },
-      { type: 'destroy', timeout: DEFAULT_DESTROY_TIMEOUT },
-    ].forEach(({ type, timeout, timeoutKey }) => {
+    jobTypes.forEach(({ type, timeout, timeoutKey }) => {
       syncs = [
         ...syncs,
         { path: `ClusterCurator[0].spec.${type}.prehook`, setter: setCustomHook.bind(null, type, true) },
         { path: `ClusterCurator[0].spec.${type}.posthook`, setter: setCustomHook.bind(null, type, false) },
         {
           path: `ClusterCurator[0].spec.${type}.${timeoutKey || 'jobMonitorTimeout'}`,
-          setter: ((value: any) => {
-            setUpdateTimeout(value || timeout)
-          }).bind(null),
+          setter: ((type: string, value: any) => {
+            switch (type) {
+              case 'install':
+                setInstallTimeout(value || timeout)
+                break
+              case 'upgrade':
+                setUpdateTimeout(value || timeout)
+                break
+              case 'scale':
+                setScaleTimeout(value || timeout)
+                break
+              case 'destroy':
+                setDestroyTimeout(value || timeout)
+                break
+            }
+          }).bind(null, type),
         },
       ]
     })
