@@ -566,7 +566,7 @@ describe('Overview Tab', () => {
     await waitForText('Mar 1 2022, 9:30 pm')
 
     // click show subscription details
-    await clickByRole('button', 1)
+    await clickByRole('button', {}, 1)
 
     await waitForText('Set time window')
   })
@@ -596,7 +596,7 @@ describe('Overview Tab', () => {
     await waitForText('Mar 1 2022, 9:30 pm')
 
     // click show subscription details
-    await clickByRole('button', 1)
+    await clickByRole('button', {}, 1)
     await clickByText('blocked')
     await waitForText('Edit time window')
   })

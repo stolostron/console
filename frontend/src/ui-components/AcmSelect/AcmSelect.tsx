@@ -126,6 +126,11 @@ export function AcmSelect(props: AcmSelectProps) {
           )
         }
         isDisabled={props.isDisabled || ValidationContext.isReadOnly}
+        clearSelectionsAriaLabel={
+          selectProps.variant !== SelectVariant.single && selectProps.variant !== SelectVariant.typeahead
+            ? t('Clear all')
+            : t('Clear selected item')
+        }
       />
       {validated === 'error' ? (
         <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>
