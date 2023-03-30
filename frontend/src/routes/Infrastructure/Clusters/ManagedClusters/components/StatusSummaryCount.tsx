@@ -1,17 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useCallback, useContext, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { get } from 'lodash'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useHistory, useRouteMatch } from 'react-router-dom'
+import { GetDiscoveredOCPApps, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { IRequestResult } from '../../../../../resources'
+import { Application, Cluster, IRequestResult } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
+import { getArgoDestinationCluster } from '../../../../Applications/ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { getClusterList } from '../../../../Applications/helpers/resource-helper'
+import { localClusterStr } from '../../../../Applications/Overview'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
+import { useAllClusters } from './useAllClusters'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
   let query = ''
@@ -20,9 +26,39 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 }
 
 export function StatusSummaryCount() {
-  const { policyreportState } = useSharedAtoms()
+  const {
+    applicationsState,
+    argoApplicationsState,
+    discoveredApplicationsState,
+    discoveredOCPAppResourcesState,
+    helmReleaseState,
+    placementDecisionsState,
+    policyreportState,
+    subscriptionsState,
+  } = useSharedAtoms()
+  const applicationsMatch = useRouteMatch()
+  const [applications] = useRecoilState(applicationsState)
+  const [argoApps] = useRecoilState(argoApplicationsState)
+  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+  const [helmReleases] = useRecoilState(helmReleaseState)
   const [policyReports] = useRecoilState(policyreportState)
+  const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
+  const [placementDecisions] = useRecoilState(placementDecisionsState)
+  const [subscriptions] = useRecoilState(subscriptionsState)
+
+  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
   const { cluster } = useContext(ClusterContext)
+  const allClusters: Cluster[] = useAllClusters()
+  const clusters: Cluster[] = useMemo(() => {
+    return allClusters.filter((cluster) => {
+      // don't show clusters in cluster pools in table
+      if (cluster.hive.clusterPool) {
+        return cluster.hive.clusterClaimName !== undefined
+      } else {
+        return true
+      }
+    })
+  }, [allClusters])
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
   const { isSearchAvailable, isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
@@ -50,6 +86,40 @@ export function StatusSummaryCount() {
   const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
   const moderateCount = policyReportViolations.filter((item) => item.properties?.total_risk === '2').length
   const lowCount = policyReportViolations.filter((item) => item.properties?.total_risk === '1').length
+  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+
+  useEffect(() => {
+    discoveredApplications.forEach((remoteArgoApp: any) => {
+      setArgoApplicationsHashSet(
+        (prev) =>
+          new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
+      )
+    })
+    argoApps.forEach((argoApp: any) => {
+      const resources = argoApp.status ? argoApp.status.resources : undefined
+      const definedNamespace = get(resources, '[0].namespace')
+      // cache Argo app signature for filtering OCP apps later
+      setArgoApplicationsHashSet(
+        (prev) =>
+          new Set(
+            prev.add(
+              `${argoApp.metadata.name}-${
+                definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+              }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, 'local-cluster')}`
+            )
+          )
+      )
+    })
+  }, [argoApps, clusters, discoveredApplications, ocpApps])
+
+  const applicationList: Application[] = []
+  const localCluster = useMemo(() => clusters.find((cls) => cls.name === localClusterStr), [clusters])
+  applications.forEach((application) => {
+    const clusterList = getClusterList(application, argoApps, placementDecisions, subscriptions, localCluster, clusters)
+    if (clusterList.includes(cluster?.name!)) {
+      applicationList.push(application)
+    }
+  })
 
   // Show cluster issues sidebar by default if showClusterIssues url param is present
   // This will be true if we are redirected to this page via search results table.
@@ -64,6 +134,16 @@ export function StatusSummaryCount() {
       })
     }
   }, [policyReport, policyReportViolationsCount, setDrawerContext])
+
+  const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
+  const clusterOcpApps = []
+  for (const [, value] of Object.entries(filteredOCPApps)) {
+    if (value.cluster === cluster?.name) {
+      clusterOcpApps.push(value)
+    }
+  }
+
+  const clusterDiscoveredArgoApps = discoveredApplications.filter((app) => app.cluster === cluster?.name)
 
   return (
     <div style={{ marginTop: '24px' }}>
@@ -92,12 +172,9 @@ export function StatusSummaryCount() {
             ? [
                 {
                   id: 'applications',
-                  count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]?.count ?? 0,
-                  countClick: () =>
-                    push(buildSearchLink({ cluster: cluster?.name!, kind: 'Subscription' }, 'Application')),
+                  count: [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps].length,
+                  countClick: () => push(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
-                  linkText: t('summary.applications.launch'),
-                  onLinkClick: () => push(NavigationPath.applications),
                 },
               ]
             : []),

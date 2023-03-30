@@ -2403,7 +2403,6 @@
   "Suggested search templates": "Suggested search templates",
   "Summary": "Summary",
   "summary.applications": "Applications",
-  "summary.applications.launch": "Go to Applications",
   "summary.cluster.issues": "Identified issues",
   "summary.cluster.issues.description.count": "{{criticalCount}} Critical, {{importantCount}} Important, {{moderateCount}} Moderate, {{lowCount}} Low",
   "summary.cluster.no.issues": "No potential issues found",

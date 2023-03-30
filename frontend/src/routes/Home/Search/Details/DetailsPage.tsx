@@ -14,7 +14,7 @@ import LogsPage from './LogsPage'
 import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
 import YAMLPage from './YAMLPage'
 
-function getResourceParams() {
+export function getResourceParams() {
   let cluster = '',
     kind = '',
     apiversion = '',
