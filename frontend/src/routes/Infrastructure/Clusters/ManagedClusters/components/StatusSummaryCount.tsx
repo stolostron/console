@@ -182,7 +182,7 @@ export function StatusSummaryCount() {
             ? [
                 {
                   id: 'violations',
-                  count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
+                  count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.count ?? 0 ?? 0,
                   // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
                   countClick: () =>
                     push(
