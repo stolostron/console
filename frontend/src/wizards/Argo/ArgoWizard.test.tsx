@@ -260,8 +260,6 @@ describe('ArgoWizard tests', () => {
         name: /placement1/i,
       })
     )
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-    // screen.logTestingPlaygroundURL()
 
     //=====================================================================
     //                      review page
@@ -271,9 +269,6 @@ describe('ArgoWizard tests', () => {
         name: /review/i,
       })
     )
-
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-    // screen.logTestingPlaygroundURL()
 
     userEvent.click(
       screen.getByRole('button', {
