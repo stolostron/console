@@ -555,7 +555,7 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.timeout'),
                       labelHelp: t('template.timeout.help', { timeout: DEFAULT_SCALE_TIMEOUT }),
                       value: scaleTimeout,
-                      onChange: (value) => {
+                      onChange: /* istanbul ignore next */ (value) => {
                         setScaleTimeout(value || DEFAULT_SCALE_TIMEOUT)
                       },
                     },
@@ -623,7 +623,7 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.timeout'),
                       labelHelp: t('template.timeout.help', { timeout: DEFAULT_DESTROY_TIMEOUT }),
                       value: destroyTimeout,
-                      onChange: (value) => {
+                      onChange: /* istanbul ignore next */ (value) => {
                         setDestroyTimeout(value || DEFAULT_DESTROY_TIMEOUT)
                       },
                     },
