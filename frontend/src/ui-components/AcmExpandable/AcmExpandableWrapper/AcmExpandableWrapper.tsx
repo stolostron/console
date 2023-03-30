@@ -12,8 +12,8 @@ type AcmExpandableWrapperProps = {
   children: React.ReactNode
   withCount: boolean
   expandable: boolean
-  minSize?: number
-  maxItemsPerRow?: number
+  minWidth?: number
+  maxItemsPerRow?: gridSpans
 }
 
 const useStyles = makeStyles({
@@ -33,7 +33,7 @@ const useStyles = makeStyles({
 })
 
 export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
-  const { children, headerLabel, withCount, expandable, minSize = 300, maxItemsPerRow = 4 } = props
+  const { children, headerLabel, withCount, expandable, minWidth = 300, maxItemsPerRow = 6 } = props
   const classes = useStyles(props)
   const ref = useRef(null)
   const [showAll, setShowAll] = useState<boolean>(false)
@@ -46,10 +46,12 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
 
   useResizeObserver(ref, (entry) => {
     let columns = 1
-    while ((columns + 1) * minSize + columns * 16 < entry.contentRect.width) {
+    while ((columns + 1) * minWidth < entry.contentRect.width) {
       columns++
     }
-    if (maxItemsPerRow && columns > maxItemsPerRow) columns = maxItemsPerRow
+    if (columns > maxItemsPerRow) {
+      columns = maxItemsPerRow
+    }
     setColumnCount(columns)
   })
   const spanPerColumn = useMemo(() => Math.floor(12 / columnCount) as gridSpans, [columnCount])

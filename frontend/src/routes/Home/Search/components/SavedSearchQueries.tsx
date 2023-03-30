@@ -116,13 +116,7 @@ export default function SavedSearchQueries(props: {
           />
         )}
         {savedSearches.length > 0 && (
-          <AcmExpandableWrapper
-            headerLabel={t('Saved searches')}
-            withCount={false}
-            expandable={true}
-            minSize={250}
-            maxItemsPerRow={4}
-          >
+          <AcmExpandableWrapper headerLabel={t('Saved searches')} withCount={false} expandable={true} minWidth={300}>
             {savedSearches.map((savedSearch, index) => {
               return (
                 <AcmCountCard
@@ -162,8 +156,7 @@ export default function SavedSearchQueries(props: {
           headerLabel={t('Suggested search templates')}
           withCount={false}
           expandable={false}
-          minSize={250}
-          maxItemsPerRow={4}
+          minWidth={300}
         >
           {suggestedQueryTemplates.map((query, index) => {
             return (
