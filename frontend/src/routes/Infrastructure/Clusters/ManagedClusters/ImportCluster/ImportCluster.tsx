@@ -4,6 +4,7 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   SelectOption,
+  SelectVariant,
   Split,
   SplitItem,
   Switch,
@@ -853,6 +854,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
         label={controlLabel}
         placeholder={t('template.clusterCreate.select.placeholder')}
         labelHelp={t('template.clusterImport.tooltip')}
+        variant={SelectVariant.typeahead}
         helperText={
           <Split>
             <SplitItem isFilled />
