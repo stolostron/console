@@ -14,7 +14,7 @@
 // seems to be an issue with this rule and redux
 
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
-import DeprecationAlert from '../common/DeprecationAlert'
+import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRuleDeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
@@ -272,7 +272,7 @@ const placementData = (isLocalCluster, t) => {
     {
       id: 'deprecationWarning',
       type: 'custom',
-      component: <DeprecationAlert />,
+      component: <PlacementRuleDeprecationAlert />,
     },
     {
       id: existingRuleCheckbox,
