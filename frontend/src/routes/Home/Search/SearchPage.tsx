@@ -170,7 +170,7 @@ function RenderSearchBar(props: {
             'cluster',
             'apigroup',
             'created',
-            'Loading more...',
+            t('Loading more...'),
           ]),
           'filter',
           '', // Dont need to de-dupe filters
