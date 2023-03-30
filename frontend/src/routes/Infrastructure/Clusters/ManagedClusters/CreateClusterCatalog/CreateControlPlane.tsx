@@ -10,12 +10,12 @@ import {
   PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { listMultiClusterEngines } from '../../../../../resources'
 import { AcmPage } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
@@ -23,21 +23,7 @@ export function CreateControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
 
-  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
-  useEffect(() => {
-    const getHypershiftStatus = async () => {
-      try {
-        const [multiClusterEngine] = await listMultiClusterEngines().promise
-        const components = multiClusterEngine.spec?.overrides.components
-        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
-        const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
-        setIsHypershiftEnabled((hypershiftLocalHosting?.enabled && hypershiftPreview?.enabled) as boolean)
-      } catch {
-        // nothing to do
-      }
-    }
-    getHypershiftStatus()
-  }, [])
+  const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [

@@ -19,6 +19,7 @@ import {
   useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts, InfoAndTroubleshootingNotification } = CIM
 
@@ -39,6 +40,8 @@ const HostsTab: React.FC<HostsTabProps> = ({
   infraNMStates = [],
   infrastructure,
 }) => {
+  const { agentMachinesState } = useSharedAtoms()
+  const agentMachines = useRecoilValue(agentMachinesState)
   const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
   const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
   const [bulkModalProps, setBulkModalProps] = useState<
@@ -66,6 +69,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
             <CardBody>
               <InfraEnvAgentTable
                 agents={infraAgents}
+                agentMachines={agentMachines}
                 agentClusterInstalls={agentClusterInstalls}
                 bareMetalHosts={bareMetalHosts}
                 infraEnv={infraEnv}
