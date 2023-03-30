@@ -97,6 +97,7 @@ const ControlPanelSingleSelect = (props: {
                   setOpen(!open)
                 }}
                 variant={SelectVariant.typeahead}
+                clearSelectionsAriaLabel={i18n('Clear selected item')}
                 onSelect={(_event, value) => {
                   onChange(value)
                   setOpen(false)
