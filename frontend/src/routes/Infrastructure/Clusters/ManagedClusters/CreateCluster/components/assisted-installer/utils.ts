@@ -176,7 +176,7 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
 const appendPatch = (
   patches: any,
   path: string,
-  newVal: object | string | boolean,
+  newVal?: object | string | boolean,
   existingVal?: object | string | boolean
 ) => {
   if (!isEqual(newVal, existingVal)) {
@@ -188,7 +188,7 @@ const appendPatch = (
   }
 }
 
-export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstallK8sResource, values: any) => {
+export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstallK8sResource, values: CIM.ClusterDeploymentNetworkingValues) => {
   const agentClusterInstallPatches: any = []
 
   appendPatch(
@@ -290,6 +290,7 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
     }
     appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
   }
+  appendPatch(agentClusterInstallPatches, '/spec/networking/networkType', values.networkType, agentClusterInstall.spec?.networking.networkType)
 
   return agentClusterInstallPatches
 }
