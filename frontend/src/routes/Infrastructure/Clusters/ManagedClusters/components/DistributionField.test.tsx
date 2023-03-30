@@ -15,11 +15,13 @@ import {
     ClusterStatus,
     CuratorCondition,
     DistributionInfo,
+    HostedClusterApiVersion,
+    HostedClusterKind,
     NodePool,
     ResourceAttributes,
 } from '../../../../../resources'
 import { createBrowserHistory } from 'history'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
@@ -27,6 +29,8 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
 import { Router } from 'react-router-dom'
+import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import userEvent from '@testing-library/user-event'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -555,6 +559,51 @@ const mockClusterImageSet2: ClusterImageSet = {
     },
 }
 
+const mockHostedCluster: HostedClusterK8sResource = {
+    apiVersion: HostedClusterApiVersion,
+    kind: HostedClusterKind,
+    spec: {
+        dns: {
+            baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+            image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+    },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '2022-12-17T22:14:15Z',
+                message: 'The hosted control plane is available',
+                observedGeneration: 4,
+                reason: 'HostedClusterAsExpected',
+                status: 'True',
+                type: 'Available',
+            },
+        ],
+        version: {
+            desired: {
+                image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+            },
+            history: [
+                {
+                    completionTime: '',
+                    image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+                    startedTime: '2022-10-24T20:34:08Z',
+                    state: 'Partial',
+                    verified: false,
+                    version: '',
+                },
+            ],
+            observedGeneration: 2,
+        },
+    },
+}
+
 function getClusterCuratoResourceAttributes(name: string, verb: string) {
     return {
         resource: 'clustercurators',
@@ -713,7 +762,8 @@ describe('DistributionField hypershift clusters', () => {
         clusterCurator?: ClusterCurator,
         nodepool?: NodePool,
         hostedCluster?: CIM.HostedClusterK8sResource,
-        setClusterImageSet = true
+        setClusterImageSet = true,
+        resource = 'managedclusterpage'
     ) => {
         nockIgnoreRBAC()
         let nockAction: nock.Scope | undefined = undefined
@@ -739,7 +789,7 @@ describe('DistributionField hypershift clusters', () => {
                     clusterCurator={clusterCurator}
                     nodepool={nodepool}
                     hostedCluster={hostedCluster}
-                    resource={'managedclusterpage'}
+                    resource={resource}
                 />
             </RecoilRoot>
         )
@@ -750,6 +800,52 @@ describe('DistributionField hypershift clusters', () => {
             await waitForNock(nockAction2)
         }
         return retResource
+    }
+
+    const mockHypershiftCluster: Cluster = {
+        name: 'hypershift-cluster1',
+        displayName: 'hypershift-cluster1',
+        namespace: 'clusters',
+        uid: 'hypershift-cluster1-uid',
+        provider: undefined,
+        status: ClusterStatus.ready,
+        distribution: {
+            ocp: {
+                version: '4.11.21',
+                availableUpdates: [],
+                desiredVersion: '4.11.21',
+                upgradeFailed: false,
+            },
+            isManagedOpenShift: false,
+        },
+        labels: { abc: '123' },
+        nodes: undefined,
+        kubeApiServer: '',
+        consoleURL: 'some url',
+        hive: {
+            isHibernatable: true,
+            clusterPool: undefined,
+            secrets: {
+                installConfig: '',
+            },
+        },
+        hypershift: {
+            agent: false,
+            hostingNamespace: 'clusters',
+            nodePools: mockNodepools,
+            secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+            isUpgrading: true,
+        },
+        isHive: false,
+        isManaged: true,
+        isCurator: true,
+        isHostedCluster: true,
+        isHypershift: true,
+        isSNOCluster: false,
+        owner: {},
+        kubeadmin: '',
+        kubeconfig: '',
+        isRegionalHubCluster: false,
     }
 
     it('should render distribution info for hypershift', async () => {
@@ -772,7 +868,7 @@ describe('DistributionField hypershift clusters', () => {
             labels: { abc: '123' },
             nodes: undefined,
             kubeApiServer: '',
-            consoleURL: '',
+            consoleURL: 'some url',
             hive: {
                 isHibernatable: true,
                 clusterPool: undefined,
@@ -934,5 +1030,168 @@ describe('DistributionField hypershift clusters', () => {
             false
         )
         expect(queryAllByText('Upgrade available').length).toBe(0)
+    })
+    it('Should show HCP upgrading, managed clusters page', async () => {
+        const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            false,
+            'managedclusterpage'
+        )
+
+        expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+        expect(queryByRole('progressbar')).toBeTruthy()
+    })
+
+    it('Should show HCP upgrading, hosted cluster page', async () => {
+        const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            undefined,
+            'hostedcluster'
+        )
+
+        expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+        expect(queryByRole('progressbar')).toBeTruthy()
+    })
+
+    it('Should not show HCP upgrading, upgrade not in progress', async () => {
+        const mockHypershiftCluster: Cluster = {
+            name: 'clusterName',
+            uid: 'clusterName-uid',
+            status: ClusterStatus.ready,
+            hive: {
+                isHibernatable: true,
+            },
+            isHive: false,
+            isManaged: true,
+            isCurator: true,
+            isHostedCluster: true,
+            isSNOCluster: false,
+            distribution: mockDistributionInfo,
+            owner: {},
+            isHypershift: true,
+            hypershift: {
+                agent: false,
+                secretNames: [],
+                hostingNamespace: '',
+                isUpgrading: false,
+            },
+            isRegionalHubCluster: false,
+        }
+
+        const { queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            false
+        )
+
+        expect(queryByRole('progressbar')).toBeFalsy()
+    })
+
+    it("Shouldn't show HCP upgrading, upgrading but on nodepools table", async () => {
+        const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            false,
+            'nodepool'
+        )
+
+        expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(0)
+        expect(queryByRole('progressbar')).toBeFalsy()
+    })
+
+    it('Should show upgrading but with unavailable version num', async () => {
+        const mockHostedCluster: HostedClusterK8sResource = {
+            apiVersion: HostedClusterApiVersion,
+            kind: HostedClusterKind,
+            spec: {
+                dns: {
+                    baseDomain: 'dev06.red-chesterfield.com',
+                },
+                release: {
+                    image: 'randomimage',
+                },
+                services: [],
+                platform: {},
+                pullSecret: { name: 'psecret' },
+                sshKey: { name: 'thekey' },
+            },
+            status: {
+                conditions: [
+                    {
+                        lastTransitionTime: '2022-12-17T22:14:15Z',
+                        message: 'The hosted control plane is available',
+                        observedGeneration: 4,
+                        reason: 'HostedClusterAsExpected',
+                        status: 'True',
+                        type: 'Available',
+                    },
+                ],
+                version: {
+                    desired: {
+                        image: '',
+                    },
+                    history: [
+                        {
+                            completionTime: '',
+                            image: '',
+                            startedTime: '2022-10-24T20:34:08Z',
+                            state: 'Partial',
+                            verified: false,
+                            version: '',
+                        },
+                    ],
+                    observedGeneration: 2,
+                },
+            },
+        }
+        const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            false
+        )
+
+        expect(queryAllByText(/upgrading cluster/i).length).toBe(1)
+        expect(queryByRole('progressbar')).toBeTruthy()
+    })
+
+    it('Should have cluster name and version in popover', async () => {
+        const { getByText, queryAllByText, queryByRole } = await renderDistributionInfoField(
+            mockHypershiftCluster,
+            true,
+            false,
+            undefined,
+            undefined,
+            mockHostedCluster,
+            false
+        )
+
+        await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22/i }))
+        await waitFor(() =>
+            expect(getByText(/upgrading hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument()
+        )
+        expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+        expect(queryByRole('progressbar')).toBeTruthy()
     })
 })
