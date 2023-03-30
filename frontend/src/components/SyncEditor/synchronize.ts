@@ -40,12 +40,13 @@ export const setFormValues = (
     // convert errors to ErrorMessageType
     if (Array.isArray(errors)) {
       errors = errors.map(({ path, message }) => {
-        const { $r, $gv = {} } = get(resources.mappings, getPathArray(path))
+        const location = get(resources.mappings, getPathArray(path))
+        const { $r, $gv = {} } = location || {}
         const errorMsg: ErrorMessageType = {
           errorType: ErrorType.error,
           linePos: {
-            start: { line: $r, col: $gv?.start.col || 1 },
-            end: { line: $r, col: $gv?.end.col || 1 },
+            start: { line: $r || 1, col: $gv?.start?.col || 1 },
+            end: { line: $r || 1, col: $gv?.end?.col || 1 },
           },
           message,
         }
