@@ -45,7 +45,6 @@ import {
   clickByRole,
   clickByTestId,
   clickByText,
-  clickByTitle,
   typeByPlaceholderText,
   typeByTestId,
   typeByText,

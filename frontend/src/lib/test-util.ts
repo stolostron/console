@@ -154,7 +154,7 @@ export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, 
   }
 }
 
-export async function typeByRole(role: ByRoleMatcher, options?: ByRoleOptions, type: string, index?: number) {
+export async function typeByRole(type: string, role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
   await waitForInputByRole(role, options, index)
   if (index !== undefined) {
     userEvent.type(screen.getAllByRole(role, options)[index], type)
