@@ -1,9 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get } from 'lodash'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useHistory, useRouteMatch } from 'react-router-dom'
-import { GetDiscoveredOCPApps, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
+import {
+  GetArgoApplicationsHashSet,
+  GetDiscoveredOCPApps,
+  GetOpenShiftAppResourceMaps,
+} from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
@@ -12,7 +15,6 @@ import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath
 import { Application, Cluster, IRequestResult } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
-import { getArgoDestinationCluster } from '../../../../Applications/ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
 import { localClusterStr } from '../../../../Applications/Overview'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -86,31 +88,8 @@ export function StatusSummaryCount() {
   const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
   const moderateCount = policyReportViolations.filter((item) => item.properties?.total_risk === '2').length
   const lowCount = policyReportViolations.filter((item) => item.properties?.total_risk === '1').length
-  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
-  useEffect(() => {
-    discoveredApplications.forEach((remoteArgoApp: any) => {
-      setArgoApplicationsHashSet(
-        (prev) =>
-          new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
-      )
-    })
-    argoApps.forEach((argoApp: any) => {
-      const resources = argoApp.status ? argoApp.status.resources : undefined
-      const definedNamespace = get(resources, '[0].namespace')
-      // cache Argo app signature for filtering OCP apps later
-      setArgoApplicationsHashSet(
-        (prev) =>
-          new Set(
-            prev.add(
-              `${argoApp.metadata.name}-${
-                definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
-              }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, 'local-cluster')}`
-            )
-          )
-      )
-    })
-  }, [argoApps, clusters, discoveredApplications, ocpApps])
+  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
 
   const applicationList: Application[] = []
   const localCluster = useMemo(() => clusters.find((cls) => cls.name === localClusterStr), [clusters])
