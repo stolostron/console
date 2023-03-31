@@ -4,10 +4,8 @@ import {
   CatalogCardItemType,
   DataViewStringContext,
   getPatternflyColor,
-  ICatalogBreadcrumb,
   ICatalogCard,
   ItemView,
-  PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -16,7 +14,7 @@ import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../../../resources'
-import { AcmPage } from '../../../../../ui-components'
+import { AcmPage, AcmPageHeader } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateControlPlane() {
@@ -110,10 +108,10 @@ export function CreateControlPlane() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs: ICatalogBreadcrumb[] = [
-      { label: t('Clusters'), to: NavigationPath.clusters },
-      { label: t('Infrastructure'), to: NavigationPath.createCluster },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }) },
+    const newBreadcrumbs = [
+      { text: t('Clusters'), to: NavigationPath.clusters },
+      { text: t('Infrastructure'), to: NavigationPath.createCluster },
+      { text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }) },
     ]
     return newBreadcrumbs
   }, [t])
@@ -123,10 +121,10 @@ export function CreateControlPlane() {
   return (
     <AcmPage
       header={
-        <PageHeader
+        <AcmPageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' })}
           description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
     >
