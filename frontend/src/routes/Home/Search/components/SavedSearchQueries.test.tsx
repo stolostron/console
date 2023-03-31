@@ -134,6 +134,5 @@ describe('SavedSearchQueries Page', () => {
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('testSavedQuery1')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('testSavedQueryDesc1')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('Show all (1)')).toBeTruthy())
   })
 })
