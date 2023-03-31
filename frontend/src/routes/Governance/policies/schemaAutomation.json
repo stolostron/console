@@ -1,41 +1,41 @@
 [
-    {
-        "type": "PolicyAutomation",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "PolicyAutomation" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "validateName": true
-                        },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "policyRef": { "type": "string" },
-                        "mode": { "enum": ["once", "everyEvent", "disabled"] },
-                        "automationDef": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" },
-                                "secret": { "type": "string" },
-                                "type": { "const": "AnsibleJob" }
-                            },
-                            "required": ["name", "secret", "type"]
-                        }
-                    },
-                    "required": ["policyRef", "mode", "automationDef"]
-                }
+  {
+    "type": "PolicyAutomation",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "PolicyAutomation" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
             },
-            "required": ["apiVersion", "metadata", "kind", "spec"]
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "policyRef": { "type": "string" },
+            "mode": { "enum": ["once", "everyEvent", "disabled"] },
+            "automationDef": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "secret": { "type": "string" },
+                "type": { "const": "AnsibleJob" }
+              },
+              "required": ["name", "secret", "type"]
+            }
+          },
+          "required": ["policyRef", "mode", "automationDef"]
         }
+      },
+      "required": ["apiVersion", "metadata", "kind", "spec"]
     }
+  }
 ]

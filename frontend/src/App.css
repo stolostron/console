@@ -1,17 +1,17 @@
 @import '~openshift-assisted-ui-lib/index.css';
 
 .pf-c-toolbar__content-section {
-    row-gap: 16px !important;
+  row-gap: 16px !important;
 }
 
 .pf-c-page__sidebar-body {
-    padding-top: 0;
+  padding-top: 0;
 }
 
 #webpack-dev-server-client-overlay,
 #react-refresh-overlay {
-    overflow: scroll;
-    height: 20% !important;
-    top: 80% !important;
-    position: absolute !important;
+  overflow: scroll;
+  height: 20% !important;
+  top: 80% !important;
+  position: absolute !important;
 }

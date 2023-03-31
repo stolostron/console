@@ -1,116 +1,116 @@
 [
-    {
-        "type": "ApplicationSet",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "ApplicationSet" },
-                "metadata": {
+  {
+    "type": "ApplicationSet",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "ApplicationSet" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
+            },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "generators": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "clusterDecisionResource": {
                     "type": "object",
                     "properties": {
-                        "name": {
-                            "validateName": true
-                        },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "generators": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "clusterDecisionResource": {
-                                        "type": "object",
-                                        "properties": {
-                                            "configMapRef": { "const": "acm-placement" },
-                                            "requeueAfterSeconds": { "type": "number" },
-                                            "labelSelector": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "matchLabels": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "cluster.open-cluster-management.io/placement": {
-                                                                "type": "string"
-                                                            }
-                                                        },
-                                                        "required": ["cluster.open-cluster-management.io/placement"]
-                                                    }
-                                                },
-                                                "required": ["matchLabels"]
-                                            }
-                                        },
-                                        "required": ["configMapRef", "labelSelector", "requeueAfterSeconds"]
-                                    }
-                                },
-                                "required": ["clusterDecisionResource"]
-                            }
-                        },
-                        "template": {
+                      "configMapRef": { "const": "acm-placement" },
+                      "requeueAfterSeconds": { "type": "number" },
+                      "labelSelector": {
+                        "type": "object",
+                        "properties": {
+                          "matchLabels": {
                             "type": "object",
                             "properties": {
-                                "metadata": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": { "type": "string" }
-                                    },
-                                    "required": ["name"]
-                                },
-                                "spec": {
-                                    "type": "object",
-                                    "properties": {
-                                        "project": { "type": "string" },
-                                        "source": {
-                                            "type": "object",
-                                            "properties": {
-                                                "repoURL": { "type": "string" },
-                                                "targetRevision": { "type": "string" },
-                                                "path": { "type": "string" }
-                                            }
-                                        },
-                                        "destination": {
-                                            "type": "object",
-                                            "properties": {
-                                                "namespace": { "type": "string" },
-                                                "server": { "type": "string" }
-                                            }
-                                        }
-                                    },
-                                    "required": ["project", "source", "destination"]
-                                }
+                              "cluster.open-cluster-management.io/placement": {
+                                "type": "string"
+                              }
                             },
-                            "required": ["metadata", "spec"]
-                        }
+                            "required": ["cluster.open-cluster-management.io/placement"]
+                          }
+                        },
+                        "required": ["matchLabels"]
+                      }
                     },
-                    "required": ["generators", "template"]
-                }
+                    "required": ["configMapRef", "labelSelector", "requeueAfterSeconds"]
+                  }
+                },
+                "required": ["clusterDecisionResource"]
+              }
             },
-            "required": ["apiVersion", "metadata", "spec"]
-        }
-    },
-    {
-        "type": "Placement",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "Placement" },
+            "template": {
+              "type": "object",
+              "properties": {
                 "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "namespace": { "validateName": true }
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" }
+                  },
+                  "required": ["name"]
+                },
+                "spec": {
+                  "type": "object",
+                  "properties": {
+                    "project": { "type": "string" },
+                    "source": {
+                      "type": "object",
+                      "properties": {
+                        "repoURL": { "type": "string" },
+                        "targetRevision": { "type": "string" },
+                        "path": { "type": "string" }
+                      }
                     },
-                    "required": ["name", "namespace"]
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": { "type": "string" },
+                        "server": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["project", "source", "destination"]
                 }
-            },
-            "required": ["apiVersion", "kind", "metadata"]
+              },
+              "required": ["metadata", "spec"]
+            }
+          },
+          "required": ["generators", "template"]
         }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
     }
+  },
+  {
+    "type": "Placement",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Placement" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata"]
+    }
+  }
 ]

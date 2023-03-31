@@ -1,29 +1,29 @@
 .temptifly {
-    margin: 0;
+  margin: 0;
 }
 
 .temptifly.showEditor,
 .temptifly.showWizard {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .temptifly .creation-view-split-container .creation-view-controls-container,
 .temptifly .creation-view-controls-container {
-    padding: 0;
-    margin-right: 0;
-    margin-bottom: 0;
+  padding: 0;
+  margin-right: 0;
+  margin-bottom: 0;
 }
 
 .temptifly:not(.showWizard) .creation-view-split-container.showEditor .creation-view-controls-container {
-    padding: 0;
-    height: calc(100vh - 210px);
+  padding: 0;
+  height: calc(100vh - 210px);
 }
 
 .portal-controls {
-    display: flex;
+  display: flex;
 }
 .portal-controls > div {
-    margin-left: 16px;
+  margin-left: 16px;
 }
