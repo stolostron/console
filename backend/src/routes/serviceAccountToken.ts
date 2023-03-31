@@ -54,7 +54,7 @@ type Certificates = string | string[]
 function getCertificate(name: string, base64DefaultValue: string): Certificates {
   const internal_cert = readServiceAccountFile(name, base64DecodeValue(base64DefaultValue))
   return process.env.NODE_ENV === 'production'
-    ? internal_cert
+    ? [internal_cert]
     : [...(internal_cert ? [internal_cert] : []), ...rootCertificates] // include root certificates for development against clusters with signed certificates
 }
 
