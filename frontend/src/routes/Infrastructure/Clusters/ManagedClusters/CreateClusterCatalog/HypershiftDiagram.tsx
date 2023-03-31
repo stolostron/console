@@ -99,8 +99,8 @@ export function HypershiftDiagram() {
                 {t('worker nodes')}
               </span>
               <div className="hypershift-diagram-blueBlockStyle-noTextAlign">
-                <span style={{ fontWeight: 'bolder', display: 'block' }}>Worker</span>
-                <span style={{ fontWeight: 'bolder' }}>nodes xN</span>
+                <span style={{ fontWeight: 'bolder', display: 'block' }}>{t('Worker')}</span>
+                <span style={{ fontWeight: 'bolder' }}>{t('nodes xN')}</span>
               </div>
             </SplitItem>
             <SplitItem isFilled style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)', padding: '18px' }}>
@@ -109,8 +109,8 @@ export function HypershiftDiagram() {
                 {t('worker nodes')}
               </span>
               <div className="hypershift-diagram-greenBlockStyle-noTextAlign">
-                <span style={{ fontWeight: 'bolder', display: 'block' }}>Worker</span>
-                <span style={{ fontWeight: 'bolder' }}>nodes xN</span>
+                <span style={{ fontWeight: 'bolder', display: 'block' }}>{t('Worker')}</span>
+                <span style={{ fontWeight: 'bolder' }}>{t('nodes xN')}</span>
               </div>
             </SplitItem>
           </Split>

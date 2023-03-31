@@ -127,7 +127,7 @@ export function CreateAWSControlPlane() {
               toggleContent={
                 <>
                   <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
-                    Compare control plane types{' '}
+                    {t('Compare control plane types')}
                   </span>
                   <AcmButton
                     variant="link"
