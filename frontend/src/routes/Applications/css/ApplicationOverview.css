@@ -1,106 +1,105 @@
 /* Toggle subscriptions btn */
 .toggle-subs-btn {
-    width: 208px;
-    height: 32px;
-    display: block;
-    padding: 6px 0;
-    margin: 20px auto 10px;
-    font-size: 13px;
-    font-weight: 600;
+  width: 208px;
+  height: 32px;
+  display: block;
+  padding: 6px 0;
+  margin: 20px auto 10px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* Subscription cards */
 .sub-card-container {
-    width: 100%;
-    height: 6.75rem;
-    display: grid;
-    font-size: 14px;
-    grid-template-columns: 33% 34% 33%;
+  width: 100%;
+  height: 6.75rem;
+  display: grid;
+  font-size: 14px;
+  grid-template-columns: 33% 34% 33%;
 }
 
 .sub-card-content {
-    margin-left: 30px;
-    margin-top: -20px;
-    position: relative;
+  margin-left: 30px;
+  margin-top: -20px;
+  position: relative;
 }
 
 .sub-card-title {
-    font-weight: 600;
-    margin-bottom: 10px;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 .loading-skeleton-text {
-    display: inline-block;
+  display: inline-block;
 }
 
 /* Cluster count */
 .cluster-count-link {
-    color: #0066cc;
+  color: #0066cc;
 }
 
 /* "?" help icons */
 .overview-cards-container .help-icon {
-    fill: #0066cc;
-    margin-left: 4px;
-    cursor: pointer;
+  fill: #0066cc;
+  margin-left: 4px;
+  cursor: pointer;
 }
 
 .app-name-container {
-    display: flex;
-    align-items: baseline;
+  display: flex;
+  align-items: baseline;
 }
 
 .app-name {
-    margin-right: 12px;
+  margin-right: 12px;
 }
 
 /* Argo links */
 .overview-cards-container .argo-links-container {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-
 .argoLinkLoading {
-    pointer-events: none;
-    color: #5a6872;
+  pointer-events: none;
+  color: #5a6872;
 }
 
 .syncInProgress {
-    pointer-events: none;
-    color: #5a6872;
+  pointer-events: none;
+  color: #5a6872;
 }
 
 /* Search resource link */
 .details-item-link {
-    color: #0066cc;
-    text-decoration: none;
+  color: #0066cc;
+  text-decoration: none;
 }
 
 .subs-icon {
-    width: 16px;
-    height: 13px;
-    position: relative;
+  width: 16px;
+  height: 13px;
+  position: relative;
 }
 
 .set-time-window-link {
-    display: inline-block;
-    color: #0066cc;
-    text-decoration: none;
-    cursor: pointer;
+  display: inline-block;
+  color: #0066cc;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .new-tab-icon {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-bottom: 2px;
-    margin-left: 6px;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 2px;
+  margin-left: 6px;
 }
 
 .new-tab-icon .argo-app-link {
-    margin-left: 0px;
+  margin-left: 0px;
 }
 
 #set-time-window-link {
-    padding-left: 0;
+  padding-left: 0;
 }

@@ -1,131 +1,131 @@
 [
-    {
-        "type": "ManagedClusterAddOn",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "ManagedClusterAddOn" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "validateName": true
-                        },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "installNamespace": { "type": "string", "const": "submariner-operator" }
-                    },
-                    "required": ["installNamespace"]
-                }
+  {
+    "type": "ManagedClusterAddOn",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "ManagedClusterAddOn" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
             },
-            "required": ["apiVersion", "metadata", "spec"]
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "installNamespace": { "type": "string", "const": "submariner-operator" }
+          },
+          "required": ["installNamespace"]
         }
-    },
-    {
-        "type": "Secret",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "Secret" },
-                "type": { "type": "string", "enum": ["Opaque"] },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "stringData": {
-                    "type": "object",
-                    "properties": {
-                        "aws_access_key_id": { "type": "string" },
-                        "aws_secret_access_key": { "type": "string" },
-                        "osServiceAccount.json": { "type": "string" }
-                    },
-                    "oneOf": [
-                        { "required": ["aws_access_key_id", "aws_secret_access_key"] },
-                        { "required": ["osServiceAccount.json"] }
-                    ]
-                }
-            },
-            "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
-        }
-    },
-    {
-        "type": "SubmarinerConfig",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "SubmarinerConfig" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "gatewayConfig": {
-                            "type": "object",
-                            "properties": {
-                                "gateways": { "type": "number" }
-                            },
-                            "required": ["gateways"]
-                        },
-                        "IPSecNATTPort": { "type": "number" },
-                        "NATTEnable": { "type": "boolean" },
-                        "cableDriver": { "type": "string" },
-                        "credentialsSecret": {
-                            "type": "object",
-                            "properties": {
-                                "name": { "type": "string" }
-                            },
-                            "required": ["name"]
-                        }
-                    },
-                    "required": ["gatewayConfig", "IPSecNATTPort", "cableDriver", "credentialsSecret"]
-                }
-            },
-            "required": ["apiVersion", "metadata", "spec"]
-        }
-    },
-    {
-        "type": "Broker",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "Broker" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "const": "submariner-broker" },
-                        "namespace": { "type": "string" }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "globalnetEnabled": { "type": "boolean" }
-                    },
-                    "required": ["globalnetEnabled"]
-                }
-            },
-            "required": ["apiVersion", "kind", "metadata", "spec"]
-        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
     }
+  },
+  {
+    "type": "Secret",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Secret" },
+        "type": { "type": "string", "enum": ["Opaque"] },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "namespace": { "type": "string" }
+          },
+          "required": ["name", "namespace"]
+        },
+        "stringData": {
+          "type": "object",
+          "properties": {
+            "aws_access_key_id": { "type": "string" },
+            "aws_secret_access_key": { "type": "string" },
+            "osServiceAccount.json": { "type": "string" }
+          },
+          "oneOf": [
+            { "required": ["aws_access_key_id", "aws_secret_access_key"] },
+            { "required": ["osServiceAccount.json"] }
+          ]
+        }
+      },
+      "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
+    }
+  },
+  {
+    "type": "SubmarinerConfig",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "SubmarinerConfig" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "namespace": { "type": "string" }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "gatewayConfig": {
+              "type": "object",
+              "properties": {
+                "gateways": { "type": "number" }
+              },
+              "required": ["gateways"]
+            },
+            "IPSecNATTPort": { "type": "number" },
+            "NATTEnable": { "type": "boolean" },
+            "cableDriver": { "type": "string" },
+            "credentialsSecret": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" }
+              },
+              "required": ["name"]
+            }
+          },
+          "required": ["gatewayConfig", "IPSecNATTPort", "cableDriver", "credentialsSecret"]
+        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "Broker",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Broker" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "const": "submariner-broker" },
+            "namespace": { "type": "string" }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "globalnetEnabled": { "type": "boolean" }
+          },
+          "required": ["globalnetEnabled"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "spec"]
+    }
+  }
 ]

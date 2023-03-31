@@ -1,32 +1,32 @@
 .timeWindow-status-icon {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
 .timeWindow-labels-popover-content {
-    padding: 1rem 4rem 1rem 1rem;
+  padding: 1rem 4rem 1rem 1rem;
 }
 
 .timeWindow-title {
-    font-weight: 600;
-    padding-bottom: 8px;
+  font-weight: 600;
+  padding-bottom: 8px;
 }
 
 .timeWindow-content {
-    padding-bottom: 20px;
-    line-height: 18px;
+  padding-bottom: 20px;
+  line-height: 18px;
 }
 
 .edit-time-window-link {
-    display: inline-block;
-    color: #0066cc;
-    text-decoration: none;
-    cursor: pointer;
+  display: inline-block;
+  color: #0066cc;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .edit-time-window-btn-icon {
-    margin-left: 8px;
+  margin-left: 8px;
 }
 
 #set-time-window-link {
-    padding-left: 0;
+  padding-left: 0;
 }
