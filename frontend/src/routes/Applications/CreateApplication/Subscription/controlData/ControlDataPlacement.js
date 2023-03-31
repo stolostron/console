@@ -199,12 +199,12 @@ export const updateNewRuleControls = (control) => {
   const kind = _.get(active, 'kind')
   control.info = availableInfo ? availableInfo[control?.active] : ''
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
-  const isPlacementRule = groupControlData.find(({ id }) => id === 'isPlacementRule')
+  const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
   if (kind) {
     if (kind === PlacementRuleKind) {
-      isPlacementRule && _.set(isPlacementRule, 'active', true)
+      isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
     } else {
-      isPlacementRule && _.set(isPlacementRule, 'active', false)
+      isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
     }
   }
 
@@ -284,9 +284,9 @@ const placementData = (isLocalCluster, t) => {
       summarize: summarizeOnline,
     },
     {
-      id: 'isPlacementRule',
+      id: 'isDeprecatedPR',
       type: 'hidden',
-      active: false,
+      active: '',
     },
     {
       id: 'placementrulecombo',

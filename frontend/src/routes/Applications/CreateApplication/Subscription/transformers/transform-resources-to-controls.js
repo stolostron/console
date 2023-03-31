@@ -13,6 +13,7 @@
 
 import { initializeControls, getSourcePath, getResourceID } from '../../../../../components/TemplateEditor'
 import _ from 'lodash'
+import { PlacementKind, PlacementRuleKind } from '../../../../../resources'
 
 //only called when editing an existing application
 //examines resources to create the correct resource types that are being deployed
@@ -204,23 +205,34 @@ export const shiftTemplateObject = (templateObject, selfLinksControl) => {
 // remove that placement rule too
 const removePlacementRule = (subscription, templateObject, selfLinksControl) => {
   const name = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
-  if (name) {
+  const kind = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.kind.$v')
+  if (name && kind) {
     const remainingSubscriptions = _.get(templateObject, 'Subscription')
     const isReused = remainingSubscriptions.some((resource) => {
-      return name === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
+      return (
+        name === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v') &&
+        kind === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.kind.$v')
+      )
     })
 
     // unless it's used in another subscription
     if (!isReused) {
-      const rules = templateObject.PlacementRule || []
-      const inx = rules.findIndex((rule) => {
-        return name === _.get(rule, '$synced.metadata.$v.name.$v')
-      })
-      if (inx !== -1) {
-        const rule = templateObject.PlacementRule.splice(inx, 1)[0]
+      let rules = []
+      if (kind === PlacementRuleKind) {
+        rules = templateObject.PlacementRule
+      } else if (kind === PlacementKind) {
+        rules = templateObject.Placement
+      }
+      const inx =
+        rules &&
+        rules.findIndex((rule) => {
+          return name === _.get(rule, '$synced.metadata.$v.name.$v')
+        })
+      if (inx !== -1 && rules) {
+        const rule = rules.splice(inx, 1)[0]
         if (selfLinksControl) {
           const ruleSelfLink = getResourceID(rule.$raw)
-          _.set(selfLinksControl, 'active.PlacementRule', ruleSelfLink)
+          _.set(selfLinksControl, `active.${kind}`, ruleSelfLink)
         }
       }
     }
