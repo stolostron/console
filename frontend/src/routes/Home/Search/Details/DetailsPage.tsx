@@ -166,6 +166,7 @@ export default function DetailsPage() {
             loading={!resource && resourceError === ''}
             error={resourceError}
             resource={resource}
+            name={name}
           />
         </Route>
         <Route exact path={NavigationPath.resourceYAML}>
