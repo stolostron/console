@@ -75,7 +75,7 @@ describe('Applications Page', () => {
       </RecoilRoot>
     )
     // wait for page to load
-    await waitForText(mockApplication0.metadata.name!)
+    await waitForText('feng-remote-argo8')
   })
 
   test('should display info', async () => {
