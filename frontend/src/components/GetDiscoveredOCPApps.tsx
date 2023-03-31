@@ -64,6 +64,34 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean) {
   }
 }
 
+function getValues(labels: { annotation: any; value: any }[]) {
+  let itemLabel = ''
+  let argoInstanceLabelValue
+  let isManagedByHelm
+
+  labels &&
+    labels.forEach(({ annotation, value }) => {
+      if (annotation === 'app') {
+        itemLabel = value
+      } else if (annotation === partOfAnnotationStr) {
+        if (!itemLabel) {
+          itemLabel = value
+        }
+      }
+      if (annotation === 'app.kubernetes.io/instance') {
+        argoInstanceLabelValue = value
+      }
+      if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+        isManagedByHelm = true
+      }
+    })
+  return {
+    itemLabel,
+    isManagedByHelm,
+    argoInstanceLabelValue,
+  }
+}
+
 export function GetOpenShiftAppResourceMaps(
   ocpApps: OCPAppResource[],
   helmReleases: HelmRelease[],
@@ -71,14 +99,11 @@ export function GetOpenShiftAppResourceMaps(
 ) {
   const openShiftAppResourceMaps: Record<string, any> = {}
   for (const ocpApp of ocpApps) {
-    let argoInstanceLabelValue
     if ((ocpApp as any)._hostingSubscription) {
       // don't list subscription apps as ocp
       continue
     }
 
-    let itemLabel = ''
-    let isManagedByHelm = false
     const labels: [] =
       (ocpApp as any).label &&
       (ocpApp as any).label
@@ -88,22 +113,9 @@ export function GetOpenShiftAppResourceMaps(
           const [annotation, value] = label.split('=')
           return { annotation, value } as { annotation: string; value: string }
         })
-    labels &&
-      labels.forEach(({ annotation, value }) => {
-        if (annotation === 'app') {
-          itemLabel = value
-        } else if (annotation === partOfAnnotationStr) {
-          if (!itemLabel) {
-            itemLabel = value
-          }
-        }
-        if (annotation === 'app.kubernetes.io/instance') {
-          argoInstanceLabelValue = value
-        }
-        if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
-          isManagedByHelm = true
-        }
-      })
+
+    const { itemLabel, isManagedByHelm, argoInstanceLabelValue } = getValues(labels)
+
     if (itemLabel && isManagedByHelm) {
       const helmRelease = helmReleases.find(
         (hr) => hr.metadata.name === itemLabel && hr.metadata.namespace === ocpApp.namespace
