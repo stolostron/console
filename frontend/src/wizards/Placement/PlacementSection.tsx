@@ -6,7 +6,6 @@ import {
   EditMode,
   WizItemSelector,
   Section,
-  Select,
   WizSingleSelect,
   useData,
   DisplayMode,
@@ -189,6 +188,16 @@ export function PlacementSection(props: {
     )
   }
 
+  let usesPlacementRule = false
+  for (const resource of resources) {
+    if (resource.kind === PlacementBindingKind) {
+      if ((resource as any)?.placementRef?.kind === PlacementRuleKind) {
+        usesPlacementRule = true
+        break
+      }
+    }
+  }
+
   return (
     <Section
       label={t('Placement')}
@@ -253,21 +262,22 @@ export function PlacementSection(props: {
       )}
       {placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 1 && (
         <WizItemSelector selectKey="kind" selectValue={PlacementBindingKind}>
-          <Select
-            path="placementRef.name"
-            label={t('Placement')}
-            required
-            hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
-            options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
-          />
-          <WizSingleSelect
-            path="placementRef.name"
-            label={t('Placement rule')}
-            placeholder={t('Select the placement rule')}
-            required
-            hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-            options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}
-          />
+          {usesPlacementRule ? (
+            <WizSingleSelect
+              path="placementRef.name"
+              label={t('Placement rule')}
+              placeholder={t('Select the placement rule')}
+              required
+              options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}
+            />
+          ) : (
+            <WizSingleSelect
+              path="placementRef.name"
+              label={t('Placement')}
+              required
+              options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
+            />
+          )}
         </WizItemSelector>
       )}
     </Section>
