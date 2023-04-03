@@ -2567,8 +2567,6 @@
   "template.preScale.label": "Prescale Ansible templates",
   "template.preUpgrade.label": "Preupgrade Ansible templates",
   "template.templates.title": "Automation template",
-  "template.timeout": "Timeout",
-  "template.timeout.help": "Timeout in minutes. The default is {{timeout}} minutes.",
   "template.title": "Automation",
   "template.workflow.modal.name.label": "Workflow job template name",
   "template.workflow.modal.name.placeholder": "Search or select a workflow job template name",
