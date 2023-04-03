@@ -75,6 +75,7 @@ export default function AdvancedConfiguration() {
   const ChanneltableItems: IResource[] = []
   const SubscriptiontableItems: IResource[] = []
   const PlacementRuleTableItems: IResource[] = []
+  const PlacementTableItems: IResource[] = []
 
   useEffect(() => {
     const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
@@ -107,6 +108,34 @@ export default function AdvancedConfiguration() {
       .catch((err) => console.error(err))
     return () => canDeletePlacementRulePromise.abort()
   }, [])
+
+  const getPlacementDecisionClusterCount = useCallback(
+    (resource: IResource, clusterCount: ClusterCount) => {
+      let clusterDecisions = _.get(resource, 'status.decisions')
+      if (resource.kind === PlacementKind) {
+        // find the placementDecisions for the placement
+        clusterDecisions = _.get(
+          placementDecisions.find(
+            (pd) => pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === resource.metadata?.name
+          ),
+          'status.decisions'
+        )
+      }
+
+      if (clusterDecisions) {
+        clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
+          const { clusterName } = clusterDecision
+          if (clusterName === 'local-cluster') {
+            clusterCount.localPlacement = true
+          } else {
+            clusterCount.remoteCount++
+          }
+        })
+      }
+      return clusterCount
+    },
+    [placementDecisions]
+  )
 
   const getSubscriptionClusterCount = useCallback(
     function getSubscriptionClusterCount(resource: IResource, clusterCount: ClusterCount, showSearchLink?: boolean) {
@@ -146,7 +175,7 @@ export default function AdvancedConfiguration() {
         }
       }
     },
-    [placementDecisions, t]
+    [getPlacementDecisionClusterCount, placementDecisions, t]
   )
 
   // Cache cell text for sorting and searching
@@ -219,6 +248,12 @@ export default function AdvancedConfiguration() {
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
       }
+      case 'Placement': {
+        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount)
+        const clusterString = getClusterCountString(t, clusterCount)
+        _.set(transformedObject.transformed, 'clusterCount', clusterString)
+        break
+      }
     }
     // Cannot add properties directly to objects in typescript
     return { ...tableItem, ...transformedObject }
@@ -234,6 +269,8 @@ export default function AdvancedConfiguration() {
   placementrules.forEach((placementrule) => {
     PlacementRuleTableItems.push(generateTransformData(placementrule))
   })
+
+  placements.forEach((placement) => PlacementTableItems.push(generateTransformData(placement)))
 
   const getRowActionResolver = (item: IResource) => {
     const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
@@ -572,16 +609,11 @@ export default function AdvancedConfiguration() {
           },
           {
             header: t('Clusters'),
+            cell: 'transformed.clusterCount',
+            sort: 'transformed.clusterCount',
             tooltip: t(
               'Displays the number of remote and local clusters where resources are deployed because of the placement.'
             ),
-            cell: 'status.numberOfSelectedClusters',
-            sort: (resource) => {
-              const numberOfSelectedClusters = _.get(resource, 'status.numberOfSelectedClusters')
-              if (numberOfSelectedClusters) {
-                return numberOfSelectedClusters
-              }
-            },
           },
           {
             header: t('Created'),
@@ -593,7 +625,7 @@ export default function AdvancedConfiguration() {
         ],
         [t]
       ),
-      items: placements,
+      items: PlacementTableItems,
       rowActionResolver: getRowActionResolver,
     },
     placementrules: {
@@ -704,21 +736,6 @@ export default function AdvancedConfiguration() {
         </TextContent>
       </AcmExpandableCard>
     )
-  }
-
-  function getPlacementDecisionClusterCount(resource: IResource, clusterCount: ClusterCount) {
-    const clusterDecisions = _.get(resource, 'status.decisions')
-    if (clusterDecisions) {
-      clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
-        const { clusterName } = clusterDecision
-        if (clusterName === 'local-cluster') {
-          clusterCount.localPlacement = true
-        } else {
-          clusterCount.remoteCount++
-        }
-      })
-    }
-    return clusterCount
   }
 
   function editLink(params: { resource: any; kind: string; apiversion: string }) {
