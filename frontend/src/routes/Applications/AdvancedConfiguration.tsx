@@ -27,6 +27,7 @@ import {
   ChannelKind,
   IResource,
   PlacementApiVersionBeta,
+  PlacementDecision,
   PlacementDefinition,
   PlacementKind,
   PlacementRuleApiVersion,
@@ -109,34 +110,6 @@ export default function AdvancedConfiguration() {
     return () => canDeletePlacementRulePromise.abort()
   }, [])
 
-  const getPlacementDecisionClusterCount = useCallback(
-    (resource: IResource, clusterCount: ClusterCount) => {
-      let clusterDecisions = _.get(resource, 'status.decisions')
-      if (resource.kind === PlacementKind) {
-        // find the placementDecisions for the placement
-        clusterDecisions = _.get(
-          placementDecisions.find(
-            (pd) => pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === resource.metadata?.name
-          ),
-          'status.decisions'
-        )
-      }
-
-      if (clusterDecisions) {
-        clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
-          const { clusterName } = clusterDecision
-          if (clusterName === 'local-cluster') {
-            clusterCount.localPlacement = true
-          } else {
-            clusterCount.remoteCount++
-          }
-        })
-      }
-      return clusterCount
-    },
-    [placementDecisions]
-  )
-
   const getSubscriptionClusterCount = useCallback(
     function getSubscriptionClusterCount(resource: IResource, clusterCount: ClusterCount, showSearchLink?: boolean) {
       const namespace = _.get(resource, 'metadata.namespace')
@@ -155,7 +128,7 @@ export default function AdvancedConfiguration() {
         )
 
         if (selectedPlacementDecision) {
-          clusterCount = getPlacementDecisionClusterCount(selectedPlacementDecision, clusterCount)
+          clusterCount = getPlacementDecisionClusterCount(selectedPlacementDecision, clusterCount, placementDecisions)
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
             const searchLink = getSearchLink({
@@ -175,7 +148,7 @@ export default function AdvancedConfiguration() {
         }
       }
     },
-    [getPlacementDecisionClusterCount, placementDecisions, t]
+    [placementDecisions, t]
   )
 
   // Cache cell text for sorting and searching
@@ -244,7 +217,7 @@ export default function AdvancedConfiguration() {
       }
       case 'PlacementRule':
       case 'Placement': {
-        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount)
+        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions)
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
@@ -765,4 +738,33 @@ export default function AdvancedConfiguration() {
       </Stack>
     </PageSection>
   )
+}
+
+export function getPlacementDecisionClusterCount(
+  resource: IResource,
+  clusterCount: ClusterCount,
+  placementDecisions: PlacementDecision[]
+) {
+  let clusterDecisions = _.get(resource, 'status.decisions')
+  if (resource.kind === PlacementKind) {
+    // find the placementDecisions for the placement
+    clusterDecisions = _.get(
+      placementDecisions.find(
+        (pd) => pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === resource.metadata?.name
+      ),
+      'status.decisions'
+    )
+  }
+
+  if (clusterDecisions) {
+    clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
+      const { clusterName } = clusterDecision
+      if (clusterName === 'local-cluster') {
+        clusterCount.localPlacement = true
+      } else {
+        clusterCount.remoteCount++
+      }
+    })
+  }
+  return clusterCount
 }
