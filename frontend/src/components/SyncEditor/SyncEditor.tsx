@@ -368,7 +368,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorHasFocus,
         editorRef,
         monacoRef,
-        [...allErrors, ...[customValidationErrors || []]],
+        [...allErrors, ...customValidationErrors],
         yamlChanges,
         change,
         remainingEdits,
@@ -451,7 +451,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       if (errors.syntax.length === 0) {
         const clonedUnredactedChange = cloneDeep(unredactedChange)
         setResourceChanges(clonedUnredactedChange)
-        customErrors = setFormValues(syncs, clonedUnredactedChange)
+        customErrors = setFormValues(syncs, clonedUnredactedChange) || []
         setCustomValidationErrors(customErrors)
       }
       setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
@@ -462,7 +462,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorHasFocus,
         editorRef,
         monacoRef,
-        [...allErrors, ...[customErrors || []]],
+        [...allErrors, ...customErrors],
         [],
         change,
         lastUserEdits,
