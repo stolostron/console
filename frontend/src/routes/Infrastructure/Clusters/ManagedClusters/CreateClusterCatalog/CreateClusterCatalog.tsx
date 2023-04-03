@@ -215,7 +215,9 @@ export function CreateClusterCatalog() {
                   style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
                   isExpanded={isAdditionalProvidersExpanded}
                   onToggle={onAdditionalProvidersToggle}
-                  toggleContent={<span style={{ color: 'var(--pf-global--Color--100)' }}>Additional providers</span>}
+                  toggleContent={
+                    <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Additional providers')}</span>
+                  }
                   isIndented={true}
                 >
                   <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>
