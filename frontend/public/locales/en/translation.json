@@ -399,6 +399,7 @@
   "Adding hosts allows cluster creators to pull any available hosts from the infrastructure environment.": "Adding hosts allows cluster creators to pull any available hosts from the infrastructure environment.",
   "Additional actions": "Additional actions",
   "Additional information:": "Additional information:",
+  "Additional providers": "Additional providers",
   "Additional trust bundle": "Additional trust bundle",
   "Advanced configuration": "Advanced configuration",
   "advancedConfiguration.empty.subtitle": "Click <bold>Create application</bold> to create your resource.",
