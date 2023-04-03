@@ -27,12 +27,9 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
 
     const mch = await getMultiClusterHub()
     const namespace = getNamespace()
-    const searchService =
-      mch && namespace !== mch.metadata.namespace
-        ? `https://search-search-api.${mch.metadata.namespace}.svc.cluster.local:4010`
-        : undefined
+    const searchService = `https://search-search-api.${mch?.metadata?.namespace || namespace}.svc.cluster.local:4010`
 
-    const searchUrl = process.env.SEARCH_API_URL || searchService || 'https://search-search-api:4010'
+    const searchUrl = process.env.SEARCH_API_URL || searchService
 
     const url = new URL(searchUrl + '/searchapi/graphql')
     headers.authorization = `Bearer ${token}`

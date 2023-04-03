@@ -610,7 +610,7 @@ Array [
       "url": "/multicloud/infrastructure/automations/add",
     },
     "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
-    "type": "combobox",
+    "type": "singleselect",
     "validation": Object {
       "required": false,
     },
@@ -1275,7 +1275,7 @@ Array [
       "url": "/multicloud/infrastructure/automations/add",
     },
     "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
-    "type": "combobox",
+    "type": "singleselect",
     "validation": Object {
       "required": false,
     },
@@ -1940,7 +1940,7 @@ Array [
       "url": "/multicloud/infrastructure/automations/add",
     },
     "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
-    "type": "combobox",
+    "type": "singleselect",
     "validation": Object {
       "required": false,
     },

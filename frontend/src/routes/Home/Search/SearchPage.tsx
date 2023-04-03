@@ -27,7 +27,7 @@ import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchMod
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
 import { Searchbar } from './components/Searchbar'
-import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
+import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString, operators } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
   useGetMessagesQuery,
@@ -38,7 +38,6 @@ import {
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
-const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 const useStyles = makeStyles({
   actionGroup: {
     backgroundColor: 'var(--pf-global--BackgroundColor--100)',
@@ -127,7 +126,7 @@ function RenderSearchBar(props: {
     setCurrentSearch(presetSearchQuery)
   }, [presetSearchQuery])
 
-  const searchSchemaResults = useSearchSchemaQuery({
+  const { data: searchSchemaData, error: searchSchemaError } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
@@ -141,7 +140,7 @@ function RenderSearchBar(props: {
     return { searchCompleteValue: value, searchCompleteQuery: query }
   }, [currentSearch, searchAutocompleteLimit])
 
-  const searchCompleteResults = useSearchCompleteQuery({
+  const { data: searchCompleteData, error: searchCompleteError } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
@@ -152,31 +151,40 @@ function RenderSearchBar(props: {
   })
 
   useEffect(() => {
-    if (searchSchemaResults?.error || searchCompleteResults?.error) {
+    if (searchSchemaError || searchCompleteError) {
       setQueryErrors(true)
     } else {
       setQueryErrors(false)
     }
-  }, [searchSchemaResults, searchCompleteResults, queryErrors, setQueryErrors])
+  }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors])
 
   const suggestions = useMemo(() => {
     return currentSearch === '' ||
       (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
       ? formatSearchbarSuggestions(
-          _.get(searchSchemaResults, 'data.searchSchema.allProperties', []),
+          _.get(searchSchemaData, 'searchSchema.allProperties', [
+            'name',
+            'namespace',
+            'label',
+            'kind',
+            'cluster',
+            'apigroup',
+            'created',
+            t('Loading more...'),
+          ]),
           'filter',
           '', // Dont need to de-dupe filters
           searchAutocompleteLimit,
           t
         )
       : formatSearchbarSuggestions(
-          _.get(searchCompleteResults, 'data.searchComplete', []),
+          _.get(searchCompleteData || [], 'searchComplete', ['Loading...']),
           'value',
           currentSearch, // pass current search query in order to de-dupe already selected values
           searchAutocompleteLimit,
           t
         )
-  }, [currentSearch, searchSchemaResults, searchCompleteResults, searchAutocompleteLimit, t])
+  }, [currentSearch, searchSchemaData, searchCompleteData, searchAutocompleteLimit, t])
 
   const saveSearchTooltip = useMemo(() => {
     if (savedSearchQueries.length >= savedSearchLimit) {
@@ -204,7 +212,6 @@ function RenderSearchBar(props: {
         />
         <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
         <Searchbar
-          loadingSuggestions={searchSchemaResults.loading || searchCompleteResults.loading}
           queryString={currentSearch}
           saveSearchTooltip={saveSearchTooltip}
           setSaveSearch={setSaveSearch}
@@ -223,7 +230,7 @@ function RenderSearchBar(props: {
           savedSearchQueries={savedSearchQueries}
           refetchSearch={refetchSearch}
         />
-        {HandleErrors(searchSchemaResults.error, searchCompleteResults.error)}
+        {HandleErrors(searchSchemaError, searchCompleteError)}
       </PageSection>
     </Fragment>
   )

@@ -1,421 +1,421 @@
 .topologyDetails {
-    background-color: var(--pf-global--BackgroundColor--400);
-    width: 100%;
-    height: calc(100% - 29px);
-    overflow: auto;
+  background-color: var(--pf-global--BackgroundColor--400);
+  width: 100%;
+  height: calc(100% - 29px);
+  overflow: auto;
 }
 
 .topologyDetails .detailsHeader {
-    position: sticky;
-    top: 0px;
-    box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
-    z-index: var(--pf-c-page--section--m-sticky-top--ZIndex);
-    background-color: var(--pf-global--BackgroundColor--100);
+  position: sticky;
+  top: 0px;
+  box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
+  z-index: var(--pf-c-page--section--m-sticky-top--ZIndex);
+  background-color: var(--pf-global--BackgroundColor--100);
 }
 
 .topologyDetails .detailsHeader .innerDetailsHeader {
-    margin: 0;
-    display: flex;
-    align-items: center;
+  margin: 0;
+  display: flex;
+  align-items: center;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .detailsIconContainer {
-    margin: 20px 16px 20px 20px;
+  margin: 20px 16px 20px 20px;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .detailsIcon {
-    border-top: 0;
-    stroke-width: 3px;
-    fill: #fff;
+  border-top: 0;
+  stroke-width: 3px;
+  fill: #fff;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .closeIcon {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    fill: #5a6872;
-    stroke: #5a6872;
-    cursor: pointer;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  fill: #5a6872;
+  stroke: #5a6872;
+  cursor: pointer;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .titleText {
-    margin-left: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: bold;
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
 }
 .topologyDetails .detailsHeader .innerDetailsHeader .titleNameText {
-    font-size: 18px;
+  font-size: 18px;
 }
 .topologyDetails .legendHeader {
-    margin: 4px 42px 0 24px;
-    display: flex;
-    align-items: center;
+  margin: 4px 42px 0 24px;
+  display: flex;
+  align-items: center;
 }
 .topologyDetails .legendHeader .headerIcon {
-    border-top: 0;
-    stroke-width: 3px;
-    fill: #fff;
+  border-top: 0;
+  stroke-width: 3px;
+  fill: #fff;
 }
 .topologyDetails .legendHeader .titleText {
-    margin-top: 8px;
-    font-size: 20px;
-    line-height: 30px;
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 30px;
 }
 .topologyDetails .legendHeader .bodyText {
-    margin-top: 12px;
-    font-size: 14px;
-    line-height: 21px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 21px;
 }
 .topologyDetails .legendBody {
-    margin: 12px 42px 24px 24px;
-    align-items: center;
+  margin: 12px 42px 24px 24px;
+  align-items: center;
 }
 .topologyDetails .legendBody .bodyIcon {
-    border-top: 0;
-    stroke-width: 3px;
-    fill: #fff;
+  border-top: 0;
+  stroke-width: 3px;
+  fill: #fff;
 }
 .topologyDetails .legendBody .statusSvg {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-    vertical-align: text-bottom;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: text-bottom;
 }
 .topologyDetails .legendBody .iconSvg {
-    width: 40px;
-    height: 40px;
-    margin-top: 6px;
+  width: 40px;
+  height: 40px;
+  margin-top: 6px;
 }
 .topologyDetails .legendBody .titleText {
-    margin-top: 25px;
-    font-size: 14px;
-    line-height: 18px;
-    font-weight: 700;
+  margin-top: 25px;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
 }
 .topologyDetails .legendBody .titleNoteText {
-    margin-top: 4px;
-    font-size: 12px;
-    line-height: 18px;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 18px;
 }
 .topologyDetails .legendBody .bodyText {
-    margin-top: 21px;
-    font-size: 14px;
-    line-height: 21px;
-    display: flex;
+  margin-top: 21px;
+  font-size: 14px;
+  line-height: 21px;
+  display: flex;
 }
 .topologyDetails .legendBody .bodyResourcesDiv {
-    margin-top: 50px;
+  margin-top: 50px;
 }
 .topologyDetails .legendBody .titleResourcesText {
-    margin-top: 8px;
-    font-size: 14px;
-    line-height: 18px;
-    font-weight: 700;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
 }
 .topologyDetails .legendBody .bodyIconsDiv {
-    display: flex;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }
 .topologyDetails .legendBody .bodyIconsTextDiv {
-    width: 120px;
-    height: 100px;
-    text-align: center;
-    color: #06c;
-    font-size: 12px;
-    line-height: 16px;
-    align-content: flex-end;
-    display: grid;
+  width: 120px;
+  height: 100px;
+  text-align: center;
+  color: #06c;
+  font-size: 12px;
+  line-height: 16px;
+  align-content: flex-end;
+  display: grid;
 }
 .topologyDetails .closeIcon {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    fill: #5a6872;
-    stroke: #5a6872;
-    cursor: pointer;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  fill: #5a6872;
+  stroke: #5a6872;
+  cursor: pointer;
 }
 .topologyDetails hr {
-    border: 1px solid #dfe6eb;
-    margin-bottom: 0.5rem;
+  border: 1px solid #dfe6eb;
+  margin-bottom: 0.5rem;
 }
 .topologyDetails .sectionContent {
-    margin-left: 1rem;
-    margin-right: 1rem;
-    line-height: 20px;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  line-height: 20px;
 }
 .topologyDetails .sectionContent.snippet {
-    font-family: monospace;
-    color: #5a6872;
+  font-family: monospace;
+  color: #5a6872;
 }
 .topologyDetails .sectionContent.snippet code {
-    white-space: pre-wrap;
-    display: block;
-    font-size: 12px;
+  white-space: pre-wrap;
+  display: block;
+  font-size: 12px;
 }
 .topologyDetails .sectionContent.form {
-    height: 4rem;
-    margin-top: 10px;
+  height: 4rem;
+  margin-top: 10px;
 }
 .topologyDetails .sectionContent.submit {
-    height: 6rem;
-    margin-top: 30px;
-    display: flex;
-    justify-content: flex-end;
+  height: 6rem;
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-pagination__total-items {
-    display: none;
+  display: none;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-pagination
-    .pf-c-pagination__nav
-    .pf-c-pagination__nav-control
-    .pf-c-button {
-    outline-width: 0px;
+  .sectionContent
+  .clusterDetails
+  .pf-c-pagination
+  .pf-c-pagination__nav
+  .pf-c-pagination__nav-control
+  .pf-c-button {
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-options-menu {
-    display: none;
+  display: none;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-select
-    .pf-c-select__toggle
-    .pf-c-select__toggle-wrapper
-    .pf-c-form-control:focus {
-    outline-width: 0px;
+  .sectionContent
+  .clusterDetails
+  .pf-c-select
+  .pf-c-select__toggle
+  .pf-c-select__toggle-wrapper
+  .pf-c-form-control:focus {
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
-    outline-width: 0px;
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion {
-    --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-    --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--active__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-    --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+  --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
+  --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--active__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
+  --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle {
-    padding-left: 0px;
+  padding-left: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-accordion
-    .clusterDetailItem
-    .pf-c-accordion__toggle.pf-m-expanded
-    .pf-c-accordion__toggle-text {
-    color: #000;
-    font-weight: normal;
+  .sectionContent
+  .clusterDetails
+  .pf-c-accordion
+  .clusterDetailItem
+  .pf-c-accordion__toggle.pf-m-expanded
+  .pf-c-accordion__toggle-text {
+  color: #000;
+  font-weight: normal;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:hover {
-    background-color: #fff;
+  background-color: #fff;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:active {
-    background-color: #fff;
+  background-color: #fff;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:focus {
-    background-color: #fff;
-    outline-width: 0px;
+  background-color: #fff;
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle::after {
-    width: 0px;
+  width: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-accordion
-    .clusterDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded {
-    --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
+  .sectionContent
+  .clusterDetails
+  .pf-c-accordion
+  .clusterDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded {
+  --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-accordion
-    .clusterDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded
-    .pf-c-accordion__expanded-content-body {
-    padding-left: 0px;
-    padding-top: 0px;
+  .sectionContent
+  .clusterDetails
+  .pf-c-accordion
+  .clusterDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded
+  .pf-c-accordion__expanded-content-body {
+  padding-left: 0px;
+  padding-top: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .clusterDetails
-    .pf-c-accordion
-    .clusterDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded
-    .pf-c-accordion__expanded-content-body::after {
-    width: 0px;
+  .sectionContent
+  .clusterDetails
+  .pf-c-accordion
+  .clusterDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded
+  .pf-c-accordion__expanded-content-body::after {
+  width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-pagination__total-items {
-    display: none;
+  display: none;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-pagination
-    .pf-c-pagination__nav
-    .pf-c-pagination__nav-control
-    .pf-c-button {
-    outline-width: 0px;
+  .sectionContent
+  .appDetails
+  .pf-c-pagination
+  .pf-c-pagination__nav
+  .pf-c-pagination__nav-control
+  .pf-c-button {
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-options-menu {
-    display: none;
+  display: none;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-select
-    .pf-c-select__toggle
-    .pf-c-select__toggle-wrapper
-    .pf-c-form-control:focus {
-    outline-width: 0px;
+  .sectionContent
+  .appDetails
+  .pf-c-select
+  .pf-c-select__toggle
+  .pf-c-select__toggle-wrapper
+  .pf-c-form-control:focus {
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
-    outline-width: 0px;
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion {
-    --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-    --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--active__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
-    --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-    --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+  --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
+  --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--active__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
+  --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
+  --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle {
-    padding-left: 0px;
+  padding-left: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-accordion
-    .appDetailItem
-    .pf-c-accordion__toggle.pf-m-expanded
-    .pf-c-accordion__toggle-text {
-    color: #000;
-    font-weight: normal;
+  .sectionContent
+  .appDetails
+  .pf-c-accordion
+  .appDetailItem
+  .pf-c-accordion__toggle.pf-m-expanded
+  .pf-c-accordion__toggle-text {
+  color: #000;
+  font-weight: normal;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:hover {
-    background-color: #fff;
+  background-color: #fff;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:active {
-    background-color: #fff;
+  background-color: #fff;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:focus {
-    background-color: #fff;
-    outline-width: 0px;
+  background-color: #fff;
+  outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle::after {
-    width: 0px;
+  width: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-accordion
-    .appDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded {
-    --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
+  .sectionContent
+  .appDetails
+  .pf-c-accordion
+  .appDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded {
+  --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-accordion
-    .appDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded
-    .pf-c-accordion__expanded-content-body {
-    padding-left: 0px;
-    padding-top: 0px;
+  .sectionContent
+  .appDetails
+  .pf-c-accordion
+  .appDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded
+  .pf-c-accordion__expanded-content-body {
+  padding-left: 0px;
+  padding-top: 0px;
 }
 .topologyDetails
-    .sectionContent
-    .appDetails
-    .pf-c-accordion
-    .appDetailItem
-    .pf-c-accordion__expanded-content.pf-m-expanded
-    .pf-c-accordion__expanded-content-body::after {
-    width: 0px;
+  .sectionContent
+  .appDetails
+  .pf-c-accordion
+  .appDetailItem
+  .pf-c-accordion__expanded-content.pf-m-expanded
+  .pf-c-accordion__expanded-content-body::after {
+  width: 0px;
 }
 .topologyDetails .label {
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1.3rem;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.3rem;
 }
 .topologyDetails .borderLeft {
-    border-left: 5px solid #dfe6eb;
-    padding-left: 1rem;
+  border-left: 5px solid #dfe6eb;
+  padding-left: 1rem;
 }
 .topologyDetails .indent {
-    display: inline-block;
-    width: 10px;
+  display: inline-block;
+  width: 10px;
 }
 .topologyDetails .value {
-    font-size: 14px;
-    color: var(--pf-global--Color--100);
-    word-break: normal;
+  font-size: 14px;
+  color: var(--pf-global--Color--100);
+  word-break: normal;
 }
 .topologyDetails .ksLabelBackground {
-    background-color: var(--pf-c-label--BackgroundColor);
-    border-radius: 35px;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    height: 1rem;
+  background-color: var(--pf-c-label--BackgroundColor);
+  border-radius: 35px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  height: 1rem;
 }
 .topologyDetails .openSearchLink {
-    padding-top: 0.5rem;
+  padding-top: 0.5rem;
 }
 .topologyDetails .link {
-    font-family: 'RedHatText';
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--pf-global--link--Color);
-    cursor: pointer;
+  font-family: 'RedHatText';
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--pf-global--link--Color);
+  cursor: pointer;
 }
 .topologyDetails .link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 .topologyDetails .link.loadingLink {
-    pointer-events: none;
-    color: #5a6872;
+  pointer-events: none;
+  color: #5a6872;
 }
 .topologyDetails .open-out-icon {
-    width: 10px;
-    height: 10px;
+  width: 10px;
+  height: 10px;
 }
 .topologyDetails .label-icon {
-    width: 10px;
-    height: 10px;
-    margin-right: 0.3rem;
-    margin-left: 0.3rem;
-    vertical-align: middle;
+  width: 10px;
+  height: 10px;
+  margin-right: 0.3rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
 }
 .topologyDetails .spacer {
-    height: 1rem;
+  height: 1rem;
 }
 .topologyDetails .details-view-container {
-    height: calc(100vh - 470px) !important;
+  height: calc(100vh - 470px) !important;
 }
 .topologyDetails .details-view-container .details-view-scrollbar {
-    width: 100%;
-    visibility: hidden;
+  width: 100%;
+  visibility: hidden;
 }
 .topologyDetails .legend-view-container {
-    height: calc(100vh - 300px) !important;
+  height: calc(100vh - 300px) !important;
 }
 .topologyDetails .legend-view-container .details-view-scrollbar {
-    width: 100%;
-    visibility: hidden;
+  width: 100%;
+  visibility: hidden;
 }
 .topologyDetails:hover .details-view-scrollbar {
-    visibility: visible;
+  visibility: visible;
 }
 .pf-c-drawer__panel .pf-c-drawer__body.pf-m-no-padding .pf-c-drawer__actions {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .pf-c-drawer__panel
-    .pf-c-drawer__body.pf-m-no-padding
-    .pf-c-drawer__actions
-    .pf-c-drawer__close
-    .pf-c-button.pf-m-plain {
-    padding: 5px 5px 0px 0px;
+  .pf-c-drawer__body.pf-m-no-padding
+  .pf-c-drawer__actions
+  .pf-c-drawer__close
+  .pf-c-button.pf-m-plain {
+  padding: 5px 5px 0px 0px;
 }

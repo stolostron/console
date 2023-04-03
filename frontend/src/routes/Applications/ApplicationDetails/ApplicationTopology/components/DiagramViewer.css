@@ -1,12 +1,12 @@
 .pf-c-drawer__panel .pf-c-drawer__body.pf-m-no-padding .pf-c-drawer__actions {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .pf-c-drawer__panel
-    .pf-c-drawer__body.pf-m-no-padding
-    .pf-c-drawer__actions
-    .pf-c-drawer__close
-    .pf-c-button.pf-m-plain {
-    padding: 5px 5px 0px 0px;
+  .pf-c-drawer__body.pf-m-no-padding
+  .pf-c-drawer__actions
+  .pf-c-drawer__close
+  .pf-c-button.pf-m-plain {
+  padding: 5px 5px 0px 0px;
 }

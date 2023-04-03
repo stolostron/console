@@ -637,7 +637,7 @@ export const automationControlData = (t) => {
     {
       name: t('template.clusterCreate.name'),
       id: 'templateName',
-      type: 'combobox',
+      type: 'singleselect',
       tooltip: t('template.clusterCreate.tooltip'),
       placeholder: t('template.clusterCreate.select.placeholder'),
       onSelect: onChangeAutomationTemplate,

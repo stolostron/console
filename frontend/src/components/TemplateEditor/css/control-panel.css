@@ -1,231 +1,231 @@
 @import './control-panel-controls.css';
 @import './control-panel-finish.css';
 @keyframes flash {
-    0% {
-        outline-color: #7fffd4;
-    }
+  0% {
+    outline-color: #7fffd4;
+  }
 }
 .loading-control {
-    display: flex;
-    justify-content: left;
+  display: flex;
+  justify-content: left;
 }
 .temptifly .creation-view-portals,
 .creation-view .creation-view-portals {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 .temptifly .creation-view-portals > div,
 .creation-view .creation-view-portals > div {
-    margin-right: 25px;
+  margin-right: 25px;
 }
 .temptifly .creation-view-controls,
 .creation-view .creation-view-controls {
-    display: flex;
-    flex-direction: column;
-    row-gap: 0;
-    padding: var(--pf-global--spacer--lg);
+  display: flex;
+  flex-direction: column;
+  row-gap: 0;
+  padding: var(--pf-global--spacer--lg);
 }
 .temptifly .showWizard .creation-view-controls,
 .creation-view .creation-view-controls {
-    padding: var(--pf-c-wizard__main-body--PaddingTop) var(--pf-c-wizard__main-body--PaddingRight)
-        var(--pf-c-wizard__main-body--PaddingBottom) var(--pf-c-wizard__main-body--PaddingLeft);
+  padding: var(--pf-c-wizard__main-body--PaddingTop) var(--pf-c-wizard__main-body--PaddingRight)
+    var(--pf-c-wizard__main-body--PaddingBottom) var(--pf-c-wizard__main-body--PaddingLeft);
 }
 .temptifly .creation-view-controls div:focus,
 .creation-view .creation-view-controls div:focus {
-    outline: none;
+  outline: none;
 }
 .temptifly .creation-view-controls-section,
 .creation-view .creation-view-controls-section {
-    max-height: 10000px;
-    transition: max-height 0.3s;
+  max-height: 10000px;
+  transition: max-height 0.3s;
 }
 .temptifly .creation-view-controls-section.collapsed,
 .creation-view .creation-view-controls-section.collapsed {
-    overflow: hidden;
-    max-height: 0;
+  overflow: hidden;
+  max-height: 0;
 }
 .temptifly .creation-view-controls-section.shadowed,
 .creation-view .creation-view-controls-section.shadowed {
-    border: 1px solid #dfe0e3;
-    background: white;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
-    padding: 20px;
+  border: 1px solid #dfe0e3;
+  background: white;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 .temptifly .creation-view-controls-section.shadowed .pf-c-form-control,
 .creation-view .creation-view-controls-section.shadowed .pf-c-form-control {
-    background-color: #f4f7fb;
+  background-color: #f4f7fb;
 }
 .temptifly .creation-view-controls-section.shadowed.collapsed,
 .creation-view .creation-view-controls-section.shadowed.collapsed {
-    overflow: hidden;
-    max-height: 0;
-    border: none;
-    padding: 0;
+  overflow: hidden;
+  max-height: 0;
+  border: none;
+  padding: 0;
 }
 .temptifly .creation-view-controls-section.collapsed,
 .creation-view .creation-view-controls-section.collapsed {
-    overflow: hidden;
-    max-height: 0;
+  overflow: hidden;
+  max-height: 0;
 }
 .temptifly .pf-c-wizard__footer,
 .creation-view .pf-c-wizard__footer {
-    box-shadow: rgba(3, 3, 3, 0.16) 0px -2px 4px -1px;
+  box-shadow: rgba(3, 3, 3, 0.16) 0px -2px 4px -1px;
 }
 .temptifly .pf-c-skeleton,
 .creation-view .pf-c-skeleton {
-    height: 40px;
-    background-color: #e0e0e0;
+  height: 40px;
+  background-color: #e0e0e0;
 }
 .temptifly .pf-c-form-control.input,
 .creation-view .pf-c-form-control.input {
-    padding: 0;
+  padding: 0;
 }
 .temptifly .pf-c-form-control .pf-c-combo-control,
 .creation-view .pf-c-form-control .pf-c-combo-control {
-    height: 100%;
-    width: 100%;
-    border: none;
-    text-overflow: ellipsis;
-    padding-left: 6px;
+  height: 100%;
+  width: 100%;
+  border: none;
+  text-overflow: ellipsis;
+  padding-left: 6px;
 }
 .temptifly .pf-c-alert h4,
 .creation-view .pf-c-alert h4 {
-    margin: 0;
+  margin: 0;
 }
 .temptifly-controls,
 .creation-view-controls {
-    height: 100%;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .temptifly-controls-note,
 .creation-view-controls-note {
-    cursor: default;
-    display: flex;
-    padding-bottom: 2rem;
-    font-size: 0.875rem;
-    font-weight: 400;
+  cursor: default;
+  display: flex;
+  padding-bottom: 2rem;
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 .temptifly-controls-must-exist,
 .creation-view-controls-must-exist {
-    padding-top: 3px;
-    margin-left: 0.25rem;
+  padding-top: 3px;
+  margin-left: 0.25rem;
 }
 .temptifly-controls .info-icon,
 .creation-view-controls .info-icon {
-    margin-left: 0.375rem;
-    width: 1rem;
-    height: 1rem;
-    fill: #3d70b2;
-    stroke: none;
-    cursor: pointer;
+  margin-left: 0.375rem;
+  width: 1rem;
+  height: 1rem;
+  fill: #3d70b2;
+  stroke: none;
+  cursor: pointer;
 }
 .temptifly-controls-title,
 .creation-view-controls-title {
-    cursor: pointer;
+  cursor: pointer;
 }
 .temptifly-controls-title:focus,
 .creation-view-controls-title:focus {
-    outline: none;
+  outline: none;
 }
 .temptifly-controls-title-circle,
 .creation-view-controls-title-circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
-    margin: 0 10px;
-    background: #25282c;
-    border: 3px solid #25282c;
-    color: #fff;
-    font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  margin: 0 10px;
+  background: #25282c;
+  border: 3px solid #25282c;
+  color: #fff;
+  font-size: 20px;
 }
 .temptifly-controls-title-main,
 .creation-view-controls-title-main {
-    font-weight: normal;
-    font-size: 16px;
-    padding: 16px 0;
-    display: flex;
-    align-items: center;
-    position: relative;
-    line-height: 28px;
+  font-weight: normal;
+  font-size: 16px;
+  padding: 16px 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+  line-height: 28px;
 }
 .temptifly-controls-title-main.overline,
 .creation-view-controls-title-main.overline {
-    border-top: 4px double #d3caca;
+  border-top: 4px double #d3caca;
 }
 .temptifly-controls-title-main.subtitle,
 .creation-view-controls-title-main.subtitle {
-    font-size: 16px;
+  font-size: 16px;
 }
 .temptifly-controls-title-main-collapse-button,
 .creation-view-controls-title-main-collapse-button {
-    display: flex;
+  display: flex;
 }
 .temptifly-controls-title-main-collapse-button > svg,
 .creation-view-controls-title-main-collapse-button > svg {
-    margin: 0 6px;
-    width: 16px;
-    height: 16px;
-    fill: var(--pf-global--Color--100);
-    transition: all 100ms;
-    transform: rotate(90deg);
+  margin: 0 6px;
+  width: 16px;
+  height: 16px;
+  fill: var(--pf-global--Color--100);
+  transition: all 100ms;
+  transform: rotate(90deg);
 }
 .temptifly-controls-title-main-name,
 .creation-view-controls-title-main-name {
-    height: 32px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: hidden;
+  height: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: hidden;
 }
 .temptifly-controls-title-main-summary,
 .creation-view-controls-title-main-summary {
-    padding-left: 30px;
-    font-weight: 400;
-    visibility: hidden;
+  padding-left: 30px;
+  font-weight: 400;
+  visibility: hidden;
 }
 .temptifly-controls-title-main-summary.visible,
 .creation-view-controls-title-main-summary.visible {
-    visibility: visible;
+  visibility: visible;
 }
 .temptifly-controls-title-main-summary .tag,
 .creation-view-controls-title-main-summary .tag {
-    cursor: default;
-    font-size: 12px;
-    margin-right: 10px;
-    color: #596a73;
-    background-color: #e3e7e9;
+  cursor: default;
+  font-size: 12px;
+  margin-right: 10px;
+  color: #596a73;
+  background-color: #e3e7e9;
 }
 .temptifly-controls-title-normal-container,
 .creation-view-controls-title-normal-container {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 .temptifly-controls-title-normal,
 .creation-view-controls-title-normal {
-    font-weight: normal;
-    font-size: 14px;
-    padding: 0 0 8px;
+  font-weight: normal;
+  font-size: 14px;
+  padding: 0 0 8px;
 }
 .temptifly-controls-title.collapsed .creation-view-controls-title-normal-container,
 .creation-view-controls-title.collapsed .creation-view-controls-title-normal-container {
-    display: none;
+  display: none;
 }
 .temptifly-controls-title.collapsed .creation-view-controls-title-main-collapse-button > svg,
 .creation-view-controls-title.collapsed .creation-view-controls-title-main-collapse-button > svg {
-    transform: rotate(0);
+  transform: rotate(0);
 }
 .temptifly-controls-title.collapsed .creation-view-controls-title-main-name,
 .creation-view-controls-title.collapsed .creation-view-controls-title-main-name {
-    text-overflow: ellipsis;
+  text-overflow: ellipsis;
 }
 .temptifly-controls-title.collapsed .creation-view-controls-title-main-summary,
 .creation-view-controls-title.collapsed .creation-view-controls-title-main-summary {
-    visibility: visible;
+  visibility: visible;
 }
 .temptifly-controls-singleselect-loading,
 .creation-view-controls-singleselect-loading,
@@ -233,11 +233,11 @@
 .creation-view-controls-combobox-loading,
 .temptifly-controls-treeselect-loading,
 .creation-view-controls-treeselect-loading {
-    position: relative;
-    background-color: white;
-    padding: 5px 8px 5px 30px;
-    height: 36px;
-    border-bottom: 1px solid #8a8d90;
+  position: relative;
+  background-color: white;
+  padding: 5px 8px 5px 30px;
+  height: 36px;
+  border-bottom: 1px solid #8a8d90;
 }
 .temptifly-controls-singleselect-loading .pf-c-spinner,
 .creation-view-controls-singleselect-loading .pf-c-spinner,
@@ -245,9 +245,9 @@
 .creation-view-controls-combobox-loading .pf-c-spinner,
 .temptifly-controls-treeselect-loading .pf-c-spinner,
 .creation-view-controls-treeselect-loading .pf-c-spinner {
-    position: absolute;
-    top: 6px;
-    left: 4px;
+  position: absolute;
+  top: 6px;
+  left: 4px;
 }
 .temptifly-controls-singleselect .tf--list-box,
 .creation-view-controls-singleselect .tf--list-box,
@@ -255,9 +255,9 @@
 .creation-view-controls-combobox .tf--list-box,
 .temptifly-controls-treeselect .tf--list-box,
 .creation-view-controls-treeselect .tf--list-box {
-    position: relative;
-    box-shadow: 0 1px 0 0 #5a6872;
-    cursor: pointer;
+  position: relative;
+  box-shadow: 0 1px 0 0 #5a6872;
+  cursor: pointer;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__selection,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__selection,
@@ -265,13 +265,13 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__selection,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__selection,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__selection {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    right: 0.8rem;
-    padding: 0 2.2rem;
-    cursor: pointer;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  right: 0.8rem;
+  padding: 0 2.2rem;
+  cursor: pointer;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__selection svg,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__selection svg,
@@ -279,7 +279,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__selection svg,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__selection svg,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__selection svg {
-    height: 100%;
+  height: 100%;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__selection:focus,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__selection:focus,
@@ -287,7 +287,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__selection:focus,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__selection:focus,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__selection:focus {
-    outline: #06c auto 1px;
+  outline: #06c auto 1px;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon,
@@ -295,12 +295,12 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0 18px;
-    height: 100%;
-    cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 18px;
+  height: 100%;
+  cursor: pointer;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon svg,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon svg,
@@ -308,7 +308,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon svg,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon svg,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon svg {
-    height: 100%;
+  height: 100%;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon:focus,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon:focus,
@@ -316,7 +316,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon:focus,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon:focus,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon:focus {
-    outline: #06c auto 1px;
+  outline: #06c auto 1px;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon--open,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon--open,
@@ -324,7 +324,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon--open,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon--open,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon--open {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__refresh-icon,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__refresh-icon,
@@ -332,12 +332,12 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__refresh-icon,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__refresh-icon,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__refresh-icon {
-    position: absolute;
-    top: 0;
-    right: 40px;
-    padding: 0 4px;
-    height: 100%;
-    cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 40px;
+  padding: 0 4px;
+  height: 100%;
+  cursor: pointer;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__refresh-icon svg,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__refresh-icon svg,
@@ -345,7 +345,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__refresh-icon svg,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__refresh-icon svg,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__refresh-icon svg {
-    height: 100%;
+  height: 100%;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu,
@@ -353,16 +353,16 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu {
-    box-shadow: var(--pf-global--BoxShadow--md);
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 2.5rem;
-    width: 100%;
-    overflow-y: auto;
-    background-color: var(--pf-global--BackgroundColor--100);
-    z-index: 500;
-    cursor: pointer;
+  box-shadow: var(--pf-global--BoxShadow--md);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2.5rem;
+  width: 100%;
+  overflow-y: auto;
+  background-color: var(--pf-global--BackgroundColor--100);
+  z-index: 500;
+  cursor: pointer;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
@@ -370,9 +370,9 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container {
-    display: flex;
-    flex-direction: column;
-    margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
@@ -380,9 +380,9 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title {
-    font-weight: bold;
-    line-height: 12px;
-    font-size: 18px;
+  font-weight: bold;
+  line-height: 12px;
+  font-size: 18px;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
@@ -390,13 +390,13 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item {
-    display: flex;
-    align-items: center;
-    height: fit-content;
-    padding: 0 1rem;
-    cursor: pointer;
-    position: relative;
-    white-space: nowrap;
+  display: flex;
+  align-items: center;
+  height: fit-content;
+  padding: 0 1rem;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
@@ -404,7 +404,7 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus {
-    outline: #06c auto 1px;
+  outline: #06c auto 1px;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
@@ -412,8 +412,8 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover {
-    background-color: rgba(85, 150, 230, 0.1);
-    outline: 1px solid transparent;
+  background-color: rgba(85, 150, 230, 0.1);
+  outline: 1px solid transparent;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
@@ -421,168 +421,168 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b {
-    font-weight: bold;
-    font-size: 18px;
-    text-indent: 0px;
-    text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+  text-indent: 0px;
+  text-align: center;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
 .creation-view-controls-singleselect
-    .tf--list-box
-    .tf--list-box__menu
-    .tf--list-box__menu-item.tf--list-box__menu-branch,
+  .tf--list-box
+  .tf--list-box__menu
+  .tf--list-box__menu-item.tf--list-box__menu-branch,
 .temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
 .creation-view-controls-treeselect
-    .tf--list-box
-    .tf--list-box__menu
-    .tf--list-box__menu-item.tf--list-box__menu-branch {
-    font-weight: 700;
+  .tf--list-box
+  .tf--list-box__menu
+  .tf--list-box__menu-item.tf--list-box__menu-branch {
+  font-weight: 700;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
 .creation-view-controls-singleselect
-    .tf--list-box
-    .tf--list-box__menu
-    .tf--list-box__menu-item
-    .tf-select__menu-item-icon,
+  .tf--list-box
+  .tf--list-box__menu
+  .tf--list-box__menu-item
+  .tf-select__menu-item-icon,
 .temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
 .creation-view-controls-treeselect
-    .tf--list-box
-    .tf--list-box__menu
-    .tf--list-box__menu-item
-    .tf-select__menu-item-icon {
-    position: absolute;
-    right: 10px;
-    color: #06c;
-    font-size: 10px;
+  .tf--list-box
+  .tf--list-box__menu
+  .tf--list-box__menu-item
+  .tf-select__menu-item-icon {
+  position: absolute;
+  right: 10px;
+  color: #06c;
+  font-size: 10px;
 }
 .creation-view-controls-add-value-container {
-    display: flex;
+  display: flex;
 }
 .creation-view-controls-add-value-container.bottom-right {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 .temptifly-controls-delete-button,
 .creation-view-controls-delete-button {
-    display: flex;
-    position: absolute;
-    top: 16px;
-    right: 10px;
-    z-index: 100;
+  display: flex;
+  position: absolute;
+  top: 16px;
+  right: 10px;
+  z-index: 100;
 }
 .temptifly-controls-add-combobox,
 .creation-view-controls-add-combobox {
-    margin-bottom: 8px;
-    position: relative;
+  margin-bottom: 8px;
+  position: relative;
 }
 .temptifly-controls-add-combobox .pf-c-select,
 .creation-view-controls-add-combobox .pf-c-select {
-    background-color: white;
+  background-color: white;
 }
 .temptifly-controls-table-container,
 .creation-view-controls-table-container {
-    margin-bottom: 20px;
-    position: relative;
+  margin-bottom: 20px;
+  position: relative;
 }
 .temptifly-controls-table-exceptions,
 .creation-view-controls-table-exceptions {
-    color: red;
-    font-size: 12px;
+  color: red;
+  font-size: 12px;
 }
 .temptifly-controls-table-delete-button,
 .creation-view-controls-table-delete-button {
-    cursor: pointer;
-    color: #3d70b2;
-    display: flex;
+  cursor: pointer;
+  color: #3d70b2;
+  display: flex;
 }
 .temptifly-controls-table-delete-button .icon,
 .creation-view-controls-table-delete-button .icon {
-    margin: 0 6px;
-    width: 16px;
-    height: 16px;
-    fill: #3d70b2;
+  margin: 0 6px;
+  width: 16px;
+  height: 16px;
+  fill: #3d70b2;
 }
 .temptifly-controls-table-delete-button:focus,
 .creation-view-controls-table-delete-button:focus {
-    outline: none;
+  outline: none;
 }
 .temptifly-controls-table .pf-c-toolbar__content-section,
 .creation-view-controls-table .pf-c-toolbar__content-section {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 .temptifly-controls-table .pf-c-table tr > *,
 .creation-view-controls-table .pf-c-table tr > * {
-    padding: 14px;
+  padding: 14px;
 }
 .temptifly-controls-table .tf-table-button-container,
 .creation-view-controls-table .tf-table-button-container {
-    display: flex;
+  display: flex;
 }
 .temptifly-controls-table .tf-table-button-container > div,
 .creation-view-controls-table .tf-table-button-container > div {
-    padding: 10px;
+  padding: 10px;
 }
 .temptifly-controls-table-singleselect,
 .creation-view-controls-table-singleselect {
-    padding: 0;
-    min-width: 100px;
+  padding: 0;
+  min-width: 100px;
 }
 .temptifly-controls-table-toggle,
 .creation-view-controls-table-toggle {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 @keyframes fadeIt {
-    0% {
-        background-color: #eef4fc;
-    }
-    100% {
-        background-color: #fff;
-    }
+  0% {
+    background-color: #eef4fc;
+  }
+  100% {
+    background-color: #fff;
+  }
 }
 .temptifly-controls-table .new-row,
 .creation-view-controls-table .new-row {
-    animation: fadeIt 10s ease-out;
+  animation: fadeIt 10s ease-out;
 }
 .temptifly-controls-labels,
 .creation-view-controls-labels {
-    padding: 0 0.3125rem 1.5625rem 2px;
+  padding: 0 0.3125rem 1.5625rem 2px;
 }
 .temptifly-controls-labels-title,
 .creation-view-controls-labels-title {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.875rem;
-    padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  padding-bottom: 0.5rem;
 }
 .temptifly-controls-labels-container,
 .creation-view-controls-labels-container {
-    min-height: 40px;
-    box-shadow: 0 1px 0 0 #5a6872;
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0;
+  min-height: 40px;
+  box-shadow: 0 1px 0 0 #5a6872;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
 }
 .temptifly-controls-labels-tag-container,
 .creation-view-controls-labels-tag-container {
-    padding: 6px 0 0 7px;
+  padding: 6px 0 0 7px;
 }
 .temptifly-controls-labels-tag-container .pf-c-label,
 .creation-view-controls-labels-tag-container .pf-c-label {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 .temptifly-controls-labels-edit-container,
 .creation-view-controls-labels-edit-container {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 .temptifly-controls-labels-edit-container input,
 .creation-view-controls-labels-edit-container input {
-    border: none;
+  border: none;
 }
 .temptifly-controls-textbox,
 .creation-view-controls-textbox,
@@ -604,7 +604,7 @@
 .creation-view-controls-cards,
 .temptifly-controls-skeleton,
 .creation-view-controls-skeleton {
-    padding: 0 0.3125rem 1.5625rem 2px;
+  padding: 0 0.3125rem 1.5625rem 2px;
 }
 .temptifly-controls-textbox-title,
 .creation-view-controls-textbox-title,
@@ -626,11 +626,11 @@
 .creation-view-controls-cards-title,
 .temptifly-controls-skeleton-title,
 .creation-view-controls-skeleton-title {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.875rem;
-    padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  padding-bottom: 0.5rem;
 }
 .temptifly-controls-textbox .pf-c-select,
 .creation-view-controls-textbox .pf-c-select,
@@ -652,7 +652,7 @@
 .creation-view-controls-cards .pf-c-select,
 .temptifly-controls-skeleton .pf-c-select,
 .creation-view-controls-skeleton .pf-c-select {
-    background-color: white;
+  background-color: white;
 }
 .temptifly-controls-textbox .pf-c-select .pf-c-select__menu,
 .creation-view-controls-textbox .pf-c-select .pf-c-select__menu,
@@ -674,168 +674,168 @@
 .creation-view-controls-cards .pf-c-select .pf-c-select__menu,
 .temptifly-controls-skeleton .pf-c-select .pf-c-select__menu,
 .creation-view-controls-skeleton .pf-c-select .pf-c-select__menu {
-    padding-left: 0;
-    margin-left: 0;
+  padding-left: 0;
+  margin-left: 0;
 }
 .temptifly-controls textarea.pf-c-form-control,
 .creation-view-controls textarea.pf-c-form-control {
-    min-height: 100px;
+  min-height: 100px;
 }
 .temptifly-controls-treeselect .tf--list-box__menu-branch,
 .creation-view-controls-treeselect .tf--list-box__menu-branch {
-    font-weight: bold;
-    text-decoration: none;
+  font-weight: bold;
+  text-decoration: none;
 }
 .temptifly-controls-treeselect .tf--list-box__menu-branch:before,
 .creation-view-controls-treeselect .tf--list-box__menu-branch:before {
-    padding-right: 2px;
-    font-family: codicon;
-    content: '\eab4';
+  padding-right: 2px;
+  font-family: codicon;
+  content: '\eab4';
 }
 .temptifly-controls-treeselect .tf--list-box__menu-branch.open:before,
 .creation-view-controls-treeselect .tf--list-box__menu-branch.open:before {
-    content: '\eab7';
+  content: '\eab7';
 }
 .temptifly-controls-treeselect .tf--list-box__menu-branch.searching,
 .creation-view-controls-treeselect .tf--list-box__menu-branch.searching {
-    color: gray;
-    font-weight: normal;
+  color: gray;
+  font-weight: normal;
 }
 .temptifly-controls-checkbox,
 .creation-view-controls-checkbox {
-    padding: 0 0.3125rem 1.125rem 0;
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.875rem;
-    position: relative;
+  padding: 0 0.3125rem 1.125rem 0;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  position: relative;
 }
 .temptifly-controls-checkbox .pf-c-form__group-label,
 .creation-view-controls-checkbox .pf-c-form__group-label,
 .creation-view-controls-custom .pf-c-form__group-label {
-    padding: 0 0 0 5px;
+  padding: 0 0 0 5px;
 }
 .temptifly-controls-checkbox .pf-c-check__input,
 .creation-view-controls-checkbox .pf-c-check__input {
-    margin-right: 6px;
+  margin-right: 6px;
 }
 .temptifly-controls .creation-view-group-container,
 .creation-view-controls .creation-view-group-container {
-    position: relative;
-    border: 1px solid var(--pf-global--BorderColor--300);
-    background-color: var(--pf-global--BackgroundColor--light-200);
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    margin: 10px 0;
+  position: relative;
+  border: 1px solid var(--pf-global--BorderColor--300);
+  background-color: var(--pf-global--BackgroundColor--light-200);
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin: 10px 0;
 }
 .creation-view-controls .creation-view-group-subcontainer {
-    border: 1px solid var(--pf-global--BorderColor--300);
-    background-color: var(--pf-global--BackgroundColor--light-100);
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
-    padding: 10px;
-    margin-bottom: 3px;
+  border: 1px solid var(--pf-global--BorderColor--300);
+  background-color: var(--pf-global--BackgroundColor--light-100);
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  margin-bottom: 3px;
 }
 
 .creation-view-controls .creation-view-group-subcontainer .creation-view-controls-title-main-name {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .creation-view-controls .creation-view-group-subcontainer .pf-c-form__label-text {
-    font-weight: normal;
-    font-size: 16px;
+  font-weight: normal;
+  font-size: 16px;
 }
 
 .creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-c-form__label-text {
-    font-weight: bold;
+  font-weight: bold;
 }
 .temptifly-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,
 .creation-view-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,
 .temptifly-controls .creation-view-group-container .pf-c-form-control .pf-c-badge.pf-m-read,
 .creation-view-controls .creation-view-group-container .pf-c-form-control .pf-c-badge.pf-m-read {
-    background-color: darkgray;
+  background-color: darkgray;
 }
 .temptifly-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button,
 .creation-view-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button {
-    position: relative;
-    left: unset;
+  position: relative;
+  left: unset;
 }
 .temptifly-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button.collapsed > svg,
 .creation-view-controls
-    .creation-view-group-container
-    .creation-view-controls-title-main-collapse-button.collapsed
-    > svg {
-    transform: rotate(-180deg);
+  .creation-view-group-container
+  .creation-view-controls-title-main-collapse-button.collapsed
+  > svg {
+  transform: rotate(-180deg);
 }
 .temptifly-controls .creation-view-group-container .techPreviewTag,
 .creation-view-controls .creation-view-group-container .techPreviewTag {
-    width: 88px;
-    height: 26px;
-    display: inline-block;
-    background-color: #d93f00;
-    border-radius: 3px;
-    padding: 5px 0;
-    margin-left: 16px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 16px;
-    text-align: center;
+  width: 88px;
+  height: 26px;
+  display: inline-block;
+  background-color: #d93f00;
+  border-radius: 3px;
+  padding: 5px 0;
+  margin-left: 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 16px;
+  text-align: center;
 }
 .temptifly-controls .creation-view-group-container .tf--create-cluster-page__provider-card,
 .creation-view-controls .creation-view-group-container .tf--create-cluster-page__provider-card {
-    background-color: #f0f0f0;
-    border: 1px solid #dfe3e6;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+  background-color: #f0f0f0;
+  border: 1px solid #dfe3e6;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .temptifly-controls.showEditor .creation-view-controls-card-container,
 .creation-view-controls.showEditor .creation-view-controls-card-container {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .creation-view-controls-card-container .pf-c-tile.pf-m-display-lg {
-    min-height: 140px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+  min-height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .temptifly .pf-c-wizard .pf-c-wizard__main-body,
 .creation-view .pf-c-wizard .pf-c-wizard__main-body {
-    padding: 0;
-    height: 100%;
+  padding: 0;
+  height: 100%;
 }
 .temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name,
 .creation-view .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name {
-    font-weight: bold;
-    margin-left: -30px;
+  font-weight: bold;
+  margin-left: -30px;
 }
 .temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button,
 .creation-view .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button {
-    left: -25px;
+  left: -25px;
 }
 .temptifly .pf-c-wizard .creation-view-controls .creation-view-group-container,
 .creation-view .pf-c-wizard .creation-view-controls .creation-view-group-container {
-    border: none;
-    box-shadow: none;
-    padding: 0 0 0 22px;
-    margin-left: 0px;
+  border: none;
+  box-shadow: none;
+  padding: 0 0 0 22px;
+  margin-left: 0px;
 }
 
 .temptifly .pf-c-wizard .pf-c-tile {
-    --pf-c-tile--TranslateY: none;
-    --pf-c-tile--Transition: none;
+  --pf-c-tile--TranslateY: none;
+  --pf-c-tile--Transition: none;
 }
 
 .temptifly .pf-c-wizard .pf-c-tile::after {
-    transition: none;
-    transform: none;
+  transition: none;
+  transform: none;
 }
 
 .creation-view-controls-hint {
-    margin: 16px 0px 24px 0px;
-    font-size: smaller;
+  margin: 16px 0px 24px 0px;
+  font-size: smaller;
 }

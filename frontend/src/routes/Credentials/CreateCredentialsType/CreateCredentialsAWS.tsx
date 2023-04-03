@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import {
-  CatalogCardItemType,
-  ICatalogBreadcrumb,
-  ICatalogCard,
-  ItemView,
-  PageHeader,
-  DataViewStringContext,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard, ItemView, DataViewStringContext } from '@stolostron/react-data-view'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../lib/dataViewStrings'
@@ -15,7 +8,7 @@ import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
-import { AcmIcon, AcmIconVariant, AcmPage, Provider } from '../../../ui-components'
+import { AcmIcon, AcmIconVariant, AcmPage, AcmPageHeader, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
@@ -90,10 +83,10 @@ export function CreateCredentialsAWS() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs: ICatalogBreadcrumb[] = [
-      { label: t('Credentials'), to: NavigationPath.credentials },
-      { label: t('Credential type'), to: NavigationPath.addCredentials },
-      { label: t('Amazon Web Services credential') },
+    const newBreadcrumbs = [
+      { text: t('Credentials'), to: NavigationPath.credentials },
+      { text: t('Credential type'), to: NavigationPath.addCredentials },
+      { text: t('Amazon Web Services credential') },
     ]
     return newBreadcrumbs
   }, [t])
@@ -103,10 +96,10 @@ export function CreateCredentialsAWS() {
   return (
     <AcmPage
       header={
-        <PageHeader
+        <AcmPageHeader
           title={t('Amazon Web Services credential')}
           description={t('Choose your AWS credential.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
     >

@@ -1,12 +1,12 @@
 .aws-icon .graphic {
-    fill: #ff9900;
+  fill: #ff9900;
 }
 
 .aws-icon .type {
-    fill: #252f3e;
+  fill: #252f3e;
 }
 
 :root:where(.pf-theme-dark) .aws-icon .type,
 :root:where(.pf-theme-dark) .aws-icon .graphic {
-    fill: #ffffff;
+  fill: #ffffff;
 }

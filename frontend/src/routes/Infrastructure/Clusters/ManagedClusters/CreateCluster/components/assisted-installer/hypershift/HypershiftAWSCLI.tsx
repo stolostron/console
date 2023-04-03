@@ -19,14 +19,13 @@ import {
   Toolbar,
   ToolbarContent,
 } from '@patternfly/react-core'
-import { PageHeader } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
-import { Provider } from '../../../../../../../../ui-components'
+import { AcmPageHeader, Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
 import './css/HypershiftAWSCLI.css'
 
@@ -34,10 +33,10 @@ export function HypershiftAWSCLI() {
   const { t } = useTranslation()
   const { back, cancel } = useBackCancelNavigation()
   const breadcrumbs = [
-    { label: t('Clusters'), to: NavigationPath.clusters },
-    { label: t('Infrastructure'), to: NavigationPath.createCluster },
-    { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
-    { label: t('Create cluster') },
+    { text: t('Clusters'), to: NavigationPath.clusters },
+    { text: t('Infrastructure'), to: NavigationPath.createCluster },
+    { text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
+    { text: t('Create cluster') },
   ]
 
   const [copied, setCopied] = useState(false)
@@ -128,10 +127,10 @@ hypershift create cluster aws
           hideYaml={true}
         />
       </Modal>
-      <PageHeader
+      <AcmPageHeader
         title={t('Create cluster')}
-        breadcrumbs={breadcrumbs}
-        titleHelp={
+        breadcrumb={breadcrumbs}
+        titleTooltip={
           <>
             {t('page.header.create-cluster.tooltip')}
             <a

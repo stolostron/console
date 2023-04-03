@@ -1,113 +1,113 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 .modal-with-editor .yamlSampleTabsContainer {
-    border-top: 1px solid #dfe3e6;
+  border-top: 1px solid #dfe3e6;
 }
 .modal-with-editor .yamlSampleTabs {
-    padding-left: 25px;
+  padding-left: 25px;
 }
 .remove-app-modal-content {
-    height: auto;
-    max-height: 25rem;
-    overflow-y: auto;
+  height: auto;
+  max-height: 25rem;
+  overflow-y: auto;
 }
 .remove-app-modal-content-text {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 .remove-app-modal-content-data {
-    width: 100%;
-    border-bottom: 1px solid #dfe3e6;
-    padding-bottom: 0.4rem;
+  width: 100%;
+  border-bottom: 1px solid #dfe3e6;
+  padding-bottom: 0.4rem;
 }
 .yaml-instructions {
-    font-size: 12px;
-    width: 750px;
+  font-size: 12px;
+  width: 750px;
 }
 .yaml-instructions-edit {
-    font-size: 14px;
-    font-weight: 600;
-    height: 36px;
-    width: 80%;
-    margin: 1.25rem 3rem 1.25rem 3rem;
+  font-size: 14px;
+  font-weight: 600;
+  height: 36px;
+  width: 80%;
+  margin: 1.25rem 3rem 1.25rem 3rem;
 }
 .help-link {
-    display: inline-block;
-    vertical-align: top;
-    width: 150px;
-    font-size: 12px;
-    padding-left: 1rem;
-    padding-bottom: 1rem;
+  display: inline-block;
+  vertical-align: top;
+  width: 150px;
+  font-size: 12px;
+  padding-left: 1rem;
+  padding-bottom: 1rem;
 }
 .help-link a {
-    text-decoration: none;
+  text-decoration: none;
 }
 .helpLinkIcon {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 .help-link-edit {
-    text-align: right;
-    vertical-align: top;
-    font-size: 12px;
-    position: relative;
-    top: -1rem;
-    right: 3rem;
+  text-align: right;
+  vertical-align: top;
+  font-size: 12px;
+  position: relative;
+  top: -1rem;
+  right: 3rem;
 }
 .help-link-edit a {
-    text-decoration: none;
+  text-decoration: none;
 }
 .hidden {
-    display: none;
+  display: none;
 }
 .remove-app-modal-content-text {
-    line-height: 21px;
+  line-height: 21px;
 }
 .remove-app-modal-content-data {
-    line-height: 21px;
-    padding-top: 5px;
+  line-height: 21px;
+  padding-top: 5px;
 }
 .remove-app-modal-alert {
-    padding-bottom: 10px;
+  padding-bottom: 10px;
 }
 .shared-resource-content {
-    display: inline-flex;
-    color: #152935;
-    line-height: 21px;
-    margin-top: 1.5rem;
+  display: inline-flex;
+  color: #152935;
+  line-height: 21px;
+  margin-top: 1.5rem;
 }
 .shared-resource-content svg {
-    fill: #e6ae3c;
-    width: 18px;
-    height: 18px;
+  fill: #e6ae3c;
+  width: 18px;
+  height: 18px;
 }
 .shared-resource-content p {
-    font-size: 14px;
+  font-size: 14px;
 }
 .shared-resource-content p:first-of-type {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 .shared-resource-content div:first-of-type {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 .sub-child-resource-content {
-    display: flex;
-    line-height: 21px;
+  display: flex;
+  line-height: 21px;
 }
 .sub-child-resource-content svg {
-    fill: #e6ae3c;
-    width: 18px;
-    height: 18px;
+  fill: #e6ae3c;
+  width: 18px;
+  height: 18px;
 }
 .sub-child-resource-content p {
-    font-size: 14px;
+  font-size: 14px;
 }
 .sub-child-resource-content div:first-of-type {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 .sibling-resource-content {
-    line-height: 21px;
-    font-size: 14px;
-    border-bottom: 1px solid #dfe3e6;
+  line-height: 21px;
+  font-size: 14px;
+  border-bottom: 1px solid #dfe3e6;
 }
 .italic-font {
-    font-style: italic;
+  font-style: italic;
 }

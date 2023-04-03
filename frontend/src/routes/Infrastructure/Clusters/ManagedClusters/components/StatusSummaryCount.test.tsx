@@ -9,6 +9,12 @@ import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
+import {
+  mockSearchQueryArgoApps,
+  mockSearchQueryOCPApplications,
+  mockSearchResponseArgoApps1,
+  mockSearchResponseOCPApplications,
+} from '../../../../Applications/Application.sharedmocks'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 
@@ -139,13 +145,6 @@ const mockSearchQuery = {
     input: [
       {
         filters: [
-          { property: 'kind', values: ['Subscription'] },
-          { property: 'cluster', values: ['test-cluster'] },
-        ],
-        relatedKinds: ['Application'],
-      },
-      {
-        filters: [
           { property: 'compliant', values: ['!Compliant'] },
           { property: 'kind', values: ['Policy'] },
           { property: 'namespace', values: ['test-cluster'] },
@@ -161,7 +160,6 @@ const mockSearchQuery = {
 const mockSearchResponse = {
   data: {
     searchResult: [
-      { count: 14, related: [{ kind: 'Application', count: 4 }], __typename: 'SearchResult' },
       {
         count: 1,
         related: [
@@ -216,6 +214,12 @@ const mockPolicyReports: PolicyReport[] = [
 ]
 
 describe('StatusSummaryCount', () => {
+  beforeEach(() => {
+    nockSearch(mockSearchQuery, mockSearchResponse)
+    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+  })
+
   const Component = () => (
     <RecoilRoot initializeState={(snapshot) => snapshot.set(policyreportState, mockPolicyReports)}>
       <MemoryRouter>
@@ -226,33 +230,27 @@ describe('StatusSummaryCount', () => {
     </RecoilRoot>
   )
   test('renders', async () => {
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
     render(<Component />)
     await act(async () => {
       await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
-      await waitFor(() => expect(search.isDone()).toBeTruthy())
       await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-      await clickByText('4')
+      // click Application
+      await clickByText('1', 0)
       expect(push).toHaveBeenCalledTimes(1)
-      expect(push.mock.calls[0][0]).toBe(
-        '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:Subscription"}&showrelated=Application'
-      )
+      expect(push.mock.calls[0][0]).toBe('/multicloud/applications?cluster=test-cluster')
 
-      await clickByText('Go to Applications')
+      // click Policy violations
+      await clickByText('1', 1)
       expect(push).toHaveBeenCalledTimes(2)
-      expect(push.mock.calls[1][0]).toBe('/multicloud/applications')
-
-      await clickByText('1')
-      expect(push).toHaveBeenCalledTimes(3)
-      expect(push.mock.calls[2][0]).toBe(
+      expect(push.mock.calls[1][0]).toBe(
         '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:Policy%20namespace:test-cluster%20compliant:!Compliant"}'
       )
 
       await clickByText('Go to Policies')
-      expect(push).toHaveBeenCalledTimes(4)
-      expect(push.mock.calls[3][0]).toBe('/multicloud/governance/policies')
+      expect(push).toHaveBeenCalledTimes(3)
+      expect(push.mock.calls[2][0]).toBe('/multicloud/governance/policies')
 
       await clickByText('6')
 
@@ -272,8 +270,6 @@ describe('StatusSummaryCount', () => {
       await waitFor(() => expect(search.isDone()).toBeTruthy())
       await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
-
-      await waitForNotText('Go to Applications')
 
       await waitForNotText('Go to Policies')
 
@@ -298,7 +294,7 @@ describe('StatusSummaryCount', () => {
       await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-      await waitForNotText('Go to Applications')
+      await waitForNotText('Applications')
 
       await waitForNotText('Go to Policies')
 

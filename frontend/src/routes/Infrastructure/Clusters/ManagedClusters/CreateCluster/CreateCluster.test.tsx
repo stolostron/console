@@ -42,9 +42,9 @@ import {
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import {
   clickByPlaceholderText,
+  clickByRole,
   clickByTestId,
   clickByText,
-  clickByTitle,
   typeByPlaceholderText,
   typeByTestId,
   typeByText,
@@ -677,7 +677,7 @@ describe('CreateCluster AWS', () => {
     await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
 
     // clear template
-    await clickByTitle('Clear selected item')
+    await clickByRole('button', { name: /clear selected item/i })
     await waitForNotText('View test')
     await clickByText('Next')
 

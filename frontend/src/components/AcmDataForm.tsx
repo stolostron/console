@@ -91,7 +91,6 @@ import {
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
-import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
 import { SyncEditor } from './SyncEditor/SyncEditor'
 
 export interface AcmDataFormProps {
@@ -124,7 +123,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
-  const [stateChanges, setStateChanges] = useState<any | undefined>([])
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const mode = props.mode ?? 'form'
@@ -169,9 +167,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     onClose={(): void => {
                       setDrawerExpanded(false)
                     }}
-                    onStatusChange={(changes: { errors: any[]; changes: any[] }): void => {
-                      setStateChanges(changes)
-                    }}
                     onEditorChange={(changes: { resources: any[] }): void => {
                       formData.customData = changes?.resources
                     }}
@@ -215,7 +210,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
               <PageSection isFilled type="wizard" style={{ height: '100%' }}>
                 <AcmDataForm
                   {...props}
-                  stateChanges={stateChanges}
                   mode={mode}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
@@ -228,7 +222,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
               <PageSection variant="light" isFilled>
                 <AcmDataForm
                   {...props}
-                  stateChanges={stateChanges}
                   mode={mode}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
@@ -305,21 +298,18 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
 export function AcmDataForm(
   props: AcmDataFormProps & {
-    stateChanges: SyncDiffType
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
     globalWizardAlert?: ReactNode
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, stateChanges, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } =
-    props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
   switch (props.mode) {
     case 'wizard':
       return (
         <AcmDataFormWizard
           formData={formData}
-          stateChanges={stateChanges}
           isHorizontal={isHorizontal ?? false}
           showFormErrors={showFormErrors}
           setShowFormErrors={setShowFormErrors}
@@ -339,7 +329,6 @@ export function AcmDataForm(
       return (
         <AcmDataFormDefault
           formData={formData}
-          stateChanges={stateChanges}
           isHorizontal={isHorizontal}
           showFormErrors={showFormErrors}
           setShowFormErrors={setShowFormErrors}
@@ -350,13 +339,12 @@ export function AcmDataForm(
 
 export function AcmDataFormDefault(props: {
   formData: FormData
-  stateChanges: SyncDiffType
   isHorizontal?: boolean
   showFormErrors: boolean
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, stateChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
+  const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
@@ -394,15 +382,6 @@ export function AcmDataFormDefault(props: {
           </FormSection>
         )
       })}
-
-      {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-        <FormSection key="editor-changes">
-          <Title headingLevel="h2">{t('Other YAML changes')}</Title>
-          <FormGroup fieldId="diffs">
-            <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
-          </FormGroup>
-        </FormSection>
-      )}
 
       <Stack>
         {submitError && <Alert isInline variant="danger" title={submitError} />}
@@ -450,7 +429,6 @@ export function AcmDataFormDefault(props: {
 
 export function AcmDataFormWizard(props: {
   formData: FormData
-  stateChanges: SyncDiffType
   isHorizontal: boolean
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
@@ -458,8 +436,7 @@ export function AcmDataFormWizard(props: {
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, stateChanges, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } =
-    props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
@@ -532,14 +509,6 @@ export function AcmDataFormWizard(props: {
           </AlertGroup>
         )}
         <AcmDataFormDetails formData={formData} wizardSummary={true} />
-        {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
-          <FormSection key="editor-changes">
-            <Title headingLevel="h2">{t('Other YAML changes')}</Title>
-            <FormGroup fieldId="diffs">
-              <SyncDiff stateChanges={stateChanges} errorMessage={t('Resolve editor syntax errors.')} />
-            </FormGroup>
-          </FormSection>
-        )}
       </Form>
     ),
     canJumpTo: !isSubmitting,

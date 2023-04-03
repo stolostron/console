@@ -1,44 +1,43 @@
 .timeWindow-mode-container {
-    display: inline-grid;
-    margin-bottom: 10px;
+  display: inline-grid;
+  margin-bottom: 10px;
 }
 .mode-btn {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 .config-title-required {
-    font-weight: 400;
-    color: #c9190b;
-    display: inline;
-    margin-left: 0.25rem;
+  font-weight: 400;
+  color: #c9190b;
+  display: inline;
+  margin-left: 0.25rem;
 }
 .config-title {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .time-picker-title .config-title {
-    padding-right: 71px;
+  padding-right: 71px;
 }
 
-
 #timeZoneSelect {
-    width: 290px;
-    margin-left: 0;
-    padding-left: 0;
+  width: 290px;
+  margin-left: 0;
+  padding-left: 0;
 }
 
 .config-time-container {
-    display: flex;
-    margin-bottom: 20px;
+  display: flex;
+  margin-bottom: 20px;
 }
 
 .config-input-time {
-    float: left;
-    margin-right: 10px;
+  float: left;
+  margin-right: 10px;
 }
 
 .config-time-container ul {
-    margin-left: 0;
-    padding-left: 0;
+  margin-left: 0;
+  padding-left: 0;
 }

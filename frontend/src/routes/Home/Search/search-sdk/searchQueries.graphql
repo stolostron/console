@@ -1,55 +1,55 @@
 query searchSchema {
-    searchSchema
+  searchSchema
 }
 
 query searchComplete($property: String!, $query: SearchInput, $limit: Int) {
-    searchComplete(property: $property, query: $query, limit: $limit)
+  searchComplete(property: $property, query: $query, limit: $limit)
 }
 
 query searchResultItems($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-        items
-    }
+  searchResult: search(input: $input) {
+    items
+  }
 }
 
 query searchResultCount($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-        count
-    }
+  searchResult: search(input: $input) {
+    count
+  }
 }
 
 query searchResultCountAndRelatedCount($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-        count
-        related {
-            kind
-            count
-        }
+  searchResult: search(input: $input) {
+    count
+    related {
+      kind
+      count
     }
+  }
 }
 
 query searchResultRelatedCount($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-        related {
-            kind
-            count
-        }
+  searchResult: search(input: $input) {
+    related {
+      kind
+      count
     }
+  }
 }
 
 query searchResultRelatedItems($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-        related {
-            kind
-            items
-        }
+  searchResult: search(input: $input) {
+    related {
+      kind
+      items
     }
+  }
 }
 
 query getMessages {
-    messages {
-        id
-        kind
-        description
-    }
+  messages {
+    id
+    kind
+    description
+  }
 }

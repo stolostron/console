@@ -45,7 +45,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       handleChange(control)
     }
     // eslint-disable-next-line
-    }, [])
+  }, [])
 
   control.validate = async () => {
     await formRef?.current?.submitForm()

@@ -154,7 +154,12 @@ describe('DetailsOverviewPage', () => {
             resource={{
               apiVersion: 'v1',
               kind: 'Pod',
+              metadata: {
+                name: 'testName',
+                namespace: 'testNs',
+              },
             }}
+            name={'testName'}
             loading={true}
             error={''}
           />
@@ -175,7 +180,12 @@ describe('DetailsOverviewPage', () => {
             resource={{
               apiVersion: 'v1',
               kind: 'Pod',
+              metadata: {
+                name: 'testName',
+                namespace: 'testNs',
+              },
             }}
+            name={'testName'}
             loading={false}
             error={'Error getting resource'}
           />
@@ -184,7 +194,7 @@ describe('DetailsOverviewPage', () => {
     )
 
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('Error querying for resource:')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Error querying for resource: testName')).toBeTruthy())
   })
 
   it('Should correctly return DetailsOverviewPage', async () => {
@@ -257,6 +267,7 @@ describe('DetailsOverviewPage', () => {
                 },
               } as any
             }
+            name={'application-manager'}
             loading={false}
             error={''}
           />
