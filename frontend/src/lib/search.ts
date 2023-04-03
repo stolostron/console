@@ -40,13 +40,6 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
       input: [
         {
           filters: [
-            { property: 'kind', values: ['Subscription'] },
-            { property: 'cluster', values: [cluster] },
-          ],
-          relatedKinds: ['Application'],
-        },
-        {
-          filters: [
             { property: 'compliant', values: ['!Compliant'] },
             { property: 'kind', values: ['Policy'] },
             { property: 'namespace', values: [cluster] },

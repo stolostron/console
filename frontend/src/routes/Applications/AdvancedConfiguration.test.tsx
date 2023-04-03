@@ -16,9 +16,9 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-u
 import { clickByTestId, waitForText } from '../../lib/test-util'
 import ApplicationsPage from './ApplicationsPage'
 import {
-  mockSearchQuery,
+  mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
-  mockSearchResponse,
+  mockSearchResponseArgoApps,
   mockSearchResponseOCPApplications,
 } from './Application.sharedmocks'
 
@@ -86,7 +86,7 @@ describe('advanced configuration page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockSearch(mockSearchQuery, mockSearchResponse)
+    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   })
 
