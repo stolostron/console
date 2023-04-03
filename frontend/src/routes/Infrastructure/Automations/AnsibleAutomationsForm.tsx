@@ -273,12 +273,7 @@ export function AnsibleAutomationsForm(props: {
     return curator
   }
 
-  const jobTypes = [
-    { type: 'install', timeout: DEFAULT_INSTALL_TIMEOUT },
-    { type: 'upgrade', timeout: DEFAULT_UPGRADE_TIMEOUT, timeoutKey: 'monitorTimeout' },
-    { type: 'scale', timeout: DEFAULT_SCALE_TIMEOUT },
-    { type: 'destroy', timeout: DEFAULT_DESTROY_TIMEOUT },
-  ]
+  const jobTypes = [{ type: 'install' }, { type: 'upgrade' }, { type: 'scale' }, { type: 'destroy' }]
 
   function setAnsibleSelections(value: any) {
     const errors: any[] = []
@@ -341,30 +336,11 @@ export function AnsibleAutomationsForm(props: {
       { path: 'ClusterCurator[0].spec.inventory', setState: setAnsibleInventory },
       { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
     ]
-    jobTypes.forEach(({ type, timeout, timeoutKey }) => {
+    jobTypes.forEach(({ type }) => {
       syncs = [
         ...syncs,
         { path: `ClusterCurator[0].spec.${type}.prehook`, setter: setCustomHook.bind(null, type, true) },
         { path: `ClusterCurator[0].spec.${type}.posthook`, setter: setCustomHook.bind(null, type, false) },
-        {
-          path: `ClusterCurator[0].spec.${type}.${timeoutKey || 'jobMonitorTimeout'}`,
-          setter: ((type: string, value: any) => {
-            switch (type) {
-              case 'install':
-                setInstallTimeout(value || timeout)
-                break
-              case 'upgrade':
-                setUpdateTimeout(value || timeout)
-                break
-              case 'scale':
-                setScaleTimeout(value || timeout)
-                break
-              case 'destroy':
-                setDestroyTimeout(value || timeout)
-                break
-            }
-          }).bind(null, type),
-        },
       ]
     })
     return syncs
