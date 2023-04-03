@@ -242,12 +242,7 @@ export default function AdvancedConfiguration() {
         }
         break
       }
-      case 'PlacementRule': {
-        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount)
-        const clusterString = getClusterCountString(t, clusterCount)
-        _.set(transformedObject.transformed, 'clusterCount', clusterString)
-        break
-      }
+      case 'PlacementRule':
       case 'Placement': {
         clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount)
         const clusterString = getClusterCountString(t, clusterCount)
