@@ -57,6 +57,7 @@ export interface InputBase<T> {
   value: T
   onChange: (value: T) => void
   validation?: (value: T) => string | undefined
+  validate?: boolean
 
   isRequired?: boolean
   isDisabled?: boolean

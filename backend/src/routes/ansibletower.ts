@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { request, RequestOptions } from 'https'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Agent, request, RequestOptions } from 'https'
 import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, respondBadRequest } from '../lib/respond'
+import { notFound, respond, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 
 interface AnsibleCredential {
@@ -61,6 +61,7 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
         }),
         (err) => {
           if (err) logger.error(err)
+          respond(res, JSON.stringify(err.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
         }
       )
     })

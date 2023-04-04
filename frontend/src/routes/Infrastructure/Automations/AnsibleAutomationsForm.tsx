@@ -38,6 +38,7 @@ import {
   listAnsibleTowerJobs,
   ProviderConnection,
   replaceResource,
+  ResourceErrorCode,
   Secret,
 } from '../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
@@ -179,39 +180,46 @@ export function AnsibleAutomationsForm(props: {
       const inventoryList: string[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
-      listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
-        .promise.then((response) => {
-          if (response) {
-            response.results.forEach((template) => {
-              if (template.type === 'job_template' && template.name) {
-                jobList.push(template.name)
-              } else if (template.type === 'workflow_job_template' && template.name) {
-                workflowList.push(template.name)
-              }
-            })
-            setAnsibleTowerJobTemplateList(jobList)
-            setAnsibleTowerWorkflowTemplateList(workflowList)
-            setAnsibleTowerAuthError('')
+      Promise.all([
+        listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
+          (response) => {
+            if (response) {
+              response.results.forEach((template) => {
+                if (template.type === 'job_template' && template.name) {
+                  jobList.push(template.name)
+                } else if (template.type === 'workflow_job_template' && template.name) {
+                  workflowList.push(template.name)
+                }
+              })
+              setAnsibleTowerJobTemplateList(jobList)
+              setAnsibleTowerWorkflowTemplateList(workflowList)
+            }
           }
+        ),
+        listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
+          (response) => {
+            if (response) {
+              response.results.forEach((inventory) => {
+                if (inventory.name) {
+                  inventoryList.push(inventory.name)
+                }
+              })
+              setAnsibleTowerInventoryList(inventoryList)
+            }
+          }
+        ),
+      ])
+        .then(() => {
+          setAnsibleTowerAuthError('')
         })
-        .catch(() => {
-          setAnsibleTowerAuthError(t('validate.ansible.host'))
+        .catch((err) => {
+          setAnsibleTowerAuthError(
+            err.code === ResourceErrorCode.InternalServerError && err.reason
+              ? t('validate.ansible.reason', { reason: err.reason })
+              : t('validate.ansible.host')
+          )
           setAnsibleTowerJobTemplateList([])
-        })
-      listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
-        .promise.then((response) => {
-          if (response) {
-            response.results.forEach((inventory) => {
-              if (inventory.name) {
-                inventoryList.push(inventory.name)
-              }
-            })
-            setAnsibleTowerInventoryList(inventoryList)
-            setAnsibleTowerAuthError('')
-          }
-        })
-        .catch(() => {
-          setAnsibleTowerAuthError(t('validate.ansible.host'))
+          setAnsibleTowerWorkflowTemplateList([])
           setAnsibleTowerInventoryList([])
         })
     }
@@ -346,6 +354,7 @@ export function AnsibleAutomationsForm(props: {
             validation: () => {
               if (AnsibleTowerAuthError) return AnsibleTowerAuthError
             },
+            validate: !!AnsibleTowerAuthError,
           },
           {
             id: 'Inventory',
@@ -360,9 +369,6 @@ export function AnsibleAutomationsForm(props: {
               value: name as string,
             })),
             isHidden: !ansibleSelection,
-            validation: () => {
-              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
-            },
           },
         ],
       },

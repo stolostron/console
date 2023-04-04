@@ -877,7 +877,7 @@ export function AcmDataFormInputs(props: {
     <Fragment>
       {inputs?.map((input) => {
         const error: string | undefined = inputError(t, input)
-        const validated = showFormErrors && error !== undefined ? 'error' : undefined
+        const validated = (showFormErrors || input.validate) && error !== undefined ? 'error' : undefined
         return (
           <Fragment key={input.id}>
             {!input.isHidden && (
