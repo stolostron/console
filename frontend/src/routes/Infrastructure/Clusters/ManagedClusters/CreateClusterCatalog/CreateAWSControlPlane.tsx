@@ -93,8 +93,8 @@ export function CreateAWSControlPlane() {
 
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs = [
-      { text: t('Infrastructure'), to: NavigationPath.createCluster },
       { text: t('Clusters'), to: NavigationPath.clusters },
+      { text: t('Infrastructure'), to: NavigationPath.createCluster },
       { text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }) },
     ]
     return newBreadcrumbs
