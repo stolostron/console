@@ -86,6 +86,9 @@ describe('Create Policy Page', () => {
     // check existing placements
     screen.getByRole('button', { name: 'Existing placement' }).click()
     screen.getByRole('button', { name: /options menu/i }).click()
+    // Verify that the existing placement can be selected
+    screen.getByRole('option', { name: /policy-set-with-1-placement/i }).click()
+    expect(screen.getByRole('button', { name: /options menu/i }).textContent).toEqual('policy-set-with-1-placement')
 
     // new placement
     screen.getByRole('button', { name: 'New placement' }).click()
