@@ -119,11 +119,20 @@ export function setImmutableValues(decorationData, resources) {
 export function getDecorationRows(decorationData, templateObjects) {
   const decorationRows = []
   decorationData.forEach(({ path: _path, decorationType }) => {
-    const path = decorationType === DecorationType.DEPRECATED ? _path : getSourcePath(_path)
-    const row = get(templateObjects, path)
-    if (row) {
-      decorationRows.push({ ...row, decorationType })
+    let paths = [_path]
+    const wildcard = _path.split('[*]')
+    if (wildcard.length > 1 && templateObjects[wildcard[0]]) {
+      paths = templateObjects[wildcard[0]].map((_p, inx) => {
+        return `${wildcard[0]}[${inx}]${wildcard[1]}`
+      })
     }
+    paths.forEach((path) => {
+      path = getSourcePath(path)
+      const row = get(templateObjects, path)
+      if (row) {
+        decorationRows.push({ ...row, decorationType })
+      }
+    })
   })
   return decorationRows
 }

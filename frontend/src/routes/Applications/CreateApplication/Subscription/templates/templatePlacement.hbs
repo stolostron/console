@@ -39,40 +39,9 @@
 
 {{#if isDeprecatedPR}}
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
-metadata:
-  labels:
-    app: {{{@root.name}}}
-  name: {{{@root.name}}}-placement-{{uniqueGroupID}}
-  namespace: {{{@root.namespace}}}
-  {{#if selfLinks}}
-  selfLink: {{{selfLinks.PlacementRule}}}
-  {{/if}}
-{{#if clusterSelector.mode}}
-spec:
-  clusterSelector:
-    matchLabels:
-      {{#each clusterSelector.clusterLabelsList}}
-      {{#if validValue}}
-      '{{{labelName}}}': '{{{labelValue}}}'
-      {{/if}}
-      {{/each}}
+{{{deprecated-rule}}}
 {{else}}
-  {{#if online-cluster-only-checkbox}}
-spec:
-  clusterConditions:
-    - type: ManagedClusterConditionAvailable
-      status: "True"
-  {{/if}}
-  {{#if local-cluster-checkbox}}
-spec:
-  clusterSelector:
-    matchLabels:
-      'local-cluster': 'true'
-  {{/if}}
-{{/if}}
-{{else}}
+{{#unless existingrule-checkbox}} 
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
@@ -127,4 +96,5 @@ spec:
   clusterSet: {{{clusterSetName}}}
 {{/unless}}  
 {{/each}}
+{{/unless}}  
 {{/if}}
