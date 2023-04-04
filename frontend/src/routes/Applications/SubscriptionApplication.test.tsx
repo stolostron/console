@@ -116,7 +116,7 @@ const mockSubscription: Subscription = {
     channel: 'ginvalidcom-ns/ginvalidcom',
     placement: {
       placementRef: {
-        kind: 'PlacementRule',
+        kind: 'Placement',
         name: 'application-0-placement-1',
       },
     },
@@ -337,7 +337,24 @@ const mockPlacement: Placement = {
     namespace: 'namespace-0',
     name: 'application-0-placement-1',
   },
-  spec: {},
+  spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'In',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
+    clusterSets: ['global'],
+  },
 }
 
 const mockPlacementRule: PlacementRule = {
@@ -347,7 +364,7 @@ const mockPlacementRule: PlacementRule = {
     labels: {
       app: 'application-0',
     },
-    name: 'application-0-placement-1',
+    name: 'application-0-rule-1',
     namespace: 'namespace-0',
   },
   spec: {
@@ -511,8 +528,9 @@ describe('Create Subscription Application page', () => {
       })
     )
 
+    // pick existing Placement
     screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
-    await clickByText(mockPlacementRule.metadata.name!)
+    await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
     const dropdownButton = screen.getByRole('button', {
@@ -632,19 +650,6 @@ describe('Create Subscription Application page', () => {
         },
       ]),
       nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
-      nockPatch(mockPlacement, [
-        {
-          op: 'remove',
-          path: '/spec',
-        },
-        {
-          op: 'add',
-          path: '/metadata/labels',
-          value: {
-            app: 'application-0',
-          },
-        },
-      ]),
     ]
     //update the resources
     userEvent.click(
