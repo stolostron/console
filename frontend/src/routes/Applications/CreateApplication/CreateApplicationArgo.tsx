@@ -16,6 +16,7 @@ import {
   createResources,
   getGitChannelBranches,
   getGitChannelPaths,
+  GitOpsCluster,
   IResource,
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
@@ -23,6 +24,16 @@ import schema from './schema.json'
 
 export default function CreateArgoApplicationSetPage() {
   return <CreateApplicationArgo />
+}
+
+export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
+  return gitOpsClusters
+    .map((gitOpsCluster) => {
+      const description = `name: ${gitOpsCluster.metadata.name}; namespace: ${gitOpsCluster.metadata.namespace}`
+      const name = gitOpsCluster.spec?.argoServer?.argoNamespace!
+      return { value: name, label: name, description: description }
+    })
+    .filter(isType)
 }
 
 export function WizardSyncEditor() {
@@ -70,9 +81,7 @@ export function CreateApplicationArgo() {
   const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
 
-  const availableArgoNS = gitOpsClusters
-    .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
-    .filter(isType)
+  const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
   const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)
