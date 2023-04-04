@@ -28,6 +28,7 @@ import {
   useAssistedServiceConfigMap,
   useClusterDeploymentInfraEnv,
   importYaml,
+  onSetInstallationDiskId,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -120,15 +121,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
       ]).promise as Promise<CIM.AgentK8sResource>
     },
     onDeleteHost,
-    onSetInstallationDiskId: (agent: CIM.AgentK8sResource, diskId: string) => {
-      return patchResource(agent as IResource, [
-        {
-          op: 'replace',
-          path: '/spec/installation_disk_id',
-          value: diskId,
-        },
-      ]).promise as Promise<CIM.AgentK8sResource>
-    },
+    onSetInstallationDiskId,
   }
 
   useEffect(() => {

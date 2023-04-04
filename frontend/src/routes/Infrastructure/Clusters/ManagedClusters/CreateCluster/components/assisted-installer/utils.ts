@@ -808,3 +808,13 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 }
 
 export const getDefault = (values: (string | undefined)[]): string => values.filter(Boolean)?.[0] || ''
+
+export const onSetInstallationDiskId = (agent: CIM.AgentK8sResource, diskId: string) => {
+    return patchResource(agent as IResource, [
+        {
+            op: 'replace',
+            path: '/spec/installation_disk_id',
+            value: diskId,
+        },
+    ]).promise as Promise<CIM.AgentK8sResource>
+};
