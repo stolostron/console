@@ -19,6 +19,19 @@ export enum CableDriver {
   vxlan = 'vxlan',
 }
 
+export enum InstallPlanApproval {
+  automatic = 'automatic',
+  manual = 'manual',
+}
+
+export interface SubscriptionConfig {
+  source: string
+  sourceNamespace: string
+  channel?: string
+  startingCSV?: string
+  installPlanApproval: InstallPlanApproval
+}
+
 export interface SubmarinerConfig extends IResource {
   apiVersion: SubmarinerConfigApiVersionType
   kind: SubmarinerConfigKindType
@@ -48,6 +61,7 @@ export interface SubmarinerConfig extends IResource {
     }
     globalCIDR?: string
     loadBalancerEnable?: boolean
+    subscriptionConfig?: SubscriptionConfig
   }
 }
 
@@ -62,6 +76,9 @@ type SubmarinerConfigDefaults = {
   openStackInstanceType: string
   loadBalancerEnable: boolean
   brokerGlobalnetCIDR: string
+  source: string
+  sourceNamespace: string
+  installPlanApporval: InstallPlanApproval
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
@@ -75,4 +92,7 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
   openStackInstanceType: 'PnTAE.CPU_4_Memory_8192_Disk_50',
   loadBalancerEnable: false,
   brokerGlobalnetCIDR: '242.0.0.0/8', //NOSONAR
+  source: 'redhat-operators',
+  sourceNamespace: 'openshift-marketplace',
+  installPlanApporval: InstallPlanApproval.automatic,
 }
