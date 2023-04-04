@@ -60,8 +60,10 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
           pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
         }),
         (err) => {
-          if (err) logger.error(err)
-          respond(res, JSON.stringify(err.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          if (err) {
+            logger.error(err)
+            respond(res, JSON.stringify(err.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          }
         }
       )
     })
