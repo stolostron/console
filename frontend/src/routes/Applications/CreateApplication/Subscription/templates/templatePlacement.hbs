@@ -6,7 +6,7 @@
 
   placement:
     placementRef:
-    {{#if isPlacementRule}}
+    {{#if isDeprecatedPR}}
       kind: PlacementRule
     {{else}}
       kind: Placement
@@ -37,7 +37,11 @@
     {{/if}}
 {{/if}}
 
-{{#unless isPlacementRule}} 
+{{#if isDeprecatedPR}}
+---
+{{{deprecated-rule}}}
+{{else}}
+{{#unless existingrule-checkbox}} 
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
@@ -92,4 +96,5 @@ spec:
   clusterSet: {{{clusterSetName}}}
 {{/unless}}  
 {{/each}}
-{{/unless}}
+{{/unless}}  
+{{/if}}

@@ -8,7 +8,8 @@ import StackTrace from 'stacktrace-js'
 import path from 'path'
 
 const hashCode = (str: string) => str.split('').reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0)
-const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
+const defaultFilters = ['managedFields', 'finalizers', 'creationTimestamp', 'resourceVersion', 'generation', 'uid']
+const getSnapshot = (obj: any, unfiltered: boolean, customFilters?: string[] | undefined, max?: number) => {
   interface IProto {
     name?: string
     displayName?: string
@@ -18,9 +19,9 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
   const funcSet = new Set<string>()
   const getReplacements = () => {
     const seen = new WeakSet()
-    const filteredKeys = unfiltered
-      ? []
-      : ['managedFields', 'finalizers', 'creationTimestamp', 'resourceVersion', 'generation', 'uid', 'controlData']
+    customFilters = Array.isArray(customFilters) ? customFilters : ([customFilters] as unknown as string[])
+    const filteredKeys = unfiltered ? [] : [...defaultFilters, ...(customFilters || [])]
+    const filterFunctions = filteredKeys.includes('__FUNCTION__')
 
     return (key: any, value: { continue?: any } | null | undefined) => {
       if (value) {
@@ -51,11 +52,13 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
               return
             }
             if (React.isValidElement(value)) {
-              const proto = value.type as IProto
-              return `__COMPONENT__${proto.name || proto.displayName}`
+              return
             }
             break
           case type === 'function': {
+            if (filterFunctions) {
+              return
+            }
             const isTrans = key === 'i18n' || key === 't'
             const proto = value as IProto
             if (proto.name) {
@@ -69,11 +72,9 @@ const getSnapshot = (obj: any, unfiltered: boolean, max?: number) => {
       return value
     }
   }
-  const snapshot = JSON.stringify(obj, getReplacements(), '  ')
-    .replace(/"__FUNCTION__(.*)"/g, (_r, name) => {
-      return name === 'i18n' ? '(k)=>k' : `mock${name}`
-    })
-    .replace(/"__COMPONENT__(.*)"/g, '</*$1*/></>')
+  const snapshot = JSON.stringify(obj, getReplacements(), '  ').replace(/"__FUNCTION__(.*)"/g, (_r, name) => {
+    return name === 'i18n' ? '(k)=>k' : `mock${name}`
+  })
 
   const mockFunctions: string[] = []
   const actualCallTimes: string[] = []
@@ -105,6 +106,10 @@ export const removeCircular = (object: any) => {
   return object
 }
 
+export const cleanResults = (obj: any, customFilters?: string[]) => {
+  return JSON.parse(getSnapshot(obj, false, customFilters, 1000).snapshot)
+}
+
 const getSnippet = (snaps: string[], expects: string[]) => {
   const snippets = []
   snippets.push(...snaps)
@@ -114,7 +119,7 @@ const getSnippet = (snaps: string[], expects: string[]) => {
 }
 
 // window.propShot(props or this.props)
-window.propShot = (props: any, max?: number) => {
+window.propShot = (props: any, customFilters?: string[], max?: number) => {
   if (process.env.NODE_ENV === 'production') {
     console.log('!!!! REMOVE propShot FROM CODE !!!!')
     return
@@ -122,7 +127,8 @@ window.propShot = (props: any, max?: number) => {
   if (process.env.NODE_ENV !== 'test') {
     const stack: StackTrace.StackFrame[] = StackTrace.getSync()
     const className = stack[1].getFunctionName().split('.')[0]
-    const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, false, max || 10)
+    const filters = [...(customFilters || []), ...['controlData']]
+    const { snapshot, mockFunctions, expectCallTimes, actualCallTimes } = getSnapshot(props, false, filters, max || 10)
     const snippet = getSnippet(
       [...mockFunctions, `const props /*:PropType*/ = ${snapshot}`],
       ['\n\n', ...expectCallTimes, '\n\n', ...actualCallTimes]
@@ -134,7 +140,7 @@ window.propShot = (props: any, max?: number) => {
   }
 }
 
-window.coilShot = (recoil: any, stateName: string, max?: number) => {
+window.coilShot = (recoil: any, stateName: string, customFilters?: string[], max?: number) => {
   if (process.env.NODE_ENV === 'production') {
     console.log('!!!! REMOVE coilShot FROM CODE !!!!')
     return
@@ -143,7 +149,8 @@ window.coilShot = (recoil: any, stateName: string, max?: number) => {
     const stack: StackTrace.StackFrame[] = StackTrace.getSync()
     const className = stack[1].getFunctionName().split('.')[0]
     const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
-    const { snapshot } = getSnapshot(recoil, false, max || 10)
+    const filters = [...(customFilters || []), ...['controlData']]
+    const { snapshot } = getSnapshot(recoil, false, filters, max || 10)
     const snippets = []
     snippets.push(`//import {${stateName}} from '../../atoms'\n\n`)
     snippets.push(`//const ${dataName} = ${snapshot}\n\n`)
@@ -162,7 +169,7 @@ window.coilShot = (recoil: any, stateName: string, max?: number) => {
 
 // return window.funcShot([arg1, arg2], ret)
 // //return original
-window.funcShot = (args, ret) => {
+window.funcShot = (args, ret, customFilters?: string[]) => {
   if (process.env.NODE_ENV === 'production') {
     console.log('!!!! REMOVE funcShot FROM CODE !!!!')
     return
@@ -173,14 +180,14 @@ window.funcShot = (args, ret) => {
     const fileName = path.parse(stack[1].getFileName()).name
     const apiName = camelCase(fileName)
     const snippets = []
-    const { snapshot: argShot, mockFunctions } = getSnapshot(args, false, 1000)
-    const { snapshot: retShot } = getSnapshot(ret, false, 1000)
+    const filters = [...(customFilters || []), ...['__FUNCTION__']]
+    const { snapshot: argShot } = getSnapshot(args, false, filters, 1000)
+    const { snapshot: retShot } = getSnapshot(ret, false, filters, 1000)
     snippets.push(`//import * as ${apiName}API from './${fileName}'\n`)
-    snippets.push(`//import { removeCircular } from '../../../lib/test-shots'\n`)
-    snippets.push(...mockFunctions)
+    snippets.push(`//import { cleanResults } from '../../../lib/test-shots'\n`)
     snippets.push(`const ${methodName}={args: ${argShot}, ret: ${retShot}}\n`)
     snippets.push(`const ${methodName}Fn = jest.spyOn(${apiName}API, '${methodName}') as jest.Mock<any>`)
-    snippets.push(`expect (removeCircular(${methodName}Fn(...${methodName}.args))).toEqual(${methodName}.ret)`)
+    snippets.push(`expect (cleanResults(${methodName}Fn(...${methodName}.args))).toEqual(${methodName}.ret)`)
     const snip: { [index: string]: string } = {}
     const key = `${methodName}FuncShot`
     snip[key] = snippets.join('\n')
@@ -215,12 +222,12 @@ const getNockShotName = (
     kindList = methodMap[kind] = []
   }
   let { reqBody, resBody, resource } = testShot
-  ;({ snapshot: reqBody } = getSnapshot(reqBody, unfiltered, 5))
+  ;({ snapshot: reqBody } = getSnapshot(reqBody, unfiltered, undefined, 5))
   if (resBody) {
-    ;({ snapshot: resBody } = getSnapshot(resBody, unfiltered, 5))
+    ;({ snapshot: resBody } = getSnapshot(resBody, unfiltered, undefined, 5))
   }
   if (resource) {
-    ;({ snapshot: resource } = getSnapshot(resource, unfiltered, 5))
+    ;({ snapshot: resource } = getSnapshot(resource, unfiltered, undefined, 5))
   }
   const key = hashCode(`${reqBody}\\\\${resBody}`)
   const inx = kindList.findIndex((kind: IKindData) => {

@@ -31,7 +31,7 @@ export const isFiltered = (key: string, parentObj: any) => {
   return false
 }
 
-const filterDeep = (obj: object | null) => {
+export const filterDeep = (obj: object | null) => {
   const newObj: any = {}
   Object.entries(obj || {}).forEach(([k, v]) => {
     const value = filter(v)

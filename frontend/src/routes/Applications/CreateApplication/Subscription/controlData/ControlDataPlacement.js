@@ -13,6 +13,7 @@
 
 // seems to be an issue with this rule and redux
 
+import YAML from 'yaml'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRuleDeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
@@ -20,6 +21,7 @@ import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './u
 import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
+import { filterDeep } from '../transformers/transform-data-to-resources'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
@@ -43,8 +45,8 @@ export const loadExistingPlacementRules = (t) => {
 }
 
 const getLabels = (clusterSelector) => {
-  return clusterSelector.matchExpressions
-    .map(({ key, operator, values }) => {
+  return clusterSelector?.matchExpressions
+    ?.map(({ key, operator, values }) => {
       return `${key} "${operator}" ${values.join(', ')}`
     })
     .join('; ')
@@ -199,12 +201,15 @@ export const updateNewRuleControls = (control) => {
   const kind = _.get(active, 'kind')
   control.info = availableInfo ? availableInfo[control?.active] : ''
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
-  const isPlacementRule = groupControlData.find(({ id }) => id === 'isPlacementRule')
+  const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
+  const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
   if (kind) {
     if (kind === PlacementRuleKind) {
-      isPlacementRule && _.set(isPlacementRule, 'active', true)
+      isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
+      deprecatedRule && _.set(deprecatedRule, 'active', YAML.stringify(filterDeep(active)))
     } else {
-      isPlacementRule && _.set(isPlacementRule, 'active', false)
+      isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
+      deprecatedRule && _.set(deprecatedRule, 'active', '')
     }
   }
 
@@ -284,9 +289,14 @@ const placementData = (isLocalCluster, t) => {
       summarize: summarizeOnline,
     },
     {
-      id: 'isPlacementRule',
+      id: 'isDeprecatedPR',
       type: 'hidden',
-      active: false,
+      active: '',
+    },
+    {
+      id: 'deprecated-rule',
+      type: 'hidden',
+      active: '',
     },
     {
       id: 'placementrulecombo',
@@ -312,7 +322,7 @@ const placementData = (isLocalCluster, t) => {
     {
       id: 'placementRuleDeprecated',
       type: 'hidden',
-      deprecated: { path: 'PlacementRule[0].$synced.kind' },
+      deprecated: { path: 'PlacementRule[*].kind' },
     },
     {
       type: 'custom',

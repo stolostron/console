@@ -11,8 +11,11 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import YAML from 'yaml'
 import { initializeControls, getSourcePath, getResourceID } from '../../../../../components/TemplateEditor'
+import { filterDeep } from './transform-data-to-resources'
 import _ from 'lodash'
+import { PlacementRuleKind } from '../../../../../resources'
 
 //only called when editing an existing application
 //examines resources to create the correct resource types that are being deployed
@@ -142,6 +145,17 @@ const discoverChannelFromSource = (
       }
     }
 
+    // remember if this is a deprecated PlacementRuleKind
+    const placementKind = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.kind'))?.$v
+    const isDeprecatedPRControl = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
+    const deprecatedRuleControl = groupControlData.find(({ id }) => id === 'deprecated-rule')
+    if (isDeprecatedPRControl && deprecatedRuleControl && placementKind === PlacementRuleKind) {
+      isDeprecatedPRControl.active = true
+      const ruleName = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))?.$v
+      const rule = templateObject[PlacementRuleKind].find((rule) => ruleName === rule?.$raw?.metadata?.name)
+      deprecatedRuleControl.active = YAML.stringify(filterDeep(rule.$raw))
+    }
+
     // if more then one group, collapse all groups
     groupControlData
       .filter(({ type }) => type === 'section')
@@ -192,35 +206,6 @@ export const shiftTemplateObject = (templateObject, selfLinksControl) => {
         if (selfLinksControl) {
           const channelSelfLink = getResourceID(channel.$raw)
           _.set(selfLinksControl, 'active.Channel', channelSelfLink)
-        }
-      }
-    }
-
-    removePlacementRule(subscription, templateObject, selfLinksControl)
-  }
-}
-
-// if this subscription pointed to a placement rule in this template
-// remove that placement rule too
-const removePlacementRule = (subscription, templateObject, selfLinksControl) => {
-  const name = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
-  if (name) {
-    const remainingSubscriptions = _.get(templateObject, 'Subscription')
-    const isReused = remainingSubscriptions.some((resource) => {
-      return name === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
-    })
-
-    // unless it's used in another subscription
-    if (!isReused) {
-      const rules = templateObject.PlacementRule || []
-      const inx = rules.findIndex((rule) => {
-        return name === _.get(rule, '$synced.metadata.$v.name.$v')
-      })
-      if (inx !== -1) {
-        const rule = templateObject.PlacementRule.splice(inx, 1)[0]
-        if (selfLinksControl) {
-          const ruleSelfLink = getResourceID(rule.$raw)
-          _.set(selfLinksControl, 'active.PlacementRule', ruleSelfLink)
         }
       }
     }
