@@ -67,7 +67,7 @@ export async function getDeprovisionPod(namespace: string, name: string) {
   })
 }
 
-export async function getLatestHivePod(namespace: string, name: string) {
+export async function getLatestHivePod(namespace: string) {
   const response = listPods(namespace, [])
   return await response.promise.then((result) => {
     const latestJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
