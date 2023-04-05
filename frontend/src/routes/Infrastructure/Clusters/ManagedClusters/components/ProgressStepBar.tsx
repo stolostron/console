@@ -112,7 +112,7 @@ export function ProgressStepBar() {
         prehookStatus = StatusType.healthy
     }
 
-    function isPrehookLinkDisabled() {
+    const isPrehookLinkDisabled = () => {
       if (!prehooks && !posthooks) {
         return false
       }
@@ -125,7 +125,7 @@ export function ProgressStepBar() {
       return false
     }
 
-    function isPosthookLinkDisabled() {
+    const isPosthookLinkDisabled = () => {
       if (!latestJobs.posthook?.status?.ansibleJobResult?.url) {
         return false
       } else {

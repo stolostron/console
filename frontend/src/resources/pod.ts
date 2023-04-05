@@ -81,7 +81,7 @@ export async function getHivePod(namespace: string, name: string, status: string
   if (status === ClusterStatus.creating) {
     hiveJob = await getProvisionPod(namespace, name)
   } else if (status === ClusterStatus.provisionfailed || status === ClusterStatus.deprovisionfailed) {
-    hiveJob = await getLatestHivePod(namespace, name)
+    hiveJob = await getLatestHivePod(namespace)
   } else if (status === ClusterStatus.destroying) {
     hiveJob = await getDeprovisionPod(namespace, name)
   }

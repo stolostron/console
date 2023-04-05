@@ -64,7 +64,7 @@ export const checkCuratorConditionDone = (condition: string, conditions: V1Custo
 
 export const getFailedCuratorJobName = (clusterName: string, conditions: V1CustomResourceDefinitionCondition[]) => {
   const cond = conditions?.find((c) => c.type === 'clustercurator-job')
-  const regex = new RegExp(`(?<=${clusterName}\/)[A-Za-z0-9_\-]*`, 'i')
+  const regex = new RegExp(`(?<=${clusterName}/)[A-Za-z0-9_-]*`, 'i')
   const match = regex.exec(cond!.message!)
   if (match) {
     return match[0]
