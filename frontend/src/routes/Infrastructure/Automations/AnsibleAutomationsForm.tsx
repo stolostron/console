@@ -213,6 +213,8 @@ export function AnsibleAutomationsForm(props: {
           setAnsibleTowerAuthError('')
         })
         .catch((err) => {
+          console.log('CAUGHT THE ERROR')
+          console.log(err)
           setAnsibleTowerAuthError(
             err.code === ResourceErrorCode.InternalServerError && err.reason
               ? t('validate.ansible.reason', { reason: err.reason })
