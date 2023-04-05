@@ -100,7 +100,7 @@ export interface ArgoWizardProps {
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
   ansibleCredentials: string[]
-  argoServers: string[]
+  argoServers: { label: string; value: string; description?: string }[]
   namespaces: string[]
   onSubmit: WizardSubmit
   onCancel: WizardCancel

@@ -283,7 +283,7 @@ describe('ArgoWizard tests', () => {
 const props: ArgoWizardProps = {
   createClusterSetCallback: mockCreateclustersetcallback,
   ansibleCredentials: [],
-  argoServers: ['http://argoserver.com'],
+  argoServers: [{ value: 'http://argoserver.com', label: 'http://argoserver.com' }],
   namespaces: [
     'aap',
     'default',
