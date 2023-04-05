@@ -91,12 +91,6 @@ describe('Topology tests', () => {
     userEvent.click(screen.getByText(/fit to screen/i))
     userEvent.click(screen.getByText(/reset view/i))
 
-    /////////////////////////////////////////////////
-    // verify topology
-    // edges
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-    // screen.logTestingPlaygroundURL()
-
     expect(container.querySelectorAll("[data-type='edge']")).toHaveLength(9)
     // nodes
     expect(container.querySelectorAll("[data-id='application--test']")).toHaveLength(2)

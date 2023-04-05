@@ -25,6 +25,7 @@ import {
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
+import { GetGitOpsClusters } from './CreateApplicationArgo'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -74,9 +75,7 @@ export function EditArgoApplicationSet() {
   const [managedClusters] = useRecoilState(managedClustersState)
   const [clusterSets] = useRecoilState(managedClusterSetsState)
   const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-  const availableArgoNS = gitOpsClusters
-    .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
-    .filter(isType)
+  const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
   const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)

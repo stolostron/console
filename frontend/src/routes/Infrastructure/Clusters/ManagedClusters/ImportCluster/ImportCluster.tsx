@@ -4,6 +4,7 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   SelectOption,
+  SelectVariant,
   Split,
   SplitItem,
   Switch,
@@ -370,60 +371,55 @@ export default function ImportClusterPage() {
         showYaml={drawerExpanded}
         yamlEditor={getWizardSyncEditor}
         defaultData={defaultData}
-        onSubmit={function (data: unknown): Promise<void> {
+        onSubmit={async (data: unknown) => {
           toastContext.clearAlerts()
 
           const resources = data as any[]
-
-          return new Promise(async (resolve, reject) => {
+          try {
+            // create the project
             try {
-              // create the project
-              try {
-                await createProject(state.clusterName).promise
-              } catch (err) {
-                const resourceError = err as ResourceError
-                if (resourceError.code !== ResourceErrorCode.Conflict) {
-                  throw err
-                }
-              }
-
-              const resourceGroups = groupBy(resources, 'kind')
-              // create resources
-              for (const kind of [ManagedClusterKind, KlusterletAddonConfigKind, ClusterCuratorKind, SecretKind]) {
-                if (resourceGroups[kind]?.length) {
-                  for (const resource of resourceGroups[kind]) {
-                    await (kind === ClusterCuratorKind ? createClusterCurator(resource) : createResource(resource))
-                      .promise
-                  }
-                }
-              }
-              toastContext.addAlert({
-                title: t('success.create.created', [state.clusterName]),
-                type: 'success',
-                autoClose: true,
-              })
-              setTimeout(() => {
-                history.push(
-                  generatePath(NavigationPath.clusterDetails, {
-                    name: state.clusterName,
-                    namespace: '~managed-cluster',
-                  })
-                )
-              }, 2000)
+              await createProject(state.clusterName).promise
             } catch (err) {
-              if (err instanceof Error) {
-                toastContext.addAlert({
-                  type: 'danger',
-                  title: err.name,
-                  message: err.message,
-                })
-              } else {
-                reject()
+              const resourceError = err as ResourceError
+              if (resourceError.code !== ResourceErrorCode.Conflict) {
+                throw err
               }
-            } finally {
-              resolve(undefined)
             }
-          })
+
+            const resourceGroups = groupBy(resources, 'kind')
+            // create resources
+            for (const kind of [ManagedClusterKind, KlusterletAddonConfigKind, ClusterCuratorKind, SecretKind]) {
+              if (resourceGroups[kind]?.length) {
+                for (const resource of resourceGroups[kind]) {
+                  await (kind === ClusterCuratorKind ? createClusterCurator(resource) : createResource(resource))
+                    .promise
+                }
+              }
+            }
+            toastContext.addAlert({
+              title: t('success.create.created', [state.clusterName]),
+              type: 'success',
+              autoClose: true,
+            })
+            setTimeout(() => {
+              history.push(
+                generatePath(NavigationPath.clusterDetails, {
+                  name: state.clusterName,
+                  namespace: '~managed-cluster',
+                })
+              )
+            }, 2000)
+          } catch (err) {
+            if (err instanceof Error) {
+              toastContext.addAlert({
+                type: 'danger',
+                title: err.name,
+                message: err.message,
+              })
+            } else {
+              throw err
+            }
+          }
         }}
         onCancel={cancel(NavigationPath.clusters)}
         submitButtonText={submitButtonText}
@@ -792,52 +788,51 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
       })
 
       // Add new YAML for ClusterCurator and secrets
-      if (template) {
-        // TODO: include namespace in key
-        const curatorTemplate = curatorTemplates.find((cct) => cct.metadata.name === template)
-        if (curatorTemplate) {
-          setSelectedTemplateName(curatorTemplate)
-          const curator = {
-            ...ClusterCuratorDefinition,
-            metadata: {
-              name: clusterName,
-              namespace: clusterName,
-            },
-            spec: cloneDeep(curatorTemplate.spec),
-          }
-          resources.push(curator)
-          supportedCurations.forEach((curationType) => {
-            const curation = curator.spec?.[curationType]
-            if (curation?.towerAuthSecret) {
-              const matchingSecret = ansibleCredentials.find(
-                (s) =>
-                  s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
-                  s.metadata.namespace === curatorTemplate.metadata.namespace
-              )
-              if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
-                const secretName = `toweraccess-${curationType}`
-                const copiedSecret = {
-                  ...SecretDefinition,
-                  type: 'Opaque',
-                  metadata: {
-                    name: secretName,
-                    namespace: clusterName,
-                    labels: {
-                      'cluster.open-cluster-management.io/type': 'ans',
-                      'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
-                      'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
-                      'cluster.open-cluster-management.io/backup': 'cluster',
-                    },
-                  },
-                  stringData: cloneDeep(matchingSecret.stringData),
-                }
-                curation.towerAuthSecret = secretName
-                resources.push(copiedSecret)
-              }
-            }
-          })
+      const curatorTemplate = template ? curatorTemplates.find((cct) => cct.metadata.name === template) : undefined
+
+      if (curatorTemplate) {
+        setSelectedTemplateName(curatorTemplate)
+        const curator = {
+          ...ClusterCuratorDefinition,
+          metadata: {
+            name: clusterName,
+            namespace: clusterName,
+          },
+          spec: cloneDeep(curatorTemplate.spec),
         }
+        resources.push(curator)
+        supportedCurations.forEach((curationType) => {
+          const curation = curator.spec?.[curationType]
+          if (curation?.towerAuthSecret) {
+            const matchingSecret = ansibleCredentials.find(
+              (s) =>
+                s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
+                s.metadata.namespace === curatorTemplate.metadata.namespace
+            )
+            if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+              const secretName = `toweraccess-${curationType}`
+              const copiedSecret = {
+                ...SecretDefinition,
+                type: 'Opaque',
+                metadata: {
+                  name: secretName,
+                  namespace: clusterName,
+                  labels: {
+                    'cluster.open-cluster-management.io/type': 'ans',
+                    'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
+                    'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
+                    'cluster.open-cluster-management.io/backup': 'cluster',
+                  },
+                },
+                stringData: cloneDeep(matchingSecret.stringData),
+              }
+              curation.towerAuthSecret = secretName
+              resources.push(copiedSecret)
+            }
+          }
+        })
       }
+      setSelectedTemplateName(curatorTemplate)
       dispatch({ type: 'setTemplateName', templateName: template })
       update()
     },
@@ -858,6 +853,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
         label={controlLabel}
         placeholder={t('template.clusterCreate.select.placeholder')}
         labelHelp={t('template.clusterImport.tooltip')}
+        variant={SelectVariant.typeahead}
         helperText={
           <Split>
             <SplitItem isFilled />

@@ -5,22 +5,29 @@ import { RecoilRoot } from 'recoil'
 import { namespacesState, subscriptionsState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
 import {
+  IResource,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
+  PlacementDecision,
+  PlacementDecisionApiVersion,
+  PlacementDecisionKind,
+  PlacementKind,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../resources'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
-import ApplicationsPage from './ApplicationsPage'
 import {
-  mockSearchQuery,
+  mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
-  mockSearchResponse,
+  mockSearchResponseArgoApps,
   mockSearchResponseOCPApplications,
 } from './Application.sharedmocks'
+import AdvancedConfiguration, { getPlacementDecisionClusterCount } from './AdvancedConfiguration'
+import { PlacementApiVersion } from '../../wizards/common/resources/IPlacement'
+import { ClusterCount } from './helpers/resource-helper'
 
 const mockSubscription1: Subscription = {
   kind: SubscriptionKind,
@@ -76,7 +83,7 @@ function TestAdvancedConfigurationPage() {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
-        <ApplicationsPage />
+        <AdvancedConfiguration />
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -86,7 +93,7 @@ describe('advanced configuration page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockSearch(mockSearchQuery, mockSearchResponse)
+    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   })
 
@@ -108,5 +115,73 @@ describe('advanced configuration page', () => {
   test('should click placement rule option', async () => {
     render(<TestAdvancedConfigurationPage />)
     await clickByTestId('placementrules')
+  })
+})
+
+describe('getPlacementDecisionClusterCount', () => {
+  const resource: IResource = {
+    kind: PlacementKind,
+    apiVersion: PlacementApiVersion,
+    metadata: {
+      name: 'test-placement',
+    },
+    status: {
+      decisions: [
+        {
+          clusterName: 'local-cluster',
+          clusterNamespace: 'local-cluster',
+        },
+        {
+          clusterName: 'remote-cluster-1',
+          clusterNamespace: 'default',
+        },
+      ],
+    },
+  }
+
+  const placementDecisions: PlacementDecision[] = [
+    {
+      apiVersion: PlacementDecisionApiVersion,
+      kind: PlacementDecisionKind,
+      metadata: {
+        labels: {
+          'cluster.open-cluster-management.io/placement': 'test-placement',
+        },
+      },
+      status: {
+        decisions: [
+          {
+            clusterName: 'local-cluster',
+            reason: '',
+          },
+          {
+            clusterName: 'remote-cluster-2',
+            reason: '',
+          },
+        ],
+      },
+    },
+  ]
+
+  it('should count local and remote placement correctly', () => {
+    const clusterCount: ClusterCount = {
+      localPlacement: false,
+      remoteCount: 0,
+    }
+    const expectedClusterCount: ClusterCount = {
+      localPlacement: true,
+      remoteCount: 1,
+    }
+    const result = getPlacementDecisionClusterCount(resource, clusterCount, placementDecisions)
+    expect(result).toEqual(expectedClusterCount)
+  })
+
+  it('should return the input clusterCount if no decisions found', () => {
+    const clusterCount: ClusterCount = {
+      localPlacement: false,
+      remoteCount: 0,
+    }
+    const result = getPlacementDecisionClusterCount({} as IResource, clusterCount, [])
+    expect(result).toEqual(clusterCount)
   })
 })

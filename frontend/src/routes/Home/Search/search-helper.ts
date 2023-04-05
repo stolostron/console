@@ -5,7 +5,7 @@
 import { TFunction } from 'i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
-const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
+export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
 
 export function formatSearchbarSuggestions(
@@ -19,7 +19,6 @@ export function formatSearchbarSuggestions(
   let suggestions: DropdownSuggestionsProps[] = []
   const labelTag = {
     id: 'id-suggestions-label',
-    key: 'key-suggestions-label',
     name: t('Filters'),
     kind: suggestionKind,
     disabled: true,
@@ -27,7 +26,10 @@ export function formatSearchbarSuggestions(
   if (suggestionKind === 'value') {
     // Get a list of duplicate values to remove from suggestions dropdown
     const searchTokens = searchQuery.split(' ')
-    const searchCompleteFilter = searchTokens[searchTokens.length - 1].replace(':', '')
+    const searchCompleteFilter = searchTokens[searchTokens.length - 1].substring(
+      0,
+      searchTokens[searchTokens.length - 1].indexOf(':')
+    )
     labelTag.name = t('{{0}} values', [searchCompleteFilter])
     const query = convertStringToQuery(searchQuery, limit)
     query.filters.forEach((filter) => {
@@ -47,7 +49,6 @@ export function formatSearchbarSuggestions(
           labelTag,
           {
             id: 'id-values-range',
-            key: 'key-values-range',
             name: numberRange,
             kind: suggestionKind,
             disabled: true,
@@ -57,7 +58,6 @@ export function formatSearchbarSuggestions(
       suggestions = operators.map((op) => {
         return {
           id: `id-${op}`,
-          key: `key-${op}`,
           name: op,
           kind: suggestionKind,
         }
@@ -73,7 +73,6 @@ export function formatSearchbarSuggestions(
       suggestions = dateValues.map((date) => {
         return {
           id: `id-date-${date}`,
-          key: `key-date-${date}`,
           name: date,
           kind: suggestionKind,
         }
@@ -95,7 +94,6 @@ export function formatSearchbarSuggestions(
     .map((field) => {
       return {
         id: `id-${field}`,
-        key: `key-${field}`,
         name: field,
         kind: suggestionKind,
       }
@@ -115,7 +113,7 @@ export const convertStringToQuery = (searchText: string, queryResultLimit: numbe
       const values = f.substring(splitIdx + 1)
       return { property, values: values.split(',') }
     })
-    .filter((f) => ['', '=', '<', '>', '<=', '>=', '!=', '!'].findIndex((op) => op === f.values[0]) === -1)
+
   return {
     keywords,
     filters,
@@ -135,7 +133,7 @@ export const getSearchCompleteString = (searchQuery: string) => {
     const operator = operators.filter(
       (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
     )
-    return queryTags[queryTags.length - 1].replace(':', '').replace(operator[operator.length - 1], '')
+    return queryTags[queryTags.length - 1].replace(':', '').replace(operator[0], '')
   }
   return ''
 }

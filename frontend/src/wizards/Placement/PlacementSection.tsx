@@ -6,7 +6,6 @@ import {
   EditMode,
   WizItemSelector,
   Section,
-  Select,
   WizSingleSelect,
   useData,
   DisplayMode,
@@ -19,18 +18,14 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 
 import { IResource } from '../common/resources/IResource'
+import PlacementRuleDeprecationAlert from '../../components/PlacementRuleDeprecationAlert'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
-import {
-  IPlacementRule,
-  PlacementRuleApiGroup,
-  PlacementRuleKind,
-  PlacementRuleType,
-} from '../common/resources/IPlacementRule'
+import { IPlacementRule, PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
-import { PlacementRule, PlacementRules } from './PlacementRule'
+import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function PlacementSection(props: {
@@ -40,7 +35,6 @@ export function PlacementSection(props: {
   existingPlacementRules: IResource[]
   existingClusterSets: IResource[]
   existingClusterSetBindings: IClusterSetBinding[]
-  defaultPlacementKind: 'Placement' | 'PlacementRule'
   clusters: IResource[]
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
@@ -173,16 +167,13 @@ export function PlacementSection(props: {
   if (isAdvanced) {
     return (
       <Fragment>
-        {placementCount || (props.defaultPlacementKind === 'Placement' && placementRuleCount === 0) ? (
+        {placementCount ? (
           <Placements
             clusterSets={props.existingClusterSets}
             clusterSetBindings={props.existingClusterSetBindings}
             bindingKind={props.bindingSubjectKind}
             clusters={props.clusters}
           />
-        ) : null}
-        {placementRuleCount || (props.defaultPlacementKind === 'PlacementRule' && placementCount === 0) ? (
-          <PlacementRules clusters={props.clusters} />
         ) : null}
         <PlacementBindings
           placementCount={placementCount}
@@ -197,12 +188,23 @@ export function PlacementSection(props: {
     )
   }
 
+  let usesPlacementRule = false
+  for (const resource of resources) {
+    if (resource.kind === PlacementBindingKind) {
+      if ((resource as any)?.placementRef?.kind === PlacementRuleKind) {
+        usesPlacementRule = true
+        break
+      }
+    }
+  }
+
   return (
     <Section
       label={t('Placement')}
       // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
       autohide={false}
     >
+      {placementRuleCount != 0 && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
       {showPlacementSelector && (
         <PlacementSelector
           placementCount={placementCount}
@@ -210,7 +212,6 @@ export function PlacementSection(props: {
           placementBindingCount={placementBindingCount}
           bindingSubjectKind={props.bindingSubjectKind}
           bindingSubjectApiGroup={props.bindingSubjectApiGroup}
-          defaultPlacementKind={props.defaultPlacementKind}
           allowNoPlacement={props.allowNoPlacement}
           withoutOnlineClusterCondition={props.withoutOnlineClusterCondition}
         />
@@ -261,21 +262,22 @@ export function PlacementSection(props: {
       )}
       {placementCount === 0 && placementRuleCount === 0 && placementBindingCount === 1 && (
         <WizItemSelector selectKey="kind" selectValue={PlacementBindingKind}>
-          <Select
-            path="placementRef.name"
-            label={t('Placement')}
-            required
-            hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
-            options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
-          />
-          <WizSingleSelect
-            path="placementRef.name"
-            label={t('Placement rule')}
-            placeholder={t('Select the placement rule')}
-            required
-            hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-            options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}
-          />
+          {usesPlacementRule ? (
+            <WizSingleSelect
+              path="placementRef.name"
+              label={t('Placement rule')}
+              placeholder={t('Select the placement rule')}
+              required
+              options={namespacedPlacementRules.map((placement) => placement.metadata?.name ?? '')}
+            />
+          ) : (
+            <WizSingleSelect
+              path="placementRef.name"
+              label={t('Placement')}
+              required
+              options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
+            />
+          )}
         </WizItemSelector>
       )}
     </Section>
@@ -288,7 +290,6 @@ export function PlacementSelector(props: {
   placementBindingCount: number
   bindingSubjectKind: string
   bindingSubjectApiGroup: string
-  defaultPlacementKind: 'Placement' | 'PlacementRule'
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
 }) {
@@ -319,38 +320,18 @@ export function PlacementSelector(props: {
                 ? uniqueResourceName(`${bindingSubject.metadata?.name ?? ''}-placement-binding`, newResources)
                 : ''
               const namespace = bindingSubject?.metadata?.namespace ?? ''
-              const placementRefApiGroup =
-                props.defaultPlacementKind === PlacementKind ? PlacementApiGroup : PlacementRuleApiGroup
-              if (props.defaultPlacementKind === PlacementKind) {
-                newResources.push({
-                  apiVersion: PlacementApiVersion,
-                  kind: PlacementKind,
-                  metadata: { name: placementName, namespace },
-                  spec: {},
-                } as IResource)
-              } else {
-                newResources.push({
-                  ...PlacementRuleType,
-                  metadata: { name: placementName, namespace },
-                  spec: {
-                    clusterSelector: { matchExpressions: [] },
-                    clusterConditions: props.withoutOnlineClusterCondition
-                      ? []
-                      : [
-                          {
-                            status: 'True',
-                            type: 'ManagedClusterConditionAvailable',
-                          },
-                        ],
-                  },
-                } as IResource)
-              }
+              newResources.push({
+                apiVersion: PlacementApiVersion,
+                kind: PlacementKind,
+                metadata: { name: placementName, namespace },
+                spec: {},
+              } as IResource)
               newResources.push({
                 ...PlacementBindingType,
                 metadata: { name: placementBindingName, namespace },
                 placementRef: {
-                  apiGroup: placementRefApiGroup,
-                  kind: props.defaultPlacementKind,
+                  apiGroup: PlacementApiGroup,
+                  kind: PlacementKind,
                   name: placementName,
                 },
                 subjects: [
@@ -377,8 +358,6 @@ export function PlacementSelector(props: {
                 ? uniqueResourceName(`${bindingSubject.metadata?.name ?? ''}-placement-binding`, newResources)
                 : ''
               const namespace = bindingSubject?.metadata?.namespace ?? ''
-              const placementRefApiGroup =
-                props.defaultPlacementKind === PlacementKind ? PlacementApiGroup : PlacementRuleApiGroup
 
               newResources.push({
                 ...PlacementBindingType,
@@ -387,8 +366,8 @@ export function PlacementSelector(props: {
                   namespace: namespace,
                 },
                 placementRef: {
-                  apiGroup: placementRefApiGroup,
-                  kind: props.defaultPlacementKind,
+                  apiGroup: PlacementApiGroup,
+                  kind: PlacementKind,
                   name: '',
                 },
                 subjects: [

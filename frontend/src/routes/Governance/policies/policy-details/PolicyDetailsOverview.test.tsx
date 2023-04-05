@@ -50,6 +50,29 @@ describe('Policy Details Results', () => {
     await waitForText('Without violations:')
   })
 
+  test('Should render Policy Details Results Page correctly for policy with description', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsOverview policy={mockPolicy[2]} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // wait page load
+    await waitForText('policy1')
+
+    // verify decsription card items
+    await waitForText('Test policy description')
+  })
+
   test('Should render Policy Details Page content correctly for pending policy', async () => {
     render(
       <RecoilRoot

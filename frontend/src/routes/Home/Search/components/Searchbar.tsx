@@ -22,8 +22,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton } from '../../../../ui-components/AcmButton'
-
-const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
+import { operators } from '../search-helper'
 
 type SearchbarTag = {
   id: string
@@ -38,7 +37,6 @@ export type DropdownSuggestionsProps = {
 }
 
 type SearchbarProps = {
-  loadingSuggestions: boolean
   queryString: string
   saveSearchTooltip: string | undefined
   setSaveSearch: Dispatch<SetStateAction<SavedSearch | undefined>>
@@ -64,10 +62,17 @@ export const convertStringToTags = (searchText: string) => {
   return []
 }
 
+const stripOperators = (text: string) => {
+  if (operators.some((op: string) => text.startsWith(op))) {
+    const idx = operators.findIndex((op: string) => text.startsWith(op))
+    return text.substring(operators[idx].length)
+  }
+  return text
+}
+
 export function Searchbar(props: SearchbarProps) {
   const {
     currentQueryCallback,
-    loadingSuggestions,
     saveSearchTooltip,
     setSaveSearch,
     suggestions,
@@ -146,11 +151,12 @@ export function Searchbar(props: SearchbarProps) {
 
   const [t] = useTranslation()
   useEffect(() => {
+    const parsedInputValue = stripOperators(inputValue)
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
-      if (inputValue !== '' && currentValue.name.toLowerCase().includes(inputValue.toLowerCase())) {
-        const preIndex = currentValue.name.toLowerCase().indexOf(inputValue.toLowerCase())
+      if (inputValue !== '' && currentValue.name.toLowerCase().includes(parsedInputValue.toLowerCase())) {
+        const preIndex = currentValue.name.toLowerCase().indexOf(parsedInputValue.toLowerCase())
         const pre = currentValue.name.substring(0, preIndex)
-        const markText = currentValue.name.substring(preIndex, preIndex + inputValue.length)
+        const markText = currentValue.name.substring(preIndex, preIndex + parsedInputValue.length)
         const mark = (
           <mark
             style={{
@@ -163,7 +169,7 @@ export function Searchbar(props: SearchbarProps) {
             {markText}
           </mark>
         )
-        const post = currentValue.name.substring(pre.length + inputValue.length)
+        const post = currentValue.name.substring(pre.length + parsedInputValue.length)
 
         return (
           <p>
@@ -184,31 +190,24 @@ export function Searchbar(props: SearchbarProps) {
       </MenuItem>
     )
 
-    let filteredMenuItems = [
-      // eslint-disable-next-line jsx-a11y/aria-role
-      <MenuItem role={'search-suggestion-item'} isDisabled key={'loading-suggestion'} itemId={'loading-suggestion'}>
-        {t('Loading...')}
-      </MenuItem>,
-    ]
-    if (!loadingSuggestions) {
-      /** in the menu only show items that include the text in the input */
-      filteredMenuItems = suggestions
-        .filter(
-          (item, index) =>
-            index !== 0 && // filter the headerItem suggestion
-            (!inputValue || item.name.toLowerCase().includes(inputValue.toString().toLowerCase()))
-        )
-        .map((currentValue) => (
-          <MenuItem
-            // eslint-disable-next-line jsx-a11y/aria-role
-            role={'search-suggestion-item'}
-            itemId={`${currentValue.kind}-${currentValue.id}`}
-            key={`${currentValue.kind}-${currentValue.id}`}
-          >
-            {handleSuggestionMark(currentValue)}
-          </MenuItem>
-        ))
-    }
+    let filteredMenuItems = []
+    /** in the menu only show items that include the text in the input */
+    filteredMenuItems = suggestions
+      .filter(
+        (item, index) =>
+          index !== 0 && // filter the headerItem suggestion
+          (!inputValue || item.name.toLowerCase().includes(parsedInputValue.toLowerCase()))
+      )
+      .map((currentValue) => (
+        <MenuItem
+          isDisabled={currentValue.name.includes('Loading')}
+          role={'menuitem'}
+          itemId={`${currentValue.kind}-${currentValue.id}`}
+          key={`${currentValue.kind}-${currentValue.id}`}
+        >
+          {handleSuggestionMark(currentValue)}
+        </MenuItem>
+      ))
 
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
@@ -225,13 +224,11 @@ export function Searchbar(props: SearchbarProps) {
     const divider = <Divider key="divider" />
 
     setMenuItems([headingItem, divider, ...filteredMenuItems])
-  }, [inputValue, loadingSuggestions, suggestions, t])
+  }, [inputValue, suggestions, t])
 
   const addChip = (newChipText: string, newChipId?: string) => {
-    if (
-      (!newChipId && newChipText === '') || // don't allow blank tags to be added to searchbar
-      (operators.some((operator: string) => currentQuery.endsWith(operator)) && isNaN(parseInt(newChipText, 10))) // don't allow non-ints to be added when using an operator
-    ) {
+    if (!newChipId && newChipText === '') {
+      // don't allow blank tags to be added to searchbar
       return
     }
 
@@ -244,6 +241,10 @@ export function Searchbar(props: SearchbarProps) {
       newQueryString = `${currentQuery === '' ? '' : `${currentQuery} `}${newChipText}:`
       newQueryTags = convertStringToTags(newQueryString)
     } else if (newChipId?.startsWith('value') || currentQuery.endsWith(':')) {
+      const opIdx = operators.findIndex((op: string) => inputValue.startsWith(op))
+      if (opIdx > -1 && newChipText !== inputValue) {
+        newChipText = `${operators[opIdx]}${newChipText}`
+      }
       newQueryTags = convertStringToTags(`${currentQuery}${newChipText}`)
       if (newQueryTags.length > 1) {
         const lastTag = newQueryTags[newQueryTags.length - 1]
@@ -291,8 +292,9 @@ export function Searchbar(props: SearchbarProps) {
   }
 
   function handleAddition() {
+    const parsedInputValue = stripOperators(inputValue)
     const suggestionMatch = suggestions
-      .filter((suggestion) => suggestion.name.toLowerCase() === inputValue.toLowerCase())
+      .filter((suggestion) => suggestion.name.toLowerCase() === parsedInputValue.toLowerCase())
       .map((suggestion) => {
         return {
           id: `${suggestion.kind}-${suggestion.id}`,

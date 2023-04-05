@@ -152,51 +152,49 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                 isDisabled={!loaded}
                 onClick={() => {
                   alertContext.clearAlerts()
-                  return new Promise(async (resolve, reject) => {
-                    const newNamespaces = selectedNamespaces?.filter(
-                      (ns) => clusterSetBindings.find((mcsb) => mcsb.metadata.namespace === ns) === undefined
-                    )
-                    const removedBindings = clusterSetBindings.filter(
-                      (mcsb) => selectedNamespaces?.find((ns) => ns === mcsb.metadata.namespace) === undefined
-                    )
+                  const newNamespaces = selectedNamespaces?.filter(
+                    (ns) => clusterSetBindings.find((mcsb) => mcsb.metadata.namespace === ns) === undefined
+                  )
+                  const removedBindings = clusterSetBindings.filter(
+                    (mcsb) => selectedNamespaces?.find((ns) => ns === mcsb.metadata.namespace) === undefined
+                  )
 
-                    const calls: any[] = []
-                    newNamespaces?.forEach((namespace) => {
-                      const resource: ManagedClusterSetBinding = {
-                        apiVersion: ManagedClusterSetBindingApiVersion,
-                        kind: ManagedClusterSetBindingKind,
-                        metadata: {
-                          name: props.clusterSet!.metadata.name,
-                          namespace: namespace,
-                        },
-                        spec: {
-                          clusterSet: props.clusterSet!.metadata.name!,
-                        },
-                      }
-                      calls.push(createResource<ManagedClusterSetBinding>(resource))
-                    })
+                  const calls: any[] = []
+                  newNamespaces?.forEach((namespace) => {
+                    const resource: ManagedClusterSetBinding = {
+                      apiVersion: ManagedClusterSetBindingApiVersion,
+                      kind: ManagedClusterSetBindingKind,
+                      metadata: {
+                        name: props.clusterSet!.metadata.name,
+                        namespace: namespace,
+                      },
+                      spec: {
+                        clusterSet: props.clusterSet!.metadata.name!,
+                      },
+                    }
+                    calls.push(createResource<ManagedClusterSetBinding>(resource))
+                  })
 
-                    removedBindings.forEach((mcsb) => calls.push(deleteResource<ManagedClusterSetBinding>(mcsb)))
+                  removedBindings.forEach((mcsb) => calls.push(deleteResource<ManagedClusterSetBinding>(mcsb)))
 
-                    const requests = resultsSettled(calls)
-                    const results = await requests.promise
+                  const requests = resultsSettled(calls)
+                  return requests.promise.then((results) => {
                     const errors: string[] = []
                     results.forEach((res) => {
                       if (res.status === 'rejected') {
                         errors.push(res.reason)
                       }
                     })
-
                     if (errors.length > 0) {
                       alertContext.addAlert({
                         type: 'danger',
                         title: t('request.failed'),
                         message: `${errors.map((error) => `${error} \n`)}`,
                       })
-                      reject()
+                      throw errors[0]
                     } else {
-                      resolve(results)
                       reset()
+                      return results
                     }
                   })
                 }}

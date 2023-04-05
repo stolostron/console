@@ -6,7 +6,6 @@ import {
   DataViewStringContext,
   ICatalogCard,
   ItemView,
-  PageHeader,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -15,6 +14,7 @@ import {
   AcmIcon,
   AcmIconVariant,
   AcmPage,
+  AcmPageHeader,
   Provider,
   ProviderIconMap,
   ProviderLongTextMap,
@@ -201,7 +201,7 @@ export function CreateClusterCatalog() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(
-    () => [{ label: t('Clusters'), to: NavigationPath.clusters }, { label: t('Infrastructure') }],
+    () => [{ text: t('Clusters'), to: NavigationPath.clusters }, { text: t('Infrastructure') }],
     [t]
   )
 
@@ -210,10 +210,10 @@ export function CreateClusterCatalog() {
   return (
     <AcmPage
       header={
-        <PageHeader
+        <AcmPageHeader
           title={t('Infrastructure')}
           description={t('Choose your infrastructure provider.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
     >
@@ -233,7 +233,9 @@ export function CreateClusterCatalog() {
                   style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
                   isExpanded={isAdditionalProvidersExpanded}
                   onToggle={onAdditionalProvidersToggle}
-                  toggleContent={<span style={{ color: 'var(--pf-global--Color--100)' }}>Additional providers</span>}
+                  toggleContent={
+                    <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Additional providers')}</span>
+                  }
                   isIndented={true}
                 >
                   <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>

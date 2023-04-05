@@ -1,9 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Dropdown, DropdownGroup, DropdownItem, DropdownSeparator, DropdownToggle, Page } from '@patternfly/react-core'
+import { Page } from '@patternfly/react-core'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { isMatch } from 'lodash'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { Fragment, Suspense, useMemo, useState } from 'react'
+import {
+  InfraEnvHostsTabAgentsWarning,
+  INFRAENV_AGENTINSTALL_LABEL_KEY,
+  getAgentsHostsNames,
+  AddHostDropdown,
+} from 'openshift-assisted-ui-lib/cim'
+import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
@@ -19,15 +24,7 @@ import {
 import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
-
-const {
-  AddHostModal,
-  AddBmcHostModal,
-  AddBmcHostYamlModal,
-  InfraEnvHostsTabAgentsWarning,
-  INFRAENV_AGENTINSTALL_LABEL_KEY,
-  getAgentsHostsNames,
-} = CIM
+import { DOC_VERSION } from '../../../../lib/doc-util'
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -35,9 +32,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
-  const [isoModalOpen, setISOModalOpen] = useState(false)
-  const [isBmcModalOpen, setBMCModalOpen] = useState(false)
-  const [isBmcYamlModalOpen, setBMCYamlModalOpen] = useState(false)
 
   const { agentClusterInstallsState, agentsState, bareMetalHostsState, infrastructuresState, nmStateConfigsState } =
     useSharedAtoms()
@@ -70,7 +64,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
   )
 
   const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
-  const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
 
   if (!infraEnv) {
     return (
@@ -136,54 +129,14 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
               </AcmSecondaryNav>
             }
             actions={
-              <Dropdown
-                id={`${infraEnv.metadata?.name}-actions`}
-                toggle={
-                  <DropdownToggle id="dropdown-basic" onToggle={setIsKebabOpen} isPrimary>
-                    {t('Add hosts')}
-                  </DropdownToggle>
-                }
-                isOpen={isKebabOpen}
-                dropdownItems={[
-                  <DropdownItem
-                    key="discovery-iso"
-                    onClick={() => {
-                      setIsKebabOpen(false)
-                      setISOModalOpen(true)
-                    }}
-                    description={t('Discover hosts by booting a discovery image')}
-                  >
-                    {t('With Discovery ISO')}
-                  </DropdownItem>,
-                  <DropdownSeparator key="separator" />,
-                  <DropdownGroup
-                    id="discovery-bmc"
-                    key="discovery-bmc"
-                    label={t('Baseboard Management Controller (BMC)')}
-                  >
-                    <DropdownItem
-                      key="width-credentials"
-                      onClick={() => {
-                        setIsKebabOpen(false)
-                        setBMCModalOpen(true)
-                      }}
-                      description={t('Discover a single host via Baseboard Management Controller')}
-                    >
-                      {t('With BMC form')}
-                    </DropdownItem>
-                    <DropdownItem
-                      key="upload-yaml"
-                      onClick={() => {
-                        setIsKebabOpen(false)
-                        setBMCYamlModalOpen(true)
-                      }}
-                      description={t('Discover multiple hosts by providing yaml with Bare Metal Host definitions')}
-                    >
-                      {t('By uploading a YAML')}
-                    </DropdownItem>
-                  </DropdownGroup>,
-                ]}
-                position={'right'}
+              <AddHostDropdown
+                infraEnv={infraEnv}
+                docVersion={DOC_VERSION}
+                onCreateBMH={getOnCreateBMH(infraEnv)}
+                onCreateBmcByYaml={importYaml}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
+                usedHostnames={usedHostnames}
               />
             }
           />
@@ -214,33 +167,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
           </Switch>
         </Suspense>
       </AcmPage>
-      <AddHostModal
-        infraEnv={infraEnv}
-        isOpen={isoModalOpen}
-        onClose={() => setISOModalOpen(false)}
-        onCreateBMH={getOnCreateBMH(infraEnv)}
-        onSaveISOParams={getOnSaveISOParams(infraEnv)}
-        usedHostnames={usedHostnames}
-        isBMPlatform={isBMPlatform(infrastructures[0])}
-      />
-      {isBmcModalOpen && (
-        <AddBmcHostModal
-          infraEnv={infraEnv}
-          isOpen={isBmcModalOpen}
-          onClose={() => setBMCModalOpen(false)}
-          onCreateBMH={getOnCreateBMH(infraEnv)}
-          onSaveISOParams={getOnSaveISOParams(infraEnv)}
-          usedHostnames={usedHostnames}
-          isBMPlatform={isBMPlatform(infrastructures[0])}
-        />
-      )}
-      {isBmcYamlModalOpen && (
-        <AddBmcHostYamlModal
-          isOpen={isBmcYamlModalOpen}
-          onClose={() => setBMCYamlModalOpen(false)}
-          onCreateBmcByYaml={importYaml}
-        />
-      )}
     </>
   )
 }

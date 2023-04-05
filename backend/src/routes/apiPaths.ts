@@ -38,7 +38,7 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
     try {
       const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken).then(
         async (response: APIPathResponse) => {
-          const apiResourceLists = await Promise.all(
+          const apiResourceLists = await Promise.allSettled(
             response.paths
               .filter((path) => {
                 const pathArray = path.substring(1).split('/')
@@ -67,23 +67,26 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
   }
 }
 
-function buildPathObject(apiResourcePathResponse: APIResourcePathResponse[]) {
+function buildPathObject(apiResourcePathResponse: PromiseSettledResult<APIResourcePathResponse>[]) {
   const resourceNames: Record<string, APIResourceNames> = {}
-  apiResourcePathResponse.forEach((resourceList) => {
-    const resourceKindMap: { [key: string]: APIResourceMeta } = {}
-    const groupVersion = resourceList.groupVersion
-    resourceList.resources.forEach((resource) => {
-      if (resource['name'].split('/').length === 1) {
-        const pluralName = resource['name']
-        const kind = resource['kind']
+  apiResourcePathResponse.forEach((settledPromise) => {
+    if (settledPromise.status === 'fulfilled') {
+      const resourceList = settledPromise.value
+      const resourceKindMap: { [key: string]: APIResourceMeta } = {}
+      const groupVersion = resourceList.groupVersion
+      resourceList.resources.forEach((resource) => {
+        if (resource['name'].split('/').length === 1) {
+          const pluralName = resource['name']
+          const kind = resource['kind']
 
-        const apiMetadata: APIResourceMeta = {
-          pluralName,
+          const apiMetadata: APIResourceMeta = {
+            pluralName,
+          }
+          resourceKindMap[kind] = apiMetadata
         }
-        resourceKindMap[kind] = apiMetadata
-      }
-    })
-    resourceNames[groupVersion] = resourceKindMap
+      })
+      resourceNames[groupVersion] = resourceKindMap
+    }
   })
   return resourceNames
 }

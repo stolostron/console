@@ -19,8 +19,7 @@
     },
     {
       "label": "KillNodes",
-      "command": "killall",
-      "args": ["node"],
+      "command": "killall node || true",
       "type": "shell",
       "group": "none",
       "presentation": {

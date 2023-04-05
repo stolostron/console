@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../mock-request'
-import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import nock from 'nock'
 
 describe(`search Route`, function () {

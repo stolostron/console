@@ -16,10 +16,10 @@ export function HypershiftAWSCLI() {
   const { t } = useTranslation()
   const { back, cancel } = useBackCancelNavigation()
   const breadcrumbs = [
-    { label: t('Clusters'), to: NavigationPath.clusters },
-    { label: t('Infrastructure'), to: NavigationPath.createCluster },
-    { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
-    { label: t('Create cluster') },
+    { text: t('Clusters'), to: NavigationPath.clusters },
+    { text: t('Infrastructure'), to: NavigationPath.createCluster },
+    { text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
+    { text: t('Create cluster') },
   ]
 
   const [isModalOpenAws, setIsModalOpenAws] = useState(false)

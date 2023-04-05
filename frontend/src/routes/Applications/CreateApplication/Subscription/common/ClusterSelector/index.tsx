@@ -55,18 +55,8 @@ const ClusterSelector = (props: {
     if (_.get(control, activeModeStr, false)) {
       const labelNameSet = new Set()
       control.active.clusterLabelsList.map((item: { id: number; labelName: string; validValue: boolean }) => {
-        const { id, labelName, validValue } = item
-        const invalidLabel = (validValue || id === 0) && (!labelName || labelName.length === 0)
+        const { id, labelName } = item
 
-        // Add exception if no input for labels or values
-        if (invalidLabel) {
-          exceptions.push({
-            row: 1,
-            text: i18n('creation.missing.clusterSelector.label'),
-            type: 'error',
-            controlId: `labelName-${id}`,
-          })
-        }
         if (labelNameSet.has(labelName)) {
           exceptions.push({
             row: 1,
@@ -130,7 +120,6 @@ const ClusterSelector = (props: {
   )
 
   const addClusterSetToControl = (clusterSets: string[]) => {
-    // const { t } = useTranslation()
     const { control, templateYAML } = props
     const { active } = control
     const { clusterSetsList } = active
@@ -247,7 +236,6 @@ const ClusterSelector = (props: {
                     placeholder={i18n('clusterSelector.label.placeholder.field')}
                     isDisabled={isReadOnly}
                     onChange={(value) => handleChange(value, 'labelName', id)}
-                    isRequired
                   />
                 </div>
                 <div className="matching-labels-input">

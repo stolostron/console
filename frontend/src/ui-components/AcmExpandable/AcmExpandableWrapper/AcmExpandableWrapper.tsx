@@ -1,17 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Children, useState } from 'react'
 import { makeStyles } from '@mui/styles'
-import { AcmButton } from '../../AcmButton/AcmButton'
-import { Title, Gallery, GalleryItem } from '@patternfly/react-core'
+import { Grid, GridItem, gridSpans, Title } from '@patternfly/react-core'
+import useResizeObserver from '@react-hook/resize-observer'
+import { Children, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { AcmButton } from '../../AcmButton/AcmButton'
 
 type AcmExpandableWrapperProps = {
   headerLabel?: string
   children: React.ReactNode
-  maxHeight?: string
   withCount: boolean
   expandable: boolean
+  minWidth?: number
+  maxItemsPerRow?: gridSpans
 }
 
 const useStyles = makeStyles({
@@ -25,48 +27,67 @@ const useStyles = makeStyles({
   wrapperContainer: {
     margin: '1rem 0',
   },
-  gallery: {
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  },
-  hideExtras: {
-    maxHeight: (props: AcmExpandableWrapperProps) => props.maxHeight,
-    overflow: 'hidden',
-  },
   showAllButton: {
     margin: '1rem auto',
   },
 })
 
 export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
-  const { children, headerLabel, withCount, expandable } = props
+  const { children, headerLabel, withCount, expandable, minWidth = 300, maxItemsPerRow = 6 } = props
   const classes = useStyles(props)
+  const ref = useRef(null)
   const [showAll, setShowAll] = useState<boolean>(false)
+  const [columnCount, setColumnCount] = useState(1)
   const { t } = useTranslation()
+
+  const itemCount = useMemo(() => {
+    return Children.count(children)
+  }, [children])
+
+  useResizeObserver(ref, (entry) => {
+    let columns = 1
+    while ((columns + 1) * minWidth < entry.contentRect.width) {
+      columns++
+    }
+    if (columns > maxItemsPerRow) {
+      columns = maxItemsPerRow
+    }
+    setColumnCount(columns)
+  })
+  const spanPerColumn = useMemo(() => Math.floor(12 / columnCount) as gridSpans, [columnCount])
+
+  const visibleItems = useMemo(() => {
+    if (expandable) {
+      return showAll ? children : Children.toArray(children).slice(0, columnCount)
+    }
+    return children
+  }, [children, expandable, showAll, columnCount])
+
   return (
     <div className={classes.root}>
       {headerLabel && (
         <Title headingLevel="h4">
           {headerLabel}
-          {withCount && <span className={classes.headerCount}> {`( ${Children.count(children)} total )`}</span>}
+          {withCount && <span className={classes.headerCount}> {`( ${itemCount} total )`}</span>}
         </Title>
       )}
-      <div className={showAll ? `${classes.wrapperContainer}` : `${classes.wrapperContainer} ${classes.hideExtras}`}>
-        <Gallery hasGutter className={classes.gallery}>
-          {Children.map(props.children, (child, idx) => {
+      <div ref={ref}>
+        <Grid hasGutter className={classes.wrapperContainer}>
+          {Children.map(visibleItems, (child, idx) => {
             return (
-              <GalleryItem>
+              <GridItem span={spanPerColumn}>
                 <div key={`item-${idx}`}>{child}</div>
-              </GalleryItem>
+              </GridItem>
             )
           })}
-        </Gallery>
+        </Grid>
       </div>
-      {expandable && (
+      {expandable && itemCount > columnCount && (
         <AcmButton className={classes.showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
           {showAll
             ? t('Show less')
             : t('Show all ({{count}})', {
-                count: Children.count(children),
+                count: itemCount,
               })}
         </AcmButton>
       )}

@@ -35,7 +35,7 @@ import { WizardPage } from '../WizardPage'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
-import { validateKubernetesResourceName, validateWebURL } from '../../lib/validation'
+import { validateAppSetName, validateWebURL } from '../../lib/validation'
 import { Placement } from '../Placement/Placement'
 import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
@@ -100,7 +100,7 @@ export interface ArgoWizardProps {
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
   ansibleCredentials: string[]
-  argoServers: string[]
+  argoServers: { label: string; value: string; description?: string }[]
   namespaces: string[]
   onSubmit: WizardSubmit
   onCancel: WizardCancel
@@ -308,7 +308,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               placeholder={t('Enter the application set name')}
               required
               id="name"
-              validation={validateKubernetesResourceName}
+              validation={validateAppSetName}
             />
             <Select
               id="namespace"

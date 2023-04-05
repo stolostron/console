@@ -260,8 +260,6 @@ describe('ArgoWizard tests', () => {
         name: /placement1/i,
       })
     )
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-    // screen.logTestingPlaygroundURL()
 
     //=====================================================================
     //                      review page
@@ -271,9 +269,6 @@ describe('ArgoWizard tests', () => {
         name: /review/i,
       })
     )
-
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-    // screen.logTestingPlaygroundURL()
 
     userEvent.click(
       screen.getByRole('button', {
@@ -288,7 +283,7 @@ describe('ArgoWizard tests', () => {
 const props: ArgoWizardProps = {
   createClusterSetCallback: mockCreateclustersetcallback,
   ansibleCredentials: [],
-  argoServers: ['http://argoserver.com'],
+  argoServers: [{ value: 'http://argoserver.com', label: 'http://argoserver.com' }],
   namespaces: [
     'aap',
     'default',

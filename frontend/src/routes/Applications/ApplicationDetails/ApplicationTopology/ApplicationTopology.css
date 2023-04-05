@@ -1,52 +1,52 @@
 .how-to-read-text {
-    font-weight: bold;
-    color: #06c;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: left;
-    cursor: pointer;
-    margin-right: 4px;
+  font-weight: bold;
+  color: #06c;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+  margin-right: 4px;
 }
 
 .how-to-read-icon {
-    width: 14px;
-    height: 11px;
-    margin-left: 9px;
-    fill: #06c;
+  width: 14px;
+  height: 11px;
+  margin-left: 9px;
+  fill: #06c;
 }
 
 .diagram-title {
-    float: right;
-    font-weight: bold;
-    font-size: 14px;
+  float: right;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .app-topology-view .pf-c-toolbar {
-    padding-bottom: 0;
+  padding-bottom: 0;
 }
 
 .pf-topology__node__icon {
-    fill: #000;
-    stroke: 'none';
+  fill: #000;
+  stroke: 'none';
 }
 
 :root:where(.pf-theme-dark) .pf-topology__node__icon {
-    fill: #fff;
+  fill: #fff;
 }
 
 .pf-topology__node__icon_reverse {
-    fill: #fff;
-    stroke: 'none';
+  fill: #fff;
+  stroke: 'none';
 }
 
 :root:where(.pf-theme-dark) .pf-topology__node__icon_reverse {
-    fill: #000;
+  fill: #000;
 }
 
 .pf-topology__node__icon__stroke {
-    stroke: #000;
+  stroke: #000;
 }
 
 :root:where(.pf-theme-dark) .pf-topology__node__icon__stroke {
-    stroke: #fff;
+  stroke: #fff;
 }

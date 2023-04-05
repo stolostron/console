@@ -10,7 +10,7 @@ import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { getTemplateValue } from '../utils'
-import { defaultPodCIDR, defaultServiceCIDR } from './constants'
+import { defaultHostPrefix, defaultPodCIDR, defaultServiceCIDR } from './constants'
 import { getClusterImageVersion, getDefaultNetworkType } from './utils'
 
 type FormControl = {
@@ -38,8 +38,11 @@ export const getDefaultNetworkFormValues = (
   // To preserve form values on Back button
   // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
   const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
-  const serviceCIDR = getTemplateValue(templateYAML, 'serviceCIDR', defaultServiceCIDR)
-  const podCIDR = getTemplateValue(templateYAML, 'podCIDR', defaultPodCIDR)
+  const serviceNetworkCidr = getTemplateValue(templateYAML, 'serviceNetworkCidr', defaultServiceCIDR)
+  const clusterNetworkCidr = getTemplateValue(templateYAML, 'clusterNetworkCidr', defaultPodCIDR)
+  const clusterNetworkHostPrefix = parseInt(
+    getTemplateValue(templateYAML, 'clusterNetworkHostPrefix', defaultHostPrefix)
+  )
   const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
 
   const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
@@ -55,8 +58,8 @@ export const getDefaultNetworkFormValues = (
     machineCIDR,
     isAdvanced: isAdvancedNetworking,
     sshPublicKey,
-    serviceCIDR,
-    podCIDR,
+    serviceNetworkCidr,
+    clusterNetworkCidr,
     enableProxy,
     httpProxy,
     httpsProxy,
@@ -64,6 +67,7 @@ export const getDefaultNetworkFormValues = (
     apiPublishingStrategy: isNodePort || isBM ? 'NodePort' : 'LoadBalancer',
     nodePortPort,
     nodePortAddress,
+    clusterNetworkHostPrefix,
   }
 }
 
@@ -86,7 +90,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
       handleChange(control)
     }
     // eslint-disable-next-line
-    }, [])
+  }, [])
 
   React.useEffect(() => {
     const clusterVersion = getClusterImageVersion(clusterImageSets, releaseImage)
@@ -119,12 +123,16 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
       summary.push(
         ...[
           {
-            term: 'Cluster CIDR',
-            desc: control.active.podCIDR,
+            term: 'Cluster network CIDR',
+            desc: control.active.clusterNetworkCidr,
           },
           {
-            term: 'Service CIDR',
-            desc: control.active.serviceCIDR,
+            term: 'Cluster network host prefix',
+            desc: control.active.clusterNetworkHostPrefix,
+          },
+          {
+            term: 'Service network CIDR',
+            desc: control.active.serviceNetworkCidr,
           },
         ]
       )

@@ -1,47 +1,47 @@
 .node .nodeIcon {
-    stroke-width: 6px;
-    stroke-opacity: 1;
+  stroke-width: 6px;
+  stroke-opacity: 1;
 }
 .node .nodeStatus {
-    stroke: black;
-    stroke-width: 1px;
-    fill: none;
-    font-variant: small-caps;
+  stroke: black;
+  stroke-width: 1px;
+  fill: none;
+  font-variant: small-caps;
 }
 .node .nodeStatus.red {
-    stroke: #e0182d;
+  stroke: #e0182d;
 }
 .success {
-    fill: #5aa700;
+  fill: #5aa700;
 }
 .warning {
-    fill: #efc100;
+  fill: #efc100;
 }
 .failure {
-    fill: #e0182d;
+  fill: #e0182d;
 }
 
 .spinner .swirly {
-    fill: transparent;
-    stroke: #0b23f3;
-    stroke-width: 4;
-    stroke-linecap: round;
-    stroke-dasharray: 126;
-    transform-origin: 20px 20px 0;
-    animation: spinner 2s linear infinite;
+  fill: transparent;
+  stroke: #0b23f3;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 126;
+  transform-origin: 20px 20px 0;
+  animation: spinner 2s linear infinite;
 }
 
 @keyframes spinner {
-    0% {
-        transform: rotate(0deg);
-        stroke-dashoffset: 126;
-    }
-    50% {
-        transform: rotate(720deg);
-        stroke-dashoffset: 26;
-    }
-    100% {
-        transform: rotate(1080deg);
-        stroke-dashoffset: 126;
-    }
+  0% {
+    transform: rotate(0deg);
+    stroke-dashoffset: 126;
+  }
+  50% {
+    transform: rotate(720deg);
+    stroke-dashoffset: 26;
+  }
+  100% {
+    transform: rotate(1080deg);
+    stroke-dashoffset: 126;
+  }
 }

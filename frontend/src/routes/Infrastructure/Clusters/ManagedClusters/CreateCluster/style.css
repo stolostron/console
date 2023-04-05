@@ -1,35 +1,35 @@
 .pf-c-content {
-    --pf-c-page__main-wizard--BorderTopWidth: 0;
+  --pf-c-page__main-wizard--BorderTopWidth: 0;
 }
 
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
 .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-    padding: 0;
-    margin: 0 -10px 0 0;
-    height: 100%;
+  padding: 0;
+  margin: 0 -10px 0 0;
+  height: 100%;
 }
 
 .portal-controls {
-    display: flex;
+  display: flex;
 }
 .portal-controls > div {
-    margin-left: 16px;
+  margin-left: 16px;
 }
 
 .pf-c-content .pf-c-wizard__main-body {
-    height: 100%;
+  height: 100%;
 }
 
 .temptifly-controls-singleselect .tf--list-box,
@@ -38,16 +38,16 @@
 .creation-view-controls-singleselect .tf--list-box,
 .creation-view-controls-combobox .tf--list-box,
 .creation-view-controls-treeselect .tf--list-box {
-    box-shadow: unset !important;
+  box-shadow: unset !important;
 }
 
 .temptifly-controls-labels-container,
 .creation-view-controls-labels-container {
-    border-style: solid;
-    border-width: var(--pf-global--BorderWidth--sm);
-    border-top-color: var(--pf-global--BorderColor--300);
-    border-right-color: var(--pf-global--BorderColor--300);
-    border-bottom-color: var(--pf-global--BorderColor--200);
-    border-left-color: var(--pf-global--BorderColor--300);
-    box-shadow: unset !important;
+  border-style: solid;
+  border-width: var(--pf-global--BorderWidth--sm);
+  border-top-color: var(--pf-global--BorderColor--300);
+  border-right-color: var(--pf-global--BorderColor--300);
+  border-bottom-color: var(--pf-global--BorderColor--200);
+  border-left-color: var(--pf-global--BorderColor--300);
+  box-shadow: unset !important;
 }

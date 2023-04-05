@@ -1,76 +1,76 @@
 .channel-controls-container {
-    display: flex;
-    align-items: baseline;
+  display: flex;
+  align-items: baseline;
 }
 .channel-controls-container .channelsCombo {
-    width: 100%;
-    font-weight: 400;
-    font-size: 14px;
+  width: 100%;
+  font-weight: 400;
+  font-size: 14px;
 }
 .channel-controls-container .channelsCombo .pf-c-dropdown,
 .channel-controls-container .channelsCombo #comboChannel {
-    width: 100%;
+  width: 100%;
 }
 .channel-controls-container .channelsCombo .pf-c-dropdown__toggle-text {
-    white-space: normal;
-    text-align: left;
-    font-size: 14px;
+  white-space: normal;
+  text-align: left;
+  font-size: 14px;
 }
 .channel-controls-container .channelsCombo .pf-c-dropdown__menu-item {
-    font-size: 14px;
+  font-size: 14px;
 }
 .channel-controls-container .pf-c-options-menu {
-    display: none;
+  display: none;
 }
 .channel-controls-container .label {
-    font-family: RedHatText;
-    font-size: 0.8rem;
-    font-weight: bold;
-    line-height: 18px;
-    padding-right: 10px;
-    white-space: nowrap;
+  font-family: RedHatText;
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 18px;
+  padding-right: 10px;
+  white-space: nowrap;
 }
 .channel-controls-container .pagination {
-    display: flex;
+  display: flex;
 }
 .channel-controls-container .resourcePaging {
-    display: flex;
-    margin-left: 40px;
+  display: flex;
+  margin-left: 40px;
 }
 .channel-controls-container .show-subscription-pages-icon {
-    align-items: center;
+  align-items: center;
 }
 .channel-controls-container .channel-controls-help-icon {
-    fill: #06c;
-    margin-left: 4px;
-    cursor: pointer;
+  fill: #06c;
+  margin-left: 4px;
+  cursor: pointer;
 }
 .channel-controls-container .channel-control {
-    padding: 2px 0 2px 3px;
-    position: relative;
-    color: #152935;
-    line-height: 10px;
+  padding: 2px 0 2px 3px;
+  position: relative;
+  color: #152935;
+  line-height: 10px;
 }
 .channel-controls-container .channel-control-subscripion {
-    font-size: 1rem;
-    font-weight: bold;
+  font-size: 1rem;
+  font-weight: bold;
 }
 .channel-controls-container .channel-control-channel {
-    font-size: 10px;
-    font-weight: 600;
+  font-size: 10px;
+  font-weight: 600;
 }
 .channel-controls-container .channel-control-start {
-    font-size: 0.3rem;
-    font-weight: 600;
+  font-size: 0.3rem;
+  font-weight: 600;
 }
 .channel-controls-container .channel-control-end {
-    font-size: 8px;
+  font-size: 8px;
 }
 .channel-controls-container .channel-control:hover {
-    cursor: pointer;
-    background-color: #f3f7fb;
+  cursor: pointer;
+  background-color: #f3f7fb;
 }
 .channel-controls-container .channel-control.selected {
-    border-left: 4px solid #06c;
-    background-color: #f3f7fb;
+  border-left: 4px solid #06c;
+  background-color: #f3f7fb;
 }

@@ -59,7 +59,7 @@ describe('Infrastructure Environment Details page', () => {
     await waitForText('ai:Infrastructure Environment name')
 
     // Open discovery ISO dialog
-    await clickHostAction('With Discovery ISO')
+    await clickHostAction('ai:With Discovery ISO')
 
     // Discovery ISO config dialog
     await clickByText('ai:Generate Discovery ISO')

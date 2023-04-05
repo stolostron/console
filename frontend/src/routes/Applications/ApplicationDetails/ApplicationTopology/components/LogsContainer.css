@@ -1,18 +1,18 @@
 .custom-select-class {
-    width: auto;
-    min-width: min-content;
-    max-width: max-content;
+  width: auto;
+  min-width: min-content;
+  max-width: max-content;
 }
 
 .pod-dropdown {
-    display: block;
-    padding-left: 0.5rem;
-    font-size: 1rem;
+  display: block;
+  padding-left: 0.5rem;
+  font-size: 1rem;
 }
 
 .container-dropdown {
-    display: block;
-    padding-left: 0.5rem;
-    padding-top: 0.5rem;
-    font-size: 1rem;
+  display: block;
+  padding-left: 0.5rem;
+  padding-top: 0.5rem;
+  font-size: 1rem;
 }

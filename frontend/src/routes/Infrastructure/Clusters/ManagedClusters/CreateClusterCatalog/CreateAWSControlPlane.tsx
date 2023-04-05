@@ -17,7 +17,7 @@ import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import GetHostedCard from './common/GetHostedCard'
-import HypershiftDiagram from './HypershiftDiagram.svg'
+import { HypershiftDiagram } from './HypershiftDiagram'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()

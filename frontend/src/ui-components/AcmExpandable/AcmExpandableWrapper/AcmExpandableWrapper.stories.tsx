@@ -47,7 +47,7 @@ export const ExpandableSavedSearchWrapper = () => {
     )
   })
   return (
-    <AcmExpandableWrapper maxHeight={'16.2rem'} headerLabel={'Saved searches'} withCount={true} expandable={true}>
+    <AcmExpandableWrapper headerLabel={'Saved searches'} withCount={true} expandable={true}>
       {renderAcmCountCards}
     </AcmExpandableWrapper>
   )
@@ -97,7 +97,7 @@ export const ExpandableRelatedResWrapper = () => {
     )
   })
   return (
-    <AcmExpandableWrapper maxHeight={'9rem'} withCount={false} expandable={true}>
+    <AcmExpandableWrapper withCount={false} expandable={true}>
       {renderAcmTiles}
     </AcmExpandableWrapper>
   )

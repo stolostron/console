@@ -467,8 +467,6 @@ describe('Create Subscription Application page', () => {
     )
     userEvent.type(screen.getByRole('textbox', { name: /clusterselector\.value\.field\.ui/i }), 'local-cluster')
 
-    // screen.logTestingPlaygroundURL()
-
     await clickByTestId('create-button-portal-id-btn')
     await waitForNocks([
       nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),

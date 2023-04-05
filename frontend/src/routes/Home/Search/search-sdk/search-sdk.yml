@@ -4,10 +4,10 @@ overwrite: true
 schema: https://localhost:4010/searchapi/graphql
 documents: ./src/search-sdk/*.graphql
 generates:
-    src/search-sdk/search-sdk.ts:
-        plugins:
-            - typescript
-            - typescript-operations
-            - typescript-react-apollo
-        config:
-            skipTypename: true
+  src/search-sdk/search-sdk.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      skipTypename: true

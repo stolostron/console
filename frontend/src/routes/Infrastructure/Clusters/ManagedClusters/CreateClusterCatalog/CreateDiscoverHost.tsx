@@ -41,13 +41,13 @@ export function CreateDiscoverHost() {
   }, [nextStep, t])
 
   const breadcrumbs = [
-    { label: t('Clusters'), to: NavigationPath.clusters },
-    { label: t('Infrastructure'), to: NavigationPath.createCluster },
+    { text: t('Clusters'), to: NavigationPath.clusters },
+    { text: t('Infrastructure'), to: NavigationPath.createCluster },
     {
-      label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+      text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
       to: NavigationPath.createBMControlPlane,
     },
-    { label: t('Hosts') },
+    { text: t('Hosts') },
   ]
   return (
     <GetControlPlane
@@ -55,7 +55,7 @@ export function CreateDiscoverHost() {
         <PageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
       cards={cards}

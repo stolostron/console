@@ -1,7 +1,7 @@
 .temptifly .creation-view-controls-custom .pf-c-input-group {
-    max-width: unset;
+  max-width: unset;
 }
 
 .temptifly.showEditor .infra-env-form > .pf-l-grid__item {
-    --pf-l-grid__item--GridColumnEnd: span 12;
+  --pf-l-grid__item--GridColumnEnd: span 12;
 }

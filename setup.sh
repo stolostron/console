@@ -29,8 +29,12 @@ INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0]
 SA=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE_MCE console-mce -o jsonpath='{.metadata.name}')
 SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE_MCE -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name")
 SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="jsonpath={.data.token}" | base64 -d`
+CA_CERT=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="jsonpath={.data.ca\.crt}"`
+SERVICE_CA_CERT=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="jsonpath={.data.service-ca\.crt}"`
 
 echo TOKEN=$SA_TOKEN >> ./backend/.env
+echo CA_CERT=$CA_CERT >> ./backend/.env
+echo SERVICE_CA_CERT=$SERVICE_CA_CERT >> ./backend/.env
 
 oc apply -f - << EOF
 apiVersion: oauth.openshift.io/v1
@@ -45,7 +49,20 @@ EOF
 
 # Create route to the search-api service on the target cluster.
 if [[ -n "$INSTALLATION_NAMESPACE" ]]; then
-  oc get route search-api -n $INSTALLATION_NAMESPACE &>/dev/null || oc create route passthrough search-api --service=search-search-api --insecure-policy=Redirect -n $INSTALLATION_NAMESPACE
-  SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE |grep search-api | awk '{print $2}')
+  oc apply -f - << EOF
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: search-api
+  namespace: $INSTALLATION_NAMESPACE
+spec:
+  to:
+    kind: Service
+    name: search-search-api
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+EOF
+  SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE -o="jsonpath={.status.ingress[0].host}")
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi

@@ -57,6 +57,12 @@ describe('Policies Page', () => {
     screen.getByRole('button', { name: 'Source' }).click()
     screen.getByRole('button', { name: 'Automation' }).click()
     screen.getByRole('button', { name: 'Name' }).click()
+
+    // Verify annotation dropdown
+    screen.getAllByRole('button', { name: /details/i })[0].click()
+    await waitForText('Add')
+    screen.getAllByRole('button', { name: /details/i })[1].click()
+    await waitForText('Test policy description')
   })
 
   test('Should render Policies page correctly', async () => {
