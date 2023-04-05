@@ -244,6 +244,5 @@ function jobPodsStillAvailable(curator: ClusterCurator) {
   const podCompletionTime = new Date(failurePodTransitionTime)
   const currentTime = new Date()
   const hours = Math.floor((currentTime.getTime() - podCompletionTime.getTime()) / 1000 / 60 / 60)
-  console.log('pods still available: ', hours < 1)
   return hours < 1
 }
