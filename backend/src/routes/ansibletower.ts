@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent, request, RequestOptions } from 'https'
+import { request, RequestOptions } from 'https'
 import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
@@ -47,6 +47,7 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
         headers: {
           Authorization: `Bearer ${ansibleCredential.token}`,
         },
+        rejectUnauthorized: false, // NOSONAR - AAP connects insecurely by default
       }
       if (process.env.HTTPS_PROXY) {
         options.agent = new ProxyAgent()
