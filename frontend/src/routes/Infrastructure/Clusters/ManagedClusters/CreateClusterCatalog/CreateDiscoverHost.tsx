@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
@@ -40,14 +40,14 @@ export function CreateDiscoverHost() {
     return newCards
   }, [nextStep, t])
 
-  const breadcrumbs = [
-    { text: t('Clusters'), to: NavigationPath.clusters },
-    { text: t('Infrastructure'), to: NavigationPath.createCluster },
+  const breadcrumbs: ICatalogBreadcrumb[] = [
+    { label: t('Clusters'), to: NavigationPath.clusters },
+    { label: t('Infrastructure'), to: NavigationPath.createCluster },
     {
-      text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+      label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
       to: NavigationPath.createBMControlPlane,
     },
-    { text: t('Hosts') },
+    { label: t('Hosts') },
   ]
   return (
     <GetControlPlane
@@ -55,7 +55,7 @@ export function CreateDiscoverHost() {
         <PageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
-          breadcrumb={breadcrumbs}
+          breadcrumbs={breadcrumbs}
         />
       }
       cards={cards}

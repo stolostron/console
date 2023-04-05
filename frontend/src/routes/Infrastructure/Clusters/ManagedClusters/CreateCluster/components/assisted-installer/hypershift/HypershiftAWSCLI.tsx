@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { CodeBlock, CodeBlockCode, Modal, ModalVariant, Page, Text, TextVariants } from '@patternfly/react-core'
+import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
@@ -15,11 +16,11 @@ import DocPage from './common/DocPage'
 export function HypershiftAWSCLI() {
   const { t } = useTranslation()
   const { back, cancel } = useBackCancelNavigation()
-  const breadcrumbs = [
-    { text: t('Clusters'), to: NavigationPath.clusters },
-    { text: t('Infrastructure'), to: NavigationPath.createCluster },
-    { text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
-    { text: t('Create cluster') },
+  const breadcrumbs: ICatalogBreadcrumb[] = [
+    { label: t('Clusters'), to: NavigationPath.clusters },
+    { label: t('Infrastructure'), to: NavigationPath.createCluster },
+    { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }), to: NavigationPath.createAWSControlPlane },
+    { label: t('Create cluster') },
   ]
 
   const [isModalOpenAws, setIsModalOpenAws] = useState(false)
