@@ -528,6 +528,12 @@ describe('Create Subscription Application page', () => {
       })
     )
 
+    // pick existing PlacementRule
+    screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
+    await clickByText(mockPlacementRule.metadata.name!)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
+
     // pick existing Placement
     screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
     await clickByText(mockPlacement.metadata.name!)
@@ -633,6 +639,7 @@ describe('Create Subscription Application page', () => {
         name: /application-0/i,
       })
     ).toBeTruthy()
+
     // click git card
     userEvent.click(screen.getByText(/channel\.type\.git/i))
     await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
