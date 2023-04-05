@@ -34,7 +34,7 @@ export interface PodList extends IResource {
   items: Pod[]
 }
 
-export function listHivePods(namespace: string, labels?: string[]) {
+export function listPods(namespace: string, labels?: string[]) {
   return listNamespacedResources<Pod>(
     {
       apiVersion: PodApiVersion,
@@ -51,7 +51,7 @@ const getClusterDeploymentNameSelector = (name: string) => {
 
 export async function getProvisionPod(namespace: string, name: string) {
   const provisionJobSelector = 'hive.openshift.io/job-type=provision'
-  const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), provisionJobSelector])
+  const response = listPods(namespace, [getClusterDeploymentNameSelector(name), provisionJobSelector])
   return await response.promise.then((result) => {
     const latestProvisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
     return latestProvisionJob
@@ -60,7 +60,7 @@ export async function getProvisionPod(namespace: string, name: string) {
 
 export async function getDeprovisionPod(namespace: string, name: string) {
   const deprovisionJobSelector = `job-name=${name}-uninstall`
-  const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), deprovisionJobSelector])
+  const response = listPods(namespace, [getClusterDeploymentNameSelector(name), deprovisionJobSelector])
   return await response.promise.then((result) => {
     const latestDeprovisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
     return latestDeprovisionJob
@@ -68,7 +68,7 @@ export async function getDeprovisionPod(namespace: string, name: string) {
 }
 
 export async function getLatestHivePod(namespace: string, name: string) {
-  const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name)])
+  const response = listPods(namespace, [])
   return await response.promise.then((result) => {
     const latestJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
     return latestJob
@@ -86,4 +86,11 @@ export async function getHivePod(namespace: string, name: string, status: string
     hiveJob = await getDeprovisionPod(namespace, name)
   }
   return hiveJob
+}
+
+export async function getMostRecentAnsibleJobPod(namespace: string, jobName: string) {
+  const response = listPods(namespace, [`job-name=${jobName}`])
+  return await response.promise.then((result) => {
+    return result.find((pod) => pod.metadata.name?.includes(jobName))
+  })
 }
