@@ -67,8 +67,8 @@ export async function getDeprovisionPod(namespace: string, name: string) {
   })
 }
 
-export async function getLatestHivePod(namespace: string) {
-  const response = listPods(namespace, [])
+export async function getLatestHivePod(namespace: string, name: string) {
+  const response = listPods(namespace, [getClusterDeploymentNameSelector(name)])
   return await response.promise.then((result) => {
     const latestJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
     return latestJob
@@ -81,7 +81,7 @@ export async function getHivePod(namespace: string, name: string, status: string
   if (status === ClusterStatus.creating) {
     hiveJob = await getProvisionPod(namespace, name)
   } else if (status === ClusterStatus.provisionfailed || status === ClusterStatus.deprovisionfailed) {
-    hiveJob = await getLatestHivePod(namespace)
+    hiveJob = await getLatestHivePod(namespace, name)
   } else if (status === ClusterStatus.destroying) {
     hiveJob = await getDeprovisionPod(namespace, name)
   }
