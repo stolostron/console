@@ -813,7 +813,11 @@ export async function fetchRetry<T>(options: {
 
       if (retries === 0) {
         if (ResourceErrorCodes.includes(response.status)) {
-          throw new ResourceError(response.status, response.statusText)
+          throw new ResourceError(
+            response.status,
+            response.statusText,
+            typeof responseData === 'string' ? responseData : undefined
+          )
         } else {
           throw new ResourceError(ResourceErrorCode.Unknown, `Unknown error code: ${response.status}`)
         }

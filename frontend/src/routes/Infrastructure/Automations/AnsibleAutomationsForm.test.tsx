@@ -7,6 +7,7 @@ import {
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
+  ResourceErrorCode,
   Secret,
   SecretApiVersion,
   SecretKind,
@@ -21,6 +22,7 @@ import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
   nockAnsibleTower,
+  nockAnsibleTowerError,
   nockAnsibleTowerInventory,
   nockCreate,
   nockIgnoreApiPaths,
@@ -31,6 +33,7 @@ import {
   clickByText,
   typeByPlaceholderText,
   waitForNock,
+  waitForNocks,
   waitForNotText,
   waitForTestId,
   waitForText,
@@ -257,5 +260,24 @@ describe('add automation template page', () => {
   it('should not render warning when Ansible operator is installed', async () => {
     render(<AddAnsibleTemplateTest subscriptions={[mockSubscriptionOperator]} />)
     waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
+  })
+
+  it('should display Ansible connection errors', async () => {
+    render(<AddAnsibleTemplateTest />)
+
+    // template information
+    const ansibleError = {
+      message: 'Internal Server Error',
+      code: ResourceErrorCode.InternalServerError,
+      reason: 'self-signed certificate',
+    }
+    const ansibleJobNock = nockAnsibleTowerError(mockAnsibleCredential, ansibleError)
+    const ansibleInventoryNock = nockAnsibleTowerError(mockAnsibleCredentialInventory, ansibleError)
+    await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(mockSecret.metadata.name!)
+    await waitForText('The credential returned an error response from Ansible Tower. Please review the host and token.')
+
+    await waitForNocks([ansibleJobNock, ansibleInventoryNock])
   })
 })

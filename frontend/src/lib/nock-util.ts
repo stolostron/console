@@ -74,13 +74,6 @@ export function nockGet<Resource extends IResource>(
   return finalNockScope
 }
 
-// export function nockGetError<Resource extends IResource>(resource: Resource, error: string | object) {
-//   const resourcePath = getResourceNameApiPathTestHelper(resource)
-//   return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-//     .get(resourcePath)
-//     .replyWithError(error)
-// }
-
 export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
   const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
   const finalNockScope = nockScope.reply(statusCode, response, {
@@ -370,6 +363,14 @@ export function nockAnsibleTowerInventory(
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Credentials': 'true',
     })
+}
+
+export function nockAnsibleTowerError(data: AnsibleCredentialPostBody | unknown, error: string | object) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string, {
+    encodedQueryParams: true,
+  })
+    .post('/ansibletower', (body) => isEqual(body, data))
+    .replyWithError(error)
 }
 
 export function nockIgnoreApiPaths() {
