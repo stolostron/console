@@ -2,20 +2,20 @@
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
-  DataViewStringContext,
+  CatalogColor,
   getPatternflyColor,
   ICatalogCard,
-  ItemView,
+  PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { listMultiClusterEngines } from '../../../../../resources'
-import { AcmPage, AcmPageHeader } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
+import { breadcrumbs } from './common/common'
+import { GetControlPlane } from './common/GetControlPlane'
 
 export function CreateControlPlane() {
   const [t] = useTranslation()
@@ -73,6 +73,8 @@ export function CreateControlPlane() {
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
         ),
+        badge: t('Technology preview'),
+        badgeColor: CatalogColor.orange,
       },
       {
         id: 'standalone',
@@ -105,38 +107,18 @@ export function CreateControlPlane() {
     return newCards
   }, [nextStep, t, isHypershiftEnabled])
 
-  const keyFn = useCallback((card: ICatalogCard) => card.id, [])
-
-  const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs = [
-      { text: t('Clusters'), to: NavigationPath.clusters },
-      { text: t('Infrastructure'), to: NavigationPath.createCluster },
-      { text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }) },
-    ]
-    return newBreadcrumbs
-  }, [t])
-
-  const dataViewStrings = useDataViewStrings()
-
   return (
-    <AcmPage
-      header={
-        <AcmPageHeader
+    <GetControlPlane
+      pageHeader={
+        <PageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' })}
           description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
-          breadcrumb={breadcrumbs}
+          breadcrumbs={breadcrumbs('Host Inventory', t)}
         />
       }
-    >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.createCluster)}
-          onCancel={cancel(NavigationPath.clusters)}
-        />
-      </DataViewStringContext.Provider>
-    </AcmPage>
+      cards={cards}
+      onBack={back(NavigationPath.createCluster)}
+      onCancel={cancel(NavigationPath.clusters)}
+    />
   )
 }

@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, ItemView, ICatalogCard, DataViewStringContext } from '@stolostron/react-data-view'
-import { useCallback, useMemo } from 'react'
+import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmPage, AcmPageHeader } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
+import { GetControlPlane } from './common/GetControlPlane'
 
 export function CreateDiscoverHost() {
   const [t] = useTranslation()
@@ -41,39 +40,27 @@ export function CreateDiscoverHost() {
     return newCards
   }, [nextStep, t])
 
-  const keyFn = useCallback((card: ICatalogCard) => card.id, [])
-
-  const breadcrumbs = [
-    { text: t('Clusters'), to: NavigationPath.clusters },
-    { text: t('Infrastructure'), to: NavigationPath.createCluster },
+  const breadcrumbs: ICatalogBreadcrumb[] = [
+    { label: t('Clusters'), to: NavigationPath.clusters },
+    { label: t('Infrastructure'), to: NavigationPath.createCluster },
     {
-      text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+      label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
       to: NavigationPath.createBMControlPlane,
     },
-    { text: t('Hosts') },
+    { label: t('Hosts') },
   ]
-
-  const dataViewStrings = useDataViewStrings()
-
   return (
-    <AcmPage
-      header={
-        <AcmPageHeader
+    <GetControlPlane
+      pageHeader={
+        <PageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
-          breadcrumb={breadcrumbs}
+          breadcrumbs={breadcrumbs}
         />
       }
-    >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.createBMControlPlane)}
-          onCancel={cancel(NavigationPath.clusters)}
-        />
-      </DataViewStringContext.Provider>
-    </AcmPage>
+      cards={cards}
+      onBack={back(NavigationPath.createBMControlPlane)}
+      onCancel={cancel(NavigationPath.clusters)}
+    />
   )
 }

@@ -14,13 +14,17 @@ import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/Cr
 import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
+import { CreateKubeVirtControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateKubeVirtControlPlane'
+import { HypershiftKubeVirtCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftKubeVirtCLI'
 
 export default function Clusters() {
   return (
     <Switch>
       <Route exact path={NavigationPath.createBMControlPlane} component={CreateControlPlane} />
       <Route exact path={NavigationPath.createAWSControlPlane} component={CreateAWSControlPlane} />
+      <Route exact path={NavigationPath.createKubeVirtControlPlane} component={CreateKubeVirtControlPlane} />
       <Route exact path={NavigationPath.createAWSCLI} component={HypershiftAWSCLI} />
+      <Route exact path={NavigationPath.createKubeVirtCLI} component={HypershiftKubeVirtCLI} />
 
       <Route exact path={NavigationPath.createDiscoverHost} component={CreateDiscoverHost} />
       <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />

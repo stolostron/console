@@ -81,6 +81,12 @@ export function CreateClusterCatalog() {
         description: 'Placeholder',
       },
       {
+        id: 'kubevirt',
+        provider: Provider.kubevirt,
+        description:
+          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise datacenter.',
+      },
+      {
         id: 'azure',
         provider: Provider.azure,
         description: t('A Red Hat OpenShift cluster that is running in your Azure subscription.'),
@@ -109,6 +115,19 @@ export function CreateClusterCatalog() {
     ]
   }, [t])
 
+  const getOnClickAction = useCallback(
+    (id: string, provider: Provider & ClusterInfrastructureType) => {
+      if (id === Provider.aws) {
+        return nextStep(NavigationPath.createAWSControlPlane)
+      } else if (id === Provider.kubevirt) {
+        return nextStep(NavigationPath.createKubeVirtControlPlane)
+      } else {
+        return nextStep(getTypedCreateClusterPath(provider))
+      }
+    },
+    [nextStep]
+  )
+
   const cards = useMemo(() => {
     const getProviderCard = (
       id: string,
@@ -126,8 +145,7 @@ export function CreateClusterCatalog() {
         },
       ],
       labels,
-      onClick:
-        id !== 'aws' ? nextStep(getTypedCreateClusterPath(provider)) : nextStep(NavigationPath.createAWSControlPlane),
+      onClick: getOnClickAction(id, provider),
     })
 
     const cardsWithCreds: ICatalogCard[] = []
@@ -178,7 +196,7 @@ export function CreateClusterCatalog() {
     })
 
     return { cardsWithCreds, cardsWithOutCreds }
-  }, [nextStep, getCredentialLabels, clusterImageSets.length, t, cardsData])
+  }, [nextStep, getCredentialLabels, clusterImageSets.length, t, cardsData, getOnClickAction])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 

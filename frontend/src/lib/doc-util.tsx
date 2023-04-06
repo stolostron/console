@@ -11,6 +11,8 @@ export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_CREATE_HOSTED_CLUSTER = 'https://hypershift-docs.netlify.app/getting-started/#create-a-hostedcluster'
+export const DOC_CREATE_kUBEVIRT_CLUSTER =
+  'https://hypershift-docs.netlify.app/how-to/kubevirt/create-kubevirt-cluster/'
 
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-overview`,
@@ -45,7 +47,6 @@ export const DOC_LINKS = {
   CIM_CONFIG_AWS: `${DOC_BASE_PATH}/clusters/index#enable-cim-aws`,
   CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/clusters/index#disconnected-vm`,
   CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#disconnected-openstack`,
-  HOSTED_CONTROL_PLANES: `${DOC_BASE_PATH}/clusters/multicluster_engine_overview#hosted-control-planes-configure`,
   INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#creating-an-infrastructure-environment`,
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
@@ -53,6 +54,8 @@ export const DOC_LINKS = {
   POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
+  HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosting-service-cluster-configure-aws`,
+  HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
   HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-enable-feature-aws`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
