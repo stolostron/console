@@ -188,7 +188,10 @@ const appendPatch = (
   }
 }
 
-export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstallK8sResource, values: CIM.ClusterDeploymentNetworkingValues) => {
+export const getNetworkingPatches = (
+  agentClusterInstall: CIM.AgentClusterInstallK8sResource,
+  values: CIM.ClusterDeploymentNetworkingValues
+) => {
   const agentClusterInstallPatches: any = []
 
   appendPatch(
@@ -290,7 +293,12 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
     }
     appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
   }
-  appendPatch(agentClusterInstallPatches, '/spec/networking/networkType', values.networkType, agentClusterInstall.spec?.networking.networkType)
+  appendPatch(
+    agentClusterInstallPatches,
+    '/spec/networking/networkType',
+    values.networkType,
+    agentClusterInstall.spec?.networking.networkType
+  )
 
   return agentClusterInstallPatches
 }
@@ -833,11 +841,11 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 export const getDefault = (values: (string | undefined)[]): string => values.filter(Boolean)?.[0] || ''
 
 export const onSetInstallationDiskId = (agent: CIM.AgentK8sResource, diskId: string) => {
-    return patchResource(agent as IResource, [
-        {
-            op: 'replace',
-            path: '/spec/installation_disk_id',
-            value: diskId,
-        },
-    ]).promise as Promise<CIM.AgentK8sResource>
-};
+  return patchResource(agent as IResource, [
+    {
+      op: 'replace',
+      path: '/spec/installation_disk_id',
+      value: diskId,
+    },
+  ]).promise as Promise<CIM.AgentK8sResource>
+}

@@ -68,8 +68,7 @@ export const getDefaultNetworkFormValues = (
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
-  const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage } =
-    React.useContext(HypershiftAgentContext)
+  const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage } = React.useContext(HypershiftAgentContext)
   const { waitForAll } = useSharedRecoil()
   const { agentsState, infrastructuresState, clusterImageSetsState } = useSharedAtoms()
   const [agents, infrastructures, clusterImageSets] = useRecoilValue(
@@ -147,6 +146,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
       formRef={formRef}
       onValuesChanged={onValuesChanged}
       initialValues={initialValues}
+      count={0}
     />
   ) : (
     <LoadingState />

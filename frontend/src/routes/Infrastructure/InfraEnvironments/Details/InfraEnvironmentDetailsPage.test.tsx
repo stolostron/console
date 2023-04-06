@@ -61,9 +61,6 @@ describe('Infrastructure Environment Details page', () => {
     // Open discovery ISO dialog
     await clickHostAction('ai:With Discovery ISO')
 
-    // Discovery ISO config dialog
-    await clickByText('ai:Generate Discovery ISO')
-
     // Discovery ISO download state
     await waitForText('ai:Discovery ISO is ready to be downloaded')
     await waitForText('ai:Download Discovery ISO')

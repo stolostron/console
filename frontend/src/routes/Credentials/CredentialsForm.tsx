@@ -150,7 +150,7 @@ export function CredentialsForm(
     isViewing: boolean
     handleModalToggle?: () => void
     hideYaml?: boolean
-    newCredentialCallback?: (resource: IResource) => void
+    newCredentialCallback?: (resource: Secret) => void
     isHosted?: boolean
   } & ProviderConnectionOrCredentialsType
 ) {
@@ -1502,7 +1502,7 @@ export function CredentialsForm(
           })
 
           if (newCredentialCallback) {
-            newCredentialCallback(resource)
+            newCredentialCallback(resource as Secret)
           }
 
           if (handleModalToggle) {

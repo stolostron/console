@@ -7,9 +7,9 @@
 }
 
 .temptifly .infra-env-form .pf-c-form__group-label {
-    padding: 0 0 var(--pf-c-form__group-label--PaddingBottom) 0 !important;
+  padding: 0 0 var(--pf-c-form__group-label--PaddingBottom) 0 !important;
 }
 
 .infra-env-form__section {
-    padding: 0 0 var(--pf-c-page__main-section--PaddingBottom) 0!important;
+  padding: 0 0 var(--pf-c-page__main-section--PaddingBottom) 0 !important;
 }

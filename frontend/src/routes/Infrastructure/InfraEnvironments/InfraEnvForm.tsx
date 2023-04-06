@@ -23,13 +23,12 @@ import { FormikProps } from 'formik'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
-import { useSharedAtoms, useRecoilState, useRecoilValue } from '../../../shared-recoil'
+import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 
 import './InfraEnvForm.css'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import { Provider } from '../../../ui-components'
 import { GetProjects } from '../../../components/GetProjects'
-import { providerConnectionsValue } from '../../../selectors'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 
 // where to put Create/Cancel buttons
@@ -63,14 +62,16 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)
   const [isCredentialsOpen, setCredentialsOpen] = useState(false)
   const [credentialsUID, setCredentialsUID] = useState<string>()
+  const { providerConnectionsValue } = useSharedSelectors()
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
   const { projects } = GetProjects()
   const { infraEnvironmentsState } = useSharedAtoms()
   const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
   const formRef = useRef<FormikProps<any>>(null)
 
-  const providerConnections = allProviderConnections.filter((p) => p.metadata?.labels?.['cluster.open-cluster-management.io/type'] === Provider.hostinventory)
-  
+  const providerConnections = allProviderConnections.filter(
+    (p) => p.metadata?.labels?.['cluster.open-cluster-management.io/type'] === Provider.hostinventory
+  )
 
   const onValuesChanged = useCallback((values: EnvironmentStepFormValues) => {
     control.active = values
@@ -109,7 +110,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   }, [])
 
   const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata?.name!), [infraEnvironments])
-  const currentConnection = providerConnections.find((p) => p.metadata.uid === credentialsUID);
+  const currentConnection = providerConnections.find((p) => p.metadata.uid === credentialsUID)
   return (
     <>
       <PageSection variant="light" isFilled className="infra-env-form__section">
@@ -128,13 +129,15 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
                   onToggle={setCredentialsOpen}
-                  onSelect={(e, v) => {
+                  onSelect={(_, v) => {
                     setCredentialsUID(v as string)
                     setCredentialsOpen(false)
                   }}
                   selections={credentialsUID}
                   isOpen={isCredentialsOpen}
-                  footer={<CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />}
+                  footer={
+                    <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
+                  }
                 >
                   {providerConnections.map((p) => (
                     <SelectOption key={p.metadata.uid} value={p.metadata.uid}>

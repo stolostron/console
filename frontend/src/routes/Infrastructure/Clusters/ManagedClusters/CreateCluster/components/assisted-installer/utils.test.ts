@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AgentClusterInstallK8sResource } from 'openshift-assisted-ui-lib/cim'
-import { getDefault, getTemplateValue, getNetworkingPatches } from './utils'
+import {
+  AGENT_BMH_NAME_LABEL_KEY,
+  AgentClusterInstallK8sResource,
+  AgentK8sResource,
+  BareMetalHostK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
+import { getDefault, getTemplateValue, getNetworkingPatches, getDeleteHostAction } from './utils'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -30,11 +35,60 @@ describe('networking patch utils', () => {
         provisionRequirements: {
           controlPlaneAgents: 0,
         },
+        apiVIP: '10.10.10.10',
+        ingressVIP: '10.10.10.10',
       },
     }
     const patches = getNetworkingPatches(aci, {
       managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
     })
-    expect(patches.length).toBe(3)
+    expect(patches.length).toBe(5)
+  })
+  it('enables cluster networking', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'None',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      apiVip: '10.10.10.10',
+      ingressVip: '10.10.10.10',
+    })
+    expect(patches.length).toBe(5)
+  })
+})
+
+describe('getDeleteHostAction utils', () => {
+  it('matches agent to bmh', () => {
+    const bmh: BareMetalHostK8sResource = {
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+    }
+    const agent: AgentK8sResource = {
+      metadata: {
+        namespace: 'bar',
+        labels: {
+          [AGENT_BMH_NAME_LABEL_KEY]: 'foo',
+        },
+      },
+      spec: {
+        approved: false,
+        role: 'auto-assign',
+      },
+    }
+    expect(getDeleteHostAction([bmh], undefined, undefined, agent)).toBeDefined()
   })
 })

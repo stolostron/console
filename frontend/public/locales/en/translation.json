@@ -1519,6 +1519,7 @@
   "infraEnvCount": "{{count}} infrastructure environment",
   "infraEnvCount_plural": "{{count}} infrastructure environments",
   "Infrastructure": "Infrastructure",
+  "Infrastructure provider credentials": "Infrastructure provider credentials",
   "install": "Install",
   "Install plan approved": "Install plan approved",
   "Install the operator": "Install the operator",
