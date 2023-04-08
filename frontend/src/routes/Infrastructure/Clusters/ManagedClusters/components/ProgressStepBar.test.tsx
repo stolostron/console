@@ -124,6 +124,52 @@ const clusterCurator1: ClusterCurator = {
   },
 }
 
+const clusterCuratorConditionFailed: ClusterCurator = {
+  apiVersion: ClusterCuratorApiVersion,
+  kind: ClusterCuratorKind,
+  metadata: {
+    name: 'test-cluster',
+    namespace: 'test-cluster',
+  },
+  spec: {
+    desiredCuration: 'install',
+    install: {
+      towerAuthSecret: 'ansible-credential-i',
+      prehook: [
+        {
+          name: 'test-job-i',
+        },
+      ],
+    },
+  },
+  status: {
+    conditions: [
+      {
+        lastTransitionTime: new Date(),
+        message:
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob rbrunopi-i/prehookjob-k92td exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'clustercurator-job',
+      },
+      {
+        lastTransitionTime: new Date(),
+        message: 'AnsibleJob rbrunopi-i/prehookjob-k92td exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'prehook-ansiblejob',
+      },
+      {
+        lastTransitionTime: new Date(),
+        message: 'prehookjob-k92td',
+        reason: 'Job_has_finished',
+        status: 'False',
+        type: 'current-ansiblejob',
+      },
+    ],
+  },
+}
+
 const ansibleJob: AnsibleJob = {
   apiVersion: AnsibleJobApiVersion,
   kind: AnsibleJobKind,
@@ -197,6 +243,25 @@ describe('ProgressStepBar', () => {
         <RecoilRoot
           initializeState={(snapshot) => {
             snapshot.set(clusterCuratorsState, [clusterCurator1])
+            snapshot.set(ansibleJobState, [ansibleJob])
+          }}
+        >
+          <MemoryRouter>
+            <ProgressStepBar />
+          </MemoryRouter>
+        </RecoilRoot>
+      </ClusterContext.Provider>
+    )
+    await clickByText('View logs')
+  })
+
+  test('OCP job logs links', async () => {
+    window.open = jest.fn()
+    render(
+      <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+        <RecoilRoot
+          initializeState={(snapshot) => {
+            snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailed])
             snapshot.set(ansibleJobState, [ansibleJob])
           }}
         >
