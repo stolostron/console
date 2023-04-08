@@ -29,7 +29,7 @@ export interface AnsibleJob {
       changed: boolean
       failed: boolean
       status: string
-      url: string
+      url?: string
       finished: string
       started: string
     }

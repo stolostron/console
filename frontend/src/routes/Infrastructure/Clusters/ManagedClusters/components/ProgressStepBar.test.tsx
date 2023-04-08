@@ -124,7 +124,7 @@ const clusterCurator1: ClusterCurator = {
   },
 }
 
-const clusterCuratorConditionFailed: ClusterCurator = {
+const clusterCuratorConditionFailedPrehook: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
   kind: ClusterCuratorKind,
   metadata: {
@@ -147,14 +147,14 @@ const clusterCuratorConditionFailed: ClusterCurator = {
       {
         lastTransitionTime: new Date(),
         message:
-          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob rbrunopi-i/prehookjob-k92td exited with an error',
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/prehookjob exited with an error',
         reason: 'Job_failed',
         status: 'True',
         type: 'clustercurator-job',
       },
       {
         lastTransitionTime: new Date(),
-        message: 'AnsibleJob rbrunopi-i/prehookjob-k92td exited with an error',
+        message: 'AnsibleJob tester/prehookjob-k92td exited with an error',
         reason: 'Job_failed',
         status: 'True',
         type: 'prehook-ansiblejob',
@@ -165,6 +165,38 @@ const clusterCuratorConditionFailed: ClusterCurator = {
         reason: 'Job_has_finished',
         status: 'False',
         type: 'current-ansiblejob',
+      },
+    ],
+  },
+}
+
+const clusterCuratorConditionFailedPosthook: ClusterCurator = {
+  apiVersion: ClusterCuratorApiVersion,
+  kind: ClusterCuratorKind,
+  metadata: {
+    name: 'test-cluster',
+    namespace: 'test-cluster',
+  },
+  spec: {
+    desiredCuration: 'install',
+    install: {
+      towerAuthSecret: 'ansible-credential-i',
+      posthook: [
+        {
+          name: 'test-job-i',
+        },
+      ],
+    },
+  },
+  status: {
+    conditions: [
+      {
+        lastTransitionTime: new Date(),
+        message:
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/prehookjob-k92td exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'clustercurator-job',
       },
     ],
   },
@@ -186,6 +218,47 @@ const ansibleJob: AnsibleJob = {
       failed: false,
       status: 'pending',
       url: '/ansible/url',
+      finished: '2021-06-08T16:43:09.023018Z',
+      started: '2021-06-08T16:43:01.853019Z',
+    },
+  },
+}
+const ansibleJobFailedPrehook: AnsibleJob = {
+  apiVersion: AnsibleJobApiVersion,
+  kind: AnsibleJobKind,
+  metadata: {
+    name: 'ansible-job',
+    namespace: 'test-cluster',
+    annotations: {
+      jobtype: 'prehook',
+    },
+  },
+  status: {
+    ansibleJobResult: {
+      changed: true,
+      failed: false,
+      status: 'error',
+      finished: '2021-06-08T16:43:09.023018Z',
+      started: '2021-06-08T16:43:01.853019Z',
+    },
+  },
+}
+
+const ansibleJobFailedPosthook: AnsibleJob = {
+  apiVersion: AnsibleJobApiVersion,
+  kind: AnsibleJobKind,
+  metadata: {
+    name: 'ansible-job',
+    namespace: 'test-cluster',
+    annotations: {
+      jobtype: 'posthook',
+    },
+  },
+  status: {
+    ansibleJobResult: {
+      changed: true,
+      failed: false,
+      status: 'error',
       finished: '2021-06-08T16:43:09.023018Z',
       started: '2021-06-08T16:43:01.853019Z',
     },
@@ -255,14 +328,32 @@ describe('ProgressStepBar', () => {
     await clickByText('View logs')
   })
 
-  test('OCP job logs links', async () => {
+  test('OCP job logs links for prehook job', async () => {
     window.open = jest.fn()
     render(
       <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
         <RecoilRoot
           initializeState={(snapshot) => {
-            snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailed])
-            snapshot.set(ansibleJobState, [ansibleJob])
+            snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPrehook])
+            snapshot.set(ansibleJobState, [ansibleJobFailedPrehook])
+          }}
+        >
+          <MemoryRouter>
+            <ProgressStepBar />
+          </MemoryRouter>
+        </RecoilRoot>
+      </ClusterContext.Provider>
+    )
+    await clickByText('View logs')
+  })
+  test('OCP job logs links for posthook job', async () => {
+    window.open = jest.fn()
+    render(
+      <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+        <RecoilRoot
+          initializeState={(snapshot) => {
+            snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPosthook])
+            snapshot.set(ansibleJobState, [ansibleJobFailedPosthook])
           }}
         >
           <MemoryRouter>
