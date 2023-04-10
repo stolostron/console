@@ -17,6 +17,7 @@ import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
 import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ProgressStepBar } from './ProgressStepBar'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -193,10 +194,24 @@ const clusterCuratorConditionFailedPosthook: ClusterCurator = {
       {
         lastTransitionTime: new Date(),
         message:
-          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/prehookjob-k92td exited with an error',
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/posthookjob-k92td exited with an error',
         reason: 'Job_failed',
         status: 'True',
         type: 'clustercurator-job',
+      },
+      {
+        lastTransitionTime: new Date(),
+        message: 'AnsibleJob tester/prehookjob-k92td exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'posthook-ansiblejob',
+      },
+      {
+        lastTransitionTime: new Date(),
+        message: 'posthookjob-k92td',
+        reason: 'Job_has_finished',
+        status: 'False',
+        type: 'current-ansiblejob',
       },
     ],
   },
@@ -227,7 +242,7 @@ const ansibleJobFailedPrehook: AnsibleJob = {
   apiVersion: AnsibleJobApiVersion,
   kind: AnsibleJobKind,
   metadata: {
-    name: 'ansible-job',
+    name: 'failed-ansible-job',
     namespace: 'test-cluster',
     annotations: {
       jobtype: 'prehook',
@@ -248,7 +263,7 @@ const ansibleJobFailedPosthook: AnsibleJob = {
   apiVersion: AnsibleJobApiVersion,
   kind: AnsibleJobKind,
   metadata: {
-    name: 'ansible-job',
+    name: 'failed-ansible-job',
     namespace: 'test-cluster',
     annotations: {
       jobtype: 'posthook',
@@ -330,8 +345,9 @@ describe('ProgressStepBar', () => {
 
   test('OCP job logs links for prehook job', async () => {
     window.open = jest.fn()
+    nockIgnoreApiPaths()
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
         <RecoilRoot
           initializeState={(snapshot) => {
             snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPrehook])
@@ -348,8 +364,9 @@ describe('ProgressStepBar', () => {
   })
   test('OCP job logs links for posthook job', async () => {
     window.open = jest.fn()
+    nockIgnoreApiPaths()
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
         <RecoilRoot
           initializeState={(snapshot) => {
             snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPosthook])
