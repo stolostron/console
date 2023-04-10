@@ -495,7 +495,7 @@ export function getPolicyDescription(policy: Policy | undefined) {
 
   const annotations = policy.metadata.annotations
   if (annotations && annotations['policy.open-cluster-management.io/description']) {
-    return annotations['policy.open-cluster-management.io/description']
+    return formatDescriptionForDropdown(annotations['policy.open-cluster-management.io/description'])
   }
 
   return '-'
