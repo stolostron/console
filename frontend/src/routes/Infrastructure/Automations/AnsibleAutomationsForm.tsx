@@ -226,7 +226,7 @@ export function AnsibleAutomationsForm(props: {
           setAnsibleTowerInventoryList([])
         })
     }
-  }, [ansibleSelection, ansibleCredentials, t])
+  }, [ansibleSelection, ansibleCredentials, ansibleInventory, t])
 
   function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
     if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -291,18 +291,37 @@ export function AnsibleAutomationsForm(props: {
     if (Object.keys(value).length) {
       jobTypes.forEach(({ type }) => {
         const path = `ClusterCurator[0].spec.${type}.towerAuthSecret`
-        const test = get(value, `${type}.towerAuthSecret`)
-        if (!!test && test !== ansibleSelection) {
-          if (ansibleCredentials.findIndex((cred) => get(cred, 'metadata.name') === test) === -1) {
-            errors.push({ path, message: `'${test}' is not an existing ansible` })
+        const testSecret = get(value, `${type}.towerAuthSecret`)
+        if (!!testSecret && testSecret !== ansibleSelection) {
+          if (ansibleCredentials.findIndex((cred) => get(cred, 'metadata.name') === testSecret) === -1) {
+            errors.push({ path, message: t('{{testSecret}} is not an existing ansible credential', { testSecret }) })
           } else {
-            secret = test
+            secret = testSecret
           }
         }
       })
       if (!errors.length) {
         setAnsibleSelection(secret)
       }
+    }
+    return errors
+  }
+
+  function setAnsibleInventorySelection(testInventory: any) {
+    const errors: any[] = []
+    let selectedInventory: SetStateAction<string> = ansibleInventory
+    if (testInventory !== ansibleInventory) {
+      if (!!testInventory && !ansibleTowerInventoryList.includes(testInventory)) {
+        errors.push({
+          path: `ClusterCurator[0].spec.inventory`,
+          message: t('{{testInventory}} is not an existing ansible inventory', { testInventory }),
+        })
+      } else {
+        selectedInventory = testInventory
+      }
+    }
+    if (!errors.length) {
+      setAnsibleInventory(selectedInventory)
     }
     return errors
   }
@@ -343,7 +362,7 @@ export function AnsibleAutomationsForm(props: {
   function stateToSyncs() {
     let syncs: any = [
       { path: 'ClusterCurator[0].metadata.name', setState: setTemplateName },
-      { path: 'ClusterCurator[0].spec.inventory', setState: setAnsibleInventory },
+      { path: 'ClusterCurator[0].spec.inventory', setter: setAnsibleInventorySelection.bind(null) },
       { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
     ]
     jobTypes.forEach(({ type }) => {
