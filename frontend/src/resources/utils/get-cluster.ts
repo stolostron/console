@@ -1149,7 +1149,9 @@ export function getClusterStatus(
         switch (powerState) {
           case 'Running':
             cdStatus =
-              clusterDeployment.spec?.clusterPoolRef && !clusterClaim ? ClusterStatus.running : ClusterStatus.detached
+              clusterDeployment.spec?.clusterPoolRef && !clusterDeployment.spec.clusterPoolRef.claimName
+                ? ClusterStatus.running
+                : ClusterStatus.detached
             break
           case 'Hibernating':
             cdStatus = ClusterStatus.hibernating
