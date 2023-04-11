@@ -59,6 +59,7 @@ export const DOC_LINKS = {
   HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-enable-feature-aws`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
+  DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/red-hat-advanced-cluster-management-for-kubernetes-release-notes#deprecations-removals`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {
