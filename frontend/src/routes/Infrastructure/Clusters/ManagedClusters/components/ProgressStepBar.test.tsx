@@ -9,15 +9,18 @@ import {
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
   ClusterStatus,
+  Pod,
+  PodApiVersion,
+  PodKind,
 } from '../../../../../resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
-import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
+import { clickByTestId, clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ProgressStepBar } from './ProgressStepBar'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-util'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -54,7 +57,7 @@ const mockCluster: Cluster = {
   isRegionalHubCluster: false,
 }
 
-const mockCluster1: Cluster = {
+const mockClusterUpdatesAvailable: Cluster = {
   name: 'clusterName',
   displayName: 'clusterName',
   namespace: 'clusterName',
@@ -104,6 +107,40 @@ const mockCluster1: Cluster = {
   isHypershift: true,
   isRegionalHubCluster: false,
 }
+const mockClusterPosthook: Cluster = {
+  name: 'test-cluster',
+  displayName: 'test-cluster',
+  namespace: 'test-cluster',
+  uid: 'test-cluster-uid',
+  status: ClusterStatus.posthookjob,
+  distribution: {
+    k8sVersion: '1.19',
+    ocp: undefined,
+    displayVersion: '1.19',
+    isManagedOpenShift: false,
+  },
+  labels: undefined,
+  nodes: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hive: {
+    isHibernatable: true,
+    clusterPool: undefined,
+    secrets: {
+      installConfig: '',
+    },
+  },
+  isHive: false,
+  isManaged: true,
+  isCurator: false,
+  isHostedCluster: false,
+  isSNOCluster: false,
+  owner: {},
+  kubeconfig: '',
+  kubeadmin: '',
+  isHypershift: false,
+  isRegionalHubCluster: false,
+}
 
 const clusterCurator1: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
@@ -148,24 +185,10 @@ const clusterCuratorConditionFailedPrehook: ClusterCurator = {
       {
         lastTransitionTime: new Date(),
         message:
-          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/prehookjob exited with an error',
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob test-cluster/prehookjob exited with an error',
         reason: 'Job_failed',
         status: 'True',
         type: 'clustercurator-job',
-      },
-      {
-        lastTransitionTime: new Date(),
-        message: 'AnsibleJob tester/prehookjob-k92td exited with an error',
-        reason: 'Job_failed',
-        status: 'True',
-        type: 'prehook-ansiblejob',
-      },
-      {
-        lastTransitionTime: new Date(),
-        message: 'prehookjob-k92td',
-        reason: 'Job_has_finished',
-        status: 'False',
-        type: 'current-ansiblejob',
       },
     ],
   },
@@ -194,24 +217,10 @@ const clusterCuratorConditionFailedPosthook: ClusterCurator = {
       {
         lastTransitionTime: new Date(),
         message:
-          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob tester/posthookjob-k92td exited with an error',
+          'curator-job-llmxl DesiredCuration: install Failed - AnsibleJob test-cluster/posthookjob-k92td exited with an error',
         reason: 'Job_failed',
         status: 'True',
         type: 'clustercurator-job',
-      },
-      {
-        lastTransitionTime: new Date(),
-        message: 'AnsibleJob tester/prehookjob-k92td exited with an error',
-        reason: 'Job_failed',
-        status: 'True',
-        type: 'posthook-ansiblejob',
-      },
-      {
-        lastTransitionTime: new Date(),
-        message: 'posthookjob-k92td',
-        reason: 'Job_has_finished',
-        status: 'False',
-        type: 'current-ansiblejob',
       },
     ],
   },
@@ -280,6 +289,15 @@ const ansibleJobFailedPosthook: AnsibleJob = {
   },
 }
 
+const FailedAnsibleJob: Pod = {
+  apiVersion: PodApiVersion,
+  kind: PodKind,
+  metadata: {
+    name: 'posthookjob-k92td-1234',
+    namespace: 'cluster',
+  },
+}
+
 describe('ProgressStepBar', () => {
   test('renders progress bar', async () => {
     render(
@@ -327,7 +345,7 @@ describe('ProgressStepBar', () => {
   test('hypershift logs link', async () => {
     window.open = jest.fn()
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster1, addons: undefined }}>
+      <ClusterContext.Provider value={{ cluster: mockClusterUpdatesAvailable, addons: undefined }}>
         <RecoilRoot
           initializeState={(snapshot) => {
             snapshot.set(clusterCuratorsState, [clusterCurator1])
@@ -365,8 +383,40 @@ describe('ProgressStepBar', () => {
   test('OCP job logs links for posthook job', async () => {
     window.open = jest.fn()
     nockIgnoreApiPaths()
+    nockNamespacedList(
+      {
+        apiVersion: 'v1',
+        kind: 'pods',
+        metadata: {
+          namespace: 'test-cluster',
+        },
+      },
+      [],
+      ['job-name=prehookjob']
+    )
+    nockNamespacedList(
+      {
+        apiVersion: 'v1',
+        kind: 'pods',
+        metadata: {
+          namespace: 'test-cluster',
+        },
+      },
+      [FailedAnsibleJob],
+      ['job-name=posthookjob']
+    )
+    nockGet(
+      {
+        apiVersion: 'v1',
+        kind: 'pods',
+        metadata: {
+          namespace: 'test-cluster',
+        },
+      },
+      FailedAnsibleJob
+    )
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+      <ClusterContext.Provider value={{ cluster: mockClusterPosthook, addons: undefined }}>
         <RecoilRoot
           initializeState={(snapshot) => {
             snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPosthook])
@@ -379,6 +429,6 @@ describe('ProgressStepBar', () => {
         </RecoilRoot>
       </ClusterContext.Provider>
     )
-    await clickByText('View logs')
+    await clickByTestId('posthook-link')
   })
 })

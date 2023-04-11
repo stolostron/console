@@ -148,6 +148,7 @@ export function ProgressStepBar() {
         statusType: prehookStatus,
         statusText: t('status.prehook'),
         statusSubtitle: prehooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
+        stepID: 'prehook',
         // will render link when prehook job url is defined or when there are no job hooks setup
         link: {
           linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
@@ -163,6 +164,7 @@ export function ProgressStepBar() {
         statusType: creatingStatus,
         statusText: t('status.install.text'),
         statusSubtitle: getStatusLabel(creatingStatus, t),
+        stepID: 'install',
         ...(provisionStatus.includes(cluster?.status!) && {
           link: {
             linkName: t('status.link.logs'),
@@ -179,15 +181,19 @@ export function ProgressStepBar() {
       },
       {
         statusType: importStatus,
+        stepID: 'import',
         statusText: t('status.import.text'),
         statusSubtitle: getStatusLabel(importStatus, t),
       },
       {
         statusType: posthookStatus,
+        stepID: 'posthook',
         statusText: t('status.posthook'),
         statusSubtitle: posthooks ? getStatusLabel(posthookStatus, t) : t('status.subtitle.nojobs'),
         ...(posthooks &&
-          latestJobs.posthook?.status?.ansibleJobResult?.url && {
+          (cluster?.status === 'posthookjob' ||
+            cluster?.status === 'posthookfailed' ||
+            latestJobs.posthook?.status?.ansibleJobResult?.url) && {
             link: {
               linkName: t('status.link.logs'),
               linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
@@ -244,6 +250,6 @@ function jobPodsStillAvailable(curator: ClusterCurator) {
   }
   const podCompletionTime = new Date(failurePodTransitionTime)
   const currentTime = new Date()
-  const hours = Math.floor((currentTime.getTime() - podCompletionTime.getTime()) / 1000 / 60 / 60)
-  return hours < 1
+  const hoursSincePodFailure = Math.floor((currentTime.getTime() - podCompletionTime.getTime()) / 1000 / 60 / 60)
+  return hoursSincePodFailure < 1
 }
