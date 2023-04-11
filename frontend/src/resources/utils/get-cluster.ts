@@ -415,7 +415,6 @@ export function getCluster(
     managedCluster,
     clusterCurator,
     agentClusterInstall,
-    clusterClaim,
     hostedCluster
   )
 
@@ -1029,7 +1028,6 @@ export function getClusterStatus(
   managedCluster: ManagedCluster | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
-  clusterClaim: ClusterClaim | undefined,
   hostedCluster: HostedClusterK8sResource | undefined
 ) {
   let statusMessage: string | undefined
@@ -1149,7 +1147,9 @@ export function getClusterStatus(
         switch (powerState) {
           case 'Running':
             cdStatus =
-              clusterDeployment.spec?.clusterPoolRef && !clusterClaim ? ClusterStatus.running : ClusterStatus.detached
+              clusterDeployment.spec?.clusterPoolRef && !clusterDeployment.spec.clusterPoolRef.claimName
+                ? ClusterStatus.running
+                : ClusterStatus.detached
             break
           case 'Hibernating':
             cdStatus = ClusterStatus.hibernating
