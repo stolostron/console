@@ -3,12 +3,12 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { policyreportState } from '../../../../../atoms'
+import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
-import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
+import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
 import {
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
@@ -139,40 +139,6 @@ const mockCluster: Cluster = {
   isRegionalHubCluster: false,
 }
 
-const mockSearchQuery = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          { property: 'compliant', values: ['!Compliant'] },
-          { property: 'kind', values: ['Policy'] },
-          { property: 'namespace', values: ['test-cluster'] },
-          { property: 'cluster', values: ['local-cluster'] },
-        ],
-      },
-    ],
-  },
-  query:
-    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
-}
-
-const mockSearchResponse = {
-  data: {
-    searchResult: [
-      {
-        count: 1,
-        related: [
-          { kind: 'Cluster', count: 1, __typename: 'SearchRelatedResult' },
-          { kind: 'ConfigurationPolicy', count: 1, __typename: 'SearchRelatedResult' },
-          { kind: 'Policy', count: 1, __typename: 'SearchRelatedResult' },
-        ],
-        __typename: 'SearchResult',
-      },
-    ],
-  },
-}
-
 const mockPolicyReports: PolicyReport[] = [
   {
     apiVersion: 'wgpolicyk8s.io/v1alpha2',
@@ -213,15 +179,95 @@ const mockPolicyReports: PolicyReport[] = [
   },
 ]
 
+const mockPolicies: Policy[] = [
+  {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: {
+      annotations: {
+        'policy.open-cluster-management.io/categories': 'AC Access Control',
+        'policy.open-cluster-management.io/controls': 'AC-3 Access Enforcement',
+        'policy.open-cluster-management.io/standards': 'NIST SP 800-53',
+      },
+      creationTimestamp: '2023-04-10T17:55:02Z',
+      name: 'policy-role',
+      namespace: 'default',
+      resourceVersion: '2122237',
+      uid: '484f1ab1-ff2f-476c-9e63-7061af81a229',
+    },
+    spec: {
+      disabled: false,
+      'policy-templates': [
+        {
+          objectDefinition: {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'ConfigurationPolicy',
+            metadata: {
+              name: 'policy-role-example',
+            },
+            spec: {
+              namespaceSelector: {
+                include: ['default'],
+              },
+              'object-templates': [
+                {
+                  complianceType: 'mustonlyhave',
+                  objectDefinition: {
+                    apiVersion: 'rbac.authorization.k8s.io/v1',
+                    kind: 'Role',
+                    metadata: {
+                      name: 'sample-role',
+                    },
+                    rules: [
+                      {
+                        apiGroups: ['extensions', 'apps'],
+                        resources: ['deployments'],
+                        verbs: ['get', 'list', 'watch', 'delete', 'patch'],
+                      },
+                    ],
+                  },
+                },
+              ],
+              remediationAction: 'inform',
+              severity: 'high',
+            },
+          },
+        },
+      ],
+      remediationAction: 'inform',
+    },
+    status: {
+      compliant: 'NonCompliant',
+      placement: [
+        {
+          placementBinding: 'binding-policy-role',
+          placementRule: 'placement-policy-role',
+        },
+      ],
+      status: [
+        {
+          clustername: 'test-cluster',
+          clusternamespace: 'test-cluster',
+          compliant: 'NonCompliant',
+        },
+      ],
+    },
+  },
+]
+
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
-    nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
   })
 
   const Component = () => (
-    <RecoilRoot initializeState={(snapshot) => snapshot.set(policyreportState, mockPolicyReports)}>
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(policiesState, mockPolicies)
+        snapshot.set(policyreportState, mockPolicyReports)
+      }}
+    >
       <MemoryRouter>
         <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
           <StatusSummaryCount />
@@ -232,9 +278,10 @@ describe('StatusSummaryCount', () => {
   test('renders', async () => {
     render(<Component />)
     await act(async () => {
-      await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
-      await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+      // This wait pauses till summary data has been parsed
+      await waitFor(() => expect(screen.getAllByText('1')).toHaveLength(2))
 
       // click Application
       await clickByText('1', 0)
@@ -244,34 +291,7 @@ describe('StatusSummaryCount', () => {
       // click Policy violations
       await clickByText('1', 1)
       expect(push).toHaveBeenCalledTimes(2)
-      expect(push.mock.calls[1][0]).toBe(
-        '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:Policy%20namespace:test-cluster%20compliant:!Compliant"}'
-      )
-
-      await clickByText('Go to Policies')
-      expect(push).toHaveBeenCalledTimes(3)
-      expect(push.mock.calls[2][0]).toBe('/multicloud/governance/policies')
-
-      await clickByText('6')
-
-      await waitForText('Identified issues')
-      await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
-    })
-  })
-  test('renders without search', async () => {
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
-    render(
-      <PluginContext.Provider value={{ isSearchAvailable: false, dataContext: PluginDataContext }}>
-        <Component />
-      </PluginContext.Provider>
-    )
-    await act(async () => {
-      await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
-      await waitFor(() => expect(search.isDone()).toBeTruthy())
-      await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
-      await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
-
-      await waitForNotText('Go to Policies')
+      expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=with-violations')
 
       await clickByText('6')
 
@@ -280,7 +300,6 @@ describe('StatusSummaryCount', () => {
     })
   })
   test('renders without applications and governance', async () => {
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
     render(
       <PluginContext.Provider
         value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext }}
@@ -289,14 +308,11 @@ describe('StatusSummaryCount', () => {
       </PluginContext.Provider>
     )
     await act(async () => {
-      await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
-      await waitFor(() => expect(search.isDone()).toBeTruthy())
-      await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
       await waitForNotText('Applications')
 
-      await waitForNotText('Go to Policies')
+      await waitForNotText('Policy violations')
 
       await clickByText('6')
 
