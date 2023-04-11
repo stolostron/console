@@ -637,10 +637,8 @@ export function AcmDataFormWizard(props: {
         <Wizard
           titleId="create-credential-title"
           descriptionId="create-credential-description"
-          title={t('Add credential')}
-          description={t(
-            'A credential stores the access credentials and configuration information for creating clusters.'
-          )}
+          title={formData.title}
+          description={formData.description!}
           steps={steps}
           footer={Footer}
           onClose={formData.cancel}
@@ -771,6 +769,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
     case 'Alert':
     case 'TextNumber':
     case 'Number':
+    case 'Yaml':
       return (
         <DescriptionListGroup key={input.label}>
           <DescriptionListTerm>{input.label}</DescriptionListTerm>
@@ -1206,6 +1205,19 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         <Alert isInline variant={input.variant} title={input.labelHelpTitle}>
           {input.reactNode}
         </Alert>
+      )
+    }
+
+    case 'Yaml': {
+      return (
+        <SyncEditor
+          variant="toolbar"
+          id="code-content"
+          // editorTitle={editorTitle}
+          resources={[input.resource]}
+          filters={['*.metadata.managedFields']}
+          readonly={false}
+        />
       )
     }
   }

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 
 import { ReactNode } from 'react'
+import { GitOpsCluster } from '../resources'
 
 export interface FormData {
   title: string
@@ -74,6 +75,13 @@ export interface AlertInput extends InputBase<string> {
   reactNode?: ReactNode
   variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
   type: 'Alert'
+}
+
+export interface YamlInput extends InputBase<string> {
+  resource: GitOpsCluster
+  reactNode?: ReactNode
+  // variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
+  type: 'Yaml'
 }
 
 export interface TextInput extends InputBase<string> {
@@ -178,3 +186,4 @@ export type Input =
   | NumberInput
   | FormDataOrderedInput
   | CheckboxInput
+  | YamlInput
