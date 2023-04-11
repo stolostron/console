@@ -415,7 +415,6 @@ export function getCluster(
     managedCluster,
     clusterCurator,
     agentClusterInstall,
-    clusterClaim,
     hostedCluster
   )
 
@@ -1029,7 +1028,6 @@ export function getClusterStatus(
   managedCluster: ManagedCluster | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
-  clusterClaim: ClusterClaim | undefined,
   hostedCluster: HostedClusterK8sResource | undefined
 ) {
   let statusMessage: string | undefined
