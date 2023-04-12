@@ -7,7 +7,7 @@ import { GitOpsClusterApiVersion, GitOpsClusterKind, PlacementApiVersionBeta, Pl
 import schema from './schema.json'
 
 export interface ICreateArgoResourcesModalProps {
-  handleModalToggle?: () => void
+  handleModalToggle: () => void
 }
 
 function stateToData() {
@@ -33,25 +33,8 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
           'This enables the Red Hat OpenShift Container Platform GitOps instance to deploy applications to any of those Red Hat Advanced Cluster Management managed clusters.'
         ),
         inputs: [
-          //   {
-          //     id: 'disable-alert',
-          //     type: 'Alert',
-          //     label: '',
-          //     labelHelpTitle: t('Credential name and namespace are predefined as below for HyperShift add-on'),
-          //     variant: 'info',
-          //     reactNode: (
-          //       <Fragment>
-          //         <a href={DOC_LINKS.HYPERSHIFT_OIDC} target="_blank" rel="noreferrer">
-          //           {t('Learn more')}
-          //         </a>
-          //       </Fragment>
-          //     ),
-          //     value: '',
-          //     onChange: () => {},
-          //     isHidden: false,
-          //   },
           {
-            id: 'test',
+            id: 'create-gitops',
             type: 'Yaml',
             label: '',
             resource: {
@@ -80,14 +63,14 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
       },
     ],
     submit: () => {},
-    submitText: 'Submit',
-    submittingText: 'Submitting',
+    submitText: t('Add'),
+    submittingText: t('Adding'),
     reviewTitle: 'Review',
     reviewDescription: 'Review description',
-    nextLabel: 'Next',
-    backLabel: 'Back',
-    cancelLabel: 'Cancel',
-    cancel: () => {},
+    nextLabel: t('Next'),
+    backLabel: t('Back'),
+    cancelLabel: t('Cancel'),
+    cancel: handleModalToggle,
     stateToData,
   }
 

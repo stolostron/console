@@ -12,28 +12,7 @@
         },
         "namespace": { "validateLabel": true },
         "labels": {
-          "type": "object",
-          "properties": {
-            "cluster.open-cluster-management.io/type": {
-              "enum": [
-                "",
-                "aws",
-                "awss3",
-                "azr",
-                "gcp",
-                "ost",
-                "vmw",
-                "bmc",
-                "ans",
-                "rhocm",
-                "hostinventory",
-                "hybrid",
-                "redhatvirtualization"
-              ]
-            },
-            "cluster.open-cluster-management.io/credentials": { "type": "string" }
-          },
-          "required": ["cluster.open-cluster-management.io/type", "cluster.open-cluster-management.io/credentials"]
+          "type": "object"
         }
       },
       "required": ["name", "namespace", "labels"]
