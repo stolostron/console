@@ -77,13 +77,6 @@ export interface AlertInput extends InputBase<string> {
   type: 'Alert'
 }
 
-export interface YamlInput extends InputBase<string> {
-  resource: GitOpsCluster
-  reactNode?: ReactNode
-  // variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
-  type: 'Yaml'
-}
-
 export interface TextInput extends InputBase<string> {
   type: 'Text'
   isSecret?: boolean
@@ -186,4 +179,3 @@ export type Input =
   | NumberInput
   | FormDataOrderedInput
   | CheckboxInput
-  | YamlInput

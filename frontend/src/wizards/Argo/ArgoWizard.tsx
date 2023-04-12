@@ -248,14 +248,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
         onClose={handleModalToggle}
         hasNoBodyWrapper
       >
-        {/* <CredentialsForm
-          namespaces={[]}
-          isEditing={false}
-          isViewing={false}
-          credentialsType={Provider.redhatcloud}
-          handleModalToggle={handleModalToggle}
-          hideYaml={true}
-        /> */}
         <CreateArgoResources handleModalToggle={handleModalToggle} />
       </Modal>
       <WizardPage
@@ -341,7 +333,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               component="alert"
               operatorNotRequired={hideInstallPrompt}
               notAnsible={true}
-              message={t('The OpenShift GitOps Operator is required to create ApplicationSets.')}
+              message={t('OpenShift GitOps Operator is required to create ApplicationSets.')}
               operatorName={'Red+Hat+OpenShift+GitOps'}
             />
             <Section label={t('General')}>

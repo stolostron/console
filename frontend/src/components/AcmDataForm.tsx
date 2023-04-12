@@ -769,7 +769,6 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
     case 'Alert':
     case 'TextNumber':
     case 'Number':
-    case 'Yaml':
       return (
         <DescriptionListGroup key={input.label}>
           <DescriptionListTerm>{input.label}</DescriptionListTerm>
@@ -1205,19 +1204,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         <Alert isInline variant={input.variant} title={input.labelHelpTitle}>
           {input.reactNode}
         </Alert>
-      )
-    }
-
-    case 'Yaml': {
-      return (
-        <SyncEditor
-          variant="toolbar"
-          id="code-content"
-          // editorTitle={editorTitle}
-          resources={[input.resource]}
-          filters={['*.metadata.managedFields']}
-          readonly={false}
-        />
       )
     }
   }
