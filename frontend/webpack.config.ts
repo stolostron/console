@@ -97,7 +97,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
       useTsChecker &&
         new ForkTsCheckerWebpackPlugin({
-          async: false,
+          async: true,
           typescript: {
             configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
           },
