@@ -1,14 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 import { PageSection, Stack } from '@patternfly/react-core'
-import _ from 'lodash'
+import { isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouteMatch } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
+import {
+  GetArgoApplicationsHashSet,
+  GetDiscoveredOCPApps,
+  GetOpenShiftAppResourceMaps,
+} from '../../../components/GetDiscoveredOCPApps'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
   AddonStatus,
+  ApplicationSetKind,
   Cluster,
   ClusterStatus,
   ManagedClusterInfo,
@@ -178,12 +185,25 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 }
 
 export default function OverviewPage() {
+  const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
-  const { applicationsState, argoApplicationsState, managedClusterInfosState, policyreportState, usePolicies } =
-    useSharedAtoms()
+  const {
+    applicationsState,
+    argoApplicationsState,
+    discoveredApplicationsState,
+    discoveredOCPAppResourcesState,
+    helmReleaseState,
+    managedClusterInfosState,
+    policyreportState,
+    usePolicies,
+  } = useSharedAtoms()
+
   const policies = usePolicies()
   const [apps] = useRecoilState(applicationsState)
   const [argoApps] = useRecoilState(argoApplicationsState)
+  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+  const [helmReleases] = useRecoilState(helmReleaseState)
+  const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
   const [policyReports] = useRecoilState(policyreportState)
   const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
   const [selectedCloud, setSelectedCloud] = useState<string>('')
@@ -202,6 +222,8 @@ export default function OverviewPage() {
     },
     providers: [],
   })
+  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+
   const allClusters: Cluster[] = useAllClusters()
   const clusters: Cluster[] = useMemo(() => {
     return allClusters.filter((cluster) => {
@@ -213,6 +235,24 @@ export default function OverviewPage() {
       }
     })
   }, [allClusters])
+  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
+
+  const ownerReferences: string[] = useMemo(() => {
+    const array: string[] = []
+    argoApps.forEach((argoApp) => {
+      const appSetOwnerReferences = argoApp.metadata.ownerReferences
+      if (appSetOwnerReferences && appSetOwnerReferences[0].kind === ApplicationSetKind) {
+        // check if OwnerReferences obj has it
+        const name = appSetOwnerReferences[0].name
+        if (!array.includes(name)) {
+          array.push(name)
+        }
+      }
+    })
+    return array
+  }, [argoApps])
+
+  const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
 
   const allAddons = useClusterAddons()
 
@@ -272,10 +312,10 @@ export default function OverviewPage() {
     setSummaryData({ kubernetesTypes, regions, ready, offline, addons, providers })
 
     if (selectedCloud === '') {
-      if (!_.isEqual(selectedClusterNames, [])) {
+      if (!isEqual(selectedClusterNames, [])) {
         setSelectedClusterNames([])
       }
-    } else if (!_.isEqual(selectedClusterNames, Array.from(clusterNames))) {
+    } else if (!isEqual(selectedClusterNames, Array.from(clusterNames))) {
       setSelectedClusterNames(Array.from(clusterNames))
     }
   }, [clusters, selectedCloud, searchData, selectedClusterNames, allAddons])
@@ -351,10 +391,10 @@ export default function OverviewPage() {
   const summary = useMemo(() => {
     let overviewSummary = [
       {
-        isLoading: !apps || !argoApps,
+        isLoading: !apps || !argoApps || !ocpApps,
         description: t('Applications'),
-        count: [...apps, ...argoApps].length || 0,
-        href: buildSummaryLinks('Application', true),
+        count: [...apps, ...ownerReferences, ...Object.keys(filteredOCPApps)].length || 0,
+        href: NavigationPath.applications,
       },
       {
         isLoading: !clusters,
@@ -390,8 +430,11 @@ export default function OverviewPage() {
     buildSummaryLinks,
     cloudLabelFilter,
     clusters,
+    filteredOCPApps,
     kubernetesTypes?.size,
     nodeCount,
+    ocpApps,
+    ownerReferences,
     regions?.size,
     searchError,
     selectedClusterNames.length,

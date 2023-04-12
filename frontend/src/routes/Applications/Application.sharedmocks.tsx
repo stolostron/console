@@ -357,7 +357,7 @@ const mockSearchDisabledCluster = {
   _hubClusterResource: 'true',
 }
 
-export const mockSearchQuery = {
+export const mockSearchQueryArgoApps = {
   operationName: 'searchResult',
   variables: {
     input: [
@@ -372,7 +372,7 @@ export const mockSearchQuery = {
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
-export const mockSearchResponse = {
+export const mockSearchResponseArgoApps = {
   data: {
     searchResult: [
       {
@@ -381,6 +381,35 @@ export const mockSearchResponse = {
             apigroup: 'argoproj.io',
             apiversion: 'v1alpha1',
             cluster: 'feng-managed',
+            created: '2021-12-03T18:55:47Z',
+            destinationName: 'in-cluster',
+            destinationNamespace: 'feng-remote-namespace',
+            kind: 'application',
+            name: 'feng-remote-argo8',
+            namespace: 'openshift-gitops',
+            path: 'helloworld-perf',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            status: 'Healthy',
+            targetRevision: 'HEAD',
+            _clusterNamespace: 'feng-managed',
+            _rbac: 'feng-managed_argoproj.io_applications',
+            _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
+          },
+        ],
+      },
+    ],
+  },
+}
+
+export const mockSearchResponseArgoApps1 = {
+  data: {
+    searchResult: [
+      {
+        items: [
+          {
+            apigroup: 'argoproj.io',
+            apiversion: 'v1alpha1',
+            cluster: 'test-cluster',
             created: '2021-12-03T18:55:47Z',
             destinationName: 'in-cluster',
             destinationNamespace: 'feng-remote-namespace',

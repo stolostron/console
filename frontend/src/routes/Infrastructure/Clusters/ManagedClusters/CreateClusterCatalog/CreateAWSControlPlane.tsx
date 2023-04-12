@@ -6,10 +6,8 @@ import {
   CatalogColor,
   DataViewStringContext,
   getPatternflyColor,
-  ICatalogBreadcrumb,
   ICatalogCard,
   ItemView,
-  PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
@@ -17,7 +15,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmButton, AcmPage, Provider } from '../../../../../ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { HypershiftDiagram } from './HypershiftDiagram'
 
@@ -94,10 +92,10 @@ export function CreateAWSControlPlane() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = useMemo(() => {
-    const newBreadcrumbs: ICatalogBreadcrumb[] = [
-      { label: t('Clusters'), to: NavigationPath.clusters },
-      { label: t('Infrastructure'), to: NavigationPath.createCluster },
-      { label: t('Control plane type - {{hcType}}', { hcType: 'AWS' }) },
+    const newBreadcrumbs = [
+      { text: t('Clusters'), to: NavigationPath.clusters },
+      { text: t('Infrastructure'), to: NavigationPath.createCluster },
+      { text: t('Control plane type - {{hcType}}', { hcType: 'AWS' }) },
     ]
     return newBreadcrumbs
   }, [t])
@@ -107,10 +105,10 @@ export function CreateAWSControlPlane() {
   return (
     <AcmPage
       header={
-        <PageHeader
+        <AcmPageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'AWS' })}
           description={t('Choose a control plane type for your cluster.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
     >
@@ -129,7 +127,7 @@ export function CreateAWSControlPlane() {
               toggleContent={
                 <>
                   <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
-                    Compare control plane types{' '}
+                    {t('Compare control plane types')}
                   </span>
                   <AcmButton
                     variant="link"

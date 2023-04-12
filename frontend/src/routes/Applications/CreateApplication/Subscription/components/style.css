@@ -1,33 +1,33 @@
 .shared-resource-warning {
-    display: inline-flex;
-    color: #152935;
-    line-height: 2rem;
+  display: inline-flex;
+  color: #152935;
+  line-height: 2rem;
 }
 
 .shared-resource-warning svg {
-    fill: #e6ae3c;
-    width: 18px;
-    height: 18px;
+  fill: #e6ae3c;
+  width: 18px;
+  height: 18px;
 }
 
 .shared-resource-warning p {
-    font-size: 14px;
-    margin-top: 0.5rem;
+  font-size: 14px;
+  margin-top: 0.5rem;
 }
 
 .shared-resource-warning p:first-of-type {
-    margin-top: 0rem;
+  margin-top: 0rem;
 }
 
 .shared-resource-warning div:first-of-type {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 .shared-resource-warning .warning-font {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .shared-resource-warning .code-font {
-    font-size: 12px;
-    font-family: Menlo, Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  font-family: Menlo, Monaco, 'Courier New', monospace;
 }

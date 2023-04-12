@@ -90,7 +90,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
       handleChange(control)
     }
     // eslint-disable-next-line
-    }, [])
+  }, [])
 
   React.useEffect(() => {
     const clusterVersion = getClusterImageVersion(clusterImageSets, releaseImage)

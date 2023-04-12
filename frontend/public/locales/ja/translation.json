@@ -2568,6 +2568,8 @@
   "template.preScale.label": "Ansible テンプレートの事前スケーリング",
   "template.preUpgrade.label": "Ansible テンプレートの事前アップグレード",
   "template.templates.title": "自動化テンプレート",
+  "template.timeout": "タイムアウト",
+  "template.timeout.help": "タイムアウト (分単位)デフォルトは {{timeout}} 分です。",
   "template.title": "自動化",
   "template.workflow.modal.name.label": "ワークフロージョブテンプレート名",
   "template.workflow.modal.name.placeholder": "ワークフロージョブテンプレート名を検索または選択する",

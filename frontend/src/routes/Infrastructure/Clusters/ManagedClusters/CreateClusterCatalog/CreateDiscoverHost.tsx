@@ -1,16 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  CatalogCardItemType,
-  ItemView,
-  ICatalogCard,
-  PageHeader,
-  DataViewStringContext,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, ItemView, ICatalogCard, DataViewStringContext } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmPage } from '../../../../../ui-components'
+import { AcmPage, AcmPageHeader } from '../../../../../ui-components'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 
 export function CreateDiscoverHost() {
@@ -50,13 +44,13 @@ export function CreateDiscoverHost() {
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
   const breadcrumbs = [
-    { label: t('Clusters'), to: NavigationPath.clusters },
-    { label: t('Infrastructure'), to: NavigationPath.createCluster },
+    { text: t('Clusters'), to: NavigationPath.clusters },
+    { text: t('Infrastructure'), to: NavigationPath.createCluster },
     {
-      label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+      text: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
       to: NavigationPath.createBMControlPlane,
     },
-    { label: t('Hosts') },
+    { text: t('Hosts') },
   ]
 
   const dataViewStrings = useDataViewStrings()
@@ -64,10 +58,10 @@ export function CreateDiscoverHost() {
   return (
     <AcmPage
       header={
-        <PageHeader
+        <AcmPageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
-          breadcrumbs={breadcrumbs}
+          breadcrumb={breadcrumbs}
         />
       }
     >

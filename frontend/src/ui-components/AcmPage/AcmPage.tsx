@@ -102,7 +102,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                                 }
                               >
                                 <Button
-                                  variant="link"
+                                  variant="plain"
                                   style={{
                                     padding: 0,
                                     marginLeft: '8px',

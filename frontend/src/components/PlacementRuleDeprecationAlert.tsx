@@ -2,9 +2,9 @@
 
 import { Alert } from '@patternfly/react-core'
 import React from 'react'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 
-const DeprecationAlert = () => {
+const PlacementRuleDeprecationAlert = () => {
   const { t } = useTranslation()
   return (
     <React.Fragment>
@@ -15,4 +15,4 @@ const DeprecationAlert = () => {
   )
 }
 
-export default DeprecationAlert
+export default PlacementRuleDeprecationAlert

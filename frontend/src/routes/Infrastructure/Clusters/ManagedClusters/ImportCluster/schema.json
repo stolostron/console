@@ -1,72 +1,72 @@
 [
-    {
-        "type": "ManagedCluster",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "ManagedCluster" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "labels": {
-                            "type": "object",
-                            "properties": {
-                                "cloud": { "type": "string" },
-                                "vendor": { "type": "string" },
-                                "name": { "type": "string" }
-                            },
-                            "required": ["name", "cloud", "vendor"]
-                        }
-                    },
-                    "required": ["name", "labels"]
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "hubAcceptsClient": { "type": "boolean" }
-                    },
-                    "required": ["hubAcceptsClient"]
-                }
-            },
-            "required": ["apiVersion", "metadata", "spec"]
+  {
+    "type": "ManagedCluster",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "ManagedCluster" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "labels": {
+              "type": "object",
+              "properties": {
+                "cloud": { "type": "string" },
+                "vendor": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": ["name", "cloud", "vendor"]
+            }
+          },
+          "required": ["name", "labels"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "hubAcceptsClient": { "type": "boolean" }
+          },
+          "required": ["hubAcceptsClient"]
         }
-    },
-    {
-        "type": "Secret",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "type": "string", "const": "Secret" },
-                "type": { "type": "string", "enum": ["Opaque"] },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "validateName": true },
-                        "namespace": { "validateName": true }
-                    },
-                    "required": ["name", "namespace"]
-                },
-                "stringData": {
-                    "type": "object",
-                    "properties": {
-                        "autoImportRetry": { "type": "string" },
-                        "host": { "type": "string" },
-                        "kubeconfig": { "type": "string" },
-                        "server": { "type": "string" },
-                        "token": { "type": "string" }
-                    },
-                    "oneOf": [
-                        { "required": ["host", "token"] },
-                        { "required": ["autoImportRetry", "token", "server"] },
-                        { "required": ["autoImportRetry", "kubeconfig"] }
-                    ]
-                }
-            },
-            "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
-        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
     }
+  },
+  {
+    "type": "Secret",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Secret" },
+        "type": { "type": "string", "enum": ["Opaque"] },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "stringData": {
+          "type": "object",
+          "properties": {
+            "autoImportRetry": { "type": "string" },
+            "host": { "type": "string" },
+            "kubeconfig": { "type": "string" },
+            "server": { "type": "string" },
+            "token": { "type": "string" }
+          },
+          "oneOf": [
+            { "required": ["host", "token"] },
+            { "required": ["autoImportRetry", "token", "server"] },
+            { "required": ["autoImportRetry", "kubeconfig"] }
+          ]
+        }
+      },
+      "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
+    }
+  }
 ]

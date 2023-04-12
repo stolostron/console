@@ -14,6 +14,7 @@ export const ArgoApplicationDefinition: IResourceDefinition = {
 }
 
 export interface ArgoApplication extends IResource {
+  cluster?: string
   apiVersion: ArgoApplicationApiVersionType
   kind: ArgoApplicationKindType
   metadata: Metadata

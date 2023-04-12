@@ -1,18 +1,18 @@
 .temptifly .pf-c-number-input,
 .creation-view .pf-c-number-input {
-    width: 180px;
+  width: 180px;
 }
 .temptifly .pf-c-number-input .pf-c-form-control,
 .creation-view .pf-c-number-input .pf-c-form-control {
-    text-align: right;
+  text-align: right;
 }
 .temptifly input[type='number']::-webkit-inner-spin-button,
 .creation-view input[type='number']::-webkit-inner-spin-button,
 .temptifly input[type='number']::-webkit-outer-spin-button,
 .creation-view input[type='number']::-webkit-outer-spin-button {
-    text-align: right;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    margin: 0;
+  text-align: right;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
 }

@@ -3,7 +3,14 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
+import {
+  AcmDropdown,
+  AcmEmptyState,
+  AcmTable,
+  compareStrings,
+  IAcmRowAction,
+  IAcmTableColumn,
+} from '../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
@@ -54,14 +61,16 @@ import { isLocalSubscription } from './helpers/subscriptions'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { PluginContext } from '../../lib/PluginContext'
 import { get } from 'lodash'
+import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
+import { getResourceParams } from '../Home/Search/Details/DetailsPage'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 // support github annotations
 const githubBranchAnnotationStr = 'apps.open-cluster-management.io/github-branch'
 const githubPathAnnotationStr = 'apps.open-cluster-management.io/github-path'
-const localClusterStr = 'local-cluster'
-const partOfAnnotationStr = 'app.kubernetes.io/part-of'
+export const localClusterStr = 'local-cluster'
+export const partOfAnnotationStr = 'app.kubernetes.io/part-of'
 const appAnnotationStr = 'app'
 
 const fluxAnnotations = {
@@ -129,7 +138,7 @@ export function getAppSetApps(argoApps: IResource[], appSetName: string) {
   return appSetApps
 }
 
-function getAppNamespace(resource: IResource) {
+export function getAppNamespace(resource: IResource) {
   let castType
   if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
     castType = resource as ArgoApplication
@@ -206,6 +215,7 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 
 export default function ApplicationsOverview() {
   const { t } = useTranslation()
+  const { cluster } = getResourceParams()
 
   const { dataContext } = useContext(PluginContext)
   const { recoil, atoms } = useContext(dataContext)
@@ -327,6 +337,7 @@ export default function ApplicationsOverview() {
       const transformedObject = {
         transformed: {
           clusterCount: clusterTransformData,
+          clusterList: clusterList,
           resourceText: resourceText,
           createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
           timeWindow: timeWindow,
@@ -415,63 +426,12 @@ export default function ApplicationsOverview() {
   }, [discoveredApplications, generateTransformData])
 
   const ocpAppResourceTableItems = useMemo(() => {
-    const openShiftAppResourceMaps: Record<string, any> = {}
+    const openShiftAppResourceMaps = GetOpenShiftAppResourceMaps(
+      discoveredOCPAppResources,
+      helmReleases,
+      argoApplicationsHashSet
+    )
     const transformedData: any[] = []
-    for (let i = 0; i < discoveredOCPAppResources.length; i++) {
-      let argoInstanceLabelValue
-      if ((discoveredOCPAppResources[i] as any)._hostingSubscription) {
-        // don't list subscription apps as ocp
-        continue
-      }
-
-      let itemLabel = ''
-      let isManagedByHelm = false
-      const labels: [] =
-        (discoveredOCPAppResources[i] as any).label &&
-        (discoveredOCPAppResources[i] as any).label
-          .replace(/\s/g, '')
-          .split(';')
-          .map((label: string) => {
-            const [annotation, value] = label.split('=')
-            return { annotation, value } as { annotation: string; value: string }
-          })
-      labels &&
-        labels.forEach(({ annotation, value }) => {
-          if (annotation === 'app') {
-            itemLabel = value
-          } else if (annotation === partOfAnnotationStr) {
-            if (!itemLabel) {
-              itemLabel = value
-            }
-          }
-          if (annotation === 'app.kubernetes.io/instance') {
-            argoInstanceLabelValue = value
-          }
-          if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
-            isManagedByHelm = true
-          }
-        })
-      if (itemLabel && isManagedByHelm) {
-        const helmRelease = helmReleases.find(
-          (hr) => hr.metadata.name === itemLabel && hr.metadata.namespace === discoveredOCPAppResources[i].namespace
-        )
-        if (helmRelease && helmRelease.metadata.annotations?.[hostingSubAnnotationStr]) {
-          // don't list helm subscription apps as ocp
-          continue
-        }
-      }
-      if (itemLabel) {
-        const key = `${itemLabel}-${(discoveredOCPAppResources[i] as any).namespace}-${
-          (discoveredOCPAppResources[i] as any).cluster
-        }`
-        const argoKey = `${argoInstanceLabelValue}-${(discoveredOCPAppResources[i] as any).namespace}-${
-          (discoveredOCPAppResources[i] as any).cluster
-        }`
-        if (!argoApplicationsHashSet.has(argoKey)) {
-          openShiftAppResourceMaps[key] = discoveredOCPAppResources[i]
-        }
-      }
-    }
 
     Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
       let labelIdx
@@ -760,8 +720,24 @@ export default function ApplicationsOverview() {
           })
         },
       },
+      {
+        id: 'cluster',
+        label: t('Cluster'),
+        options: Object.values(managedClusters)
+          .map((cluster) => ({
+            label: cluster.name,
+            value: cluster.name,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          const clusterList = get(item, 'transformed.clusterList')
+          return selectedValues.some((value) => {
+            return clusterList.includes(value)
+          })
+        },
+      },
     ],
-    [t]
+    [t, managedClusters]
   )
 
   const history = useHistory()
@@ -1035,6 +1011,7 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
+        initialFilters={cluster ? { ['cluster']: [cluster] } : undefined}
         customTableAction={appCreationButton}
         emptyState={
           <AcmEmptyState

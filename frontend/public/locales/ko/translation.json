@@ -2568,6 +2568,8 @@
   "template.preScale.label": "Ansible 템플릿 사전 스케일",
   "template.preUpgrade.label": "Ansible 템플릿 사전 업그레이드",
   "template.templates.title": "자동화 템플릿",
+  "template.timeout": "시간 제한",
+  "template.timeout.help": "시간 제한 (분)입니다. 기본값은 {{timeout}} 분입니다.",
   "template.title": "자동화",
   "template.workflow.modal.name.label": "워크플로 작업 템플릿 이름",
   "template.workflow.modal.name.placeholder": "워크플로 작업 템플릿 이름을 검색하거나 선택합니다.",

@@ -1,61 +1,61 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 .label-with-popover-container {
-    display: flex;
+  display: flex;
 }
 .label-with-popover {
-    display: inline-block;
-    margin-right: 8px;
+  display: inline-block;
+  margin-right: 8px;
 }
 .label-with-popover.pf-c-popover {
-    --pf-c-popover__content--Padding: 0px;
-    --pf-c-popover__content--PaddingTop: var(--pf-c-popover__content--Padding);
-    --pf-c-popover__content--PaddingLeft: var(--pf-c-popover__content--Padding);
-    --pf-c-popover__content--PaddingBottom: var(--pf-c-popover__content--Padding);
-    --pf-c-popover__content--PaddingRight: var(--pf-c-popover__content--Padding);
-    --pf-c-popover--c-button--sibling--PaddingRight: var(--pf-c-popover__content--Padding);
-    --pf-c-popover--c-button--Right: var(--pf-c-popover__content--Padding);
+  --pf-c-popover__content--Padding: 0px;
+  --pf-c-popover__content--PaddingTop: var(--pf-c-popover__content--Padding);
+  --pf-c-popover__content--PaddingLeft: var(--pf-c-popover__content--Padding);
+  --pf-c-popover__content--PaddingBottom: var(--pf-c-popover__content--Padding);
+  --pf-c-popover__content--PaddingRight: var(--pf-c-popover__content--Padding);
+  --pf-c-popover--c-button--sibling--PaddingRight: var(--pf-c-popover__content--Padding);
+  --pf-c-popover--c-button--Right: var(--pf-c-popover__content--Padding);
 }
 .label-with-popover.pf-c-popover .pf-c-popover__content .pf-c-button {
-    --pf-c-button--PaddingTop: 1rem;
+  --pf-c-button--PaddingTop: 1rem;
 }
 .label-with-popover.pf-c-popover .pf-c-popover__content h6 {
-    padding: 1rem 1rem 0 1rem;
+  padding: 1rem 1rem 0 1rem;
 }
 .channel-labels {
-    --gutter: 0.5rem;
-    --margin: 1rem;
+  --gutter: 0.5rem;
+  --margin: 1rem;
 }
 .channel-labels .pf-l-split {
-    --pf-l-split--m-gutter--MarginRight: var(--gutter);
+  --pf-l-split--m-gutter--MarginRight: var(--gutter);
 }
 .channel-labels .pf-l-stack {
-    --pf-l-stack--m-gutter--MarginBottom: var(--gutter);
+  --pf-l-stack--m-gutter--MarginBottom: var(--gutter);
 }
 .channel-labels .channel-label {
-    --pf-l-split--m-gutter--MarginRight: 8px;
+  --pf-l-split--m-gutter--MarginRight: 8px;
 }
 .channel-labels .channel-entry {
-    margin: var(--margin);
-    padding-right: calc(3rem);
+  margin: var(--margin);
+  padding-right: calc(3rem);
 }
 .channel-labels .channel-entry-link {
-    display: block;
-    color: #06c;
-    fill: #06c;
-    word-break: break-all;
+  display: block;
+  color: #06c;
+  fill: #06c;
+  word-break: break-all;
 }
 .channel-labels .channel-entry-link svg {
-    margin-left: 8px;
+  margin-left: 8px;
 }
 .channel-labels .channel-entry-link + .channel-entry-attribute {
-    /* extra padding for first attribute after link */
-    padding-top: calc(2 * var(--gutter));
+  /* extra padding for first attribute after link */
+  padding-top: calc(2 * var(--gutter));
 }
 .channel-labels .channel-entry-attribute-name {
-    font-weight: 600;
+  font-weight: 600;
 }
 .channel-labels-popover-content {
-    max-height: 360px;
-    overflow-y: auto;
+  max-height: 360px;
+  overflow-y: auto;
 }

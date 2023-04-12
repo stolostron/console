@@ -216,8 +216,9 @@ export default function DetailsOverviewPage(props: {
   resource: IResource
   loading: boolean
   error: string
+  name: string
 }) {
-  const { cluster, resource, loading, error } = props
+  const { cluster, resource, loading, error, name } = props
   const { t } = useTranslation()
   const history = useHistory()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)

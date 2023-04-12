@@ -26,25 +26,21 @@ Array [
   Object {
     "disabled": true,
     "id": "id-suggestions-label",
-    "key": "key-suggestions-label",
     "kind": "filter",
     "name": "Filters",
   },
   Object {
     "id": "id-kind",
-    "key": "key-kind",
     "kind": "filter",
     "name": "kind",
   },
   Object {
     "id": "id-cluster",
-    "key": "key-cluster",
     "kind": "filter",
     "name": "cluster",
   },
   Object {
     "id": "id-deployment",
-    "key": "key-deployment",
     "kind": "filter",
     "name": "deployment",
   },
@@ -56,25 +52,21 @@ Array [
   Object {
     "disabled": true,
     "id": "id-suggestions-label",
-    "key": "key-suggestions-label",
     "kind": "value",
     "name": "name values",
   },
   Object {
     "id": "id-name1",
-    "key": "key-name1",
     "kind": "value",
     "name": "name1",
   },
   Object {
     "id": "id-name2",
-    "key": "key-name2",
     "kind": "value",
     "name": "name2",
   },
   Object {
     "id": "id-name3",
-    "key": "key-name3",
     "kind": "value",
     "name": "name3",
   },
@@ -86,25 +78,21 @@ Array [
   Object {
     "disabled": true,
     "id": "id-suggestions-label",
-    "key": "key-suggestions-label",
     "kind": "value",
     "name": "namespace values",
   },
   Object {
     "id": "id-namespace1",
-    "key": "key-namespace1",
     "kind": "value",
     "name": "namespace1",
   },
   Object {
     "id": "id-namespace2",
-    "key": "key-namespace2",
     "kind": "value",
     "name": "namespace2",
   },
   Object {
     "id": "id-namespace3",
-    "key": "key-namespace3",
     "kind": "value",
     "name": "namespace3",
   },
@@ -120,46 +108,39 @@ Array [
     "name": "Operators",
   },
   Object {
-    "id": "id-=",
-    "key": "key-=",
-    "kind": "value",
-    "name": "=",
-  },
-  Object {
-    "id": "id-<",
-    "key": "key-<",
-    "kind": "value",
-    "name": "<",
-  },
-  Object {
-    "id": "id->",
-    "key": "key->",
-    "kind": "value",
-    "name": ">",
-  },
-  Object {
     "id": "id-<=",
-    "key": "key-<=",
     "kind": "value",
     "name": "<=",
   },
   Object {
     "id": "id->=",
-    "key": "key->=",
     "kind": "value",
     "name": ">=",
   },
   Object {
     "id": "id-!=",
-    "key": "key-!=",
     "kind": "value",
     "name": "!=",
   },
   Object {
     "id": "id-!",
-    "key": "key-!",
     "kind": "value",
     "name": "!",
+  },
+  Object {
+    "id": "id-=",
+    "kind": "value",
+    "name": "=",
+  },
+  Object {
+    "id": "id-<",
+    "kind": "value",
+    "name": "<",
+  },
+  Object {
+    "id": "id->",
+    "kind": "value",
+    "name": ">",
   },
 ]
 `;
@@ -174,31 +155,26 @@ Array [
   },
   Object {
     "id": "id-date-hour",
-    "key": "key-date-hour",
     "kind": "value",
     "name": "hour",
   },
   Object {
     "id": "id-date-day",
-    "key": "key-date-day",
     "kind": "value",
     "name": "day",
   },
   Object {
     "id": "id-date-week",
-    "key": "key-date-week",
     "kind": "value",
     "name": "week",
   },
   Object {
     "id": "id-date-month",
-    "key": "key-date-month",
     "kind": "value",
     "name": "month",
   },
   Object {
     "id": "id-date-year",
-    "key": "key-date-year",
     "kind": "value",
     "name": "year",
   },
@@ -210,14 +186,12 @@ Array [
   Object {
     "disabled": true,
     "id": "id-suggestions-label",
-    "key": "key-suggestions-label",
     "kind": "value",
-    "name": "cpu= values",
+    "name": "cpu values",
   },
   Object {
     "disabled": true,
     "id": "id-values-range",
-    "key": "key-values-range",
     "kind": "value",
     "name": "Min: 1 - Max: 1",
   },
@@ -229,14 +203,12 @@ Array [
   Object {
     "disabled": true,
     "id": "id-suggestions-label",
-    "key": "key-suggestions-label",
     "kind": "value",
-    "name": "cpu= values",
+    "name": "cpu values",
   },
   Object {
     "disabled": true,
     "id": "id-values-range",
-    "key": "key-values-range",
     "kind": "value",
     "name": "Min: 1 - Max: 10",
   },

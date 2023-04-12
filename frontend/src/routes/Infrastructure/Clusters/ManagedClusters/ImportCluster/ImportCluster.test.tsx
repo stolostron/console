@@ -51,7 +51,8 @@ import {
 } from '../../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
-  clickBySelector,
+  clickByPlaceholderText,
+  clickByRole,
   clickByTestId,
   clickByText,
   typeByTestId,
@@ -427,7 +428,7 @@ describe('ImportCluster', () => {
     const kacNock = nockCreate(mockKac, mockKacResponse)
     const importSecretNock = nockGet(mockSecretResponse)
 
-    const { container } = render(<Component />)
+    render(<Component />)
 
     await typeByTestId('clusterName', 'foobar')
 
@@ -439,9 +440,9 @@ describe('ImportCluster', () => {
     // Advance to Automation step; choose automation template then clear
     await clickByText('Next')
     await waitForText('Install the operator')
-    await clickByText('Select an automation template')
+    await clickByPlaceholderText('Select an automation template')
     await clickByText(mockClusterCurators[0].metadata.name!)
-    await clickBySelector(container, '#templateName-label button[aria-label="Clear all"]')
+    await clickByRole('button', { name: /clear selected item/i })
 
     // Advance to Review step and submit the form
     await clickByText('Next')
@@ -481,7 +482,7 @@ describe('ImportCluster', () => {
     await clickByText('Next')
     await waitForText('Automation template')
     await waitForNotText('Install the operator')
-    await clickByText('Select an automation template')
+    await clickByPlaceholderText('Select an automation template')
     await clickByText(mockClusterCurators[0].metadata.name!)
 
     // check automation summary

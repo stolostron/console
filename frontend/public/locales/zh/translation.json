@@ -2568,6 +2568,8 @@
   "template.preScale.label": "Prescale Ansible 模板",
   "template.preUpgrade.label": "Preupgrade Ansible 模板",
   "template.templates.title": "自动化模板",
+  "template.timeout": "超时",
+  "template.timeout.help": "超时时间（分钟）。默认为 {{timeout}} 分钟。",
   "template.title": "自动化",
   "template.workflow.modal.name.label": "工作流作业模板名称",
   "template.workflow.modal.name.placeholder": "搜索或选择工作流作业模板名称",

@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Fragment } from 'react'
-import { AcmLabels, AcmModal } from '../../../../../ui-components'
 import { makeStyles } from '@mui/styles'
+import { Chip, ChipGroup } from '@patternfly/react-core'
+import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { AcmModal } from '../../../../../ui-components'
 
 const useStyles = makeStyles({
   root: {
@@ -60,11 +61,15 @@ export const SearchInfoModal = (props: any) => {
         <div>
           <p>{t('To search for a keyword, type the word in the search box.')}</p>
           <div className={classes.exampleRow}>
-            <AcmLabels labels={[t('Type')]} />
+            <ChipGroup>
+              <Chip isReadOnly>{t('Type')}</Chip>
+            </ChipGroup>
             <p>OpenShift</p>
           </div>
           <div className={classes.exampleRow}>
-            <AcmLabels labels={[t('Show')]} />
+            <ChipGroup>
+              <Chip isReadOnly>{t('Show')}</Chip>
+            </ChipGroup>
             <p>{t('A list of resources that contain the keyword "OpenShift" in any field.')}</p>
           </div>
         </div>
@@ -76,11 +81,15 @@ export const SearchInfoModal = (props: any) => {
             )}
           </p>
           <div className={classes.exampleRow}>
-            <AcmLabels labels={[t('Type')]} />
-            <p>status: failed,pending</p>
+            <ChipGroup>
+              <Chip isReadOnly>{t('Type')}</Chip>
+            </ChipGroup>
+            <p>status:failed,pending</p>
           </div>
           <div className={classes.exampleRow}>
-            <AcmLabels labels={[t('Show')]} />
+            <ChipGroup>
+              <Chip isReadOnly>{t('Show')}</Chip>
+            </ChipGroup>
             <p>{t('Resources with "failed" or "pending" status.')}</p>
           </div>
         </div>
@@ -92,6 +101,11 @@ export const SearchInfoModal = (props: any) => {
             <li>
               {t(
                 'You can apply multiple values to the same property filter. First, type or select the filter name, then select the value. Both values combine into a single filter.'
+              )}
+            </li>
+            <li>
+              {t(
+                'You can include an operator (<=, >=, !=, !, =, <, >) before a value selection to enhance your search. The search: name:!resourceName, would return all resources not named resourceName.'
               )}
             </li>
           </ul>

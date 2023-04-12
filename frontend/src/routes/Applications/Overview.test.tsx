@@ -23,8 +23,8 @@ import { PluginContext } from '../../lib/PluginContext'
 import { NavigationPath } from '../../NavigationPath'
 import ApplicationsPage from './ApplicationsPage'
 import {
-  mockSearchQuery,
-  mockSearchResponse,
+  mockSearchQueryArgoApps,
+  mockSearchResponseArgoApps,
   mockSearchQueryOCPApplications,
   mockSearchResponseOCPApplications,
   mockApplications,
@@ -50,7 +50,7 @@ describe('Applications Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockSearch(mockSearchQuery, mockSearchResponse)
+    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
     render(
       <RecoilRoot
@@ -75,7 +75,7 @@ describe('Applications Page', () => {
       </RecoilRoot>
     )
     // wait for page to load
-    await waitForText(mockApplication0.metadata.name!)
+    await waitForText('feng-remote-argo8')
   })
 
   test('should display info', async () => {

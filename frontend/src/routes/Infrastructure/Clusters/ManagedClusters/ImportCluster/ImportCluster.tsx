@@ -4,6 +4,7 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   SelectOption,
+  SelectVariant,
   Split,
   SplitItem,
   Switch,
@@ -787,52 +788,51 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
       })
 
       // Add new YAML for ClusterCurator and secrets
-      if (template) {
-        // TODO: include namespace in key
-        const curatorTemplate = curatorTemplates.find((cct) => cct.metadata.name === template)
-        if (curatorTemplate) {
-          setSelectedTemplateName(curatorTemplate)
-          const curator = {
-            ...ClusterCuratorDefinition,
-            metadata: {
-              name: clusterName,
-              namespace: clusterName,
-            },
-            spec: cloneDeep(curatorTemplate.spec),
-          }
-          resources.push(curator)
-          supportedCurations.forEach((curationType) => {
-            const curation = curator.spec?.[curationType]
-            if (curation?.towerAuthSecret) {
-              const matchingSecret = ansibleCredentials.find(
-                (s) =>
-                  s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
-                  s.metadata.namespace === curatorTemplate.metadata.namespace
-              )
-              if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
-                const secretName = `toweraccess-${curationType}`
-                const copiedSecret = {
-                  ...SecretDefinition,
-                  type: 'Opaque',
-                  metadata: {
-                    name: secretName,
-                    namespace: clusterName,
-                    labels: {
-                      'cluster.open-cluster-management.io/type': 'ans',
-                      'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
-                      'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
-                      'cluster.open-cluster-management.io/backup': 'cluster',
-                    },
-                  },
-                  stringData: cloneDeep(matchingSecret.stringData),
-                }
-                curation.towerAuthSecret = secretName
-                resources.push(copiedSecret)
-              }
-            }
-          })
+      const curatorTemplate = template ? curatorTemplates.find((cct) => cct.metadata.name === template) : undefined
+
+      if (curatorTemplate) {
+        setSelectedTemplateName(curatorTemplate)
+        const curator = {
+          ...ClusterCuratorDefinition,
+          metadata: {
+            name: clusterName,
+            namespace: clusterName,
+          },
+          spec: cloneDeep(curatorTemplate.spec),
         }
+        resources.push(curator)
+        supportedCurations.forEach((curationType) => {
+          const curation = curator.spec?.[curationType]
+          if (curation?.towerAuthSecret) {
+            const matchingSecret = ansibleCredentials.find(
+              (s) =>
+                s.metadata.name === curatorTemplate.spec?.[curationType]?.towerAuthSecret &&
+                s.metadata.namespace === curatorTemplate.metadata.namespace
+            )
+            if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+              const secretName = `toweraccess-${curationType}`
+              const copiedSecret = {
+                ...SecretDefinition,
+                type: 'Opaque',
+                metadata: {
+                  name: secretName,
+                  namespace: clusterName,
+                  labels: {
+                    'cluster.open-cluster-management.io/type': 'ans',
+                    'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
+                    'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
+                    'cluster.open-cluster-management.io/backup': 'cluster',
+                  },
+                },
+                stringData: cloneDeep(matchingSecret.stringData),
+              }
+              curation.towerAuthSecret = secretName
+              resources.push(copiedSecret)
+            }
+          }
+        })
       }
+      setSelectedTemplateName(curatorTemplate)
       dispatch({ type: 'setTemplateName', templateName: template })
       update()
     },
@@ -853,6 +853,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
         label={controlLabel}
         placeholder={t('template.clusterCreate.select.placeholder')}
         labelHelp={t('template.clusterImport.tooltip')}
+        variant={SelectVariant.typeahead}
         helperText={
           <Split>
             <SplitItem isFilled />

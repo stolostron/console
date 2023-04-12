@@ -16,7 +16,7 @@ import {
   policiesState,
   policyreportState,
 } from '../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
   ClusterManagementAddOn,
@@ -29,6 +29,12 @@ import {
   PolicyReport,
   SelfSubjectAccessReview,
 } from '../../../resources'
+import {
+  mockSearchQueryArgoApps,
+  mockSearchQueryOCPApplications,
+  mockSearchResponseArgoApps,
+  mockSearchResponseOCPApplications,
+} from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 
@@ -966,6 +972,8 @@ it('should render overview page in empty state', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
+  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
 
   render(
     <RecoilRoot>
@@ -985,6 +993,8 @@ it('should render overview page in empty state', async () => {
 })
 
 it('should render overview page in error state', async () => {
+  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const mocks = [
@@ -1019,6 +1029,8 @@ it('should render overview page in error state', async () => {
 })
 
 it('should render overview page with expected data', async () => {
+  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const mocks = [
@@ -1144,7 +1156,7 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('0 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('0Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('1Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
