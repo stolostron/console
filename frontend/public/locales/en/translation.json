@@ -27,6 +27,8 @@
   "{{remaining}} more": "{{remaining}} more",
   "{{remoteCount}} Remote": "{{remoteCount}} Remote",
   "{{remoteCount}} Remote, 1 Local": "{{remoteCount}} Remote, 1 Local",
+  "{{testInventory}} is not an existing ansible inventory": "{{testInventory}} is not an existing ansible inventory",
+  "{{testSecret}} is not an existing ansible credential": "{{testSecret}} is not an existing ansible credential",
   "< Back to all {{resourceType}} resources": "< Back to all {{resourceType}} resources",
   "<0>Run this command</0> to import your cluster": "<0>Run this command</0> to import your cluster",
   "<0>Run this command</0> to log-in to the existing cluster in your terminal": "<0>Run this command</0> to log-in to the existing cluster in your terminal",
