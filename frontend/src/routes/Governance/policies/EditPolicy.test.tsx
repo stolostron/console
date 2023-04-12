@@ -62,9 +62,7 @@ describe('Edit Policy Page', () => {
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 3 -- placement
-    screen.getByText(
-      /placementrule is deprecated and will not receive updates or fixes\. best practice: use placement\./i
-    )
+    screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 4 -- Policy annotations
