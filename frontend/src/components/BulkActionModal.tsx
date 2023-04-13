@@ -93,7 +93,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     processing,
     title,
     ...tableProps
-  } = props as BulkActionModalProps<T>
+  } = props
 
   function getItemError(item: T) {
     if (errors) {
