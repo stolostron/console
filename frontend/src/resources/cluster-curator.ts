@@ -14,6 +14,18 @@ export type ClusterCuratorKindType = 'ClusterCurator'
 
 export type Curation = 'install' | 'upgrade' | 'scale' | 'destroy'
 
+export type CuratorAction = {
+  towerAuthSecret?: string
+  prehook?: ClusterCuratorAnsibleJob[]
+  posthook?: ClusterCuratorAnsibleJob[]
+}
+
+type CuratorUpgradeAction = CuratorAction & {
+  desiredUpdate?: string
+  channel?: string
+  upstream?: string
+}
+
 export const ClusterCuratorDefinition: IResourceDefinition = {
   apiVersion: ClusterCuratorApiVersion,
   kind: ClusterCuratorKind,
@@ -25,30 +37,11 @@ export interface ClusterCurator {
   metadata: Metadata
   spec?: {
     desiredCuration?: Curation
-    install?: {
-      towerAuthSecret?: string
-      prehook?: ClusterCuratorAnsibleJob[]
-      posthook?: ClusterCuratorAnsibleJob[]
-    }
-    upgrade?: {
-      desiredUpdate?: string
-      channel?: string
-      upstream?: string
-      towerAuthSecret?: string
-      prehook?: ClusterCuratorAnsibleJob[]
-      posthook?: ClusterCuratorAnsibleJob[]
-    }
+    install?: CuratorAction
+    upgrade?: CuratorUpgradeAction
     inventory?: string
-    scale?: {
-      towerAuthSecret?: string
-      prehook?: ClusterCuratorAnsibleJob[]
-      posthook?: ClusterCuratorAnsibleJob[]
-    }
-    destroy?: {
-      towerAuthSecret?: string
-      prehook?: ClusterCuratorAnsibleJob[]
-      posthook?: ClusterCuratorAnsibleJob[]
-    }
+    scale?: CuratorAction
+    destroy?: CuratorAction
   }
   status?: {
     conditions: V1CustomResourceDefinitionCondition[]
@@ -108,4 +101,8 @@ export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentia
   if (!copy.spec.destroy.towerAuthSecret) copy.spec.destroy.towerAuthSecret = ansibleCredentialName
 
   return replaceResource<ClusterCurator>(copy)
+}
+
+export function curatorActionHasJobs(curatorAction: CuratorAction) {
+  return !!(curatorAction.prehook?.length || curatorAction.posthook?.length)
 }

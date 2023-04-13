@@ -120,20 +120,19 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
           <Fragment>
             {description}
             {checkBox}
-            {(columns && !(hideTableAfterSubmit && progress != 0))
-              && (
-                  <AcmTablePaginationContextProvider localStorageKey="model">
-                    <AcmTable<T>
-                      gridBreakPoint={TableGridBreakpoint.none}
-                      tableActions={[]}
-                      rowActions={[]}
-                      perPageOptions={[]}
-                      autoHidePagination
-                      columns={columns}
-                      {...tableProps}
-                    />
-                  </AcmTablePaginationContextProvider>
-                )}
+            {columns && !(hideTableAfterSubmit && progress != 0) && (
+              <AcmTablePaginationContextProvider localStorageKey="model">
+                <AcmTable<T>
+                  gridBreakPoint={TableGridBreakpoint.none}
+                  tableActions={[]}
+                  rowActions={[]}
+                  perPageOptions={[]}
+                  autoHidePagination
+                  columns={columns}
+                  {...tableProps}
+                />
+              </AcmTablePaginationContextProvider>
+            )}
 
             <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
               {progress > 0 ? (

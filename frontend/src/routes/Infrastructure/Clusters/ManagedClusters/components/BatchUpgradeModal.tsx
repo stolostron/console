@@ -10,6 +10,7 @@ import {
   ClusterCurator,
   ClusterCuratorDefinition,
   createResource,
+  curatorActionHasJobs,
   IRequestResult,
   patchResource,
   ResourceError,
@@ -18,6 +19,9 @@ import {
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
+import { useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue } from 'recoil'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -65,6 +69,9 @@ export function BatchUpgradeModal(props: {
   const { t } = useTranslation()
   const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
   const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+
+  const { clusterCuratorsState } = useSharedAtoms()
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
 
   useEffect(() => {
     // set up latest if not selected
@@ -149,6 +156,31 @@ export function BatchUpgradeModal(props: {
           },
         },
       ]}
+      addSubRows={(item: Cluster) => {
+        const clusterCurator = item.isCurator
+          ? clusterCurators.find((cc) => cc.metadata?.namespace === item.namespace)
+          : undefined
+        debugger
+        const upgradeAction = clusterCurator?.spec?.upgrade
+        return upgradeAction && curatorActionHasJobs(upgradeAction)
+          ? [
+              {
+                noPadding: false,
+                cells: [
+                  {
+                    title: (
+                      <PrePostTemplatesList
+                        preLabel={t('template.preUpgrade.label')}
+                        postLabel={t('template.postUpgrade.label')}
+                        curatorAction={upgradeAction}
+                      />
+                    ),
+                  },
+                ],
+              },
+            ]
+          : []
+      }}
       keyFn={(cluster) => cluster.name as string}
       actionFn={(cluster) => {
         if (!cluster.name || !selectVersions[cluster.name]) {
