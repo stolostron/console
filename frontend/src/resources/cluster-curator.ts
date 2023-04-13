@@ -103,6 +103,6 @@ export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentia
   return replaceResource<ClusterCurator>(copy)
 }
 
-export function curatorActionHasJobs(curatorAction: CuratorAction) {
-  return !!(curatorAction.prehook?.length || curatorAction.posthook?.length)
+export function curatorActionHasJobs(curatorAction: CuratorAction | undefined) {
+  return !!(curatorAction?.prehook?.length || curatorAction?.posthook?.length)
 }

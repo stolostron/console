@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
+import { SelectOption, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -73,6 +73,31 @@ export function BatchUpgradeModal(props: {
   const { clusterCuratorsState } = useSharedAtoms()
   const clusterCurators = useRecoilValue(clusterCuratorsState)
 
+  const description = useMemo(() => {
+    const hasUpgradeActions = upgradeableClusters.some((cluster) => {
+      const curator = clusterCurators.find((cc) => cc.metadata?.namespace === cluster.namespace)
+      return curatorActionHasJobs(curator?.spec?.upgrade)
+    })
+    return (
+      <Stack hasGutter>
+        { hasUpgradeActions && (
+        <StackItem>
+        <AcmAlert
+              isInline
+              noClose
+              variant="info"
+              title={t('Automation templates are configured')}
+              message={t('One or more of the selected clusters have automations that will run before or after the upgrade. Expand the table rows to view the Ansible templates for each cluster.')}
+            />
+        </StackItem>
+        )}
+        <StackItem>
+          {t('bulk.message.upgrade')}
+        </StackItem>
+      </Stack>
+    )
+  }, [upgradeableClusters, clusterCurators])
+
   useEffect(() => {
     // set up latest if not selected
     const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
@@ -97,7 +122,7 @@ export function BatchUpgradeModal(props: {
         setSelectVersions({})
         props.close()
       }}
-      description={t('bulk.message.upgrade')}
+      description={description}
       columns={[
         {
           header: t('upgrade.table.name'),
