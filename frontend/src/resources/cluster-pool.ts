@@ -63,3 +63,7 @@ export interface ClusterPool extends IResource {
 }
 
 export const clusterPoolNamespaceLabels = Object.freeze({ 'open-cluster-management.io/managed-by': 'clusterpools' })
+
+export function isClusterPoolDeleting(clusterPool: ClusterPool) {
+  return !!clusterPool?.metadata?.deletionTimestamp
+}
