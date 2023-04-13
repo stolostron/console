@@ -540,8 +540,8 @@ async function getAnsibleInventories(
   result.data.results && ansibleInventories.push(...result.data.results)
 
   return {
-    results: ansibleInventories?.map((ansibleInventory: { name?: string; type?: string }) => {
-      return { name: ansibleInventory.name, type: ansibleInventory.type! }
+    results: ansibleInventories?.map((ansibleInventory: { name?: string; type?: string; description?: string }) => {
+      return { name: ansibleInventory.name, type: ansibleInventory.type!, description: ansibleInventory.description }
     }),
   }
 }

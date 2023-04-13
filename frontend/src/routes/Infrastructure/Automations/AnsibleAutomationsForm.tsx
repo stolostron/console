@@ -131,7 +131,9 @@ export function AnsibleAutomationsForm(props: {
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
   const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
-  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
+  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<{ name: string; description?: string }[]>(
+    []
+  )
 
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
   const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
@@ -177,7 +179,7 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
-      const inventoryList: string[] = []
+      const inventoryList: { name: string; description?: string }[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
       Promise.all([
@@ -201,7 +203,7 @@ export function AnsibleAutomationsForm(props: {
             if (response) {
               response.results.forEach((inventory) => {
                 if (inventory.name) {
-                  inventoryList.push(inventory.name)
+                  inventoryList.push({ name: inventory.name, description: inventory?.description })
                 }
               })
               setAnsibleTowerInventoryList(inventoryList)
@@ -309,7 +311,7 @@ export function AnsibleAutomationsForm(props: {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
-
+  console.log('checking inventory:', ansibleTowerInventoryList)
   const formData: FormData = {
     title: isEditing ? t('template.edit.title') : t('template.create.title'),
     titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
@@ -366,9 +368,10 @@ export function AnsibleAutomationsForm(props: {
             value: ansibleInventory,
             onChange: setAnsibleInventory,
             isRequired: false,
-            options: ansibleTowerInventoryList.map((name) => ({
+            options: ansibleTowerInventoryList.map(({ name, description }) => ({
               id: name as string,
               value: name as string,
+              description: description,
             })),
             isHidden: !ansibleSelection,
           },
