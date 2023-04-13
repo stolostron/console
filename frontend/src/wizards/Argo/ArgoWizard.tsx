@@ -248,7 +248,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         onClose={handleModalToggle}
         hasNoBodyWrapper
       >
-        <CreateArgoResources handleModalToggle={handleModalToggle} />
+        <CreateArgoResources handleModalToggle={handleModalToggle} clusterSets={props.clusterSets} />
       </Modal>
       <WizardPage
         id="application-set-wizard"

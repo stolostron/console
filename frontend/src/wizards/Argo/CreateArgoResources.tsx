@@ -1,26 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Select, Step, Sync, useData, useItem, WizItemSelector, WizTextInput } from '@patternfly-labs/react-form-wizard'
-import { useContext } from 'react'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { useContext, useState } from 'react'
+import { useRecoilState } from 'recoil'
+import { argoCDsState } from '../../atoms'
+import { AcmDataFormPage } from '../../components/AcmDataForm'
+import { FormData } from '../../components/AcmFormData'
 import { SyncEditor } from '../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../lib/acm-i18next'
 import {
-  createResources,
+  GitOpsCluster,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  IResource,
+  ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
+  Placement,
   PlacementApiVersionBeta,
   PlacementKind,
+  reconcileResources,
 } from '../../resources'
 import { AcmToastContext } from '../../ui-components'
-import { PlacementType } from '../common/resources/IPlacement'
-import { WizardPage } from '../WizardPage'
+import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
 
 export interface ICreateArgoResourcesModalProps {
   handleModalToggle: () => void
+  clusterSets: IResource[]
 }
 
 export function WizardSyncEditor() {
@@ -40,147 +46,138 @@ export function WizardSyncEditor() {
   )
 }
 
-function getWizardSyncEditor() {
-  return <WizardSyncEditor />
-}
-
 export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
   const { t } = useTranslation()
-  const { handleModalToggle } = props
+  const { handleModalToggle, clusterSets } = props
+
+  const [argoCDs] = useRecoilState(argoCDsState)
 
   const toast = useContext(AcmToastContext)
 
-  return (
-    <WizardPage
-      id="application-set-wizard"
-      title={t('Add Argo Server')}
-      description={t(
-        'Argo Server exposes an API and UI for workflows. You can run this in either "hosted" or "local" mode. '
-      )}
-      yamlEditor={getWizardSyncEditor}
-      defaultData={[
-        {
-          apiVersion: GitOpsClusterApiVersion,
-          kind: GitOpsClusterKind,
-          metadata: { name: '', namespace: '' },
-          spec: {
-            argoServer: {
-              argoNamespace: '',
-            },
-            placementRef: {
-              kind: PlacementKind,
-              apiVersion: PlacementApiVersionBeta,
-              name: '',
-            },
-          },
-        },
-        {
-          apiVersion: ManagedClusterSetBindingApiVersion,
-          kind: ManagedClusterSetBindingKind,
-          metadata: { name: '', namespace: '' },
-          spec: {
-            clusterSet: '',
-          },
-        },
-        {
-          ...PlacementType,
-          metadata: { name: '', namespace: '' },
-          spec: {
-            clusterSets: [],
-          },
-        },
-      ]}
-      onCancel={handleModalToggle}
-      onSubmit={(data) => {
-        const resources = data as IResource[]
-        return createResources(resources).then(() => {
-          const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
-          if (gitOpsCluster) {
-            toast.addAlert({
-              title: t('Argo Server created'),
-              message: t('{{name}} was successfully created.', { name: gitOpsCluster.metadata?.name }),
-              type: 'success',
-              autoClose: true,
-            })
-          }
-          handleModalToggle()
-        })
-      }}
-    >
-      <Step id="general" label={t('General')}>
-        {/* sync values to different fields */}
-        <Sync
-          kind={GitOpsClusterKind}
-          path="metadata.name"
-          targetKind={PlacementKind}
-          targetPath="metadata.name"
-          suffix="-placement"
-        />
-        <Sync
-          kind={GitOpsClusterKind}
-          path="metadata.name"
-          targetKind={GitOpsClusterKind}
-          targetPath="spec.placementRef.name"
-          suffix="-placement"
-        />
-        <Sync
-          kind={ManagedClusterSetBindingKind}
-          path="metadata.name"
-          targetKind={ManagedClusterSetBindingKind}
-          targetPath="spec.clusterSet"
-        />
-        <Sync
-          kind={ManagedClusterSetBindingKind}
-          path="metadata.name"
-          targetKind={PlacementKind}
-          targetPath="spec.clusterSets.0"
-        />
-        <Sync
-          kind={ManagedClusterSetBindingKind}
-          path="metadata.namespace"
-          targetKind={PlacementKind}
-          targetPath="metadata.namespace"
-        />
-        <Sync
-          kind={ManagedClusterSetBindingKind}
-          path="metadata.namespace"
-          targetKind={GitOpsClusterKind}
-          targetPath="metadata.namespace"
-        />
-        <Sync
-          kind={ManagedClusterSetBindingKind}
-          path="metadata.namespace"
-          targetKind={GitOpsClusterKind}
-          targetPath="spec.argoServer.argoNamespace"
-        />
-        <WizItemSelector selectKey="kind" selectValue={GitOpsClusterKind}>
-          <WizTextInput
-            path="metadata.name"
-            label={t('Name')}
-            placeholder={t('Enter the GitOpsCluster name')}
-            required
-            id="name"
-            // validation={validateAppSetName}
-          />
-        </WizItemSelector>
+  const [name, setName] = useState('')
+  const [namespace, setNamespace] = useState('')
+  const [clusterSet, setClusterSet] = useState('default')
 
-        <WizItemSelector selectKey="kind" selectValue="ManagedClusterSetBinding">
-          <Select
-            path="metadata.name"
-            label={t('ClusterSet')}
-            placeholder={t('Select the clusterSet')}
-            options={['default']}
-            required
-          />
-          <Select
-            path="metadata.namespace"
-            label={t('Namespace')}
-            placeholder={t('Select the namespace')}
-            options={['openshift-gitops']}
-            required
-          />
-        </WizItemSelector>
-      </Step>
-    </WizardPage>
-  )
+  const argoCDsList = argoCDs.map((argoCD) => {
+    const namespace = argoCD.metadata?.namespace!
+    return {
+      id: namespace,
+      value: namespace,
+    }
+  })
+
+  function stateToData() {
+    const gitOpsCluster: GitOpsCluster = {
+      apiVersion: GitOpsClusterApiVersion,
+      kind: GitOpsClusterKind,
+      metadata: { name, namespace },
+      spec: {
+        argoServer: {
+          argoNamespace: namespace,
+        },
+        placementRef: {
+          kind: PlacementKind,
+          apiVersion: PlacementApiVersionBeta,
+          name: `${name}-placement`,
+        },
+      },
+    }
+
+    const managedClusterSetBinding: ManagedClusterSetBinding = {
+      apiVersion: ManagedClusterSetBindingApiVersion,
+      kind: ManagedClusterSetBindingKind,
+      metadata: { name: clusterSet, namespace: namespace },
+      spec: {
+        clusterSet: clusterSet,
+      },
+    }
+
+    const placement: Placement = {
+      apiVersion: PlacementApiVersionBeta,
+      kind: PlacementKind,
+      metadata: { name: `${name}-placement`, namespace: namespace },
+      spec: {
+        clusterSets: [clusterSet],
+      },
+    }
+
+    return [gitOpsCluster, managedClusterSetBinding, placement]
+  }
+  const formData: FormData = {
+    title: t('Add Argo Server'),
+    description: t(
+      'Argo Server exposes an API and UI for workflows. You can run this in either "hosted" or "local" mode. '
+    ),
+    sections: [
+      {
+        type: 'Section',
+        title: '',
+        inputs: [
+          {
+            id: 'Text',
+            type: 'Text',
+            label: t('Name'),
+            placeholder: t('Enter the name'),
+            value: name,
+            onChange: setName,
+            isRequired: true,
+          },
+          {
+            id: 'namespace',
+            type: 'Select',
+            label: t('Namespace'),
+            placeholder: t('Select the namespace'),
+            value: namespace,
+            onChange: setNamespace,
+            isRequired: true,
+            options: argoCDsList,
+          },
+          {
+            id: 'clusterset',
+            type: 'Select',
+            label: t('ClusterSet'),
+            placeholder: t('Select the cluster set'),
+            value: clusterSet,
+            onChange: setClusterSet,
+            isRequired: true,
+            options: clusterSets.map((clusterSet) => {
+              const name = clusterSet.metadata?.name!
+              return {
+                id: name,
+                value: name,
+              }
+            }),
+          },
+        ],
+      },
+    ],
+    submit: () => {
+      let createData = stateToData()
+      return reconcileResources(createData, []).then(() => {
+        toast.addAlert({
+          title: t('GitOpsCluster created'),
+          message: t('{{namespace}} has been successfully added to Argo server.', { namespace }),
+          type: 'success',
+          autoClose: true,
+        })
+
+        // if (newCredentialCallback) {
+        //   newCredentialCallback(credentialData)
+        // }
+
+        handleModalToggle()
+      })
+    },
+    submitText: t('Add'),
+    submittingText: t('Adding'),
+    reviewTitle: 'Review',
+    reviewDescription: 'Review description',
+    nextLabel: 'Next',
+    backLabel: 'Back',
+    cancelLabel: 'Cancel',
+    cancel: handleModalToggle,
+    stateToData,
+  }
+
+  return <AcmDataFormPage formData={formData} mode={'form'} editorTitle={t('GitOpsCluster YAML')} schema={schema} />
 }
