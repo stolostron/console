@@ -20,8 +20,7 @@ import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
-import { useSharedAtoms } from '../../../../../shared-recoil'
-import { useRecoilValue } from 'recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -80,23 +79,23 @@ export function BatchUpgradeModal(props: {
     })
     return (
       <Stack hasGutter>
-        { hasUpgradeActions && (
-        <StackItem>
-        <AcmAlert
+        {hasUpgradeActions && (
+          <StackItem>
+            <AcmAlert
               isInline
               noClose
               variant="info"
               title={t('Automation templates are configured')}
-              message={t('One or more of the selected clusters have automations that will run before or after the upgrade. Expand the table rows to view the Ansible templates for each cluster.')}
+              message={t(
+                'One or more of the selected clusters have automations that will run before or after the upgrade. Expand the table rows to view the Ansible templates for each cluster.'
+              )}
             />
-        </StackItem>
+          </StackItem>
         )}
-        <StackItem>
-          {t('bulk.message.upgrade')}
-        </StackItem>
+        <StackItem>{t('bulk.message.upgrade')}</StackItem>
       </Stack>
     )
-  }, [upgradeableClusters, clusterCurators])
+  }, [clusterCurators, upgradeableClusters, t])
 
   useEffect(() => {
     // set up latest if not selected
@@ -185,7 +184,6 @@ export function BatchUpgradeModal(props: {
         const clusterCurator = item.isCurator
           ? clusterCurators.find((cc) => cc.metadata?.namespace === item.namespace)
           : undefined
-        debugger
         const upgradeAction = clusterCurator?.spec?.upgrade
         return upgradeAction && curatorActionHasJobs(upgradeAction)
           ? [
