@@ -226,7 +226,7 @@ export function AnsibleAutomationsForm(props: {
           setAnsibleTowerInventoryList([])
         })
     }
-  }, [ansibleSelection, ansibleCredentials, ansibleInventory, t])
+  }, [ansibleSelection, ansibleCredentials, t])
 
   function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
     if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
