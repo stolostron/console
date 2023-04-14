@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
 import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, respondBadRequest } from '../lib/respond'
+import { notFound, respond, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 
 interface AnsibleCredential {
@@ -53,17 +53,20 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
                 options.agent = new ProxyAgent()
             }
 
-            pipeline(
-                req,
-                request(options, (response) => {
-                    if (!response) return notFound(req, res)
-                    res.writeHead(response.statusCode ?? 500, response.headers)
-                    pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-                }),
-                (err) => {
-                    if (err) logger.error(err)
-                }
-            )
+            const towerReq = request(options, (response) => {
+                if (!response) return notFound(req, res)
+                res.writeHead(response.statusCode ?? 500, response.headers)
+                pipeline(response, res as unknown as NodeJS.WritableStream, (err) => {
+                    if (err) {
+                        logger.error(err)
+                    }
+                })
+            })
+            towerReq.on('error', (e) => {
+                logger.error(e)
+                respond(res, JSON.stringify(e.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+            })
+            towerReq.end()
         })
     }
 }
