@@ -577,11 +577,11 @@ export const onChangeAutomationTemplate = (control, controlData) => {
   const curations = getControlByID(controlData, 'supportedCurations')?.active
   if (control.active && clusterCuratorTemplate) {
     const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
+    if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
+      clusterCurator.spec.desiredCuration = 'install'
+    }
     if (clusterCurator.spec?.install?.prehook?.length) {
-      clusterCurator.spec.desiredCuration = 'install'
       reconcilePause.active = 'true'
-    } else if (clusterCurator.spec?.install?.posthook?.length) {
-      clusterCurator.spec.desiredCuration = 'install'
     }
     curations.forEach((curation) => {
       if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
