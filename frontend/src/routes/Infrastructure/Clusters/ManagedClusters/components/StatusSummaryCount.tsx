@@ -11,7 +11,7 @@ import {
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { Application, ApplicationSet, Cluster } from '../../../../../resources'
+import { Application, ApplicationSet, ApplicationSetKind, Cluster } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
@@ -89,8 +89,13 @@ export function StatusSummaryCount() {
     }
   }, [policyReports, cluster?.name])
 
-  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
+  const argoAppList = argoApps.filter((argoApp) => {
+    const isChildOfAppset =
+      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+    return !argoApp.metadata.ownerReferences || !isChildOfAppset
+  })
 
+  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
   const applicationList: Application[] = useMemo(() => {
     const appList: Application[] = []
     const localCluster = clusters.find((cls) => cls.name === localClusterStr)
@@ -158,7 +163,7 @@ export function StatusSummaryCount() {
   }, [applicationSets, placementDecisions, cluster?.name])
 
   const appsCount = useMemo(
-    () => [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps, ...appSets].length,
+    () => [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps, ...appSets, ...argoAppList].length,
     [applicationList, clusterDiscoveredArgoApps, clusterOcpApps, appSets]
   )
 

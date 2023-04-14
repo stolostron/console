@@ -252,6 +252,12 @@ export default function OverviewPage() {
     return array
   }, [argoApps])
 
+  const argoAppList = argoApps.filter((argoApp) => {
+    const isChildOfAppset =
+      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+    return !argoApp.metadata.ownerReferences || !isChildOfAppset
+  })
+
   const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
 
   const allAddons = useClusterAddons()
@@ -393,7 +399,7 @@ export default function OverviewPage() {
       {
         isLoading: !apps || !argoApps || !ocpApps,
         description: t('Applications'),
-        count: [...apps, ...ownerReferences, ...Object.keys(filteredOCPApps)].length || 0,
+        count: [...apps, ...ownerReferences, ...Object.keys(filteredOCPApps), ...argoAppList].length || 0,
         href: NavigationPath.applications,
       },
       {
