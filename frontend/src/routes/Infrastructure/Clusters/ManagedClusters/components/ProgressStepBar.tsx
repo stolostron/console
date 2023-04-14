@@ -4,6 +4,7 @@ import {
   ClusterStatus,
   getMostRecentAnsibleJobPod,
   getLatestAnsibleJob,
+  AnsibleJob,
 } from '../../../../../resources'
 import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
@@ -112,29 +113,6 @@ export function ProgressStepBar() {
         prehookStatus = StatusType.healthy
     }
 
-    const isPrehookLinkDisabled = () => {
-      if (!prehooks && !posthooks) {
-        return false
-      }
-      if (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined) {
-        if (latestJobs.prehook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator)) {
-          return false
-        }
-        return true
-      }
-      return false
-    }
-
-    const isPosthookLinkDisabled = () => {
-      if (
-        latestJobs.posthook?.status?.ansibleJobResult?.url ||
-        (latestJobs.posthook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator!))
-      ) {
-        return false
-      }
-      return true
-    }
-
     const provisionStatus: string[] = [
       ClusterStatus.creating,
       ClusterStatus.provisionfailed,
@@ -154,7 +132,7 @@ export function ProgressStepBar() {
           linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
           // TODO: add ansible documentation url
           linkUrl: !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
-          isDisabled: isPrehookLinkDisabled(),
+          isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
           linkCallback: () => {
             curator && launchJobLogs(curator)
           },
@@ -197,7 +175,7 @@ export function ProgressStepBar() {
             link: {
               linkName: t('status.link.logs'),
               linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
-              isDisabled: isPosthookLinkDisabled(),
+              isDisabled: isPosthookLinkDisabled(latestJobs, curator),
               linkCallback: () => {
                 curator && launchJobLogs(curator)
               },
@@ -230,7 +208,7 @@ export function ProgressStepBar() {
   return null
 }
 
-function launchJobLogs(curator: ClusterCurator) {
+export function launchJobLogs(curator: ClusterCurator | undefined) {
   if (curator?.status?.conditions) {
     const jobName = getFailedCuratorJobName(curator.metadata.name!, curator.status.conditions)
     const jobPodResponse = getMostRecentAnsibleJobPod(curator?.metadata.namespace!, jobName!)
@@ -240,7 +218,7 @@ function launchJobLogs(curator: ClusterCurator) {
   }
 }
 
-function jobPodsStillAvailable(curator: ClusterCurator) {
+export function jobPodsStillAvailable(curator: ClusterCurator | undefined) {
   const failurePodTransitionTime = curator?.status?.conditions?.find(
     (c) => c.type === 'clustercurator-job'
   )?.lastTransitionTime
@@ -252,4 +230,40 @@ function jobPodsStillAvailable(curator: ClusterCurator) {
   const currentTime = new Date()
   const hoursSincePodFailure = Math.floor((currentTime.getTime() - podCompletionTime.getTime()) / 1000 / 60 / 60)
   return hoursSincePodFailure < 1
+}
+export const isPrehookLinkDisabled = (
+  prehooks: number | undefined,
+  posthooks: number | undefined,
+  latestJobs: {
+    prehook: AnsibleJob | undefined
+    posthook: AnsibleJob | undefined
+  },
+  curator: ClusterCurator | undefined
+) => {
+  if (!prehooks && !posthooks) {
+    return false
+  }
+  if (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined) {
+    if (latestJobs.prehook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator)) {
+      return false
+    }
+    return true
+  }
+  return false
+}
+
+export const isPosthookLinkDisabled = (
+  latestJobs: {
+    prehook: AnsibleJob | undefined
+    posthook: AnsibleJob | undefined
+  },
+  curator: ClusterCurator | undefined
+) => {
+  if (
+    latestJobs.posthook?.status?.ansibleJobResult?.url ||
+    (latestJobs.posthook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator!))
+  ) {
+    return false
+  }
+  return true
 }
