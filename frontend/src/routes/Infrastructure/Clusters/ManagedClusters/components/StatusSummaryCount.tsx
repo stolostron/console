@@ -164,7 +164,7 @@ export function StatusSummaryCount() {
 
   const appsCount = useMemo(
     () => [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps, ...appSets, ...argoAppList].length,
-    [applicationList, clusterDiscoveredArgoApps, clusterOcpApps, appSets]
+    [applicationList, argoAppList, clusterDiscoveredArgoApps, clusterOcpApps, appSets]
   )
 
   const nodesCount = useMemo(() => (cluster?.nodes?.nodeList ?? []).length, [cluster])

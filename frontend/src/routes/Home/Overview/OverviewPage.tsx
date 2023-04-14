@@ -433,6 +433,7 @@ export default function OverviewPage() {
   }, [
     apps,
     argoApps,
+    argoAppList,
     buildSummaryLinks,
     cloudLabelFilter,
     clusters,
