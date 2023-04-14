@@ -1011,8 +1011,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 {
                   id: 'isCustomSubscription',
                   type: 'Checkbox',
-                  label: t('Use Custom Submariner Subscription'),
-                  labelHelp: t('Enable this option to use Custom Submariner Subscription.'),
+                  label: t('Use custom submariner subscription'),
+                  labelHelp: t('Enable this option to use a custom Submariner subscription.'),
                   value: isCustomSubscriptions[clusterName] !== undefined ? isCustomSubscriptions[clusterName] : false,
                   onChange: (value: boolean) => {
                     const copy = { ...isCustomSubscriptions }
@@ -1026,8 +1026,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   label: t('Source'),
                   placeholder: t('Enter the catalog source'),
                   labelHelp: t(
-                    'Enter the catalog source of a submariner subscription, if left blank the default' +
-                      ' values will be used.'
+                    'Enter the catalog source of a Submariner subscription. If left blank, the default values will' +
+                      ' be used.'
                   ),
                   value: sources[clusterName] ?? submarinerConfigDefault.source,
                   isHidden: !isCustomSubscriptions[clusterName],
@@ -1036,6 +1036,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     copy[clusterName] = value
                     setsourcess(copy)
                   },
+                  isRequired: isCustomSubscriptions[clusterName],
                 },
                 {
                   id: 'source-namespace',
@@ -1053,6 +1054,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     copy[clusterName] = value
                     setSourceNamespaces(copy)
                   },
+                  isRequired: isCustomSubscriptions[clusterName],
                 },
                 {
                   id: 'channel',
@@ -1067,6 +1069,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     copy[clusterName] = value
                     setChannels(copy)
                   },
+                  isRequired: isCustomSubscriptions[clusterName],
                 },
                 {
                   id: 'starting-csv',
@@ -1088,7 +1091,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   label: t('Install Plan Approval'),
                   placeholder: t('Enter InstallPlanApproval'),
                   labelHelp: t(
-                    'InstallPlanApproval determines whether subscription installation plans are applied automatically.'
+                    'InstallPlanApproval determines if subscription installation plans are applied automatically.'
                   ),
                   value: installPlanApprovals[clusterName] ?? submarinerConfigDefault.installPlanApporval,
                   isHidden: !isCustomSubscriptions[clusterName],
