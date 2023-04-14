@@ -9,6 +9,8 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+  applicationsState,
+  argoApplicationsState,
   clusterManagementAddonsState,
   managedClusterAddonsState,
   managedClusterInfosState,
@@ -30,6 +32,8 @@ import {
   SelfSubjectAccessReview,
 } from '../../../resources'
 import {
+  mockApplications,
+  mockArgoApplications,
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
   mockSearchResponseArgoApps,
@@ -1202,6 +1206,8 @@ it('should render overview page with expected data', async () => {
   const { container, getAllByText, getByText } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
+        snapshot.set(applicationsState, mockApplications)
+        snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, managedClusterInfos)
         snapshot.set(policiesState, mockPolices)
@@ -1240,7 +1246,7 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('1 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('1Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('4Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
