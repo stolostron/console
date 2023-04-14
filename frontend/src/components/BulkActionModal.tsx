@@ -31,22 +31,22 @@ import { useTranslation } from '../lib/acm-i18next'
 import { getRawErrorInfo } from './ErrorPage'
 
 export type BulkActionModalProps<T = undefined> = {
-  open: true
   action: string
-  title: string
-  processing: string
-  close: () => void
-  onCancel?: () => void
-  description: string | React.ReactNode
   actionFn: (item: T) => IRequestResult
   checkBox?: JSX.Element
+  close: () => void
   confirmText?: string
-  isDanger?: boolean
-  isValidError?: (error: Error) => boolean
+  description: string | React.ReactNode
+  disableSubmitButton?: boolean
+  hasExternalResources?: boolean
   hideTableAfterSubmit?: boolean
   icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
-  hasExternalResources?: boolean
-  disableSubmitButton?: boolean
+  isDanger?: boolean
+  isValidError?: (error: Error) => boolean
+  onCancel?: () => void
+  open: true
+  processing: string
+  title: string
 } & Required<Pick<AcmTableProps<T>, 'items'>> &
   Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
   Omit<AcmTableProps<T>, 'columns'>
@@ -74,6 +74,27 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     return <></>
   }
 
+  const {
+    action,
+    actionFn,
+    checkBox,
+    close,
+    columns,
+    confirmText,
+    description,
+    disableSubmitButton,
+    hasExternalResources,
+    hideTableAfterSubmit,
+    icon,
+    isDanger,
+    isValidError,
+    onCancel,
+    open,
+    processing,
+    title,
+    ...tableProps
+  } = props
+
   function getItemError(item: T) {
     if (errors) {
       for (const error of errors) {
@@ -88,36 +109,30 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   return (
     <AcmModal
       variant={ModalVariant.medium}
-      title={props.title}
-      titleIconVariant={props.icon}
+      title={title}
+      titleIconVariant={icon}
       isOpen={true}
-      onClose={props.close}
+      onClose={close}
       position="top"
     >
       <AcmForm style={{ gap: 0 }}>
         {!errors?.length ? (
           <Fragment>
-            {props.description}
-            {props.checkBox}
-            {props.hideTableAfterSubmit && progress != 0
-              ? undefined
-              : props.columns &&
-                props.keyFn && (
-                  <AcmTablePaginationContextProvider localStorageKey="model">
-                    <AcmTable<T>
-                      gridBreakPoint={TableGridBreakpoint.none}
-                      items={props.items}
-                      columns={props.columns}
-                      keyFn={props.keyFn}
-                      tableActions={[]}
-                      emptyState={props.emptyState}
-                      rowActions={[]}
-                      perPageOptions={[]}
-                      autoHidePagination
-                      showToolbar={props.showToolbar}
-                    />
-                  </AcmTablePaginationContextProvider>
-                )}
+            {description}
+            {checkBox}
+            {columns && !(hideTableAfterSubmit && progress != 0) && (
+              <AcmTablePaginationContextProvider localStorageKey="model">
+                <AcmTable<T>
+                  gridBreakPoint={TableGridBreakpoint.none}
+                  tableActions={[]}
+                  rowActions={[]}
+                  perPageOptions={[]}
+                  autoHidePagination
+                  columns={columns}
+                  {...tableProps}
+                />
+              </AcmTablePaginationContextProvider>
+            )}
 
             <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
               {progress > 0 ? (
@@ -129,9 +144,9 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                 <div style={{ minHeight: '24px' }} />
               )}
             </div>
-            {props.confirmText !== undefined && (
+            {confirmText !== undefined && (
               <AcmTextInput
-                label={t(`type.to.confirm`, { confirm: props.confirmText })}
+                label={t(`type.to.confirm`, { confirm: confirmText })}
                 id="confirm"
                 value={confirm}
                 onChange={setConfirm}
@@ -148,13 +163,13 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
               title={t('there.were.errors')}
               message={t('Expand the table rows to view detailed error messages.')}
             />
-            {props.columns && props.keyFn && (
+            {columns && (
               <AcmTablePaginationContextProvider localStorageKey="model">
                 <AcmTable<T>
                   emptyState={undefined} // table only displayed when there are errors
-                  items={props.items.filter((item) => getItemError(item) !== undefined)}
+                  items={tableProps.items.filter((item) => getItemError(item) !== undefined)}
                   columns={[
-                    props.columns[0],
+                    columns[0],
                     {
                       header: t('error'),
                       cell: (item) => {
@@ -185,7 +200,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                         ]
                       : []
                   }}
-                  keyFn={props.keyFn}
+                  keyFn={tableProps.keyFn}
                   tableActions={[]}
                   rowActions={[]}
                   perPageOptions={[]}
@@ -196,7 +211,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
             <div style={{ minHeight: '24px' }} />
           </Fragment>
         )}
-        {props.hasExternalResources && (
+        {hasExternalResources && (
           <Stack>
             <StackItem>
               <AcmAlert
@@ -211,7 +226,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
         <ActionGroup>
           {errors
             ? [
-                <Button variant="primary" key="close-bulk-action" onClick={props.close}>
+                <Button variant="primary" key="close-bulk-action" onClick={close}>
                   {t('Close')}
                 </Button>,
               ]
@@ -220,18 +235,18 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   key="submit-bulk-action"
                   id="submit-button"
                   isDisabled={
-                    !props.items?.length ||
-                    (props.confirmText !== undefined && confirm !== props.confirmText) ||
-                    props.disableSubmitButton
+                    !tableProps.items?.length ||
+                    (confirmText !== undefined && confirm !== confirmText) ||
+                    disableSubmitButton
                   }
-                  variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
+                  variant={isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
                     if (errors.length === 0) {
-                      setProgressCount(props.items.length)
+                      setProgressCount(tableProps.items.length)
                       const requestResult = resultsSettled(
-                        props.items.map((resource) => {
-                          const r = props.actionFn(resource)
+                        tableProps.items.map((resource) => {
+                          const r = actionFn(resource)
                           return {
                             promise: r.promise.finally(() => setProgress((progress) => progress + 1)),
                             abort: r.abort,
@@ -242,12 +257,12 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                       promiseResults.forEach((promiseResult, index) => {
                         if (promiseResult.status === 'rejected') {
                           let validError = true
-                          if (props.isValidError) {
-                            validError = props.isValidError(promiseResult.reason)
+                          if (isValidError) {
+                            validError = isValidError(promiseResult.reason)
                           }
                           if (validError) {
                             errors.push({
-                              item: props.items[index],
+                              item: tableProps.items[index],
                               error: promiseResult.reason,
                             })
                           }
@@ -257,13 +272,13 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     await new Promise((resolve) => setTimeout(resolve, 500))
                     setErrors(errors)
                     if (errors.length === 0) {
-                      props.close()
+                      close()
                     }
                   }}
-                  label={props.action}
-                  processingLabel={props.processing}
+                  label={action}
+                  processingLabel={processing}
                 />,
-                <Button variant="link" onClick={props.onCancel ? props.onCancel : props.close} key="cancel-bulk-action">
+                <Button variant="link" onClick={onCancel ? onCancel : close} key="cancel-bulk-action">
                   {t('cancel')}
                 </Button>,
               ]}
