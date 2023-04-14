@@ -23,6 +23,7 @@ import {
 import { AcmToastContext } from '../../ui-components'
 import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
+import './CreateArgoResources.css'
 
 export interface ICreateArgoResourcesModalProps {
   handleModalToggle: () => void
