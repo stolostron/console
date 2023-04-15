@@ -19,7 +19,6 @@ import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
-import { clusterCuratorsState } from '../../../../../atoms'
 import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
 
 const { LogsDownloadButton } = CIM
@@ -27,7 +26,7 @@ const { LogsDownloadButton } = CIM
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
-  const { ansibleJobState, configMapsState } = useSharedAtoms()
+  const { ansibleJobState, configMapsState, clusterCuratorsState } = useSharedAtoms()
   const [configMaps] = useRecoilState(configMapsState)
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)

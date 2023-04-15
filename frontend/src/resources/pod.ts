@@ -83,6 +83,7 @@ export async function getHivePod(namespace: string, name: string, status: string
   } else if (
     status === ClusterStatus.provisionfailed ||
     status === ClusterStatus.deprovisionfailed ||
+    status === ClusterStatus.posthookjob ||
     status === ClusterStatus.posthookfailed
   ) {
     hiveJob = await getLatestHivePod(namespace, name)
