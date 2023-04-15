@@ -128,15 +128,18 @@ export function ProgressStepBar() {
         statusSubtitle: prehooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
         stepID: 'prehook',
         // will render link when prehook job url is defined or when there are no job hooks setup
-        link: {
-          linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
-          // TODO: add ansible documentation url
-          linkUrl: !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
-          isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
-          linkCallback: () => {
-            curator && launchJobLogs(curator)
+        ...((!!prehooks || (!prehooks && !posthooks)) && {
+          link: {
+            linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+            // TODO: add ansible documentation url
+            linkUrl:
+              !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
+            isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
+            linkCallback: () => {
+              curator && launchJobLogs(curator)
+            },
           },
-        },
+        }),
       },
       {
         statusType: creatingStatus,
@@ -240,8 +243,13 @@ export const isPrehookLinkDisabled = (
   },
   curator: ClusterCurator | undefined
 ) => {
+  // if no jobs are defined we surface a link to the automation docs
   if (!prehooks && !posthooks) {
     return false
+  }
+  // if jobs are defined in posthook but not in prehook we simply disable the
+  if (!prehooks && !!posthooks) {
+    return true
   }
   if (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined) {
     if (latestJobs.prehook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator)) {

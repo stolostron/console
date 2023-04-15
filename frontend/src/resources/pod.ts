@@ -80,7 +80,11 @@ export async function getHivePod(namespace: string, name: string, status: string
   /* istanbul ignore else */
   if (status === ClusterStatus.creating) {
     hiveJob = await getProvisionPod(namespace, name)
-  } else if (status === ClusterStatus.provisionfailed || status === ClusterStatus.deprovisionfailed) {
+  } else if (
+    status === ClusterStatus.provisionfailed ||
+    status === ClusterStatus.deprovisionfailed ||
+    status === ClusterStatus.posthookfailed
+  ) {
     hiveJob = await getLatestHivePod(namespace, name)
   } else if (status === ClusterStatus.destroying) {
     hiveJob = await getDeprovisionPod(namespace, name)
