@@ -11,4 +11,5 @@ export interface AnsibleTowerInventory {
   name?: string
   type?: AnsibleApiInventoryType
   description?: string
+  inventoryID?: string
 }

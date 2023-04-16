@@ -79,4 +79,5 @@ export interface AnsibleTowerJobTemplate {
   name?: string
   type?: AnsibleApiJobTemplateType
   description?: string
+  inventoryID?: string
 }
