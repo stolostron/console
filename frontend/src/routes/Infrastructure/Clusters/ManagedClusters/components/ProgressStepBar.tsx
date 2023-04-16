@@ -269,7 +269,7 @@ export const isPosthookLinkDisabled = (
 ) => {
   if (
     latestJobs.posthook?.status?.ansibleJobResult?.url ||
-    (latestJobs.posthook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator!))
+    (latestJobs.posthook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator))
   ) {
     return false
   }
