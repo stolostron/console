@@ -104,7 +104,7 @@ export function EditPolicyAutomation() {
                 let templateList: { name: string; description?: string; id: string }[] = []
                 if (response?.results) {
                   templateList = response.results!.map((job) => ({
-                    name: job.name!,
+                    name: job.name,
                     description: job.description,
                     id: job.id,
                   }))
