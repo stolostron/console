@@ -488,8 +488,13 @@ async function getAnsibleTemplates(
   }
 
   return {
-    results: ansibleJobs?.map((ansibleJob: { name?: string; type?: string }) => {
-      return { name: ansibleJob.name, type: ansibleJob.type! }
+    results: ansibleJobs?.map((ansibleJob: { name?: string; type?: string; description?: string; id?: string }) => {
+      return {
+        name: ansibleJob.name,
+        type: ansibleJob.type!,
+        description: ansibleJob.description,
+        jobTemplateID: ansibleJob.id,
+      }
     }),
   }
 }

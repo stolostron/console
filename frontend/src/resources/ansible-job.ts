@@ -76,8 +76,8 @@ export interface AnsibleTowerJobTemplateList {
   results: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
-  name?: string
+  name: string
   type?: AnsibleApiJobTemplateType
   description?: string
-  inventoryID?: string
+  jobTemplateID: string
 }

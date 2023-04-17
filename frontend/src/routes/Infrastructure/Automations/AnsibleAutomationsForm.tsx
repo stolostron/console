@@ -145,11 +145,14 @@ export function AnsibleAutomationsForm(props: {
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
   const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
   const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<
-    { name: string; description?: string; inventoryID?: string }[]
+    { name?: string; description?: string; inventoryID?: string }[]
   >([])
 
-  const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
-  const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
+  const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
+    { name: string; description?: string; jobTemplateID: string }[] | undefined
+  >()
+  const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
+    useState<{ name: string; description?: string; jobTemplateID: string }[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
   const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
@@ -192,18 +195,26 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
-      const inventoryList: { name: string; description?: string; inventoryID?: string }[] = []
-      const jobList: string[] = []
-      const workflowList: string[] = []
+      const inventoryList: { name: string; description?: string; inventoryID: string }[] | undefined = []
+      const jobList: { name: string; description?: string; jobTemplateID: string }[] = []
+      const workflowList: { name: string; description?: string; jobTemplateID: string }[] = []
       Promise.all([
         listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
           (response) => {
             if (response) {
               response.results.forEach((template) => {
                 if (template.type === 'job_template' && template.name) {
-                  jobList.push(template.name)
+                  jobList.push({
+                    name: template.name,
+                    description: template.description,
+                    jobTemplateID: template.jobTemplateID,
+                  })
                 } else if (template.type === 'workflow_job_template' && template.name) {
-                  workflowList.push(template.name)
+                  workflowList.push({
+                    name: template.name,
+                    description: template.description,
+                    jobTemplateID: template.jobTemplateID,
+                  })
                 }
               })
               setAnsibleTowerJobTemplateList(jobList)
@@ -219,7 +230,7 @@ export function AnsibleAutomationsForm(props: {
                   inventoryList.push({
                     name: inventory.name,
                     description: inventory?.description,
-                    inventoryID: inventory?.inventoryID,
+                    inventoryID: inventory.inventoryID,
                   })
                 }
               })
@@ -679,8 +690,8 @@ export function AnsibleAutomationsForm(props: {
 function EditAnsibleJobModal(props: {
   ansibleSelection?: string
   ansibleCredentials: ProviderConnection[]
-  ansibleTowerTemplateList: string[] | undefined
-  ansibleTowerWorkflowTemplateList: string[] | undefined
+  ansibleTowerTemplateList: { name: string; description?: string; jobTemplateID: string }[] | undefined
+  ansibleTowerWorkflowTemplateList: { name: string; description?: string; jobTemplateID: string }[] | undefined
   ansibleJob?: ClusterCuratorAnsibleJob
   ansibleJobList?: ClusterCuratorAnsibleJob[]
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
@@ -688,11 +699,15 @@ function EditAnsibleJobModal(props: {
   const { t } = useTranslation()
   const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
-  const { ansibleTowerTemplateList = [], ansibleTowerWorkflowTemplateList = [] } = props
+  const {
+    ansibleTowerTemplateList = [],
+    ansibleTowerWorkflowTemplateList = [],
+    ansibleSelection,
+    ansibleCredentials,
+  } = props
   useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
   const classes = useStyles()
-
   const newTemplateSelection = (jobName: string | undefined) => {
     if (ansibleJob) {
       const copy = { ...ansibleJob }
@@ -760,26 +775,38 @@ function EditAnsibleJobModal(props: {
               isRequired
             >
               {filterForJobTemplates
-                ? ansibleTowerTemplateList?.map((name) => (
-                    <SelectOption key={name} value={name}>
+                ? ansibleTowerTemplateList?.map(({ name, description }) => (
+                    <SelectOption key={name} value={name} description={description}>
                       {name}
                     </SelectOption>
                   ))
-                : ansibleTowerWorkflowTemplateList?.map((name) => (
-                    <SelectOption key={name} value={name}>
+                : ansibleTowerWorkflowTemplateList?.map(({ name, description }) => (
+                    <SelectOption key={name} value={name} description={description}>
                       {name}
                     </SelectOption>
                   ))}
             </AcmSelect>
           </FlexItem>
-          <FlexItem flex={{ default: 'flex_1' }}>
+          <FlexItem align={{ default: 'alignRight' }}>
             <AcmButton
               id="view-selected"
-              isDisabled={true}
+              isDisabled={!ansibleJob?.name}
               target="_blank"
               isInline
               variant={ButtonVariant.link}
               component={Link}
+              onClick={() => {
+                if (ansibleCredentials.length) {
+                  let templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+                  let hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
+                    ?.host
+                  let jobID = filterForJobTemplates
+                    ? ansibleTowerTemplateList.find((template) => template.name === ansibleJob?.name)?.jobTemplateID
+                    : ansibleTowerWorkflowTemplateList.find((template) => template.name === ansibleJob?.name)
+                        ?.jobTemplateID
+                  window.open(`${hostURL}/#/templates/${templateType}/${jobID}`)
+                }
+              }}
             >
               {'View selected template'}
               <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
