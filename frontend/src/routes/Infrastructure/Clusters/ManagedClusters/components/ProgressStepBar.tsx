@@ -247,10 +247,11 @@ export const isPrehookLinkDisabled = (
   if (!prehooks && !posthooks) {
     return false
   }
-  // if jobs are defined in posthook but not in prehook we simply disable the
   if (!prehooks && !!posthooks) {
     return true
   }
+  // if there are prehooks, an undefined url, an error in latest job status, and the pods are avaiable,
+  // enable link to pods
   if (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined) {
     if (latestJobs.prehook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator)) {
       return false
