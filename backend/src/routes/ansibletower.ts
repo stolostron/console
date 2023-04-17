@@ -53,20 +53,20 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
         options.agent = new ProxyAgent()
       }
 
-      pipeline(
-        req,
-        request(options, (response) => {
-          if (!response) return notFound(req, res)
-          res.writeHead(response.statusCode ?? 500, response.headers)
-          pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-        }),
-        (err) => {
+      const towerReq = request(options, (response) => {
+        if (!response) return notFound(req, res)
+        res.writeHead(response.statusCode ?? 500, response.headers)
+        pipeline(response, res as unknown as NodeJS.WritableStream, (err) => {
           if (err) {
             logger.error(err)
-            respond(res, JSON.stringify(err.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           }
-        }
-      )
+        })
+      })
+      towerReq.on('error', (e) => {
+        logger.error(e)
+        respond(res, JSON.stringify(e.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+      })
+      towerReq.end()
     })
   }
 }

@@ -2,7 +2,7 @@
 import { makeStyles } from '@mui/styles'
 import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { ClusterCurator, ClusterCuratorAnsibleJob } from '../resources'
+import { ClusterCurator, ClusterCuratorAnsibleJob, CuratorAction, curatorActionHasJobs } from '../resources'
 import { AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -43,34 +43,27 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
   if (!clusterCurator) {
     return <></>
   }
+
+  const installAction = clusterCurator.spec?.install
+  const upgradeAction = clusterCurator.spec?.upgrade
+
   return (
     <div>
-      {clusterCurator.spec?.install && (
+      {installAction && curatorActionHasJobs(installAction) && (
         <ExpandableSection
           onToggle={() => setInstallExpandable(!isInstallExpandableOpen)}
           isExpanded={isInstallExpandableOpen}
           toggleText={t('install')}
           isIndented
         >
-          <ComposableTable
-            stage={t('template.preInstall.label')}
-            curatorJobs={clusterCurator.spec.install.prehook?.map((job: ClusterCuratorAnsibleJob) => ({
-              name: job.name,
-              type: job.type,
-            }))}
-          ></ComposableTable>
-          <div className={classes.expandableSection}>
-            <ComposableTable
-              stage={t('template.postInstall.label')}
-              curatorJobs={clusterCurator.spec.install.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
-                name: job.name,
-                type: job.type,
-              }))}
-            ></ComposableTable>
-          </div>
+          <PrePostTemplatesList
+            preLabel={t('template.preInstall.label')}
+            postLabel={t('template.postInstall.label')}
+            curatorAction={installAction}
+          />
         </ExpandableSection>
       )}
-      {clusterCurator.spec?.upgrade && (
+      {upgradeAction && curatorActionHasJobs(upgradeAction) && (
         <ExpandableSection
           onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
           isExpanded={isUpgradeExpandableOpen}
@@ -78,22 +71,11 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
           toggleText={t('Upgrade')}
           isIndented
         >
-          <ComposableTable
-            stage={t('template.preUpgrade.label')}
-            curatorJobs={clusterCurator.spec.upgrade.prehook?.map((job: ClusterCuratorAnsibleJob) => ({
-              name: job.name,
-              type: job.type,
-            }))}
-          ></ComposableTable>
-          <div className={classes.expandableSection}>
-            <ComposableTable
-              stage={t('template.postUpgrade.label')}
-              curatorJobs={clusterCurator.spec.upgrade.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
-                name: job.name,
-                type: job.type,
-              }))}
-            ></ComposableTable>
-          </div>
+          <PrePostTemplatesList
+            preLabel={t('template.preUpgrade.label')}
+            postLabel={t('template.postUpgrade.label')}
+            curatorAction={upgradeAction}
+          />
         </ExpandableSection>
       )}
       {/* {curator.spec?.scale && <ExpandableSection></ExpandableSection>}
@@ -111,9 +93,35 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
       variant={ModalVariant.medium}
       isOpen={isOpen}
       onClose={close}
+      position="top"
     >
       <TemplateSummaryExpandable clusterCurator={curatorTemplate}></TemplateSummaryExpandable>
     </AcmModal>
+  )
+}
+
+export function PrePostTemplatesList(props: { preLabel: string; postLabel: string; curatorAction: CuratorAction }) {
+  const { preLabel, postLabel, curatorAction } = props
+  const classes = useStyles()
+  return (
+    <>
+      <ComposableTable
+        stage={preLabel}
+        curatorJobs={curatorAction.prehook?.map((job: ClusterCuratorAnsibleJob) => ({
+          name: job.name,
+          type: job.type,
+        }))}
+      ></ComposableTable>
+      <div className={classes.expandableSection}>
+        <ComposableTable
+          stage={postLabel}
+          curatorJobs={curatorAction.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
+            name: job.name,
+            type: job.type,
+          }))}
+        ></ComposableTable>
+      </div>
+    </>
   )
 }
 

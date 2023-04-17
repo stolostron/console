@@ -104,6 +104,7 @@
     "@sentry/browser": "6.19.7",
     "@storybook/addon-a11y": "^6.5.9",
     "@storybook/addon-actions": "^6.5.9",
+    "@storybook/addon-docs": "^6.5.9",
     "@storybook/addon-essentials": "^6.5.9",
     "@storybook/addon-storysource": "^6.5.9",
     "@storybook/builder-webpack5": "^6.5.9",
@@ -246,12 +247,11 @@
       "node": true
     },
     "rules": {
-      "react/jsx-key": 1,
-      "prettier/prettier": "error",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/ban-types": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "jest/expect-expect": "off",
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-extra-semi": "off",
       "@typescript-eslint/no-floating-promises": [
         "off",
         {
@@ -265,47 +265,54 @@
         }
       ],
       "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-      "jest/no-disabled-tests": "off",
-      "no-async-promise-executor": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-empty-function": "off",
-      "jest/no-identical-title": "off",
-      "@typescript-eslint/ban-types": "off",
-      "no-empty": "off",
-      "no-constant-condition": "off",
-      "jest/no-export": "off",
-      "@typescript-eslint/no-extra-semi": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-restricted-imports": [
         "error",
         {
           "paths": [
             {
-              "name": "react-i18next",
-              "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+              "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next",
+              "name": "react-i18next"
             },
             {
-              "name": "recoil",
-              "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot"
+              "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot",
+              "name": "recoil"
             },
             {
+              "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead",
               "name": "@patternfly/react-core",
               "importNames": [
                 "Truncate"
-              ],
-              "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead"
+              ]
             }
           ],
           "patterns": [
             {
+              "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot",
               "group": [
                 "**/atoms",
                 "**/selectors"
-              ],
-              "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot"
+              ]
             }
           ]
         }
-      ]
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "ignoreRestSiblings": true
+        }
+      ],
+      "jest/expect-expect": "off",
+      "jest/no-disabled-tests": "off",
+      "jest/no-export": "off",
+      "jest/no-identical-title": "off",
+      "no-async-promise-executor": "off",
+      "no-constant-condition": "off",
+      "no-empty": "off",
+      "prettier/prettier": "error",
+      "react/jsx-key": 1,
+      "react/react-in-jsx-scope": "off"
     },
     "overrides": [
       {
