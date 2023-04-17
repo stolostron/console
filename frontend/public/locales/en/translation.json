@@ -2903,6 +2903,7 @@
   "View {{templateName}}": "View {{templateName}}",
   "View all placement rules in {{0}} namespace": "View all placement rules in {{0}} namespace",
   "View all subscriptions in {{0}} namespace": "View all subscriptions in {{0}} namespace",
+  "View Ansible Inventory": "View Ansible Inventory",
   "View application": "View application",
   "View clusters with search add-on disabled.": "View clusters with search add-on disabled.",
   "View details": "View details",

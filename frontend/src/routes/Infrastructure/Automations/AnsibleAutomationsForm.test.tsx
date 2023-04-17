@@ -130,18 +130,22 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install',
       type: 'job_template',
+      jobTemplateID: '1',
     },
     {
       name: 'test-job-post-install',
       type: 'job_template',
+      jobTemplateID: '2',
     },
     {
       name: 'test-job-pre-upgrade',
       type: 'job_template',
+      jobTemplateID: '3',
     },
     {
       name: 'test-job-post-upgrade',
       type: 'job_template',
+      jobTemplateID: '4',
     },
   ],
 }
@@ -151,6 +155,7 @@ const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install-ii',
       type: 'workflow_job_template',
+      jobTemplateID: '1',
     },
   ],
 }
@@ -160,6 +165,7 @@ const mockInventoryList: AnsibleTowerInventoryList = {
     {
       name: 'test-inventory',
       type: 'inventory',
+      inventoryID: '1',
     },
   ],
 }

@@ -797,10 +797,10 @@ function EditAnsibleJobModal(props: {
               component={Link}
               onClick={() => {
                 if (ansibleCredentials.length) {
-                  let templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
-                  let hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
-                    ?.host
-                  let jobID = filterForJobTemplates
+                  const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+                  const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!
+                    .stringData?.host
+                  const jobID = filterForJobTemplates
                     ? ansibleTowerTemplateList.find((template) => template.name === ansibleJob?.name)?.jobTemplateID
                     : ansibleTowerWorkflowTemplateList.find((template) => template.name === ansibleJob?.name)
                         ?.jobTemplateID

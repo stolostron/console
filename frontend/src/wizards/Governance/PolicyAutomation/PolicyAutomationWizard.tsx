@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, Button, ButtonVariant } from '@patternfly/react-core'
+import { Alert, Button, ButtonVariant, Split, SplitItem } from '@patternfly/react-core'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
@@ -20,6 +20,8 @@ import { ConfigMap } from '../../../resources'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
+import { AcmButton } from '../../../ui-components'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -36,7 +38,9 @@ export interface PolicyAutomationWizardProps {
   resource: IPolicyAutomation
   onSubmit: WizardSubmit
   onCancel: WizardCancel
-  getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
+  getAnsibleJobsCallback: (
+    credential: IResource
+  ) => Promise<{ name: string; description?: string; jobTemplateID: string }[]>
 }
 
 export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
@@ -51,7 +55,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     () => ansibleCredentials.map((credential) => credential.metadata?.name ?? ''),
     [ansibleCredentials]
   )
-  const [jobNames, setJobNames] = useState<string[]>()
+  const [jobTemplates, setjobTemplates] = useState<{ name: string; description?: string; jobTemplateID: string }[]>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
 
@@ -62,7 +66,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       )
       props
         .getAnsibleJobsCallback(credential ?? {})
-        .then((jobNames) => setJobNames(jobNames))
+        .then((jobTemplates) => setjobTemplates(jobTemplates))
         .catch((err) => {
           if (err instanceof Error) {
             setAlert({ title: t('Failed to get job names from Ansible'), message: err.message })
@@ -131,10 +135,10 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               const credential = ansibleCredentials.find((credential) => credential.metadata?.name === value)
               if (credential) {
                 setAlert(undefined)
-                setJobNames(undefined)
+                setjobTemplates(undefined)
                 props
                   .getAnsibleJobsCallback(credential)
-                  .then((jobNames) => setJobNames(jobNames))
+                  .then((jobTemplates) => setjobTemplates(jobTemplates))
                   .catch((err) => {
                     if (err instanceof Error) {
                       setAlert({
@@ -164,14 +168,31 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
             }
             required
           />
-          <Select
-            id="job"
-            label={t('Ansible job')}
-            path="spec.automationDef.name"
-            options={jobNames}
-            hidden={(item) => !item.spec?.automationDef?.secret}
-            required
-          />
+          <>
+            <Select
+              id="job"
+              label={t('Ansible job')}
+              path="spec.automationDef.name"
+              options={jobTemplates?.map((template) => ({
+                id: template.name,
+                value: template.name,
+                label: template.name,
+                description: template.description,
+              }))}
+              footer={
+                <Split>
+                  <SplitItem>
+                    <AcmButton variant="link" style={{ paddingRight: '0px' }} onClick={() => {}}>
+                      {'prompt'}
+                      <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                    </AcmButton>
+                  </SplitItem>
+                </Split>
+              }
+              hidden={(item) => !item.spec?.automationDef?.secret}
+              required
+            />
+          </>
           <WizKeyValue
             id="extra_vars"
             path="spec.automationDef.extra_vars"

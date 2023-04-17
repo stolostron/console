@@ -10,7 +10,9 @@ const mockGetwizardsynceditor = jest.fn()
 const mockCreatecredentialscallback = jest.fn()
 const mockOncancel = jest.fn()
 const mockOnsubmit = jest.fn()
-const mockGetansiblejobscallback = jest.fn().mockResolvedValue(['job'])
+const mockGetansiblejobscallback = jest
+  .fn()
+  .mockResolvedValue([{ name: 'job', jobTemplateID: '1', description: 'mock job' }])
 
 describe('PolicyAutomationWizard tests', () => {
   const Component = (props: PolicyAutomationWizardProps) => {
