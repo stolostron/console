@@ -11,6 +11,7 @@ import {
   namespacesState,
   placementsState,
   secretsState,
+  subscriptionOperatorsState,
 } from '../../../atoms'
 import {
   nockArgoGitBranches,
@@ -48,6 +49,7 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../resources'
+import { gitOpsOperators } from '../Application.sharedmocks'
 import CreateApplicationArgo from './CreateApplicationArgo'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
@@ -271,6 +273,7 @@ describe('Create Argo Application Set', () => {
           snapshot.set(secretsState, [])
           snapshot.set(managedClusterSetsState, [clusterSet])
           snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
+          snapshot.set(subscriptionOperatorsState, gitOpsOperators)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>

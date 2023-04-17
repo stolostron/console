@@ -45,7 +45,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../components/AutomationProviderHint'
-import { useRecoilValue, useSharedSelectors } from '../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../shared-recoil'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { CreateArgoResources } from './CreateArgoResources'
 
@@ -188,6 +188,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceHelmChannels ?? []), ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
+  const { gitOpsClustersState } = useSharedAtoms()
+  const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+  const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
@@ -376,7 +379,27 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 }
                 options={props.argoServers}
                 required
-                footer={<CreateCredentialModal buttonText="Add Argo server" handleModalToggle={handleModalToggle} />}
+                footer={
+                  <CreateCredentialModal buttonText={t('Add Argo Server')} handleModalToggle={handleModalToggle} />
+                }
+                onValueChange={(value) => {
+                  // find gitopscluster in the namespace
+                  const matchingGitOps = gitOpsClusters.filter((resource) => resource.metadata.namespace === value)
+
+                  // find placement
+                  const placementRef = matchingGitOps.length && matchingGitOps[0].spec?.placementRef
+                  const placement = props.placements.find(
+                    (placement) =>
+                      placement.metadata?.namespace === value && placement.metadata?.name === placementRef?.name
+                  )
+
+                  // set filtered cluster set
+                  const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
+                    return placement?.spec?.clusterSets!.includes(clusterSet.metadata?.name!)
+                  })
+
+                  setFilteredClusterSets(clusterSets)
+                }}
               />
               <Select
                 path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
@@ -656,7 +679,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <ArgoWizardPlacementSection
             placements={props.placements}
             clusters={props.clusters}
-            clusterSets={props.clusterSets}
+            clusterSets={filteredClusterSets}
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
           />

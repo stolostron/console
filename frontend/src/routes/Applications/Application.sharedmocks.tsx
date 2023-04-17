@@ -32,9 +32,33 @@ import {
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
+  SubscriptionOperator,
+  SubscriptionOperatorApiVersion,
+  SubscriptionOperatorKind,
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
 import { ApplicationActionProps } from '../../plugin-extensions/properties'
+
+export const gitOpsOperator: SubscriptionOperator = {
+  apiVersion: SubscriptionOperatorApiVersion,
+  kind: SubscriptionOperatorKind,
+  metadata: {
+    name: 'openshift-gitops-operator',
+    namespace: 'openshift-operators',
+  },
+  status: {
+    conditions: [
+      {
+        reason: 'AllCatalogSourcesHealthy',
+        lastTransitionTime: '',
+        message: '',
+        type: 'CatalogSourcesUnhealthy',
+        status: 'False',
+      },
+    ],
+  },
+  spec: {},
+}
 
 export const mockApplication0: Application = {
   apiVersion: ApplicationApiVersion,
@@ -319,6 +343,7 @@ const applicationActionProps: ApplicationActionProps = {
 export const acmExtension: AcmExtension = {
   applicationAction: [applicationActionProps],
 }
+export const gitOpsOperators: SubscriptionOperator[] = [gitOpsOperator]
 export const mockApplications: Application[] = [mockApplication0]
 export const mockSubscriptions: Subscription[] = [mockSubscription0]
 export const mockChannels: Channel[] = [mockChannel0]

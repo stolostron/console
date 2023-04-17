@@ -10,13 +10,13 @@ export interface ICreateCredentialModalProps {
 
 export function CreateCredentialModal(props: ICreateCredentialModalProps) {
   const { t } = useTranslation()
-  const { handleModalToggle, buttonText = 'Add credential' } = props
+  const { handleModalToggle, buttonText = t('Add credential') } = props
 
   return (
     <Fragment>
       <ContextSelectorFooter>
         <Button onClick={handleModalToggle} variant="link" isInline>
-          {t(buttonText)}
+          {buttonText}
         </Button>
       </ContextSelectorFooter>
     </Fragment>

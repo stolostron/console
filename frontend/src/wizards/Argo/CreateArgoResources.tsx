@@ -58,7 +58,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
 
   const [name, setName] = useState('')
   const [namespace, setNamespace] = useState('')
-  const [clusterSet, setClusterSet] = useState('default')
+  const [clusterSet, setClusterSet] = useState<string[]>(['default'])
 
   const argoCDsList = argoCDs.map((argoCD) => {
     const namespace = argoCD.metadata?.namespace!
@@ -85,26 +85,40 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
       },
     }
 
-    const managedClusterSetBinding: ManagedClusterSetBinding = {
-      apiVersion: ManagedClusterSetBindingApiVersion,
-      kind: ManagedClusterSetBindingKind,
-      metadata: { name: clusterSet, namespace: namespace },
-      spec: {
-        clusterSet: clusterSet,
-      },
-    }
+    const managedClusterSetBindings: ManagedClusterSetBinding[] = []
+    clusterSet &&
+      clusterSet.forEach((clusterSet) => {
+        managedClusterSetBindings.push({
+          apiVersion: ManagedClusterSetBindingApiVersion,
+          kind: ManagedClusterSetBindingKind,
+          metadata: { name: clusterSet, namespace: namespace },
+          spec: {
+            clusterSet: clusterSet,
+          },
+        })
+      })
 
     const placement: Placement = {
       apiVersion: PlacementApiVersionBeta,
       kind: PlacementKind,
       metadata: { name: `${name}-placement`, namespace: namespace },
       spec: {
-        clusterSets: [clusterSet],
+        clusterSets: clusterSet,
       },
     }
 
-    return [gitOpsCluster, managedClusterSetBinding, placement]
+    return [gitOpsCluster, ...managedClusterSetBindings, placement]
   }
+
+  function stateToSyncs() {
+    const syncs = [
+      { path: 'GitOpsCluster[0].metadata.name' ?? '', setState: setName },
+      { path: 'GitOpsCluster[0].metadata.namespace' ?? '', setState: setNamespace },
+      { path: 'ManagedClusterSetBinding[*].metadata.name' ?? '', setState: setClusterSet },
+    ]
+    return syncs
+  }
+
   const formData: FormData = {
     title: t('Add Argo Server'),
     description: t(
@@ -136,17 +150,18 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
           },
           {
             id: 'clusterset',
-            type: 'Select',
+            type: 'Multiselect',
             label: t('ClusterSet'),
-            placeholder: t('Select the cluster set'),
             value: clusterSet,
             onChange: setClusterSet,
-            isRequired: true,
             options: clusterSets.map((clusterSet) => {
               const name = clusterSet.metadata?.name!
+              const description =
+                name === 'global' ? t('Deploy to all clusters') : clusterSet?.status.conditions[0].message
               return {
                 id: name,
                 value: name,
+                description,
               }
             }),
           },
@@ -163,10 +178,6 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
           autoClose: true,
         })
 
-        // if (newCredentialCallback) {
-        //   newCredentialCallback(credentialData)
-        // }
-
         handleModalToggle()
       })
     },
@@ -179,6 +190,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     cancelLabel: 'Cancel',
     cancel: handleModalToggle,
     stateToData,
+    stateToSyncs,
   }
 
   return <AcmDataFormPage formData={formData} mode={'form'} editorTitle={t('GitOpsCluster YAML')} schema={schema} />
