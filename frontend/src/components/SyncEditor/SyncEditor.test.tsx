@@ -1330,7 +1330,7 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: "```html\nMust have required property 'name' \n```" },
+      glyphMarginHoverMessage: { value: "```html\nmust have required property 'name' \n```" },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
@@ -1385,7 +1385,7 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: Test \n```' },
+      glyphMarginHoverMessage: { value: '```html\nmust be equal to constant: Test \n```' },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
@@ -1411,7 +1411,7 @@ const semanticErrors = [
       isWholeLine: true,
       glyphMarginClassName: 'warningDecoration',
       glyphMarginHoverMessage: {
-        value: '```html\n' + 'Must be equal to one of the allowed values: "ost", "vmw" \n' + '```',
+        value: '```html\n' + 'must be equal to one of the allowed values: "ost", "vmw" \n' + '```',
       },
       overviewRuler: { color: '#ffff00', position: 4 },
       minimap: { color: '#ffff0060', position: 1 },
@@ -1437,7 +1437,7 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: '```html\nMust be string \n```' },
+      glyphMarginHoverMessage: { value: '```html\nmust be string \n```' },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
@@ -1493,7 +1493,7 @@ const semanticErrors = [
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
       glyphMarginHoverMessage: {
-        value: '```html\nMust match pattern "[%d] [%p] [application-ui] [%c] %m" \n```',
+        value: '```html\nmust match pattern "[%d] [%p] [application-ui] [%c] %m" \n```',
       },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
