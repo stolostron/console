@@ -175,11 +175,18 @@ export function AnsibleAutomationsForm(props: {
   }, [newSecret])
 
   useEffect(() => {
+    // clear error and lists before fetching
+    setAnsibleTowerAuthError('')
+    setAnsibleTowerJobTemplateList([])
+    setAnsibleTowerWorkflowTemplateList([])
+    setAnsibleTowerInventoryList([])
+
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
       const inventoryList: string[] = []
       const jobList: string[] = []
       const workflowList: string[] = []
+
       Promise.all([
         listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
           (response) => {
@@ -208,22 +215,17 @@ export function AnsibleAutomationsForm(props: {
             }
           }
         ),
-      ])
-        .then(() => {
-          setAnsibleTowerAuthError('')
-        })
-        .catch((err) => {
-          console.log('CAUGHT THE ERROR')
-          console.log(err)
-          setAnsibleTowerAuthError(
-            err.code === ResourceErrorCode.InternalServerError && err.reason
-              ? t('validate.ansible.reason', { reason: err.reason })
-              : t('validate.ansible.host')
-          )
-          setAnsibleTowerJobTemplateList([])
-          setAnsibleTowerWorkflowTemplateList([])
-          setAnsibleTowerInventoryList([])
-        })
+      ]).catch((err) => {
+        setAnsibleTowerAuthError(
+          err.code === ResourceErrorCode.InternalServerError && err.reason
+            ? t('validate.ansible.reason', { reason: err.reason })
+            : t('validate.ansible.host')
+        )
+        // clear lists again in case only some requests failed
+        setAnsibleTowerJobTemplateList([])
+        setAnsibleTowerWorkflowTemplateList([])
+        setAnsibleTowerInventoryList([])
+      })
     }
   }, [ansibleSelection, ansibleCredentials, t])
 
