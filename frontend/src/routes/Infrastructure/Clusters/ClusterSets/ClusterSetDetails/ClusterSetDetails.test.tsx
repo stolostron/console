@@ -1071,7 +1071,7 @@ describe('ClusterSetDetails page', () => {
     await typeByTestId('awsAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_access_key_id)
     await typeByTestId('awsSecretAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_secret_access_key)
     await typeByTestId('global-net-cidr', mockManagedClusterNoCredentialsSubmarinerConfig.spec?.globalCIDR!)
-    await clickByLabel('Use custom submariner subscription')
+    await clickByLabel('Use custom Submariner subscription')
 
     await clickByText('Next')
 

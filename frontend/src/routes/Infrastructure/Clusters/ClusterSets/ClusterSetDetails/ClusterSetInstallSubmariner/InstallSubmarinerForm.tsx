@@ -1011,7 +1011,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 {
                   id: 'isCustomSubscription',
                   type: 'Checkbox',
-                  label: t('Use custom submariner subscription'),
+                  label: t('Use custom Submariner subscription'),
                   labelHelp: t('Enable this option to use a custom Submariner subscription.'),
                   value: isCustomSubscriptions[clusterName] !== undefined ? isCustomSubscriptions[clusterName] : false,
                   onChange: (value: boolean) => {
@@ -1044,7 +1044,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   label: t('Source Namespace'),
                   placeholder: t('Enter the SourceNamespace'),
                   labelHelp: t(
-                    'Enter the SourceNamespace  of the catalog source namespace of a submariner subscription.' +
+                    'Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription.' +
                       ' if left blank the default values will be used.'
                   ),
                   value: sourceNamespaces[clusterName] ?? submarinerConfigDefault.sourceNamespace,
@@ -1061,7 +1061,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   type: 'Text',
                   label: t('Channel'),
                   placeholder: t('Enter the channel'),
-                  labelHelp: t('Enter the channel of a submariner subscription.'),
+                  labelHelp: t('Enter the channel of a Submariner subscription.'),
                   value: channels[clusterName],
                   isHidden: !isCustomSubscriptions[clusterName],
                   onChange: (value) => {
@@ -1076,7 +1076,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   type: 'Text',
                   label: t('Starting CSV'),
                   placeholder: t('Enter the startingCSV'),
-                  labelHelp: t('Enter the startingCSV of a submariner subscription'),
+                  labelHelp: t('Enter the startingCSV of a Submariner subscription'),
                   value: startingCSVs[clusterName],
                   isHidden: !isCustomSubscriptions[clusterName],
                   onChange: (value) => {
