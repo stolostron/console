@@ -1475,8 +1475,6 @@ describe('Automation Details', () => {
 
     await waitForText('Install')
     await waitForText('posthook-1')
-
-    await waitForText('Upgrade')
   })
 })
 

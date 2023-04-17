@@ -577,8 +577,10 @@ export const onChangeAutomationTemplate = (control, controlData) => {
   const curations = getControlByID(controlData, 'supportedCurations')?.active
   if (control.active && clusterCuratorTemplate) {
     const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
-    if (clusterCurator.spec?.install?.prehook?.length) {
+    if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
       clusterCurator.spec.desiredCuration = 'install'
+    }
+    if (clusterCurator.spec?.install?.prehook?.length) {
       reconcilePause.active = 'true'
     }
     curations.forEach((curation) => {

@@ -5,13 +5,14 @@ import {
   ButtonVariant,
   Flex,
   FlexItem,
+  Label,
   PageSection,
   Stack,
   Text,
   TextContent,
   TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon, TrashIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlertContext,
@@ -42,6 +43,7 @@ import {
   ClusterStatus,
   deleteResource,
   ResourceErrorCode,
+  isClusterPoolDeleting,
 } from '../../../../resources'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
@@ -211,6 +213,8 @@ export function ClusterPoolsTable(props: {
     return clusterPool.metadata.uid!
   }
 
+  const deletingPools = clusterPools?.filter((clusterPool) => isClusterPoolDeleting(clusterPool))
+
   return (
     <Fragment>
       <BulkActionModal<ClusterPool> {...modalProps} />
@@ -219,6 +223,7 @@ export function ClusterPoolsTable(props: {
       <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
       <AcmTable<ClusterPool>
         items={clusterPools}
+        disabledItems={deletingPools}
         addSubRows={(clusterPool: ClusterPool) => {
           const clusterPoolClusters = clusters.filter(
             (cluster) =>
@@ -284,21 +289,31 @@ export function ClusterPoolsTable(props: {
           {
             header: t('table.cluster.statuses'),
             cell: (clusterPool: ClusterPool) => {
-              return <ClusterStatuses clusterPool={clusterPool} />
+              if (isClusterPoolDeleting(clusterPool)) {
+                return (
+                  <Label color="grey" icon={<TrashIcon />}>
+                    {t('Deleting')}
+                  </Label>
+                )
+              } else {
+                return <ClusterStatuses clusterPool={clusterPool} />
+              }
             },
           },
           {
             header: t('table.available'),
             cell: (clusterPool: ClusterPool) => {
-              const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
-              return (
-                <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                  {t('outOf', {
-                    firstNumber: ready,
-                    secondNumber: clusterPool.spec!.size,
-                  })}
-                </span>
-              )
+              if (!isClusterPoolDeleting(clusterPool)) {
+                const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
+                return (
+                  <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+                    {t('outOf', {
+                      firstNumber: ready,
+                      secondNumber: clusterPool.spec!.size,
+                    })}
+                  </span>
+                )
+              }
             },
           },
           {
@@ -324,87 +339,91 @@ export function ClusterPoolsTable(props: {
             header: '',
             cellTransforms: [fitContent],
             cell: (clusterPool: ClusterPool) => {
-              return (
-                <RbacButton
-                  onClick={() => {
-                    setClusterClaimModalProps({
-                      clusterPool,
-                      onClose: () => setClusterClaimModalProps(undefined),
-                    })
-                  }}
-                  variant="link"
-                  style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                  rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
-                >
-                  {t('clusterPool.claim')}
-                </RbacButton>
-              )
+              if (!isClusterPoolDeleting(clusterPool)) {
+                return (
+                  <RbacButton
+                    onClick={() => {
+                      setClusterClaimModalProps({
+                        clusterPool,
+                        onClose: () => setClusterClaimModalProps(undefined),
+                      })
+                    }}
+                    variant="link"
+                    style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                    rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
+                  >
+                    {t('clusterPool.claim')}
+                  </RbacButton>
+                )
+              }
             },
           },
           {
             header: '',
             cellTransforms: [fitContent],
             cell: (clusterPool: ClusterPool) => {
-              const actions = [
-                {
-                  id: 'scaleClusterPool',
-                  text: t('clusterPool.scale'),
-                  isAriaDisabled: true,
-                  rbac: [rbacPatch(clusterPool)],
-                  click: (clusterPool: ClusterPool) => {
-                    setScaleClusterPoolModalProps({
-                      clusterPool,
-                      onClose: () => setScaleClusterPoolModalProps(undefined),
-                    })
+              if (!isClusterPoolDeleting(clusterPool)) {
+                const actions = [
+                  {
+                    id: 'scaleClusterPool',
+                    text: t('clusterPool.scale'),
+                    isAriaDisabled: true,
+                    rbac: [rbacPatch(clusterPool)],
+                    click: (clusterPool: ClusterPool) => {
+                      setScaleClusterPoolModalProps({
+                        clusterPool,
+                        onClose: () => setScaleClusterPoolModalProps(undefined),
+                      })
+                    },
                   },
-                },
-                {
-                  id: 'updateReleaseImage',
-                  text: t('clusterPool.updateReleaseImage'),
-                  isAriaDisabled: true,
-                  rbac: [rbacPatch(clusterPool)],
-                  click: (clusterPool: ClusterPool) => {
-                    return setUpdateReleaseImageModalProps({
-                      clusterPools: [clusterPool],
-                      close: () => setUpdateReleaseImageModalProps(undefined),
-                    })
+                  {
+                    id: 'updateReleaseImage',
+                    text: t('clusterPool.updateReleaseImage'),
+                    isAriaDisabled: true,
+                    rbac: [rbacPatch(clusterPool)],
+                    click: (clusterPool: ClusterPool) => {
+                      return setUpdateReleaseImageModalProps({
+                        clusterPools: [clusterPool],
+                        close: () => setUpdateReleaseImageModalProps(undefined),
+                      })
+                    },
                   },
-                },
-                {
-                  id: 'destroy',
-                  text: t('clusterPool.destroy'),
-                  isAriaDisabled: true,
-                  click: (clusterPool: ClusterPool) => {
-                    setModalProps({
-                      open: true,
-                      title: t('bulk.title.destroyClusterPool'),
-                      action: t('destroy'),
-                      processing: t('destroying'),
-                      items: [clusterPool],
-                      emptyState: undefined, // there is always 1 item supplied
-                      description: t('bulk.message.destroyClusterPool'),
-                      columns: modalColumns,
-                      keyFn: mckeyFn,
-                      actionFn: deleteResource,
-                      confirmText: clusterPool.metadata.name!,
-                      close: () => setModalProps({ open: false }),
-                      isDanger: true,
-                      icon: 'warning',
-                    })
+                  {
+                    id: 'destroy',
+                    text: t('clusterPool.destroy'),
+                    isAriaDisabled: true,
+                    click: (clusterPool: ClusterPool) => {
+                      setModalProps({
+                        open: true,
+                        title: t('bulk.title.destroyClusterPool'),
+                        action: t('destroy'),
+                        processing: t('destroying'),
+                        items: [clusterPool],
+                        emptyState: undefined, // there is always 1 item supplied
+                        description: t('bulk.message.destroyClusterPool'),
+                        columns: modalColumns,
+                        keyFn: mckeyFn,
+                        actionFn: deleteResource,
+                        confirmText: clusterPool.metadata.name!,
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                      })
+                    },
+                    rbac: [rbacDelete(clusterPool)],
                   },
-                  rbac: [rbacDelete(clusterPool)],
-                },
-              ]
+                ]
 
-              return (
-                <RbacDropdown<ClusterPool>
-                  id={`${clusterPool.metadata.name}-actions`}
-                  item={clusterPool}
-                  isKebab={true}
-                  text={`${clusterPool.metadata.name}-actions`}
-                  actions={actions}
-                />
-              )
+                return (
+                  <RbacDropdown<ClusterPool>
+                    id={`${clusterPool.metadata.name}-actions`}
+                    item={clusterPool}
+                    isKebab={true}
+                    text={`${clusterPool.metadata.name}-actions`}
+                    actions={actions}
+                  />
+                )
+              }
             },
           },
         ]}

@@ -11,9 +11,9 @@ import {
   getHCUpgradeStatus,
   getIsHostedCluster,
 } from './get-cluster'
-import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../cluster-claim'
 import { HostedClusterApiVersion, HostedClusterKind } from '..'
 import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { cloneDeep } from 'lodash'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
@@ -467,7 +467,12 @@ const mockClusterDeployment: ClusterDeployment = {
   },
 }
 
-const mockClusterDeploymentInstalled: ClusterDeployment = {
+const mockClusterDeploymentClusterPoolRef: Required<ClusterDeployment>['spec']['clusterPoolRef'] = {
+  poolName: 'example-pool',
+  namespace: 'example-pool',
+}
+
+const mockClusterDeploymentInstalled: Required<ClusterDeployment> = {
   apiVersion: ClusterDeploymentApiVersion,
   kind: ClusterDeploymentKind,
   metadata: {
@@ -484,10 +489,7 @@ const mockClusterDeploymentInstalled: ClusterDeployment = {
   spec: {
     baseDomain: 'dev02.test-chesterfield.com',
     clusterName: clusterName,
-    clusterPoolRef: {
-      poolName: 'example-pool',
-      namespace: 'example-pool',
-    },
+    clusterPoolRef: mockClusterDeploymentClusterPoolRef,
     installed: true,
     platform: {
       aws: {
@@ -757,15 +759,6 @@ const mockClusterDeploymentUnknown: ClusterDeployment = {
   },
 }
 
-const mockClusterClaim: ClusterClaim = {
-  apiVersion: ClusterClaimApiVersion,
-  kind: ClusterClaimKind,
-  metadata: {
-    name: 'claim',
-    namespace: 'default',
-  },
-}
-
 describe('getDistributionInfo', () => {
   it('should have correct available updates and available channels', () => {
     const d = getDistributionInfo(
@@ -903,21 +896,24 @@ describe('getClusterStatus', () => {
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.running)
     expect(status.statusMessage).toBeUndefined()
   })
   it('should return detached for a claimed running cluster', () => {
+    const mockClusterDeploymentClaimed = cloneDeep(mockClusterDeploymentInstalled)
+    const mockClusterPoolRefClaimed = cloneDeep(mockClusterDeploymentClusterPoolRef)
+    mockClusterPoolRefClaimed.claimName = 'claim'
+    mockClusterDeploymentClaimed.spec.clusterPoolRef = mockClusterPoolRefClaimed
+
     const status = getClusterStatus(
-      mockClusterDeploymentInstalled,
+      mockClusterDeploymentClaimed,
       undefined /* managedClusterInfo */,
       undefined /* certificateSigningRequests */,
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      mockClusterClaim,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.detached)
@@ -931,7 +927,6 @@ describe('getClusterStatus', () => {
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.hibernating)
@@ -945,7 +940,6 @@ describe('getClusterStatus', () => {
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.resuming)
@@ -961,7 +955,6 @@ describe('getClusterStatus', () => {
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.stopping)
@@ -975,7 +968,6 @@ describe('getClusterStatus', () => {
       undefined /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.unknown)
@@ -989,7 +981,6 @@ describe('getClusterStatus', () => {
       mockHostedClusterManagedCluster /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       mockHostedCluster /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.unknown)
@@ -1003,7 +994,6 @@ describe('getClusterStatus', () => {
       mockManagedClusterImporting /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.importing)
@@ -1017,7 +1007,6 @@ describe('getClusterStatus', () => {
       mockManagedClusterImportfailed /* managedCluster */,
       undefined /* clusterCurator */,
       undefined /* agentClusterInstall */,
-      undefined /* clusterClaim */,
       undefined /* hostedCluster */
     )
     expect(status.status).toBe(ClusterStatus.importfailed)

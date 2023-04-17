@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
+import { SelectOption, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -10,6 +10,7 @@ import {
   ClusterCurator,
   ClusterCuratorDefinition,
   createResource,
+  curatorActionHasJobs,
   IRequestResult,
   patchResource,
   ResourceError,
@@ -18,6 +19,8 @@ import {
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -66,6 +69,34 @@ export function BatchUpgradeModal(props: {
   const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
   const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
 
+  const { clusterCuratorsState } = useSharedAtoms()
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+
+  const description = useMemo(() => {
+    const hasUpgradeActions = upgradeableClusters.some((cluster) => {
+      const curator = clusterCurators.find((cc) => cc.metadata?.namespace === cluster.namespace)
+      return curatorActionHasJobs(curator?.spec?.upgrade)
+    })
+    return (
+      <Stack hasGutter>
+        {hasUpgradeActions && (
+          <StackItem>
+            <AcmAlert
+              isInline
+              noClose
+              variant="info"
+              title={t('Automation templates are configured')}
+              message={t(
+                'One or more of the selected clusters have automations that will run before or after the upgrade. Expand the table rows to view the Ansible templates for each cluster.'
+              )}
+            />
+          </StackItem>
+        )}
+        <StackItem>{t('bulk.message.upgrade')}</StackItem>
+      </Stack>
+    )
+  }, [clusterCurators, upgradeableClusters, t])
+
   useEffect(() => {
     // set up latest if not selected
     const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
@@ -90,7 +121,7 @@ export function BatchUpgradeModal(props: {
         setSelectVersions({})
         props.close()
       }}
-      description={t('bulk.message.upgrade')}
+      description={description}
       columns={[
         {
           header: t('upgrade.table.name'),
@@ -149,6 +180,30 @@ export function BatchUpgradeModal(props: {
           },
         },
       ]}
+      addSubRows={(item: Cluster) => {
+        const clusterCurator = item.isCurator
+          ? clusterCurators.find((cc) => cc.metadata?.namespace === item.namespace)
+          : undefined
+        const upgradeAction = clusterCurator?.spec?.upgrade
+        return upgradeAction && curatorActionHasJobs(upgradeAction)
+          ? [
+              {
+                noPadding: false,
+                cells: [
+                  {
+                    title: (
+                      <PrePostTemplatesList
+                        preLabel={t('template.preUpgrade.label')}
+                        postLabel={t('template.postUpgrade.label')}
+                        curatorAction={upgradeAction}
+                      />
+                    ),
+                  },
+                ],
+              },
+            ]
+          : []
+      }}
       keyFn={(cluster) => cluster.name as string}
       actionFn={(cluster) => {
         if (!cluster.name || !selectVersions[cluster.name]) {
