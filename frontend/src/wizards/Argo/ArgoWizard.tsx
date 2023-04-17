@@ -344,12 +344,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 required
                 id="name"
                 validation={validateAppSetName}
+                disabled={!hideInstallPrompt}
               />
               <Select
                 id="namespace"
                 path="metadata.namespace"
                 label={t('Argo server')}
                 placeholder={t('Select the Argo server')}
+                disabled={!hideInstallPrompt}
                 labelHelp={
                   <Fragment>
                     <Text>{t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}</Text>
@@ -382,6 +384,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 options={requeueTimes}
                 labelHelp={t('Cluster decision resource requeue time in seconds')}
                 required
+                disabled={!hideInstallPrompt}
               />
             </Section>
           </WizItemSelector>

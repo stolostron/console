@@ -24,6 +24,7 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Divider,
   Drawer,
   DrawerColorVariant,
   DrawerContent,
@@ -384,44 +385,48 @@ export function AcmDataFormDefault(props: {
       })}
 
       <Stack>
-        {submitError && <Alert isInline variant="danger" title={submitError} />}
-        <ActionGroup>
-          <ActionList>
-            <ActionListGroup>
-              <ActionListItem>
-                <Button
-                  onClick={() => {
-                    setShowFormErrors(true)
-                    if (!formHasErrors(t, formData)) {
-                      try {
-                        const result = formData.submit()
-                        if ((result as unknown) instanceof Promise) {
-                          setSubmitText(formData.submittingText)
-                          ;(result as unknown as Promise<void>).catch((err) => {
-                            if (err instanceof Error) setSubmitError(err.message)
-                            setSubmitText(formData.submitText)
-                          })
+        <StackItem>
+          {submitError && <Alert isInline variant="danger" title={submitError} />}
+
+          <ActionGroup>
+            <Divider />
+            <ActionList>
+              <ActionListGroup>
+                <ActionListItem>
+                  <Button
+                    onClick={() => {
+                      setShowFormErrors(true)
+                      if (!formHasErrors(t, formData)) {
+                        try {
+                          const result = formData.submit()
+                          if ((result as unknown) instanceof Promise) {
+                            setSubmitText(formData.submittingText)
+                            ;(result as unknown as Promise<void>).catch((err) => {
+                              if (err instanceof Error) setSubmitError(err.message)
+                              setSubmitText(formData.submitText)
+                            })
+                          }
+                        } catch (err) {
+                          if (err instanceof Error) setSubmitError(err.message)
                         }
-                      } catch (err) {
-                        if (err instanceof Error) setSubmitError(err.message)
                       }
-                    }
-                  }}
-                  variant="primary"
-                  isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
-                  isLoading={isSubmitting}
-                >
-                  {submitText}
-                </Button>
-              </ActionListItem>
-              <ActionListItem>
-                <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
-                  {formData.cancelLabel}
-                </Button>
-              </ActionListItem>
-            </ActionListGroup>
-          </ActionList>
-        </ActionGroup>
+                    }}
+                    variant="primary"
+                    isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
+                    isLoading={isSubmitting}
+                  >
+                    {submitText}
+                  </Button>
+                </ActionListItem>
+                <ActionListItem>
+                  <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
+                    {formData.cancelLabel}
+                  </Button>
+                </ActionListItem>
+              </ActionListGroup>
+            </ActionList>
+          </ActionGroup>
+        </StackItem>
       </Stack>
     </Form>
   )

@@ -2,8 +2,6 @@
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { useContext, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { argoCDsState } from '../../atoms'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { SyncEditor } from '../../components/SyncEditor/SyncEditor'
@@ -24,6 +22,7 @@ import { AcmToastContext } from '../../ui-components'
 import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
 import './CreateArgoResources.css'
+import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 
 export interface ICreateArgoResourcesModalProps {
   handleModalToggle: () => void
@@ -50,6 +49,8 @@ export function WizardSyncEditor() {
 export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
   const { t } = useTranslation()
   const { handleModalToggle, clusterSets } = props
+
+  const { argoCDsState } = useSharedAtoms()
 
   const [argoCDs] = useRecoilState(argoCDsState)
 
@@ -153,7 +154,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
       },
     ],
     submit: () => {
-      let createData = stateToData()
+      const createData = stateToData()
       return reconcileResources(createData, []).then(() => {
         toast.addAlert({
           title: t('GitOpsCluster created'),
