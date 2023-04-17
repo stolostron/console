@@ -90,7 +90,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
         glyphMarginClassName: 'errorDecoration',
         overviewRuler: { color: '#ff0000', position: 4 },
         minimap: { color: '#ff000060', position: 1 },
-        glyphMarginHoverMessage: { value: '```html\n' + startCase(message) + ' \n```' },
+        glyphMarginHoverMessage: { value: '```html\n' + message + ' \n```' },
         description: 'resource-editor',
       }
       const squiggly = {

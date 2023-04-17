@@ -122,6 +122,8 @@ export function AnsibleAutomationsForm(props: {
 
   const { settingsState } = useSharedAtoms()
   const [settings] = useRecoilState(settingsState)
+  const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
+  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const history = useHistory()
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
@@ -283,13 +285,11 @@ export function AnsibleAutomationsForm(props: {
     return curator
   }
 
-  const jobTypes = [{ type: 'install' }, { type: 'upgrade' }, { type: 'scale' }, { type: 'destroy' }]
-
   function setAnsibleSelections(value: any) {
     const errors: any[] = []
     let secret: SetStateAction<string> = ansibleSelection
     if (Object.keys(value).length) {
-      jobTypes.forEach(({ type }) => {
+      supportedCurations.forEach((type) => {
         const path = `ClusterCurator[0].spec.${type}.towerAuthSecret`
         const testSecret = get(value, `${type}.towerAuthSecret`)
         if (!!testSecret && testSecret !== ansibleSelection) {
@@ -332,10 +332,10 @@ export function AnsibleAutomationsForm(props: {
       value.forEach(({ type: jobType, name }, index) => {
         const path = `ClusterCurator[0].spec.${type}.${preHook ? 'prehook' : 'posthook'}.${index}`
         if (!['Job', 'Workflow'].includes(jobType)) {
-          errors.push({ path: `${path}.type`, message: 'Must be Job or Workflow' })
+          errors.push({ path: `${path}.type`, message: t('Must be Job or Workflow') })
         }
         if (name && !AnsibleTowerJobTemplateList?.includes(name)) {
-          errors.push({ path: `${path}.name`, message: `'${name}' is not an existing job` })
+          errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an existing job', { name }) })
         }
       })
       if (!errors.length) {
@@ -365,7 +365,7 @@ export function AnsibleAutomationsForm(props: {
       { path: 'ClusterCurator[0].spec.inventory', setter: setAnsibleInventorySelection.bind(null) },
       { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
     ]
-    jobTypes.forEach(({ type }) => {
+    supportedCurations.forEach((type) => {
       syncs = [
         ...syncs,
         { path: `ClusterCurator[0].spec.${type}.prehook`, setter: setCustomHook.bind(null, type, true) },
