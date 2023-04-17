@@ -38,9 +38,7 @@ export interface PolicyAutomationWizardProps {
   resource: IPolicyAutomation
   onSubmit: WizardSubmit
   onCancel: WizardCancel
-  getAnsibleJobsCallback: (
-    credential: IResource
-  ) => Promise<{ name: string; description?: string; jobTemplateID: string }[]>
+  getAnsibleJobsCallback: (credential: IResource) => Promise<{ name: string; description?: string; id: string }[]>
 }
 
 export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
@@ -55,7 +53,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     () => ansibleCredentials.map((credential) => credential.metadata?.name ?? ''),
     [ansibleCredentials]
   )
-  const [jobTemplates, setjobTemplates] = useState<{ name: string; description?: string; jobTemplateID: string }[]>()
+  const [jobTemplates, setjobTemplates] = useState<{ name: string; description?: string; id: string }[]>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
 

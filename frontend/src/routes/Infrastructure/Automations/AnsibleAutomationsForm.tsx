@@ -145,14 +145,14 @@ export function AnsibleAutomationsForm(props: {
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
   const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
   const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<
-    { name?: string; description?: string; inventoryID?: string }[]
+    { name?: string; description?: string; id?: string }[]
   >([])
 
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
-    { name: string; description?: string; jobTemplateID: string }[] | undefined
+    { name: string; description?: string; id: string }[] | undefined
   >()
   const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
-    useState<{ name: string; description?: string; jobTemplateID: string }[]>()
+    useState<{ name: string; description?: string; id: string }[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
   const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
@@ -195,9 +195,9 @@ export function AnsibleAutomationsForm(props: {
   useEffect(() => {
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
-      const inventoryList: { name: string; description?: string; inventoryID: string }[] | undefined = []
-      const jobList: { name: string; description?: string; jobTemplateID: string }[] = []
-      const workflowList: { name: string; description?: string; jobTemplateID: string }[] = []
+      const inventoryList: { name: string; description?: string; id: string }[] | undefined = []
+      const jobList: { name: string; description?: string; id: string }[] = []
+      const workflowList: { name: string; description?: string; id: string }[] = []
       Promise.all([
         listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
           (response) => {
@@ -207,13 +207,13 @@ export function AnsibleAutomationsForm(props: {
                   jobList.push({
                     name: template.name,
                     description: template.description,
-                    jobTemplateID: template.jobTemplateID,
+                    id: template.id,
                   })
                 } else if (template.type === 'workflow_job_template' && template.name) {
                   workflowList.push({
                     name: template.name,
                     description: template.description,
-                    jobTemplateID: template.jobTemplateID,
+                    id: template.id,
                   })
                 }
               })
@@ -230,7 +230,7 @@ export function AnsibleAutomationsForm(props: {
                   inventoryList.push({
                     name: inventory.name,
                     description: inventory?.description,
-                    inventoryID: inventory.inventoryID,
+                    id: inventory.id,
                   })
                 }
               })
@@ -395,21 +395,20 @@ export function AnsibleAutomationsForm(props: {
             value: ansibleInventory,
             onChange: setAnsibleInventory,
             isRequired: false,
-            options: ansibleTowerInventoryList.map(({ name, description, inventoryID }) => ({
+            options: ansibleTowerInventoryList.map(({ name, description }) => ({
               id: name as string,
               value: name as string,
               description: description,
-              inventoryID,
             })),
             isHidden: !ansibleSelection,
             prompt: ansibleInventory
               ? {
-                  text: t('View Ansible Inventory'),
+                  text: t('View Ansible inventory'),
                   linkType: LinkType.external,
                   callback: () => {
                     window.open(
                       `${ansibleCredentials[0].stringData?.host}/#/inventories/inventory/${
-                        ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.inventoryID
+                        ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.id
                       }`
                     )
                   },
@@ -690,8 +689,8 @@ export function AnsibleAutomationsForm(props: {
 function EditAnsibleJobModal(props: {
   ansibleSelection?: string
   ansibleCredentials: ProviderConnection[]
-  ansibleTowerTemplateList: { name: string; description?: string; jobTemplateID: string }[] | undefined
-  ansibleTowerWorkflowTemplateList: { name: string; description?: string; jobTemplateID: string }[] | undefined
+  ansibleTowerTemplateList: { name: string; description?: string; id: string }[] | undefined
+  ansibleTowerWorkflowTemplateList: { name: string; description?: string; id: string }[] | undefined
   ansibleJob?: ClusterCuratorAnsibleJob
   ansibleJobList?: ClusterCuratorAnsibleJob[]
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
@@ -801,9 +800,8 @@ function EditAnsibleJobModal(props: {
                   const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!
                     .stringData?.host
                   const jobID = filterForJobTemplates
-                    ? ansibleTowerTemplateList.find((template) => template.name === ansibleJob?.name)?.jobTemplateID
-                    : ansibleTowerWorkflowTemplateList.find((template) => template.name === ansibleJob?.name)
-                        ?.jobTemplateID
+                    ? ansibleTowerTemplateList.find((template) => template.name === ansibleJob?.name)?.id
+                    : ansibleTowerWorkflowTemplateList.find((template) => template.name === ansibleJob?.name)?.id
                   window.open(`${hostURL}/#/templates/${templateType}/${jobID}`)
                 }
               }}

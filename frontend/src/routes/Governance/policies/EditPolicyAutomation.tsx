@@ -101,12 +101,12 @@ export function EditPolicyAutomation() {
           ansibleJobs.promise
             .then((response) => {
               if (response) {
-                let templateList: { name: string; description?: string; jobTemplateID: string }[] = []
+                let templateList: { name: string; description?: string; id: string }[] = []
                 if (response?.results) {
                   templateList = response.results!.map((job) => ({
                     name: job.name!,
                     description: job.description,
-                    jobTemplateID: job.jobTemplateID,
+                    id: job.id,
                   }))
                 }
                 resolve(templateList)

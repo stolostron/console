@@ -493,7 +493,7 @@ async function getAnsibleTemplates(
         name: ansibleJob.name,
         type: ansibleJob.type!,
         description: ansibleJob.description,
-        jobTemplateID: ansibleJob.id,
+        id: ansibleJob.id,
       }
     }),
   }
@@ -551,7 +551,7 @@ async function getAnsibleInventories(
           name: ansibleInventory.name,
           type: ansibleInventory.type!,
           description: ansibleInventory.description,
-          inventoryID: ansibleInventory.id,
+          id: ansibleInventory.id,
         }
       }
     ),
