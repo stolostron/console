@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ModalVariant } from '@patternfly/react-core'
-import { AcmCodeSnippet, AcmModal } from '../../../../../ui-components'
+import { ClipboardCopy, ModalVariant } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../../resources/userpreference'
+import { AcmModal } from '../../../../../ui-components'
 
 export const ShareSearchModal = (props: { onClose: () => void; shareSearch: SavedSearch }) => {
   const { onClose, shareSearch } = props
@@ -27,12 +27,9 @@ export const ShareSearchModal = (props: { onClose: () => void; shareSearch: Save
         actions={[]}
       >
         <p>{t('Copy this private URL to share')}</p>
-        <AcmCodeSnippet
-          id="snippet"
-          command={GetUrl()}
-          copyTooltipText={t('Copy to clipboard')}
-          copySuccessText={t('Copied!')}
-        />
+        <ClipboardCopy isReadOnly={true} hoverTip={t('Copy to clipboard')} clickTip={t('Copied!')}>
+          {GetUrl()}
+        </ClipboardCopy>
       </AcmModal>
     </Fragment>
   )
