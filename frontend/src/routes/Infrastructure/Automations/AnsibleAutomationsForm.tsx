@@ -145,7 +145,7 @@ export function AnsibleAutomationsForm(props: {
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
   const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
   const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<
-    { name?: string; description?: string; id?: string }[]
+    { name: string; description?: string; id: string }[]
   >([])
 
   const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
