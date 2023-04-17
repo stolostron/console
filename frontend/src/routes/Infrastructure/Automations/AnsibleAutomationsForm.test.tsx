@@ -16,7 +16,8 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
@@ -244,6 +245,35 @@ describe('add automation template page', () => {
     await clickByPlaceholderText('Search or select a job template name', 0)
     await clickByText(mockTemplateList.results![3].name!, 0)
     await clickByText('Save')
+
+    // open yaml and use yaml to change stuff
+    await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    await waitFor(() => expect(input).not.toHaveValue(''))
+    const changeYaml = (path: string, text: string) => {
+      const i = input.value.indexOf(path) + path.length
+      input.setSelectionRange(i, i)
+      userEvent.type(input, text)
+    }
+
+    // cause some errors
+    const saved = input.value
+    changeYaml('towerAuthSecret: ', 'x') // change secret to xansible-test-secret -->error!!
+    changeYaml('name: ', 'y') // change job to ytest-job-pre-install-ii -->error!!
+    changeYaml('type: ', 'z') // change type to zJob -->error!!
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    // undo
+    input.select()
+    userEvent.type(input, saved)
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+
+    // close yaml
+    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+
     await clickByText('Next')
 
     // add template
