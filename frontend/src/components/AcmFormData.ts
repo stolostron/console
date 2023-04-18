@@ -67,7 +67,7 @@ export interface InputBase<T> {
   labelHelp?: string
   labelHelpTitle?: string
 
-  prompt?: { text: string; linkType: LinkType; callback: () => void }
+  prompt?: { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
 }
 
 export interface AlertInput extends InputBase<string> {

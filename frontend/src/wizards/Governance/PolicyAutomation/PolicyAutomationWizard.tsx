@@ -178,7 +178,6 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
                     (template) => template.name === (item as IPolicyAutomation).spec?.automationDef?.name
                   )?.id
                 )
-                props.resource.spec.automationDef.secret
               }}
               options={jobTemplates?.map((template) => ({
                 id: template.name,

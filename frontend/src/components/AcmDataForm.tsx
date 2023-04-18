@@ -893,7 +893,12 @@ export function AcmDataFormInputs(props: {
                     </SplitItem>
                     {input.prompt && (
                       <SplitItem>
-                        <AcmButton variant="link" style={{ paddingRight: '0px' }} onClick={input.prompt.callback}>
+                        <AcmButton
+                          variant="link"
+                          style={{ paddingRight: '0px' }}
+                          onClick={input.prompt.callback}
+                          isDisabled={input.prompt.isDisabled}
+                        >
                           {input.prompt.text}
                           {input.prompt.linkType === LinkType.external ||
                           input.prompt.linkType === LinkType.internalNewTab ? (
@@ -912,7 +917,12 @@ export function AcmDataFormInputs(props: {
                     </SplitItem>
                     {input.prompt && (
                       <SplitItem>
-                        <AcmButton variant="link" style={{ paddingRight: '0px' }} onClick={input.prompt.callback}>
+                        <AcmButton
+                          variant="link"
+                          style={{ paddingRight: '0px' }}
+                          onClick={input.prompt.callback}
+                          isDisabled={input.prompt.isDisabled}
+                        >
                           {input.prompt.text}
                           {input.prompt.linkType === LinkType.external ||
                           input.prompt.linkType === LinkType.internalNewTab ? (

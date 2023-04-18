@@ -280,7 +280,7 @@ describe('add automation template page', () => {
     await clickByPlaceholderText('Select an inventory')
     await clickByText(mockInventoryList.results[0].name!)
     window.open = jest.fn()
-    await clickByText('View Ansible inventory')
+    await clickByText('View selected inventory')
     expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/inventories/inventory/1')
   })
 

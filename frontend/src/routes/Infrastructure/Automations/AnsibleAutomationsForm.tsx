@@ -16,7 +16,7 @@ import {
   SelectVariant,
 } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { Link, RouteComponentProps, useHistory } from 'react-router-dom'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
@@ -402,19 +402,18 @@ export function AnsibleAutomationsForm(props: {
               description: description,
             })),
             isHidden: !ansibleSelection,
-            prompt: ansibleInventory
-              ? {
-                  text: t('View Ansible inventory'),
-                  linkType: LinkType.external,
-                  callback: () => {
-                    window.open(
-                      `${ansibleCredentials[0].stringData?.host}/#/inventories/inventory/${
-                        ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.id
-                      }`
-                    )
-                  },
-                }
-              : undefined,
+            prompt: {
+              text: t('View selected inventory'),
+              linkType: LinkType.external,
+              isDisabled: !ansibleInventory,
+              callback: () => {
+                window.open(
+                  `${ansibleCredentials[0].stringData?.host}/#/inventories/inventory/${
+                    ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.id
+                  }`
+                )
+              },
+            },
           },
         ],
       },
@@ -791,10 +790,8 @@ function EditAnsibleJobModal(props: {
             <AcmButton
               id="view-selected"
               isDisabled={!ansibleJob?.name}
-              target="_blank"
               isInline
               variant={ButtonVariant.link}
-              component={Link}
               onClick={() => {
                 if (ansibleCredentials.length) {
                   const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
