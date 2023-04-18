@@ -387,10 +387,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   const matchingGitOps = gitOpsClusters.filter((resource) => resource.metadata.namespace === value)
 
                   // find placement
-                  const placementRef = matchingGitOps.length && matchingGitOps[0].spec?.placementRef
+                  const placementRefName = matchingGitOps.length && matchingGitOps[0].spec?.placementRef?.name
                   const placement = props.placements.find(
                     (placement) =>
-                      placement.metadata?.namespace === value && placement.metadata?.name === placementRef?.name
+                      placement.metadata?.namespace === value && placement.metadata?.name === placementRefName
                   )
 
                   // set filtered cluster set
