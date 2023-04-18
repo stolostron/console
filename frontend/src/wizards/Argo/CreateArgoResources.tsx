@@ -184,6 +184,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     submitText: t('Add'),
     submittingText: t('Adding'),
     reviewTitle: t('Review'),
+    reviewDescription: t('Review and create'),
     nextLabel: t('Next'),
     backLabel: t('Back'),
     cancelLabel: t('Cancel'),
