@@ -13,12 +13,16 @@ import {
   Channel,
   ChannelApiVersion,
   ChannelKind,
+  IResource,
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterInfo,
   ManagedClusterInfoApiVersion,
   ManagedClusterInfoKind,
   ManagedClusterKind,
+  ManagedClusterSet,
+  ManagedClusterSetApiVersion,
+  ManagedClusterSetKind,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
@@ -32,9 +36,54 @@ import {
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
+  SubscriptionOperator,
+  SubscriptionOperatorApiVersion,
+  SubscriptionOperatorKind,
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
 import { ApplicationActionProps } from '../../plugin-extensions/properties'
+
+export const mockArgoCD: IResource = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'ArgoCD',
+  metadata: {
+    name: 'openshift-gitops',
+    namespace: 'openshift-gitops',
+  },
+}
+
+export const mockClusterSet0: ManagedClusterSet = {
+  apiVersion: ManagedClusterSetApiVersion,
+  kind: ManagedClusterSetKind,
+  metadata: {
+    name: 'cluster-set-01',
+    namespace: 'argo-server-1',
+  },
+  spec: {
+    clusterSet: 'cluster-set-01',
+  },
+}
+
+export const gitOpsOperator: SubscriptionOperator = {
+  apiVersion: SubscriptionOperatorApiVersion,
+  kind: SubscriptionOperatorKind,
+  metadata: {
+    name: 'openshift-gitops-operator',
+    namespace: 'openshift-operators',
+  },
+  status: {
+    conditions: [
+      {
+        reason: 'AllCatalogSourcesHealthy',
+        lastTransitionTime: '',
+        message: '',
+        type: 'CatalogSourcesUnhealthy',
+        status: 'False',
+      },
+    ],
+  },
+  spec: {},
+}
 
 export const mockApplication0: Application = {
   apiVersion: ApplicationApiVersion,
@@ -319,7 +368,9 @@ const applicationActionProps: ApplicationActionProps = {
 export const acmExtension: AcmExtension = {
   applicationAction: [applicationActionProps],
 }
+export const gitOpsOperators: SubscriptionOperator[] = [gitOpsOperator]
 export const mockApplications: Application[] = [mockApplication0]
+export const mockClusterSets: ManagedClusterSet[] = [mockClusterSet0]
 export const mockSubscriptions: Subscription[] = [mockSubscription0]
 export const mockChannels: Channel[] = [mockChannel0]
 export const mockPlacementsDecisions: PlacementDecision[] = [mockPlacementDecision0]

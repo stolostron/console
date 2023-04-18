@@ -1,0 +1,114 @@
+[
+  {
+    "type": "GitOpsCluster",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "GitOpsCluster" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
+            },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "argoServer": {
+              "type": "object",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "argoNamespace": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "template": {
+              "type": "object",
+              "properties": {
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" }
+                  },
+                  "required": ["name"]
+                },
+                "spec": {
+                  "type": "object",
+                  "properties": {
+                    "project": { "type": "string" },
+                    "source": {
+                      "type": "object",
+                      "properties": {
+                        "repoURL": { "type": "string" },
+                        "targetRevision": { "type": "string" },
+                        "path": { "type": "string" }
+                      }
+                    },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": { "type": "string" },
+                        "server": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["project", "source", "destination"]
+                }
+              },
+              "required": ["metadata", "spec"]
+            }
+          },
+          "required": ["argoServer", "placementRef"]
+        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "ManagedClusterSetBinding",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "ManagedClusterSetBinding" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "required": ["apiVersion", "kind", "metadata"]
+      }
+    }
+  },
+  {
+    "type": "Placement",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Placement" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata"]
+    }
+  }
+]

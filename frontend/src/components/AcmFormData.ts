@@ -7,7 +7,7 @@ export interface FormData {
   title: string
   titleTooltip?: ReactNode
   description?: string
-  breadcrumb: { text: string; to?: string }[]
+  breadcrumb?: { text: string; to?: string }[]
   sections: (Section | SectionGroup)[]
   submit: () => void
   cancel: () => void

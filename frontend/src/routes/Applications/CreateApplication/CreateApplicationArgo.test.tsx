@@ -11,6 +11,7 @@ import {
   namespacesState,
   placementsState,
   secretsState,
+  subscriptionOperatorsState,
 } from '../../../atoms'
 import {
   nockArgoGitBranches,
@@ -48,6 +49,7 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../resources'
+import { gitOpsOperators } from '../Application.sharedmocks'
 import CreateApplicationArgo from './CreateApplicationArgo'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
@@ -61,7 +63,11 @@ const gitOpsCluster: GitOpsCluster = {
   spec: {
     argoServer: {
       argoNamespace: 'argo-server-1',
-      // cluster?:
+    },
+    placementRef: {
+      apiVersion: PlacementApiVersionBeta,
+      kind: PlacementKind,
+      name: 'mock-placement',
     },
   },
 }
@@ -235,6 +241,18 @@ const argoAppSetHelm: ApplicationSet = {
   },
 }
 
+const mockPlacement: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: {
+    name: 'mock-placement',
+    namespace: gitOpsCluster.metadata.namespace,
+  },
+  spec: {
+    clusterSets: ['cluster-set-01'],
+  },
+}
+
 const placementGit: Placement = {
   apiVersion: PlacementApiVersionBeta,
   kind: PlacementKind,
@@ -264,13 +282,14 @@ describe('Create Argo Application Set', () => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(placementsState, [])
+          snapshot.set(placementsState, [mockPlacement])
           snapshot.set(gitOpsClustersState, [gitOpsCluster])
           snapshot.set(channelsState, [channelGit, channelHelm])
           snapshot.set(namespacesState, [namespace])
           snapshot.set(secretsState, [])
           snapshot.set(managedClusterSetsState, [clusterSet])
           snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
+          snapshot.set(subscriptionOperatorsState, gitOpsOperators)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>

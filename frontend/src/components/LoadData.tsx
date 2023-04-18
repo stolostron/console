@@ -261,7 +261,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
     addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
     addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
-    addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
+    addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
     addSetter(AgentKindVersion, AgentKind, setAgents)
     addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
     addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)

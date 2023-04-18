@@ -91,3 +91,15 @@ export const ansibleOperatorSubscriptionsValue = selector({
     )
   },
 })
+
+export const gitOpsOperatorSubscriptionsValue = selector({
+  key: 'gitOpsOperatorSubscriptions',
+  get: ({ get }) => {
+    const subscriptionOperators = get(subscriptionOperatorsState)
+    return subscriptionOperators.filter(
+      (op) =>
+        op.metadata.name === 'openshift-gitops-operator' &&
+        op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
+    )
+  },
+})

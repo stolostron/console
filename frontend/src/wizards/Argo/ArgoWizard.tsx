@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import {
   Button,
   Flex,
@@ -8,6 +9,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   TextVariants,
+  ModalVariant,
+  Modal,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GitAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
@@ -41,6 +44,10 @@ import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
+import { AutomationProviderHint } from '../../components/AutomationProviderHint'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../shared-recoil'
+import { CreateCredentialModal } from '../../components/CreateCredentialModal'
+import { CreateArgoResources } from './CreateArgoResources'
 
 interface Channel {
   metadata?: {
@@ -181,9 +188,21 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceHelmChannels ?? []), ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
+  const { gitOpsClustersState } = useSharedAtoms()
+  const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+  const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
+
+  const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
+  const gitOpsOperators = useRecoilValue(gitOpsOperatorSubscriptionsValue)
+  const hideInstallPrompt = gitOpsOperators.length > 0
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const handleModalToggle = () => {
+    setIsModalOpen(!isModalOpen)
+  }
 
   useEffect(() => {
     const applicationSet: any = resources?.find((resource) => resource.kind === 'ApplicationSet')
@@ -222,407 +241,451 @@ export function ArgoWizard(props: ArgoWizardProps) {
   })
 
   return (
-    <WizardPage
-      id="application-set-wizard"
-      wizardStrings={translatedWizardStrings}
-      breadcrumb={props.breadcrumb}
-      title={props.resources ? t('Edit application set') : t('Create application set')}
-      yamlEditor={props.yamlEditor}
-      defaultData={
-        props.resources ?? [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            kind: 'ApplicationSet',
-            metadata: { name: '', namespace: '' },
-            spec: {
-              generators: [
-                {
-                  clusterDecisionResource: {
-                    configMapRef: 'acm-placement',
-                    labelSelector: {
-                      matchLabels: {
-                        'cluster.open-cluster-management.io/placement': '-placement',
+    <Fragment>
+      <Modal
+        variant={ModalVariant.large}
+        showClose={false}
+        isOpen={isModalOpen}
+        aria-labelledby="modal-wizard-label"
+        aria-describedby="modal-wizard-description"
+        onClose={handleModalToggle}
+        hasNoBodyWrapper
+      >
+        <CreateArgoResources handleModalToggle={handleModalToggle} clusterSets={props.clusterSets} />
+      </Modal>
+      <WizardPage
+        id="application-set-wizard"
+        wizardStrings={translatedWizardStrings}
+        breadcrumb={props.breadcrumb}
+        title={props.resources ? t('Edit application set') : t('Create application set')}
+        yamlEditor={props.yamlEditor}
+        defaultData={
+          props.resources ?? [
+            {
+              apiVersion: 'argoproj.io/v1alpha1',
+              kind: 'ApplicationSet',
+              metadata: { name: '', namespace: '' },
+              spec: {
+                generators: [
+                  {
+                    clusterDecisionResource: {
+                      configMapRef: 'acm-placement',
+                      labelSelector: {
+                        matchLabels: {
+                          'cluster.open-cluster-management.io/placement': '-placement',
+                        },
                       },
+                      requeueAfterSeconds: 180,
                     },
-                    requeueAfterSeconds: 180,
                   },
-                },
-              ],
-              template: {
-                metadata: {
-                  name: '-{{name}}',
-                  labels: {
-                    'velero.io/exclude-from-backup': 'true',
-                  },
-                },
-                spec: {
-                  project: 'default',
-                  source: {},
-                  destination: { namespace: '', server: '{{server}}' },
-                  syncPolicy: {
-                    automated: {
-                      selfHeal: true,
+                ],
+                template: {
+                  metadata: {
+                    name: '-{{name}}',
+                    labels: {
+                      'velero.io/exclude-from-backup': 'true',
                     },
-                    syncOptions: ['CreateNamespace=true'],
+                  },
+                  spec: {
+                    project: 'default',
+                    source: {},
+                    destination: { namespace: '', server: '{{server}}' },
+                    syncPolicy: {
+                      automated: {
+                        selfHeal: true,
+                      },
+                      syncOptions: ['CreateNamespace=true'],
+                    },
                   },
                 },
               },
             },
-          },
-          {
-            ...PlacementType,
-            metadata: { name: '', namespace: '' },
-            spec: {},
-          },
-        ]
-      }
-      editMode={props.resources ? EditMode.Edit : EditMode.Create}
-      onCancel={props.onCancel}
-      onSubmit={props.onSubmit}
-    >
-      <Step id="general" label={t('General')}>
-        <Sync
-          kind={PlacementKind}
-          path="metadata.name"
-          targetKind="ApplicationSet"
-          targetPath="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
-        />
-        {editMode === EditMode.Create && (
-          <Fragment>
-            <Sync kind="ApplicationSet" path="metadata.name" suffix="-placement" />
-          </Fragment>
-        )}
-        <Sync kind="ApplicationSet" path="metadata.namespace" />
-        <Sync
-          kind="ApplicationSet"
-          path="metadata.name"
-          targetKind="ApplicationSet"
-          targetPath="spec.template.metadata.name"
-          suffix="-{{name}}"
-        />
-        <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-          <Section label={t('General')}>
-            <WizTextInput
-              path="metadata.name"
-              label={t('Name')}
-              placeholder={t('Enter the application set name')}
-              required
-              id="name"
-              validation={validateAppSetName}
+            {
+              ...PlacementType,
+              metadata: { name: '', namespace: '' },
+              spec: {},
+            },
+          ]
+        }
+        editMode={props.resources ? EditMode.Edit : EditMode.Create}
+        onCancel={props.onCancel}
+        onSubmit={props.onSubmit}
+      >
+        <Step id="general" label={t('General')}>
+          <Sync
+            kind={PlacementKind}
+            path="metadata.name"
+            targetKind="ApplicationSet"
+            targetPath="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
+          />
+          {editMode === EditMode.Create && (
+            <Fragment>
+              <Sync kind="ApplicationSet" path="metadata.name" suffix="-placement" />
+            </Fragment>
+          )}
+          <Sync kind="ApplicationSet" path="metadata.namespace" />
+          <Sync
+            kind="ApplicationSet"
+            path="metadata.name"
+            targetKind="ApplicationSet"
+            targetPath="spec.template.metadata.name"
+            suffix="-{{name}}"
+          />
+          <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <AutomationProviderHint
+              component="alert"
+              operatorNotRequired={hideInstallPrompt}
+              notAnsible={true}
+              message={t('OpenShift GitOps Operator is required to create ApplicationSets.')}
+              operatorName={'Red+Hat+OpenShift+GitOps'}
             />
-            <Select
-              id="namespace"
-              path="metadata.namespace"
-              label={t('Argo server')}
-              placeholder={t('Select the Argo server')}
-              labelHelp={
-                <Fragment>
-                  <Text>{t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}</Text>
-                  <TextContent>
-                    <Text
-                      component={TextVariants.a}
-                      isVisitedLink
-                      href={DOC_LINKS.GITOPS_CONFIG}
-                      target="_blank"
-                      style={{
-                        cursor: 'pointer',
-                        display: 'inline-block',
-                        padding: '0px',
-                        fontSize: '14px',
-                        color: '#0066cc',
-                      }}
-                    >
-                      {t('View documentation')} <ExternalLinkAltIcon />
-                    </Text>
-                  </TextContent>
-                </Fragment>
-              }
-              options={props.argoServers}
-              required
-            />
-            <Select
-              path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
-              label={t('Requeue time')}
-              options={requeueTimes}
-              labelHelp={t('Cluster decision resource requeue time in seconds')}
-              required
-            />
-          </Section>
-        </WizItemSelector>
-      </Step>
-      <Step id="template" label={t('Template')}>
-        <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-          <Section label={t('Source')}>
-            <WizTiles
-              path="spec.template.spec.source"
-              label={t('Repository type')}
-              inputValueToPathValue={repositoryTypeToSource}
-              pathValueToInputValue={sourceToRepositoryType}
-              onValueChange={(_, item: ApplicationSet) => {
-                if (item.spec.template?.spec) {
-                  item.spec.template.spec.syncPolicy = {
-                    automated: {
-                      selfHeal: true,
-                      prune: true,
-                    },
-                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                  }
-                }
-              }}
-            >
-              <Tile
-                id="git"
-                value="Git"
-                label={t('Git')}
-                icon={<GitAltIcon />}
-                description={t('Use a Git repository')}
-              />
-              <Tile
-                id="helm"
-                value="Helm"
-                label={t('Helm')}
-                icon={<HelmIcon />}
-                description={t('Use a Helm repository')}
-              />
-            </WizTiles>
-            {/* Git repo */}
-            <WizHidden hidden={(data) => data.spec.template.spec.source.path === undefined}>
-              <Select
-                path="spec.template.spec.source.repoURL"
-                label={t('URL')}
-                labelHelp={t('The URL path for the Git repository.')}
-                placeholder={t('Enter or select a Git URL')}
-                options={gitChannels}
-                onValueChange={(value) => {
-                  const channel = props.channels?.find((channel) => channel.spec.pathname === value)
-                  setGitRevisionsAsyncCallback(
-                    () => () =>
-                      getGitBranchList(
-                        {
-                          metadata: {
-                            name: channel?.metadata?.name,
-                            namespace: channel?.metadata?.namespace,
-                          },
-                          spec: { pathname: value as string, type: 'git' },
-                        },
-                        props.getGitRevisions
-                      )
-                  )
-                }}
-                validation={validateWebURL}
+            <Section label={t('General')}>
+              <WizTextInput
+                path="metadata.name"
+                label={t('Name')}
+                placeholder={t('Enter the application set name')}
                 required
-                isCreatable
-                onCreate={(value: string) =>
-                  setCreatedChannels((channels) => {
-                    if (!channels.includes(value)) {
-                      channels.push(value)
+                id="name"
+                validation={validateAppSetName}
+                disabled={!hideInstallPrompt}
+              />
+              <Select
+                id="namespace"
+                path="metadata.namespace"
+                label={t('Argo server')}
+                placeholder={t('Select the Argo server')}
+                disabled={!hideInstallPrompt}
+                labelHelp={
+                  <Fragment>
+                    <Text>{t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}</Text>
+                    <TextContent>
+                      <Text
+                        component={TextVariants.a}
+                        isVisitedLink
+                        href={DOC_LINKS.GITOPS_CONFIG}
+                        target="_blank"
+                        style={{
+                          cursor: 'pointer',
+                          display: 'inline-block',
+                          padding: '0px',
+                          fontSize: '14px',
+                          color: '#0066cc',
+                        }}
+                      >
+                        {t('View documentation')} <ExternalLinkAltIcon />
+                      </Text>
+                    </TextContent>
+                  </Fragment>
+                }
+                options={props.argoServers}
+                required
+                footer={
+                  <CreateCredentialModal buttonText={t('Add Argo Server')} handleModalToggle={handleModalToggle} />
+                }
+                onValueChange={(value) => {
+                  // find gitopscluster in the namespace
+                  const matchingGitOps = gitOpsClusters.filter((resource) => resource.metadata.namespace === value)
+
+                  // find placement
+                  const placementRefName = matchingGitOps.length && matchingGitOps[0].spec?.placementRef?.name
+                  const placement = props.placements.find(
+                    (placement) =>
+                      placement.metadata?.namespace === value && placement.metadata?.name === placementRefName
+                  )
+
+                  // set filtered cluster set
+                  const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
+                    return placement?.spec?.clusterSets!.includes(clusterSet.metadata?.name!)
+                  })
+
+                  setFilteredClusterSets(clusterSets)
+                }}
+              />
+              <Select
+                path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
+                label={t('Requeue time')}
+                options={requeueTimes}
+                labelHelp={t('Cluster decision resource requeue time in seconds')}
+                required
+                disabled={!hideInstallPrompt}
+              />
+            </Section>
+          </WizItemSelector>
+        </Step>
+        <Step id="template" label={t('Template')}>
+          <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <Section label={t('Source')}>
+              <WizTiles
+                path="spec.template.spec.source"
+                label={t('Repository type')}
+                inputValueToPathValue={repositoryTypeToSource}
+                pathValueToInputValue={sourceToRepositoryType}
+                onValueChange={(_, item: ApplicationSet) => {
+                  if (item.spec.template?.spec) {
+                    item.spec.template.spec.syncPolicy = {
+                      automated: {
+                        selfHeal: true,
+                        prune: true,
+                      },
+                      syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
                     }
+                  }
+                }}
+              >
+                <Tile
+                  id="git"
+                  value="Git"
+                  label={t('Git')}
+                  icon={<GitAltIcon />}
+                  description={t('Use a Git repository')}
+                />
+                <Tile
+                  id="helm"
+                  value="Helm"
+                  label={t('Helm')}
+                  icon={<HelmIcon />}
+                  description={t('Use a Helm repository')}
+                />
+              </WizTiles>
+              {/* Git repo */}
+              <WizHidden hidden={(data) => data.spec.template.spec.source.path === undefined}>
+                <Select
+                  path="spec.template.spec.source.repoURL"
+                  label={t('URL')}
+                  labelHelp={t('The URL path for the Git repository.')}
+                  placeholder={t('Enter or select a Git URL')}
+                  options={gitChannels}
+                  onValueChange={(value) => {
+                    const channel = props.channels?.find((channel) => channel.spec.pathname === value)
                     setGitRevisionsAsyncCallback(
                       () => () =>
                         getGitBranchList(
                           {
-                            metadata: { name: '', namespace: '' },
-                            spec: { pathname: value, type: 'git' },
+                            metadata: {
+                              name: channel?.metadata?.name,
+                              namespace: channel?.metadata?.namespace,
+                            },
+                            spec: { pathname: value as string, type: 'git' },
                           },
                           props.getGitRevisions
-                        )
-                    )
-                    return [...channels]
-                  })
-                }
-              />
-              <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
-                <WizAsyncSelect
-                  path="spec.template.spec.source.targetRevision"
-                  label={t('Revision')}
-                  labelHelp={t('Refer to a single commit')}
-                  placeholder={t('Enter or select a tracking revision')}
-                  asyncCallback={gitRevisionsAsyncCallback}
-                  isCreatable
-                  onValueChange={(value, item) => {
-                    const channel = props.channels?.find(
-                      (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL
-                    )
-                    const path = createdChannels.find((channel) => channel === item.spec.template.spec.source.repoURL)
-                    setGitPathsAsyncCallback(
-                      () => () =>
-                        getGitPathList(
-                          {
-                            metadata: {
-                              name: channel?.metadata?.name || '',
-                              namespace: channel?.metadata?.namespace || '',
-                            },
-                            spec: {
-                              pathname: channel?.spec.pathname || path || '',
-                              type: 'git',
-                            },
-                          },
-                          value as string,
-                          props.getGitPaths
                         )
                     )
                   }}
-                />
-                <WizAsyncSelect
-                  path="spec.template.spec.source.path"
-                  label={t('Path')}
-                  labelHelp={t('The location of the resources on the Git repository.')}
-                  placeholder={t('Enter or select a repository path')}
+                  validation={validateWebURL}
+                  required
                   isCreatable
-                  asyncCallback={gitPathsAsyncCallback}
+                  onCreate={(value: string) =>
+                    setCreatedChannels((channels) => {
+                      if (!channels.includes(value)) {
+                        channels.push(value)
+                      }
+                      setGitRevisionsAsyncCallback(
+                        () => () =>
+                          getGitBranchList(
+                            {
+                              metadata: { name: '', namespace: '' },
+                              spec: { pathname: value, type: 'git' },
+                            },
+                            props.getGitRevisions
+                          )
+                      )
+                      return [...channels]
+                    })
+                  }
+                />
+                <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
+                  <WizAsyncSelect
+                    path="spec.template.spec.source.targetRevision"
+                    label={t('Revision')}
+                    labelHelp={t('Refer to a single commit')}
+                    placeholder={t('Enter or select a tracking revision')}
+                    asyncCallback={gitRevisionsAsyncCallback}
+                    isCreatable
+                    onValueChange={(value, item) => {
+                      const channel = props.channels?.find(
+                        (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL
+                      )
+                      const path = createdChannels.find((channel) => channel === item.spec.template.spec.source.repoURL)
+                      setGitPathsAsyncCallback(
+                        () => () =>
+                          getGitPathList(
+                            {
+                              metadata: {
+                                name: channel?.metadata?.name || '',
+                                namespace: channel?.metadata?.namespace || '',
+                              },
+                              spec: {
+                                pathname: channel?.spec.pathname || path || '',
+                                type: 'git',
+                              },
+                            },
+                            value as string,
+                            props.getGitPaths
+                          )
+                      )
+                    }}
+                  />
+                  <WizAsyncSelect
+                    path="spec.template.spec.source.path"
+                    label={t('Path')}
+                    labelHelp={t('The location of the resources on the Git repository.')}
+                    placeholder={t('Enter or select a repository path')}
+                    isCreatable
+                    asyncCallback={gitPathsAsyncCallback}
+                  />
+                </WizHidden>
+              </WizHidden>
+              {/* Helm repo */}
+              <WizHidden hidden={(data) => data.spec.template.spec.source.chart === undefined}>
+                <Select
+                  path="spec.template.spec.source.repoURL"
+                  label={t('URL')}
+                  labelHelp={t('The URL path for the Helm repository.')}
+                  placeholder={t('Enter or select a Helm URL')}
+                  options={helmChannels}
+                  required
+                  isCreatable
+                  validation={validateWebURL}
+                  onCreate={(value: string) =>
+                    setCreatedChannels((channels) => {
+                      if (!channels.includes(value)) {
+                        channels.push(value)
+                      }
+                      setGitRevisionsAsyncCallback(
+                        () => () =>
+                          getGitBranchList(
+                            {
+                              metadata: { name: '', namespace: '' },
+                              spec: { pathname: value, type: 'git' },
+                            },
+                            props.getGitRevisions
+                          )
+                      )
+                      return [...channels]
+                    })
+                  }
+                />
+                <WizTextInput
+                  path="spec.template.spec.source.chart"
+                  label={t('Chart name')}
+                  placeholder={t('Enter the name of the Helm chart')}
+                  labelHelp={t('The specific name for the target Helm chart.')}
+                  required
+                />
+                <WizTextInput
+                  path="spec.template.spec.source.targetRevision"
+                  label={t('Package version')}
+                  placeholder={t('Enter the version or versions')}
+                  labelHelp={t(
+                    'The version or versions for the deployable. You can use a range of versions in the form >1.0, or <3.0.'
+                  )}
+                  required
                 />
               </WizHidden>
-            </WizHidden>
-            {/* Helm repo */}
-            <WizHidden hidden={(data) => data.spec.template.spec.source.chart === undefined}>
-              <Select
-                path="spec.template.spec.source.repoURL"
-                label={t('URL')}
-                labelHelp={t('The URL path for the Helm repository.')}
-                placeholder={t('Enter or select a Helm URL')}
-                options={helmChannels}
-                required
-                isCreatable
-                validation={validateWebURL}
-                onCreate={(value: string) =>
-                  setCreatedChannels((channels) => {
-                    if (!channels.includes(value)) {
-                      channels.push(value)
-                    }
-                    setGitRevisionsAsyncCallback(
-                      () => () =>
-                        getGitBranchList(
-                          {
-                            metadata: { name: '', namespace: '' },
-                            spec: { pathname: value, type: 'git' },
-                          },
-                          props.getGitRevisions
-                        )
-                    )
-                    return [...channels]
-                  })
-                }
-              />
+            </Section>
+            <Section label={t('Destination')}>
               <WizTextInput
-                path="spec.template.spec.source.chart"
-                label={t('Chart name')}
-                placeholder={t('Enter the name of the Helm chart')}
-                labelHelp={t('The specific name for the target Helm chart.')}
+                id="destination"
+                path="spec.template.spec.destination.namespace"
+                label={t('Remote namespace')}
+                placeholder={t('Enter the destination namespace')}
                 required
               />
-              <WizTextInput
-                path="spec.template.spec.source.targetRevision"
-                label={t('Package version')}
-                placeholder={t('Enter the version or versions')}
-                labelHelp={t(
-                  'The version or versions for the deployable. You can use a range of versions in the form >1.0, or <3.0.'
-                )}
-                required
-              />
-            </WizHidden>
-          </Section>
-          <Section label={t('Destination')}>
-            <WizTextInput
-              id="destination"
-              path="spec.template.spec.destination.namespace"
-              label={t('Remote namespace')}
-              placeholder={t('Enter the destination namespace')}
-              required
-            />
-          </Section>
-        </WizItemSelector>
-      </Step>
-      <Step id="sync-policy" label={t('Sync policy')}>
-        <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-          <Section
-            label={t('Sync policy')}
-            description={t(
-              'Settings used to configure application syncing when there are differences between the desired state and the live cluster state.'
-            )}
-          >
-            <WizCheckbox
-              label={t('Delete resources that are no longer defined in the source repository')}
-              path="spec.template.spec.syncPolicy.automated.prune"
-            />
-            <WizCheckbox
-              id="prune-last"
-              label={t(
-                'Delete resources that are no longer defined in the source repository at the end of a sync operation'
+            </Section>
+          </WizItemSelector>
+        </Step>
+        <Step id="sync-policy" label={t('Sync policy')}>
+          <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <Section
+              label={t('Sync policy')}
+              description={t(
+                'Settings used to configure application syncing when there are differences between the desired state and the live cluster state.'
               )}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={booleanToSyncOptions('PruneLast')}
-              pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
-            />
-            <WizCheckbox
-              id="replace"
-              label={t('Replace resources instead of applying changes from the source repository')}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={booleanToSyncOptions('Replace')}
-              pathValueToInputValue={syncOptionsToBoolean('Replace')}
-            />
-
-            <WizCheckbox
-              path="spec.template.spec.syncPolicy.automated.allowEmpty"
-              label={t('Allow applications to have empty resources')}
-            />
-            <WizCheckbox
-              id="apply-out-of-sync-only"
-              label={t('Only synchronize out-of-sync resources')}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
-              pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
-            />
-            <WizCheckbox
-              path="spec.template.spec.syncPolicy.automated.selfHeal"
-              label={t('Automatically sync when cluster state changes')}
-            />
-            <WizCheckbox
-              id="create-namespace"
-              label={t('Automatically create namespace if it does not exist')}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
-              pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
-            />
-            <WizCheckbox
-              id="validate"
-              label={t('Disable kubectl validation')}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={booleanToSyncOptions('Validate')}
-              pathValueToInputValue={syncOptionsToBoolean('Validate')}
-            />
-            <WizCheckbox
-              id="propagation-policy"
-              label={t('Prune propagation policy')}
-              path="spec.template.spec.syncPolicy.syncOptions"
-              inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
-              pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
             >
-              <Select
-                label={t('Propagation policy')}
-                options={[
-                  { label: t('foreground'), value: 'foreground' },
-                  { label: t('background'), value: 'background' },
-                  { label: t('orphan'), value: 'orphan' },
-                ]}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={prunePropagationPolicyToSyncOptions}
-                pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
-                required
+              <WizCheckbox
+                label={t('Delete resources that are no longer defined in the source repository')}
+                path="spec.template.spec.syncPolicy.automated.prune"
               />
-            </WizCheckbox>
-          </Section>
-        </WizItemSelector>
-      </Step>
-      <Step id="placement" label={t('Placement')}>
-        <ArgoWizardPlacementSection
-          placements={props.placements}
-          clusters={props.clusters}
-          clusterSets={props.clusterSets}
-          clusterSetBindings={props.clusterSetBindings}
-          createClusterSetCallback={props.createClusterSetCallback}
-        />
-      </Step>
-    </WizardPage>
+              <WizCheckbox
+                id="prune-last"
+                label={t(
+                  'Delete resources that are no longer defined in the source repository at the end of a sync operation'
+                )}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={booleanToSyncOptions('PruneLast')}
+                pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
+              />
+              <WizCheckbox
+                id="replace"
+                label={t('Replace resources instead of applying changes from the source repository')}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={booleanToSyncOptions('Replace')}
+                pathValueToInputValue={syncOptionsToBoolean('Replace')}
+              />
+
+              <WizCheckbox
+                path="spec.template.spec.syncPolicy.automated.allowEmpty"
+                label={t('Allow applications to have empty resources')}
+              />
+              <WizCheckbox
+                id="apply-out-of-sync-only"
+                label={t('Only synchronize out-of-sync resources')}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
+                pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
+              />
+              <WizCheckbox
+                path="spec.template.spec.syncPolicy.automated.selfHeal"
+                label={t('Automatically sync when cluster state changes')}
+              />
+              <WizCheckbox
+                id="create-namespace"
+                label={t('Automatically create namespace if it does not exist')}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
+                pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
+              />
+              <WizCheckbox
+                id="validate"
+                label={t('Disable kubectl validation')}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={booleanToSyncOptions('Validate')}
+                pathValueToInputValue={syncOptionsToBoolean('Validate')}
+              />
+              <WizCheckbox
+                id="propagation-policy"
+                label={t('Prune propagation policy')}
+                path="spec.template.spec.syncPolicy.syncOptions"
+                inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
+                pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
+              >
+                <Select
+                  label={t('Propagation policy')}
+                  options={[
+                    { label: t('foreground'), value: 'foreground' },
+                    { label: t('background'), value: 'background' },
+                    { label: t('orphan'), value: 'orphan' },
+                  ]}
+                  path="spec.template.spec.syncPolicy.syncOptions"
+                  inputValueToPathValue={prunePropagationPolicyToSyncOptions}
+                  pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
+                  required
+                />
+              </WizCheckbox>
+            </Section>
+          </WizItemSelector>
+        </Step>
+        <Step id="placement" label={t('Placement')}>
+          <ArgoWizardPlacementSection
+            placements={props.placements}
+            clusters={props.clusters}
+            clusterSets={filteredClusterSets}
+            clusterSetBindings={props.clusterSetBindings}
+            createClusterSetCallback={props.createClusterSetCallback}
+          />
+        </Step>
+      </WizardPage>
+    </Fragment>
   )
 }
 

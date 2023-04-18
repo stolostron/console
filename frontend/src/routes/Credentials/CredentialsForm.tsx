@@ -583,6 +583,7 @@ export function CredentialsForm(
 
   const formData: FormData = {
     title,
+    description: t('A credential stores the access credentials and configuration information for creating clusters.'),
     titleTooltip,
     breadcrumb: breadcrumbs,
     sections: [
