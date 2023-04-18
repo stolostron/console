@@ -294,7 +294,7 @@ export function AnsibleAutomationsForm(props: {
         const testSecret = get(value, `${type}.towerAuthSecret`)
         if (!!testSecret && testSecret !== ansibleSelection) {
           if (ansibleCredentials.findIndex((cred) => get(cred, 'metadata.name') === testSecret) === -1) {
-            errors.push({ path, message: t('{{testSecret}} is not an existing ansible credential', { testSecret }) })
+            errors.push({ path, message: t('"{{testSecret}}" is not an existing Ansible credential', { testSecret }) })
           } else {
             secret = testSecret
           }
@@ -314,7 +314,7 @@ export function AnsibleAutomationsForm(props: {
       if (!!testInventory && !ansibleTowerInventoryList.includes(testInventory)) {
         errors.push({
           path: `ClusterCurator[0].spec.inventory`,
-          message: t('{{testInventory}} is not an existing ansible inventory', { testInventory }),
+          message: t('{{testInventory}} is not an existing Ansible inventory', { testInventory }),
         })
       } else {
         selectedInventory = testInventory
@@ -334,8 +334,15 @@ export function AnsibleAutomationsForm(props: {
         if (!['Job', 'Workflow'].includes(jobType)) {
           errors.push({ path: `${path}.type`, message: t('Must be Job or Workflow') })
         }
-        if (name && !AnsibleTowerJobTemplateList?.includes(name)) {
-          errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an existing job', { name }) })
+        if (name) {
+          if (jobType === 'Job' && !AnsibleTowerJobTemplateList?.includes(name)) {
+            errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an Ansible existing job', { name }) })
+          } else if (jobType === 'Workflow' && !AnsibleTowerWorkflowTemplateList?.includes(name)) {
+            errors.push({
+              path: `${path}.name`,
+              message: t('"{{name}}" is not an Ansible existing workflow', { name }),
+            })
+          }
         }
       })
       if (!errors.length) {
