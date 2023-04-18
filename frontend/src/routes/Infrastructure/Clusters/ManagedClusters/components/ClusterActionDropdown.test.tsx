@@ -104,6 +104,14 @@ function rbacCreateSecret() {
   return rbacCreate(SecretDefinition, mockCluster.namespace)
 }
 
+function rbacDeleteClusterCurator() {
+  return rbacDelete(ClusterCuratorDefinition, mockCluster.namespace)
+}
+
+function rbacDeleteSecret() {
+  return rbacDelete(SecretDefinition, mockCluster.namespace)
+}
+
 function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: string, value?: string) {
   const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = { op, path }
   if (value) {
@@ -231,6 +239,9 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacCreateClusterCurator()),
       nockRBAC(await rbacPatchSecret()),
       nockRBAC(await rbacCreateSecret()),
+      //delete automation template
+      nockRBAC(await rbacDeleteClusterCurator()),
+      nockRBAC(await rbacDeleteSecret()),
     ]
     await clickByLabel('Actions')
     await waitForNocks(rbacNocks)

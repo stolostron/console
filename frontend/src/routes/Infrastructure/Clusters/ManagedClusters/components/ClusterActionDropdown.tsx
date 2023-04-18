@@ -120,10 +120,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           click: () => setShowRemoveAutomationModal(true),
           isAriaDisabled: true,
           rbac: [
-            rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-            rbacPatch(SecretDefinition, cluster.namespace),
-            rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-            rbacCreate(SecretDefinition, cluster.namespace),
+            rbacDelete(ClusterCuratorDefinition, cluster.namespace),
+            rbacDelete(SecretDefinition, cluster.namespace),
           ],
         },
         {
