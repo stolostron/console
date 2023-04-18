@@ -531,8 +531,6 @@ describe('Create Subscription Application page', () => {
     // pick existing PlacementRule
     screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
     await clickByText(mockPlacementRule.metadata.name!)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     // pick existing Placement
     screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()

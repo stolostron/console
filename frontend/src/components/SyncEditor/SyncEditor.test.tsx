@@ -327,8 +327,6 @@ describe('SyncEditor component', () => {
     }) as HTMLTextAreaElement
     await waitFor(() => expect(input).not.toHaveValue(''))
     expect(input).toHaveMultilineValue(existingResourceYaml)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     // try typing on immutable
     const text = 'name: test'
