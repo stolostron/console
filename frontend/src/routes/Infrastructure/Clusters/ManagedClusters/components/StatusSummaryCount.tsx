@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useCallback, useContext, useEffect, useMemo } from 'react'
+import { get } from 'lodash'
+import { useContext, useEffect, useMemo } from 'react'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import {
   GetArgoApplicationsHashSet,
@@ -9,10 +10,8 @@ import {
 } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
-import { useQuery } from '../../../../../lib/useQuery'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { Application, Cluster, IRequestResult } from '../../../../../resources'
+import { Application, ApplicationSet, ApplicationSetKind, Cluster } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
@@ -21,15 +20,10 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { useAllClusters } from './useAllClusters'
 
-const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
-  let query = ''
-  Object.keys(filters).forEach((key) => (query += `${query ? '%20' : ''}${key}:${filters[key]}`))
-  return `${NavigationPath.search}?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
-}
-
 export function StatusSummaryCount() {
   const {
     applicationsState,
+    applicationSetsState,
     argoApplicationsState,
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
@@ -37,9 +31,11 @@ export function StatusSummaryCount() {
     placementDecisionsState,
     policyreportState,
     subscriptionsState,
+    usePolicies,
   } = useSharedAtoms()
   const applicationsMatch = useRouteMatch()
   const [applications] = useRecoilState(applicationsState)
+  const [applicationSets] = useRecoilState(applicationSetsState)
   const [argoApps] = useRecoilState(argoApplicationsState)
   const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
   const [helmReleases] = useRecoilState(helmReleaseState)
@@ -47,6 +43,7 @@ export function StatusSummaryCount() {
   const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [subscriptions] = useRecoilState(subscriptionsState)
+  const policies = usePolicies()
 
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
   const { cluster } = useContext(ClusterContext)
@@ -63,42 +60,60 @@ export function StatusSummaryCount() {
   }, [allClusters])
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
-  const { isSearchAvailable, isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
+  const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
   const { push } = useHistory()
-  const queryFunction = useCallback<() => IRequestResult<ISearchResult>>(() => {
-    if (isSearchAvailable && cluster?.name) {
-      return queryStatusCount(cluster?.name)
-    } else {
-      return {
-        promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
-        abort: () => {
-          // nothing to abort
-        },
-      }
-    }
-  }, [isSearchAvailable, cluster])
-  /* istanbul ignore next */
-  const { data, loading, startPolling } = useQuery(queryFunction)
-  useEffect(startPolling, [startPolling])
 
-  const policyReport = policyReports.filter((pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name)[0]
-  const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
-  const policyReportViolationsCount = policyReportViolations.length ?? 0
-  const criticalCount = policyReportViolations.filter((item) => item.properties?.total_risk === '4').length
-  const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
-  const moderateCount = policyReportViolations.filter((item) => item.properties?.total_risk === '2').length
-  const lowCount = policyReportViolations.filter((item) => item.properties?.total_risk === '1').length
+  const {
+    policyReport,
+    policyReportViolations,
+    policyReportViolationsCount,
+    criticalCount,
+    importantCount,
+    moderateCount,
+    lowCount,
+  } = useMemo(() => {
+    const policyReport = policyReports.filter(
+      (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
+    )[0]
+    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
+    const violationsCount = policyReportViolations.length ?? 0
+
+    return {
+      policyReport,
+      policyReportViolations,
+      policyReportViolationsCount: violationsCount,
+      criticalCount: policyReportViolations.filter((item) => item.properties?.total_risk === '4').length,
+      importantCount: policyReportViolations.filter((item) => item.properties?.total_risk === '3').length,
+      moderateCount: policyReportViolations.filter((item) => item.properties?.total_risk === '2').length,
+      lowCount: policyReportViolations.filter((item) => item.properties?.total_risk === '1').length,
+    }
+  }, [policyReports, cluster?.name])
+
+  const argoAppList = argoApps.filter((argoApp) => {
+    const isChildOfAppset =
+      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+    return !argoApp.metadata.ownerReferences || !isChildOfAppset
+  })
 
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
-
-  const applicationList: Application[] = []
-  const localCluster = useMemo(() => clusters.find((cls) => cls.name === localClusterStr), [clusters])
-  applications.forEach((application) => {
-    const clusterList = getClusterList(application, argoApps, placementDecisions, subscriptions, localCluster, clusters)
-    if (clusterList.includes(cluster?.name!)) {
-      applicationList.push(application)
-    }
-  })
+  const applicationList: Application[] = useMemo(() => {
+    const appList: Application[] = []
+    const localCluster = clusters.find((cls) => cls.name === localClusterStr)
+    applications.forEach((application) => {
+      const clusterList = getClusterList(
+        application,
+        argoApps,
+        placementDecisions,
+        subscriptions,
+        localCluster,
+        clusters
+      )
+      if (clusterList.includes(cluster?.name!)) {
+        appList.push(application)
+      }
+    })
+    return appList
+  }, [applications, argoApps, cluster?.name, clusters, placementDecisions, subscriptions])
 
   // Show cluster issues sidebar by default if showClusterIssues url param is present
   // This will be true if we are redirected to this page via search results table.
@@ -115,26 +130,67 @@ export function StatusSummaryCount() {
   }, [policyReport, policyReportViolationsCount, setDrawerContext])
 
   const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
-  const clusterOcpApps = []
-  for (const [, value] of Object.entries(filteredOCPApps)) {
-    if (value.cluster === cluster?.name) {
-      clusterOcpApps.push(value)
+  const clusterOcpApps = useMemo(() => {
+    const tempApps = []
+    for (const [, value] of Object.entries(filteredOCPApps)) {
+      if (value.cluster === cluster?.name) {
+        tempApps.push(value)
+      }
     }
-  }
+    return tempApps
+  }, [filteredOCPApps, cluster?.name])
 
   const clusterDiscoveredArgoApps = discoveredApplications.filter((app) => app.cluster === cluster?.name)
+
+  const appSets: ApplicationSet[] = useMemo(() => {
+    const filteredAppSets = applicationSets.filter((appSet) => {
+      // Get the Placement name so we can find PlacementDecision
+      const placementName = get(
+        appSet,
+        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+        ''
+      )
+      // filter for the correct PlacementDecision which lists the clusters that match the decision parameters.
+      const decision = placementDecisions.filter((decision) => {
+        const owner = decision.metadata.ownerReferences
+        return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
+      })[0]
+      // determine whether the matched decision has placed an appSet in the current cluster.
+      const clusterMatch = decision.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
+      return clusterMatch > -1
+    })
+    return filteredAppSets
+  }, [applicationSets, placementDecisions, cluster?.name])
+
+  const appsCount = useMemo(
+    () => [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps, ...appSets, ...argoAppList].length,
+    [applicationList, argoAppList, clusterDiscoveredArgoApps, clusterOcpApps, appSets]
+  )
+
+  const nodesCount = useMemo(() => (cluster?.nodes?.nodeList ?? []).length, [cluster])
+
+  const policyViolationCount: number = useMemo(() => {
+    let violationCount = 0
+    for (const policy of policies) {
+      if (policy.spec.disabled) continue
+      for (const clusterStatus of policy.status?.status ?? []) {
+        if (clusterStatus.clustername === cluster?.name && clusterStatus.compliant === 'NonCompliant') {
+          violationCount++
+        }
+      }
+    }
+    return violationCount
+  }, [policies, cluster])
 
   return (
     <div style={{ marginTop: '24px' }}>
       <AcmCountCardSection
         id="summary-status"
         title={t('summary.status')}
-        loading={loading}
-        loadingAriaLabel={t('summary.status.loading')}
         cards={[
           {
             id: 'nodes',
-            count: /* istanbul ignore next */ (cluster?.nodes?.nodeList ?? []).length,
+            count: nodesCount,
             countClick: () => (cluster ? push(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
             title: t('summary.nodes'),
             description: (
@@ -147,34 +203,23 @@ export function StatusSummaryCount() {
             ),
             isDanger: cluster?.nodes?.unhealthy! + cluster?.nodes?.unknown! > 0,
           },
-          ...(isSearchAvailable && isApplicationsAvailable
+          ...(isApplicationsAvailable
             ? [
                 {
                   id: 'applications',
-                  count: [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps].length,
+                  count: appsCount,
                   countClick: () => push(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
                 },
               ]
             : []),
-          ...(isSearchAvailable && isGovernanceAvailable
+          ...(isGovernanceAvailable
             ? [
                 {
                   id: 'violations',
-                  count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.count ?? 0 ?? 0,
-                  // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
-                  countClick: () =>
-                    push(
-                      buildSearchLink({
-                        cluster: 'local-cluster',
-                        kind: 'Policy',
-                        namespace: cluster?.namespace!,
-                        compliant: '!Compliant',
-                      })
-                    ),
+                  count: policyViolationCount ?? 0,
+                  countClick: () => push(NavigationPath.policies + '?violations=with-violations'),
                   title: t('summary.violations'),
-                  linkText: t('summary.violations.launch'),
-                  onLinkClick: () => push(NavigationPath.policies),
                   isDanger: true,
                 },
               ]

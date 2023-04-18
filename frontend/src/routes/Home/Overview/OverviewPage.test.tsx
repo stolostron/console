@@ -9,6 +9,8 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+  applicationsState,
+  argoApplicationsState,
   clusterManagementAddonsState,
   managedClusterAddonsState,
   managedClusterInfosState,
@@ -30,6 +32,8 @@ import {
   SelfSubjectAccessReview,
 } from '../../../resources'
 import {
+  mockApplications,
+  mockArgoApplications,
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
   mockSearchResponseArgoApps,
@@ -397,6 +401,90 @@ const mockPolicyReports: PolicyReport[] = [
         properties: {
           created_at: '2021-03-02T21:26:04Z',
           total_risk: '2',
+          component: 'rule.id.0',
+        },
+        message: 'policyreport testing risk 2 and grc filtering',
+        policy: 'policyreport testing risk 2 and grc filtering - policy',
+        result: 'policyreport testing risk 2 and grc filtering - result',
+      },
+    ],
+  },
+  {
+    apiVersion: 'wgpolicyk8s.io/v1alpha2',
+    kind: 'PolicyReport',
+    metadata: {
+      name: 'managed-cluster-policyreport',
+      namespace: 'managed-cluster',
+      uid: 'uid.report.risk.1',
+    },
+    scope: {
+      kind: 'cluster',
+      name: 'managed-cluster',
+      namespace: 'managed-cluster',
+    },
+    results: [
+      {
+        category: 'category,category1,category2',
+        scored: false,
+        source: 'insights',
+        properties: {
+          created_at: '2021-03-02T21:26:04Z',
+          total_risk: '2',
+          component: 'rule.id.0',
+        },
+        message: 'policyreport testing risk 0',
+        policy: 'policyreport testing risk 0 policy',
+        result: 'policyreport testing risk 0 result',
+      },
+      {
+        category: 'category,category1,category2',
+        scored: false,
+        source: 'grc',
+        properties: {
+          created_at: '2021-03-02T21:26:04Z',
+          total_risk: '2',
+          component: 'rule.id.0',
+        },
+        message: 'policyreport testing risk 2 and grc filtering',
+        policy: 'policyreport testing risk 2 and grc filtering - policy',
+        result: 'policyreport testing risk 2 and grc filtering - result',
+      },
+    ],
+  },
+  {
+    apiVersion: 'wgpolicyk8s.io/v1alpha2',
+    kind: 'PolicyReport',
+    metadata: {
+      name: 'managed-cluster-policyreport',
+      namespace: 'managed-cluster',
+      uid: 'uid.report.risk.1',
+    },
+    scope: {
+      kind: 'cluster',
+      name: 'managed-cluster',
+      namespace: 'managed-cluster',
+    },
+    results: [
+      {
+        category: 'category,category1,category2',
+        scored: false,
+        source: 'insights',
+        properties: {
+          created_at: '2021-03-02T21:26:04Z',
+          total_risk: '1',
+          component: 'rule.id.0',
+        },
+        message: 'policyreport testing risk 0',
+        policy: 'policyreport testing risk 0 policy',
+        result: 'policyreport testing risk 0 result',
+      },
+      {
+        category: 'category,category1,category2',
+        scored: false,
+        source: 'grc',
+        properties: {
+          created_at: '2021-03-02T21:26:04Z',
+          total_risk: '1',
           component: 'rule.id.0',
         },
         message: 'policyreport testing risk 2 and grc filtering',
@@ -1118,6 +1206,8 @@ it('should render overview page with expected data', async () => {
   const { container, getAllByText, getByText } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
+        snapshot.set(applicationsState, mockApplications)
+        snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, managedClusterInfos)
         snapshot.set(policiesState, mockPolices)
@@ -1152,11 +1242,11 @@ it('should render overview page with expected data', async () => {
   // Check PolicyReport chart
   await waitFor(() => expect(getByText('2 Critical')).toBeTruthy())
   await waitFor(() => expect(getByText('1 Important')).toBeTruthy())
-  await waitFor(() => expect(getByText('0 Moderate')).toBeTruthy())
-  await waitFor(() => expect(getByText('0 Low')).toBeTruthy())
+  await waitFor(() => expect(getByText('1 Moderate')).toBeTruthy())
+  await waitFor(() => expect(getByText('1 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('1Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('4Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
