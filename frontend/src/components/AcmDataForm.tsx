@@ -643,7 +643,7 @@ export function AcmDataFormWizard(props: {
           titleId="create-credential-title"
           descriptionId="create-credential-description"
           title={formData.title}
-          description={formData.description!}
+          description={formData.description}
           steps={steps}
           footer={Footer}
           onClose={formData.cancel}

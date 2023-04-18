@@ -6,8 +6,9 @@ import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import { waitForText } from '../../lib/test-util'
-import { subscriptionOperatorsState } from '../../atoms'
-import { gitOpsOperators } from '../../routes/Applications/Application.sharedmocks'
+import { argoCDsState, managedClusterSetsState, subscriptionOperatorsState } from '../../atoms'
+import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
+import { nockIgnoreApiPaths } from '../../lib/nock-util'
 
 const mockCreateclustersetcallback = jest.fn()
 const mockGetgitchannelbranches = jest.fn().mockImplementation(() => {
@@ -25,6 +26,8 @@ function TestArgoWizard() {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+        snapshot.set(managedClusterSetsState, mockClusterSets)
+        snapshot.set(argoCDsState, [mockArgoCD])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -53,6 +56,35 @@ describe('ArgoWizard tests', () => {
     )
     await waitForText('OpenShift GitOps Operator is required to create ApplicationSets.')
     await waitForText('Install the operator')
+  })
+
+  test('CreateArgoResources', async () => {
+    nockIgnoreApiPaths()
+    render(<TestArgoWizard />)
+    userEvent.click(screen.getByText(/select the argo server/i))
+    userEvent.click(screen.getByRole('button', { name: /add argo server/i }))
+
+    //fill the form
+
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /name/i,
+      }),
+      'test-gitops'
+    )
+
+    userEvent.click(screen.getByPlaceholderText(/select the namespace/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /openshift-gitops/i,
+      })
+    )
+
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /add/i,
+      })
+    )
   })
 
   //=====================================================================

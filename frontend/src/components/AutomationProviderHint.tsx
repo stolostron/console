@@ -64,11 +64,17 @@ export function AutomationProviderHint(props: {
   const { t } = useTranslation()
 
   const title = showInstallPrompt ? t('Operator required') : t('Operator upgrade required')
-  const message = showInstallPrompt
-    ? props.message
-      ? props.message
-      : t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
-    : t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  let message = ''
+  if (showInstallPrompt) {
+    if (props.message) {
+      message = props.message
+    } else {
+      message = t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
+    }
+  } else {
+    message = t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  }
+
   const linkTarget = showInstallPrompt
     ? `/operatorhub/all-namespaces?keyword=${operatorName}`
     : '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'

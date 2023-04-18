@@ -157,7 +157,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
             options: clusterSets.map((clusterSet) => {
               const name = clusterSet.metadata?.name!
               const description =
-                name === 'global' ? t('Deploy to all clusters') : clusterSet?.status.conditions[0].message
+                name === 'global' ? t('Deploy to all clusters') : clusterSet?.status?.conditions[0]?.message
               return {
                 id: name,
                 value: name,
