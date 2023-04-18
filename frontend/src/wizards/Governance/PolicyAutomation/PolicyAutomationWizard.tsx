@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, Button, ButtonVariant, Split, SplitItem } from '@patternfly/react-core'
+import { Alert, Button, ButtonVariant } from '@patternfly/react-core'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
@@ -20,8 +20,6 @@ import { ConfigMap } from '../../../resources'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { AcmButton } from '../../../ui-components'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -54,6 +52,8 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     [ansibleCredentials]
   )
   const [jobTemplates, setjobTemplates] = useState<{ name: string; description?: string; id: string }[]>()
+  const [selectedTemplateID, setSelectedTemplateID] = useState<string>()
+  const [selectedAnsibleCredentialHost, setSelectedAnsibleCredentialHost] = useState<string>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
 
@@ -130,7 +130,8 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               if ((item as IPolicyAutomation).spec?.automationDef?.name) {
                 ;(item as IPolicyAutomation).spec.automationDef.name = ''
               }
-              const credential = ansibleCredentials.find((credential) => credential.metadata?.name === value)
+              const credential: any = ansibleCredentials.find((credential) => credential.metadata?.name === value)
+              setSelectedAnsibleCredentialHost(Buffer.from(credential?.data?.host || '', 'base64').toString('ascii'))
               if (credential) {
                 setAlert(undefined)
                 setjobTemplates(undefined)
@@ -171,22 +172,25 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               id="job"
               label={t('Ansible job')}
               path="spec.automationDef.name"
+              onValueChange={(_, item) => {
+                setSelectedTemplateID(
+                  jobTemplates?.find(
+                    (template) => template.name === (item as IPolicyAutomation).spec?.automationDef?.name
+                  )?.id
+                )
+                props.resource.spec.automationDef.secret
+              }}
               options={jobTemplates?.map((template) => ({
                 id: template.name,
                 value: template.name,
                 label: template.name,
                 description: template.description,
               }))}
-              footer={
-                <Split>
-                  <SplitItem>
-                    <AcmButton variant="link" style={{ paddingRight: '0px' }} onClick={() => {}}>
-                      {'prompt'}
-                      <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                    </AcmButton>
-                  </SplitItem>
-                </Split>
-              }
+              prompt={{
+                label: t('View selected template'),
+                isDisabled: !selectedTemplateID,
+                href: `${selectedAnsibleCredentialHost}/#/templates/job_template/${selectedTemplateID}`,
+              }}
               hidden={(item) => !item.spec?.automationDef?.secret}
               required
             />

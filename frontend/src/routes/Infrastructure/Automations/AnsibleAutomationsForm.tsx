@@ -807,7 +807,7 @@ function EditAnsibleJobModal(props: {
                 }
               }}
             >
-              {'View selected template'}
+              {t('View selected template')}
               <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
             </AcmButton>
           </FlexItem>
