@@ -32,6 +32,7 @@ import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { RemoveAutomationModal } from './RemoveAutomationModal'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -41,6 +42,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
+  const [showRemoveAutomationModal, setShowRemoveAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
@@ -104,6 +106,18 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.UpdateAutomationTemplate,
           text: t('Update automation template'),
           click: () => setShowUpdateAutomationModal(true),
+          isAriaDisabled: true,
+          rbac: [
+            rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+            rbacPatch(SecretDefinition, cluster.namespace),
+            rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+            rbacCreate(SecretDefinition, cluster.namespace),
+          ],
+        },
+        {
+          id: ClusterAction.RemoveAutomationTemplate,
+          text: t('Remove automation template'),
+          click: () => setShowRemoveAutomationModal(true),
           isAriaDisabled: true,
           rbac: [
             rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -369,6 +383,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         clusters={[cluster]}
         open={showUpdateAutomationModal}
         close={() => setShowUpdateAutomationModal(false)}
+      />
+      <RemoveAutomationModal
+        clusters={[cluster]}
+        open={showRemoveAutomationModal}
+        close={() => setShowRemoveAutomationModal(false)}
       />
       <EditLabels
         resource={

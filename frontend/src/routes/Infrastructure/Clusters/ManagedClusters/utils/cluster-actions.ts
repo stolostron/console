@@ -16,6 +16,7 @@ export enum ClusterAction {
   ScaleUpAI = 'ai-scale-up',
   DestroyHosted = 'destroy-hypershift-cluster',
   UpdateAutomationTemplate = 'update-automation-template',
+  RemoveAutomationTemplate = 'remove-automation-template',
 }
 
 export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAction): boolean {
@@ -70,6 +71,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
     case ClusterAction.DestroyHosted:
       return cluster.isHypershift && !!cluster.hypershift?.agent && cluster.status !== ClusterStatus.destroying
     case ClusterAction.UpdateAutomationTemplate:
+    case ClusterAction.RemoveAutomationTemplate:
       return (
         !!cluster.name && // name is set
         !!cluster.distribution?.ocp?.version && // is OpenShift
