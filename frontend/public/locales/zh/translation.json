@@ -1895,7 +1895,6 @@
   "Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "放置规则用来定义订阅要发送到的目标集群。这可以通过集群名称、集群资源注解或集群资源标签完成。",
   "Placement rules determine which clusters a resources will be applied.": "放置规则决定将要应用资源的集群。",
   "PlacementRule": "PlacementRule",
-  "PlacementRule is deprecated and will not receive updates or fixes. Best practice: Use Placement.": "PlacementRule 已被弃用，不会接收更新或修复。最佳实践：使用放置。",
   "Placements": "放置",
   "Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "放置定义必须订阅一个 ClusterSet 的目标集群，该集群需要提供订阅和应用程序集。这可以通过集群名称、集群资源注解或集群资源标签完成。",
   "Platform specific data for the add node pool form will no longer automatically populate after the last node pool is removed.": "在删除最后一个节点池后，添加节点池表单的特定于平台的数据将不再自动填充。",

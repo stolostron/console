@@ -1895,7 +1895,6 @@
   "Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "配置ルールは、サブスクリプションが配信されるターゲットクラスターを定義します。これは、クラスター名、クラスターリソースアノテーション、またはクラスターリソースラベルによって行われます。",
   "Placement rules determine which clusters a resources will be applied.": "配置ルールは、リソースが適用されるクラスターを決定します。",
   "PlacementRule": "PlacementRule",
-  "PlacementRule is deprecated and will not receive updates or fixes. Best practice: Use Placement.": "PlacementRule は非推奨となり、更新または修正は提供されません。ベストプラクティス: Placement を使用します。",
   "Placements": "配置",
   "Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "配置は、サブスクリプションおよびアプリケーションセットが配信される ClusterSet にサブスクライブする必要のあるターゲットクラスターを定義します。これは、クラスター名、クラスターリソースアノテーション、またはクラスターリソースラベルによって行われます。",
   "Platform specific data for the add node pool form will no longer automatically populate after the last node pool is removed.": "ノードプールの追加フォームのプラットフォーム固有のデータは、最後のノードプールが削除された後に自動的に入力されなくなります。",

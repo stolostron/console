@@ -1895,7 +1895,6 @@
   "Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "배치 규칙은 서브스크립션이 제공되는 대상 클러스터를 정의합니다. 이는 클러스터 이름, 클러스터 리소스 주석 또는 클러스터 리소스 레이블로 수행됩니다.",
   "Placement rules determine which clusters a resources will be applied.": "배치 규칙은 리소스를 적용할 클러스터를 결정합니다.",
   "PlacementRule": "배치 규칙",
-  "PlacementRule is deprecated and will not receive updates or fixes. Best practice: Use Placement.": "배치 규칙은 더 이상 사용되지 않으며 업데이트 또는 수정 사항을 수신하지 않습니다. 모범 사례: 배치를 사용합니다.",
   "Placements": "배치",
   "Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "배치는 서브스크립션 및 애플리케이션 세트가 제공되는 클러스터 세트에 가입해야 하는 대상 클러스터를 정의합니다. 이는 클러스터 이름, 클러스터 리소스 주석 또는 클러스터 리소스 레이블로 수행됩니다.",
   "Platform specific data for the add node pool form will no longer automatically populate after the last node pool is removed.": "추가 노드 풀 양식의 플랫폼별 데이터는 마지막 노드 풀이 제거된 후 더 이상 자동으로 채워지지 않습니다.",
