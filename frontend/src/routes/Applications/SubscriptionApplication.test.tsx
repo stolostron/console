@@ -403,16 +403,6 @@ const mockSecrets = [mockAnsibleSecret, mockCopiedFromSecret]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-  withTranslation: () => (Component: any) => {
-    Component.defaultProps = { ...Component.defaultProps, t: () => '' }
-    return Component
-  },
-}))
-
 describe('Create Subscription Application page', () => {
   const Component = () => {
     return (
@@ -444,9 +434,7 @@ describe('Create Subscription Application page', () => {
     render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Create application', true)
-    const cancelButton = screen.getByRole('button', {
-      name: /button\.cancel/i,
-    })
+    const cancelButton = screen.getByRole('button', { name: /cancel/i })
     userEvent.click(cancelButton)
     expect(window.location.pathname).toEqual('/')
   })
@@ -461,12 +449,12 @@ describe('Create Subscription Application page', () => {
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
-    userEvent.click(screen.getByText(/channel\.type\.git/i))
+    userEvent.click(screen.getByText(/git/i))
     await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+    const githubURL = screen.getByLabelText(/url \*/i)
     userEvent.type(githubURL, gitLink)
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
+    userEvent.type(screen.getByLabelText(/path/i), 'test-path')
 
     // create placement
     await clickBySelector(container, '#clusterSelector-checkbox-clusterSelector')
@@ -476,13 +464,8 @@ describe('Create Subscription Application page', () => {
         name: /global/i,
       })
     )
-    userEvent.type(
-      screen.getByRole('textbox', {
-        name: /clusterselector\.label\.field\.ui/i,
-      }),
-      'name'
-    )
-    userEvent.type(screen.getByRole('textbox', { name: /clusterselector\.value\.field\.ui/i }), 'local-cluster')
+    userEvent.type(screen.getByRole('textbox', { name: /label/i }), 'name')
+    userEvent.type(screen.getByRole('textbox', { name: /value/i }), 'local-cluster')
 
     await clickByTestId('create-button-portal-id-btn')
     await waitForNocks([
@@ -509,14 +492,14 @@ describe('Create Subscription Application page', () => {
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
-    userEvent.click(screen.getByText(/channel\.type\.git/i))
+    userEvent.click(screen.getByText(/git/i))
     await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+    const githubURL = screen.getByLabelText(/url/i)
     userEvent.type(githubURL, gitLink)
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path')
+    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
+    userEvent.type(screen.getByLabelText(/path/i), 'test-path')
 
-    const ansibleSecretName = screen.getByPlaceholderText(/app\.enter\.select\.ansiblesecretname/i)
+    const ansibleSecretName = screen.getByPlaceholderText(/select an existing secret from the list./i)
 
     userEvent.click(ansibleSecretName)
     userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
@@ -524,23 +507,22 @@ describe('Create Subscription Application page', () => {
     // select an existing placement rule
     userEvent.click(
       screen.getByRole('radio', {
-        name: /creation\.app\.settings\.existingrule/i,
+        name: /select an existing placement configuration/i,
       })
     )
 
     // pick existing PlacementRule
-    screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacementRule.metadata.name!)
     await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     // pick existing Placement
-    screen.getByPlaceholderText(/creation\.app\.settings\.existingrule/i).click()
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
     const dropdownButton = screen.getByRole('button', {
-      name: /creation\.app\.ansible\.credential\.name options menu/i,
+      name: /Ansible Automation Platform credential options menu/i,
     })
     userEvent.click(dropdownButton)
     userEvent.click(screen.getByText(/add credential/i))
@@ -641,12 +623,12 @@ describe('Create Subscription Application page', () => {
     ).toBeTruthy()
 
     // click git card
-    userEvent.click(screen.getByText(/channel\.type\.git/i))
+    userEvent.click(screen.getByText(/git/i))
     await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/creation\.app\.github\.url \*/i)
+    const githubURL = screen.getByLabelText(/url \*/i)
     userEvent.type(githubURL, gitLink)
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'test-path2')
+    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
+    userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
     const patchNocks: Scope[] = [
       nockPatch(mockSubscriptionPlacement, [
         { op: 'replace', path: '/spec/placement/placementRef/name', value: null },
@@ -659,11 +641,7 @@ describe('Create Subscription Application page', () => {
       nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
     ]
     //update the resources
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /button\.update/i,
-      })
-    )
+    userEvent.click(screen.getByRole('button', { name: /update/i }))
     await waitForNocks(patchNocks)
   })
 })
