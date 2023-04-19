@@ -18,12 +18,14 @@ export type CuratorAction = {
   towerAuthSecret?: string
   prehook?: ClusterCuratorAnsibleJob[]
   posthook?: ClusterCuratorAnsibleJob[]
+  jobMonitorTimeout?: number
 }
 
 type CuratorUpgradeAction = CuratorAction & {
   desiredUpdate?: string
   channel?: string
   upstream?: string
+  monitorTimeout?: number
 }
 
 export const ClusterCuratorDefinition: IResourceDefinition = {

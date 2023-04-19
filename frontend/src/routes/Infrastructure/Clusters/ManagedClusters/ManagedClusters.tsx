@@ -58,6 +58,7 @@ import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { ClusterAction, clusterSupportsAction } from './utils/cluster-actions'
+import { RemoveAutomationModal } from './components/RemoveAutomationModal'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -193,6 +194,7 @@ export function ClustersTable(props: {
   const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
+  const [removeAutomationTemplates, setRemoveAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
@@ -272,12 +274,22 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
+      { id: 'seperator-0', variant: 'action-seperator' },
       {
         id: 'updateAutomationTemplates',
         title: t('Update automation template'),
         click: (managedClusters: Array<Cluster>) => {
           if (!managedClusters) return
           setUpdateAutomationTemplates(managedClusters)
+        },
+        variant: 'bulk-action',
+      },
+      {
+        id: 'removeAutomationTemplates',
+        title: t('Remove automation templates'),
+        click: (managedClusters: Array<Cluster>) => {
+          if (!managedClusters) return
+          setRemoveAutomationTemplates(managedClusters)
         },
         variant: 'bulk-action',
       },
@@ -514,6 +526,13 @@ export function ClustersTable(props: {
         open={!!updateAutomationTemplates}
         close={() => {
           setUpdateAutomationTemplates(undefined)
+        }}
+      />
+      <RemoveAutomationModal
+        clusters={removeAutomationTemplates}
+        open={!!removeAutomationTemplates}
+        close={() => {
+          setRemoveAutomationTemplates(undefined)
         }}
       />
       <BatchUpgradeModal
