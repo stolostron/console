@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
@@ -53,6 +53,7 @@ import {
   Provider,
 } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import get from 'lodash/get'
 import schema from './schema.json'
 
 export default function AnsibleAutomationsFormPage({
@@ -122,6 +123,8 @@ export function AnsibleAutomationsForm(props: {
 
   const { settingsState } = useSharedAtoms()
   const [settings] = useRecoilState(settingsState)
+  const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
+  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const history = useHistory()
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
@@ -300,8 +303,101 @@ export function AnsibleAutomationsForm(props: {
     }
     return curator
   }
+
+  function setAnsibleSelections(value: any) {
+    const errors: any[] = []
+    let secret: SetStateAction<string> = ansibleSelection
+    if (Object.keys(value).length) {
+      supportedCurations.forEach((type) => {
+        const path = `ClusterCurator[0].spec.${type}.towerAuthSecret`
+        const testSecret = get(value, `${type}.towerAuthSecret`)
+        if (!!testSecret && testSecret !== ansibleSelection) {
+          if (ansibleCredentials.findIndex((cred) => get(cred, 'metadata.name') === testSecret) === -1) {
+            errors.push({ path, message: t('"{{testSecret}}" is not an existing Ansible credential', { testSecret }) })
+          } else {
+            secret = testSecret
+          }
+        }
+      })
+      if (!errors.length) {
+        setAnsibleSelection(secret)
+      }
+    }
+    return errors
+  }
+
+  function setAnsibleInventorySelection(testInventory: any) {
+    const errors: any[] = []
+    let selectedInventory: SetStateAction<string> = ansibleInventory
+    if (testInventory !== ansibleInventory) {
+      if (!!testInventory && !ansibleTowerInventoryList.includes(testInventory)) {
+        errors.push({
+          path: `ClusterCurator[0].spec.inventory`,
+          message: t('{{testInventory}} is not an existing Ansible inventory', { testInventory }),
+        })
+      } else {
+        selectedInventory = testInventory
+      }
+    }
+    if (!errors.length) {
+      setAnsibleInventory(selectedInventory)
+    }
+    return errors
+  }
+
+  function setCustomHook(type: string, preHook: boolean, value: any) {
+    const errors: any[] = []
+    if (Array.isArray(value)) {
+      value.forEach(({ type: jobType, name }, index) => {
+        const path = `ClusterCurator[0].spec.${type}.${preHook ? 'prehook' : 'posthook'}.${index}`
+        if (!['Job', 'Workflow'].includes(jobType)) {
+          errors.push({ path: `${path}.type`, message: t('Must be Job or Workflow') })
+        }
+        if (name) {
+          if (jobType === 'Job' && !AnsibleTowerJobTemplateList?.includes(name)) {
+            errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an existing Ansible job', { name }) })
+          } else if (jobType === 'Workflow' && !AnsibleTowerWorkflowTemplateList?.includes(name)) {
+            errors.push({
+              path: `${path}.name`,
+              message: t('"{{name}}" is not an existing Ansible workflow', { name }),
+            })
+          }
+        }
+      })
+      if (!errors.length) {
+        switch (type) {
+          case 'install':
+            preHook ? setInstallPreJobs(value) : setInstallPostJobs(value)
+            break
+          case 'upgrade':
+            preHook ? setUpgradePreJobs(value) : setUpgradePostJobs(value)
+            break
+          case 'scale':
+            preHook ? setScalePreJobs(value) : setScalePostJobs(value)
+            break
+          case 'destroy':
+            preHook ? setDestroyPreJobs(value) : setDestroyPostJobs(value)
+            break
+        }
+        return undefined
+      }
+    }
+    return errors
+  }
+
   function stateToSyncs() {
-    const syncs = [{ path: 'ClusterCurator[0].metadata.name', setState: setTemplateName }]
+    let syncs: any = [
+      { path: 'ClusterCurator[0].metadata.name', setState: setTemplateName },
+      { path: 'ClusterCurator[0].spec.inventory', setter: setAnsibleInventorySelection.bind(null) },
+      { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
+    ]
+    supportedCurations.forEach((type) => {
+      syncs = [
+        ...syncs,
+        { path: `ClusterCurator[0].spec.${type}.prehook`, setter: setCustomHook.bind(null, type, true) },
+        { path: `ClusterCurator[0].spec.${type}.posthook`, setter: setCustomHook.bind(null, type, false) },
+      ]
+    })
     return syncs
   }
 

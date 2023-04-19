@@ -81,6 +81,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [prohibited, setProhibited] = useState<any>([])
   const [filteredRows, setFilteredRows] = useState<number[]>([])
   const [userEdits, setUserEdits] = useState<any>([])
+  const [customValidationErrors, setCustomValidationErrors] = useState<any>([])
   const [resourceChanges, setResourceChanges] = useState<ProcessedType>()
   const [statusChanges, setStatusChanges] = useState<{
     changes: any[]
@@ -367,7 +368,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorHasFocus,
         editorRef,
         monacoRef,
-        allErrors,
+        [...allErrors, ...customValidationErrors],
         yamlChanges,
         change,
         remainingEdits,
@@ -446,8 +447,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // report new resources/errors/useredits to form
       // if there are validation errors still pass it to form
+      let customErrors = []
       if (errors.syntax.length === 0) {
-        setResourceChanges(cloneDeep(unredactedChange))
+        const clonedUnredactedChange = cloneDeep(unredactedChange)
+        setResourceChanges(clonedUnredactedChange)
+        customErrors = setFormValues(syncs, clonedUnredactedChange) || []
+        setCustomValidationErrors(customErrors)
       }
       setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
 
@@ -457,7 +462,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorHasFocus,
         editorRef,
         monacoRef,
-        allErrors,
+        [...allErrors, ...customErrors],
         [],
         change,
         lastUserEdits,
@@ -505,10 +510,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (resourceChanges) {
       const isArr = Array.isArray(resources)
       let _resources = isArr ? resourceChanges.resources : resourceChanges.resources[0]
-
-      // if synceditor resources is different from form.wizard, report resources
-      // if syncs defined, set values into form/wizard
-      setFormValues(syncs, resourceChanges)
       _resources = isArr ? resources : [resources]
       if (onEditorChange && !isEqual(resourceChanges.resources, _resources)) {
         const editChanges = {

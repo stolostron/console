@@ -2,6 +2,7 @@
 import get from 'lodash/get'
 import set from 'lodash/set'
 import { MappingType } from './process'
+import { ErrorMessageType, ErrorType } from './validation'
 
 const immutableKeys = [
   'name',
@@ -17,19 +18,42 @@ const immutableKeys = [
 export const setFormValues = (
   syncs: unknown,
   resources: {
+    mappings: { [x: string]: any[] }
     parsed: { [x: string]: any[] }
   }
 ) => {
   if (Array.isArray(syncs)) {
-    syncs.forEach(({ path, getter, setState }) => {
+    let errors: any = []
+    syncs.forEach(({ path, getter, setState, setter }) => {
       let value = ''
       if (typeof path === 'string') {
         value = get(resources.parsed, path, '') as string
       } else if (typeof getter === 'function') {
         value = getter(resources.parsed)
       }
-      setState(value ?? '')
+      if (typeof setState === 'function') {
+        setState(value ?? '')
+      } else if (typeof setter === 'function') {
+        errors = [...errors, ...(setter(value) || [])]
+      }
     })
+    // convert errors to ErrorMessageType
+    if (Array.isArray(errors)) {
+      errors = errors.map(({ path, message }) => {
+        const location = get(resources.mappings, getPathArray(path))
+        const { $r, $gv = {} } = location || {}
+        const errorMsg: ErrorMessageType = {
+          errorType: ErrorType.error,
+          linePos: {
+            start: { line: $r || 1, col: $gv?.start?.col || 1 },
+            end: { line: $r || 1, col: $gv?.end?.col || 1 },
+          },
+          message,
+        }
+        return errorMsg
+      })
+      return errors
+    }
   }
 }
 

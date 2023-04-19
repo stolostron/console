@@ -1,7 +1,7 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "jsx": "react-jsxdev",
-        "target": "es2020"
-    }
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsxdev",
+    "target": "es2020"
+  }
 }

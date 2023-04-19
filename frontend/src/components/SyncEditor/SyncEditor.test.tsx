@@ -283,6 +283,7 @@ describe('SyncEditor component', () => {
     clone.onEditorChange = onEditorChange
     const setAwsS3Region = jest.fn()
     const setAwsAccessKeyID = jest.fn()
+    const setInstallTimeout = jest.fn()
     function getValue(path: string, template: any) {
       return get(template, path, '') as string
     }
@@ -291,6 +292,16 @@ describe('SyncEditor component', () => {
       {
         getter: getValue.bind(null, 'Policy[0].spec.policy-templates[0].objectDefinition.spec.severity'),
         setState: setAwsAccessKeyID,
+      },
+      {
+        path: `ClusterCurator[0].spec.install.jobMonitorTimeout}`,
+        setter: ((value: any) => {
+          const errors: any[] = []
+          const path = `ClusterCurator[0].spec.prehook`
+          errors.push({ path, message: 'Must be Job or Workflow' })
+          setInstallTimeout(value)
+          return errors
+        }).bind(null),
       },
     ]
     render(<SyncEditor {...clone} />)
