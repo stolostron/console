@@ -1,5 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
+import {
+  ClusterCurator,
+  ClusterStatus,
+  getMostRecentAnsibleJobPod,
+  getLatestAnsibleJob,
+  AnsibleJob,
+} from '../../../../../resources'
 import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useContext } from 'react'
@@ -9,6 +15,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
+import { getFailedCuratorJobName } from '../../../../../resources/utils/status-conditions'
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
@@ -119,21 +126,28 @@ export function ProgressStepBar() {
         statusType: prehookStatus,
         statusText: t('status.prehook'),
         statusSubtitle: prehooks ? getStatusLabel(prehookStatus, t) : t('status.subtitle.nojobs'),
+        stepID: 'prehook',
         // will render link when prehook job url is defined or when there are no job hooks setup
-        link: {
-          linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
-          // TODO: add ansible documentation url
-          linkUrl: !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
-          isDisabled:
-            !prehooks && !posthooks
-              ? false
-              : !!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined,
-        },
+        ...((!!prehooks || (!prehooks && !posthooks)) && {
+          link: {
+            linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+            // TODO: add ansible documentation url
+            linkUrl:
+              !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
+            isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
+            linkCallback: !latestJobs.prehook?.status?.ansibleJobResult?.url
+              ? () => {
+                  curator && launchJobLogs(curator)
+                }
+              : undefined,
+          },
+        }),
       },
       {
         statusType: creatingStatus,
         statusText: t('status.install.text'),
         statusSubtitle: getStatusLabel(creatingStatus, t),
+        stepID: 'install',
         ...(provisionStatus.includes(cluster?.status!) && {
           link: {
             linkName: t('status.link.logs'),
@@ -150,19 +164,28 @@ export function ProgressStepBar() {
       },
       {
         statusType: importStatus,
+        stepID: 'import',
         statusText: t('status.import.text'),
         statusSubtitle: getStatusLabel(importStatus, t),
       },
       {
         statusType: posthookStatus,
+        stepID: 'posthook',
         statusText: t('status.posthook'),
         statusSubtitle: posthooks ? getStatusLabel(posthookStatus, t) : t('status.subtitle.nojobs'),
         ...(posthooks &&
-          latestJobs.posthook?.status?.ansibleJobResult?.url && {
+          (cluster?.status === 'posthookjob' ||
+            cluster?.status === 'posthookfailed' ||
+            latestJobs.posthook?.status?.ansibleJobResult?.url) && {
             link: {
               linkName: t('status.link.logs'),
               linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
-              isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
+              isDisabled: isPosthookLinkDisabled(latestJobs, curator),
+              linkCallback: !latestJobs.posthook?.status?.ansibleJobResult?.url
+                ? () => {
+                    curator && launchJobLogs(curator)
+                  }
+                : undefined,
             },
           }),
       },
@@ -190,4 +213,70 @@ export function ProgressStepBar() {
     )
   }
   return null
+}
+
+export function launchJobLogs(curator: ClusterCurator | undefined) {
+  if (curator?.status?.conditions) {
+    const jobName = getFailedCuratorJobName(curator.metadata.name!, curator.status.conditions)
+    const jobPodResponse = getMostRecentAnsibleJobPod(curator?.metadata.namespace!, jobName!)
+    jobPodResponse.then((pod) => {
+      launchToOCP(`k8s/ns/${curator.metadata.name}/pods/${pod?.metadata.name}/logs`)
+    })
+  }
+}
+
+export function jobPodsStillAvailable(curator: ClusterCurator | undefined) {
+  const failurePodTransitionTime = curator?.status?.conditions?.find(
+    (c) => c.type === 'clustercurator-job'
+  )?.lastTransitionTime
+
+  if (!failurePodTransitionTime) {
+    return false
+  }
+  const podCompletionTime = new Date(failurePodTransitionTime)
+  const currentTime = new Date()
+  const hoursSincePodFailure = Math.floor((currentTime.getTime() - podCompletionTime.getTime()) / 1000 / 60 / 60)
+  return hoursSincePodFailure < 1
+}
+export const isPrehookLinkDisabled = (
+  prehooks: number | undefined,
+  posthooks: number | undefined,
+  latestJobs: {
+    prehook: AnsibleJob | undefined
+    posthook: AnsibleJob | undefined
+  },
+  curator: ClusterCurator | undefined
+) => {
+  // if no jobs are defined we surface a link to the automation docs
+  if (!prehooks && !posthooks) {
+    return false
+  }
+  if (!prehooks && !!posthooks) {
+    return true
+  }
+  // if there are prehooks, an undefined url, an error in latest job status, and the pods are avaiable,
+  // enable link to pods
+  if (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined) {
+    if (latestJobs.prehook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator)) {
+      return false
+    }
+    return true
+  }
+  return false
+}
+
+export const isPosthookLinkDisabled = (
+  latestJobs: {
+    prehook: AnsibleJob | undefined
+    posthook: AnsibleJob | undefined
+  },
+  curator: ClusterCurator | undefined
+) => {
+  if (
+    latestJobs.posthook?.status?.ansibleJobResult?.url ||
+    (latestJobs.posthook?.status?.ansibleJobResult?.status === 'error' && jobPodsStillAvailable(curator))
+  ) {
+    return false
+  }
+  return true
 }

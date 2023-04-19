@@ -23,6 +23,7 @@ export type ProgressTrackerStep = {
   popover?: PopoverProps
   statusSubtitle?: string
   link?: ProgressTrackerStepLink
+  stepID?: string
 }
 
 export type ProgressTrackerStepLink = {
@@ -112,6 +113,7 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
               </TextContent>
               {step.link && (
                 <AcmButton
+                  id={step.stepID && `${step.stepID}-link`}
                   className={classes.button}
                   variant="link"
                   isSmall

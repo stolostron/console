@@ -29,7 +29,7 @@ export interface AnsibleJob {
       changed: boolean
       failed: boolean
       status: string
-      url: string
+      url?: string
       finished: string
       started: string
     }
@@ -55,18 +55,36 @@ export interface AnsibleJob {
 export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string) {
   const jobs = ansibleJobs.filter((job) => job.metadata.namespace === namespace)
 
-  const prehookJobs = getLatest<AnsibleJob>(
+  //  considers unstarted jobs that failed
+  const failedUnstartedJob = jobs.filter(
+    (job) => job.status?.ansibleJobResult?.status === 'error' && job.status?.ansibleJobResult?.started === undefined
+  )
+  const prehookJob = getLatest<AnsibleJob>(
     jobs.filter((job) => job.metadata.annotations?.jobtype === 'prehook'),
     'status.ansibleJobResult.started'
   )
-  const posthookJobs = getLatest<AnsibleJob>(
+  const posthookJob = getLatest<AnsibleJob>(
     jobs.filter((job) => job.metadata.annotations?.jobtype === 'posthook'),
     'status.ansibleJobResult.started'
   )
 
+  if (failedUnstartedJob.length) {
+    if (failedUnstartedJob[0].metadata?.annotations?.jobtype === 'prehook') {
+      return {
+        prehook: failedUnstartedJob[0],
+        posthook: undefined,
+      }
+    } else {
+      return {
+        prehook: prehookJob,
+        posthook: failedUnstartedJob[0],
+      }
+    }
+  }
+
   return {
-    prehook: prehookJobs,
-    posthook: posthookJobs,
+    prehook: prehookJob,
+    posthook: posthookJob,
   }
 }
 

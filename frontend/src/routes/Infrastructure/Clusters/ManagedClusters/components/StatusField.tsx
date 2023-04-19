@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  AnsibleJob,
   Cluster,
   ClusterStatus,
   getClusterStatusLabel,
@@ -18,13 +19,14 @@ import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
+import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
 
 const { LogsDownloadButton } = CIM
 
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
-  const { ansibleJobState, configMapsState } = useSharedAtoms()
+  const { ansibleJobState, configMapsState, clusterCuratorsState } = useSharedAtoms()
   const [configMaps] = useRecoilState(configMapsState)
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
@@ -32,6 +34,12 @@ export function StatusField(props: { cluster: Cluster }) {
     name: props.cluster?.name!,
     namespace: props.cluster?.namespace!,
   })
+  const [curators] = useRecoilState(clusterCuratorsState)
+  const curator = curators.find(
+    (curator) => curator.metadata.name === props.cluster?.name && curator.metadata.namespace == props.cluster?.namespace
+  )
+  const prehooks = curator?.spec?.install?.prehook?.length
+  const posthooks = curator?.spec?.install?.posthook?.length
 
   const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
   const type = getClusterStatusType(props.cluster.status)
@@ -39,6 +47,15 @@ export function StatusField(props: { cluster: Cluster }) {
   let hasAction = false
   let Action = () => <></>
   let header = ''
+
+  const launchToLogs = (hookJob: AnsibleJob | undefined) => {
+    if (hookJob?.status?.ansibleJobResult.status === 'error' && jobPodsStillAvailable(curator)) {
+      return launchJobLogs(curator)
+    } else {
+      return window.open(latestJob.prehook?.status?.ansibleJobResult.url)
+    }
+  }
+
   switch (props.cluster?.status) {
     case ClusterStatus.notstarted:
       hasAction = true
@@ -63,12 +80,12 @@ export function StatusField(props: { cluster: Cluster }) {
         <AcmButton
           style={{ padding: 0, fontSize: 'inherit' }}
           key={props.cluster.name}
-          onClick={() => window.open(latestJob.prehook?.status?.ansibleJobResult.url)}
+          onClick={() => launchToLogs(latestJob.prehook)}
           variant="link"
           role="link"
           icon={<ExternalLinkAltIcon />}
           iconPosition="right"
-          isDisabled={!latestJob.prehook?.status?.ansibleJobResult?.url}
+          isDisabled={isPrehookLinkDisabled(prehooks, posthooks, latestJob, curator)}
         >
           {t('view.logs')}
         </AcmButton>
@@ -81,12 +98,12 @@ export function StatusField(props: { cluster: Cluster }) {
         <AcmButton
           style={{ padding: 0, fontSize: 'inherit' }}
           key={props.cluster.name}
-          onClick={() => window.open(latestJob.posthook?.status?.ansibleJobResult.url)}
+          onClick={() => launchToLogs(latestJob.posthook)}
           variant="link"
           role="link"
           icon={<ExternalLinkAltIcon />}
           iconPosition="right"
-          isDisabled={!latestJob.posthook?.status?.ansibleJobResult?.url}
+          isDisabled={isPosthookLinkDisabled(latestJob, curator)}
         >
           {t('view.logs')}
         </AcmButton>
