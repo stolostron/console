@@ -90,7 +90,8 @@ export default function RelatedResults(props: {
 
   const relatedCounts = useMemo(() => {
     const dataArray = data?.searchResult?.[0]?.related || []
-    return dataArray.sort((a, b) => compareStrings(a!.kind, b!.kind))
+    const tmpArray = [...dataArray] // use new array so we are not manipulating the memo deps
+    return tmpArray.sort((a, b) => compareStrings(a!.kind, b!.kind))
   }, [data])
 
   if (loading) {
