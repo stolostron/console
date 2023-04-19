@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Divider, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
@@ -9,6 +8,7 @@ import LabelWithPopover from './LabelWithPopover'
 import { TFunction } from 'i18next'
 import '../css/ResourceLabels.css'
 import { Fragment } from 'react'
+import { AcmInlineCopy } from '../../../ui-components'
 
 function repoSort(appRepos: any) {
   return _.sortBy(appRepos, ['pathName', 'gitBranch', 'gitPath'])
@@ -58,7 +58,6 @@ export function ResourceLabels(props: {
             <Stack className="channel-labels channel-labels-popover-content">
               {repoSort(repoMap[type]).map((repo, index) => {
                 const pathName = repo.pathName
-                const link = type === 'namespace' ? '' : pathName
                 let repoTypeAttributes: any = []
                 if (props.showSubscriptionAttributes) {
                   if (type === 'git') {
@@ -87,10 +86,7 @@ export function ResourceLabels(props: {
                     <StackItem className="channel-entry">
                       <Stack>
                         <StackItem className="channel-entry-link">
-                          <a href={link} target="_blank" rel="noreferrer">
-                            {pathName}
-                            <ExternalLinkAltIcon />
-                          </a>
+                          <AcmInlineCopy text={pathName} id="pathName" />
                         </StackItem>
                         {repoTypeAttributes.length > 0 && (
                           <Fragment>
