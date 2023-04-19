@@ -13,7 +13,7 @@ import _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmLoadingPage, AcmTable } from '../../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
@@ -88,6 +88,11 @@ export default function RelatedResults(props: {
     },
   })
 
+  const relatedCounts = useMemo(() => {
+    const dataArray = data?.searchResult?.[0]?.related || []
+    return dataArray.sort((a, b) => compareStrings(a!.kind, b!.kind))
+  }, [data])
+
   if (loading) {
     return (
       <Accordion isBordered asDefinitionList={true}>
@@ -119,7 +124,6 @@ export default function RelatedResults(props: {
     )
   }
 
-  const relatedCounts = data.searchResult[0]?.related || []
   if (relatedCounts.length === 0) {
     return <Alert variant={'info'} isInline title={t('There are no resources related to your search results.')} />
   }

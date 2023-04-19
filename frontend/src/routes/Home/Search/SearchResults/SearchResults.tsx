@@ -1,5 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
+import { makeStyles } from '@mui/styles'
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +21,7 @@ import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
+import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import {
   ClosedDeleteModalProps,
   DeleteResourceModal,
@@ -30,6 +31,27 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { GetRowActions, ISearchResult } from './utils'
+
+const useStyles = makeStyles({
+  resultsWrapper: { paddingTop: '0' },
+  relatedExpandableWrapper: {
+    display: 'flex',
+    alignItems: 'baseline',
+  },
+  accordionItemHeader: {
+    flexDirection: 'row',
+  },
+  accordionItemKind: {
+    display: 'flex',
+    alignItems: 'center',
+    flex: 1,
+  },
+  accordionItemGroup: {
+    marginLeft: '10px',
+    fontSize: 'var(--pf-global--FontSize--sm)',
+    color: 'var(--pf-global--Color--200)',
+  },
+})
 
 function RenderAccordionItem(props: {
   currentQuery: string
@@ -41,11 +63,14 @@ function RenderAccordionItem(props: {
 }) {
   const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
+  const classes = useStyles()
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
   const accordionItemKey = `${kind}-${idx}`
   const items = kindSearchResultItems[kind]
+  const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
+  const kindString = kind.split('.').pop() ?? ''
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
@@ -75,27 +100,21 @@ function RenderAccordionItem(props: {
         isExpanded={isExpanded}
         id={accordionItemKey}
       >
-        <span style={{ flexDirection: 'row' }}>
-          <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            {kind}
-            <div
-              style={{
-                marginLeft: '10px',
-                fontSize: 'var(--pf-global--FontSize--sm)',
-                color: 'var(--pf-global--Color--200)',
-              }}
-            >
-              {`(${items.length})`}
-            </div>
+        <span className={classes.accordionItemHeader}>
+          <span className={classes.accordionItemKind}>
+            {kindString}
+            {/* Cluster is not a real Kube resource and therefore does not have apigroup/apiversion */}
+            {kindString.toLowerCase() !== 'cluster' && <span className={classes.accordionItemGroup}>{apiGroup}</span>}
+            <div className={classes.accordionItemGroup}>{`(${items.length})`}</div>
           </span>
         </span>
       </AccordionToggle>
-      <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kind, items)}</AccordionContent>
+      <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kindString, items)}</AccordionContent>
     </AccordionItem>
   )
 }
 
-function SearchResultTables(props: {
+function SearchResultAccordion(props: {
   data: ISearchResult[]
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
@@ -105,21 +124,28 @@ function SearchResultTables(props: {
   const { kindSearchResultItems, kinds } = useMemo(() => {
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
     for (const searchResultItem of data) {
-      const existing = kindSearchResultItems[searchResultItem.kind]
+      const groupAndKind = `${searchResultItem?.apigroup ?? ''}.${searchResultItem.kind}`
+      const existing = kindSearchResultItems[groupAndKind]
       if (!existing) {
-        kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
+        kindSearchResultItems[groupAndKind] = [searchResultItem]
       } else {
-        kindSearchResultItems[searchResultItem.kind].push(searchResultItem)
+        kindSearchResultItems[groupAndKind].push(searchResultItem)
       }
     }
-    const kinds = Object.keys(kindSearchResultItems)
+    // Keys are formatted as apigroup.kind - but we sort alphabetically by kind - if kinds are equal sort on apigroup
+    const kinds = Object.keys(kindSearchResultItems).sort((a, b) => {
+      const strCompareRes = compareStrings(kindSearchResultItems[a][0].kind, kindSearchResultItems[b][0].kind)
+      return strCompareRes !== 0
+        ? strCompareRes
+        : compareStrings(kindSearchResultItems[a][0].apigroup, kindSearchResultItems[b][0].apigroup)
+    })
     return { kindSearchResultItems, kinds }
   }, [data])
 
   return (
     <PageSection isFilled={false} variant={'light'}>
       <Accordion isBordered asDefinitionList={true}>
-        {kinds.sort().map((kind: string, idx: number) => {
+        {kinds.map((kind: string, idx: number) => {
           const accordionItemKey = `${kind}-${idx}`
           return (
             <RenderAccordionItem
@@ -147,20 +173,21 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
+  const classes = useStyles()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
-  const [showRelatedResources, setShowRelatedResources] = useState<boolean>(
-    // If the url has a preselected related resource -> automatically show the selected related resource tables - otherwise hide the section
-    preSelectedRelatedResources.length > 0 ? true : false
-  )
+  const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
 
   useEffect(() => {
     // If the current search query changes -> hide related resources
     if (preSelectedRelatedResources.length === 0) {
       setShowRelatedResources(false)
       setSelectedRelatedKinds([])
+    } else {
+      setShowRelatedResources(true)
+      setSelectedRelatedKinds(preSelectedRelatedResources)
     }
   }, [preSelectedRelatedResources])
 
@@ -215,7 +242,7 @@ export default function SearchResults(props: {
         currentQuery={deleteResource.currentQuery}
         relatedResource={deleteResource.relatedResource}
       />
-      <PageSection style={{ paddingTop: '0' }}>
+      <PageSection className={classes.resultsWrapper}>
         <Stack hasGutter>
           {searchResultItems.length >= searchResultLimit ? (
             <AcmAlert
@@ -229,7 +256,7 @@ export default function SearchResults(props: {
           ) : null}
 
           <PageSection isFilled={false} variant={'light'}>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+            <div className={classes.relatedExpandableWrapper}>
               <ExpandableSection
                 onToggle={() => setShowRelatedResources(!showRelatedResources)}
                 isExpanded={showRelatedResources}
@@ -252,7 +279,7 @@ export default function SearchResults(props: {
               />
             )}
           </PageSection>
-          <SearchResultTables
+          <SearchResultAccordion
             data={searchResultItems}
             currentQuery={currentQuery}
             setDeleteResource={setDeleteResource}
