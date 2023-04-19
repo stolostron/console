@@ -63,6 +63,7 @@ import {
   Broker,
   BrokerKind,
   BrokerApiVersion,
+  InstallPlanApproval,
 } from '../../../../../resources'
 import {
   mockClusterDeployments,
@@ -317,6 +318,11 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
     cableDriver: submarinerConfigDefault.cableDriver,
     credentialsSecret: {
       name: mockManagedClusterNoCredentialsSecret.metadata.name!,
+    },
+    subscriptionConfig: {
+      source: submarinerConfigDefault.source,
+      sourceNamespace: submarinerConfigDefault.sourceNamespace,
+      installPlanApproval: InstallPlanApproval.automatic,
     },
     globalCIDR: '244.0.0.0/8',
   },
@@ -1065,6 +1071,7 @@ describe('ClusterSetDetails page', () => {
     await typeByTestId('awsAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_access_key_id)
     await typeByTestId('awsSecretAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_secret_access_key)
     await typeByTestId('global-net-cidr', mockManagedClusterNoCredentialsSubmarinerConfig.spec?.globalCIDR!)
+    await clickByLabel('Use custom Submariner subscription')
 
     await clickByText('Next')
 

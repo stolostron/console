@@ -22,6 +22,7 @@ import {
   createResource,
   defaultBrokerName,
   getBroker,
+  InstallPlanApproval,
   IResource,
   listNamespaceSecrets,
   ManagedClusterAddOnApiVersion,
@@ -36,6 +37,7 @@ import {
   SubmarinerConfigApiVersion,
   submarinerConfigDefault,
   SubmarinerConfigKind,
+  SubscriptionConfig,
 } from '../../../../../../resources'
 import {
   AcmAlert,
@@ -188,6 +190,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
   const [azInstanceTypes, setAzInstanceTypes] = useState<Record<string, string>>({})
   const [openStackInstanceTypes, setOpenStackInstanceTypes] = useState<Record<string, string>>({})
   const [globalNetCIDRs, setglobalNetCIDRs] = useState<Record<string, string>>({})
+  const [isCustomSubscriptions, setIsCustomSubscriptions] = useState<Record<string, boolean>>({})
+  const [sources, setsourcess] = useState<Record<string, string>>({})
+  const [sourceNamespaces, setSourceNamespaces] = useState<Record<string, string>>({})
+  const [channels, setChannels] = useState<Record<string, string>>({})
+  const [startingCSVs, setStartingCSVs] = useState<Record<string, string>>({})
+  const [installPlanApprovals, setInstallPlanApprovals] = useState<Record<string, InstallPlanApproval>>({})
 
   const { availableClusters } = props
 
@@ -360,6 +368,16 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         } else {
           submarinerConfig.spec.gatewayConfig = {}
           submarinerConfig.spec.loadBalancerEnable = true
+        }
+        if (isCustomSubscriptions[cluster.displayName!]) {
+          const subscriptionConfig: SubscriptionConfig = {
+            source: sources[cluster.displayName!]! ?? submarinerConfigDefault.source,
+            sourceNamespace: sourceNamespaces[cluster.displayName!]! ?? submarinerConfigDefault.sourceNamespace,
+            channel: channels[cluster.displayName!]!,
+            startingCSV: startingCSVs[cluster.displayName!]!,
+            installPlanApproval: installPlanApprovals[cluster.displayName!]! ?? InstallPlanApproval.automatic,
+          }
+          submarinerConfig.spec.subscriptionConfig = subscriptionConfig
         }
         resources.push(submarinerConfig)
       } else {
@@ -989,6 +1007,100 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     setCableDrivers(copy)
                   },
                   options: Object.values(CableDriver).map((cb) => ({ id: cb, value: cb })),
+                },
+                {
+                  id: 'isCustomSubscription',
+                  type: 'Checkbox',
+                  label: t('Use custom Submariner subscription'),
+                  labelHelp: t('Enable this option to use a custom Submariner subscription.'),
+                  value: isCustomSubscriptions[clusterName] !== undefined ? isCustomSubscriptions[clusterName] : false,
+                  onChange: (value: boolean) => {
+                    const copy = { ...isCustomSubscriptions }
+                    copy[clusterName] = value
+                    setIsCustomSubscriptions(copy)
+                  },
+                },
+                {
+                  id: 'source',
+                  type: 'Text',
+                  label: t('Source'),
+                  placeholder: t('Enter the catalog source'),
+                  labelHelp: t(
+                    'Enter the catalog source of a Submariner subscription. If left blank, the default values will' +
+                      ' be used.'
+                  ),
+                  value: sources[clusterName] ?? submarinerConfigDefault.source,
+                  isHidden: !isCustomSubscriptions[clusterName],
+                  onChange: (value) => {
+                    const copy = { ...sources }
+                    copy[clusterName] = value
+                    setsourcess(copy)
+                  },
+                  isRequired: isCustomSubscriptions[clusterName],
+                },
+                {
+                  id: 'source-namespace',
+                  type: 'Text',
+                  label: t('Source Namespace'),
+                  placeholder: t('Enter the SourceNamespace'),
+                  labelHelp: t(
+                    'Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription.' +
+                      ' if left blank the default values will be used.'
+                  ),
+                  value: sourceNamespaces[clusterName] ?? submarinerConfigDefault.sourceNamespace,
+                  isHidden: !isCustomSubscriptions[clusterName],
+                  onChange: (value) => {
+                    const copy = { ...sourceNamespaces }
+                    copy[clusterName] = value
+                    setSourceNamespaces(copy)
+                  },
+                  isRequired: isCustomSubscriptions[clusterName],
+                },
+                {
+                  id: 'channel',
+                  type: 'Text',
+                  label: t('Channel'),
+                  placeholder: t('Enter the channel'),
+                  labelHelp: t('Enter the channel of a Submariner subscription.'),
+                  value: channels[clusterName],
+                  isHidden: !isCustomSubscriptions[clusterName],
+                  onChange: (value) => {
+                    const copy = { ...channels }
+                    copy[clusterName] = value
+                    setChannels(copy)
+                  },
+                  isRequired: isCustomSubscriptions[clusterName],
+                },
+                {
+                  id: 'starting-csv',
+                  type: 'Text',
+                  label: t('Starting CSV'),
+                  placeholder: t('Enter the startingCSV'),
+                  labelHelp: t('Enter the startingCSV of a Submariner subscription'),
+                  value: startingCSVs[clusterName],
+                  isHidden: !isCustomSubscriptions[clusterName],
+                  onChange: (value) => {
+                    const copy = { ...startingCSVs }
+                    copy[clusterName] = value
+                    setStartingCSVs(copy)
+                  },
+                },
+                {
+                  id: 'installPlanApproval',
+                  type: 'Select',
+                  label: t('Install Plan Approval'),
+                  placeholder: t('Enter InstallPlanApproval'),
+                  labelHelp: t(
+                    'InstallPlanApproval determines if subscription installation plans are applied automatically.'
+                  ),
+                  value: installPlanApprovals[clusterName] ?? submarinerConfigDefault.installPlanApporval,
+                  isHidden: !isCustomSubscriptions[clusterName],
+                  onChange: (value) => {
+                    const copy = { ...installPlanApprovals }
+                    copy[clusterName] = value as InstallPlanApproval
+                    setInstallPlanApprovals(copy)
+                  },
+                  options: Object.values(InstallPlanApproval).map((cb) => ({ id: cb, value: cb })),
                 },
               ],
             } as Section
