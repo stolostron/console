@@ -95,9 +95,13 @@ export function CreatePolicyAutomation() {
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
 
         return listAnsibleTowerJobs(host, token).promise.then((response) => {
-          let templateList: string[] = []
+          let templateList: { name: string; description?: string; id: string }[] = []
           if (response?.results) {
-            templateList = response.results!.map((job) => job.name!)
+            templateList = response.results!.map((job) => ({
+              name: job.name,
+              description: job.description,
+              id: job.id,
+            }))
           }
           return templateList
         })

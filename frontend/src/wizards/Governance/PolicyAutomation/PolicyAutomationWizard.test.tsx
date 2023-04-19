@@ -10,7 +10,7 @@ const mockGetwizardsynceditor = jest.fn()
 const mockCreatecredentialscallback = jest.fn()
 const mockOncancel = jest.fn()
 const mockOnsubmit = jest.fn()
-const mockGetansiblejobscallback = jest.fn().mockResolvedValue(['job'])
+const mockGetansiblejobscallback = jest.fn().mockResolvedValue([{ name: 'job', id: '1', description: 'mock job' }])
 
 describe('PolicyAutomationWizard tests', () => {
   const Component = (props: PolicyAutomationWizardProps) => {
@@ -110,6 +110,34 @@ describe('PolicyAutomationWizard tests', () => {
     )
     //console.log(util.inspect(mockOnsubmit.mock.calls, { depth: null }))
     expect(mockOnsubmit).toHaveBeenCalledWith(submitted)
+  })
+
+  test('select prompt routes to correct template id', async () => {
+    render(<Component {...props} />)
+    await waitFor(() => expect(screen.getByText(/select the ansible credential/i)).toBeInTheDocument())
+
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /options menu/i,
+      })
+    )
+
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /test/i,
+      })
+    )
+
+    await waitFor(() => expect(screen.getByText(/select the ansible job/i)).toBeInTheDocument())
+    userEvent.click(screen.getByText(/select the ansible job/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /job/i,
+      })
+    )
+    window.open = jest.fn()
+    userEvent.click(screen.getByText('View selected template'))
+    expect(window.open).toHaveBeenCalledWith('/#/templates/job_template/1')
   })
 })
 

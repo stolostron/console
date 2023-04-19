@@ -17,7 +17,7 @@ import {
 import { Fragment, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData, Section } from '../../../components/AcmFormData'
+import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -26,6 +26,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import { AcmHelperTextPrompt } from '../../../ui-components/AcmHelperTextPrompt/AcmHelperTextPrompt'
 import {
   ClusterCurator,
   ClusterCuratorAnsibleJob,
@@ -131,10 +132,15 @@ export function AnsibleAutomationsForm(props: {
   const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
   const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
   const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
-  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<string[]>([])
+  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<
+    { name: string; description?: string; id: string }[]
+  >([])
 
-  const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
-  const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] = useState<string[]>()
+  const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
+    { name: string; description?: string; id: string }[] | undefined
+  >()
+  const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
+    useState<{ name: string; description?: string; id: string }[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
   const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
@@ -183,19 +189,26 @@ export function AnsibleAutomationsForm(props: {
 
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
-      const inventoryList: string[] = []
-      const jobList: string[] = []
-      const workflowList: string[] = []
-
+      const inventoryList: { name: string; description?: string; id: string }[] | undefined = []
+      const jobList: { name: string; description?: string; id: string }[] = []
+      const workflowList: { name: string; description?: string; id: string }[] = []
       Promise.all([
         listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
           (response) => {
             if (response) {
               response.results.forEach((template) => {
                 if (template.type === 'job_template' && template.name) {
-                  jobList.push(template.name)
+                  jobList.push({
+                    name: template.name,
+                    description: template.description,
+                    id: template.id,
+                  })
                 } else if (template.type === 'workflow_job_template' && template.name) {
-                  workflowList.push(template.name)
+                  workflowList.push({
+                    name: template.name,
+                    description: template.description,
+                    id: template.id,
+                  })
                 }
               })
               setAnsibleTowerJobTemplateList(jobList)
@@ -208,7 +221,11 @@ export function AnsibleAutomationsForm(props: {
             if (response) {
               response.results.forEach((inventory) => {
                 if (inventory.name) {
-                  inventoryList.push(inventory.name)
+                  inventoryList.push({
+                    name: inventory.name,
+                    description: inventory?.description,
+                    id: inventory.id,
+                  })
                 }
               })
               setAnsibleTowerInventoryList(inventoryList)
@@ -311,7 +328,6 @@ export function AnsibleAutomationsForm(props: {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
-
   const formData: FormData = {
     title: isEditing ? t('template.edit.title') : t('template.create.title'),
     titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
@@ -368,11 +384,24 @@ export function AnsibleAutomationsForm(props: {
             value: ansibleInventory,
             onChange: setAnsibleInventory,
             isRequired: false,
-            options: ansibleTowerInventoryList.map((name) => ({
+            options: ansibleTowerInventoryList.map(({ name, description }) => ({
               id: name as string,
               value: name as string,
+              description: description,
             })),
             isHidden: !ansibleSelection,
+            prompt: {
+              text: t('View selected inventory'),
+              linkType: LinkType.external,
+              isDisabled: !ansibleInventory,
+              callback: () => {
+                window.open(
+                  `${ansibleCredentials[0].stringData?.host}/#/inventories/inventory/${
+                    ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.id
+                  }`
+                )
+              },
+            },
           },
         ],
       },
@@ -648,8 +677,8 @@ export function AnsibleAutomationsForm(props: {
 function EditAnsibleJobModal(props: {
   ansibleSelection?: string
   ansibleCredentials: ProviderConnection[]
-  ansibleTowerTemplateList: string[] | undefined
-  ansibleTowerWorkflowTemplateList: string[] | undefined
+  ansibleTowerTemplateList: { name: string; description?: string; id: string }[] | undefined
+  ansibleTowerWorkflowTemplateList: { name: string; description?: string; id: string }[] | undefined
   ansibleJob?: ClusterCuratorAnsibleJob
   ansibleJobList?: ClusterCuratorAnsibleJob[]
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
@@ -657,7 +686,13 @@ function EditAnsibleJobModal(props: {
   const { t } = useTranslation()
   const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
-  const { ansibleTowerTemplateList = [], ansibleTowerWorkflowTemplateList = [] } = props
+  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>()
+  const {
+    ansibleTowerTemplateList = [],
+    ansibleTowerWorkflowTemplateList = [],
+    ansibleSelection,
+    ansibleCredentials,
+  } = props
   useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
   const newTemplateSelection = (jobName: string | undefined) => {
@@ -715,26 +750,41 @@ function EditAnsibleJobModal(props: {
           value={ansibleJob?.name}
           onChange={(name) => {
             newTemplateSelection(name)
+            if (ansibleCredentials.length) {
+              const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+              const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
+                ?.host
+              const jobID = filterForJobTemplates
+                ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
+                : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
+              setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+            }
           }}
           variant={SelectVariant.typeahead}
           placeholder={
             filterForJobTemplates ? t('template.modal.name.placeholder') : t('template.workflow.modal.name.placeholder')
           }
           isRequired
+          helperText={AcmHelperTextPrompt({
+            prompt: {
+              label: t('View selected template'),
+              href: ansibleTemplateUrl,
+              isDisabled: !ansibleTemplateUrl,
+            },
+          })}
         >
           {filterForJobTemplates
-            ? ansibleTowerTemplateList?.map((name) => (
-                <SelectOption key={name} value={name}>
+            ? ansibleTowerTemplateList?.map(({ name, description }) => (
+                <SelectOption key={name} value={name} description={description}>
                   {name}
                 </SelectOption>
               ))
-            : ansibleTowerWorkflowTemplateList?.map((name) => (
-                <SelectOption key={name} value={name}>
+            : ansibleTowerWorkflowTemplateList?.map(({ name, description }) => (
+                <SelectOption key={name} value={name} description={description}>
                   {name}
                 </SelectOption>
               ))}
         </AcmSelect>
-
         <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}

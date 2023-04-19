@@ -17,33 +17,22 @@ import {
 import { makeStyles } from '@mui/styles'
 import {
   AcmAlert,
-  AcmButton,
   AcmEmptyState,
   AcmForm,
+  AcmHelperTextPrompt,
   AcmModal,
   AcmSelect,
   AcmTable,
   IAcmTableColumn,
 } from '../../../../../ui-components'
-import {
-  Button,
-  ButtonVariant,
-  Flex,
-  FlexItem,
-  ModalVariant,
-  SelectOption,
-  Stack,
-  StackItem,
-} from '@patternfly/react-core'
+import { Button, ModalVariant, SelectOption, Stack, StackItem } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
-import { NavigationPath } from '../../../../../NavigationPath'
 import { cloneDeep } from 'lodash'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { NavigationPath } from '../../../../../NavigationPath'
 
 const useStyles = makeStyles({
   body: {},
@@ -277,51 +266,32 @@ export function UpdateAutomationModal(props: {
           )}
           <StackItem>{t('Update the automation template for the selected clusters.')}</StackItem>
           <StackItem className={classes.select}>
-            <Flex>
-              <FlexItem flex={{ default: 'flex_1' }}>
-                <AcmSelect
-                  id="curator-templates"
-                  label={t('New template')}
-                  maxHeight="12em"
-                  menuAppendTo="parent"
-                  onChange={(key) => handleCuratorSelect(key)}
-                  value={selectedCuratorTemplate?.metadata.uid}
-                  placeholder={t('Select a template')}
-                >
-                  {validCuratorTemplates.map((templates) => (
-                    <SelectOption key={templates.metadata.uid} value={templates.metadata.uid}>
-                      {templates.metadata.name}
-                    </SelectOption>
-                  ))}
-                </AcmSelect>
-              </FlexItem>
-              <FlexItem flex={{ default: 'flex_1' }}>
-                <AcmButton
-                  id="view-selected"
-                  isDisabled={!selectedCuratorTemplate}
-                  target="_blank"
-                  isInline
-                  variant={ButtonVariant.link}
-                  component={Link}
-                  to={{
-                    pathname:
-                      selectedCuratorTemplate &&
-                      selectedCuratorTemplate.metadata.namespace &&
-                      selectedCuratorTemplate.metadata.name
-                        ? NavigationPath.editAnsibleAutomation
-                            .replace(':namespace', selectedCuratorTemplate.metadata.namespace as string)
-                            .replace(':name', selectedCuratorTemplate.metadata.name as string)
-                        : undefined,
-                    state: {
-                      from: NavigationPath.managedClusters,
-                    },
-                  }}
-                >
-                  {t('View selected template')}
-                  <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                </AcmButton>
-              </FlexItem>
-            </Flex>
+            <AcmSelect
+              id="curator-templates"
+              label={t('New template')}
+              maxHeight="12em"
+              menuAppendTo="parent"
+              onChange={(key) => {
+                handleCuratorSelect(key)
+              }}
+              value={selectedCuratorTemplate?.metadata.uid}
+              placeholder={t('Select a template')}
+              helperText={AcmHelperTextPrompt({
+                prompt: {
+                  label: t('View selected template'),
+                  href: NavigationPath.editAnsibleAutomation
+                    .replace(':namespace', selectedCuratorTemplate?.metadata.namespace || '')
+                    .replace(':name', selectedCuratorTemplate?.metadata.name || ''),
+                  isDisabled: !selectedCuratorTemplate,
+                },
+              })}
+            >
+              {validCuratorTemplates.map((templates) => (
+                <SelectOption key={templates.metadata.uid} value={templates.metadata.uid}>
+                  {templates.metadata.name}
+                </SelectOption>
+              ))}
+            </AcmSelect>
           </StackItem>
           <StackItem className={classes.table}>
             <AcmTable<Cluster>

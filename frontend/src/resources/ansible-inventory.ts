@@ -8,6 +8,8 @@ export interface AnsibleTowerInventoryList {
   results: Array<AnsibleTowerInventory>
 }
 export interface AnsibleTowerInventory {
-  name?: string
+  name: string
   type?: AnsibleApiInventoryType
+  description?: string
+  id: string
 }

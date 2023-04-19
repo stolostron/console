@@ -2922,6 +2922,7 @@
   "View Pod YAML and Logs": "View Pod YAML and Logs",
   "View related resources": "View related resources",
   "View resource YAML": "View resource YAML",
+  "View selected inventory": "View selected inventory",
   "View selected template": "View selected template",
   "View status YAML": "View status YAML",
   "View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).": "View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).",

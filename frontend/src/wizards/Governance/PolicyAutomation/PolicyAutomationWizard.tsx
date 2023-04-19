@@ -36,7 +36,7 @@ export interface PolicyAutomationWizardProps {
   resource: IPolicyAutomation
   onSubmit: WizardSubmit
   onCancel: WizardCancel
-  getAnsibleJobsCallback: (credential: IResource) => Promise<string[]>
+  getAnsibleJobsCallback: (credential: IResource) => Promise<{ name: string; description?: string; id: string }[]>
 }
 
 export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
@@ -51,7 +51,9 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     () => ansibleCredentials.map((credential) => credential.metadata?.name ?? ''),
     [ansibleCredentials]
   )
-  const [jobNames, setJobNames] = useState<string[]>()
+  const [jobTemplates, setjobTemplates] = useState<{ name: string; description?: string; id: string }[]>()
+  const [selectedTemplateID, setSelectedTemplateID] = useState<string>()
+  const [selectedAnsibleCredentialHost, setSelectedAnsibleCredentialHost] = useState<string>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
 
@@ -62,7 +64,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       )
       props
         .getAnsibleJobsCallback(credential ?? {})
-        .then((jobNames) => setJobNames(jobNames))
+        .then((jobTemplates) => setjobTemplates(jobTemplates))
         .catch((err) => {
           if (err instanceof Error) {
             setAlert({ title: t('Failed to get job names from Ansible'), message: err.message })
@@ -128,13 +130,14 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               if ((item as IPolicyAutomation).spec?.automationDef?.name) {
                 ;(item as IPolicyAutomation).spec.automationDef.name = ''
               }
-              const credential = ansibleCredentials.find((credential) => credential.metadata?.name === value)
+              const credential: any = ansibleCredentials.find((credential) => credential.metadata?.name === value)
+              setSelectedAnsibleCredentialHost(Buffer.from(credential?.data?.host || '', 'base64').toString('ascii'))
               if (credential) {
                 setAlert(undefined)
-                setJobNames(undefined)
+                setjobTemplates(undefined)
                 props
                   .getAnsibleJobsCallback(credential)
-                  .then((jobNames) => setJobNames(jobNames))
+                  .then((jobTemplates) => setjobTemplates(jobTemplates))
                   .catch((err) => {
                     if (err instanceof Error) {
                       setAlert({
@@ -164,14 +167,33 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
             }
             required
           />
-          <Select
-            id="job"
-            label={t('Ansible job')}
-            path="spec.automationDef.name"
-            options={jobNames}
-            hidden={(item) => !item.spec?.automationDef?.secret}
-            required
-          />
+          <>
+            <Select
+              id="job"
+              label={t('Ansible job')}
+              path="spec.automationDef.name"
+              onValueChange={(_, item) => {
+                setSelectedTemplateID(
+                  jobTemplates?.find(
+                    (template) => template.name === (item as IPolicyAutomation).spec?.automationDef?.name
+                  )?.id
+                )
+              }}
+              options={jobTemplates?.map((template) => ({
+                id: template.name,
+                value: template.name,
+                label: template.name,
+                description: template.description,
+              }))}
+              prompt={{
+                label: t('View selected template'),
+                isDisabled: !selectedTemplateID,
+                href: `${selectedAnsibleCredentialHost}/#/templates/job_template/${selectedTemplateID}`,
+              }}
+              hidden={(item) => !item.spec?.automationDef?.secret}
+              required
+            />
+          </>
           <WizKeyValue
             id="extra_vars"
             path="spec.automationDef.extra_vars"

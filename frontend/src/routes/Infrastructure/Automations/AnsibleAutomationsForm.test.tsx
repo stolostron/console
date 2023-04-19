@@ -130,18 +130,22 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install',
       type: 'job_template',
+      id: '1',
     },
     {
       name: 'test-job-post-install',
       type: 'job_template',
+      id: '2',
     },
     {
       name: 'test-job-pre-upgrade',
       type: 'job_template',
+      id: '3',
     },
     {
       name: 'test-job-post-upgrade',
       type: 'job_template',
+      id: '4',
     },
   ],
 }
@@ -151,6 +155,7 @@ const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install-ii',
       type: 'workflow_job_template',
+      id: '1',
     },
   ],
 }
@@ -160,6 +165,7 @@ const mockInventoryList: AnsibleTowerInventoryList = {
     {
       name: 'test-inventory',
       type: 'inventory',
+      id: '1',
     },
   ],
 }
@@ -250,6 +256,97 @@ describe('add automation template page', () => {
     const createNock = nockCreate(mockClusterCurator)
     await clickByText('Add')
     await waitForNock(createNock)
+  })
+  it('should visit the correct Ansible tower inventory template url', async () => {
+    render(<AddAnsibleTemplateTest />)
+
+    // template information
+    const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
+    await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    // Should show the modal wizard
+    await clickByText('Add credential')
+    // Credentials type
+    await waitForTestId('credentialsType-input-toggle')
+    await clickByText('Cancel', 1)
+
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(mockSecret.metadata.name!)
+    await waitForNock(ansibleJobNock)
+    await waitForNock(ansibleWorkflowNock)
+    await waitForNock(ansibleInventoryNock)
+    await clickByPlaceholderText('Select an inventory')
+    await clickByText(mockInventoryList.results[0].name!)
+    window.open = jest.fn()
+    await clickByText('View selected inventory')
+    expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/inventories/inventory/1')
+  })
+
+  it('should visit the correct Ansible tower job template url', async () => {
+    render(<AddAnsibleTemplateTest />)
+
+    // template information
+    const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
+    await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    // Should show the modal wizard
+    await clickByText('Add credential')
+    // Credentials type
+    await waitForTestId('credentialsType-input-toggle')
+    await clickByText('Cancel', 1)
+
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(mockSecret.metadata.name!)
+    await clickByText('Next')
+    await waitForNock(ansibleJobNock)
+    await waitForNock(ansibleWorkflowNock)
+    await waitForNock(ansibleInventoryNock)
+
+    // install job templates
+    await clickByText('Add an Ansible template', 0)
+    await clickByPlaceholderText('Search or select a job template name', 0)
+    await clickByText(mockTemplateList.results![0].name!, 0)
+    window.open = jest.fn()
+    await clickByText('View selected template')
+    expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/templates/job_template/1')
+  })
+
+  it('should visit the correct Ansible tower workflow job template url', async () => {
+    render(<AddAnsibleTemplateTest />)
+
+    // template information
+    const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
+    await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    // Should show the modal wizard
+    await clickByText('Add credential')
+    // Credentials type
+    await waitForTestId('credentialsType-input-toggle')
+    await clickByText('Cancel', 1)
+
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(mockSecret.metadata.name!)
+    await clickByText('Next')
+    await waitForNock(ansibleJobNock)
+    await waitForNock(ansibleWorkflowNock)
+    await waitForNock(ansibleInventoryNock)
+
+    // install workflow job templates
+    await clickByText('Add an Ansible template', 0)
+    await clickByText('Workflow job template')
+    await clickByPlaceholderText('Search or select a workflow job template name', 0)
+    await clickByText(mockTemplateWorkflowList.results![0].name!, 0)
+    window.open = jest.fn()
+    await clickByText('View selected template')
+    expect(window.open).toHaveBeenCalledWith(
+      'https://ansible-tower-web-svc-tower.com/#/templates/workflow_job_template/1'
+    )
   })
 
   it('should render warning when Ansible operator is not installed', async () => {
