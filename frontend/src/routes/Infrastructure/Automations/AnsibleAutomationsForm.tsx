@@ -2,7 +2,6 @@
 import {
   ActionGroup,
   Button,
-  ButtonVariant,
   Chip,
   ChipGroup,
   Flex,
@@ -27,6 +26,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import { AcmHelperTextPrompt } from '../../../ui-components/AcmHelperTextPrompt/AcmHelperTextPrompt'
 import {
   ClusterCurator,
   ClusterCuratorAnsibleJob,
@@ -45,7 +45,6 @@ import {
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,
-  AcmButton,
   AcmForm,
   AcmKubernetesLabelsInput,
   AcmModal,
@@ -55,17 +54,6 @@ import {
 } from '../../../ui-components'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import schema from './schema.json'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@mui/styles'
-
-const useStyles = makeStyles({
-  select: {
-    alignItems: 'end',
-    '& > div:last-child': {
-      paddingBottom: '6px',
-    },
-  },
-})
 
 export default function AnsibleAutomationsFormPage({
   match,
@@ -698,6 +686,7 @@ function EditAnsibleJobModal(props: {
   const { t } = useTranslation()
   const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
+  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>()
   const {
     ansibleTowerTemplateList = [],
     ansibleTowerWorkflowTemplateList = [],
@@ -706,7 +695,6 @@ function EditAnsibleJobModal(props: {
   } = props
   useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
-  const classes = useStyles()
   const newTemplateSelection = (jobName: string | undefined) => {
     if (ansibleJob) {
       const copy = { ...ansibleJob }
@@ -754,62 +742,49 @@ function EditAnsibleJobModal(props: {
             }}
           />
         </FormGroup>
-        <Flex className={classes.select}>
-          <FlexItem flex={{ default: 'flex_1' }}>
-            <AcmSelect
-              maxHeight="18em"
-              menuAppendTo="parent"
-              label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
-              id="job-name"
-              value={ansibleJob?.name}
-              onChange={(name) => {
-                newTemplateSelection(name)
-              }}
-              variant={SelectVariant.typeahead}
-              placeholder={
-                filterForJobTemplates
-                  ? t('template.modal.name.placeholder')
-                  : t('template.workflow.modal.name.placeholder')
-              }
-              isRequired
-            >
-              {filterForJobTemplates
-                ? ansibleTowerTemplateList?.map(({ name, description }) => (
-                    <SelectOption key={name} value={name} description={description}>
-                      {name}
-                    </SelectOption>
-                  ))
-                : ansibleTowerWorkflowTemplateList?.map(({ name, description }) => (
-                    <SelectOption key={name} value={name} description={description}>
-                      {name}
-                    </SelectOption>
-                  ))}
-            </AcmSelect>
-          </FlexItem>
-          <FlexItem align={{ default: 'alignRight' }}>
-            <AcmButton
-              id="view-selected"
-              isDisabled={!ansibleJob?.name}
-              isInline
-              variant={ButtonVariant.link}
-              onClick={() => {
-                if (ansibleCredentials.length) {
-                  const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
-                  const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!
-                    .stringData?.host
-                  const jobID = filterForJobTemplates
-                    ? ansibleTowerTemplateList.find((template) => template.name === ansibleJob?.name)?.id
-                    : ansibleTowerWorkflowTemplateList.find((template) => template.name === ansibleJob?.name)?.id
-                  window.open(`${hostURL}/#/templates/${templateType}/${jobID}`)
-                }
-              }}
-            >
-              {t('View selected template')}
-              <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-            </AcmButton>
-          </FlexItem>
-        </Flex>
-
+        <AcmSelect
+          maxHeight="18em"
+          menuAppendTo="parent"
+          label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
+          id="job-name"
+          value={ansibleJob?.name}
+          onChange={(name) => {
+            newTemplateSelection(name)
+            if (ansibleCredentials.length) {
+              const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+              const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
+                ?.host
+              const jobID = filterForJobTemplates
+                ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
+                : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
+              setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+            }
+          }}
+          variant={SelectVariant.typeahead}
+          placeholder={
+            filterForJobTemplates ? t('template.modal.name.placeholder') : t('template.workflow.modal.name.placeholder')
+          }
+          isRequired
+          helperText={AcmHelperTextPrompt({
+            prompt: {
+              label: t('View selected template'),
+              href: ansibleTemplateUrl,
+              isDisabled: !ansibleTemplateUrl,
+            },
+          })}
+        >
+          {filterForJobTemplates
+            ? ansibleTowerTemplateList?.map(({ name, description }) => (
+                <SelectOption key={name} value={name} description={description}>
+                  {name}
+                </SelectOption>
+              ))
+            : ansibleTowerWorkflowTemplateList?.map(({ name, description }) => (
+                <SelectOption key={name} value={name} description={description}>
+                  {name}
+                </SelectOption>
+              ))}
+        </AcmSelect>
         <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}
