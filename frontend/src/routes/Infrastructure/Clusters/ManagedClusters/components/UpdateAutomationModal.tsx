@@ -70,6 +70,7 @@ export function UpdateAutomationModal(props: {
   const [isUpdating, setIsUpdating] = useState(false)
   const clusterProviders = useClusterProviderColumn()
   const distributionVersion = useClusterDistributionColumn(clusterCurators, hostedClusters)
+  const [templatePath, setTemplatePath] = useState<string>()
 
   const handleCuratorSelect = (uid: string | undefined) => {
     setSelectedCuratorTemplate(
@@ -271,20 +272,17 @@ export function UpdateAutomationModal(props: {
               label={t('New template')}
               maxHeight="12em"
               menuAppendTo="parent"
-              onChange={(key) => handleCuratorSelect(key)}
+              onChange={(key) => {
+                handleCuratorSelect(key)
+              }}
               value={selectedCuratorTemplate?.metadata.uid}
               placeholder={t('Select a template')}
               helperText={AcmHelperTextPrompt({
                 prompt: {
                   label: t('View selected template'),
-                  href:
-                    selectedCuratorTemplate &&
-                    selectedCuratorTemplate.metadata.namespace &&
-                    selectedCuratorTemplate.metadata.name
-                      ? (NavigationPath.editAnsibleAutomation
-                          .replace(':namespace', selectedCuratorTemplate.metadata.namespace as string)
-                          .replace(':name', selectedCuratorTemplate.metadata.name as string) as string)
-                      : '',
+                  href: NavigationPath.editAnsibleAutomation
+                    .replace(':namespace', selectedCuratorTemplate?.metadata.namespace || '')
+                    .replace(':name', selectedCuratorTemplate?.metadata.name || '') as string,
                   isDisabled: !selectedCuratorTemplate,
                 },
               })}
