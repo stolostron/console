@@ -70,7 +70,6 @@ export function UpdateAutomationModal(props: {
   const [isUpdating, setIsUpdating] = useState(false)
   const clusterProviders = useClusterProviderColumn()
   const distributionVersion = useClusterDistributionColumn(clusterCurators, hostedClusters)
-  const [templatePath, setTemplatePath] = useState<string>()
 
   const handleCuratorSelect = (uid: string | undefined) => {
     setSelectedCuratorTemplate(
