@@ -336,11 +336,11 @@ export function AnsibleAutomationsForm(props: {
         }
         if (name) {
           if (jobType === 'Job' && !AnsibleTowerJobTemplateList?.includes(name)) {
-            errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an Ansible existing job', { name }) })
+            errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an existing Ansible job', { name }) })
           } else if (jobType === 'Workflow' && !AnsibleTowerWorkflowTemplateList?.includes(name)) {
             errors.push({
               path: `${path}.name`,
-              message: t('"{{name}}" is not an Ansible existing workflow', { name }),
+              message: t('"{{name}}" is not an existing Ansible workflow', { name }),
             })
           }
         }
