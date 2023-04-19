@@ -181,7 +181,7 @@ export function RemoveAutomationModal(props: {
         <Stack hasGutter>
           <StackItem>
             {t(
-              'This action removes the automation template from the following list of clusters. Update the automation template to add it to the list again.'
+              'This action removes the automation template from the following list of clusters. Only clusters that have an automation template are listed.'
             )}
           </StackItem>
           <StackItem className={classes.table}>
