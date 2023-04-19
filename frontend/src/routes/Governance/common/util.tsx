@@ -480,7 +480,7 @@ export function getPolicyRemediation(policy: Policy | undefined) {
     } else if (remediationAggregation !== '-' && remediationAggregation !== templateRemediation) {
       remediationAggregation = 'inform/enforce'
       return
-    } else if (remediationAggregation !== templateRemediation) {
+    } else if (remediationAggregation !== templateRemediation && templateRemediation) {
       remediationAggregation = templateRemediation
       return
     }

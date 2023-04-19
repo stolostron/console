@@ -9,8 +9,10 @@ import {
   mockPolicy,
 } from '../../../routes/Governance/governance.sharedMocks'
 
+import { Policy } from '../../../resources'
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
+import { waitForText } from '../../../lib/test-util'
 
 describe('ExistingTemplateName', () => {
   test('should return false for non-existing name', () => {
@@ -41,6 +43,44 @@ function TestPolicyWizard() {
   )
 }
 
+function TestPolicyWizardGK() {
+  const mockPolicyGK = JSON.parse(JSON.stringify(mockPolicy[0])) as Policy
+  mockPolicyGK.spec['policy-templates'] = [
+    {
+      objectDefinition: {
+        apiVersion: 'templates.gatekeeper.sh/v1beta1',
+        kind: 'ConstraintTemplate',
+        metadata: { name: 'policy-set-with-1-placement-policy-1' },
+        spec: {},
+      },
+    },
+    {
+      objectDefinition: {
+        apiVersion: 'constraints.gatekeeper.sh/v1beta1',
+        kind: 'K8sRequiredLabels',
+        metadata: { name: 'policy-set-with-1-placement-policy-2' },
+        spec: {},
+      },
+    },
+  ]
+
+  return (
+    <PolicyWizard
+      title="Testing the policy wizard"
+      namespaces={['argo-server-1']}
+      policies={[mockPolicyGK as IResource]}
+      placements={[mockPlacements as IResource]}
+      placementRules={[]}
+      clusters={mockManagedClusters}
+      clusterSets={[mockClusterSet]}
+      clusterSetBindings={[mockClusterSetBinding]}
+      onSubmit={() => new Promise(() => {})}
+      onCancel={() => {}}
+      resources={[mockPolicyGK as IResource]}
+    />
+  )
+}
+
 describe('Policy wizard', () => {
   test('can show correct cluster sets dropdown', async () => {
     const { container } = render(<TestPolicyWizard />)
@@ -60,5 +100,14 @@ describe('Policy wizard', () => {
     expect(screen.getByRole('button', { name: /create cluster set/i })).not.toBeNull()
 
     expect(screen.getByRole('checkbox', { name: /cluster-set-01/i })).not.toBeNull()
+  })
+
+  test('policy template customization is disabled for Gatekeeper policy', async () => {
+    const { container } = render(<TestPolicyWizardGK />)
+    screen.getByRole('button', { name: /policy templates/i }).click()
+
+    await waitForText('Gatekeeper policy templates must be customized using the YAML editor.', true)
+    expect(container.querySelector('#objectdefinition-spec-severity-form-group')).toBeNull()
+    expect(container.querySelector('#objectdefinition-spec-remediationaction-form-group')).toBeNull()
   })
 })

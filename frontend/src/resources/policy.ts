@@ -55,8 +55,8 @@ export interface PolicyTemplate {
           subjects?: ResourceRef[]
         }
       }[]
-      remediationAction: string
-      severity: string
+      remediationAction?: string
+      severity?: string
       maxClusterRoleBindingUsers?: number
       pruneObjectBehavior?: string
     }
