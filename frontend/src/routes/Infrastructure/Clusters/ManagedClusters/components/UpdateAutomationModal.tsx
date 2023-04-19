@@ -281,7 +281,7 @@ export function UpdateAutomationModal(props: {
                   label: t('View selected template'),
                   href: NavigationPath.editAnsibleAutomation
                     .replace(':namespace', selectedCuratorTemplate?.metadata.namespace || '')
-                    .replace(':name', selectedCuratorTemplate?.metadata.name || '') as string,
+                    .replace(':name', selectedCuratorTemplate?.metadata.name || ''),
                   isDisabled: !selectedCuratorTemplate,
                 },
               })}
