@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
@@ -240,6 +240,139 @@ describe('Policy Template Details content', () => {
     const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
       `/multicloud/home/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
+    )
+  })
+
+  test('Should render Policy Template Details Page content correctly with Gatekeeper content', async () => {
+    const getResourceRequest = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: '2553352ec733ab71e2ded9369e78ad3f11047c7d',
+        namespace: 'local-cluster',
+        labels: { viewName: '2553352ec733ab71e2ded9369e78ad3f11047c7d' },
+      },
+      spec: {
+        scope: {
+          name: 'ns-must-have-gk',
+          resource: 'k8srequiredlabels.v1beta1.constraints.gatekeeper.sh',
+        },
+      },
+    }
+
+    const getResourceResponse = JSON.parse(JSON.stringify(getResourceRequest))
+    getResourceResponse.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'constraints.gatekeeper.sh/v1beta1',
+        kind: 'K8sRequiredLabels',
+        metadata: {
+          labels: {
+            'cluster-name': 'local-cluster',
+            'cluster-namespace': 'local-cluster',
+            'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+            'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+            'policy.open-cluster-management.io/policy': 'open-cluster-management-global-set.gk-policy',
+          },
+          name: 'ns-must-have-gk',
+        },
+        spec: {
+          enforcementAction: 'warn',
+          match: { kinds: [{ apiGroups: [''], kinds: ['Namespace'] }] },
+          parameters: { labels: ['gatekeeper'] },
+        },
+        status: {
+          auditTimestamp: '2023-04-19T14:36:50Z',
+          byPod: [
+            {
+              constraintUID: '920387b5-5976-48d5-a51b-4a74db008dfa',
+              enforced: true,
+              id: 'gatekeeper-audit-7457d48b6c-rtjtf',
+              observedGeneration: 1,
+              operations: ['audit', 'status'],
+            },
+            {
+              constraintUID: '920387b5-5976-48d5-a51b-4a74db008dfa',
+              enforced: true,
+              id: 'gatekeeper-controller-manager-758949dcb9-2vrrg',
+              observedGeneration: 1,
+              operations: ['webhook'],
+            },
+            {
+              constraintUID: '920387b5-5976-48d5-a51b-4a74db008dfa',
+              enforced: true,
+              id: 'gatekeeper-controller-manager-758949dcb9-pxwll',
+              observedGeneration: 1,
+              operations: ['webhook'],
+            },
+          ],
+          totalViolations: 2,
+          violations: [
+            {
+              enforcementAction: 'warn',
+              group: '',
+              kind: 'Namespace',
+              message: 'you must provide labels: {"gatekeeper"}',
+              name: 'default',
+              version: 'v1',
+            },
+            {
+              enforcementAction: 'warn',
+              group: '',
+              kind: 'Namespace',
+              message: 'you must provide labels: {"gatekeeper"}',
+              name: 'default-broker',
+              version: 'v1',
+            },
+          ],
+        },
+      },
+    }
+
+    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyTemplateDetails
+            clusterName={'local-cluster'}
+            apiGroup={'constraints.gatekeeper.sh'}
+            apiVersion={'v1beta1'}
+            kind={'K8sRequiredLabels'}
+            templateName={'ns-must-have-gk'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for the get resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // Verify the template description section
+    await waitForText('Template details')
+    await waitForText('ns-must-have-gk')
+    await waitForText('K8sRequiredLabels')
+    screen.getByText(
+      /\[\{"enforcementaction":"warn","group":"","kind":"namespace","message":"you must provide labels: \{\\"gatekeeper\\"\}","name":"default","version":"v1"\},\{"enforcementaction":"warn","group":"","kind":"namespace","message":"you must provide labels: \{\\"gatekeeper\\"\}","name":"default-broker","version":"v1"\}\]/i
+    )
+
+    const row = screen.getByRole('row', {
+      name: /default-broker - namespace v1 violations you must provide labels: \{"gatekeeper"\} view yaml/i,
+    })
+    const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
+    expect(viewYamlLink.getAttribute('href')).toEqual(
+      `/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
   })
 })
