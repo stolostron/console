@@ -135,9 +135,11 @@ export function ProgressStepBar() {
             linkUrl:
               !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
             isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
-            linkCallback: () => {
-              curator && launchJobLogs(curator)
-            },
+            linkCallback: !latestJobs.prehook?.status?.ansibleJobResult?.url
+              ? () => {
+                  curator && launchJobLogs(curator)
+                }
+              : undefined,
           },
         }),
       },
@@ -179,9 +181,11 @@ export function ProgressStepBar() {
               linkName: t('status.link.logs'),
               linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
               isDisabled: isPosthookLinkDisabled(latestJobs, curator),
-              linkCallback: () => {
-                curator && launchJobLogs(curator)
-              },
+              linkCallback: !latestJobs.posthook?.status?.ansibleJobResult?.url
+                ? () => {
+                    curator && launchJobLogs(curator)
+                  }
+                : undefined,
             },
           }),
       },

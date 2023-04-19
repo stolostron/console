@@ -56,7 +56,7 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
   const jobs = ansibleJobs.filter((job) => job.metadata.namespace === namespace)
 
   //  considers unstarted jobs that failed
-  const failedUnstartedJob = jobs.filter((job) => job.status?.ansibleJobResult.status === 'error')
+  const failedUnstartedJob = jobs.filter((job) => job.status?.ansibleJobResult?.status === 'error')
   if (failedUnstartedJob.length) {
     if (failedUnstartedJob[0].metadata?.annotations?.jobtype === 'prehook') {
       return {
