@@ -1,3 +1,12 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: pullsecret-{{{ai.name}}}
+  namespace: {{{ai.name}}}
+data:
+  '.dockerconfigjson': '{{{ai.pullSecret}}}'
+type: 'kubernetes.io/dockerconfigjson'
+---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: InfraEnv
 metadata:
@@ -46,15 +55,6 @@ status:
     {{#each ai.labels}}
       {{@key}}: {{this}}
     {{/each}}
----
-kind: Secret
-apiVersion: v1
-metadata:
-  name: pullsecret-{{{ai.name}}}
-  namespace: {{{ai.name}}}
-data:
-  '.dockerconfigjson': '{{{ai.pullSecret}}}'
-type: 'kubernetes.io/dockerconfigjson'
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1

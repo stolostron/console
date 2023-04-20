@@ -176,7 +176,7 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
 const appendPatch = (
   patches: any,
   path: string,
-  newVal: object | string | boolean,
+  newVal?: object | string | boolean,
   existingVal?: object | string | boolean
 ) => {
   if (!isEqual(newVal, existingVal)) {
@@ -188,7 +188,10 @@ const appendPatch = (
   }
 }
 
-export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstallK8sResource, values: any) => {
+export const getNetworkingPatches = (
+  agentClusterInstall: CIM.AgentClusterInstallK8sResource,
+  values: CIM.ClusterDeploymentNetworkingValues
+) => {
   const agentClusterInstallPatches: any = []
 
   appendPatch(
@@ -290,6 +293,12 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
     }
     appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
   }
+  appendPatch(
+    agentClusterInstallPatches,
+    '/spec/networking/networkType',
+    values.networkType,
+    agentClusterInstall.spec?.networking.networkType
+  )
 
   return agentClusterInstallPatches
 }
@@ -704,6 +713,28 @@ export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource)
   }
 }
 
+export const onEditProxy = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+  const patches: any[] = []
+  const proxySettings: {
+    httpProxy?: string
+    httpsProxy?: string
+    noProxy?: string
+  } = {}
+  if (values.httpProxy) {
+    proxySettings.httpProxy = values.httpProxy
+  }
+  if (values.httpsProxy) {
+    proxySettings.httpsProxy = values.httpsProxy
+  }
+  if (values.noProxy) {
+    proxySettings.noProxy = values.noProxy
+  }
+  appendPatch(patches, '/spec/proxy', proxySettings, infraEnv.spec?.proxy)
+  if (patches.length) {
+    return patchResource(infraEnv as IResource, patches).promise
+  }
+}
+
 export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
   const secret = {
     apiVersion: 'v1',
@@ -808,3 +839,13 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 }
 
 export const getDefault = (values: (string | undefined)[]): string => values.filter(Boolean)?.[0] || ''
+
+export const onSetInstallationDiskId = (agent: CIM.AgentK8sResource, diskId: string) => {
+  return patchResource(agent as IResource, [
+    {
+      op: 'replace',
+      path: '/spec/installation_disk_id',
+      value: diskId,
+    },
+  ]).promise as Promise<CIM.AgentK8sResource>
+}

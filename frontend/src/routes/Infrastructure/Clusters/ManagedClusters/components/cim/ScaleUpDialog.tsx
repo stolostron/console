@@ -3,7 +3,11 @@ import { useCallback } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 
 import { patchResource } from '../../../../../../resources/utils/resource-request'
-import { useClusterDeployment, onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
+import {
+  useClusterDeployment,
+  onSaveAgent,
+  onSetInstallationDiskId,
+} from '../../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 import { IResource } from '../../../../../../resources'
 
@@ -63,6 +67,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
       agents={agents}
       addHostsToCluster={addHostsToCluster}
       onChangeHostname={onSaveAgent}
+      onSetInstallationDiskId={onSetInstallationDiskId}
     />
   )
 }

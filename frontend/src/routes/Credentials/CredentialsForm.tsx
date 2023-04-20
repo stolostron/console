@@ -151,7 +151,7 @@ export function CredentialsForm(
     isViewing: boolean
     handleModalToggle?: () => void
     hideYaml?: boolean
-    newCredentialCallback?: any
+    newCredentialCallback?: (resource: Secret) => void
     isHosted?: boolean
   } & ProviderConnectionOrCredentialsType
 ) {
@@ -1496,7 +1496,7 @@ export function CredentialsForm(
           history.push(NavigationPath.credentials)
         })
       } else {
-        return createResource(credentialData as IResource).promise.then(() => {
+        return createResource(credentialData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Credentials created'),
             message: t('credentialsForm.created.message', { name }),
@@ -1505,7 +1505,7 @@ export function CredentialsForm(
           })
 
           if (newCredentialCallback) {
-            newCredentialCallback(credentialData)
+            newCredentialCallback(resource as Secret)
           }
 
           if (handleModalToggle) {

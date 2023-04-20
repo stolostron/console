@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from 'openshift-assisted-ui-lib/cim'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
-import isMatch from 'lodash/isMatch'
 
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
@@ -37,7 +35,6 @@ export const getDefaultNetworkFormValues = (
 ): NetworkFormValues => {
   // To preserve form values on Back button
   // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
-  const machineCIDR = getTemplateValue(templateYAML, 'machineCIDR', '')
   const serviceNetworkCidr = getTemplateValue(templateYAML, 'serviceNetworkCidr', defaultServiceCIDR)
   const clusterNetworkCidr = getTemplateValue(templateYAML, 'clusterNetworkCidr', defaultPodCIDR)
   const clusterNetworkHostPrefix = parseInt(
@@ -55,7 +52,6 @@ export const getDefaultNetworkFormValues = (
   const isNodePort: boolean = nodePortPort !== undefined || !!nodePortAddress
 
   return {
-    machineCIDR,
     isAdvanced: isAdvancedNetworking,
     sshPublicKey,
     serviceNetworkCidr,
@@ -72,8 +68,7 @@ export const getDefaultNetworkFormValues = (
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
-  const { nodePools, isAdvancedNetworking, setIsAdvancedNetworking, infraEnvNamespace, releaseImage } =
-    React.useContext(HypershiftAgentContext)
+  const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage } = React.useContext(HypershiftAgentContext)
   const { waitForAll } = useSharedRecoil()
   const { agentsState, infrastructuresState, clusterImageSetsState } = useSharedAtoms()
   const [agents, infrastructures, clusterImageSets] = useRecoilValue(
@@ -141,22 +136,6 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
     return summary
   }
 
-  const { matchingAgents, count } = nodePools?.reduce<{ matchingAgents: CIM.AgentK8sResource[]; count: number }>(
-    (acc, nodePool) => {
-      const labels = nodePool.agentLabels.reduce((acc, curr) => {
-        acc[curr.key] = curr.value
-        return acc
-      }, {} as { [key: string]: string })
-      const mAgents = agents.filter(
-        (a) => a.metadata?.namespace === infraEnvNamespace && isMatch(a.metadata?.labels || {}, labels)
-      )
-      acc.matchingAgents.push(...mAgents)
-      acc.count += nodePool.count
-      return acc
-    },
-    { matchingAgents: [], count: 0 }
-  ) || { matchingAgents: [], count: 0 }
-
   const initialValues: NetworkFormValues = React.useMemo(
     () => getDefaultNetworkFormValues(templateYAML, isBMPlatform(infrastructures[0]), isAdvancedNetworking),
     [templateYAML, infrastructures, isAdvancedNetworking]
@@ -165,10 +144,9 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
   return agents ? (
     <HostedClusterNetworkStep
       formRef={formRef}
-      agents={matchingAgents}
-      count={count}
       onValuesChanged={onValuesChanged}
       initialValues={initialValues}
+      count={0}
     />
   ) : (
     <LoadingState />
