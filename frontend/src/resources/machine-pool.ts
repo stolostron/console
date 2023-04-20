@@ -77,7 +77,13 @@ export interface MachinePool {
       minReplicas: number
       name: string
       replicas: number
+      readyReplicas?: number
     }[]
     replicas: number
   }
+}
+
+export function getReadyReplicas(machinePool: MachinePool): number {
+  const machineSets = machinePool.status?.machineSets || []
+  return machineSets.reduce((sum, machineSet) => sum + (machineSet.readyReplicas || 0), 0)
 }
