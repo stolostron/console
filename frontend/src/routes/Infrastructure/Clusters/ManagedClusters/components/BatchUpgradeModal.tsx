@@ -191,13 +191,7 @@ export function BatchUpgradeModal(props: {
                 noPadding: false,
                 cells: [
                   {
-                    title: (
-                      <PrePostTemplatesList
-                        preLabel={t('template.preUpgrade.label')}
-                        postLabel={t('template.postUpgrade.label')}
-                        curatorAction={upgradeAction}
-                      />
-                    ),
+                    title: <PrePostTemplatesList curation="upgrade" curatorAction={upgradeAction} />,
                   },
                 ],
               },

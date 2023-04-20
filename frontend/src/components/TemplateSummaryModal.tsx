@@ -2,7 +2,7 @@
 import { makeStyles } from '@mui/styles'
 import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { ClusterCurator, ClusterCuratorAnsibleJob, CuratorAction, curatorActionHasJobs } from '../resources'
+import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
 import { AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -56,11 +56,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
           toggleText={t('install')}
           isIndented
         >
-          <PrePostTemplatesList
-            preLabel={t('template.preInstall.label')}
-            postLabel={t('template.postInstall.label')}
-            curatorAction={installAction}
-          />
+          <PrePostTemplatesList curation="install" curatorAction={installAction} />
         </ExpandableSection>
       )}
       {upgradeAction && curatorActionHasJobs(upgradeAction) && (
@@ -71,11 +67,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
           toggleText={t('Upgrade')}
           isIndented
         >
-          <PrePostTemplatesList
-            preLabel={t('template.preUpgrade.label')}
-            postLabel={t('template.postUpgrade.label')}
-            curatorAction={upgradeAction}
-          />
+          <PrePostTemplatesList curation="upgrade" curatorAction={upgradeAction} />
         </ExpandableSection>
       )}
       {/* {curator.spec?.scale && <ExpandableSection></ExpandableSection>}
@@ -100,9 +92,31 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
   )
 }
 
-export function PrePostTemplatesList(props: { preLabel: string; postLabel: string; curatorAction: CuratorAction }) {
-  const { preLabel, postLabel, curatorAction } = props
+export function PrePostTemplatesList(props: { curation: Curation; curatorAction: CuratorAction }) {
+  const { curation, curatorAction } = props
+  const { t } = useTranslation()
   const classes = useStyles()
+
+  let preLabel, postLabel
+  switch (curation) {
+    case 'install':
+      preLabel = t('template.preInstall.name')
+      postLabel = t('template.postInstall.name')
+      break
+    case 'upgrade':
+      preLabel = t('template.preUpgrade.name')
+      postLabel = t('template.postUpgrade.name')
+      break
+    case 'scale':
+      preLabel = t('template.preScale.name')
+      postLabel = t('template.postScale.name')
+      break
+    case 'destroy':
+      preLabel = t('template.preDestroy.name')
+      postLabel = t('template.postDestroy.name')
+      break
+  }
+
   return (
     <>
       <ComposableTable
@@ -130,18 +144,18 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
   const { t } = useTranslation()
 
   return curatorJobs && curatorJobs.length > 0 ? (
-    <TableComposable aria-label={t('Simple table')} variant={'compact'}>
+    <TableComposable aria-label={stage} variant={'compact'}>
       <Thead>
         <Tr>
           <Th>{stage}</Th>
-          <Th>{t('Template Type')}</Th>
+          <Th width={30}>{t('Template Type')}</Th>
         </Tr>
       </Thead>
       <Tbody>
-        {curatorJobs.map((job) => (
-          <Tr key={job.name}>
-            <Td dataLabel={job.name}>{job.name}</Td>
-            <Td dataLabel={job.type}>{job.type}</Td>
+        {curatorJobs.map((job, i) => (
+          <Tr key={`${job.name}-${i}`}>
+            <Td dataLabel={stage}>{job.name}</Td>
+            <Td dataLabel={t('Template Type')}>{job.type}</Td>
           </Tr>
         ))}
       </Tbody>
