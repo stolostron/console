@@ -8,6 +8,7 @@ import { IResource } from '../resources'
 import set from 'lodash/set'
 
 import isCidr from 'is-cidr'
+import { awsRegions } from '../routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
@@ -212,6 +213,13 @@ export function validateAnsibleHost(url: string, t: TFunction, supportedProtocol
   )
     return undefined
   return t('validate.ansible.url.not.valid')
+}
+
+export function validateAwsRegion(value: string, t: TFunction) {
+  if (Object.keys(awsRegions).includes(value)) {
+    return undefined
+  }
+  return t('The provided region is not a valid Amazon Web Service region.')
 }
 
 export function validateWebURL(url: string, _item: unknown, t?: TFunction) {

@@ -2654,6 +2654,7 @@
   "The placement rule name should match the name of a placement rule in this namespace.": "The placement rule name should match the name of a placement rule in this namespace.",
   "The placement rule used to select clusters for placement.": "The placement rule used to select clusters for placement.",
   "The private SSH key to use to access your cluster machines.": "The private SSH key to use to access your cluster machines.",
+  "The provided region is not a valid Amazon Web Service region.": "The provided region is not a valid Amazon Web Service region.",
   "The public SSH key to use to access your cluster machines.": "The public SSH key to use to access your cluster machines.",
   "The pull secret that you obtained from the pull secret page on the Red Hat OpenShift Cluster Manager site. Use this pull secret to authenticate with the services that are provided by the included authorities, including Quay.io, which serves the container images for OpenShift Container Platform components.": "The pull secret that you obtained from the pull secret page on the Red Hat OpenShift Cluster Manager site. Use this pull secret to authenticate with the services that are provided by the included authorities, including Quay.io, which serves the container images for OpenShift Container Platform components.",
   "The request was cancelled.": "The request was cancelled.",
