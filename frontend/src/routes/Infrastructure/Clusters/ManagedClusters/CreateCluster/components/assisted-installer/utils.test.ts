@@ -5,7 +5,14 @@ import {
   AgentK8sResource,
   BareMetalHostK8sResource,
 } from 'openshift-assisted-ui-lib/cim'
-import { getDefault, getTemplateValue, getNetworkingPatches, getDeleteHostAction } from './utils'
+import {
+  getDefault,
+  getTemplateValue,
+  getNetworkingPatches,
+  getDeleteHostAction,
+  setProvisionRequirements,
+} from './utils'
+import { CIM } from 'openshift-assisted-ui-lib'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -90,5 +97,46 @@ describe('getDeleteHostAction utils', () => {
       },
     }
     expect(getDeleteHostAction([bmh], undefined, undefined, agent)).toBeDefined()
+  })
+})
+
+describe('setProvisionRequirements', () => {
+  const patchResource = jest.fn()
+  it('adds provision requirements if none are set', () => {
+    const mockAgentClusterInstall = {
+      spec: {
+        provisionRequirements: undefined,
+      },
+    }
+    setProvisionRequirements(
+      mockAgentClusterInstall as unknown as CIM.AgentClusterInstallK8sResource,
+      undefined,
+      undefined
+    )
+    expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+      { op: 'add', path: '/spec/provisionRequirements', value: {} },
+    ])
+  })
+
+  it('updates provisioning requirements if some are already set', () => {
+    const mockAgentClusterInstall = {
+      spec: {
+        provisionRequirements: {
+          workerAgents: 3,
+          controlPlaneAgents: 3,
+        },
+      },
+    }
+    setProvisionRequirements(mockAgentClusterInstall as unknown as CIM.AgentClusterInstallK8sResource, 4, 3)
+    expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+      {
+        op: 'replace',
+        path: '/spec/provisionRequirements',
+        value: {
+          workerAgents: 4,
+          controlPlaneAgents: 3,
+        },
+      },
+    ])
   })
 })

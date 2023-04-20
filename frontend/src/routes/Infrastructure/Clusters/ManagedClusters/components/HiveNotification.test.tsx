@@ -16,7 +16,7 @@ import { nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-
 import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { HiveNotification } from './HiveNotification'
+import { HiveNotification, launchToYaml } from './HiveNotification'
 import { Provider } from '../../../../../ui-components'
 
 const mockCluster: Cluster = {
@@ -234,5 +234,91 @@ describe('HiveNotification', () => {
     }
     render(<AIComponent />)
     await waitForNotTestId('View logs')
+  })
+})
+
+test('wont render if cluster has statusMessage', async () => {
+  const mockCluster: Cluster = {
+    name: 'test-cluster',
+    displayName: 'test-cluster',
+    namespace: 'test-cluster',
+    uid: 'test-cluster-uid',
+    status: ClusterStatus.failed,
+    statusMessage: 'The cluster has failed',
+    distribution: {
+      k8sVersion: '1.19',
+      ocp: undefined,
+      displayVersion: '1.19',
+      isManagedOpenShift: false,
+    },
+    labels: undefined,
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hive: {
+      isHibernatable: true,
+      clusterPool: undefined,
+      secrets: {
+        installConfig: '',
+      },
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeconfig: '',
+    kubeadmin: '',
+    isHypershift: false,
+    isRegionalHubCluster: false,
+    provider: Provider.hybrid,
+  }
+  const AIComponent = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+          snapshot.set(clusterProvisionsState, [mockClusterProvision])
+        }}
+      >
+        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+          <HiveNotification />
+        </ClusterContext.Provider>
+      </RecoilRoot>
+    )
+  }
+  render(<AIComponent />)
+  await waitForNotTestId('View logs')
+})
+
+describe('launchToYaml', () => {
+  window.open = jest.fn()
+  it('opens window with clusterDeployment properties for non cluster pool clusters', () => {
+    launchToYaml(mockCluster, [mockOpenShiftConsoleConfigMap])
+    expect(window.open).toHaveBeenCalledWith(
+      `${
+        mockOpenShiftConsoleConfigMap.data!.consoleURL
+      }/k8s/ns/test-cluster/hive.openshift.io~v1~ClusterDeployment/test-cluster/yaml`
+    )
+  })
+  it('opens window with clusterPool properties for cluster pool clusters', () => {
+    const cluster = {
+      ...mockCluster,
+      hive: {
+        isHibernatable: true,
+        clusterPool: 'my-cluster-pool',
+        clusterPoolNamespace: 'my-cluster-pool-namespace',
+        secrets: {
+          installConfig: '',
+        },
+      },
+    }
+    launchToYaml(cluster, [mockOpenShiftConsoleConfigMap])
+    expect(window.open).toHaveBeenCalledWith(
+      `${
+        mockOpenShiftConsoleConfigMap.data!.consoleURL
+      }/k8s/ns/my-cluster-pool-namespace/hive.openshift.io~v1~ClusterPool/my-cluster-pool/yaml`
+    )
   })
 })
