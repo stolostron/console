@@ -65,6 +65,13 @@ export function HiveNotification() {
     return null
   }
 
+  if (
+    cluster?.provider === Provider.hostinventory &&
+    (cluster?.status === ClusterStatus.provisionfailed || cluster?.status === ClusterStatus.deprovisionfailed)
+  ) {
+    return null
+  }
+
   return (
     <div style={{ marginBottom: '1rem' }} id={`hive-notification-${cluster?.status}`}>
       <AcmAlert

@@ -216,7 +216,7 @@ describe('HiveNotification', () => {
       kubeadmin: '',
       isHypershift: false,
       isRegionalHubCluster: false,
-      provider: Provider.hybrid,
+      provider: Provider.hostinventory,
     }
     const AIComponent = () => {
       return (
@@ -243,7 +243,7 @@ test('wont render if cluster has statusMessage', async () => {
     displayName: 'test-cluster',
     namespace: 'test-cluster',
     uid: 'test-cluster-uid',
-    status: ClusterStatus.failed,
+    status: ClusterStatus.destroying,
     statusMessage: 'The cluster has failed',
     distribution: {
       k8sVersion: '1.19',
@@ -272,7 +272,7 @@ test('wont render if cluster has statusMessage', async () => {
     kubeadmin: '',
     isHypershift: false,
     isRegionalHubCluster: false,
-    provider: Provider.hybrid,
+    provider: Provider.hostinventory,
   }
   const AIComponent = () => {
     return (
