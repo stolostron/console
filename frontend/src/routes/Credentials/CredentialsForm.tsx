@@ -25,6 +25,7 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
   enforceCloudsYaml,
   validateAnsibleHost,
+  validateAwsRegion,
   validateBaseDomain,
   validateCertificate,
   validateCloudsYaml,
@@ -796,6 +797,7 @@ export function CredentialsForm(
             onChange: setAwsS3Region,
             placeholder: t('Select region'),
             isRequired: true,
+            validation: (value) => validateAwsRegion(value, t),
           },
         ],
       },

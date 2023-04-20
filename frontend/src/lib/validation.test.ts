@@ -14,6 +14,7 @@ import {
   validateVCenterServer,
   validateNoProxy,
   validateNoProxyList,
+  validateAwsRegion,
 } from './validation'
 
 const t = (key: string) => key
@@ -261,6 +262,19 @@ describe('validation', () => {
         expect(validateNoProxyList(value, t)).toBeTruthy()
       } else {
         expect(validateNoProxyList(value, t)).toBeUndefined()
+      }
+    })
+  })
+
+  describe('validateAwsRegion', () => {
+    test.each([
+      ['should allow a region with valid value', 'us-east-1', true],
+      ['should not allow a region with any bad value', 'random', false],
+    ])('%s', (_name, value, isValid) => {
+      if (!isValid) {
+        expect(validateAwsRegion(value, t)).toBeTruthy()
+      } else {
+        expect(validateAwsRegion(value, t)).toBeUndefined()
       }
     })
   })
