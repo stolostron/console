@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { TFunction } from 'i18next'
 import { YAMLContainer } from './YAMLContainer'
 import { render } from '@testing-library/react'
