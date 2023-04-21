@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, SetStateAction, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
@@ -781,8 +781,8 @@ function EditAnsibleJobModal(props: {
 }) {
   const { t } = useTranslation()
   const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-  const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
-  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>()
+  const [filterForJobTemplates, setFilterForJobTemplates] = useState<boolean | undefined>(true)
+  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string | undefined>('')
   const {
     ansibleTowerTemplateList = [],
     ansibleTowerWorkflowTemplateList = [],
@@ -790,6 +790,42 @@ function EditAnsibleJobModal(props: {
     ansibleCredentials,
   } = props
   useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
+  useEffect(() => setFilterForJobTemplates(ansibleJob?.type !== 'Workflow'), [ansibleJob?.type])
+
+  const memoizeGetTemplateUrl = useCallback(
+    (name: string | undefined) => {
+      if (name && ansibleCredentials.length) {
+        const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+        const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)?.stringData?.host
+        const jobID = filterForJobTemplates
+          ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
+          : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
+        setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+      }
+    },
+    [
+      ansibleCredentials,
+      filterForJobTemplates,
+      ansibleTowerTemplateList,
+      ansibleTowerWorkflowTemplateList,
+      ansibleSelection,
+    ]
+  )
+
+  function getTemplateUrl(name: string | undefined) {
+    {
+      newTemplateSelection(name)
+      if (name && ansibleCredentials.length) {
+        const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+        const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)?.stringData?.host
+        const jobID = filterForJobTemplates
+          ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
+          : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
+        setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+      }
+    }
+  }
+  useEffect(() => memoizeGetTemplateUrl(ansibleJob?.name), [ansibleJob?.name, memoizeGetTemplateUrl])
 
   const newTemplateSelection = (jobName: string | undefined) => {
     if (ansibleJob) {
@@ -844,18 +880,7 @@ function EditAnsibleJobModal(props: {
           label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
           id="job-name"
           value={ansibleJob?.name}
-          onChange={(name) => {
-            newTemplateSelection(name)
-            if (ansibleCredentials.length) {
-              const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
-              const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
-                ?.host
-              const jobID = filterForJobTemplates
-                ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
-                : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
-              setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
-            }
-          }}
+          onChange={(name) => getTemplateUrl(name)}
           variant={SelectVariant.typeahead}
           placeholder={
             filterForJobTemplates ? t('template.modal.name.placeholder') : t('template.workflow.modal.name.placeholder')
