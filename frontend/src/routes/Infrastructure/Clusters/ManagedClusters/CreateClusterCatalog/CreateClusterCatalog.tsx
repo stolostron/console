@@ -236,7 +236,6 @@ export function CreateClusterCatalog() {
                   toggleContent={
                     <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Additional providers')}</span>
                   }
-                  isIndented={true}
                 >
                   <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>
                     {t('Add credentials in order to get started with a new infrastructure provider.')}
