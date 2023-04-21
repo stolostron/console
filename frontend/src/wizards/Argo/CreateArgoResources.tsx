@@ -68,6 +68,16 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     }
   })
 
+  const clusterSetsList = clusterSets.map((clusterSet) => {
+    const name = clusterSet.metadata?.name!
+    const description = name === 'global' ? t('Deploy to all clusters') : clusterSet?.status?.conditions[0]?.message
+    return {
+      id: name,
+      value: name,
+      description,
+    }
+  })
+
   function stateToData() {
     const gitOpsCluster: GitOpsCluster = {
       apiVersion: GitOpsClusterApiVersion,
@@ -114,7 +124,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     const syncs = [
       { path: 'GitOpsCluster[0].metadata.name' ?? '', setState: setName },
       { path: 'GitOpsCluster[0].metadata.namespace' ?? '', setState: setNamespace },
-      { path: 'ManagedClusterSetBinding[*].metadata.name' ?? '', setState: setClusterSet },
+      { path: 'Placement[0].spec.clusterSets' ?? '', setState: setClusterSet },
     ]
     return syncs
   }
@@ -147,6 +157,12 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
             onChange: setNamespace,
             isRequired: true,
             options: argoCDsList,
+            validation: (value) => {
+              if (!argoCDsList.map((item) => item.value).includes(value)) {
+                return t('The provided namespace is not a valid Argo Server namespace.')
+              }
+              return undefined
+            },
           },
           {
             id: 'clusterset',
@@ -154,16 +170,17 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
             label: t('ClusterSet'),
             value: clusterSet,
             onChange: setClusterSet,
-            options: clusterSets.map((clusterSet) => {
-              const name = clusterSet.metadata?.name!
-              const description =
-                name === 'global' ? t('Deploy to all clusters') : clusterSet?.status?.conditions[0]?.message
-              return {
-                id: name,
-                value: name,
-                description,
-              }
-            }),
+            options: clusterSetsList,
+            validation: (clusterSets) => {
+              let msg = undefined
+              const availableClusterSets = clusterSetsList.map((item) => item.value)
+              clusterSets.forEach((clusterSet) => {
+                if (!availableClusterSets.includes(clusterSet)) {
+                  msg = t('The provided cluster sets are not valid.')
+                }
+              })
+              return msg
+            },
           },
         ],
       },

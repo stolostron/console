@@ -1553,7 +1553,13 @@ export function CredentialsForm(
         '*.stringData.osServiceAccount.json',
         '*.stringData.clouds.yaml',
       ]}
-      immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
+      immutables={
+        isHostedControlPlane
+          ? ['Secret.0.metadata.name', 'Secret.0.metadata.namespace']
+          : isEditing
+          ? ['*.metadata.name', '*.metadata.namespace']
+          : []
+      }
       edit={() => {
         if (providerConnection) {
           history.push(
