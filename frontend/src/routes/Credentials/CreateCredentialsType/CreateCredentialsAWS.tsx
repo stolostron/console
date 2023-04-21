@@ -1,45 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { CatalogCardItemType, ICatalogCard, ItemView, DataViewStringContext } from '@stolostron/react-data-view'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useIsHypershiftEnabled } from '../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
-import { listMultiClusterEngines } from '../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmIcon, AcmIconVariant, AcmPage, AcmPageHeader, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
-  const { managedClusterAddonsState } = useSharedAtoms()
-  const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
-  const hypershiftAddon = managedClusterAddOns.find(
-    (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
-  )
-
-  const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
-  useEffect(() => {
-    const getHypershiftStatus = async () => {
-      try {
-        const [multiClusterEngine] = await listMultiClusterEngines().promise
-        const components = multiClusterEngine.spec?.overrides.components
-        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
-        const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
-        setIsHypershiftEnabled(
-          (hypershiftLocalHosting?.enabled &&
-            hypershiftPreview?.enabled &&
-            hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')?.status ===
-              'True') as boolean
-        )
-      } catch {
-        // nothing to do
-      }
-    }
-    getHypershiftStatus()
-  }, [hypershiftAddon?.status?.conditions])
+  const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [

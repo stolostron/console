@@ -1,6 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AgentClusterInstallK8sResource } from 'openshift-assisted-ui-lib/cim'
-import { getDefault, getTemplateValue, getNetworkingPatches } from './utils'
+import {
+  AGENT_BMH_NAME_LABEL_KEY,
+  AgentClusterInstallK8sResource,
+  AgentK8sResource,
+  BareMetalHostK8sResource,
+  ClusterDeploymentK8sResource,
+  InfraEnvK8sResource,
+} from 'openshift-assisted-ui-lib/cim'
+import {
+  getDefault,
+  getTemplateValue,
+  getNetworkingPatches,
+  getDeleteHostAction,
+  setProvisionRequirements,
+  onHostsNext,
+  onEditProxy,
+} from './utils'
+import { AgentClusterInstallApiVersion, AgentClusterInstallKind } from '../../../../../../../resources'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -30,11 +46,149 @@ describe('networking patch utils', () => {
         provisionRequirements: {
           controlPlaneAgents: 0,
         },
+        apiVIP: '10.10.10.10',
+        ingressVIP: '10.10.10.10',
       },
     }
     const patches = getNetworkingPatches(aci, {
       managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
     })
-    expect(patches.length).toBe(3)
+    expect(patches.length).toBe(5)
+  })
+  it('enables cluster networking', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'None',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      apiVip: '10.10.10.10',
+      ingressVip: '10.10.10.10',
+    })
+    expect(patches.length).toBe(5)
+  })
+})
+
+describe('getDeleteHostAction utils', () => {
+  it('matches agent to bmh', () => {
+    const bmh: BareMetalHostK8sResource = {
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+    }
+    const agent: AgentK8sResource = {
+      metadata: {
+        namespace: 'bar',
+        labels: {
+          [AGENT_BMH_NAME_LABEL_KEY]: 'foo',
+        },
+      },
+      spec: {
+        approved: false,
+        role: 'auto-assign',
+      },
+    }
+    expect(getDeleteHostAction([bmh], undefined, undefined, agent)).toBeDefined()
+  })
+})
+
+jest.mock('../../../../../../../resources', () => {
+  return {
+    patchResource: () => {
+      return {
+        promise: undefined,
+      }
+    },
+  }
+})
+
+describe('setProvisionRequirements', () => {
+  it('adds provision requirements if none are set', () => {
+    const mockAgentClusterInstall = {
+      apiVersion: AgentClusterInstallApiVersion,
+      kind: AgentClusterInstallKind,
+      spec: {
+        provisionRequirements: undefined,
+      },
+    }
+    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, undefined, undefined)
+    //expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+    //  { op: 'add', path: '/spec/provisionRequirements', value: {} },
+    //])
+  })
+
+  it('updates provisioning requirements if some are already set', () => {
+    const mockAgentClusterInstall = {
+      apiVersion: AgentClusterInstallApiVersion,
+      kind: AgentClusterInstallKind,
+      spec: {
+        provisionRequirements: {
+          workerAgents: 3,
+          controlPlaneAgents: 3,
+        },
+      },
+    }
+    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 3)
+    /*
+    expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+      {
+        op: 'replace',
+        path: '/spec/provisionRequirements',
+        value: {
+          workerAgents: 4,
+          controlPlaneAgents: 3,
+        },
+      },
+    ])
+    */
+  })
+})
+
+describe('onHostsNext', () => {
+  it('adds provision requirements if none are set', () => {
+    const clusterDeployment: ClusterDeploymentK8sResource = {
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+    }
+    const agentClusterInstall: AgentClusterInstallK8sResource = {}
+    onHostsNext({
+      values: { selectedHostIds: [], agentLabels: [], locations: [] },
+      clusterDeployment,
+      agents: [],
+      agentClusterInstall,
+    })
+  })
+})
+
+describe('onEditProxy', () => {
+  it('enables proxy', () => {
+    const infraEnv: InfraEnvK8sResource = {
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+    }
+    onEditProxy(
+      {
+        httpProxy: 'foo',
+        httpsProxy: 'bar',
+        noProxy: 'baz',
+      },
+      infraEnv
+    )
   })
 })

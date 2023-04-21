@@ -3,25 +3,33 @@ import {
   Card,
   CardBody,
   CardTitle,
+  FormGroup,
   Grid,
   GridItem,
+  Modal,
+  ModalVariant,
   PageSection,
+  Select,
+  SelectOption,
+  SelectVariant,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { InfraEnvFormPage, getLabels, EnvironmentStepFormValues } from 'openshift-assisted-ui-lib/cim'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FormikProps } from 'formik'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
-import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
+import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 
 import './InfraEnvForm.css'
-
-const { InfraEnvFormPage, getLabels } = CIM
+import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import { Provider } from '../../../ui-components'
+import { GetProjects } from '../../../components/GetProjects'
+import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 
 // where to put Create/Cancel buttons
 export const Portals = Object.freeze({
@@ -31,7 +39,7 @@ export const Portals = Object.freeze({
 })
 
 const portals = (
-  <PageSection variant="light" isFilled>
+  <PageSection variant="light" isFilled className="infra-env-form__section">
     <Split hasGutter>
       <SplitItem>
         <div id={Portals.createBtn} />
@@ -51,11 +59,21 @@ type InfraEnvFormProps = {
 const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
   const { t } = useTranslation()
 
+  const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)
+  const [isCredentialsOpen, setCredentialsOpen] = useState(false)
+  const [credentialsUID, setCredentialsUID] = useState<string>()
+  const { providerConnectionsValue } = useSharedSelectors()
+  const allProviderConnections = useRecoilValue(providerConnectionsValue)
+  const { projects } = GetProjects()
   const { infraEnvironmentsState } = useSharedAtoms()
   const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
   const formRef = useRef<FormikProps<any>>(null)
 
-  const onValuesChanged = useCallback((values: CIM.EnvironmentStepFormValues) => {
+  const providerConnections = allProviderConnections.filter(
+    (p) => p.metadata?.labels?.['cluster.open-cluster-management.io/type'] === Provider.hostinventory
+  )
+
+  const onValuesChanged = useCallback((values: EnvironmentStepFormValues) => {
     control.active = values
     if (values.labels) {
       control.active = {
@@ -92,12 +110,43 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   }, [])
 
   const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata?.name!), [infraEnvironments])
+  const currentConnection = providerConnections.find((p) => p.metadata.uid === credentialsUID)
   return (
     <>
-      <PageSection variant="light" isFilled>
+      <PageSection variant="light" isFilled className="infra-env-form__section">
         <Grid hasGutter className="infra-env-form">
           <GridItem span={8}>
-            <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} formRef={formRef} />
+            <InfraEnvFormPage
+              onValuesChanged={onValuesChanged}
+              usedNames={infraEnvNames}
+              formRef={formRef}
+              pullSecret={currentConnection?.stringData?.['pullSecret']}
+              sshPublicKey={currentConnection?.stringData?.['ssh-publickey']}
+            >
+              <FormGroup fieldId="credentials" label={t('Infrastructure provider credentials')}>
+                <Select
+                  variant={SelectVariant.typeahead}
+                  placeholderText={t('creation.ocp.cloud.select.connection')}
+                  aria-label="Select credentials"
+                  onToggle={setCredentialsOpen}
+                  onSelect={(_, v) => {
+                    setCredentialsUID(v as string)
+                    setCredentialsOpen(false)
+                  }}
+                  selections={credentialsUID}
+                  isOpen={isCredentialsOpen}
+                  footer={
+                    <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
+                  }
+                >
+                  {providerConnections.map((p) => (
+                    <SelectOption key={p.metadata.uid} value={p.metadata.uid}>
+                      {p.metadata.name}
+                    </SelectOption>
+                  ))}
+                </Select>
+              </FormGroup>
+            </InfraEnvFormPage>
           </GridItem>
           <GridItem span={8}>
             <Card>
@@ -129,6 +178,25 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
           </GridItem>
         </Grid>
       </PageSection>
+      {isCredentialsModalOpen && (
+        <Modal
+          variant={ModalVariant.large}
+          showClose={false}
+          isOpen
+          onClose={() => setCredentialsModalOpen(false)}
+          hasNoBodyWrapper
+        >
+          <CredentialsForm
+            namespaces={projects}
+            isEditing={false}
+            isViewing={false}
+            credentialsType={Provider.hostinventory}
+            handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)}
+            hideYaml
+            newCredentialCallback={(r) => setCredentialsUID(r.metadata?.uid)}
+          />
+        </Modal>
+      )}
       {portals}
     </>
   )
