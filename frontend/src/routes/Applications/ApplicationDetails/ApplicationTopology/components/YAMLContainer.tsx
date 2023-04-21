@@ -86,7 +86,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
       fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
         .then((viewResponse) => {
           if (viewResponse.message) {
-            setResourceError(viewResponse.message)
+            setResourceError({ message: viewResponse.message, stack: '' })
           } else {
             if (isComponentMounted) {
               setResource(viewResponse.result)
