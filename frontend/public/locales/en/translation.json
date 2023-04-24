@@ -1369,6 +1369,7 @@
   "formerror.valid.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
   "G3 - NVIDIA Tesla M60 GPUs": "G3 - NVIDIA Tesla M60 GPUs",
   "G4 - NVIDIA T4 Tensor Core GPUs": "G4 - NVIDIA T4 Tensor Core GPUs",
+  "Gatekeeper policy templates must be customized using the YAML editor.": "Gatekeeper policy templates must be customized using the YAML editor.",
   "Gateway timeout": "Gateway timeout",
   "General": "General",
   "General Purpose": "General Purpose",

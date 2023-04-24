@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Alert, Button, Stack, Text, Title } from '@patternfly/react-core'
+import { Alert, Button, Stack, Text, TextContent, Title } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { klona } from 'klona/json'
@@ -469,34 +469,42 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
           </WizArrayInput>
         </WizHidden>
 
-        <WizRadioGroup path="objectDefinition.spec.remediationAction" label="Remediation">
-          <Radio
-            id="inform"
-            label={t('Inform')}
-            value="inform"
-            description={t('Reports the violation, which requires manual remediation.')}
-          />
-          <Radio
-            id="enforce"
-            label={t('Enforce')}
-            value="enforce"
-            description={t(
-              'Automatically runs remediation action that is defined in the source, if this feature is supported.'
-            )}
-          />
-        </WizRadioGroup>
+        <WizHidden hidden={(template: any) => template?.objectDefinition?.apiVersion?.includes('gatekeeper.sh/')}>
+          <WizRadioGroup path="objectDefinition.spec.remediationAction" label="Remediation">
+            <Radio
+              id="inform"
+              label={t('Inform')}
+              value="inform"
+              description={t('Reports the violation, which requires manual remediation.')}
+            />
+            <Radio
+              id="enforce"
+              label={t('Enforce')}
+              value="enforce"
+              description={t(
+                'Automatically runs remediation action that is defined in the source, if this feature is supported.'
+              )}
+            />
+          </WizRadioGroup>
 
-        <Select
-          path="objectDefinition.spec.severity"
-          label={t('Severity')}
-          placeholder={t('Select severity')}
-          options={[
-            { label: t('low'), value: 'low' },
-            { label: t('medium'), value: 'medium' },
-            { label: t('high'), value: 'high' },
-          ]}
-          required
-        />
+          <Select
+            path="objectDefinition.spec.severity"
+            label={t('Severity')}
+            placeholder={t('Select severity')}
+            options={[
+              { label: t('low'), value: 'low' },
+              { label: t('medium'), value: 'medium' },
+              { label: t('high'), value: 'high' },
+            ]}
+            required
+          />
+        </WizHidden>
+
+        <WizHidden hidden={(template: any) => !template?.objectDefinition?.apiVersion?.includes('gatekeeper.sh/')}>
+          <TextContent>
+            <Text>{t('Gatekeeper policy templates must be customized using the YAML editor.')}</Text>
+          </TextContent>
+        </WizHidden>
       </WizArrayInput>
     </Section>
   )
