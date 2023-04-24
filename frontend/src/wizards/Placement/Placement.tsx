@@ -124,7 +124,7 @@ export function Placement(props: {
       {!props.namespaceClusterSetNames.length ? (
         <Alert
           variant="warning"
-          title={t('ClusterSets failed to fetch. Check the Gitopscluster and Placement YAML for status errors.')}
+          title={t('ClusterSets failed to fetch. Check the GitOpsCluster and Placement YAML for status errors.')}
         />
       ) : null}
 
