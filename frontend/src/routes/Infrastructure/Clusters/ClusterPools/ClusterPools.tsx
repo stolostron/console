@@ -12,7 +12,7 @@ import {
   TextContent,
   TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, TrashIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon, SpinnerIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlertContext,
@@ -291,8 +291,8 @@ export function ClusterPoolsTable(props: {
             cell: (clusterPool: ClusterPool) => {
               if (isClusterPoolDeleting(clusterPool)) {
                 return (
-                  <Label color="grey" icon={<TrashIcon />}>
-                    {t('Deleting')}
+                  <Label color="grey" icon={<SpinnerIcon />}>
+                    {t('destroying')}
                   </Label>
                 )
               } else {
