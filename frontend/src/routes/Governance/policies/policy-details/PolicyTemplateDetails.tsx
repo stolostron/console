@@ -64,16 +64,45 @@ export function PolicyTemplateDetails(props: {
       templateNamespace = addon.spec.installNamespace || 'open-cluster-management-agent-addon'
     }
 
+    if (apiGroup.endsWith('gatekeeper.sh')) {
+      // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
+      templateNamespace = ''
+    }
+
     break
   }
 
   function getRelatedObjects(resource: any, clusterName: string) {
-    return (
-      resource?.status?.relatedObjects?.map((obj: any) => {
+    if (resource?.status?.relatedObjects?.length) {
+      return resource.status.relatedObjects.map((obj: any) => {
         obj.cluster = clusterName
         return obj
-      }) ?? []
-    )
+      })
+    } else if (
+      // Detect if this is a Gatekeeper constraint and is populated with audit results from a newer Gatekeeper. Older
+      // Gatekeeper installations don't set "group" and "version".
+      resource?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
+      resource?.status?.violations?.length &&
+      resource.status.violations[0].version !== undefined
+    ) {
+      return resource.status.violations.map((violation: any) => {
+        return {
+          cluster: clusterName,
+          compliant: 'NonCompliant',
+          object: {
+            apiVersion: violation.group === '' ? violation.version : `${violation.group}/${violation.version}`,
+            kind: violation.kind,
+            metadata: {
+              name: violation.name,
+              namespace: violation.namespace,
+            },
+          },
+          reason: violation.message,
+        }
+      })
+    }
+
+    return []
   }
 
   useEffect(() => {
@@ -102,6 +131,13 @@ export function PolicyTemplateDetails(props: {
     }
   }, [])
 
+  let details = '-'
+  if (template?.status?.compliancyDetails) {
+    details = template?.status?.compliancyDetails
+  } else if (template?.status?.violations) {
+    details = template?.status?.violations
+  }
+
   const descriptionItems = [
     {
       key: t('Name'),
@@ -125,7 +161,7 @@ export function PolicyTemplateDetails(props: {
     },
     {
       key: t('Details'),
-      value: JSON.stringify(template?.status?.compliancyDetails ?? '-'),
+      value: JSON.stringify(details),
     },
   ]
 
