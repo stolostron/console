@@ -679,6 +679,7 @@ export function CredentialsForm(
                   "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
                 ),
             value: baseDomain,
+            isDisabled: isEditing,
             onChange: setBaseDomain,
             validation: (v) => validateBaseDomain(v, t),
           },
@@ -1559,7 +1560,7 @@ export function CredentialsForm(
         isHostedControlPlane
           ? ['Secret.0.metadata.name', 'Secret.0.metadata.namespace']
           : isEditing
-          ? ['*.metadata.name', '*.metadata.namespace']
+          ? ['*.metadata.name', '*.metadata.namespace', '*.stringData.baseDomain']
           : []
       }
       edit={() => {
