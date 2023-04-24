@@ -12,7 +12,6 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
   AcmIcon,
-  AcmIconVariant,
   AcmPage,
   AcmPageHeader,
   Provider,
@@ -26,9 +25,10 @@ import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../Cluster
 import { Divider, ExpandableSection } from '@patternfly/react-core'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 
+type CardProvider = Provider & (ClusterInfrastructureType | Provider.hostinventory)
 type CardData = {
   id: string
-  provider: Provider & ClusterInfrastructureType
+  provider: CardProvider
   description: string
 }
 
@@ -77,14 +77,17 @@ export function CreateClusterCatalog() {
       },
       {
         id: 'hostinventory',
-        provider: Provider.vmware, // placeholder provider
-        description: 'Placeholder',
+        provider: Provider.hostinventory,
+        description: t(
+          'A Red Hat OpenShift cluster that is running on available hosts from your on-premise inventory; bare metal or virtualized.'
+        ),
       },
       {
         id: 'kubevirt',
         provider: Provider.kubevirt,
-        description:
-          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise data center.',
+        description: t(
+          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise data center.'
+        ),
       },
       {
         id: 'azure',
@@ -116,78 +119,69 @@ export function CreateClusterCatalog() {
   }, [t])
 
   const getOnClickAction = useCallback(
-    (id: string, provider: Provider & ClusterInfrastructureType) => {
-      if (id === Provider.aws) {
+    (provider: CardProvider) => {
+      if (provider === Provider.aws) {
         return nextStep(NavigationPath.createAWSControlPlane)
-      } else if (id === Provider.kubevirt) {
+      } else if (provider === Provider.kubevirt) {
         return nextStep(NavigationPath.createKubeVirtControlPlane)
+      } else if (provider === Provider.hostinventory) {
+        return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
       } else {
         return nextStep(getTypedCreateClusterPath(provider))
       }
     },
-    [nextStep]
+    [clusterImageSets, nextStep]
   )
 
   const cards = useMemo(() => {
     const getProviderCard = (
       id: string,
-      provider: Provider & ClusterInfrastructureType,
+      provider: CardProvider,
       description: string,
       labels: { label: string; color: CatalogColor }[] | undefined
-    ): ICatalogCard => ({
-      id,
-      icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-      title: ProviderLongTextMap[provider],
-      items: [
-        {
-          type: CatalogCardItemType.Description,
-          description,
-        },
-      ],
-      labels,
-      onClick: getOnClickAction(id, provider),
-    })
+    ): ICatalogCard => {
+      let card: ICatalogCard = {
+        id,
+        icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+        title: ProviderLongTextMap[provider],
+        items: [
+          {
+            type: CatalogCardItemType.Description as const,
+            description,
+          },
+        ],
+        labels,
+        onClick: getOnClickAction(provider),
+      }
+      if (provider === Provider.hostinventory) {
+        card = {
+          ...card,
+          title: t('Host inventory'),
+          alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
+          alertVariant: 'info',
+          alertContent: (
+            <>
+              {t(
+                'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
+              )}
+              <br />
+              <br />
+              <a href={DOC_LINKS.CREATE_CLUSTER_PREREQ} target="_blank" rel="noopener noreferrer">
+                {t('View documentation')} <ExternalLinkAltIcon />
+              </a>
+            </>
+          ),
+        }
+      }
+      return card
+    }
 
     const cardsWithCreds: ICatalogCard[] = []
     const cardsWithOutCreds: ICatalogCard[] = []
 
     cardsData.forEach((cardData) => {
-      const credLabels = getCredentialLabels(
-        cardData.id !== 'hostinventory' ? cardData.provider : Provider.hostinventory
-      )
-      const providerCard =
-        cardData.id !== 'hostinventory'
-          ? getProviderCard(cardData.id, cardData.provider, cardData.description, credLabels)
-          : ({
-              id: cardData.id,
-              icon: <AcmIcon icon={AcmIconVariant.hybrid} />,
-              title: t('Host inventory'),
-              items: [
-                {
-                  type: CatalogCardItemType.Description,
-                  description: t(
-                    'A Red Hat OpenShift cluster that is running on available hosts from your on-premise inventory; bare metal or virtualized.'
-                  ),
-                },
-              ],
-              labels: credLabels,
-              onClick: clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined,
-              alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
-              alertVariant: 'info',
-              alertContent: (
-                <>
-                  {t(
-                    'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
-                  )}
-                  <br />
-                  <br />
-                  <a href={DOC_LINKS.CREATE_CLUSTER_PREREQ} target="_blank" rel="noopener noreferrer">
-                    {t('View documentation')} <ExternalLinkAltIcon />
-                  </a>
-                </>
-              ),
-            } as ICatalogCard)
-
+      const credLabels = getCredentialLabels(cardData.provider)
+      const providerCard = getProviderCard(cardData.id, cardData.provider, cardData.description, credLabels)
       if (credLabels) {
         cardsWithCreds.push(providerCard)
       } else {
@@ -196,7 +190,7 @@ export function CreateClusterCatalog() {
     })
 
     return { cardsWithCreds, cardsWithOutCreds }
-  }, [nextStep, getCredentialLabels, clusterImageSets.length, t, cardsData, getOnClickAction])
+  }, [getCredentialLabels, clusterImageSets.length, t, cardsData, getOnClickAction])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
