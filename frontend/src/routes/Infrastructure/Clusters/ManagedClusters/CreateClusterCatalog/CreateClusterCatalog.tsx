@@ -84,7 +84,7 @@ export function CreateClusterCatalog() {
         id: 'kubevirt',
         provider: Provider.kubevirt,
         description:
-          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise datacenter.',
+          'A Red Hat OpenShift cluster that is hosted on the Red Hat OpenShift Container Platform in your on-premise data center.',
       },
       {
         id: 'azure',
