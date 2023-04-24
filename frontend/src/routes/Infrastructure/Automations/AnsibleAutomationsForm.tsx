@@ -792,9 +792,24 @@ function EditAnsibleJobModal(props: {
   useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
   useEffect(() => setFilterForJobTemplates(ansibleJob?.type !== 'Workflow'), [ansibleJob?.type])
 
+  const newTemplateSelection = (jobName: string | undefined) => {
+    if (ansibleJob) {
+      const copy = { ...ansibleJob }
+      copy.name = jobName as string
+      copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
+      setAnsibleJob(copy)
+    }
+  }
+
+  const clearTemplateName = () => {
+    if (ansibleJob) {
+      const copy = { ...ansibleJob }
+      copy.name = ''
+      setAnsibleJob(copy)
+    }
+  }
   const memoizeGetTemplateUrl = useCallback(
     (name) => {
-      newTemplateSelection(name)
       if (name && ansibleCredentials.length) {
         const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
         const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)?.stringData?.host
@@ -814,25 +829,8 @@ function EditAnsibleJobModal(props: {
       ansibleSelection,
     ]
   )
-
   useEffect(() => memoizeGetTemplateUrl(ansibleJob?.name), [ansibleJob?.name, memoizeGetTemplateUrl])
 
-  const newTemplateSelection = (jobName: string | undefined) => {
-    if (ansibleJob) {
-      const copy = { ...ansibleJob }
-      copy.name = jobName as string
-      copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
-      setAnsibleJob(copy)
-    }
-  }
-
-  const clearTemplateName = () => {
-    if (ansibleJob) {
-      const copy = { ...ansibleJob }
-      copy.name = ''
-      setAnsibleJob(copy)
-    }
-  }
   return (
     <AcmModal
       variant={ModalVariant.medium}
@@ -870,7 +868,10 @@ function EditAnsibleJobModal(props: {
           label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
           id="job-name"
           value={ansibleJob?.name}
-          onChange={(name) => memoizeGetTemplateUrl(name)}
+          onChange={(name) => {
+            newTemplateSelection(name)
+            memoizeGetTemplateUrl(name)
+          }}
           variant={SelectVariant.typeahead}
           placeholder={
             filterForJobTemplates ? t('template.modal.name.placeholder') : t('template.workflow.modal.name.placeholder')
