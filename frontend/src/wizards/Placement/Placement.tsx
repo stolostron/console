@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button } from '@patternfly/react-core'
+import { Alert, Button } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { Fragment, useMemo } from 'react'
@@ -120,6 +120,13 @@ export function Placement(props: {
         }
         options={props.namespaceClusterSetNames}
       />
+
+      {!props.namespaceClusterSetNames.length ? (
+        <Alert
+          variant="warning"
+          title={t('ClusterSets failed to fetch. Check the Gitopscluster and Placement YAML for status errors.')}
+        />
+      ) : null}
 
       <WizHidden
         hidden={(placement) => {
