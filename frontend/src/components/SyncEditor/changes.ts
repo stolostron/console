@@ -178,7 +178,7 @@ const getChanges = (
   const diffs = diff(lastComparison, comparison)
   if (diffs) {
     diffs.forEach((diff: any) => {
-      const { path, item, lhs, rhs } = diff
+      const { path, item, lhs, rhs, index } = diff
       let { kind } = diff
       if (path && path.length) {
         let pathArr = getPathArray(path)
@@ -232,23 +232,30 @@ const getChanges = (
           switch (kind) {
             case 'A': {
               if (item.kind === 'N') {
-                chng = { $t: 'N', $a: pathArr, $p: path, $y: true }
-                if (isCustomEdit) {
-                  chng.$u = item.rhs
-                  chng.$f = 'new'
+                if (!isCustomEdit && Array.isArray(obj) && index) {
+                  Object.values(obj[index]).forEach((itm: any) => {
+                    chng = { $t: 'N', $a: [...pathArr, index, itm.$k], $p: [...path, index, itm.$k] }
+                    changes.push(chng)
+                  })
                 } else {
-                  if (Array.isArray(obj.$v)) {
-                    obj.$v.some((itm: { $v: any; rhs: any; $k: any }) => {
-                      if ((!itm.$v && item.rhs === '') || itm.$v === item.rhs) {
-                        chng.$a = [...pathArr, '$v', itm.$k]
-                        chng.$p = [...path, itm.$k]
-                        return true
-                      }
-                      return false
-                    })
+                  chng = { $t: 'N', $a: pathArr, $p: path, $y: true }
+                  if (isCustomEdit) {
+                    chng.$u = item.rhs
+                    chng.$f = 'new'
+                  } else {
+                    if (Array.isArray(obj.$v)) {
+                      obj.$v.some((itm: { $v: any; rhs: any; $k: any }) => {
+                        if ((!itm.$v && item.rhs === '') || itm.$v === item.rhs) {
+                          chng.$a = [...pathArr, '$v', itm.$k]
+                          chng.$p = [...path, itm.$k]
+                          return true
+                        }
+                        return false
+                      })
+                    }
                   }
+                  changes.push(chng)
                 }
-                changes.push(chng)
               }
               break
             }
