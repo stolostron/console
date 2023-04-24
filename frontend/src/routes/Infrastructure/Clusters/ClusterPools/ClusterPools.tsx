@@ -5,14 +5,13 @@ import {
   ButtonVariant,
   Flex,
   FlexItem,
-  Label,
   PageSection,
   Stack,
   Text,
   TextContent,
   TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, SpinnerIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlertContext,
@@ -20,10 +19,12 @@ import {
   AcmEmptyState,
   AcmExpandableCard,
   AcmInlineProvider,
+  AcmInlineStatus,
   AcmPageContent,
   AcmTable,
   IAcmTableButtonAction,
   Provider,
+  StatusType,
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -290,11 +291,7 @@ export function ClusterPoolsTable(props: {
             header: t('table.cluster.statuses'),
             cell: (clusterPool: ClusterPool) => {
               if (isClusterPoolDeleting(clusterPool)) {
-                return (
-                  <Label color="grey" icon={<SpinnerIcon />}>
-                    {t('destroying')}
-                  </Label>
-                )
+                return <AcmInlineStatus type={StatusType.progress} status={t('Destroying')} />
               } else {
                 return <ClusterStatuses clusterPool={clusterPool} />
               }
