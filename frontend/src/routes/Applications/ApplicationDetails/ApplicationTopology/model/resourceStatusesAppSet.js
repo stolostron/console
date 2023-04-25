@@ -33,11 +33,16 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
   const kindsNotNamespaceScopedNames = []
   resources.forEach((resource) => {
     const rscNS = _.get(resource, 'namespace')
+    const rscKind = _.get(resource, 'kind')
     if (rscNS) {
       definedNamespace.push(rscNS)
     }
     if (!rscNS) {
-      kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
+      if (rscKind.toLowerCase() === 'project') {
+        kindsNotNamespaceScoped.push('namespace')
+      } else {
+        kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
+      }
       kindsNotNamespaceScopedNames.push(resource.name)
     }
   })

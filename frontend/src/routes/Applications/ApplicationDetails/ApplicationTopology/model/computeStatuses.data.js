@@ -106,6 +106,7 @@ export const persVolumePendingStateYellow = {
     },
     raw: {},
   },
+  namespace: 'default',
 }
 
 export const persVolumePendingStatePendingRes = [
@@ -218,6 +219,7 @@ export const persVolumePendingStateGreen = {
     },
     raw: {},
   },
+  namespace: 'default',
 }
 
 export const subscriptionInputRed1 = {
@@ -1051,7 +1053,7 @@ export const deploymentNodeRed3 = {
       },
     ],
   },
-  namespace: '',
+  namespace: 'test-app',
   topology: null,
   labels: null,
   __typename: 'Resource',
