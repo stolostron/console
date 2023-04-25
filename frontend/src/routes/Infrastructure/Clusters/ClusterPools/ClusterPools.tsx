@@ -291,7 +291,7 @@ export function ClusterPoolsTable(props: {
             header: t('table.cluster.statuses'),
             cell: (clusterPool: ClusterPool) => {
               if (isClusterPoolDeleting(clusterPool)) {
-                return <AcmInlineStatus type={StatusType.progress} status={t('Destroying')} />
+                return <AcmInlineStatus type={StatusType.progress} status={t('destroying')} />
               } else {
                 return <ClusterStatuses clusterPool={clusterPool} />
               }
