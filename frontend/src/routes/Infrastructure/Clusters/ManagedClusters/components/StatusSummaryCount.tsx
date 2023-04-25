@@ -92,7 +92,10 @@ export function StatusSummaryCount() {
   const argoAppList = argoApps.filter((argoApp) => {
     const isChildOfAppset =
       argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-    return !argoApp.metadata.ownerReferences || !isChildOfAppset
+
+    const localCluster = clusters.find((cls) => cls.name === localClusterStr)
+    const clusterList = getClusterList(argoApp, argoApps, placementDecisions, subscriptions, localCluster, clusters)
+    return (!argoApp.metadata.ownerReferences || !isChildOfAppset) && clusterList.includes(cluster?.name!)
   })
 
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
