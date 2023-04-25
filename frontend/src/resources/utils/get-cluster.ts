@@ -367,7 +367,9 @@ export function mapClusters(
     const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
-    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+    const clusterCurator = clusterCurators.find(
+      (cc) => cc.metadata.namespace === cluster && cc.spec && Object.keys(cc.spec).length > 0
+    )
     const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&

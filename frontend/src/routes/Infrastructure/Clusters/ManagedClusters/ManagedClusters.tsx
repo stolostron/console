@@ -659,7 +659,9 @@ export function useClusterDistributionColumn(
     cell: (cluster) => (
       <DistributionField
         cluster={cluster}
-        clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
+        clusterCurator={clusterCurators.find(
+          (curator) => curator.metadata.name === cluster.name && curator.spec && Object.keys(curator.spec).length > 0
+        )}
         hostedCluster={hostedClusters.find((hc) => cluster.name === hc.metadata?.name)}
         resource={'managedclusterpage'}
       />

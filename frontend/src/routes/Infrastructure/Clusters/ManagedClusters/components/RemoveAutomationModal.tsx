@@ -55,7 +55,12 @@ export function RemoveAutomationModal(props: {
     () =>
       props.clusters &&
       props.clusters.filter(({ name }) => {
-        return clusterCurators.findIndex(({ metadata }) => name === metadata.name && name === metadata.namespace) !== -1
+        return (
+          clusterCurators.findIndex(
+            (cc) =>
+              name === cc.metadata.name && name === cc.metadata.namespace && cc.spec && Object.keys(cc.spec).length > 0
+          ) !== -1
+        )
       }),
     [props.clusters, clusterCurators]
   )
