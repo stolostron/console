@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterStatus, deleteResource, MachinePool } from '../../../../../../resources'
+import { ClusterStatus, deleteResource, getReadyReplicas, MachinePool } from '../../../../../../resources'
 import {
   AcmEmptyState,
   AcmPageContent,
@@ -86,7 +86,7 @@ export function MachinePoolsTable() {
           return (
             <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
               {t('outOf', {
-                firstNumber: machinePool.status?.replicas ?? 0,
+                firstNumber: getReadyReplicas(machinePool),
                 secondNumber: machinePool.spec.replicas,
               })}
             </span>

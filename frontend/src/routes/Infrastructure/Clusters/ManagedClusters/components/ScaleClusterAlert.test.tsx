@@ -1,26 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
+import { machinePoolsState } from '../../../../../atoms'
 import { waitForNotText, waitForText } from '../../../../../lib/test-util'
-import { SubmarinerConfig, SubmarinerConfigApiVersion, SubmarinerConfigKind } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { mockCluster, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails/ClusterDetails.sharedmocks'
+import {
+  mockCluster,
+  mockMachinePoolAuto,
+  mockMachinePoolOther,
+  mockMachinePoolManual,
+} from '../ClusterDetails/ClusterDetails.sharedmocks'
 import { ScaleClusterAlert } from './ScaleClusterAlert'
-
-const mockSubmarinerConfig: SubmarinerConfig = {
-  apiVersion: SubmarinerConfigApiVersion,
-  kind: SubmarinerConfigKind,
-  metadata: {
-    name: 'submariner',
-    namespace: mockCluster.namespace,
-  },
-  spec: {
-    gatewayConfig: {
-      gateways: 2,
-    },
-  },
-}
 
 describe('ScaleClusterAlert', () => {
   it('does not render without MachinePools', async () => {
@@ -68,9 +58,7 @@ describe('ScaleClusterAlert', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [
-            { ...mockMachinePoolManual, status: { ...mockMachinePoolAuto.status, replicas: 1 } },
-          ])
+          snapshot.set(machinePoolsState, [mockMachinePoolOther])
         }}
       >
         <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
@@ -80,21 +68,5 @@ describe('ScaleClusterAlert', () => {
     )
 
     await waitForText('Scaling down in progress')
-  })
-  it('detects scale up due to Submariner', async () => {
-    render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [mockMachinePoolManual])
-          snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
-        }}
-      >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <ScaleClusterAlert />
-        </ClusterContext.Provider>
-      </RecoilRoot>
-    )
-
-    await waitForText('Scaling up in progress')
   })
 })

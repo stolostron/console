@@ -96,6 +96,7 @@ export function AcmAlert(props: {
   title?: ReactNode
   subtitle?: ReactNode
   message?: ReactNode
+  actions?: ReactNode
   noClose?: boolean
   variant?: 'success' | 'danger' | 'warning' | 'info' | 'default'
   style?: CSSProperties
@@ -126,7 +127,7 @@ export function AcmAlert(props: {
       timeout={150}
     >
       <Alert
-        actionLinks={alertInfo?.actions}
+        actionLinks={alertInfo?.actions || props.actions}
         isInline={props.isInline}
         title={alertInfo?.title || props.title}
         actionClose={!props.noClose && <AlertActionCloseButton onClose={() => setOpen(false)} />}
