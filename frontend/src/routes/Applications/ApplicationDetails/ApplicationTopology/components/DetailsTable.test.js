@@ -129,7 +129,7 @@ describe('DetailsTable', () => {
         },
       ],
       deploymentModel: {
-        'pause-deploy3-local-cluster': [
+        'pause-deploy3-local-cluster-feng-argo-perf': [
           {
             _clusterNamespace: '',
             _hubClusterResource: 'true',
@@ -151,7 +151,7 @@ describe('DetailsTable', () => {
             pulse: 'green',
           },
         ],
-        'pause-deploy2-local-cluster': [
+        'pause-deploy2-local-cluster-feng-argo-perf': [
           {
             _clusterNamespace: '',
             _hubClusterResource: 'true',
@@ -170,10 +170,10 @@ describe('DetailsTable', () => {
             namespace: 'feng-argo-perf',
             ready: '1',
             resStatus: '1/1',
-            pulse: 'green',
+            pulse: 'blocked',
           },
         ],
-        'pause-deploy-local-cluster': [
+        'pause-deploy-local-cluster-feng-argo-perf': [
           {
             _clusterNamespace: '',
             _hubClusterResource: 'true',
@@ -192,7 +192,7 @@ describe('DetailsTable', () => {
             namespace: 'feng-argo-perf',
             ready: '1',
             resStatus: '1/1',
-            pulse: 'green',
+            pulse: 'yellow',
           },
         ],
       },
