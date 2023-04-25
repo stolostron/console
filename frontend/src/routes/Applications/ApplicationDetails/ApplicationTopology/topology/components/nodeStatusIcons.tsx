@@ -32,6 +32,16 @@ export const NodeStatusIcons = () => (
         ></path>
       </g>
     </symbol>
+    <symbol viewBox="0 0 512 512" width="16" y="0" id="nodeStatusIcon_blocked">
+      <g>
+        <circle id="Oval" fill="#FFFFFF" cx="12" cy="12" r="9"></circle>
+        <path
+          d="M256,8C119,8,8,119,8,256S119,504,256,504,504,393,504,256,393,8,256,8Zm92.49,313h0l-20,25a16,16,0,0,1-22.49,2.5h0l-67-49.72a40,40,0,0,1-15-31.23V112a16,16,0,0,1,16-16h32a16,16,0,0,1,16,16V256l58,42.5A16,16,0,0,1,348.49,321Z"
+          id="clock-circle"
+          fill="#F0AB00"
+        ></path>
+      </g>
+    </symbol>
     <symbol viewBox="4 4 16 16" id="nodeStatusIcon_pending">
       <g id="Applications" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="2.1-App-9" transform="translate(-1151.000000, -1345.000000)">

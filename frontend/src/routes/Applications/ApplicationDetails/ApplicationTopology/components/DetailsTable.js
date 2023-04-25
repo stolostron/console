@@ -129,6 +129,9 @@ class DetailsTable extends Component {
             case 'yellow':
               icon = 'warning'
               break
+            case 'blocked':
+              icon = 'blocked'
+              break
             case undefined:
             case 'orange':
               icon = 'pending'
