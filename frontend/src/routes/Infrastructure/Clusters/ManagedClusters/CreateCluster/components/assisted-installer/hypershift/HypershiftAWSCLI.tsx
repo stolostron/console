@@ -33,12 +33,12 @@ CLUSTER_NAME="example"
 SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
 NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
 
-hypershift create cluster aws 
+hypershift create cluster aws \\
   --name $CLUSTER_NAME \\
   --namespace $NAMESPACE \\
   --node-pool-replicas=3 \\
   --secret-creds $SECRET_CREDS \\
-  --region $REGION \\`
+  --region $REGION`
 
   const helperCommand = `hypershift create cluster aws --help`
   const handleModalToggleAws = () => {
