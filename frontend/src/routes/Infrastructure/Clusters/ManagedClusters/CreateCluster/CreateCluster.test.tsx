@@ -92,6 +92,15 @@ const clusterCurator: ClusterCurator = {
       ],
       towerAuthSecret: 'ansible-connection',
     },
+    upgrade: {
+      posthook: [
+        {
+          name: 'test-posthook-upgrade',
+          extra_vars: {},
+        },
+      ],
+      towerAuthSecret: 'ansible-connection',
+    },
   },
 }
 

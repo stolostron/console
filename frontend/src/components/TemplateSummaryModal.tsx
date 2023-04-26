@@ -107,11 +107,13 @@ export function PrePostTemplatesList(props: { curation: Curation; curatorAction:
       preLabel = t('template.preUpgrade.name')
       postLabel = t('template.postUpgrade.name')
       break
-    case 'scale':
+    /* istanbul ignore next */
+    case 'scale': // scale not currently supported
       preLabel = t('template.preScale.name')
       postLabel = t('template.postScale.name')
       break
-    case 'destroy':
+    /* istanbul ignore next */
+    case 'destroy': // destroy not currently supported
       preLabel = t('template.preDestroy.name')
       postLabel = t('template.postDestroy.name')
       break
@@ -153,7 +155,7 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
       </Thead>
       <Tbody>
         {curatorJobs.map((job, i) => (
-          <Tr key={`${job.name}-${i}`}>
+          <Tr key={`${job.name}-${job.type}-${i}`}>
             <Td dataLabel={stage}>{job.name}</Td>
             <Td dataLabel={t('Template Type')}>{job.type}</Td>
           </Tr>
