@@ -33,7 +33,7 @@ hypershift create cluster kubevirt \\
 --node-pool-replicas=$WORKER_COUNT \\
 --pull-secret $PULL_SECRET \\
 --memory $MEM \\
---cores $CPU \\`
+--cores $CPU`
 
   const helperCommand = `hypershift create cluster kubevirt --help`
 
