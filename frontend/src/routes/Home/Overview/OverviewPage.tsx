@@ -278,7 +278,7 @@ export default function OverviewPage() {
       // determine whether the matched decision has placed an appSet in the selected cluster.
 
       const clusterMatch =
-        decision.status?.decisions.findIndex((d) => selectedClusterNames.includes(d.clusterName)) ?? -1
+        decision?.status?.decisions.findIndex((d) => selectedClusterNames.includes(d.clusterName)) ?? -1
       return clusterMatch > -1
     })
     return filteredAppSets

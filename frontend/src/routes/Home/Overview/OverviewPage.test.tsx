@@ -9,6 +9,7 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
+  applicationSetsState,
   applicationsState,
   argoApplicationsState,
   clusterManagementAddonsState,
@@ -33,6 +34,7 @@ import {
 } from '../../../resources'
 import {
   mockApplications,
+  mockApplicationSets,
   mockArgoApplications,
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
@@ -1207,6 +1209,7 @@ it('should render overview page with expected data', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
+        snapshot.set(applicationSetsState, mockApplicationSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, managedClusterInfos)
