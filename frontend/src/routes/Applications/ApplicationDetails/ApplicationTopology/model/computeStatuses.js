@@ -20,7 +20,6 @@ import {
   filterSubscriptionObject,
   showMissingClusterDetails,
   getTargetNsForNode,
-  nodesWithNoNS,
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
 import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
@@ -402,7 +401,7 @@ const getPulseStatusForGenericNode = (node, t) => {
   clusterNames.forEach((clusterName) => {
     clusterName = R.trim(clusterName)
     //get target cluster namespaces
-    const resourceNSString = _.includes(nodesWithNoNS, nodeType) ? 'name' : 'namespace'
+    const resourceNSString = !_.get(node, 'namespace') ? 'name' : 'namespace'
     const resourcesForCluster = _.filter(
       _.flatten(Object.values(resourceMap)),
       (obj) => _.get(obj, 'cluster', '') === clusterName
@@ -474,6 +473,7 @@ const getStateNames = (t) => {
     'propagated',
     'healthy',
     'active',
+    'available',
   ]
   return { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates }
 }
@@ -1318,7 +1318,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
       _.flatten(Object.values(resourceMap)),
       (obj) => _.get(obj, 'cluster', '') === clusterName
     )
-    const resourceNSString = _.includes(nodesWithNoNS, nodeType) ? 'name' : 'namespace'
+    const resourceNSString = !_.get(node, 'namespace') ? 'name' : 'namespace'
     //get cluster target namespaces
     const targetNSList = getTargetNsForNode(node, resourcesForCluster, clusterName, '*')
     targetNSList.forEach((targetNS) => {

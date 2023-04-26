@@ -96,11 +96,16 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
     const resourceNS = []
     resources.forEach((rsc) => {
       const rscNS = _.get(rsc, 'namespace')
+      const rscKind = _.get(rsc, 'kind')
       if (rscNS) {
         resourceNS.push(rscNS)
       }
       if (!rscNS) {
-        kindsNotNamespaceScoped.push(rsc.kind.toLowerCase())
+        if (rscKind.toLowerCase() === 'project') {
+          kindsNotNamespaceScoped.push('namespace')
+        } else {
+          kindsNotNamespaceScoped.push(rsc.kind.toLowerCase())
+        }
         kindsNotNamespaceScopedNames.push(rsc.name)
       }
     })
