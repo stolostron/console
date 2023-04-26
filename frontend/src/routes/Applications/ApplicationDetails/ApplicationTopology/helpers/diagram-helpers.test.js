@@ -21,6 +21,7 @@ import {
   parseApplicationNodeName,
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
+  createEditLink,
 } from './diagram-helpers'
 
 const t = i18n.t.bind(i18n)
@@ -1475,5 +1476,487 @@ describe('parseApplicationNodeName', () => {
 
   it('returns id without parsing', () => {
     expect(parseApplicationNodeName('app-test')).toEqual('app-test')
+  })
+})
+
+describe('createEditLink subscriptionstatus', () => {
+  const node = {
+    name: 'feng-wordpress-subscription-1',
+    namespace: 'feng-wordpress',
+    type: 'subscription',
+    id: 'member--subscription--feng-wordpress--feng-wordpress-subscription-1',
+    uid: 'member--subscription--feng-wordpress--feng-wordpress-subscription-1',
+    specs: {
+      title: 'wordpress',
+      isDesign: true,
+      hasRules: false,
+      isPlaced: true,
+      raw: {
+        apiVersion: 'apps.open-cluster-management.io/v1',
+        kind: 'Subscription',
+        metadata: {
+          annotations: {
+            'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+          },
+          creationTimestamp: '2023-04-18T15:43:49Z',
+          generation: 1,
+          labels: {
+            app: 'feng-wordpress',
+            'app.kubernetes.io/part-of': 'feng-wordpress',
+            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+          },
+          name: 'feng-wordpress-subscription-1',
+          namespace: 'feng-wordpress',
+          resourceVersion: '4173353',
+          uid: '5a6ce590-c6ab-4131-befe-c494706834c8',
+        },
+        spec: {
+          channel: 'hchartsbitnamicom-bitnami-ns/hchartsbitnamicom-bitnami',
+          name: 'wordpress',
+          packageOverrides: [
+            {
+              packageAlias: 'wordpress',
+              packageName: 'wordpress',
+            },
+          ],
+          placement: {
+            placementRef: {
+              kind: 'Placement',
+              name: 'feng-wordpress-placement-1',
+            },
+          },
+        },
+        status: {
+          lastUpdateTime: '2023-04-18T15:43:52Z',
+          message: 'Active',
+          phase: 'Propagated',
+        },
+        posthooks: [],
+        prehooks: [],
+        channels: [
+          {
+            apiVersion: 'apps.open-cluster-management.io/v1',
+            kind: 'Channel',
+            metadata: {
+              annotations: {
+                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+              },
+              creationTimestamp: '2023-04-18T15:43:49Z',
+              generation: 1,
+              name: 'hchartsbitnamicom-bitnami',
+              namespace: 'hchartsbitnamicom-bitnami-ns',
+              resourceVersion: '4173223',
+              uid: '8f6a4116-6f7b-40d6-b2ca-ff8a5040a2a5',
+            },
+            spec: {
+              pathname: 'https://charts.bitnami.com/bitnami',
+              type: 'HelmRepo',
+            },
+          },
+        ],
+        decisions: [
+          {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'PlacementDecision',
+            metadata: {
+              creationTimestamp: '2023-04-18T15:43:49Z',
+              generation: 1,
+              labels: {
+                'cluster.open-cluster-management.io/placement': 'feng-wordpress-placement-1',
+              },
+              name: 'feng-wordpress-placement-1-decision-1',
+              namespace: 'feng-wordpress',
+              ownerReferences: [
+                {
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+                  blockOwnerDeletion: true,
+                  controller: true,
+                  kind: 'Placement',
+                  name: 'feng-wordpress-placement-1',
+                  uid: '08697165-c8d6-4d6d-a42d-3bcb47ccd106',
+                },
+              ],
+              resourceVersion: '9217370',
+              uid: 'd385dad4-1d60-40e6-9405-109f827982f7',
+            },
+            status: {
+              decisions: [
+                {
+                  clusterName: 'feng-managed',
+                  reason: '',
+                },
+                {
+                  clusterName: 'local-cluster',
+                  reason: '',
+                },
+              ],
+            },
+          },
+        ],
+        placements: [
+          {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: {
+              creationTimestamp: '2023-04-18T15:43:49Z',
+              generation: 1,
+              labels: {
+                app: 'feng-wordpress',
+              },
+              name: 'feng-wordpress-placement-1',
+              namespace: 'feng-wordpress',
+              resourceVersion: '9217374',
+              uid: '08697165-c8d6-4d6d-a42d-3bcb47ccd106',
+            },
+            spec: {
+              clusterSets: ['default'],
+              predicates: [
+                {
+                  requiredClusterSelector: {
+                    labelSelector: {},
+                  },
+                },
+              ],
+            },
+            status: {
+              conditions: [
+                {
+                  lastTransitionTime: '2023-04-18T15:43:49Z',
+                  message: 'Placement configurations check pass',
+                  reason: 'Succeedconfigured',
+                  status: 'False',
+                  type: 'PlacementMisconfigured',
+                },
+                {
+                  lastTransitionTime: '2023-04-25T13:38:36Z',
+                  message: 'All cluster decisions scheduled',
+                  reason: 'AllDecisionsScheduled',
+                  status: 'True',
+                  type: 'PlacementSatisfied',
+                },
+              ],
+              numberOfSelectedClusters: 2,
+            },
+          },
+        ],
+        report: {
+          apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+          kind: 'SubscriptionReport',
+          metadata: {
+            creationTimestamp: '2023-04-18T15:43:51Z',
+            generation: 133,
+            labels: {
+              'apps.open-cluster-management.io/hosting-subscription': 'feng-wordpress.feng-wordpress-subscription-1',
+            },
+            name: 'feng-wordpress-subscription-1',
+            namespace: 'feng-wordpress',
+            ownerReferences: [
+              {
+                apiVersion: 'apps.open-cluster-management.io/v1',
+                blockOwnerDeletion: true,
+                controller: true,
+                kind: 'Subscription',
+                name: 'feng-wordpress-subscription-1',
+                uid: '5a6ce590-c6ab-4131-befe-c494706834c8',
+              },
+            ],
+            resourceVersion: '9226643',
+            uid: '309be373-4f53-422c-a43f-390287d164d9',
+          },
+          reportType: 'Application',
+          resources: [
+            {
+              apiVersion: '/v1',
+              kind: 'ServiceAccount',
+              name: 'wordpress-mariadb',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'Secret',
+              name: 'wordpress-mariadb',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'Secret',
+              name: 'wordpress',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'ConfigMap',
+              name: 'wordpress-mariadb',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'PersistentVolumeClaim',
+              name: 'wordpress',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'Service',
+              name: 'wordpress-mariadb',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: '/v1',
+              kind: 'Service',
+              name: 'wordpress',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: 'apps/v1',
+              kind: 'Deployment',
+              name: 'wordpress',
+              namespace: 'feng-wordpress',
+            },
+            {
+              apiVersion: 'apps/v1',
+              kind: 'StatefulSet',
+              name: 'wordpress-mariadb',
+              namespace: 'feng-wordpress',
+            },
+          ],
+          results: [
+            {
+              result: 'failed',
+              source: 'local-cluster',
+              timestamp: {
+                nanos: 0,
+                seconds: 0,
+              },
+            },
+          ],
+          summary: {
+            clusters: '2',
+            deployed: '0',
+            failed: '1',
+            inProgress: '1',
+            propagationFailed: '0',
+          },
+        },
+      },
+      clustersNames: ['feng-managed', 'local-cluster'],
+      searchClusters: [
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__local-cluster',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'local-cluster',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com',
+          cpu: '24',
+          created: '2023-04-07T21:42:28Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.7+eab9cc9',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+          memory: '96432376Ki',
+          name: 'local-cluster',
+          nodes: '6',
+        },
+      ],
+      subscriptionModel: {
+        'feng-wordpress-subscription-1-local-local-cluster-feng-wordpress': [
+          {
+            _clusterNamespace: '',
+            _hostingSubscription: 'feng-wordpress/feng-wordpress-subscription-1',
+            _hubClusterResource: 'true',
+            _uid: 'local-cluster/3be89a94-4391-433a-99bb-9484fdd8d534',
+            apigroup: 'apps.open-cluster-management.io',
+            apiversion: 'v1',
+            channel: 'hchartsbitnamicom-bitnami-ns/hchartsbitnamicom-bitnami',
+            cluster: 'local-cluster',
+            created: '2023-04-18T15:43:51Z',
+            kind: 'Subscription',
+            kind_plural: 'subscriptions',
+            label:
+              'app=feng-wordpress; app.kubernetes.io/part-of=feng-wordpress; apps.open-cluster-management.io/reconcile-rate=medium',
+            localPlacement: 'true',
+            name: 'feng-wordpress-subscription-1-local',
+            namespace: 'feng-wordpress',
+            package: 'wordpress',
+            status: 'Subscribed',
+            timeWindow: 'none',
+          },
+        ],
+        'feng-wordpress-subscription-1-local-cluster-feng-wordpress': [
+          {
+            _clusterNamespace: '',
+            _hubClusterResource: 'true',
+            _uid: 'local-cluster/5a6ce590-c6ab-4131-befe-c494706834c8',
+            apigroup: 'apps.open-cluster-management.io',
+            apiversion: 'v1',
+            channel: 'hchartsbitnamicom-bitnami-ns/hchartsbitnamicom-bitnami',
+            cluster: 'local-cluster',
+            created: '2023-04-18T15:43:49Z',
+            kind: 'Subscription',
+            kind_plural: 'subscriptions',
+            label:
+              'app=feng-wordpress; app.kubernetes.io/part-of=feng-wordpress; apps.open-cluster-management.io/reconcile-rate=medium',
+            localPlacement: 'false',
+            name: 'feng-wordpress-subscription-1',
+            namespace: 'feng-wordpress',
+            package: 'wordpress',
+            status: 'Propagated',
+            timeWindow: 'none',
+          },
+        ],
+      },
+      pulse: 'red',
+      shapeType: 'subscription',
+    },
+    report: {
+      apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+      kind: 'SubscriptionReport',
+      metadata: {
+        creationTimestamp: '2023-04-18T15:43:51Z',
+        generation: 133,
+        labels: {
+          'apps.open-cluster-management.io/hosting-subscription': 'feng-wordpress.feng-wordpress-subscription-1',
+        },
+        name: 'feng-wordpress-subscription-1',
+        namespace: 'feng-wordpress',
+        ownerReferences: [
+          {
+            apiVersion: 'apps.open-cluster-management.io/v1',
+            blockOwnerDeletion: true,
+            controller: true,
+            kind: 'Subscription',
+            name: 'feng-wordpress-subscription-1',
+            uid: '5a6ce590-c6ab-4131-befe-c494706834c8',
+          },
+        ],
+        resourceVersion: '9226643',
+        uid: '309be373-4f53-422c-a43f-390287d164d9',
+      },
+      reportType: 'Application',
+      resources: [
+        {
+          apiVersion: '/v1',
+          kind: 'ServiceAccount',
+          name: 'wordpress-mariadb',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'Secret',
+          name: 'wordpress-mariadb',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'Secret',
+          name: 'wordpress',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'ConfigMap',
+          name: 'wordpress-mariadb',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'PersistentVolumeClaim',
+          name: 'wordpress',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'Service',
+          name: 'wordpress-mariadb',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: '/v1',
+          kind: 'Service',
+          name: 'wordpress',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: 'apps/v1',
+          kind: 'Deployment',
+          name: 'wordpress',
+          namespace: 'feng-wordpress',
+        },
+        {
+          apiVersion: 'apps/v1',
+          kind: 'StatefulSet',
+          name: 'wordpress-mariadb',
+          namespace: 'feng-wordpress',
+        },
+      ],
+      results: [
+        {
+          result: 'failed',
+          source: 'local-cluster',
+          timestamp: {
+            nanos: 0,
+            seconds: 0,
+          },
+        },
+      ],
+      summary: {
+        clusters: '2',
+        deployed: '0',
+        failed: '1',
+        inProgress: '1',
+        propagationFailed: '0',
+      },
+    },
+  }
+  const kind = 'SubscriptionStatus'
+  const cluster = 'local-cluster'
+  const apiversion = 'apps.open-cluster-management.io/v1alpha1'
+
+  it('returns subscriptionstatus link', () => {
+    expect(createEditLink(node, kind, cluster, apiversion)).toEqual(
+      '/multicloud/home/search/resources/yaml?apiversion=apps.open-cluster-management.io%2Fv1alpha1&cluster=local-cluster&kind=SubscriptionStatus&name=feng-wordpress-subscription-1&namespace=feng-wordpress'
+    )
+  })
+})
+
+describe('createEditLink deployment', () => {
+  const node = {
+    kind: 'deployment',
+    apigroup: 'apps',
+    apiversion: 'v1',
+    cluster: 'local-cluster',
+    name: 'mydeploy',
+    namespace: 'default',
+  }
+  it('returns deployment link', () => {
+    expect(createEditLink(node)).toEqual(
+      '/multicloud/home/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
+    )
+  })
+})
+
+describe('createEditLink kind undefined', () => {
+  const node = {
+    apigroup: 'apps',
+    apiversion: 'v1',
+    cluster: 'local-cluster',
+    name: 'mydeploy',
+    namespace: 'default',
+  }
+  it('returns non-working link', () => {
+    expect(createEditLink(node)).toEqual(
+      '/multicloud/home/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&name=mydeploy&namespace=default'
+    )
   })
 })

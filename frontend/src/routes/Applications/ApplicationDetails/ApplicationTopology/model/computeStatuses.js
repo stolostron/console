@@ -884,7 +884,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             })
             const subscriptionStatusLink = createEditLink(
               node,
-              'subscriptionstatus',
+              'SubscriptionStatus',
               subsCluster,
               'apps.open-cluster-management.io/v1alpha1'
             )
