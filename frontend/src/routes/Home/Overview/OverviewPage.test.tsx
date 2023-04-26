@@ -33,8 +33,8 @@ import {
   SelfSubjectAccessReview,
 } from '../../../resources'
 import {
-  mockApplicationSets,
   mockApplications,
+  mockApplicationSets,
   mockArgoApplications,
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
