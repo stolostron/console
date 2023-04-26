@@ -4,6 +4,7 @@ import { PageSection, Stack } from '@patternfly/react-core'
 import { get, isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouteMatch } from 'react-router-dom'
+import { NavigationPath } from '../../../NavigationPath'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import {
   GetArgoApplicationsHashSet,
@@ -11,7 +12,6 @@ import {
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
   AddonStatus,
@@ -35,11 +35,11 @@ import {
   AcmPageHeader,
   AcmScrollable,
   AcmSummaryList,
-  colorThemes,
   Provider,
+  colorThemes,
 } from '../../../ui-components'
-import { getClusterList } from '../../Applications/helpers/resource-helper'
 import { localClusterStr } from '../../Applications/Overview'
+import { getClusterList } from '../../Applications/helpers/resource-helper'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
@@ -145,14 +145,14 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         { property: 'status', values: ['Running', 'Completed'] },
       ],
     },
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         {
           property: 'status',
           values: ['ContainerCreating', 'ContainerStatusUnknown', 'Pending', 'Terminating', 'Waiting'],
@@ -162,7 +162,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         {
           property: 'status',
           values: [
