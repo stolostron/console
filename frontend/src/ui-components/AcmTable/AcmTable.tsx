@@ -1006,7 +1006,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 rowWrapper={OuiaIdRowWrapper}
                 actionResolver={actionResolver}
                 actions={actions}
-                aria-label={t('Simple Table')}
                 sortBy={adjustedSort}
                 onSort={(_event, index, direction) => updateSort({ index, direction })}
                 onSelect={

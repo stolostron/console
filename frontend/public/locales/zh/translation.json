@@ -2214,8 +2214,6 @@
   "show.less": "显示更少",
   "show.more": "{{count}} 更多",
   "show.more_plural": "{{count}} 更多",
-  "Simple table": "简单表",
-  "Simple Table": "简单表",
   "Single cluster": "单集群",
   "Single node OpenShift": "单节点 OpenShift",
   "Skip tags": "跳过标签",

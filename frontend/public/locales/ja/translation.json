@@ -2214,8 +2214,6 @@
   "show.less": "簡易表示",
   "show.more": "あと {{count}} 個",
   "show.more_plural": "あと {{count}} 個",
-  "Simple table": "シンプルなテーブル",
-  "Simple Table": "シンプルなテーブル",
   "Single cluster": "単一クラスター",
   "Single node OpenShift": "単一ノードの OpenShift",
   "Skip tags": "タグのスキップ",
