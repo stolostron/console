@@ -85,7 +85,7 @@ export const addPropertyToList = (list, data) => {
 }
 
 export const createEditLink = (node, overrideKind, overrideCluster, overrideApiVersion) => {
-  const kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
+  let kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
   const apigroup = _.get(node, 'apigroup')
   const apiversion = _.get(node, 'apiversion')
   let cluster = overrideCluster || _.get(node, 'cluster')
@@ -100,10 +100,15 @@ export const createEditLink = (node, overrideKind, overrideCluster, overrideApiV
     apiVersion = overrideApiVersion
   }
 
+  kind = kind ? kind.toLowerCase() : undefined
+  if (kind === 'subscriptionstatus') {
+    kind = 'SubscriptionStatus'
+  }
+
   return getEditLink({
     name: _.get(node, 'name'),
     namespace: _.get(node, 'namespace'),
-    kind: kind ? kind.toLowerCase() : undefined,
+    kind: kind,
     apiVersion,
     cluster: cluster ? cluster : undefined,
   })
