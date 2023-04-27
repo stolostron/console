@@ -1143,7 +1143,7 @@ it('should render overview page with expected data', async () => {
               filters: [
                 {
                   property: 'kind',
-                  values: ['pod'],
+                  values: ['Pod'],
                 },
                 {
                   property: 'status',
@@ -1156,7 +1156,7 @@ it('should render overview page with expected data', async () => {
               filters: [
                 {
                   property: 'kind',
-                  values: ['pod'],
+                  values: ['Pod'],
                 },
                 {
                   property: 'status',
@@ -1169,7 +1169,7 @@ it('should render overview page with expected data', async () => {
               filters: [
                 {
                   property: 'kind',
-                  values: ['pod'],
+                  values: ['Pod'],
                 },
                 {
                   property: 'status',

@@ -145,14 +145,14 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         { property: 'status', values: ['Running', 'Completed'] },
       ],
     },
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         {
           property: 'status',
           values: ['ContainerCreating', 'ContainerStatusUnknown', 'Pending', 'Terminating', 'Waiting'],
@@ -162,7 +162,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     {
       keywords: [],
       filters: [
-        { property: 'kind', values: ['pod'] },
+        { property: 'kind', values: ['Pod'] },
         {
           property: 'status',
           values: [
