@@ -92,6 +92,15 @@ const clusterCurator: ClusterCurator = {
       ],
       towerAuthSecret: 'ansible-connection',
     },
+    upgrade: {
+      posthook: [
+        {
+          name: 'test-posthook-upgrade',
+          extra_vars: {},
+        },
+      ],
+      towerAuthSecret: 'ansible-connection',
+    },
   },
 }
 
@@ -114,6 +123,15 @@ const mockClusterCuratorInstall: ClusterCurator = {
         },
       ],
       towerAuthSecret: 'toweraccess-install',
+    },
+    upgrade: {
+      posthook: [
+        {
+          name: 'test-posthook-upgrade',
+          extra_vars: {},
+        },
+      ],
+      towerAuthSecret: 'toweraccess-upgrade',
     },
     desiredCuration: 'install',
   },
@@ -141,6 +159,26 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
   kind: ProviderConnectionKind,
   metadata: {
     name: 'toweraccess-install',
+    namespace: clusterName,
+    labels: {
+      'cluster.open-cluster-management.io/type': 'ans',
+      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+      'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+      'cluster.open-cluster-management.io/backup': 'cluster',
+    },
+  },
+  stringData: {
+    host: 'test',
+    token: 'test',
+  },
+  type: 'Opaque',
+}
+
+const mockProviderConnectionAnsibleCopiedUpgrade: ProviderConnection = {
+  apiVersion: ProviderConnectionApiVersion,
+  kind: ProviderConnectionKind,
+  metadata: {
+    name: 'toweraccess-upgrade',
     namespace: clusterName,
     labels: {
       'cluster.open-cluster-management.io/type': 'ans',
@@ -673,8 +711,10 @@ describe('CreateCluster AWS', () => {
 
     // check template summary
     await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
-    await waitForText('Pre-install Ansible templates')
+    await waitForText('Pre-install Ansible template')
     await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
+    await waitForText('Post-upgrade Ansible template')
+    await waitForText(mockClusterCurators[0].spec!.upgrade!.posthook![0].name!)
 
     // clear template
     await clickByRole('button', { name: /clear selected item/i })
@@ -763,6 +803,7 @@ describe('CreateCluster AWS', () => {
       nockCreate(mockKlusterletAddonSecretAws),
       nockCreate(mockClusterDeploymentAwsAnsible),
       nockCreate(mockProviderConnectionAnsibleCopied),
+      nockCreate(mockProviderConnectionAnsibleCopiedUpgrade),
       nockCreate(mockClusterCuratorInstall),
     ]
 

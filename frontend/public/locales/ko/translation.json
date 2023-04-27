@@ -2214,8 +2214,6 @@
   "show.less": "적게 표시",
   "show.more": "{{count}} 추가",
   "show.more_plural": "{{count}} 추가",
-  "Simple table": "간단한 표",
-  "Simple Table": "간단한 표",
   "Single cluster": "단일 클러스터",
   "Single node OpenShift": "단일 노드 OpenShift",
   "Skip tags": "태그 건너뛰기",
