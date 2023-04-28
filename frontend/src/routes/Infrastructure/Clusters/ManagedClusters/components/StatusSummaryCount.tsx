@@ -153,13 +153,13 @@ export function StatusSummaryCount() {
         'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
-      // filter for the correct PlacementDecision which lists the clusters that match the decision parameters.
-      const decision = placementDecisions.filter((decision) => {
+      // find the correct PlacementDecision which lists the clusters that match the decision parameters.
+      const decision = placementDecisions.find((decision) => {
         const owner = decision.metadata.ownerReferences
         return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
-      })[0]
+      })
       // determine whether the matched decision has placed an appSet in the current cluster.
-      const clusterMatch = decision.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
+      const clusterMatch = decision?.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
       return clusterMatch > -1
     })
     return filteredAppSets
