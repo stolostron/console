@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import {
   AnsibleJob,
   AnsibleJobApiVersion,
@@ -29,7 +29,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
 import { Router } from 'react-router-dom'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 
 const mockDistributionInfo: DistributionInfo = {

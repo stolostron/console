@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '../../../../ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { BulkActionModal, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'

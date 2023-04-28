@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../../lib/nock-util'

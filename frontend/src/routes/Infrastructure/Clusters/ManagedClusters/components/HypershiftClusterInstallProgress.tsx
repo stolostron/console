@@ -4,7 +4,7 @@ import {
   HostedClusterK8sResource,
   NodePoolK8sResource,
   ClusterImageSetK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 

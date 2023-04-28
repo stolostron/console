@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { AgentServiceConfigK8sResource } from 'openshift-assisted-ui-lib/cim'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
+import { AgentServiceConfigK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { Alert, AlertVariant } from '@patternfly/react-core'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'

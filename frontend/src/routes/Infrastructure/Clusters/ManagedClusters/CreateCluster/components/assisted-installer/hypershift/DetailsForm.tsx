@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, useContext } from 'react'
 import { FormikProps } from 'formik'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { set, get, isEqual, startCase, camelCase } from 'lodash'
 import { getValue } from '../../../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'

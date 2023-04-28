@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'

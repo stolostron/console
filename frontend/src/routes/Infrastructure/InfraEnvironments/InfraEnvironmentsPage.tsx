@@ -43,7 +43,7 @@ import {
   ListResourcesFuncType,
   PatchResourceFuncType,
   InfrastructureK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { useState, useEffect } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cloneDeep } from 'lodash'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../resources'
 
 export const clusterName = 'test'

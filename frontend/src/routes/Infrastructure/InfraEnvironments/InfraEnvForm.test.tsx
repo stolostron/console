@@ -8,7 +8,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvForm from './InfraEnvForm'
-import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 export const infraEnvName = 'infra-env-name'
 

@@ -6,7 +6,7 @@ import {
   BareMetalHostK8sResource,
   ClusterDeploymentK8sResource,
   InfraEnvK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import {
   getDefault,
   getTemplateValue,

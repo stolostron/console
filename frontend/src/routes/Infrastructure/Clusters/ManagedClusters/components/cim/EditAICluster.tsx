@@ -2,8 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { ClusterDeploymentWizardStepsType, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
+import { ClusterDeploymentWizardStepsType, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 

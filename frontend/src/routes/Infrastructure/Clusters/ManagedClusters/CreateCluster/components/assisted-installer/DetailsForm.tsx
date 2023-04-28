@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
 import { FormikProps } from 'formik'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 // eslint-disable-next-line
 import { TFunction } from 'react-i18next'

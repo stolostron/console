@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { FormikProps } from 'formik'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'

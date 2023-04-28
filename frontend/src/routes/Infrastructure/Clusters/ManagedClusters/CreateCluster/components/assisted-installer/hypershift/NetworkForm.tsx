@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from '@openshift-assisted/ui-lib/cim'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 
